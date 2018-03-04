@@ -7,9 +7,129 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF19204B94F0006D35F4 /* DCDashSync.h */; };
+		FB10EF1C204B94F0006D35F4 /* DCDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DCDashSync.m */; };
+		FB10EF1D204B94F0006D35F4 /* DCDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DCDashSync.m */; };
+		FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF21204B9D27006D35F4 /* Reachability.h */; };
+		FB10EF24204B9D27006D35F4 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF22204B9D27006D35F4 /* Reachability.m */; };
+		FB10EF27204B9F7F006D35F4 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF26204B9F7F006D35F4 /* Security.framework */; };
+		FB10EF29204B9FCE006D35F4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF28204B9FCD006D35F4 /* UIKit.framework */; };
+		FB10EF2B204BA00D006D35F4 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF2A204BA00C006D35F4 /* libbz2.tbd */; };
+		FB10EF2D204BA01C006D35F4 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */; };
 		FB1E462E204B8F13004DE056 /* dashsync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB1E4624204B8F13004DE056 /* dashsync.framework */; };
 		FB1E4633204B8F13004DE056 /* dashsyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4632204B8F13004DE056 /* dashsyncTests.m */; };
-		FB1E4635204B8F13004DE056 /* dashsync.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4627204B8F13004DE056 /* dashsync.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465A204B8F9D004DE056 /* BRTransaction.h */; };
+		FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */; };
+		FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465C204B8F9D004DE056 /* BRKeySequence.h */; };
+		FB1E4680204B8FA0004DE056 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */; };
+		FB1E4681204B8FA0004DE056 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */; };
+		FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */; };
+		FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* BRKey.m */; };
+		FB1E4684204B8FA0004DE056 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* BRKey.m */; };
+		FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4660204B8F9D004DE056 /* BRPeer.h */; };
+		FB1E4686204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */; };
+		FB1E4687204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */; };
+		FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */; };
+		FB1E4689204B8FA0004DE056 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */; };
+		FB1E468A204B8FA0004DE056 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */; };
+		FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */; };
+		FB1E468C204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */; };
+		FB1E468D204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */; };
+		FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4666204B8F9D004DE056 /* BRPeerManager.h */; };
+		FB1E468F204B8FA0004DE056 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* BRPeerManager.m */; };
+		FB1E4690204B8FA0004DE056 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* BRPeerManager.m */; };
+		FB1E4691204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */; };
+		FB1E4692204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */; };
+		FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4669204B8F9E004DE056 /* BREventManager.h */; };
+		FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */; };
+		FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* BRTransaction.m */; };
+		FB1E4696204B8FA0004DE056 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* BRTransaction.m */; };
+		FB1E4697204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */; };
+		FB1E4698204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */; };
+		FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466D204B8F9E004DE056 /* BRKey.h */; };
+		FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */; };
+		FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466F204B8F9E004DE056 /* BRWalletManager.h */; };
+		FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */; };
+		FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */; };
+		FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4672204B8F9E004DE056 /* BRMnemonic.h */; };
+		FB1E469F204B8FA0004DE056 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */; };
+		FB1E46A0204B8FA0004DE056 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */; };
+		FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4674204B8F9F004DE056 /* BRWallet.h */; };
+		FB1E46A2204B8FA0004DE056 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4675204B8F9F004DE056 /* BREventManager.m */; };
+		FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* BRWallet.m */; };
+		FB1E46A5204B8FA0004DE056 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* BRWallet.m */; };
+		FB1E46A6204B8FA0004DE056 /* BRPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */; };
+		FB1E46A7204B8FA0004DE056 /* BRPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */; };
+		FB1E46A8204B8FA0004DE056 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */; };
+		FB1E46A9204B8FA0004DE056 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */; };
+		FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */; };
+		FB1E46AB204B8FA0004DE056 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* BRPeer.m */; };
+		FB1E46AC204B8FA0004DE056 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* BRPeer.m */; };
+		FB1E46AD204B8FA0004DE056 /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* BRWalletManager.m */; };
+		FB1E46AE204B8FA0004DE056 /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* BRWalletManager.m */; };
+		FB1E46AF204B8FA0004DE056 /* BRSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */; };
+		FB1E46B0204B8FA0004DE056 /* BRSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */; };
+		FB1E46C0204B8FBB004DE056 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */; };
+		FB1E46C1204B8FBB004DE056 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */; };
+		FB1E46C2204B8FBB004DE056 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B3204B8FBA004DE056 /* BRPeerEntity.m */; };
+		FB1E46C3204B8FBB004DE056 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B3204B8FBA004DE056 /* BRPeerEntity.m */; };
+		FB1E46C4204B8FBB004DE056 /* BRTxInputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B4204B8FBA004DE056 /* BRTxInputEntity.m */; };
+		FB1E46C5204B8FBB004DE056 /* BRTxInputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B4204B8FBA004DE056 /* BRTxInputEntity.m */; };
+		FB1E46C6204B8FBB004DE056 /* BRTxMetadataEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46B5204B8FBB004DE056 /* BRTxMetadataEntity.h */; };
+		FB1E46C7204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B6204B8FBB004DE056 /* BRTxMetadataEntity.m */; };
+		FB1E46C8204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B6204B8FBB004DE056 /* BRTxMetadataEntity.m */; };
+		FB1E46C9204B8FBB004DE056 /* BRTransactionEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46B7204B8FBB004DE056 /* BRTransactionEntity.h */; };
+		FB1E46CA204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B8204B8FBB004DE056 /* BRMerkleBlockEntity.m */; };
+		FB1E46CB204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B8204B8FBB004DE056 /* BRMerkleBlockEntity.m */; };
+		FB1E46CC204B8FBB004DE056 /* BRTxInputEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46B9204B8FBB004DE056 /* BRTxInputEntity.h */; };
+		FB1E46CD204B8FBB004DE056 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46BA204B8FBB004DE056 /* BRTxOutputEntity.m */; };
+		FB1E46CE204B8FBB004DE056 /* BRTxOutputEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46BA204B8FBB004DE056 /* BRTxOutputEntity.m */; };
+		FB1E46CF204B8FBB004DE056 /* BRPeerEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46BB204B8FBB004DE056 /* BRPeerEntity.h */; };
+		FB1E46D0204B8FBB004DE056 /* BRMerkleBlockEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46BC204B8FBB004DE056 /* BRMerkleBlockEntity.h */; };
+		FB1E46D1204B8FBB004DE056 /* BRTxOutputEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46BD204B8FBB004DE056 /* BRTxOutputEntity.h */; };
+		FB1E46D2204B8FBC004DE056 /* BRAddressEntity.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46BE204B8FBB004DE056 /* BRAddressEntity.h */; };
+		FB1E46D3204B8FBC004DE056 /* BRAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46BF204B8FBB004DE056 /* BRAddressEntity.m */; };
+		FB1E46D4204B8FBC004DE056 /* BRAddressEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46BF204B8FBB004DE056 /* BRAddressEntity.m */; };
+		FB1E46DA204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46D6204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.h */; };
+		FB1E46DB204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46D7204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataProperties.m */; };
+		FB1E46DC204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46D7204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataProperties.m */; };
+		FB1E46DD204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46D8204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.m */; };
+		FB1E46DE204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46D8204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.m */; };
+		FB1E46DF204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E46D9204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h */; };
+		FB1E46E1204B9022004DE056 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E0204B9021004DE056 /* FixedPeers.plist */; };
+		FB1E46E2204B9022004DE056 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E0204B9021004DE056 /* FixedPeers.plist */; };
+		FB1E46E6204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */; };
+		FB1E46E7204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */; };
+		FB1E46E9204B9049004DE056 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E8204B9049004DE056 /* BIP39Words.plist */; };
+		FB1E46EA204B9049004DE056 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E8204B9049004DE056 /* BIP39Words.plist */; };
+		FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E472F204B91E6004DE056 /* NSString+Dash.h */; };
+		FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */; };
+		FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */; };
+		FB1E4745204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
+		FB1E4746204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
+		FB1E4747204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
+		FB1E4748204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
+		FB1E4749204B91E7004DE056 /* NSMutableData+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4734204B91E6004DE056 /* NSMutableData+Bitcoin.h */; };
+		FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */; };
+		FB1E474B204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
+		FB1E474C204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
+		FB1E474D204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */; };
+		FB1E474E204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */; };
+		FB1E474F204B91E7004DE056 /* NSString+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */; };
+		FB1E4750204B91E7004DE056 /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4739204B91E6004DE056 /* NSString+Dash.m */; };
+		FB1E4751204B91E7004DE056 /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4739204B91E6004DE056 /* NSString+Dash.m */; };
+		FB1E4752204B91E7004DE056 /* UIImage+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473A204B91E7004DE056 /* UIImage+Utils.h */; };
+		FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473B204B91E7004DE056 /* NSData+Dash.h */; };
+		FB1E4754204B91E7004DE056 /* NSData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473C204B91E7004DE056 /* NSData+Dash.m */; };
+		FB1E4755204B91E7004DE056 /* NSData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473C204B91E7004DE056 /* NSData+Dash.m */; };
+		FB1E4756204B91E7004DE056 /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */; };
+		FB1E4757204B91E7004DE056 /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */; };
+		FB1E4758204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */; };
+		FB1E4759204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */; };
+		FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */; };
+		FB1E475B204B91E7004DE056 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4740204B91E7004DE056 /* UIImage+Utils.m */; };
+		FB1E475C204B91E7004DE056 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4740204B91E7004DE056 /* UIImage+Utils.m */; };
+		FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4741204B91E7004DE056 /* IntTypes.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -23,12 +143,155 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		FB10EF19204B94F0006D35F4 /* DCDashSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DCDashSync.h; sourceTree = "<group>"; };
+		FB10EF1A204B94F0006D35F4 /* DCDashSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DCDashSync.m; sourceTree = "<group>"; };
+		FB10EF21204B9D27006D35F4 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		FB10EF22204B9D27006D35F4 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		FB10EF26204B9F7F006D35F4 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		FB10EF28204B9FCD006D35F4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		FB10EF2A204BA00C006D35F4 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
+		FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		FB10EF2F204BA0FE006D35F4 /* BREventConfirmView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = BREventConfirmView.m; path = ../../../dashwallet/DashWallet/BREventConfirmView.m; sourceTree = "<group>"; };
+		FB10EF30204BA0FE006D35F4 /* BREventConfirmView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BREventConfirmView.h; path = ../../../dashwallet/DashWallet/BREventConfirmView.h; sourceTree = "<group>"; };
 		FB1E4624204B8F13004DE056 /* dashsync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = dashsync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB1E4627204B8F13004DE056 /* dashsync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dashsync.h; sourceTree = "<group>"; };
 		FB1E4628204B8F13004DE056 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB1E462D204B8F13004DE056 /* dashsyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = dashsyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB1E4632204B8F13004DE056 /* dashsyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = dashsyncTests.m; sourceTree = "<group>"; };
 		FB1E4634204B8F13004DE056 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FB1E463F204B8F4F004DE056 /* sph_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sph_types.h; sourceTree = "<group>"; };
+		FB1E4640204B8F50004DE056 /* aes_helper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes_helper.c; sourceTree = "<group>"; };
+		FB1E4641204B8F50004DE056 /* Keccak.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Keccak.c; sourceTree = "<group>"; };
+		FB1E4642204B8F50004DE056 /* Echo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Echo.c; sourceTree = "<group>"; };
+		FB1E4643204B8F50004DE056 /* Skein.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Skein.c; sourceTree = "<group>"; };
+		FB1E4644204B8F50004DE056 /* Luffa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Luffa.c; sourceTree = "<group>"; };
+		FB1E4645204B8F50004DE056 /* Jh.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Jh.c; sourceTree = "<group>"; };
+		FB1E4646204B8F50004DE056 /* Bmw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Bmw.c; sourceTree = "<group>"; };
+		FB1E4647204B8F50004DE056 /* Shavite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Shavite.c; sourceTree = "<group>"; };
+		FB1E4648204B8F50004DE056 /* Blake.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Blake.c; sourceTree = "<group>"; };
+		FB1E4649204B8F50004DE056 /* Groestl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Groestl.c; sourceTree = "<group>"; };
+		FB1E464A204B8F50004DE056 /* Simd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Simd.c; sourceTree = "<group>"; };
+		FB1E464B204B8F50004DE056 /* CubeHash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = CubeHash.c; sourceTree = "<group>"; };
+		FB1E465A204B8F9D004DE056 /* BRTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransaction.h; sourceTree = "<group>"; };
+		FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP32Sequence.h; sourceTree = "<group>"; };
+		FB1E465C204B8F9D004DE056 /* BRKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKeySequence.h; sourceTree = "<group>"; };
+		FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRKey+BIP38.m"; sourceTree = "<group>"; };
+		FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPaymentRequest.h; sourceTree = "<group>"; };
+		FB1E465F204B8F9D004DE056 /* BRKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRKey.m; sourceTree = "<group>"; };
+		FB1E4660204B8F9D004DE056 /* BRPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeer.h; sourceTree = "<group>"; };
+		FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSShapeshiftManager.m; sourceTree = "<group>"; };
+		FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP39Mnemonic.h; sourceTree = "<group>"; };
+		FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWalletConstants.m; sourceTree = "<group>"; };
+		FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRKey+BIP38.h"; sourceTree = "<group>"; };
+		FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP39Mnemonic.m; sourceTree = "<group>"; };
+		FB1E4666204B8F9D004DE056 /* BRPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerManager.h; sourceTree = "<group>"; };
+		FB1E4667204B8F9E004DE056 /* BRPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerManager.m; sourceTree = "<group>"; };
+		FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP32Sequence.m; sourceTree = "<group>"; };
+		FB1E4669204B8F9E004DE056 /* BREventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventManager.h; sourceTree = "<group>"; };
+		FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBloomFilter.h; sourceTree = "<group>"; };
+		FB1E466B204B8F9E004DE056 /* BRTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransaction.m; sourceTree = "<group>"; };
+		FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPaymentProtocol.m; sourceTree = "<group>"; };
+		FB1E466D204B8F9E004DE056 /* BRKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKey.h; sourceTree = "<group>"; };
+		FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPaymentProtocol.h; sourceTree = "<group>"; };
+		FB1E466F204B8F9E004DE056 /* BRWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWalletManager.h; sourceTree = "<group>"; };
+		FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSShapeshiftManager.h; sourceTree = "<group>"; };
+		FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlock.h; sourceTree = "<group>"; };
+		FB1E4672204B8F9E004DE056 /* BRMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMnemonic.h; sourceTree = "<group>"; };
+		FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBloomFilter.m; sourceTree = "<group>"; };
+		FB1E4674204B8F9F004DE056 /* BRWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWallet.h; sourceTree = "<group>"; };
+		FB1E4675204B8F9F004DE056 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
+		FB1E4676204B8F9F004DE056 /* BRWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWallet.m; sourceTree = "<group>"; };
+		FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPaymentRequest.m; sourceTree = "<group>"; };
+		FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlock.m; sourceTree = "<group>"; };
+		FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSocketHelpers.h; sourceTree = "<group>"; };
+		FB1E467A204B8FA0004DE056 /* BRPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeer.m; sourceTree = "<group>"; };
+		FB1E467B204B8FA0004DE056 /* BRWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWalletManager.m; sourceTree = "<group>"; };
+		FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BRSocketHelpers.c; sourceTree = "<group>"; };
+		FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransactionEntity.m; sourceTree = "<group>"; };
+		FB1E46B3204B8FBA004DE056 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
+		FB1E46B4204B8FBA004DE056 /* BRTxInputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxInputEntity.m; sourceTree = "<group>"; };
+		FB1E46B5204B8FBB004DE056 /* BRTxMetadataEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxMetadataEntity.h; sourceTree = "<group>"; };
+		FB1E46B6204B8FBB004DE056 /* BRTxMetadataEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxMetadataEntity.m; sourceTree = "<group>"; };
+		FB1E46B7204B8FBB004DE056 /* BRTransactionEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransactionEntity.h; sourceTree = "<group>"; };
+		FB1E46B8204B8FBB004DE056 /* BRMerkleBlockEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlockEntity.m; sourceTree = "<group>"; };
+		FB1E46B9204B8FBB004DE056 /* BRTxInputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxInputEntity.h; sourceTree = "<group>"; };
+		FB1E46BA204B8FBB004DE056 /* BRTxOutputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxOutputEntity.m; sourceTree = "<group>"; };
+		FB1E46BB204B8FBB004DE056 /* BRPeerEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerEntity.h; sourceTree = "<group>"; };
+		FB1E46BC204B8FBB004DE056 /* BRMerkleBlockEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlockEntity.h; sourceTree = "<group>"; };
+		FB1E46BD204B8FBB004DE056 /* BRTxOutputEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTxOutputEntity.h; sourceTree = "<group>"; };
+		FB1E46BE204B8FBB004DE056 /* BRAddressEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAddressEntity.h; sourceTree = "<group>"; };
+		FB1E46BF204B8FBB004DE056 /* BRAddressEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAddressEntity.m; sourceTree = "<group>"; };
+		FB1E46D6204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataClass.h"; sourceTree = "<group>"; };
+		FB1E46D7204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataProperties.m"; sourceTree = "<group>"; };
+		FB1E46D8204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSShapeshiftEntity+CoreDataClass.m"; sourceTree = "<group>"; };
+		FB1E46D9204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSShapeshiftEntity+CoreDataProperties.h"; sourceTree = "<group>"; };
+		FB1E46E0204B9021004DE056 /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
+		FB1E46E4204B9037004DE056 /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
+		FB1E46E5204B9037004DE056 /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
+		FB1E46E8204B9049004DE056 /* BIP39Words.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39Words.plist; sourceTree = "<group>"; };
+		FB1E472F204B91E6004DE056 /* NSString+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Dash.h"; sourceTree = "<group>"; };
+		FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+Attachments.h"; sourceTree = "<group>"; };
+		FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Bitcoin.h"; sourceTree = "<group>"; };
+		FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRTransaction+Utils.m"; sourceTree = "<group>"; };
+		FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+Attachments.m"; sourceTree = "<group>"; };
+		FB1E4734204B91E6004DE056 /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
+		FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRTransaction+Utils.h"; sourceTree = "<group>"; };
+		FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Bitcoin.m"; sourceTree = "<group>"; };
+		FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Sugar.m"; sourceTree = "<group>"; };
+		FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Bitcoin.h"; sourceTree = "<group>"; };
+		FB1E4739204B91E6004DE056 /* NSString+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Dash.m"; sourceTree = "<group>"; };
+		FB1E473A204B91E7004DE056 /* UIImage+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utils.h"; sourceTree = "<group>"; };
+		FB1E473B204B91E7004DE056 /* NSData+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Dash.h"; sourceTree = "<group>"; };
+		FB1E473C204B91E7004DE056 /* NSData+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Dash.m"; sourceTree = "<group>"; };
+		FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Bitcoin.m"; sourceTree = "<group>"; };
+		FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
+		FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Sugar.h"; sourceTree = "<group>"; };
+		FB1E4740204B91E7004DE056 /* UIImage+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utils.m"; sourceTree = "<group>"; };
+		FB1E4741204B91E7004DE056 /* IntTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntTypes.h; sourceTree = "<group>"; };
+		FB1E476F204B9239004DE056 /* secp256k1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1.h; sourceTree = "<group>"; };
+		FB1E4770204B9239004DE056 /* secp256k1_ecdh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1_ecdh.h; sourceTree = "<group>"; };
+		FB1E4771204B9239004DE056 /* secp256k1_recovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1_recovery.h; sourceTree = "<group>"; };
+		FB1E477E204B9239004DE056 /* basic-config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "basic-config.h"; sourceTree = "<group>"; };
+		FB1E477F204B9239004DE056 /* bench.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bench.h; sourceTree = "<group>"; };
+		FB1E4785204B9239004DE056 /* ecdsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecdsa.h; sourceTree = "<group>"; };
+		FB1E4786204B9239004DE056 /* ecdsa_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecdsa_impl.h; sourceTree = "<group>"; };
+		FB1E4787204B9239004DE056 /* eckey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eckey.h; sourceTree = "<group>"; };
+		FB1E4788204B9239004DE056 /* eckey_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eckey_impl.h; sourceTree = "<group>"; };
+		FB1E4789204B9239004DE056 /* ecmult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult.h; sourceTree = "<group>"; };
+		FB1E478A204B9239004DE056 /* ecmult_const.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_const.h; sourceTree = "<group>"; };
+		FB1E478B204B9239004DE056 /* ecmult_const_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_const_impl.h; sourceTree = "<group>"; };
+		FB1E478C204B9239004DE056 /* ecmult_gen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_gen.h; sourceTree = "<group>"; };
+		FB1E478D204B9239004DE056 /* ecmult_gen_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_gen_impl.h; sourceTree = "<group>"; };
+		FB1E478E204B9239004DE056 /* ecmult_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ecmult_impl.h; sourceTree = "<group>"; };
+		FB1E478F204B9239004DE056 /* field.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field.h; sourceTree = "<group>"; };
+		FB1E4790204B9239004DE056 /* field_10x26.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_10x26.h; sourceTree = "<group>"; };
+		FB1E4791204B9239004DE056 /* field_10x26_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_10x26_impl.h; sourceTree = "<group>"; };
+		FB1E4792204B9239004DE056 /* field_5x52.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_5x52.h; sourceTree = "<group>"; };
+		FB1E4793204B9239004DE056 /* field_5x52_asm_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_5x52_asm_impl.h; sourceTree = "<group>"; };
+		FB1E4794204B9239004DE056 /* field_5x52_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_5x52_impl.h; sourceTree = "<group>"; };
+		FB1E4795204B9239004DE056 /* field_5x52_int128_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_5x52_int128_impl.h; sourceTree = "<group>"; };
+		FB1E4796204B9239004DE056 /* field_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = field_impl.h; sourceTree = "<group>"; };
+		FB1E4798204B9239004DE056 /* group.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = group.h; sourceTree = "<group>"; };
+		FB1E4799204B9239004DE056 /* group_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = group_impl.h; sourceTree = "<group>"; };
+		FB1E479A204B9239004DE056 /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
+		FB1E479B204B9239004DE056 /* hash_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hash_impl.h; sourceTree = "<group>"; };
+		FB1E47A9204B9239004DE056 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
+		FB1E47AD204B9239004DE056 /* main_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main_impl.h; sourceTree = "<group>"; };
+		FB1E47B0204B9239004DE056 /* num.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = num.h; sourceTree = "<group>"; };
+		FB1E47B1204B9239004DE056 /* num_gmp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = num_gmp.h; sourceTree = "<group>"; };
+		FB1E47B2204B9239004DE056 /* num_gmp_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = num_gmp_impl.h; sourceTree = "<group>"; };
+		FB1E47B3204B9239004DE056 /* num_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = num_impl.h; sourceTree = "<group>"; };
+		FB1E47B4204B9239004DE056 /* scalar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar.h; sourceTree = "<group>"; };
+		FB1E47B5204B9239004DE056 /* scalar_4x64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_4x64.h; sourceTree = "<group>"; };
+		FB1E47B6204B9239004DE056 /* scalar_4x64_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_4x64_impl.h; sourceTree = "<group>"; };
+		FB1E47B7204B9239004DE056 /* scalar_8x32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_8x32.h; sourceTree = "<group>"; };
+		FB1E47B8204B9239004DE056 /* scalar_8x32_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_8x32_impl.h; sourceTree = "<group>"; };
+		FB1E47B9204B9239004DE056 /* scalar_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_impl.h; sourceTree = "<group>"; };
+		FB1E47BA204B9239004DE056 /* scalar_low.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_low.h; sourceTree = "<group>"; };
+		FB1E47BB204B9239004DE056 /* scalar_low_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = scalar_low_impl.h; sourceTree = "<group>"; };
+		FB1E47BC204B9239004DE056 /* secp256k1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = secp256k1.c; sourceTree = "<group>"; };
+		FB1E47BD204B9239004DE056 /* testrand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testrand.h; sourceTree = "<group>"; };
+		FB1E47BE204B9239004DE056 /* testrand_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testrand_impl.h; sourceTree = "<group>"; };
+		FB1E47C1204B9239004DE056 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +299,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB10EF2D204BA01C006D35F4 /* libsqlite3.tbd in Frameworks */,
+				FB10EF2B204BA00D006D35F4 /* libbz2.tbd in Frameworks */,
+				FB10EF29204B9FCE006D35F4 /* UIKit.framework in Frameworks */,
+				FB10EF27204B9F7F006D35F4 /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -50,12 +317,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FB10EF25204B9F7E006D35F4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */,
+				FB10EF2A204BA00C006D35F4 /* libbz2.tbd */,
+				FB10EF28204B9FCD006D35F4 /* UIKit.framework */,
+				FB10EF26204B9F7F006D35F4 /* Security.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FB10EF2E204BA0E5006D35F4 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FB10EF30204BA0FE006D35F4 /* BREventConfirmView.h */,
+				FB10EF2F204BA0FE006D35F4 /* BREventConfirmView.m */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		FB1E461A204B8F13004DE056 = {
 			isa = PBXGroup;
 			children = (
 				FB1E4626204B8F13004DE056 /* dashsync */,
 				FB1E4631204B8F13004DE056 /* dashsyncTests */,
 				FB1E4625204B8F13004DE056 /* Products */,
+				FB10EF25204B9F7E006D35F4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -71,7 +359,17 @@
 		FB1E4626204B8F13004DE056 /* dashsync */ = {
 			isa = PBXGroup;
 			children = (
-				FB1E4627204B8F13004DE056 /* dashsync.h */,
+				FB10EF2E204BA0E5006D35F4 /* Views */,
+				FB1E46EB204B9067004DE056 /* crypto */,
+				FB1E4659204B8F73004DE056 /* Models */,
+				FB1E472E204B91C0004DE056 /* Categories */,
+				FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */,
+				FB1E46E8204B9049004DE056 /* BIP39Words.plist */,
+				FB1E46E0204B9021004DE056 /* FixedPeers.plist */,
+				FB10EF21204B9D27006D35F4 /* Reachability.h */,
+				FB10EF22204B9D27006D35F4 /* Reachability.m */,
+				FB10EF19204B94F0006D35F4 /* DCDashSync.h */,
+				FB10EF1A204B94F0006D35F4 /* DCDashSync.m */,
 				FB1E4628204B8F13004DE056 /* Info.plist */,
 			);
 			path = dashsync;
@@ -86,6 +384,229 @@
 			path = dashsyncTests;
 			sourceTree = "<group>";
 		};
+		FB1E463E204B8F41004DE056 /* x11 */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E4640204B8F50004DE056 /* aes_helper.c */,
+				FB1E4648204B8F50004DE056 /* Blake.c */,
+				FB1E4646204B8F50004DE056 /* Bmw.c */,
+				FB1E464B204B8F50004DE056 /* CubeHash.c */,
+				FB1E4642204B8F50004DE056 /* Echo.c */,
+				FB1E4649204B8F50004DE056 /* Groestl.c */,
+				FB1E4645204B8F50004DE056 /* Jh.c */,
+				FB1E4641204B8F50004DE056 /* Keccak.c */,
+				FB1E4644204B8F50004DE056 /* Luffa.c */,
+				FB1E4647204B8F50004DE056 /* Shavite.c */,
+				FB1E464A204B8F50004DE056 /* Simd.c */,
+				FB1E4643204B8F50004DE056 /* Skein.c */,
+				FB1E463F204B8F4F004DE056 /* sph_types.h */,
+			);
+			path = x11;
+			sourceTree = "<group>";
+		};
+		FB1E4659204B8F73004DE056 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E46B1204B8FAE004DE056 /* Entities */,
+				FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */,
+				FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */,
+				FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */,
+				FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */,
+				FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */,
+				FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */,
+				FB1E4669204B8F9E004DE056 /* BREventManager.h */,
+				FB1E4675204B8F9F004DE056 /* BREventManager.m */,
+				FB1E466D204B8F9E004DE056 /* BRKey.h */,
+				FB1E465F204B8F9D004DE056 /* BRKey.m */,
+				FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */,
+				FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */,
+				FB1E465C204B8F9D004DE056 /* BRKeySequence.h */,
+				FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */,
+				FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */,
+				FB1E4672204B8F9E004DE056 /* BRMnemonic.h */,
+				FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */,
+				FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */,
+				FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */,
+				FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */,
+				FB1E4660204B8F9D004DE056 /* BRPeer.h */,
+				FB1E467A204B8FA0004DE056 /* BRPeer.m */,
+				FB1E4666204B8F9D004DE056 /* BRPeerManager.h */,
+				FB1E4667204B8F9E004DE056 /* BRPeerManager.m */,
+				FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */,
+				FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */,
+				FB1E465A204B8F9D004DE056 /* BRTransaction.h */,
+				FB1E466B204B8F9E004DE056 /* BRTransaction.m */,
+				FB1E4674204B8F9F004DE056 /* BRWallet.h */,
+				FB1E4676204B8F9F004DE056 /* BRWallet.m */,
+				FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */,
+				FB1E466F204B8F9E004DE056 /* BRWalletManager.h */,
+				FB1E467B204B8FA0004DE056 /* BRWalletManager.m */,
+				FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */,
+				FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FB1E46B1204B8FAE004DE056 /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E46D5204B8FE4004DE056 /* Dash */,
+				FB1E46BE204B8FBB004DE056 /* BRAddressEntity.h */,
+				FB1E46BF204B8FBB004DE056 /* BRAddressEntity.m */,
+				FB1E46BC204B8FBB004DE056 /* BRMerkleBlockEntity.h */,
+				FB1E46B8204B8FBB004DE056 /* BRMerkleBlockEntity.m */,
+				FB1E46BB204B8FBB004DE056 /* BRPeerEntity.h */,
+				FB1E46B3204B8FBA004DE056 /* BRPeerEntity.m */,
+				FB1E46B7204B8FBB004DE056 /* BRTransactionEntity.h */,
+				FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */,
+				FB1E46B9204B8FBB004DE056 /* BRTxInputEntity.h */,
+				FB1E46B4204B8FBA004DE056 /* BRTxInputEntity.m */,
+				FB1E46B5204B8FBB004DE056 /* BRTxMetadataEntity.h */,
+				FB1E46B6204B8FBB004DE056 /* BRTxMetadataEntity.m */,
+				FB1E46BD204B8FBB004DE056 /* BRTxOutputEntity.h */,
+				FB1E46BA204B8FBB004DE056 /* BRTxOutputEntity.m */,
+			);
+			path = Entities;
+			sourceTree = "<group>";
+		};
+		FB1E46D5204B8FE4004DE056 /* Dash */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E46D6204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.h */,
+				FB1E46D8204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataClass.m */,
+				FB1E46D9204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h */,
+				FB1E46D7204B8FF0004DE056 /* DSShapeshiftEntity+CoreDataProperties.m */,
+			);
+			path = Dash;
+			sourceTree = "<group>";
+		};
+		FB1E46EB204B9067004DE056 /* crypto */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E475E204B9239004DE056 /* secp256k1 */,
+				FB1E463E204B8F41004DE056 /* x11 */,
+			);
+			path = crypto;
+			sourceTree = "<group>";
+		};
+		FB1E472E204B91C0004DE056 /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */,
+				FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */,
+				FB1E4741204B91E7004DE056 /* IntTypes.h */,
+				FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */,
+				FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */,
+				FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */,
+				FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */,
+				FB1E473B204B91E7004DE056 /* NSData+Dash.h */,
+				FB1E473C204B91E7004DE056 /* NSData+Dash.m */,
+				FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */,
+				FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */,
+				FB1E4734204B91E6004DE056 /* NSMutableData+Bitcoin.h */,
+				FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */,
+				FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */,
+				FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */,
+				FB1E472F204B91E6004DE056 /* NSString+Dash.h */,
+				FB1E4739204B91E6004DE056 /* NSString+Dash.m */,
+				FB1E473A204B91E7004DE056 /* UIImage+Utils.h */,
+				FB1E4740204B91E7004DE056 /* UIImage+Utils.m */,
+			);
+			path = Categories;
+			sourceTree = "<group>";
+		};
+		FB1E475E204B9239004DE056 /* secp256k1 */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E476E204B9239004DE056 /* include */,
+				FB1E477B204B9239004DE056 /* src */,
+			);
+			path = secp256k1;
+			sourceTree = "<group>";
+		};
+		FB1E476E204B9239004DE056 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E476F204B9239004DE056 /* secp256k1.h */,
+				FB1E4770204B9239004DE056 /* secp256k1_ecdh.h */,
+				FB1E4771204B9239004DE056 /* secp256k1_recovery.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		FB1E477B204B9239004DE056 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E477E204B9239004DE056 /* basic-config.h */,
+				FB1E477F204B9239004DE056 /* bench.h */,
+				FB1E4785204B9239004DE056 /* ecdsa.h */,
+				FB1E4786204B9239004DE056 /* ecdsa_impl.h */,
+				FB1E4787204B9239004DE056 /* eckey.h */,
+				FB1E4788204B9239004DE056 /* eckey_impl.h */,
+				FB1E4789204B9239004DE056 /* ecmult.h */,
+				FB1E478A204B9239004DE056 /* ecmult_const.h */,
+				FB1E478B204B9239004DE056 /* ecmult_const_impl.h */,
+				FB1E478C204B9239004DE056 /* ecmult_gen.h */,
+				FB1E478D204B9239004DE056 /* ecmult_gen_impl.h */,
+				FB1E478E204B9239004DE056 /* ecmult_impl.h */,
+				FB1E478F204B9239004DE056 /* field.h */,
+				FB1E4790204B9239004DE056 /* field_10x26.h */,
+				FB1E4791204B9239004DE056 /* field_10x26_impl.h */,
+				FB1E4792204B9239004DE056 /* field_5x52.h */,
+				FB1E4793204B9239004DE056 /* field_5x52_asm_impl.h */,
+				FB1E4794204B9239004DE056 /* field_5x52_impl.h */,
+				FB1E4795204B9239004DE056 /* field_5x52_int128_impl.h */,
+				FB1E4796204B9239004DE056 /* field_impl.h */,
+				FB1E4798204B9239004DE056 /* group.h */,
+				FB1E4799204B9239004DE056 /* group_impl.h */,
+				FB1E479A204B9239004DE056 /* hash.h */,
+				FB1E479B204B9239004DE056 /* hash_impl.h */,
+				FB1E47A7204B9239004DE056 /* modules */,
+				FB1E47B0204B9239004DE056 /* num.h */,
+				FB1E47B1204B9239004DE056 /* num_gmp.h */,
+				FB1E47B2204B9239004DE056 /* num_gmp_impl.h */,
+				FB1E47B3204B9239004DE056 /* num_impl.h */,
+				FB1E47B4204B9239004DE056 /* scalar.h */,
+				FB1E47B5204B9239004DE056 /* scalar_4x64.h */,
+				FB1E47B6204B9239004DE056 /* scalar_4x64_impl.h */,
+				FB1E47B7204B9239004DE056 /* scalar_8x32.h */,
+				FB1E47B8204B9239004DE056 /* scalar_8x32_impl.h */,
+				FB1E47B9204B9239004DE056 /* scalar_impl.h */,
+				FB1E47BA204B9239004DE056 /* scalar_low.h */,
+				FB1E47BB204B9239004DE056 /* scalar_low_impl.h */,
+				FB1E47BC204B9239004DE056 /* secp256k1.c */,
+				FB1E47BD204B9239004DE056 /* testrand.h */,
+				FB1E47BE204B9239004DE056 /* testrand_impl.h */,
+				FB1E47C1204B9239004DE056 /* util.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		FB1E47A7204B9239004DE056 /* modules */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E47A8204B9239004DE056 /* ecdh */,
+				FB1E47AC204B9239004DE056 /* recovery */,
+			);
+			path = modules;
+			sourceTree = "<group>";
+		};
+		FB1E47A8204B9239004DE056 /* ecdh */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E47A9204B9239004DE056 /* main_impl.h */,
+			);
+			path = ecdh;
+			sourceTree = "<group>";
+		};
+		FB1E47AC204B9239004DE056 /* recovery */ = {
+			isa = PBXGroup;
+			children = (
+				FB1E47AD204B9239004DE056 /* main_impl.h */,
+			);
+			path = recovery;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -93,7 +614,45 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1E4635204B8F13004DE056 /* dashsync.h in Headers */,
+				FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */,
+				FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */,
+				FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */,
+				FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */,
+				FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */,
+				FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */,
+				FB1E46CC204B8FBB004DE056 /* BRTxInputEntity.h in Headers */,
+				FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */,
+				FB1E4752204B91E7004DE056 /* UIImage+Utils.h in Headers */,
+				FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */,
+				FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */,
+				FB1E46D2204B8FBC004DE056 /* BRAddressEntity.h in Headers */,
+				FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */,
+				FB1E46D1204B8FBB004DE056 /* BRTxOutputEntity.h in Headers */,
+				FB1E46C6204B8FBB004DE056 /* BRTxMetadataEntity.h in Headers */,
+				FB1E46CF204B8FBB004DE056 /* BRPeerEntity.h in Headers */,
+				FB1E46D0204B8FBB004DE056 /* BRMerkleBlockEntity.h in Headers */,
+				FB1E46C9204B8FBB004DE056 /* BRTransactionEntity.h in Headers */,
+				FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */,
+				FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */,
+				FB1E4749204B91E7004DE056 /* NSMutableData+Bitcoin.h in Headers */,
+				FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */,
+				FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */,
+				FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */,
+				FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */,
+				FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */,
+				FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */,
+				FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */,
+				FB1E46DA204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.h in Headers */,
+				FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */,
+				FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */,
+				FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */,
+				FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */,
+				FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */,
+				FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */,
+				FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */,
+				FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */,
+				FB1E474F204B91E7004DE056 /* NSString+Bitcoin.h in Headers */,
+				FB1E46DF204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -178,6 +737,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB1E46E9204B9049004DE056 /* BIP39Words.plist in Resources */,
+				FB1E46E1204B9022004DE056 /* FixedPeers.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,6 +746,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB1E46EA204B9049004DE056 /* BIP39Words.plist in Resources */,
+				FB1E46E2204B9022004DE056 /* FixedPeers.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -195,6 +758,44 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB1E46E6204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */,
+				FB1E46DD204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
+				FB1E4691204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */,
+				FB1E46DB204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
+				FB10EF24204B9D27006D35F4 /* Reachability.m in Sources */,
+				FB1E468F204B8FA0004DE056 /* BRPeerManager.m in Sources */,
+				FB1E4686204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */,
+				FB1E4680204B8FA0004DE056 /* BRKey+BIP38.m in Sources */,
+				FB1E46CA204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */,
+				FB10EF1C204B94F0006D35F4 /* DCDashSync.m in Sources */,
+				FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */,
+				FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */,
+				FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */,
+				FB1E4758204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */,
+				FB1E46AD204B8FA0004DE056 /* BRWalletManager.m in Sources */,
+				FB1E4689204B8FA0004DE056 /* BRWalletConstants.m in Sources */,
+				FB1E46C7204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */,
+				FB1E4754204B91E7004DE056 /* NSData+Dash.m in Sources */,
+				FB1E46C2204B8FBB004DE056 /* BRPeerEntity.m in Sources */,
+				FB1E46AF204B8FA0004DE056 /* BRSocketHelpers.c in Sources */,
+				FB1E4745204B91E7004DE056 /* BRTransaction+Utils.m in Sources */,
+				FB1E46D3204B8FBC004DE056 /* BRAddressEntity.m in Sources */,
+				FB1E46CD204B8FBB004DE056 /* BRTxOutputEntity.m in Sources */,
+				FB1E4750204B91E7004DE056 /* NSString+Dash.m in Sources */,
+				FB1E4747204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */,
+				FB1E46AB204B8FA0004DE056 /* BRPeer.m in Sources */,
+				FB1E474B204B91E7004DE056 /* NSData+Bitcoin.m in Sources */,
+				FB1E469F204B8FA0004DE056 /* BRBloomFilter.m in Sources */,
+				FB1E474D204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */,
+				FB1E4697204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */,
+				FB1E468C204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */,
+				FB1E46A8204B8FA0004DE056 /* BRMerkleBlock.m in Sources */,
+				FB1E475B204B91E7004DE056 /* UIImage+Utils.m in Sources */,
+				FB1E4756204B91E7004DE056 /* NSString+Bitcoin.m in Sources */,
+				FB1E46C4204B8FBB004DE056 /* BRTxInputEntity.m in Sources */,
+				FB1E46A2204B8FA0004DE056 /* BREventManager.m in Sources */,
+				FB1E46C0204B8FBB004DE056 /* BRTransactionEntity.m in Sources */,
+				FB1E46A6204B8FA0004DE056 /* BRPaymentRequest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,7 +803,43 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB1E4748204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */,
+				FB1E474C204B91E7004DE056 /* NSData+Bitcoin.m in Sources */,
+				FB1E46E7204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */,
+				FB1E46D4204B8FBC004DE056 /* BRAddressEntity.m in Sources */,
+				FB1E4755204B91E7004DE056 /* NSData+Dash.m in Sources */,
+				FB1E474E204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */,
+				FB1E46DE204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
+				FB1E46A7204B8FA0004DE056 /* BRPaymentRequest.m in Sources */,
+				FB1E475C204B91E7004DE056 /* UIImage+Utils.m in Sources */,
+				FB1E4757204B91E7004DE056 /* NSString+Bitcoin.m in Sources */,
+				FB1E46A9204B8FA0004DE056 /* BRMerkleBlock.m in Sources */,
+				FB1E46C3204B8FBB004DE056 /* BRPeerEntity.m in Sources */,
+				FB1E46DC204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
+				FB1E46CE204B8FBB004DE056 /* BRTxOutputEntity.m in Sources */,
+				FB1E46C8204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */,
+				FB1E468A204B8FA0004DE056 /* BRWalletConstants.m in Sources */,
+				FB1E46AC204B8FA0004DE056 /* BRPeer.m in Sources */,
+				FB1E4692204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */,
+				FB1E4746204B91E7004DE056 /* BRTransaction+Utils.m in Sources */,
+				FB1E4684204B8FA0004DE056 /* BRKey.m in Sources */,
+				FB1E4696204B8FA0004DE056 /* BRTransaction.m in Sources */,
+				FB1E46A0204B8FA0004DE056 /* BRBloomFilter.m in Sources */,
+				FB1E4687204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */,
+				FB1E4690204B8FA0004DE056 /* BRPeerManager.m in Sources */,
+				FB10EF1D204B94F0006D35F4 /* DCDashSync.m in Sources */,
+				FB1E46C1204B8FBB004DE056 /* BRTransactionEntity.m in Sources */,
+				FB1E4698204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */,
+				FB1E46B0204B8FA0004DE056 /* BRSocketHelpers.c in Sources */,
+				FB1E4751204B91E7004DE056 /* NSString+Dash.m in Sources */,
+				FB1E46C5204B8FBB004DE056 /* BRTxInputEntity.m in Sources */,
+				FB1E46CB204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */,
+				FB1E4759204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */,
+				FB1E4681204B8FA0004DE056 /* BRKey+BIP38.m in Sources */,
+				FB1E46AE204B8FA0004DE056 /* BRWalletManager.m in Sources */,
+				FB1E46A5204B8FA0004DE056 /* BRWallet.m in Sources */,
 				FB1E4633204B8F13004DE056 /* dashsyncTests.m in Sources */,
+				FB1E468D204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,6 +967,7 @@
 		FB1E4639204B8F13004DE056 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_COMMA = NO;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -337,8 +975,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_WARN_UNUSED_FUNCTION = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				INFOPLIST_FILE = dashsync/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashcore.dashsync;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -350,6 +992,7 @@
 		FB1E463A204B8F13004DE056 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_COMMA = NO;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -357,8 +1000,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_WARN_UNUSED_FUNCTION = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				INFOPLIST_FILE = dashsync/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = org.dashcore.dashsync;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -424,6 +1071,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				FB1E46E4204B9037004DE056 /* BreadWallet 2.xcdatamodel */,
+				FB1E46E5204B9037004DE056 /* BreadWallet.xcdatamodel */,
+			);
+			currentVersion = FB1E46E4204B9037004DE056 /* BreadWallet 2.xcdatamodel */;
+			path = DashWallet.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = FB1E461B204B8F13004DE056 /* Project object */;
 }
