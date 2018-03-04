@@ -25,7 +25,6 @@
 
 #import "BREventManager.h"
 #import "BRPeerManager.h"
-#import "BREventConfirmView.h"
 #import "UIImage+Utils.h"
 
 #define HAS_DETERMINED_SAMPLE_GROUP     @"has_determined_sample_group"
@@ -188,9 +187,14 @@
     return [self isInSampleGroup] && [self hasAcquiredPermission];
 }
 
+
+
 - (void)acquireUserPermissionInViewController:(UIViewController *)viewController
                                  withCallback:(void (^)(BOOL))completionCallback
 {
+    if (!self.eventConfirmView) {
+        return;
+    }
     if (![self shouldAskForPermission]) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0),
                        dispatch_get_main_queue(), ^{
@@ -206,33 +210,28 @@
     UIGraphicsEndImageContext();
     UIImage *blurredBgImg = [bgImg blurWithRadius:3];
     
-    // display the popup
-    __weak BREventConfirmView *eventConfirmView =
-        [[NSBundle mainBundle] loadNibNamed:@"BREventConfirmView" owner:nil options:nil][0];
-    eventConfirmView.image = blurredBgImg;
-    eventConfirmView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    eventConfirmView.frame = viewController.view.bounds;
-    eventConfirmView.alpha = 0;
-    [viewController.view addSubview:eventConfirmView];
+
+    [viewController.view addSubview:self.eventConfirmView];
     
     [UIView animateWithDuration:.5 animations:^{
-        eventConfirmView.alpha = 1;
+        self.eventConfirmView.alpha = 1;
     }];
     [self saveEvent:@"ask_for_data_collection"];
     
-    eventConfirmView.completionHandler = ^(BOOL didApprove) {
+    __weak typeof(self) weakSelf = self;
+    self.eventConfirmView.completionHandler = ^(BOOL didApprove) {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:HAS_PROMPTED_FOR_PERMISSION];
         [[NSUserDefaults standardUserDefaults] setBool:didApprove forKey:HAS_ACQUIRED_PERMISSION];
         
         if (didApprove) {
-            [self saveEvent:@"approve_data_collection"];
+            [weakSelf saveEvent:@"approve_data_collection"];
         }
         
         [UIView animateWithDuration:.5 animations:^{
-            eventConfirmView.alpha = 0;
+            weakSelf.eventConfirmView.alpha = 0;
         } completion:^(BOOL finished) {
             if (completionCallback) completionCallback(didApprove);
-            [eventConfirmView removeFromSuperview];
+            [weakSelf.eventConfirmView removeFromSuperview];
         }];
     };
 }

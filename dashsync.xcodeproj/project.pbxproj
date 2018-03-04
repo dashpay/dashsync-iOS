@@ -151,8 +151,6 @@
 		FB10EF28204B9FCD006D35F4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FB10EF2A204BA00C006D35F4 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		FB10EF2F204BA0FE006D35F4 /* BREventConfirmView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = BREventConfirmView.m; path = ../../../dashwallet/DashWallet/BREventConfirmView.m; sourceTree = "<group>"; };
-		FB10EF30204BA0FE006D35F4 /* BREventConfirmView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BREventConfirmView.h; path = ../../../dashwallet/DashWallet/BREventConfirmView.h; sourceTree = "<group>"; };
 		FB1E4624204B8F13004DE056 /* dashsync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = dashsync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB1E4628204B8F13004DE056 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB1E462D204B8F13004DE056 /* dashsyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = dashsyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -328,15 +326,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		FB10EF2E204BA0E5006D35F4 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				FB10EF30204BA0FE006D35F4 /* BREventConfirmView.h */,
-				FB10EF2F204BA0FE006D35F4 /* BREventConfirmView.m */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
 		FB1E461A204B8F13004DE056 = {
 			isa = PBXGroup;
 			children = (
@@ -359,7 +348,6 @@
 		FB1E4626204B8F13004DE056 /* dashsync */ = {
 			isa = PBXGroup;
 			children = (
-				FB10EF2E204BA0E5006D35F4 /* Views */,
 				FB1E46EB204B9067004DE056 /* crypto */,
 				FB1E4659204B8F73004DE056 /* Models */,
 				FB1E472E204B91C0004DE056 /* Categories */,

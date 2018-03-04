@@ -26,7 +26,15 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@protocol BREventConfirmViewProtocol
+
+@property (nonatomic, copy) void(^completionHandler)(BOOL);
+
+@end
+
 @interface BREventManager : NSObject
+
+@property (nonatomic,strong) UIView<BREventConfirmViewProtocol> * eventConfirmView;
 
 // typically this class is used as a singleton so this is how you should get a handle on the global event manager
 + (instancetype)sharedEventManager;
