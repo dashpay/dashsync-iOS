@@ -16,45 +16,45 @@
 		FB10EF29204B9FCE006D35F4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF28204B9FCD006D35F4 /* UIKit.framework */; };
 		FB10EF2B204BA00D006D35F4 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF2A204BA00C006D35F4 /* libbz2.tbd */; };
 		FB10EF2D204BA01C006D35F4 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */; };
-		FB1E462E204B8F13004DE056 /* dashsync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB1E4624204B8F13004DE056 /* dashsync.framework */; };
+		FB1E462E204B8F13004DE056 /* DashSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB1E4624204B8F13004DE056 /* DashSync.framework */; };
 		FB1E4633204B8F13004DE056 /* dashsyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4632204B8F13004DE056 /* dashsyncTests.m */; };
-		FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465A204B8F9D004DE056 /* BRTransaction.h */; };
-		FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */; };
-		FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465C204B8F9D004DE056 /* BRKeySequence.h */; };
+		FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465A204B8F9D004DE056 /* BRTransaction.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465C204B8F9D004DE056 /* BRKeySequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4680204B8FA0004DE056 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */; };
 		FB1E4681204B8FA0004DE056 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */; };
-		FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */; };
+		FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* BRKey.m */; };
 		FB1E4684204B8FA0004DE056 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* BRKey.m */; };
-		FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4660204B8F9D004DE056 /* BRPeer.h */; };
+		FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4660204B8F9D004DE056 /* BRPeer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4686204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */; };
 		FB1E4687204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */; };
-		FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */; };
+		FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4689204B8FA0004DE056 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */; };
 		FB1E468A204B8FA0004DE056 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */; };
-		FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */; };
+		FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E468C204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */; };
 		FB1E468D204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */; };
-		FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4666204B8F9D004DE056 /* BRPeerManager.h */; };
+		FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4666204B8F9D004DE056 /* BRPeerManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E468F204B8FA0004DE056 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* BRPeerManager.m */; };
 		FB1E4690204B8FA0004DE056 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* BRPeerManager.m */; };
 		FB1E4691204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */; };
 		FB1E4692204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */; };
-		FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4669204B8F9E004DE056 /* BREventManager.h */; };
-		FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */; };
+		FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4669204B8F9E004DE056 /* BREventManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* BRTransaction.m */; };
 		FB1E4696204B8FA0004DE056 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* BRTransaction.m */; };
 		FB1E4697204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */; };
 		FB1E4698204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */; };
-		FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466D204B8F9E004DE056 /* BRKey.h */; };
-		FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */; };
-		FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466F204B8F9E004DE056 /* BRWalletManager.h */; };
-		FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */; };
-		FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */; };
-		FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4672204B8F9E004DE056 /* BRMnemonic.h */; };
+		FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466D204B8F9E004DE056 /* BRKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466F204B8F9E004DE056 /* BRWalletManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4672204B8F9E004DE056 /* BRMnemonic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E469F204B8FA0004DE056 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */; };
 		FB1E46A0204B8FA0004DE056 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */; };
-		FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4674204B8F9F004DE056 /* BRWallet.h */; };
+		FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4674204B8F9F004DE056 /* BRWallet.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E46A2204B8FA0004DE056 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4675204B8F9F004DE056 /* BREventManager.m */; };
 		FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* BRWallet.m */; };
 		FB1E46A5204B8FA0004DE056 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* BRWallet.m */; };
@@ -62,7 +62,7 @@
 		FB1E46A7204B8FA0004DE056 /* BRPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */; };
 		FB1E46A8204B8FA0004DE056 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */; };
 		FB1E46A9204B8FA0004DE056 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */; };
-		FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */; };
+		FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E46AB204B8FA0004DE056 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* BRPeer.m */; };
 		FB1E46AC204B8FA0004DE056 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* BRPeer.m */; };
 		FB1E46AD204B8FA0004DE056 /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* BRWalletManager.m */; };
@@ -109,7 +109,7 @@
 		FB1E4746204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
 		FB1E4747204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
 		FB1E4748204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
-		FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */; };
+		FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E474B204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
 		FB1E474C204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
@@ -126,8 +126,8 @@
 		FB1E4758204B91E7004DE056 /* NSMutableData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Dash.m */; };
 		FB1E4759204B91E7004DE056 /* NSMutableData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Dash.m */; };
 		FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */; };
-		FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4741204B91E7004DE056 /* IntTypes.h */; };
-		FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB74FEA220525BCA00D7296A /* UIImage+Utils.h */; };
+		FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4741204B91E7004DE056 /* IntTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB74FEA220525BCA00D7296A /* UIImage+Utils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB74FEA520525BCA00D7296A /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB74FEA320525BCA00D7296A /* UIImage+Utils.m */; };
 /* End PBXBuildFile section */
 
@@ -138,6 +138,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = FB1E4623204B8F13004DE056;
 			remoteInfo = dashsync;
+		};
+		FB74FEAD205E3E3100D7296A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FB1E461B204B8F13004DE056 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FB74FEA9205E3E0E00D7296A;
+			remoteInfo = secp256k1;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -150,9 +157,9 @@
 		FB10EF28204B9FCD006D35F4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FB10EF2A204BA00C006D35F4 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		FB1E4624204B8F13004DE056 /* dashsync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = dashsync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB1E4624204B8F13004DE056 /* DashSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DashSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB1E4628204B8F13004DE056 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FB1E462D204B8F13004DE056 /* dashsyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = dashsyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB1E462D204B8F13004DE056 /* DashSyncTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashSyncTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB1E4632204B8F13004DE056 /* dashsyncTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = dashsyncTests.m; sourceTree = "<group>"; };
 		FB1E4634204B8F13004DE056 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB1E463F204B8F4F004DE056 /* sph_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sph_types.h; sourceTree = "<group>"; };
@@ -289,6 +296,9 @@
 		FB1E47C1204B9239004DE056 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
 		FB74FEA220525BCA00D7296A /* UIImage+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utils.h"; sourceTree = "<group>"; };
 		FB74FEA320525BCA00D7296A /* UIImage+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utils.m"; sourceTree = "<group>"; };
+		FB9D9B04205E4D3100539436 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		FB9D9B05205E4D3D00539436 /* DashSync.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = DashSync.podspec; sourceTree = "<group>"; };
+		FB9D9B06205E4D4300539436 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -307,7 +317,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1E462E204B8F13004DE056 /* dashsync.framework in Frameworks */,
+				FB1E462E204B8F13004DE056 /* DashSync.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,8 +348,8 @@
 		FB1E4625204B8F13004DE056 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FB1E4624204B8F13004DE056 /* dashsync.framework */,
-				FB1E462D204B8F13004DE056 /* dashsyncTests.xctest */,
+				FB1E4624204B8F13004DE056 /* DashSync.framework */,
+				FB1E462D204B8F13004DE056 /* DashSyncTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -347,6 +357,7 @@
 		FB1E4626204B8F13004DE056 /* dashsync */ = {
 			isa = PBXGroup;
 			children = (
+				FB9D9B03205E4D1E00539436 /* Podspec Metadata */,
 				FB1E46EB204B9067004DE056 /* crypto */,
 				FB1E4659204B8F73004DE056 /* Models */,
 				FB1E472E204B91C0004DE056 /* Categories */,
@@ -594,6 +605,16 @@
 			path = recovery;
 			sourceTree = "<group>";
 		};
+		FB9D9B03205E4D1E00539436 /* Podspec Metadata */ = {
+			isa = PBXGroup;
+			children = (
+				FB9D9B05205E4D3D00539436 /* DashSync.podspec */,
+				FB9D9B04205E4D3100539436 /* LICENSE */,
+				FB9D9B06205E4D4300539436 /* README.md */,
+			);
+			name = "Podspec Metadata";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -607,37 +628,37 @@
 				FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */,
 				FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */,
 				FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */,
-				FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */,
-				FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */,
-				FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */,
-				FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */,
-				FB1E46CC204B8FBB004DE056 /* BRTxInputEntity.h in Headers */,
-				FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */,
-				FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */,
-				FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */,
-				FB1E46D2204B8FBC004DE056 /* BRAddressEntity.h in Headers */,
-				FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */,
-				FB1E46D1204B8FBB004DE056 /* BRTxOutputEntity.h in Headers */,
-				FB1E46C6204B8FBB004DE056 /* BRTxMetadataEntity.h in Headers */,
-				FB1E46CF204B8FBB004DE056 /* BRPeerEntity.h in Headers */,
-				FB1E46D0204B8FBB004DE056 /* BRMerkleBlockEntity.h in Headers */,
-				FB1E46C9204B8FBB004DE056 /* BRTransactionEntity.h in Headers */,
-				FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */,
-				FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */,
-				FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */,
-				FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */,
-				FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */,
-				FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */,
-				FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */,
-				FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */,
-				FB1E46DA204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.h in Headers */,
-				FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */,
-				FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */,
+				FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */,
 				FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */,
+				FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */,
+				FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */,
+				FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */,
+				FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */,
+				FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */,
+				FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */,
+				FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */,
+				FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */,
 				FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */,
 				FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */,
-				FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */,
-				FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */,
+				FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */,
+				FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */,
+				FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */,
+				FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */,
+				FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */,
+				FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */,
+				FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */,
+				FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */,
+				FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */,
+				FB1E46D2204B8FBC004DE056 /* BRAddressEntity.h in Headers */,
+				FB1E46C6204B8FBB004DE056 /* BRTxMetadataEntity.h in Headers */,
+				FB1E46D0204B8FBB004DE056 /* BRMerkleBlockEntity.h in Headers */,
+				FB1E46C9204B8FBB004DE056 /* BRTransactionEntity.h in Headers */,
+				FB1E46CC204B8FBB004DE056 /* BRTxInputEntity.h in Headers */,
+				FB1E46D1204B8FBB004DE056 /* BRTxOutputEntity.h in Headers */,
+				FB1E46CF204B8FBB004DE056 /* BRPeerEntity.h in Headers */,
+				FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */,
+				FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */,
+				FB1E46DA204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.h in Headers */,
 				FB1E474F204B91E7004DE056 /* NSString+Bitcoin.h in Headers */,
 				FB1E46DF204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h in Headers */,
 			);
@@ -645,10 +666,27 @@
 		};
 /* End PBXHeadersBuildPhase section */
 
+/* Begin PBXLegacyTarget section */
+		FB74FEA9205E3E0E00D7296A /* secp256k1 */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "-c 'git submodule init && git submodule update'";
+			buildConfigurationList = FB74FEAC205E3E0E00D7296A /* Build configuration list for PBXLegacyTarget "secp256k1" */;
+			buildPhases = (
+			);
+			buildToolPath = /bin/sh;
+			buildWorkingDirectory = "";
+			dependencies = (
+			);
+			name = secp256k1;
+			passBuildSettingsInEnvironment = 1;
+			productName = secp256k1;
+		};
+/* End PBXLegacyTarget section */
+
 /* Begin PBXNativeTarget section */
-		FB1E4623204B8F13004DE056 /* dashsync */ = {
+		FB1E4623204B8F13004DE056 /* DashSync */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FB1E4638204B8F13004DE056 /* Build configuration list for PBXNativeTarget "dashsync" */;
+			buildConfigurationList = FB1E4638204B8F13004DE056 /* Build configuration list for PBXNativeTarget "DashSync" */;
 			buildPhases = (
 				FB1E461F204B8F13004DE056 /* Sources */,
 				FB1E4620204B8F13004DE056 /* Frameworks */,
@@ -658,15 +696,16 @@
 			buildRules = (
 			);
 			dependencies = (
+				FB74FEAE205E3E3100D7296A /* PBXTargetDependency */,
 			);
-			name = dashsync;
+			name = DashSync;
 			productName = dashsync;
-			productReference = FB1E4624204B8F13004DE056 /* dashsync.framework */;
+			productReference = FB1E4624204B8F13004DE056 /* DashSync.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		FB1E462C204B8F13004DE056 /* dashsyncTests */ = {
+		FB1E462C204B8F13004DE056 /* DashSyncTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FB1E463B204B8F13004DE056 /* Build configuration list for PBXNativeTarget "dashsyncTests" */;
+			buildConfigurationList = FB1E463B204B8F13004DE056 /* Build configuration list for PBXNativeTarget "DashSyncTests" */;
 			buildPhases = (
 				FB1E4629204B8F13004DE056 /* Sources */,
 				FB1E462A204B8F13004DE056 /* Frameworks */,
@@ -677,9 +716,9 @@
 			dependencies = (
 				FB1E4630204B8F13004DE056 /* PBXTargetDependency */,
 			);
-			name = dashsyncTests;
+			name = DashSyncTests;
 			productName = dashsyncTests;
-			productReference = FB1E462D204B8F13004DE056 /* dashsyncTests.xctest */;
+			productReference = FB1E462D204B8F13004DE056 /* DashSyncTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -699,9 +738,13 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
+					FB74FEA9205E3E0E00D7296A = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
-			buildConfigurationList = FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "DashSync" */;
+			buildConfigurationList = FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "dashsync" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -713,8 +756,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FB1E4623204B8F13004DE056 /* dashsync */,
-				FB1E462C204B8F13004DE056 /* dashsyncTests */,
+				FB1E4623204B8F13004DE056 /* DashSync */,
+				FB1E462C204B8F13004DE056 /* DashSyncTests */,
+				FB74FEA9205E3E0E00D7296A /* secp256k1 */,
 			);
 		};
 /* End PBXProject section */
@@ -834,8 +878,13 @@
 /* Begin PBXTargetDependency section */
 		FB1E4630204B8F13004DE056 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = FB1E4623204B8F13004DE056 /* dashsync */;
+			target = FB1E4623204B8F13004DE056 /* DashSync */;
 			targetProxy = FB1E462F204B8F13004DE056 /* PBXContainerItemProxy */;
+		};
+		FB74FEAE205E3E3100D7296A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FB74FEA9205E3E0E00D7296A /* secp256k1 */;
+			targetProxy = FB74FEAD205E3E3100D7296A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -964,6 +1013,7 @@
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/dashsync/crypto/secp256k1";
 				INFOPLIST_FILE = dashsync/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -989,6 +1039,7 @@
 				GCC_WARN_UNUSED_FUNCTION = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/dashsync/crypto/secp256k1";
 				INFOPLIST_FILE = dashsync/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -1026,10 +1077,37 @@
 			};
 			name = Release;
 		};
+		FB74FEAA205E3E0E00D7296A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = NMHX8CEMG9;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		FB74FEAB205E3E0E00D7296A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = NMHX8CEMG9;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "DashSync" */ = {
+		FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "dashsync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FB1E4636204B8F13004DE056 /* Debug */,
@@ -1038,7 +1116,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FB1E4638204B8F13004DE056 /* Build configuration list for PBXNativeTarget "dashsync" */ = {
+		FB1E4638204B8F13004DE056 /* Build configuration list for PBXNativeTarget "DashSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FB1E4639204B8F13004DE056 /* Debug */,
@@ -1047,11 +1125,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FB1E463B204B8F13004DE056 /* Build configuration list for PBXNativeTarget "dashsyncTests" */ = {
+		FB1E463B204B8F13004DE056 /* Build configuration list for PBXNativeTarget "DashSyncTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FB1E463C204B8F13004DE056 /* Debug */,
 				FB1E463D204B8F13004DE056 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB74FEAC205E3E0E00D7296A /* Build configuration list for PBXLegacyTarget "secp256k1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB74FEAA205E3E0E00D7296A /* Debug */,
+				FB74FEAB205E3E0E00D7296A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
