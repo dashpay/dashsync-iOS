@@ -26,7 +26,7 @@
 //  THE SOFTWARE.
 
 #import "BRTxMetadataEntity.h"
-#import "BRTransaction.h"
+#import "DSTransaction.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
@@ -37,7 +37,7 @@
 @dynamic txHash;
 @dynamic type;
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx
 {
     NSMutableData *data = [NSMutableData dataWithData:tx.data];
 
@@ -53,15 +53,15 @@
     return self;
 }
 
-- (BRTransaction *)transaction
+- (DSTransaction *)transaction
 {
-    __block BRTransaction *tx = nil;
+    __block DSTransaction *tx = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
         NSData *data = self.blob;
     
         if (data.length > sizeof(uint32_t)*2) {
-            tx = [BRTransaction transactionWithMessage:data];
+            tx = [DSTransaction transactionWithMessage:data];
             tx.blockHeight = [data UInt32AtOffset:data.length - sizeof(uint32_t)*2];
             tx.timestamp = [data UInt32AtOffset:data.length - sizeof(uint32_t)];
         }

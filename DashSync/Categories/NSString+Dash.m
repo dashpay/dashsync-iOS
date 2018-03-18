@@ -29,7 +29,7 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "UIImage+Utils.h"
-#import "BRWalletManager.h"
+#import "DSWalletManager.h"
 
 @implementation NSString (Dash)
 

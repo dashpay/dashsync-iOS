@@ -1,8 +1,8 @@
 //
-//  BRTxInputEntity.h
+//  DSBloomFilter.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 10/15/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -26,18 +26,34 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 
-@class BRTransactionEntity, DSTransaction;
+#define BLOOM_DEFAULT_FALSEPOSITIVE_RATE 0.0005 // same as bitcoinj, use 0.00005 for less data, 0.001 for good anonymity
+#define BLOOM_REDUCED_FALSEPOSITIVE_RATE 0.00005
+#define BLOOM_UPDATE_NONE                0
+#define BLOOM_UPDATE_ALL                 1
+#define BLOOM_UPDATE_P2PUBKEY_ONLY       2
+#define BLOOM_MAX_FILTER_LENGTH          36000 // this allows for 10,000 elements with a <0.0001% false positive rate
 
-@interface BRTxInputEntity : NSManagedObject
+@class DSTransaction;
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
+@interface DSBloomFilter : NSObject
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+@property (nonatomic, readonly) uint32_t tweak;
+@property (nonatomic, readonly) uint8_t flags;
+@property (nonatomic, readonly, getter = toData) NSData *data;
+@property (nonatomic, readonly) NSUInteger elementCount;
+@property (nonatomic, readonly) double falsePositiveRate;
+@property (nonatomic, readonly) NSUInteger length;
+
++ (instancetype)filterWithMessage:(NSData *)message;
++ (instancetype)filterWithFullMatch;
+
+- (instancetype)initWithMessage:(NSData *)message;
+- (instancetype)initWithFullMatch;
+- (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
+flags:(uint8_t)flags;
+- (BOOL)containsData:(NSData *)data;
+- (void)insertData:(NSData *)data;
+- (void)updateWithTransaction:(DSTransaction *)tx;
 
 @end

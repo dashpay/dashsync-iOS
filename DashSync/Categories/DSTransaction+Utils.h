@@ -1,9 +1,9 @@
 //
-//  BRTxInputEntity.h
+//  DSTransaction+Utils.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Henry on 10/27/15.
+//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
@@ -25,19 +25,21 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSTransaction.h"
 
-@class BRTransactionEntity, DSTransaction;
+typedef enum : NSInteger {
+    DSTransactionTypeSent,
+    DSTransactionTypeReceive,
+    DSTransactionTypeMove,
+    DSTransactionTypeInvalid
+} DSTransactionType;
 
-@interface BRTxInputEntity : NSManagedObject
+@interface DSTransaction (Utils)
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+- (DSTransactionType)transactionType;
+- (NSString*)amountText;
+- (NSString*)localCurrencyTextForAmount;
+- (NSString*)dateText;
+- (NSDate*)transactionDate;
 
 @end

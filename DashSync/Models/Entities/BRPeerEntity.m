@@ -26,7 +26,7 @@
 //  THE SOFTWARE.
 
 #import "BRPeerEntity.h"
-#import "BRPeer.h"
+#import "DSPeer.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import <arpa/inet.h>
@@ -39,7 +39,7 @@
 @dynamic services;
 @dynamic misbehavin;
 
-- (instancetype)setAttributesFromPeer:(BRPeer *)peer
+- (instancetype)setAttributesFromPeer:(DSPeer *)peer
 {
     //TODO: store IPv6 addresses
     if (peer.address.u64[0] != 0 || peer.address.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
@@ -55,14 +55,14 @@
     return self;
 }
 
-- (BRPeer *)peer
+- (DSPeer *)peer
 {
-    __block BRPeer *peer = nil;
+    __block DSPeer *peer = nil;
         
     [self.managedObjectContext performBlockAndWait:^{
         UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
 
-        peer = [[BRPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
+        peer = [[DSPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
         peer.misbehavin = self.misbehavin;
     }];
 

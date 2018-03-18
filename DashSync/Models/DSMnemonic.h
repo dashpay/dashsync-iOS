@@ -1,8 +1,8 @@
 //
-//  BRTxInputEntity.h
+//  DSMnemonic.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 8/15/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -26,18 +26,17 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 
-@class BRTransactionEntity, DSTransaction;
+@protocol DSMnemonic<NSObject>
+@required
 
-@interface BRTxInputEntity : NSManagedObject
-
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+- (NSString *)encodePhrase:(NSData *)data;
+- (NSData *)decodePhrase:(NSString *)phrase; // phrase must be normalized
+- (BOOL)wordIsValid:(NSString *)word; // true if word is a member of any known word list
+- (BOOL)wordIsLocal:(NSString *)word; // true if word is a member of the word list for the current locale
+- (BOOL)phraseIsValid:(NSString *)phrase; // true if all words and checksum are valid, phrase must be normalized
+- (NSString *)cleanupPhrase:(NSString *)phrase; // minimally cleans up user input phrase, suitable for display/editing
+- (NSString *)normalizePhrase:(NSString *)phrase; // normalizes phrase, suitable for decode/derivation
+- (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase; // phrase must be normalized
 
 @end

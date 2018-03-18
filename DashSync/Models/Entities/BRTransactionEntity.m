@@ -29,8 +29,8 @@
 #import "BRTxInputEntity.h"
 #import "BRTxOutputEntity.h"
 #import "BRAddressEntity.h"
-#import "BRTransaction.h"
-#import "BRMerkleBlock.h"
+#import "DSTransaction.h"
+#import "DSMerkleBlock.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
@@ -52,7 +52,7 @@
     [BRTxOutputEntity setContext:context];
 }
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
         NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
@@ -97,9 +97,9 @@
     return self;
 }
 
-- (BRTransaction *)transaction
+- (DSTransaction *)transaction
 {
-    BRTransaction *tx = [BRTransaction new];
+    DSTransaction *tx = [DSTransaction new];
     
     [self.managedObjectContext performBlockAndWait:^{
         NSData *txHash = self.txHash;

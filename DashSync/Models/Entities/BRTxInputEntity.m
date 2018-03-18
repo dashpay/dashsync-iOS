@@ -27,7 +27,7 @@
 
 #import "BRTxInputEntity.h"
 #import "BRTransactionEntity.h"
-#import "BRTransaction.h"
+#import "DSTransaction.h"
 #import "BRTxOutputEntity.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
@@ -40,7 +40,7 @@
 @dynamic sequence;
 @dynamic transaction;
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx inputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index
 {
     [self.managedObjectContext performBlockAndWait:^{
         UInt256 hash = UINT256_ZERO;

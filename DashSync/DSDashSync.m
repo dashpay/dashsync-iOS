@@ -34,9 +34,9 @@
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
     
     // start the event manager
-    [[BREventManager sharedEventManager] up];
+    [[DSEventManager sharedEventManager] up];
     
-    [BRWalletManager sharedInstance];
+    [DSWalletManager sharedInstance];
     
     [DSShapeshiftManager sharedInstance];
     }
@@ -56,7 +56,7 @@
         protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
     
-    if ([BRPeerManager sharedInstance].syncProgress >= 1.0) {
+    if ([DSPeerManager sharedInstance].syncProgress >= 1.0) {
         NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
@@ -65,8 +65,8 @@
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [BRPeerManager sharedInstance].syncProgress);
-            completion(([BRPeerManager sharedInstance].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
+            NSLog(@"background fetch timeout with progress: %f", [DSPeerManager sharedInstance].syncProgress);
+            completion(([DSPeerManager sharedInstance].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
                        UIBackgroundFetchResultFailed);
             cleanup();
         }
@@ -77,11 +77,11 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch protected data available");
-                                                           [[BRPeerManager sharedInstance] connect];
+                                                           [[DSPeerManager sharedInstance] connect];
                                                        }];
     
     syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch sync finished");
                                                            if (completion) completion(UIBackgroundFetchResultNewData);
@@ -89,7 +89,7 @@
                                                        }];
     
     syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:BRPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch sync failed");
                                                            if (completion) completion(UIBackgroundFetchResultFailed);
@@ -97,10 +97,10 @@
                                                        }];
     
     NSLog(@"background fetch starting");
-    [[BRPeerManager sharedInstance] connect];
+    [[DSPeerManager sharedInstance] connect];
     
     // sync events to the server
-    [[BREventManager sharedEventManager] sync];
+    [[DSEventManager sharedEventManager] sync];
     
     //    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
     //        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&

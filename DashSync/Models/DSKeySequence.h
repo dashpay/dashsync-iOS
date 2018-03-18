@@ -1,8 +1,8 @@
 //
-//  BRTxInputEntity.h
+//  DSKeySequence.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 5/27/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -26,18 +26,25 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 
-@class BRTransactionEntity, DSTransaction;
+#define SEQUENCE_GAP_LIMIT_EXTERNAL 10
+#define SEQUENCE_GAP_LIMIT_INTERNAL 5
+#define BIP44_PURPOSE      44
+#define BIP32_PURPOSE      0
+#define BIP44_PURPOSE_ACCOUNT_DEPTH      3
+#define BIP32_PURPOSE_ACCOUNT_DEPTH      1
+#define ADDRESS_DEFAULT      BIP44_PURPOSE
 
-@interface BRTxInputEntity : NSManagedObject
+@protocol DSKeySequence<NSObject>
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
+@optional
+- (NSData *)deprecatedIncorrectExtendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose;
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+@required
+
+- (NSData *)extendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose;
+- (NSData *)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData *)masterPublicKey;
+- (NSString *)privateKey:(uint32_t)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSArray *)privateKeys:(NSArray *)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData *)seed;
 
 @end

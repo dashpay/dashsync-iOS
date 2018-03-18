@@ -10,7 +10,7 @@
 #import "BRTransactionEntity.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSShapeshiftManager.h"
-#import "BRPeerManager.h"
+#import "DSPeerManager.h"
 
 @interface DSShapeshiftEntity()
 
@@ -81,7 +81,7 @@
 
 +(NSArray*)shapeshiftsInProgress {
     static uint32_t height = 0;
-    uint32_t h = [[BRPeerManager sharedInstance] lastBlockHeight];
+    uint32_t h = [[DSPeerManager sharedInstance] lastBlockHeight];
     if (h > 20) height = h - 20; //only care about shapeshifts in last 20 blocks
     NSArray * shapeshiftsInProgress = [DSShapeshiftEntity objectsMatching:@"(shapeshiftStatus == %@ || shapeshiftStatus == %@) && transaction.blockHeight > %@",@(eShapeshiftAddressStatus_NoDeposits), @(eShapeshiftAddressStatus_Received),@(height)];
     

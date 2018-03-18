@@ -26,7 +26,7 @@
 //  THE SOFTWARE.
 
 #import "BRMerkleBlockEntity.h"
-#import "BRMerkleBlock.h"
+#import "DSMerkleBlock.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -44,7 +44,7 @@
 @dynamic hashes;
 @dynamic flags;
 
-- (instancetype)setAttributesFromBlock:(BRMerkleBlock *)block;
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
 {
     [self.managedObjectContext performBlockAndWait:^{
         self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
@@ -63,9 +63,9 @@
     return self;
 }
 
-- (BRMerkleBlock *)merkleBlock
+- (DSMerkleBlock *)merkleBlock
 {
-    __block BRMerkleBlock *block = nil;
+    __block DSMerkleBlock *block = nil;
     
     [self.managedObjectContext performBlockAndWait:^{
         NSData *blockHash = self.blockHash, *prevBlock = self.prevBlock, *merkleRoot = self.merkleRoot;
@@ -73,7 +73,7 @@
                 prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
                 root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
         
-        block = [[BRMerkleBlock alloc] initWithBlockHash:hash version:self.version prevBlock:prev merkleRoot:root
+        block = [[DSMerkleBlock alloc] initWithBlockHash:hash version:self.version prevBlock:prev merkleRoot:root
                  timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce
                  totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];

@@ -30,7 +30,7 @@
 
 #define TX_MDTYPE_MSG 0x01
 
-@class BRTransaction;
+@class DSTransaction;
 
 @interface BRTxMetadataEntity : NSManagedObject
 
@@ -38,7 +38,7 @@
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t type;
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx;
-- (BRTransaction *)transaction;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx;
+- (DSTransaction *)transaction;
 
 @end

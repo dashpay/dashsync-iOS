@@ -28,7 +28,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class BRMerkleBlock;
+@class DSMerkleBlock;
 
 @interface BRMerkleBlockEntity : NSManagedObject
 
@@ -44,7 +44,7 @@
 @property (nonatomic, retain) NSData *hashes;
 @property (nonatomic, retain) NSData *flags;
 
-- (instancetype)setAttributesFromBlock:(BRMerkleBlock *)block;
-- (BRMerkleBlock *)merkleBlock;
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
+- (DSMerkleBlock *)merkleBlock;
 
 @end

@@ -1,11 +1,9 @@
 //
-//  BRTxInputEntity.h
+//  DSSocketHelpers.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Samuel Sutch on 2/17/16.
+//  Copyright (c) 2016 breadwallet LLC
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,19 +23,30 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#ifndef DSSocketHelpers_h
+#define DSSocketHelpers_h
 
-@class BRTransactionEntity, DSTransaction;
+#include <stdio.h>
 
-@interface BRTxInputEntity : NSManagedObject
+int bw_nbioify(int fd);
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
+struct bw_select_request {
+    int write_fd_len;
+    int read_fd_len;
+    int *write_fds;
+    int *read_fds;
+};
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+struct bw_select_result {
+    int error; // if > 0 there is an error
+    int write_fd_len;
+    int read_fd_len;
+    int error_fd_len;
+    int *write_fds;
+    int *read_fds;
+    int *error_fds;
+};
 
-@end
+struct bw_select_result bw_select(struct bw_select_request);
+
+#endif /* DSSocketHelpers_h */

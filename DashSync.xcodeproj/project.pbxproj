@@ -18,57 +18,57 @@
 		FB10EF2D204BA01C006D35F4 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF2C204BA01C006D35F4 /* libsqlite3.tbd */; };
 		FB1E462E204B8F13004DE056 /* DashSync.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB1E4624204B8F13004DE056 /* DashSync.framework */; };
 		FB1E4633204B8F13004DE056 /* dashsyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4632204B8F13004DE056 /* dashsyncTests.m */; };
-		FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465A204B8F9D004DE056 /* BRTransaction.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465C204B8F9D004DE056 /* BRKeySequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E4680204B8FA0004DE056 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */; };
-		FB1E4681204B8FA0004DE056 /* BRKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */; };
-		FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* BRKey.m */; };
-		FB1E4684204B8FA0004DE056 /* BRKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* BRKey.m */; };
-		FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4660204B8F9D004DE056 /* BRPeer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E467D204B8FA0004DE056 /* DSTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465A204B8F9D004DE056 /* DSTransaction.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E467E204B8FA0004DE056 /* DSBIP32Sequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465B204B8F9D004DE056 /* DSBIP32Sequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E467F204B8FA0004DE056 /* DSKeySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465C204B8F9D004DE056 /* DSKeySequence.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4680204B8FA0004DE056 /* DSKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* DSKey+BIP38.m */; };
+		FB1E4681204B8FA0004DE056 /* DSKey+BIP38.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465D204B8F9D004DE056 /* DSKey+BIP38.m */; };
+		FB1E4682204B8FA0004DE056 /* DSPaymentRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E465E204B8F9D004DE056 /* DSPaymentRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4683204B8FA0004DE056 /* DSKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* DSKey.m */; };
+		FB1E4684204B8FA0004DE056 /* DSKey.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E465F204B8F9D004DE056 /* DSKey.m */; };
+		FB1E4685204B8FA0004DE056 /* DSPeer.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4660204B8F9D004DE056 /* DSPeer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4686204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */; };
 		FB1E4687204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */; };
-		FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E4689204B8FA0004DE056 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */; };
-		FB1E468A204B8FA0004DE056 /* BRWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */; };
-		FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E468C204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */; };
-		FB1E468D204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */; };
-		FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4666204B8F9D004DE056 /* BRPeerManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E468F204B8FA0004DE056 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* BRPeerManager.m */; };
-		FB1E4690204B8FA0004DE056 /* BRPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* BRPeerManager.m */; };
-		FB1E4691204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */; };
-		FB1E4692204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */; };
-		FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4669204B8F9E004DE056 /* BREventManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* BRTransaction.m */; };
-		FB1E4696204B8FA0004DE056 /* BRTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* BRTransaction.m */; };
-		FB1E4697204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */; };
-		FB1E4698204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */; };
-		FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466D204B8F9E004DE056 /* BRKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466F204B8F9E004DE056 /* BRWalletManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4688204B8FA0004DE056 /* DSBIP39Mnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4662204B8F9D004DE056 /* DSBIP39Mnemonic.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4689204B8FA0004DE056 /* DSWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* DSWalletConstants.m */; };
+		FB1E468A204B8FA0004DE056 /* DSWalletConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4663204B8F9D004DE056 /* DSWalletConstants.m */; };
+		FB1E468B204B8FA0004DE056 /* DSKey+BIP38.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4664204B8F9D004DE056 /* DSKey+BIP38.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E468C204B8FA0004DE056 /* DSBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* DSBIP39Mnemonic.m */; };
+		FB1E468D204B8FA0004DE056 /* DSBIP39Mnemonic.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4665204B8F9D004DE056 /* DSBIP39Mnemonic.m */; };
+		FB1E468E204B8FA0004DE056 /* DSPeerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4666204B8F9D004DE056 /* DSPeerManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E468F204B8FA0004DE056 /* DSPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* DSPeerManager.m */; };
+		FB1E4690204B8FA0004DE056 /* DSPeerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4667204B8F9E004DE056 /* DSPeerManager.m */; };
+		FB1E4691204B8FA0004DE056 /* DSBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* DSBIP32Sequence.m */; };
+		FB1E4692204B8FA0004DE056 /* DSBIP32Sequence.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4668204B8F9E004DE056 /* DSBIP32Sequence.m */; };
+		FB1E4693204B8FA0004DE056 /* DSEventManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4669204B8F9E004DE056 /* DSEventManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4694204B8FA0004DE056 /* DSBloomFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466A204B8F9E004DE056 /* DSBloomFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4695204B8FA0004DE056 /* DSTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* DSTransaction.m */; };
+		FB1E4696204B8FA0004DE056 /* DSTransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466B204B8F9E004DE056 /* DSTransaction.m */; };
+		FB1E4697204B8FA0004DE056 /* DSPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* DSPaymentProtocol.m */; };
+		FB1E4698204B8FA0004DE056 /* DSPaymentProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E466C204B8F9E004DE056 /* DSPaymentProtocol.m */; };
+		FB1E4699204B8FA0004DE056 /* DSKey.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466D204B8F9E004DE056 /* DSKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469A204B8FA0004DE056 /* DSPaymentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466E204B8F9E004DE056 /* DSPaymentProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469B204B8FA0004DE056 /* DSWalletManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E466F204B8F9E004DE056 /* DSWalletManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4672204B8F9E004DE056 /* BRMnemonic.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E469F204B8FA0004DE056 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */; };
-		FB1E46A0204B8FA0004DE056 /* BRBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */; };
-		FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4674204B8F9F004DE056 /* BRWallet.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E46A2204B8FA0004DE056 /* BREventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4675204B8F9F004DE056 /* BREventManager.m */; };
-		FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* BRWallet.m */; };
-		FB1E46A5204B8FA0004DE056 /* BRWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* BRWallet.m */; };
-		FB1E46A6204B8FA0004DE056 /* BRPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */; };
-		FB1E46A7204B8FA0004DE056 /* BRPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */; };
-		FB1E46A8204B8FA0004DE056 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */; };
-		FB1E46A9204B8FA0004DE056 /* BRMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */; };
-		FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E46AB204B8FA0004DE056 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* BRPeer.m */; };
-		FB1E46AC204B8FA0004DE056 /* BRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* BRPeer.m */; };
-		FB1E46AD204B8FA0004DE056 /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* BRWalletManager.m */; };
-		FB1E46AE204B8FA0004DE056 /* BRWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* BRWalletManager.m */; };
-		FB1E46AF204B8FA0004DE056 /* BRSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */; };
-		FB1E46B0204B8FA0004DE056 /* BRSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */; };
+		FB1E469D204B8FA0004DE056 /* DSMerkleBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4671204B8F9E004DE056 /* DSMerkleBlock.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469E204B8FA0004DE056 /* DSMnemonic.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4672204B8F9E004DE056 /* DSMnemonic.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E469F204B8FA0004DE056 /* DSBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* DSBloomFilter.m */; };
+		FB1E46A0204B8FA0004DE056 /* DSBloomFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4673204B8F9F004DE056 /* DSBloomFilter.m */; };
+		FB1E46A1204B8FA0004DE056 /* DSWallet.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4674204B8F9F004DE056 /* DSWallet.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E46A2204B8FA0004DE056 /* DSEventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4675204B8F9F004DE056 /* DSEventManager.m */; };
+		FB1E46A4204B8FA0004DE056 /* DSWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* DSWallet.m */; };
+		FB1E46A5204B8FA0004DE056 /* DSWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4676204B8F9F004DE056 /* DSWallet.m */; };
+		FB1E46A6204B8FA0004DE056 /* DSPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* DSPaymentRequest.m */; };
+		FB1E46A7204B8FA0004DE056 /* DSPaymentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4677204B8F9F004DE056 /* DSPaymentRequest.m */; };
+		FB1E46A8204B8FA0004DE056 /* DSMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* DSMerkleBlock.m */; };
+		FB1E46A9204B8FA0004DE056 /* DSMerkleBlock.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4678204B8F9F004DE056 /* DSMerkleBlock.m */; };
+		FB1E46AA204B8FA0004DE056 /* DSSocketHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4679204B8F9F004DE056 /* DSSocketHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E46AB204B8FA0004DE056 /* DSPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* DSPeer.m */; };
+		FB1E46AC204B8FA0004DE056 /* DSPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467A204B8FA0004DE056 /* DSPeer.m */; };
+		FB1E46AD204B8FA0004DE056 /* DSWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* DSWalletManager.m */; };
+		FB1E46AE204B8FA0004DE056 /* DSWalletManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467B204B8FA0004DE056 /* DSWalletManager.m */; };
+		FB1E46AF204B8FA0004DE056 /* DSSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467C204B8FA0004DE056 /* DSSocketHelpers.c */; };
+		FB1E46B0204B8FA0004DE056 /* DSSocketHelpers.c in Sources */ = {isa = PBXBuildFile; fileRef = FB1E467C204B8FA0004DE056 /* DSSocketHelpers.c */; };
 		FB1E46C0204B8FBB004DE056 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */; };
 		FB1E46C1204B8FBB004DE056 /* BRTransactionEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */; };
 		FB1E46C2204B8FBB004DE056 /* BRPeerEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46B3204B8FBA004DE056 /* BRPeerEntity.m */; };
@@ -103,12 +103,12 @@
 		FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E472F204B91E6004DE056 /* NSString+Dash.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */; };
-		FB1E4745204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
-		FB1E4746204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
+		FB1E4745204B91E7004DE056 /* DSTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* DSTransaction+Utils.m */; };
+		FB1E4746204B91E7004DE056 /* DSTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* DSTransaction+Utils.m */; };
 		FB1E4747204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
 		FB1E4748204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
 		FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E474A204B91E7004DE056 /* DSTransaction+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4735204B91E6004DE056 /* DSTransaction+Utils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E474B204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
 		FB1E474C204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
 		FB1E474D204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */; };
@@ -178,41 +178,41 @@
 		FB1E4649204B8F50004DE056 /* Groestl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Groestl.c; sourceTree = "<group>"; };
 		FB1E464A204B8F50004DE056 /* Simd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Simd.c; sourceTree = "<group>"; };
 		FB1E464B204B8F50004DE056 /* CubeHash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = CubeHash.c; sourceTree = "<group>"; };
-		FB1E465A204B8F9D004DE056 /* BRTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRTransaction.h; sourceTree = "<group>"; };
-		FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP32Sequence.h; sourceTree = "<group>"; };
-		FB1E465C204B8F9D004DE056 /* BRKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKeySequence.h; sourceTree = "<group>"; };
-		FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRKey+BIP38.m"; sourceTree = "<group>"; };
-		FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPaymentRequest.h; sourceTree = "<group>"; };
-		FB1E465F204B8F9D004DE056 /* BRKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRKey.m; sourceTree = "<group>"; };
-		FB1E4660204B8F9D004DE056 /* BRPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeer.h; sourceTree = "<group>"; };
+		FB1E465A204B8F9D004DE056 /* DSTransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSTransaction.h; sourceTree = "<group>"; };
+		FB1E465B204B8F9D004DE056 /* DSBIP32Sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSBIP32Sequence.h; sourceTree = "<group>"; };
+		FB1E465C204B8F9D004DE056 /* DSKeySequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSKeySequence.h; sourceTree = "<group>"; };
+		FB1E465D204B8F9D004DE056 /* DSKey+BIP38.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSKey+BIP38.m"; sourceTree = "<group>"; };
+		FB1E465E204B8F9D004DE056 /* DSPaymentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSPaymentRequest.h; sourceTree = "<group>"; };
+		FB1E465F204B8F9D004DE056 /* DSKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSKey.m; sourceTree = "<group>"; };
+		FB1E4660204B8F9D004DE056 /* DSPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSPeer.h; sourceTree = "<group>"; };
 		FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSShapeshiftManager.m; sourceTree = "<group>"; };
-		FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBIP39Mnemonic.h; sourceTree = "<group>"; };
-		FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWalletConstants.m; sourceTree = "<group>"; };
-		FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRKey+BIP38.h"; sourceTree = "<group>"; };
-		FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP39Mnemonic.m; sourceTree = "<group>"; };
-		FB1E4666204B8F9D004DE056 /* BRPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPeerManager.h; sourceTree = "<group>"; };
-		FB1E4667204B8F9E004DE056 /* BRPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerManager.m; sourceTree = "<group>"; };
-		FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBIP32Sequence.m; sourceTree = "<group>"; };
-		FB1E4669204B8F9E004DE056 /* BREventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BREventManager.h; sourceTree = "<group>"; };
-		FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBloomFilter.h; sourceTree = "<group>"; };
-		FB1E466B204B8F9E004DE056 /* BRTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransaction.m; sourceTree = "<group>"; };
-		FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPaymentProtocol.m; sourceTree = "<group>"; };
-		FB1E466D204B8F9E004DE056 /* BRKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRKey.h; sourceTree = "<group>"; };
-		FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRPaymentProtocol.h; sourceTree = "<group>"; };
-		FB1E466F204B8F9E004DE056 /* BRWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWalletManager.h; sourceTree = "<group>"; };
+		FB1E4662204B8F9D004DE056 /* DSBIP39Mnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSBIP39Mnemonic.h; sourceTree = "<group>"; };
+		FB1E4663204B8F9D004DE056 /* DSWalletConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSWalletConstants.m; sourceTree = "<group>"; };
+		FB1E4664204B8F9D004DE056 /* DSKey+BIP38.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSKey+BIP38.h"; sourceTree = "<group>"; };
+		FB1E4665204B8F9D004DE056 /* DSBIP39Mnemonic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSBIP39Mnemonic.m; sourceTree = "<group>"; };
+		FB1E4666204B8F9D004DE056 /* DSPeerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSPeerManager.h; sourceTree = "<group>"; };
+		FB1E4667204B8F9E004DE056 /* DSPeerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSPeerManager.m; sourceTree = "<group>"; };
+		FB1E4668204B8F9E004DE056 /* DSBIP32Sequence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSBIP32Sequence.m; sourceTree = "<group>"; };
+		FB1E4669204B8F9E004DE056 /* DSEventManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSEventManager.h; sourceTree = "<group>"; };
+		FB1E466A204B8F9E004DE056 /* DSBloomFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSBloomFilter.h; sourceTree = "<group>"; };
+		FB1E466B204B8F9E004DE056 /* DSTransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSTransaction.m; sourceTree = "<group>"; };
+		FB1E466C204B8F9E004DE056 /* DSPaymentProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSPaymentProtocol.m; sourceTree = "<group>"; };
+		FB1E466D204B8F9E004DE056 /* DSKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSKey.h; sourceTree = "<group>"; };
+		FB1E466E204B8F9E004DE056 /* DSPaymentProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSPaymentProtocol.h; sourceTree = "<group>"; };
+		FB1E466F204B8F9E004DE056 /* DSWalletManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSWalletManager.h; sourceTree = "<group>"; };
 		FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSShapeshiftManager.h; sourceTree = "<group>"; };
-		FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMerkleBlock.h; sourceTree = "<group>"; };
-		FB1E4672204B8F9E004DE056 /* BRMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRMnemonic.h; sourceTree = "<group>"; };
-		FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBloomFilter.m; sourceTree = "<group>"; };
-		FB1E4674204B8F9F004DE056 /* BRWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRWallet.h; sourceTree = "<group>"; };
-		FB1E4675204B8F9F004DE056 /* BREventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BREventManager.m; sourceTree = "<group>"; };
-		FB1E4676204B8F9F004DE056 /* BRWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWallet.m; sourceTree = "<group>"; };
-		FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPaymentRequest.m; sourceTree = "<group>"; };
-		FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRMerkleBlock.m; sourceTree = "<group>"; };
-		FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRSocketHelpers.h; sourceTree = "<group>"; };
-		FB1E467A204B8FA0004DE056 /* BRPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeer.m; sourceTree = "<group>"; };
-		FB1E467B204B8FA0004DE056 /* BRWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRWalletManager.m; sourceTree = "<group>"; };
-		FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BRSocketHelpers.c; sourceTree = "<group>"; };
+		FB1E4671204B8F9E004DE056 /* DSMerkleBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlock.h; sourceTree = "<group>"; };
+		FB1E4672204B8F9E004DE056 /* DSMnemonic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSMnemonic.h; sourceTree = "<group>"; };
+		FB1E4673204B8F9F004DE056 /* DSBloomFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSBloomFilter.m; sourceTree = "<group>"; };
+		FB1E4674204B8F9F004DE056 /* DSWallet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSWallet.h; sourceTree = "<group>"; };
+		FB1E4675204B8F9F004DE056 /* DSEventManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSEventManager.m; sourceTree = "<group>"; };
+		FB1E4676204B8F9F004DE056 /* DSWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSWallet.m; sourceTree = "<group>"; };
+		FB1E4677204B8F9F004DE056 /* DSPaymentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSPaymentRequest.m; sourceTree = "<group>"; };
+		FB1E4678204B8F9F004DE056 /* DSMerkleBlock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSMerkleBlock.m; sourceTree = "<group>"; };
+		FB1E4679204B8F9F004DE056 /* DSSocketHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSSocketHelpers.h; sourceTree = "<group>"; };
+		FB1E467A204B8FA0004DE056 /* DSPeer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSPeer.m; sourceTree = "<group>"; };
+		FB1E467B204B8FA0004DE056 /* DSWalletManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSWalletManager.m; sourceTree = "<group>"; };
+		FB1E467C204B8FA0004DE056 /* DSSocketHelpers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = DSSocketHelpers.c; sourceTree = "<group>"; };
 		FB1E46B2204B8FBA004DE056 /* BRTransactionEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTransactionEntity.m; sourceTree = "<group>"; };
 		FB1E46B3204B8FBA004DE056 /* BRPeerEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRPeerEntity.m; sourceTree = "<group>"; };
 		FB1E46B4204B8FBA004DE056 /* BRTxInputEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRTxInputEntity.m; sourceTree = "<group>"; };
@@ -237,10 +237,10 @@
 		FB1E472F204B91E6004DE056 /* NSString+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Dash.h"; sourceTree = "<group>"; };
 		FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+Attachments.h"; sourceTree = "<group>"; };
 		FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Bitcoin.h"; sourceTree = "<group>"; };
-		FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRTransaction+Utils.m"; sourceTree = "<group>"; };
+		FB1E4732204B91E6004DE056 /* DSTransaction+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSTransaction+Utils.m"; sourceTree = "<group>"; };
 		FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+Attachments.m"; sourceTree = "<group>"; };
 		FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Dash.h"; sourceTree = "<group>"; };
-		FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRTransaction+Utils.h"; sourceTree = "<group>"; };
+		FB1E4735204B91E6004DE056 /* DSTransaction+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSTransaction+Utils.h"; sourceTree = "<group>"; };
 		FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Bitcoin.m"; sourceTree = "<group>"; };
 		FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Sugar.m"; sourceTree = "<group>"; };
 		FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Bitcoin.h"; sourceTree = "<group>"; };
@@ -413,39 +413,39 @@
 			isa = PBXGroup;
 			children = (
 				FB1E46B1204B8FAE004DE056 /* Entities */,
-				FB1E465B204B8F9D004DE056 /* BRBIP32Sequence.h */,
-				FB1E4668204B8F9E004DE056 /* BRBIP32Sequence.m */,
-				FB1E4662204B8F9D004DE056 /* BRBIP39Mnemonic.h */,
-				FB1E4665204B8F9D004DE056 /* BRBIP39Mnemonic.m */,
-				FB1E466A204B8F9E004DE056 /* BRBloomFilter.h */,
-				FB1E4673204B8F9F004DE056 /* BRBloomFilter.m */,
-				FB1E4669204B8F9E004DE056 /* BREventManager.h */,
-				FB1E4675204B8F9F004DE056 /* BREventManager.m */,
-				FB1E466D204B8F9E004DE056 /* BRKey.h */,
-				FB1E465F204B8F9D004DE056 /* BRKey.m */,
-				FB1E4664204B8F9D004DE056 /* BRKey+BIP38.h */,
-				FB1E465D204B8F9D004DE056 /* BRKey+BIP38.m */,
-				FB1E465C204B8F9D004DE056 /* BRKeySequence.h */,
-				FB1E4671204B8F9E004DE056 /* BRMerkleBlock.h */,
-				FB1E4678204B8F9F004DE056 /* BRMerkleBlock.m */,
-				FB1E4672204B8F9E004DE056 /* BRMnemonic.h */,
-				FB1E466E204B8F9E004DE056 /* BRPaymentProtocol.h */,
-				FB1E466C204B8F9E004DE056 /* BRPaymentProtocol.m */,
-				FB1E465E204B8F9D004DE056 /* BRPaymentRequest.h */,
-				FB1E4677204B8F9F004DE056 /* BRPaymentRequest.m */,
-				FB1E4660204B8F9D004DE056 /* BRPeer.h */,
-				FB1E467A204B8FA0004DE056 /* BRPeer.m */,
-				FB1E4666204B8F9D004DE056 /* BRPeerManager.h */,
-				FB1E4667204B8F9E004DE056 /* BRPeerManager.m */,
-				FB1E467C204B8FA0004DE056 /* BRSocketHelpers.c */,
-				FB1E4679204B8F9F004DE056 /* BRSocketHelpers.h */,
-				FB1E465A204B8F9D004DE056 /* BRTransaction.h */,
-				FB1E466B204B8F9E004DE056 /* BRTransaction.m */,
-				FB1E4674204B8F9F004DE056 /* BRWallet.h */,
-				FB1E4676204B8F9F004DE056 /* BRWallet.m */,
-				FB1E4663204B8F9D004DE056 /* BRWalletConstants.m */,
-				FB1E466F204B8F9E004DE056 /* BRWalletManager.h */,
-				FB1E467B204B8FA0004DE056 /* BRWalletManager.m */,
+				FB1E465B204B8F9D004DE056 /* DSBIP32Sequence.h */,
+				FB1E4668204B8F9E004DE056 /* DSBIP32Sequence.m */,
+				FB1E4662204B8F9D004DE056 /* DSBIP39Mnemonic.h */,
+				FB1E4665204B8F9D004DE056 /* DSBIP39Mnemonic.m */,
+				FB1E466A204B8F9E004DE056 /* DSBloomFilter.h */,
+				FB1E4673204B8F9F004DE056 /* DSBloomFilter.m */,
+				FB1E4669204B8F9E004DE056 /* DSEventManager.h */,
+				FB1E4675204B8F9F004DE056 /* DSEventManager.m */,
+				FB1E466D204B8F9E004DE056 /* DSKey.h */,
+				FB1E465F204B8F9D004DE056 /* DSKey.m */,
+				FB1E4664204B8F9D004DE056 /* DSKey+BIP38.h */,
+				FB1E465D204B8F9D004DE056 /* DSKey+BIP38.m */,
+				FB1E465C204B8F9D004DE056 /* DSKeySequence.h */,
+				FB1E4671204B8F9E004DE056 /* DSMerkleBlock.h */,
+				FB1E4678204B8F9F004DE056 /* DSMerkleBlock.m */,
+				FB1E4672204B8F9E004DE056 /* DSMnemonic.h */,
+				FB1E466E204B8F9E004DE056 /* DSPaymentProtocol.h */,
+				FB1E466C204B8F9E004DE056 /* DSPaymentProtocol.m */,
+				FB1E465E204B8F9D004DE056 /* DSPaymentRequest.h */,
+				FB1E4677204B8F9F004DE056 /* DSPaymentRequest.m */,
+				FB1E4660204B8F9D004DE056 /* DSPeer.h */,
+				FB1E467A204B8FA0004DE056 /* DSPeer.m */,
+				FB1E4666204B8F9D004DE056 /* DSPeerManager.h */,
+				FB1E4667204B8F9E004DE056 /* DSPeerManager.m */,
+				FB1E467C204B8FA0004DE056 /* DSSocketHelpers.c */,
+				FB1E4679204B8F9F004DE056 /* DSSocketHelpers.h */,
+				FB1E465A204B8F9D004DE056 /* DSTransaction.h */,
+				FB1E466B204B8F9E004DE056 /* DSTransaction.m */,
+				FB1E4674204B8F9F004DE056 /* DSWallet.h */,
+				FB1E4676204B8F9F004DE056 /* DSWallet.m */,
+				FB1E4663204B8F9D004DE056 /* DSWalletConstants.m */,
+				FB1E466F204B8F9E004DE056 /* DSWalletManager.h */,
+				FB1E467B204B8FA0004DE056 /* DSWalletManager.m */,
 				FB1E4670204B8F9E004DE056 /* DSShapeshiftManager.h */,
 				FB1E4661204B8F9D004DE056 /* DSShapeshiftManager.m */,
 			);
@@ -497,8 +497,8 @@
 		FB1E472E204B91C0004DE056 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
-				FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */,
-				FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */,
+				FB1E4735204B91E6004DE056 /* DSTransaction+Utils.h */,
+				FB1E4732204B91E6004DE056 /* DSTransaction+Utils.m */,
 				FB1E4741204B91E7004DE056 /* IntTypes.h */,
 				FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */,
 				FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */,
@@ -629,7 +629,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */,
+				FB1E474A204B91E7004DE056 /* DSTransaction+Utils.h in Headers */,
 				FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */,
 				FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */,
 				FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */,
@@ -637,24 +637,24 @@
 				FB10EF1B204B94F0006D35F4 /* DSDashSync.h in Headers */,
 				FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */,
 				FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */,
-				FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */,
-				FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */,
-				FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */,
-				FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */,
-				FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */,
+				FB1E4685204B8FA0004DE056 /* DSPeer.h in Headers */,
+				FB1E469B204B8FA0004DE056 /* DSWalletManager.h in Headers */,
+				FB1E4682204B8FA0004DE056 /* DSPaymentRequest.h in Headers */,
+				FB1E4688204B8FA0004DE056 /* DSBIP39Mnemonic.h in Headers */,
+				FB1E4694204B8FA0004DE056 /* DSBloomFilter.h in Headers */,
 				FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */,
-				FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */,
-				FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */,
-				FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */,
-				FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */,
-				FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */,
-				FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */,
-				FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */,
-				FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */,
-				FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */,
-				FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */,
-				FB1E469D204B8FA0004DE056 /* BRMerkleBlock.h in Headers */,
-				FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */,
+				FB1E46A1204B8FA0004DE056 /* DSWallet.h in Headers */,
+				FB1E4699204B8FA0004DE056 /* DSKey.h in Headers */,
+				FB1E468E204B8FA0004DE056 /* DSPeerManager.h in Headers */,
+				FB1E469E204B8FA0004DE056 /* DSMnemonic.h in Headers */,
+				FB1E468B204B8FA0004DE056 /* DSKey+BIP38.h in Headers */,
+				FB1E4693204B8FA0004DE056 /* DSEventManager.h in Headers */,
+				FB1E469A204B8FA0004DE056 /* DSPaymentProtocol.h in Headers */,
+				FB1E467E204B8FA0004DE056 /* DSBIP32Sequence.h in Headers */,
+				FB1E467D204B8FA0004DE056 /* DSTransaction.h in Headers */,
+				FB1E467F204B8FA0004DE056 /* DSKeySequence.h in Headers */,
+				FB1E469D204B8FA0004DE056 /* DSMerkleBlock.h in Headers */,
+				FB1E46AA204B8FA0004DE056 /* DSSocketHelpers.h in Headers */,
 				FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */,
 				FB1E46D2204B8FBC004DE056 /* BRAddressEntity.h in Headers */,
 				FB1E46C6204B8FBB004DE056 /* BRTxMetadataEntity.h in Headers */,
@@ -805,42 +805,42 @@
 			files = (
 				FB1E46E6204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */,
 				FB1E46DD204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
-				FB1E4691204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */,
+				FB1E4691204B8FA0004DE056 /* DSBIP32Sequence.m in Sources */,
 				FB1E46DB204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
 				FB10EF24204B9D27006D35F4 /* Reachability.m in Sources */,
-				FB1E468F204B8FA0004DE056 /* BRPeerManager.m in Sources */,
+				FB1E468F204B8FA0004DE056 /* DSPeerManager.m in Sources */,
 				FB1E4686204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */,
-				FB1E4680204B8FA0004DE056 /* BRKey+BIP38.m in Sources */,
+				FB1E4680204B8FA0004DE056 /* DSKey+BIP38.m in Sources */,
 				FB1E46CA204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */,
 				FB10EF1C204B94F0006D35F4 /* DSDashSync.m in Sources */,
-				FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */,
-				FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */,
-				FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */,
+				FB1E4683204B8FA0004DE056 /* DSKey.m in Sources */,
+				FB1E4695204B8FA0004DE056 /* DSTransaction.m in Sources */,
+				FB1E46A4204B8FA0004DE056 /* DSWallet.m in Sources */,
 				FB1E4758204B91E7004DE056 /* NSMutableData+Dash.m in Sources */,
-				FB1E46AD204B8FA0004DE056 /* BRWalletManager.m in Sources */,
-				FB1E4689204B8FA0004DE056 /* BRWalletConstants.m in Sources */,
+				FB1E46AD204B8FA0004DE056 /* DSWalletManager.m in Sources */,
+				FB1E4689204B8FA0004DE056 /* DSWalletConstants.m in Sources */,
 				FB1E46C7204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */,
 				FB1E4754204B91E7004DE056 /* NSData+Dash.m in Sources */,
 				FB1E46C2204B8FBB004DE056 /* BRPeerEntity.m in Sources */,
-				FB1E46AF204B8FA0004DE056 /* BRSocketHelpers.c in Sources */,
-				FB1E4745204B91E7004DE056 /* BRTransaction+Utils.m in Sources */,
+				FB1E46AF204B8FA0004DE056 /* DSSocketHelpers.c in Sources */,
+				FB1E4745204B91E7004DE056 /* DSTransaction+Utils.m in Sources */,
 				FB1E46D3204B8FBC004DE056 /* BRAddressEntity.m in Sources */,
 				FB1E46CD204B8FBB004DE056 /* BRTxOutputEntity.m in Sources */,
 				FB1E4750204B91E7004DE056 /* NSString+Dash.m in Sources */,
 				FB1E4747204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */,
-				FB1E46AB204B8FA0004DE056 /* BRPeer.m in Sources */,
+				FB1E46AB204B8FA0004DE056 /* DSPeer.m in Sources */,
 				FB1E474B204B91E7004DE056 /* NSData+Bitcoin.m in Sources */,
-				FB1E469F204B8FA0004DE056 /* BRBloomFilter.m in Sources */,
+				FB1E469F204B8FA0004DE056 /* DSBloomFilter.m in Sources */,
 				FB1E474D204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */,
-				FB1E4697204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */,
-				FB1E468C204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */,
-				FB1E46A8204B8FA0004DE056 /* BRMerkleBlock.m in Sources */,
+				FB1E4697204B8FA0004DE056 /* DSPaymentProtocol.m in Sources */,
+				FB1E468C204B8FA0004DE056 /* DSBIP39Mnemonic.m in Sources */,
+				FB1E46A8204B8FA0004DE056 /* DSMerkleBlock.m in Sources */,
 				FB1E4756204B91E7004DE056 /* NSString+Bitcoin.m in Sources */,
 				FB74FEA520525BCA00D7296A /* UIImage+Utils.m in Sources */,
 				FB1E46C4204B8FBB004DE056 /* BRTxInputEntity.m in Sources */,
-				FB1E46A2204B8FA0004DE056 /* BREventManager.m in Sources */,
+				FB1E46A2204B8FA0004DE056 /* DSEventManager.m in Sources */,
 				FB1E46C0204B8FBB004DE056 /* BRTransactionEntity.m in Sources */,
-				FB1E46A6204B8FA0004DE056 /* BRPaymentRequest.m in Sources */,
+				FB1E46A6204B8FA0004DE056 /* DSPaymentRequest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -855,35 +855,35 @@
 				FB1E4755204B91E7004DE056 /* NSData+Dash.m in Sources */,
 				FB1E474E204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */,
 				FB1E46DE204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
-				FB1E46A7204B8FA0004DE056 /* BRPaymentRequest.m in Sources */,
+				FB1E46A7204B8FA0004DE056 /* DSPaymentRequest.m in Sources */,
 				FB1E4757204B91E7004DE056 /* NSString+Bitcoin.m in Sources */,
-				FB1E46A9204B8FA0004DE056 /* BRMerkleBlock.m in Sources */,
+				FB1E46A9204B8FA0004DE056 /* DSMerkleBlock.m in Sources */,
 				FB1E46C3204B8FBB004DE056 /* BRPeerEntity.m in Sources */,
 				FB1E46DC204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.m in Sources */,
 				FB1E46CE204B8FBB004DE056 /* BRTxOutputEntity.m in Sources */,
 				FB1E46C8204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */,
-				FB1E468A204B8FA0004DE056 /* BRWalletConstants.m in Sources */,
-				FB1E46AC204B8FA0004DE056 /* BRPeer.m in Sources */,
-				FB1E4692204B8FA0004DE056 /* BRBIP32Sequence.m in Sources */,
-				FB1E4746204B91E7004DE056 /* BRTransaction+Utils.m in Sources */,
-				FB1E4684204B8FA0004DE056 /* BRKey.m in Sources */,
-				FB1E4696204B8FA0004DE056 /* BRTransaction.m in Sources */,
-				FB1E46A0204B8FA0004DE056 /* BRBloomFilter.m in Sources */,
+				FB1E468A204B8FA0004DE056 /* DSWalletConstants.m in Sources */,
+				FB1E46AC204B8FA0004DE056 /* DSPeer.m in Sources */,
+				FB1E4692204B8FA0004DE056 /* DSBIP32Sequence.m in Sources */,
+				FB1E4746204B91E7004DE056 /* DSTransaction+Utils.m in Sources */,
+				FB1E4684204B8FA0004DE056 /* DSKey.m in Sources */,
+				FB1E4696204B8FA0004DE056 /* DSTransaction.m in Sources */,
+				FB1E46A0204B8FA0004DE056 /* DSBloomFilter.m in Sources */,
 				FB1E4687204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */,
-				FB1E4690204B8FA0004DE056 /* BRPeerManager.m in Sources */,
+				FB1E4690204B8FA0004DE056 /* DSPeerManager.m in Sources */,
 				FB10EF1D204B94F0006D35F4 /* DSDashSync.m in Sources */,
 				FB1E46C1204B8FBB004DE056 /* BRTransactionEntity.m in Sources */,
-				FB1E4698204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */,
-				FB1E46B0204B8FA0004DE056 /* BRSocketHelpers.c in Sources */,
+				FB1E4698204B8FA0004DE056 /* DSPaymentProtocol.m in Sources */,
+				FB1E46B0204B8FA0004DE056 /* DSSocketHelpers.c in Sources */,
 				FB1E4751204B91E7004DE056 /* NSString+Dash.m in Sources */,
 				FB1E46C5204B8FBB004DE056 /* BRTxInputEntity.m in Sources */,
 				FB1E46CB204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */,
 				FB1E4759204B91E7004DE056 /* NSMutableData+Dash.m in Sources */,
-				FB1E4681204B8FA0004DE056 /* BRKey+BIP38.m in Sources */,
-				FB1E46AE204B8FA0004DE056 /* BRWalletManager.m in Sources */,
-				FB1E46A5204B8FA0004DE056 /* BRWallet.m in Sources */,
+				FB1E4681204B8FA0004DE056 /* DSKey+BIP38.m in Sources */,
+				FB1E46AE204B8FA0004DE056 /* DSWalletManager.m in Sources */,
+				FB1E46A5204B8FA0004DE056 /* DSWallet.m in Sources */,
 				FB1E4633204B8F13004DE056 /* dashsyncTests.m in Sources */,
-				FB1E468D204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */,
+				FB1E468D204B8FA0004DE056 /* DSBIP39Mnemonic.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

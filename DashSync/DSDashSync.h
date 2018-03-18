@@ -7,9 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "BRPeerManager.h"
-#import "BRWalletManager.h"
-#import "BREventManager.h"
+#import "DSPeerManager.h"
+#import "DSWalletManager.h"
+#import "DSEventManager.h"
 #import "DSShapeshiftManager.h"
 
 //! Project version number for dashsync.

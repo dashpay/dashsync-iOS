@@ -27,7 +27,7 @@
 
 #import "BRTxOutputEntity.h"
 #import "BRTransactionEntity.h"
-#import "BRTransaction.h"
+#import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
@@ -42,7 +42,7 @@
 @dynamic transaction;
 @dynamic shapeshiftOutboundAddress;
 
-- (instancetype)setAttributesFromTx:(BRTransaction *)tx outputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index
 {
     [self.managedObjectContext performBlockAndWait:^{
         UInt256 txHash = tx.txHash;
@@ -52,7 +52,7 @@
         self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
         self.script = tx.outputScripts[index];
         self.value = [tx.outputAmounts[index] longLongValue];
-        self.shapeshiftOutboundAddress = [BRTransaction shapeshiftOutboundAddressForScript:self.script];
+        self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
     }];
     
     return self;
