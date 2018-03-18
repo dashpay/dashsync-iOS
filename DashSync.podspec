@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'DashSync'
-  s.version          = '0.1.0'
+  s.version          = '0.9.0'
   s.summary          = 'Dash Sync is a light and configurable blockchain client that you can embed into your iOS Application.'
 
 # This description is used to generate tags and improve search results.
@@ -17,9 +17,7 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
-  s.description      = <<-DESC
-TODO: Add long description of the pod here.
-                       DESC
+  s.description      = 'Dash Sync is a light blockchain client that you can embed into your iOS Application.  It is fully customizable to make the type of node you are interested in.'
 
   s.homepage         = 'https://github.com/dashevo/dashsync'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
@@ -30,13 +28,15 @@ TODO: Add long description of the pod here.
 
   s.ios.deployment_target = '10.0'
 
-  s.source_files = 'DashSyncPod/Classes/**/*'
+  s.source_files = "dashsync/**/*.{h,m}"
   
   # s.resource_bundles = {
   #   'DashSyncPod' => ['DashSyncPod/Assets/*.png']
   # }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
-  s.frameworks = 'UIKit', 'Security', 'libbz2.tbd', 'libsqlite3.tbd'
+  s.frameworks = 'UIKit', 'Security'
+  s.libraries = 'bz2', 'sqlite3'
   # s.dependency 'AFNetworking', '~> 2.3'
 end
+

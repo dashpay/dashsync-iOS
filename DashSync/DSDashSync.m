@@ -1,18 +1,18 @@
 //
-//  DCDashSync.m
+//  DSDashSync.m
 //  dashsync
 //
 //  Created by Sam Westrich on 3/4/18.
 //  Copyright © 2018 dashcore. All rights reserved.
 //
 
-#import "DCDashSync.h"
+#import "DSDashSync.h"
 
-@interface DCDashSync ()
+@interface DSDashSync ()
 
 @end
 
-@implementation DCDashSync
+@implementation DSDashSync
 
 + (instancetype)syncController
 {

@@ -1,5 +1,5 @@
 //
-//  DCDashSync.h
+//  DSDashSync.h
 //  dashsync
 //
 //  Created by Sam Westrich on 3/4/18.
@@ -20,7 +20,7 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <dashsync/PublicHeader.h>
 
-@interface DCDashSync : NSObject
+@interface DSDashSync : NSObject
 
 + (instancetype _Nullable)syncController;
 

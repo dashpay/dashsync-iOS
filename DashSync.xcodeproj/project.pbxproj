@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF19204B94F0006D35F4 /* DCDashSync.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FB10EF1C204B94F0006D35F4 /* DCDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DCDashSync.m */; };
-		FB10EF1D204B94F0006D35F4 /* DCDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DCDashSync.m */; };
+		FB10EF1B204B94F0006D35F4 /* DSDashSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF19204B94F0006D35F4 /* DSDashSync.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB10EF1C204B94F0006D35F4 /* DSDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DSDashSync.m */; };
+		FB10EF1D204B94F0006D35F4 /* DSDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DSDashSync.m */; };
 		FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF21204B9D27006D35F4 /* Reachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB10EF24204B9D27006D35F4 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF22204B9D27006D35F4 /* Reachability.m */; };
 		FB10EF27204B9F7F006D35F4 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF26204B9F7F006D35F4 /* Security.framework */; };
@@ -100,8 +100,6 @@
 		FB1E46E2204B9022004DE056 /* FixedPeers.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E0204B9021004DE056 /* FixedPeers.plist */; };
 		FB1E46E6204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */; };
 		FB1E46E7204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */; };
-		FB1E46E9204B9049004DE056 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E8204B9049004DE056 /* BIP39Words.plist */; };
-		FB1E46EA204B9049004DE056 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E8204B9049004DE056 /* BIP39Words.plist */; };
 		FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E472F204B91E6004DE056 /* NSString+Dash.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */; };
@@ -129,6 +127,11 @@
 		FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4741204B91E7004DE056 /* IntTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB74FEA220525BCA00D7296A /* UIImage+Utils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB74FEA520525BCA00D7296A /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB74FEA320525BCA00D7296A /* UIImage+Utils.m */; };
+		FB9D9BAC205E8BEB00539436 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = FB9D9BA9205E8BEB00539436 /* README.md */; };
+		FB9D9BAD205E8BEB00539436 /* DashSync.podspec in Resources */ = {isa = PBXBuildFile; fileRef = FB9D9BAA205E8BEB00539436 /* DashSync.podspec */; };
+		FB9D9BAE205E8BEB00539436 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = FB9D9BAB205E8BEB00539436 /* LICENSE */; };
+		FB9D9BAF205E916F00539436 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB9D9BB2205E916F00539436 /* BIP39Words.plist */; };
+		FB9D9BB0205E916F00539436 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB9D9BB2205E916F00539436 /* BIP39Words.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -149,8 +152,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		FB10EF19204B94F0006D35F4 /* DCDashSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DCDashSync.h; sourceTree = "<group>"; };
-		FB10EF1A204B94F0006D35F4 /* DCDashSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DCDashSync.m; sourceTree = "<group>"; };
+		FB10EF19204B94F0006D35F4 /* DSDashSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDashSync.h; sourceTree = "<group>"; };
+		FB10EF1A204B94F0006D35F4 /* DSDashSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDashSync.m; sourceTree = "<group>"; };
 		FB10EF21204B9D27006D35F4 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		FB10EF22204B9D27006D35F4 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		FB10EF26204B9F7F006D35F4 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -231,7 +234,6 @@
 		FB1E46E0204B9021004DE056 /* FixedPeers.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = FixedPeers.plist; sourceTree = "<group>"; };
 		FB1E46E4204B9037004DE056 /* BreadWallet 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "BreadWallet 2.xcdatamodel"; sourceTree = "<group>"; };
 		FB1E46E5204B9037004DE056 /* BreadWallet.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BreadWallet.xcdatamodel; sourceTree = "<group>"; };
-		FB1E46E8204B9049004DE056 /* BIP39Words.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = BIP39Words.plist; sourceTree = "<group>"; };
 		FB1E472F204B91E6004DE056 /* NSString+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Dash.h"; sourceTree = "<group>"; };
 		FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+Attachments.h"; sourceTree = "<group>"; };
 		FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Bitcoin.h"; sourceTree = "<group>"; };
@@ -296,9 +298,14 @@
 		FB1E47C1204B9239004DE056 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
 		FB74FEA220525BCA00D7296A /* UIImage+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utils.h"; sourceTree = "<group>"; };
 		FB74FEA320525BCA00D7296A /* UIImage+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utils.m"; sourceTree = "<group>"; };
-		FB9D9B04205E4D3100539436 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		FB9D9B05205E4D3D00539436 /* DashSync.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = DashSync.podspec; sourceTree = "<group>"; };
-		FB9D9B06205E4D4300539436 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		FB9D9BA9205E8BEB00539436 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
+		FB9D9BAA205E8BEB00539436 /* DashSync.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DashSync.podspec; sourceTree = SOURCE_ROOT; };
+		FB9D9BAB205E8BEB00539436 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		FB9D9BB1205E916F00539436 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		FB9D9BB3205E918100539436 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = fr; path = fr.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		FB9D9BB5205E919400539436 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "zh-Hans"; path = "zh-Hans.lproj/BIP39Words.plist"; sourceTree = "<group>"; };
+		FB9D9BB6205E919A00539436 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = es; path = es.lproj/BIP39Words.plist; sourceTree = "<group>"; };
+		FB9D9BB7205E927500539436 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ja; path = ja.lproj/BIP39Words.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -338,8 +345,8 @@
 		FB1E461A204B8F13004DE056 = {
 			isa = PBXGroup;
 			children = (
-				FB1E4626204B8F13004DE056 /* dashsync */,
-				FB1E4631204B8F13004DE056 /* dashsyncTests */,
+				FB1E4626204B8F13004DE056 /* DashSync */,
+				FB1E4631204B8F13004DE056 /* DashSyncTests */,
 				FB1E4625204B8F13004DE056 /* Products */,
 				FB10EF25204B9F7E006D35F4 /* Frameworks */,
 			);
@@ -354,7 +361,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		FB1E4626204B8F13004DE056 /* dashsync */ = {
+		FB1E4626204B8F13004DE056 /* DashSync */ = {
 			isa = PBXGroup;
 			children = (
 				FB9D9B03205E4D1E00539436 /* Podspec Metadata */,
@@ -362,24 +369,24 @@
 				FB1E4659204B8F73004DE056 /* Models */,
 				FB1E472E204B91C0004DE056 /* Categories */,
 				FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */,
-				FB1E46E8204B9049004DE056 /* BIP39Words.plist */,
+				FB9D9BB2205E916F00539436 /* BIP39Words.plist */,
 				FB1E46E0204B9021004DE056 /* FixedPeers.plist */,
 				FB10EF21204B9D27006D35F4 /* Reachability.h */,
 				FB10EF22204B9D27006D35F4 /* Reachability.m */,
-				FB10EF19204B94F0006D35F4 /* DCDashSync.h */,
-				FB10EF1A204B94F0006D35F4 /* DCDashSync.m */,
+				FB10EF19204B94F0006D35F4 /* DSDashSync.h */,
+				FB10EF1A204B94F0006D35F4 /* DSDashSync.m */,
 				FB1E4628204B8F13004DE056 /* Info.plist */,
 			);
-			path = dashsync;
+			path = DashSync;
 			sourceTree = "<group>";
 		};
-		FB1E4631204B8F13004DE056 /* dashsyncTests */ = {
+		FB1E4631204B8F13004DE056 /* DashSyncTests */ = {
 			isa = PBXGroup;
 			children = (
 				FB1E4632204B8F13004DE056 /* dashsyncTests.m */,
 				FB1E4634204B8F13004DE056 /* Info.plist */,
 			);
-			path = dashsyncTests;
+			path = DashSyncTests;
 			sourceTree = "<group>";
 		};
 		FB1E463E204B8F41004DE056 /* x11 */ = {
@@ -608,9 +615,9 @@
 		FB9D9B03205E4D1E00539436 /* Podspec Metadata */ = {
 			isa = PBXGroup;
 			children = (
-				FB9D9B05205E4D3D00539436 /* DashSync.podspec */,
-				FB9D9B04205E4D3100539436 /* LICENSE */,
-				FB9D9B06205E4D4300539436 /* README.md */,
+				FB9D9BAA205E8BEB00539436 /* DashSync.podspec */,
+				FB9D9BAB205E8BEB00539436 /* LICENSE */,
+				FB9D9BA9205E8BEB00539436 /* README.md */,
 			);
 			name = "Podspec Metadata";
 			sourceTree = "<group>";
@@ -627,7 +634,7 @@
 				FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */,
 				FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */,
 				FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */,
-				FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */,
+				FB10EF1B204B94F0006D35F4 /* DSDashSync.h in Headers */,
 				FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */,
 				FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */,
 				FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */,
@@ -744,12 +751,16 @@
 					};
 				};
 			};
-			buildConfigurationList = FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "dashsync" */;
+			buildConfigurationList = FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "DashSync" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				fr,
+				"zh-Hans",
+				es,
+				ja,
 			);
 			mainGroup = FB1E461A204B8F13004DE056;
 			productRefGroup = FB1E4625204B8F13004DE056 /* Products */;
@@ -768,8 +779,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1E46E9204B9049004DE056 /* BIP39Words.plist in Resources */,
+				FB9D9BAC205E8BEB00539436 /* README.md in Resources */,
+				FB9D9BAD205E8BEB00539436 /* DashSync.podspec in Resources */,
+				FB9D9BAF205E916F00539436 /* BIP39Words.plist in Resources */,
 				FB1E46E1204B9022004DE056 /* FixedPeers.plist in Resources */,
+				FB9D9BAE205E8BEB00539436 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -777,7 +791,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1E46EA204B9049004DE056 /* BIP39Words.plist in Resources */,
+				FB9D9BB0205E916F00539436 /* BIP39Words.plist in Resources */,
 				FB1E46E2204B9022004DE056 /* FixedPeers.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -798,7 +812,7 @@
 				FB1E4686204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */,
 				FB1E4680204B8FA0004DE056 /* BRKey+BIP38.m in Sources */,
 				FB1E46CA204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */,
-				FB10EF1C204B94F0006D35F4 /* DCDashSync.m in Sources */,
+				FB10EF1C204B94F0006D35F4 /* DSDashSync.m in Sources */,
 				FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */,
 				FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */,
 				FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */,
@@ -857,7 +871,7 @@
 				FB1E46A0204B8FA0004DE056 /* BRBloomFilter.m in Sources */,
 				FB1E4687204B8FA0004DE056 /* DSShapeshiftManager.m in Sources */,
 				FB1E4690204B8FA0004DE056 /* BRPeerManager.m in Sources */,
-				FB10EF1D204B94F0006D35F4 /* DCDashSync.m in Sources */,
+				FB10EF1D204B94F0006D35F4 /* DSDashSync.m in Sources */,
 				FB1E46C1204B8FBB004DE056 /* BRTransactionEntity.m in Sources */,
 				FB1E4698204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */,
 				FB1E46B0204B8FA0004DE056 /* BRSocketHelpers.c in Sources */,
@@ -888,11 +902,27 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+		FB9D9BB2205E916F00539436 /* BIP39Words.plist */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB9D9BB1205E916F00539436 /* en */,
+				FB9D9BB3205E918100539436 /* fr */,
+				FB9D9BB5205E919400539436 /* zh-Hans */,
+				FB9D9BB6205E919A00539436 /* es */,
+				FB9D9BB7205E927500539436 /* ja */,
+			);
+			name = BIP39Words.plist;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		FB1E4636204B8F13004DE056 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -951,6 +981,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1107,7 +1138,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "dashsync" */ = {
+		FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "DashSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FB1E4636204B8F13004DE056 /* Debug */,
