@@ -1,9 +1,11 @@
 //
 //  BRWallet.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 5/12/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +36,7 @@
 #import "BRPeerManager.h"
 #import "BRKeySequence.h"
 #import "NSData+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
 // chain position of first tx output address that appears in chain

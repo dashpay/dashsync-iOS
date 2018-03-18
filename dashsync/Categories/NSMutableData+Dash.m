@@ -1,9 +1,11 @@
 //
-//  NSMutableData+Bitcoin.m
-//  BreadWallet
+//  NSMutableData+Dash.m
+//  DashSync
 //
 //  Created by Aaron Voisine on 5/20/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +25,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "NSMutableData+Bitcoin.h"
-#import "NSData+Bitcoin.h"
-#import "NSString+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
 #import "NSString+Dash.h"
 
@@ -86,7 +86,7 @@ CFAllocatorRef SecureAllocator()
     return alloc;
 }
 
-@implementation NSMutableData (Bitcoin)
+@implementation NSMutableData (Dash)
 
 + (NSMutableData *)secureData
 {

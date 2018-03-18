@@ -1,8 +1,11 @@
 //
 //  NSManagedObject+Sugar.m
+//  DashSync
 //
-//  Created by Aaron Voisine on 8/22/13.
+//  Created by Aaron Voisine on 08/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal

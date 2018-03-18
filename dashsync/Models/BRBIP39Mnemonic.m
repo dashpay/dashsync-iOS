@@ -1,9 +1,11 @@
 //
 //  BRBIP39Mnemonic.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 3/21/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +27,7 @@
 
 #import "BRBIP39Mnemonic.h"
 #import "NSData+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 #define WORDS @"BIP39Words"
 

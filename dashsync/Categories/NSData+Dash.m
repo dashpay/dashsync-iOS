@@ -1,9 +1,9 @@
 //
 //  NSData+Dash.m
-//  BreadWallet
+//  DashSync
 //
-//  Created by Sam Westrich on 1/31/17.
-//  Copyright © 2018 Dash Core. All rights reserved.
+//  Created by Quantum Explorer on 01/31/17.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal

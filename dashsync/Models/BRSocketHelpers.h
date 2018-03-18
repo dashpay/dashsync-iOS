@@ -1,6 +1,6 @@
 //
 //  BRSocketHelpers.h
-//  BreadWallet
+//  DashSync
 //
 //  Created by Samuel Sutch on 2/17/16.
 //  Copyright (c) 2016 breadwallet LLC

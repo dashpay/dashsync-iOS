@@ -1,6 +1,6 @@
 //
 //  BRWalletConstants.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Samuel Sutch on 6/3/16.
 //  Copyright © 2016 Aaron Voisine. All rights reserved.

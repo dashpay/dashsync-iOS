@@ -1,6 +1,6 @@
 //
 //  DSShapeshiftEntity+CoreDataProperties.h
-//  BreadWallet
+//  DashSync
 //
 //  Created by Sam Westrich on 1/31/17.
 //  Copyright © 2018 Dash Core. All rights reserved.

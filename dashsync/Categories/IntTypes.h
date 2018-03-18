@@ -1,6 +1,6 @@
 //
 //  IntTypes.h
-//  BreadWallet
+//  DashSync
 //
 //  Created by Sam Westrich on 7/20/16.
 //  Copyright © 2018 Dash Core. All rights reserved.

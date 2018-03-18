@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF19204B94F0006D35F4 /* DCDashSync.h */; };
+		FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF19204B94F0006D35F4 /* DCDashSync.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB10EF1C204B94F0006D35F4 /* DCDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DCDashSync.m */; };
 		FB10EF1D204B94F0006D35F4 /* DCDashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF1A204B94F0006D35F4 /* DCDashSync.m */; };
-		FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF21204B9D27006D35F4 /* Reachability.h */; };
+		FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */ = {isa = PBXBuildFile; fileRef = FB10EF21204B9D27006D35F4 /* Reachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB10EF24204B9D27006D35F4 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = FB10EF22204B9D27006D35F4 /* Reachability.m */; };
 		FB10EF27204B9F7F006D35F4 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF26204B9F7F006D35F4 /* Security.framework */; };
 		FB10EF29204B9FCE006D35F4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB10EF28204B9FCD006D35F4 /* UIKit.framework */; };
@@ -102,15 +102,15 @@
 		FB1E46E7204B9038004DE056 /* DashWallet.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1E46E3204B9037004DE056 /* DashWallet.xcdatamodeld */; };
 		FB1E46E9204B9049004DE056 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E8204B9049004DE056 /* BIP39Words.plist */; };
 		FB1E46EA204B9049004DE056 /* BIP39Words.plist in Resources */ = {isa = PBXBuildFile; fileRef = FB1E46E8204B9049004DE056 /* BIP39Words.plist */; };
-		FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E472F204B91E6004DE056 /* NSString+Dash.h */; };
-		FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */; };
+		FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E472F204B91E6004DE056 /* NSString+Dash.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4730204B91E6004DE056 /* NSAttributedString+Attachments.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */; };
 		FB1E4745204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
 		FB1E4746204B91E7004DE056 /* BRTransaction+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */; };
 		FB1E4747204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
 		FB1E4748204B91E7004DE056 /* NSAttributedString+Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */; };
-		FB1E4749204B91E7004DE056 /* NSMutableData+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4734204B91E6004DE056 /* NSMutableData+Bitcoin.h */; };
-		FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */; };
+		FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */; };
+		FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E474B204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
 		FB1E474C204B91E7004DE056 /* NSData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */; };
 		FB1E474D204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */; };
@@ -118,18 +118,17 @@
 		FB1E474F204B91E7004DE056 /* NSString+Bitcoin.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */; };
 		FB1E4750204B91E7004DE056 /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4739204B91E6004DE056 /* NSString+Dash.m */; };
 		FB1E4751204B91E7004DE056 /* NSString+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4739204B91E6004DE056 /* NSString+Dash.m */; };
-		FB1E4752204B91E7004DE056 /* UIImage+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473A204B91E7004DE056 /* UIImage+Utils.h */; };
-		FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473B204B91E7004DE056 /* NSData+Dash.h */; };
+		FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473B204B91E7004DE056 /* NSData+Dash.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB1E4754204B91E7004DE056 /* NSData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473C204B91E7004DE056 /* NSData+Dash.m */; };
 		FB1E4755204B91E7004DE056 /* NSData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473C204B91E7004DE056 /* NSData+Dash.m */; };
 		FB1E4756204B91E7004DE056 /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */; };
 		FB1E4757204B91E7004DE056 /* NSString+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */; };
-		FB1E4758204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */; };
-		FB1E4759204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */; };
+		FB1E4758204B91E7004DE056 /* NSMutableData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Dash.m */; };
+		FB1E4759204B91E7004DE056 /* NSMutableData+Dash.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E473E204B91E7004DE056 /* NSMutableData+Dash.m */; };
 		FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */; };
-		FB1E475B204B91E7004DE056 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4740204B91E7004DE056 /* UIImage+Utils.m */; };
-		FB1E475C204B91E7004DE056 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1E4740204B91E7004DE056 /* UIImage+Utils.m */; };
 		FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FB1E4741204B91E7004DE056 /* IntTypes.h */; };
+		FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = FB74FEA220525BCA00D7296A /* UIImage+Utils.h */; };
+		FB74FEA520525BCA00D7296A /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FB74FEA320525BCA00D7296A /* UIImage+Utils.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -231,19 +230,17 @@
 		FB1E4731204B91E6004DE056 /* NSData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Bitcoin.h"; sourceTree = "<group>"; };
 		FB1E4732204B91E6004DE056 /* BRTransaction+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BRTransaction+Utils.m"; sourceTree = "<group>"; };
 		FB1E4733204B91E6004DE056 /* NSAttributedString+Attachments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+Attachments.m"; sourceTree = "<group>"; };
-		FB1E4734204B91E6004DE056 /* NSMutableData+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Bitcoin.h"; sourceTree = "<group>"; };
+		FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+Dash.h"; sourceTree = "<group>"; };
 		FB1E4735204B91E6004DE056 /* BRTransaction+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BRTransaction+Utils.h"; sourceTree = "<group>"; };
 		FB1E4736204B91E6004DE056 /* NSData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Bitcoin.m"; sourceTree = "<group>"; };
 		FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+Sugar.m"; sourceTree = "<group>"; };
 		FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Bitcoin.h"; sourceTree = "<group>"; };
 		FB1E4739204B91E6004DE056 /* NSString+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Dash.m"; sourceTree = "<group>"; };
-		FB1E473A204B91E7004DE056 /* UIImage+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utils.h"; sourceTree = "<group>"; };
 		FB1E473B204B91E7004DE056 /* NSData+Dash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Dash.h"; sourceTree = "<group>"; };
 		FB1E473C204B91E7004DE056 /* NSData+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Dash.m"; sourceTree = "<group>"; };
 		FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Bitcoin.m"; sourceTree = "<group>"; };
-		FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Bitcoin.m"; sourceTree = "<group>"; };
+		FB1E473E204B91E7004DE056 /* NSMutableData+Dash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+Dash.m"; sourceTree = "<group>"; };
 		FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+Sugar.h"; sourceTree = "<group>"; };
-		FB1E4740204B91E7004DE056 /* UIImage+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utils.m"; sourceTree = "<group>"; };
 		FB1E4741204B91E7004DE056 /* IntTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntTypes.h; sourceTree = "<group>"; };
 		FB1E476F204B9239004DE056 /* secp256k1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1.h; sourceTree = "<group>"; };
 		FB1E4770204B9239004DE056 /* secp256k1_ecdh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = secp256k1_ecdh.h; sourceTree = "<group>"; };
@@ -290,6 +287,8 @@
 		FB1E47BD204B9239004DE056 /* testrand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testrand.h; sourceTree = "<group>"; };
 		FB1E47BE204B9239004DE056 /* testrand_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testrand_impl.h; sourceTree = "<group>"; };
 		FB1E47C1204B9239004DE056 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+		FB74FEA220525BCA00D7296A /* UIImage+Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Utils.h"; sourceTree = "<group>"; };
+		FB74FEA320525BCA00D7296A /* UIImage+Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Utils.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -491,14 +490,14 @@
 				FB1E473C204B91E7004DE056 /* NSData+Dash.m */,
 				FB1E473F204B91E7004DE056 /* NSManagedObject+Sugar.h */,
 				FB1E4737204B91E6004DE056 /* NSManagedObject+Sugar.m */,
-				FB1E4734204B91E6004DE056 /* NSMutableData+Bitcoin.h */,
-				FB1E473E204B91E7004DE056 /* NSMutableData+Bitcoin.m */,
+				FB1E4734204B91E6004DE056 /* NSMutableData+Dash.h */,
+				FB1E473E204B91E7004DE056 /* NSMutableData+Dash.m */,
 				FB1E4738204B91E6004DE056 /* NSString+Bitcoin.h */,
 				FB1E473D204B91E7004DE056 /* NSString+Bitcoin.m */,
 				FB1E472F204B91E6004DE056 /* NSString+Dash.h */,
 				FB1E4739204B91E6004DE056 /* NSString+Dash.m */,
-				FB1E473A204B91E7004DE056 /* UIImage+Utils.h */,
-				FB1E4740204B91E7004DE056 /* UIImage+Utils.m */,
+				FB74FEA220525BCA00D7296A /* UIImage+Utils.h */,
+				FB74FEA320525BCA00D7296A /* UIImage+Utils.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -602,15 +601,18 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */,
 				FB1E474A204B91E7004DE056 /* BRTransaction+Utils.h in Headers */,
-				FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */,
+				FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */,
 				FB1E4753204B91E7004DE056 /* NSData+Dash.h in Headers */,
+				FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */,
+				FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */,
+				FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */,
+				FB1E4694204B8FA0004DE056 /* BRBloomFilter.h in Headers */,
+				FB1E4688204B8FA0004DE056 /* BRBIP39Mnemonic.h in Headers */,
 				FB1E467E204B8FA0004DE056 /* BRBIP32Sequence.h in Headers */,
 				FB1E475D204B91E7004DE056 /* IntTypes.h in Headers */,
 				FB1E46CC204B8FBB004DE056 /* BRTxInputEntity.h in Headers */,
 				FB1E467D204B8FA0004DE056 /* BRTransaction.h in Headers */,
-				FB1E4752204B91E7004DE056 /* UIImage+Utils.h in Headers */,
 				FB1E467F204B8FA0004DE056 /* BRKeySequence.h in Headers */,
 				FB1E4682204B8FA0004DE056 /* BRPaymentRequest.h in Headers */,
 				FB1E46D2204B8FBC004DE056 /* BRAddressEntity.h in Headers */,
@@ -622,23 +624,20 @@
 				FB1E46C9204B8FBB004DE056 /* BRTransactionEntity.h in Headers */,
 				FB1E475A204B91E7004DE056 /* NSManagedObject+Sugar.h in Headers */,
 				FB1E46AA204B8FA0004DE056 /* BRSocketHelpers.h in Headers */,
-				FB1E4749204B91E7004DE056 /* NSMutableData+Bitcoin.h in Headers */,
+				FB1E4749204B91E7004DE056 /* NSMutableData+Dash.h in Headers */,
 				FB1E468B204B8FA0004DE056 /* BRKey+BIP38.h in Headers */,
-				FB1E4743204B91E7004DE056 /* NSAttributedString+Attachments.h in Headers */,
-				FB1E4742204B91E7004DE056 /* NSString+Dash.h in Headers */,
 				FB1E469A204B8FA0004DE056 /* BRPaymentProtocol.h in Headers */,
 				FB1E46A1204B8FA0004DE056 /* BRWallet.h in Headers */,
 				FB1E4744204B91E7004DE056 /* NSData+Bitcoin.h in Headers */,
 				FB1E4693204B8FA0004DE056 /* BREventManager.h in Headers */,
 				FB1E46DA204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.h in Headers */,
-				FB10EF23204B9D27006D35F4 /* Reachability.h in Headers */,
 				FB1E4685204B8FA0004DE056 /* BRPeer.h in Headers */,
-				FB10EF1B204B94F0006D35F4 /* DCDashSync.h in Headers */,
 				FB1E4699204B8FA0004DE056 /* BRKey.h in Headers */,
 				FB1E469C204B8FA0004DE056 /* DSShapeshiftManager.h in Headers */,
 				FB1E468E204B8FA0004DE056 /* BRPeerManager.h in Headers */,
 				FB1E469E204B8FA0004DE056 /* BRMnemonic.h in Headers */,
 				FB1E469B204B8FA0004DE056 /* BRWalletManager.h in Headers */,
+				FB74FEA420525BCA00D7296A /* UIImage+Utils.h in Headers */,
 				FB1E474F204B91E7004DE056 /* NSString+Bitcoin.h in Headers */,
 				FB1E46DF204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataProperties.h in Headers */,
 			);
@@ -702,7 +701,7 @@
 					};
 				};
 			};
-			buildConfigurationList = FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "dashsync" */;
+			buildConfigurationList = FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "DashSync" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -759,7 +758,7 @@
 				FB1E4683204B8FA0004DE056 /* BRKey.m in Sources */,
 				FB1E4695204B8FA0004DE056 /* BRTransaction.m in Sources */,
 				FB1E46A4204B8FA0004DE056 /* BRWallet.m in Sources */,
-				FB1E4758204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */,
+				FB1E4758204B91E7004DE056 /* NSMutableData+Dash.m in Sources */,
 				FB1E46AD204B8FA0004DE056 /* BRWalletManager.m in Sources */,
 				FB1E4689204B8FA0004DE056 /* BRWalletConstants.m in Sources */,
 				FB1E46C7204B8FBB004DE056 /* BRTxMetadataEntity.m in Sources */,
@@ -778,8 +777,8 @@
 				FB1E4697204B8FA0004DE056 /* BRPaymentProtocol.m in Sources */,
 				FB1E468C204B8FA0004DE056 /* BRBIP39Mnemonic.m in Sources */,
 				FB1E46A8204B8FA0004DE056 /* BRMerkleBlock.m in Sources */,
-				FB1E475B204B91E7004DE056 /* UIImage+Utils.m in Sources */,
 				FB1E4756204B91E7004DE056 /* NSString+Bitcoin.m in Sources */,
+				FB74FEA520525BCA00D7296A /* UIImage+Utils.m in Sources */,
 				FB1E46C4204B8FBB004DE056 /* BRTxInputEntity.m in Sources */,
 				FB1E46A2204B8FA0004DE056 /* BREventManager.m in Sources */,
 				FB1E46C0204B8FBB004DE056 /* BRTransactionEntity.m in Sources */,
@@ -799,7 +798,6 @@
 				FB1E474E204B91E7004DE056 /* NSManagedObject+Sugar.m in Sources */,
 				FB1E46DE204B8FF1004DE056 /* DSShapeshiftEntity+CoreDataClass.m in Sources */,
 				FB1E46A7204B8FA0004DE056 /* BRPaymentRequest.m in Sources */,
-				FB1E475C204B91E7004DE056 /* UIImage+Utils.m in Sources */,
 				FB1E4757204B91E7004DE056 /* NSString+Bitcoin.m in Sources */,
 				FB1E46A9204B8FA0004DE056 /* BRMerkleBlock.m in Sources */,
 				FB1E46C3204B8FBB004DE056 /* BRPeerEntity.m in Sources */,
@@ -822,7 +820,7 @@
 				FB1E4751204B91E7004DE056 /* NSString+Dash.m in Sources */,
 				FB1E46C5204B8FBB004DE056 /* BRTxInputEntity.m in Sources */,
 				FB1E46CB204B8FBB004DE056 /* BRMerkleBlockEntity.m in Sources */,
-				FB1E4759204B91E7004DE056 /* NSMutableData+Bitcoin.m in Sources */,
+				FB1E4759204B91E7004DE056 /* NSMutableData+Dash.m in Sources */,
 				FB1E4681204B8FA0004DE056 /* BRKey+BIP38.m in Sources */,
 				FB1E46AE204B8FA0004DE056 /* BRWalletManager.m in Sources */,
 				FB1E46A5204B8FA0004DE056 /* BRWallet.m in Sources */,
@@ -1031,7 +1029,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "dashsync" */ = {
+		FB1E461E204B8F13004DE056 /* Build configuration list for PBXProject "DashSync" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FB1E4636204B8F13004DE056 /* Debug */,

@@ -1,9 +1,11 @@
 //
 //  BRTxMetadataEntity.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 10/22/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +29,7 @@
 #import "BRTransaction.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 @implementation BRTxMetadataEntity
 

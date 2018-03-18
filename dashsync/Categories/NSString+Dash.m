@@ -1,9 +1,11 @@
 //
 //  NSString+Dash.m
-//  DashWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 5/13/13.
-//  Copyright (c) 2018 Dash Core
+//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +27,7 @@
 
 #import "NSString+Dash.h"
 #import "NSData+Dash.h"
-#import "NSData+Bitcoin.h"
-#import "NSString+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 #import "UIImage+Utils.h"
 #import "BRWalletManager.h"
 

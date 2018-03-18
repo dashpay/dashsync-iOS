@@ -1,9 +1,11 @@
 //
 //  BRKey+BIP38.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 4/9/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +28,7 @@
 #import "BRKey+BIP38.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki

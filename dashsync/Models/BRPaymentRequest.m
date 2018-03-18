@@ -1,9 +1,11 @@
 //
 //  BRPaymentRequest.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 5/9/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +29,7 @@
 #import "BRPaymentProtocol.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation BRPaymentRequest

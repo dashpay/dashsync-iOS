@@ -1,9 +1,11 @@
 //
 //  NSString+Dash.h
-//  DashWallet
+//  DashSync
 //
-//  Created by Sam Westrich on 5/13/13.
-//  Copyright (c) 2018 Dash Core
+//  Created by Aaron Voisine on 5/13/13.
+//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +27,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "NSString+Bitcoin.h"
 
 #define DASH_PUBKEY_ADDRESS      76
 #define DASH_SCRIPT_ADDRESS      16

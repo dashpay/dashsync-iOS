@@ -1,9 +1,11 @@
 //
 //  BREventManager.h
-//  BreadWallet
+//  DashSync
 //
 //  Created by Samuel Sutch on 9/8/15.
 //  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal

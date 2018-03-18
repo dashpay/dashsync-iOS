@@ -1,9 +1,11 @@
 //
 //  BRKey.m
-//  BreadWallet
+//  DashSync
 //
 //  Created by Aaron Voisine on 5/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Updated by Quantum Explorer on 05/11/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +30,7 @@
 #import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
-#import "NSMutableData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 #define USE_BASIC_CONFIG       1
 #define ENABLE_MODULE_RECOVERY 1
