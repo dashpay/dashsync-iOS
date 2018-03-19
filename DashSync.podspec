@@ -23,6 +23,8 @@ Pod::Spec.new do |s|
   s.public_header_files = 'DashSync/**/*.h'
   s.libraries = 'bz2', 'sqlite3'
   s.requires_arc = true
+
+  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.dependency 'secp256k1_dash', '0.1.0'

@@ -6,11 +6,13 @@
 //  Copyright (c) 2018 Andrew Podkovyrin. All rights reserved.
 //
 
-#import <DashSync/DSDashSync.h>
+#import <DashSync/DashSync.h>
 
 #import "DSViewController.h"
 
+
 @interface DSViewController ()
+
 
 @end
 
@@ -19,6 +21,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
