@@ -6,7 +6,7 @@
 //  Copyright © 2018 dashcore. All rights reserved.
 //
 
-#import "DSDashSync.h"
+#import "DashSync.h"
 
 @interface DSDashSync ()
 

@@ -66,7 +66,7 @@ typedef struct {
  */
 
 #define AES_BIG_ENDIAN   0
-#include "aes_helper.c"
+#include "aes_helper.h"
 
 static const sph_u32 SHAVITE_IV512[] = {
     C32(0x72FCCDD8), C32(0x79CA4727), C32(0x128A077B), C32(0x40D55AEC),
