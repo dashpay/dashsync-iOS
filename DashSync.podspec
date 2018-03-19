@@ -1,5 +1,5 @@
 #
-# Be sure to run `pod lib lint DashSyncPod.podspec' to ensure this is a
+# Be sure to run `pod lib lint DashSync.podspec' to ensure this is a
 # valid spec before submitting.
 #
 # Any lines starting with a # are optional, but their use is encouraged
@@ -19,24 +19,18 @@ Pod::Spec.new do |s|
 
   s.description      = 'Dash Sync is a light blockchain client that you can embed into your iOS Application.  It is fully customizable to make the type of node you are interested in.'
 
-  s.homepage         = 'https://github.com/dashevo/dashsync'
-  # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
+  s.homepage         = 'https://github.com/dashevo/dashsync-ios'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'quantumexplorer' => 'quantum@dash.org' }
-  s.source           = { :git => 'https://github.com/quantumexplorer/dashsync.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.source           = { :git => 'https://github.com/quantumexplorer/dashsync-ios.git', :tag => s.version.to_s }
 
+  s.platform = :ios
   s.ios.deployment_target = '10.0'
 
-  s.source_files = "dashsync/**/*.{h,m}"
-  
-  # s.resource_bundles = {
-  #   'DashSyncPod' => ['DashSyncPod/Assets/*.png']
-  # }
+  s.source_files = "DashSync/**/*.{h,m}"
 
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  s.frameworks = 'UIKit', 'Security'
+  s.public_header_files = 'DashSync/**/*.h'
   s.libraries = 'bz2', 'sqlite3'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.requires_arc = true
 end
 
