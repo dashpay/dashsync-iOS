@@ -280,8 +280,9 @@ static const char *dns_seeds[] = {
             if (_peers.count < PEER_MAX_CONNECTIONS) {
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                 
-                for (NSNumber *address in [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
-                                                                            pathForResource:FIXED_PEERS ofType:@"plist"]]) {
+                NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+                NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+                for (NSNumber *address in [NSArray arrayWithContentsOfFile:[bundle pathForResource:FIXED_PEERS ofType:@"plist"]]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
                     [_peers addObject:[[DSPeer alloc] initWithAddress:addr port:DASH_STANDARD_PORT

@@ -32,19 +32,12 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 
-#define USE_BASIC_CONFIG       1
-#define ENABLE_MODULE_RECOVERY 1
-#define DETERMINISTIC          1
-#if __BIG_ENDIAN__
-#define WORDS_BIGENDIAN        1
-#endif
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wunused-function"
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
-#include "../crypto/secp256k1/src/basic-config.h"
-#include "../crypto/secp256k1/src/secp256k1.c"
+#import "secp256k1.h"
+#import "secp256k1_recovery.h"
 #pragma clang diagnostic pop
 
 static secp256k1_context *_ctx = NULL;

@@ -1,0 +1,19 @@
+PODS:
+  - DashSync (0.1.0):
+    - secp256k1_dash (= 0.1.0)
+  - secp256k1_dash (0.1.0)
+
+DEPENDENCIES:
+  - DashSync (from `../`)
+
+EXTERNAL SOURCES:
+  DashSync:
+    :path: ../
+
+SPEC CHECKSUMS:
+  DashSync: 875eceaf9188135e5f6b1ffe771bbcc9e146b657
+  secp256k1_dash: 16bc4c20423f88dc264db75d5611c9c6a5fd1f77
+
+PODFILE CHECKSUM: b0fb2efab5305d218b10067381cbee331e4a0a95
+
+COCOAPODS: 1.4.0

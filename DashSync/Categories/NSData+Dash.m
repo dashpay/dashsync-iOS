@@ -24,17 +24,17 @@
 //  THE SOFTWARE.
 
 #import "NSData+Dash.h"
-#import "../crypto/x11/Blake.c"
-#import "../crypto/x11/Bmw.c"
-#import "../crypto/x11/CubeHash.c"
-#import "../crypto/x11/Groestl.c"
-#import "../crypto/x11/Echo.c"
-#import "../crypto/x11/Jh.c"
-#import "../crypto/x11/Keccak.c"
-#import "../crypto/x11/Luffa.c"
-#import "../crypto/x11/Shavite.c"
-#import "../crypto/x11/Simd.c"
-#import "../crypto/x11/Skein.c"
+#import "../crypto/x11/Blake.h"
+#import "../crypto/x11/Bmw.h"
+#import "../crypto/x11/CubeHash.h"
+#import "../crypto/x11/Groestl.h"
+#import "../crypto/x11/Echo.h"
+#import "../crypto/x11/Jh.h"
+#import "../crypto/x11/Keccak.h"
+#import "../crypto/x11/Luffa.h"
+#import "../crypto/x11/Shavite.h"
+#import "../crypto/x11/Simd.h"
+#import "../crypto/x11/Skein.h"
 
 @implementation NSData (Dash)
 

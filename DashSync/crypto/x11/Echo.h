@@ -53,7 +53,7 @@ typedef struct {
 #endif
 
 #define AES_BIG_ENDIAN   0
-#include "aes_helper.c"
+#include "aes_helper.h"
 
 #define ECHO_DECL_STATE_SMALL   \
 sph_u64 W[16][2];

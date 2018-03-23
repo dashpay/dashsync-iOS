@@ -48,7 +48,9 @@
 - (NSArray *)words
 {
     if (! _words) {
-        _words = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:WORDS ofType:@"plist"]];
+        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        _words = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
     }
     
     return _words;
@@ -59,8 +61,10 @@
     if (! _allWords) {
         NSMutableSet *allWords = [NSMutableSet set];
         
-        for (NSString *lang in [NSBundle mainBundle].localizations) {
-            [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[[NSBundle mainBundle]
+        NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+        for (NSString *lang in bundle.localizations) {
+            [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[bundle
              pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang]]];
         }
 

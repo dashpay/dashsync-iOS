@@ -1,0 +1,11 @@
+platform :ios, '10.0'
+
+target 'DashSync_Example' do
+  pod 'DashSync', :path => '../'
+
+  target 'DashSync_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
