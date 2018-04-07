@@ -20,8 +20,14 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <dashsync/PublicHeader.h>
 
-@interface DSDashSync : NSObject
+@interface DashSync : NSObject
 
-+ (instancetype _Nullable)syncController;
+@property (nonatomic,assign) BOOL deviceIsJailbroken;
+
++ (instancetype _Nullable)sharedSyncController;
+
+-(void)startSync;
+-(void)stopSync;
+
 
 @end

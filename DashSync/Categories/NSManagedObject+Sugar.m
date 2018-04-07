@@ -239,7 +239,9 @@ static NSUInteger _fetchBatchSize = 100;
     dispatch_once(&onceToken, ^{
         NSURL *docURL =
             [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-        NSURL *modelURL = [NSBundle.mainBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
+        NSURL *bundleURL = [[NSBundle.mainBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+        NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+        NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
         NSString *projName = modelURL.lastPathComponent.stringByDeletingPathExtension;
         NSURL *storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];

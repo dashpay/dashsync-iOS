@@ -7,14 +7,16 @@
 //
 
 #import "DashSync.h"
+#import <sys/stat.h>
+#import <mach-o/dyld.h>
 
-@interface DSDashSync ()
+@interface DashSync ()
 
 @end
 
-@implementation DSDashSync
+@implementation DashSync
 
-+ (instancetype)syncController
++ (instancetype)sharedSyncController
 {
     static id singleton = nil;
     static dispatch_once_t onceToken = 0;
@@ -30,17 +32,45 @@
 - (id)init
 {
     if (self == [super init]) {
-    // use background fetch to stay synced with the blockchain
-    [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
-    
-    // start the event manager
-    [[DSEventManager sharedEventManager] up];
-    
-    [DSWalletManager sharedInstance];
-    
-    [DSShapeshiftManager sharedInstance];
+        // use background fetch to stay synced with the blockchain
+        [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+        
+        // start the event manager
+        [[DSEventManager sharedEventManager] up];
+        
+        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        
+        [DSShapeshiftManager sharedInstance];
+        if ([DSWalletManager sharedInstance].noWallet) {
+            [self createWallet];
+        }
+        
+        struct stat s;
+        self.deviceIsJailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
+        
+        // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
+        for (uint32_t count = _dyld_image_count(), i = 0; i < count && !self.deviceIsJailbroken; i++) {
+            if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) self.deviceIsJailbroken = YES;
+        }
+        
+#if TARGET_IPHONE_SIMULATOR
+        self.deviceIsJailbroken = NO;
+#endif
+        [self startSync];
     }
     return self;
+}
+
+-(void)createWallet
+{
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    [manager generateRandomSeed];
+}
+
+-(void)startSync
+{
+    if ([DSWalletManager sharedInstance].noWallet) return;
+    [[DSPeerManager sharedInstance] connect];
 }
 
 

@@ -1,5 +1,5 @@
 //
-//  DSViewController.h
+//  DSExampleViewController.h
 //  DashSync
 //
 //  Created by Andrew Podkovyrin on 03/19/2018.
@@ -8,6 +8,6 @@
 
 @import UIKit;
 
-@interface DSViewController : UIViewController
+@interface DSExampleViewController : UITableViewController
 
 @end
