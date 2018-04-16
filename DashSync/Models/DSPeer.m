@@ -1119,6 +1119,12 @@ services:(uint64_t)services
                                uint128_eq(_address, [(DSPeer *)object address]))) ? YES : NO;
 }
 
+// MARK: - Info
+
+-(NSString*)chainTip {
+    return [NSData dataWithUInt256:self.currentBlock.blockHash].shortHexString;
+}
+
 // MARK: - NSStreamDelegate
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode

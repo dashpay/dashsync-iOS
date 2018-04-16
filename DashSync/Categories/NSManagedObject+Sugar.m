@@ -216,6 +216,10 @@ static NSUInteger _fetchBatchSize = 100;
     return objects.count;
 }
 
++ (NSUInteger)deleteAllObjects {
+    return [self deleteObjects:[self allObjects]];
+}
+
 // MARK: - core data stack
 
 // call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
@@ -230,6 +234,21 @@ static NSUInteger _fetchBatchSize = 100;
     _fetchBatchSize = fetchBatchSize;
 }
 
++(NSURL*)storeURL {
+    static NSURL * storeURL = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+        NSURL *bundleURL = [[NSBundle.mainBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+        NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
+        NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
+        NSString *projName = modelURL.lastPathComponent.stringByDeletingPathExtension;
+        storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
+    });
+    return storeURL;
+}
+
 // returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
 // it to the persistent store coordinator for the application
 + (NSManagedObjectContext *)context
@@ -237,18 +256,16 @@ static NSUInteger _fetchBatchSize = 100;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        NSURL *docURL =
-            [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
+
         NSURL *bundleURL = [[NSBundle.mainBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
         NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
         NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
-        NSString *projName = modelURL.lastPathComponent.stringByDeletingPathExtension;
-        NSURL *storeURL = [[docURL URLByAppendingPathComponent:projName] URLByAppendingPathExtension:@"sqlite"];
+        
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
         NSPersistentStoreCoordinator *coordinator =
             [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
         NSError *error = nil;
-        
+        NSURL * storeURL = [self storeURL];
         if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
              options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {

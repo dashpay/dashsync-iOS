@@ -34,9 +34,11 @@
 
 @property (nonatomic) int32_t address;
 @property (nonatomic) NSTimeInterval timestamp;
+@property (nonatomic) NSTimeInterval lowPreferenceTill;
 @property (nonatomic) int16_t port;
 @property (nonatomic) int64_t services;
 @property (nonatomic) int16_t misbehavin;
+@property (nonatomic) int32_t priority;
 
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer;
 - (DSPeer *)peer;

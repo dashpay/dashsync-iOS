@@ -15,10 +15,21 @@
 
 @property (strong, nonatomic) IBOutlet UILabel *explanationLabel;
 @property (strong, nonatomic) IBOutlet UILabel *percentageLabel;
+@property (strong, nonatomic) IBOutlet UILabel *dbSizeLabel;
+@property (strong, nonatomic) IBOutlet UILabel *lastBlockHeightLabel;
 @property (strong, nonatomic) IBOutlet UIProgressView *progressView, *pulseView;
 @property (strong, nonatomic) IBOutlet UISwitch *syncSPV;
-@property (nonatomic, assign) NSTimeInterval timeout, start;
+@property (assign, nonatomic) NSTimeInterval timeout, start;
+@property (strong, nonatomic) IBOutlet UISwitch *fullBlocksSwitch;
+@property (strong, nonatomic) IBOutlet UISwitch *syncMNListSwitch;
+@property (strong, nonatomic) IBOutlet UISwitch *syncSporksSwitch;
+@property (strong, nonatomic) IBOutlet UILabel *connectedPeerCount;
+@property (strong, nonatomic) IBOutlet UILabel *downloadPeerLabel;
+@property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
 
+- (IBAction)startSync:(id)sender;
+- (IBAction)stopSync:(id)sender;
+- (IBAction)wipeData:(id)sender;
 
 @end
 
@@ -27,8 +38,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [[DashSync sharedSyncController] startSync];
-    [self startActivityWithTimeout:5.0];
 	// Do any additional setup after loading the view, typically from a nib.
 }
 
@@ -112,7 +121,8 @@
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
     double progress = [DSPeerManager sharedInstance].syncProgress;
-    
+    uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
+    uint32_t lastBlockHeight = [DSPeerManager sharedInstance].lastBlockHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     
     if ((counter % 13) == 0) {
@@ -137,12 +147,34 @@
     }
     
     counter++;
+    
+    uint64_t connectedPeerCount = [DSPeerManager sharedInstance].peerCount;
+    
     self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
+    self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
+    self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
+    self.connectedPeerCount.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
+    self.downloadPeerLabel.text = [DSPeerManager sharedInstance].downloadPeerName;
+    self.chainTipLabel.text = [DSPeerManager sharedInstance].chainTip;
     if (progress + DBL_EPSILON >= 1.0) {
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
     }
     else [self performSelector:@selector(updateProgressView) withObject:nil afterDelay:0.2];
 }
 
+- (IBAction)startSync:(id)sender {
+    [[DashSync sharedSyncController] startSync];
+    [self startActivityWithTimeout:5.0];
+}
+
+- (IBAction)stopSync:(id)sender {
+    [[DashSync sharedSyncController] stopSync];
+    [self startActivityWithTimeout:5.0];
+}
+
+- (IBAction)wipeData:(id)sender {
+    [[DashSync sharedSyncController] stopSync];
+    [[DashSync sharedSyncController] wipeBlockchainData];
+}
 @end

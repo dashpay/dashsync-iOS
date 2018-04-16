@@ -834,6 +834,16 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
     return [NSString base58WithData:self];
 }
 
+- (NSString *)shortHexString
+{
+    NSString * hexData = [NSString hexWithData:self];
+    if (hexData.length > 7) {
+        return [hexData substringToIndex:7];
+    } else {
+        return hexData;
+    }
+}
+
 - (NSString *)hexString
 {
     return [NSString hexWithData:self];

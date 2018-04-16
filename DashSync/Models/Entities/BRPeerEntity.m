@@ -38,6 +38,8 @@
 @dynamic port;
 @dynamic services;
 @dynamic misbehavin;
+@dynamic lowPreferenceTill;
+@dynamic priority;
 
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer
 {
@@ -50,6 +52,8 @@
         self.timestamp = peer.timestamp;
         self.services = peer.services;
         self.misbehavin = peer.misbehavin;
+        self.priority = peer.priority;
+        self.lowPreferenceTill = peer.lowPreferenceTill;
     }];
 
     return self;
@@ -64,6 +68,8 @@
 
         peer = [[DSPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
         peer.misbehavin = self.misbehavin;
+        peer.priority = self.priority;
+        peer.lowPreferenceTill = self.lowPreferenceTill;
     }];
 
     return peer;

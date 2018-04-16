@@ -106,6 +106,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (int)intValue; // returns the opcode used to store the receiver in a script (i.e. OP_PUSHDATA1)
 
 - (NSString *_Nonnull)base58String;
+- (NSString *_Nonnull)shortHexString;
 - (NSString *_Nonnull)hexString;
 
 @end

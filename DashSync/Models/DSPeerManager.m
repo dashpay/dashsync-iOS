@@ -191,7 +191,7 @@ static const char *dns_seeds[] = {
                                                            [self.txRelays removeAllObjects];
                                                            [self.publishedTx removeAllObjects];
                                                            [self.publishedCallback removeAllObjects];
-                                                           [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity allObjects]];
+                                                           [BRMerkleBlockEntity deleteAllObjects];
                                                            [BRMerkleBlockEntity saveContext];
                                                            _blocks = nil;
                                                            _bloomFilter = nil;
@@ -377,6 +377,10 @@ static const char *dns_seeds[] = {
     }
     
     return _lastBlock;
+}
+
+- (NSString*)chainTip {
+    return [NSData dataWithUInt256:self.lastBlock.blockHash].shortHexString;
 }
 
 - (uint32_t)lastBlockHeight
@@ -937,6 +941,14 @@ static const char *dns_seeds[] = {
     }];
 }
 
+- (void)changeCurrentPeers {
+    for (DSPeer *p in self.connectedPeers) {
+        p.priority--;
+        NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier: NSCalendarIdentifierGregorian];
+        p.lowPreferenceTill = [[calendar dateByAddingUnit:NSCalendarUnitDay value:5 toDate:[NSDate date] options:0] timeIntervalSince1970];
+    }
+}
+
 - (void)peerMisbehavin:(DSPeer *)peer
 {
     peer.misbehavin++;
@@ -946,7 +958,7 @@ static const char *dns_seeds[] = {
     if (++self.misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
         self.misbehavinCount = 0;
         [self.misbehavinPeers removeAllObjects];
-        [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
+        [BRPeerEntity deleteAllObjects];
         _peers = nil;
     }
     
@@ -957,6 +969,8 @@ static const char *dns_seeds[] = {
 - (void)sortPeers
 {
     [_peers sortUsingComparator:^NSComparisonResult(DSPeer *p1, DSPeer *p2) {
+        if (p1.priority > p2.priority) return NSOrderedAscending;
+        if (p1.priority < p2.priority) return NSOrderedDescending;
         if (p1.timestamp > p2.timestamp) return NSOrderedAscending;
         if (p1.timestamp < p2.timestamp) return NSOrderedDescending;
         return NSOrderedSame;
@@ -1144,7 +1158,7 @@ static const char *dns_seeds[] = {
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
         [self.misbehavinPeers removeAllObjects];
-        [BRPeerEntity deleteObjects:[BRPeerEntity allObjects]];
+        [BRPeerEntity deleteAllObjects];
         _peers = nil;
         
         dispatch_async(dispatch_get_main_queue(), ^{

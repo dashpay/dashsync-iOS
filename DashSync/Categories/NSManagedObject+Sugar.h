@@ -51,6 +51,7 @@
 + (NSUInteger)countObjects:(NSFetchRequest *)request;
 
 // delete objects
++ (NSUInteger)deleteAllObjects;
 + (NSUInteger)deleteObjects:(NSArray *)objects;
 
 // call this before any NSManagedObject+Sugar methods to use a concurrency type other than NSMainQueueConcurrencyType
@@ -58,6 +59,9 @@
 
 // set the fetchBatchSize to use when fetching objects, default is 100
 + (void)setFetchBatchSize:(NSUInteger)fetchBatchSize;
+
+// returns the location on disk of the sqlite store file
++ (NSURL*)storeURL;
 
 // returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
 // it to the persistent store coordinator for the application

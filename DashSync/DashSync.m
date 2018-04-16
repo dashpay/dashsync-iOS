@@ -9,6 +9,9 @@
 #import "DashSync.h"
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
+#import "NSManagedObject+Sugar.h"
+#import "BRMerkleBlockEntity.h"
+#import "BRTransactionEntity.h"
 
 @interface DashSync ()
 
@@ -32,6 +35,7 @@
 - (id)init
 {
     if (self == [super init]) {
+        self.syncType = DSSyncTypeDefault;
         // use background fetch to stay synced with the blockchain
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         
@@ -71,6 +75,40 @@
 {
     if ([DSWalletManager sharedInstance].noWallet) return;
     [[DSPeerManager sharedInstance] connect];
+}
+
+
+-(void)stopSync
+{
+    if ([DSWalletManager sharedInstance].noWallet) return;
+    [[DSPeerManager sharedInstance] disconnect];
+}
+
+-(void)addSyncType:(DSSyncType)addSyncType {
+    self.syncType = self.syncType | addSyncType;
+}
+
+-(void)clearSyncType:(DSSyncType)clearSyncType {
+    self.syncType = self.syncType & ~clearSyncType;
+}
+
+-(void)wipeBlockchainData {
+    [self stopSync];
+    [BRMerkleBlockEntity deleteAllObjects];
+    [BRTransactionEntity deleteAllObjects];
+}
+
+-(uint64_t)dbSize {
+    NSString * storeURL = [[NSManagedObject storeURL] path];
+    NSError * attributesError = nil;
+    NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:storeURL error:&attributesError];
+    if (attributesError) {
+        return 0;
+    } else {
+        NSNumber *fileSizeNumber = [fileAttributes objectForKey:NSFileSize];
+        long long fileSize = [fileSizeNumber longLongValue];
+        return fileSize;
+    }
 }
 
 

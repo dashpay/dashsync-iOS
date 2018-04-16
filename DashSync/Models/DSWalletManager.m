@@ -390,9 +390,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                 abort(); // don't wipe core data for debug builds
 #else
                 [[NSManagedObject context] performBlockAndWait:^{
-                    [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-                    [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-                    [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
+                    [BRAddressEntity deleteAllObjects];
+                    [BRTransactionEntity deleteAllObjects];
+                    [BRTxMetadataEntity deleteAllObjects];
                     [NSManagedObject saveContext];
                 }];
                 
@@ -505,9 +505,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         if (seedPhrase) seedPhrase = [self.mnemonic normalizePhrase:seedPhrase];
         
         [[NSManagedObject context] performBlockAndWait:^{
-            [BRAddressEntity deleteObjects:[BRAddressEntity allObjects]];
-            [BRTransactionEntity deleteObjects:[BRTransactionEntity allObjects]];
-            [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity allObjects]];
+            [BRAddressEntity deleteAllObjects];
+            [BRTransactionEntity deleteAllObjects];
+            [BRTxMetadataEntity deleteAllObjects];
             [NSManagedObject saveContext];
         }];
         
