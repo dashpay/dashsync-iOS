@@ -10,8 +10,8 @@
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 #import "NSManagedObject+Sugar.h"
-#import "BRMerkleBlockEntity.h"
-#import "BRTransactionEntity.h"
+#import "DSMerkleBlockEntity.h"
+#import "DSTransactionEntity.h"
 
 @interface DashSync ()
 
@@ -94,8 +94,8 @@
 
 -(void)wipeBlockchainData {
     [self stopSync];
-    [BRMerkleBlockEntity deleteAllObjects];
-    [BRTransactionEntity deleteAllObjects];
+    [DSMerkleBlockEntity deleteAllObjects];
+    [DSTransactionEntity deleteAllObjects];
 }
 
 -(uint64_t)dbSize {

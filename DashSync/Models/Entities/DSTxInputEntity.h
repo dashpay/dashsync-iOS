@@ -1,9 +1,9 @@
 //
-//  BRTxMetadataEntity.h
+//  DSTxInputEntity.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/22/15.
-//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 8/26/13.
+//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
@@ -28,17 +28,16 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-#define TX_MDTYPE_MSG 0x01
+@class DSTransactionEntity, DSTransaction;
 
-@class DSTransaction;
+@interface DSTxInputEntity : NSManagedObject
 
-@interface BRTxMetadataEntity : NSManagedObject
-
-@property (nonatomic, retain) NSData *blob;
 @property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t type;
+@property (nonatomic) int32_t n;
+@property (nonatomic, retain) NSData *signature;
+@property (nonatomic) int32_t sequence;
+@property (nonatomic, retain) DSTransactionEntity *transaction;
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx;
-- (DSTransaction *)transaction;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
 
 @end

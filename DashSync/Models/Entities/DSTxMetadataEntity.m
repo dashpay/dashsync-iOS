@@ -1,9 +1,9 @@
 //
-//  BRAddressEntity.m
+//  DSTxMetadataEntity.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 10/22/15.
+//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
@@ -25,15 +25,49 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRAddressEntity.h"
+#import "DSTxMetadataEntity.h"
+#import "DSTransaction.h"
 #import "NSManagedObject+Sugar.h"
+#import "NSData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
-@implementation BRAddressEntity
+@implementation DSTxMetadataEntity
 
-@dynamic address;
-@dynamic purpose;
-@dynamic account;
-@dynamic index;
-@dynamic internal;
+@dynamic blob;
+@dynamic txHash;
+@dynamic type;
+
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+{
+    NSMutableData *data = [NSMutableData dataWithData:tx.data];
+
+    [data appendUInt32:tx.blockHeight];
+    [data appendUInt32:tx.timestamp];
+
+    [self.managedObjectContext performBlockAndWait:^{
+        self.blob = data;
+        self.type = TX_MDTYPE_MSG;
+        self.txHash = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)];
+    }];
+    
+    return self;
+}
+
+- (DSTransaction *)transaction
+{
+    __block DSTransaction *tx = nil;
+    
+    [self.managedObjectContext performBlockAndWait:^{
+        NSData *data = self.blob;
+    
+        if (data.length > sizeof(uint32_t)*2) {
+            tx = [DSTransaction transactionWithMessage:data];
+            tx.blockHeight = [data UInt32AtOffset:data.length - sizeof(uint32_t)*2];
+            tx.timestamp = [data UInt32AtOffset:data.length - sizeof(uint32_t)];
+        }
+    }];
+    
+    return tx;
+}
 
 @end

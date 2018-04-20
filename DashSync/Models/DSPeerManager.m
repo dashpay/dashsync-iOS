@@ -27,13 +27,13 @@
 
 #import "DSPeerManager.h"
 #import "DSPeer.h"
-#import "BRPeerEntity.h"
+#import "DSPeerEntity.h"
 #import "DSBloomFilter.h"
 #import "DSKeySequence.h"
 #import "DSTransaction.h"
-#import "BRTransactionEntity.h"
+#import "DSTransactionEntity.h"
 #import "DSMerkleBlock.h"
-#import "BRMerkleBlockEntity.h"
+#import "DSMerkleBlockEntity.h"
 #import "DSWalletManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
@@ -191,8 +191,8 @@ static const char *dns_seeds[] = {
                                                            [self.txRelays removeAllObjects];
                                                            [self.publishedTx removeAllObjects];
                                                            [self.publishedCallback removeAllObjects];
-                                                           [BRMerkleBlockEntity deleteAllObjects];
-                                                           [BRMerkleBlockEntity saveContext];
+                                                           [DSMerkleBlockEntity deleteAllObjects];
+                                                           [DSMerkleBlockEntity saveContext];
                                                            _blocks = nil;
                                                            _bloomFilter = nil;
                                                            _lastBlock = nil;
@@ -218,8 +218,8 @@ static const char *dns_seeds[] = {
         if (_peers.count >= _maxConnectCount) return _peers;
         _peers = [NSMutableOrderedSet orderedSet];
         
-        [[BRPeerEntity context] performBlockAndWait:^{
-            for (BRPeerEntity *e in [BRPeerEntity allObjects]) {
+        [[DSPeerEntity context] performBlockAndWait:^{
+            for (DSPeerEntity *e in [DSPeerEntity allObjects]) {
                 @autoreleasepool {
                     if (e.misbehavin == 0) [_peers addObject:[e peer]];
                     else [self.misbehavinPeers addObject:[e peer]];
@@ -302,7 +302,7 @@ static const char *dns_seeds[] = {
 {
     if (_blocks.count > 0) return _blocks;
     
-    [[BRMerkleBlockEntity context] performBlockAndWait:^{
+    [[DSMerkleBlockEntity context] performBlockAndWait:^{
         if (_blocks.count > 0) return;
         _blocks = [NSMutableDictionary dictionary];
         self.checkpoints = [NSMutableDictionary dictionary];
@@ -317,7 +317,7 @@ static const char *dns_seeds[] = {
             self.checkpoints[@(checkpoint_array[i].height)] = uint256_obj(hash);
         }
         
-        for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity allObjects]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity allObjects]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -354,12 +354,12 @@ static const char *dns_seeds[] = {
 - (DSMerkleBlock *)lastBlock
 {
     if (! _lastBlock) {
-        NSFetchRequest *req = [BRMerkleBlockEntity fetchReq];
+        NSFetchRequest *req = [DSMerkleBlockEntity fetchReq];
         
         req.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:NO]];
         req.predicate = [NSPredicate predicateWithFormat:@"height >= 0 && height != %d", BLOCK_UNKNOWN_HEIGHT];
         req.fetchLimit = 1;
-        _lastBlock = [[BRMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
+        _lastBlock = [[DSMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
         
         // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
         for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
@@ -431,7 +431,7 @@ static const char *dns_seeds[] = {
     self.filterUpdateHeight = self.lastBlockHeight;
     self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     
-    BRUTXO o;
+    DSUTXO o;
     NSData *d;
     NSSet *addresses = [manager.wallet.allReceiveAddresses setByAddingObjectsFromSet:manager.wallet.allChangeAddresses];
     NSUInteger i, elemCount = addresses.count + manager.wallet.unspentOutputs.count;
@@ -684,7 +684,7 @@ static const char *dns_seeds[] = {
             if (block) return block.timestamp - NSTimeIntervalSince1970;
         }
     }
-    else [[BRMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
+    else [[DSMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
     
     uint32_t h = self.lastBlockHeight, t = self.lastBlock.timestamp;
     
@@ -715,14 +715,14 @@ static const char *dns_seeds[] = {
     
     //    for (NSValue *hash in updatedTx) {
     //        NSError *kvErr = nil;
-    //        BRTxMetadataObject *txm;
+    //        DSTxMetadataObject *txm;
     //        UInt256 h;
     //
     //        [hash getValue:&h];
     //        //todo reenable this, crashes now
-    //        //txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
+    //        //txm = [[DSTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
     //        //txm.blockHeight = height;
-    //        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
+    //        if (txm) [[DSAPIClient sharedClient].kv set:txm error:&kvErr];
     //    }
 }
 
@@ -958,7 +958,7 @@ static const char *dns_seeds[] = {
     if (++self.misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
         self.misbehavinCount = 0;
         [self.misbehavinPeers removeAllObjects];
-        [BRPeerEntity deleteAllObjects];
+        [DSPeerEntity deleteAllObjects];
         _peers = nil;
     }
     
@@ -988,10 +988,10 @@ static const char *dns_seeds[] = {
         [addrs addObject:@(CFSwapInt32BigToHost(p.address.u32[3]))];
     }
     
-    [[BRPeerEntity context] performBlock:^{
-        [BRPeerEntity deleteObjects:[BRPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
+    [[DSPeerEntity context] performBlock:^{
+        [DSPeerEntity deleteObjects:[DSPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
         
-        for (BRPeerEntity *e in [BRPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
+        for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
             @autoreleasepool {
                 DSPeer *p = [peers member:[e peer]];
                 
@@ -1007,7 +1007,7 @@ static const char *dns_seeds[] = {
         
         for (DSPeer *p in peers) {
             @autoreleasepool {
-                [[BRPeerEntity managedObject] setAttributesFromPeer:p]; // add new peers
+                [[DSPeerEntity managedObject] setAttributesFromPeer:p]; // add new peers
             }
         }
     }];
@@ -1024,11 +1024,11 @@ static const char *dns_seeds[] = {
         b = self.blocks[uint256_obj(b.prevBlock)];
     }
     
-    [[BRMerkleBlockEntity context] performBlock:^{
-        [BRMerkleBlockEntity deleteObjects:[BRMerkleBlockEntity objectsMatching:@"! (blockHash in %@)",
+    [[DSMerkleBlockEntity context] performBlock:^{
+        [DSMerkleBlockEntity deleteObjects:[DSMerkleBlockEntity objectsMatching:@"! (blockHash in %@)",
                                             blocks.allKeys]];
         
-        for (BRMerkleBlockEntity *e in [BRMerkleBlockEntity objectsMatching:@"blockHash in %@", blocks.allKeys]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsMatching:@"blockHash in %@", blocks.allKeys]) {
             @autoreleasepool {
                 [e setAttributesFromBlock:blocks[e.blockHash]];
                 [blocks removeObjectForKey:e.blockHash];
@@ -1037,11 +1037,11 @@ static const char *dns_seeds[] = {
         
         for (DSMerkleBlock *b in blocks.allValues) {
             @autoreleasepool {
-                [[BRMerkleBlockEntity managedObject] setAttributesFromBlock:b];
+                [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:b];
             }
         }
         
-        [BRMerkleBlockEntity saveContext];
+        [DSMerkleBlockEntity saveContext];
     }];
 }
 
@@ -1158,7 +1158,7 @@ static const char *dns_seeds[] = {
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
         [self.misbehavinPeers removeAllObjects];
-        [BRPeerEntity deleteAllObjects];
+        [DSPeerEntity deleteAllObjects];
         _peers = nil;
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1238,10 +1238,10 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
             
-            //            [[BRAPIClient sharedClient].kv
-            //             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyDashPrice.doubleValue
+            //            [[DSAPIClient sharedClient].kv
+            //             set:[[DSTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyDashPrice.doubleValue
             //                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-            //                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
+            //                  deviceId:[DSAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
@@ -1300,10 +1300,10 @@ static const char *dns_seeds[] = {
             [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
             
-            //            [[BRAPIClient sharedClient].kv
-            //             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyDashPrice.doubleValue
+            //            [[DSAPIClient sharedClient].kv
+            //             set:[[DSTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyDashPrice.doubleValue
             //                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-            //                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
+            //                  deviceId:[DSAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
@@ -1604,8 +1604,8 @@ static const char *dns_seeds[] = {
                                 userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}];
     }
     else if (tx && ! [manager.wallet transactionForHash:txHash] && [manager.wallet registerTransaction:tx]) {
-        [[BRTransactionEntity context] performBlock:^{
-            [BRTransactionEntity saveContext]; // persist transactions to core data
+        [[DSTransactionEntity context] performBlock:^{
+            [DSTransactionEntity saveContext]; // persist transactions to core data
         }];
     }
     

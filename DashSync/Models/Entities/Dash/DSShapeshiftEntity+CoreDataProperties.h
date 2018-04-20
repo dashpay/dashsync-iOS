@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class BRTransactionEntity;
+@class DSTransactionEntity;
 
 @interface DSShapeshiftEntity (CoreDataProperties)
 
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *outputTransactionId;
 @property (nullable, nonatomic, copy) NSNumber *shapeshiftStatus;
 @property (nullable, nonatomic, copy) NSString *withdrawalAddress;
-@property (nullable, nonatomic, retain) BRTransactionEntity *transaction;
+@property (nullable, nonatomic, retain) DSTransactionEntity *transaction;
 
 @end
 

@@ -1,5 +1,5 @@
 //
-//  BRPaymentProtocol.h
+//  DSPaymentProtocol.h
 //  DashSync
 //
 //  Created by Aaron Voisine on 4/21/14.
@@ -51,7 +51,7 @@ merchantData:(NSData *)data;
 
 @end
 
-@interface BRPaymentProtocolRequest : NSObject
+@interface DSPaymentProtocolRequest : NSObject
 
 @property (nonatomic, readonly) uint32_t version; // default is 1
 @property (nonatomic, readonly) NSString *pkiType; // none / x509+sha256 / x509+sha1, default is "none"
@@ -74,7 +74,7 @@ merchantData:(NSData *)data;
 
 @end
 
-@interface BRPaymentProtocolPayment : NSObject
+@interface DSPaymentProtocolPayment : NSObject
 
 @property (nonatomic, readonly) NSData *merchantData; // from request.details.merchantData, optional
 @property (nonatomic, readonly) NSArray *transactions; // array of signed DSTransaction objs to satisfy details.outputs
@@ -92,9 +92,9 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 @end
 
-@interface BRPaymentProtocolACK : NSObject
+@interface DSPaymentProtocolACK : NSObject
 
-@property (nonatomic, readonly) BRPaymentProtocolPayment *payment; // payment message that triggered this ack, required
+@property (nonatomic, readonly) DSPaymentProtocolPayment *payment; // payment message that triggered this ack, required
 @property (nonatomic, readonly) NSString *memo; // human-readable message for customer, optional
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
@@ -102,7 +102,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 + (instancetype)ackWithData:(NSData *)data;
 
 - (instancetype)initWithData:(NSData *)data;
-- (instancetype)initWithPayment:(BRPaymentProtocolPayment *)payment andMemo:(NSString *)memo;
+- (instancetype)initWithPayment:(DSPaymentProtocolPayment *)payment andMemo:(NSString *)memo;
 
 @end
 

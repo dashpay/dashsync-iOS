@@ -27,7 +27,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class BRPaymentProtocolRequest, BRPaymentProtocolPayment, BRPaymentProtocolACK;
+@class DSPaymentProtocolRequest, DSPaymentProtocolPayment, DSPaymentProtocolACK;
 
 // BIP21 bitcoin payment request URI https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @interface DSPaymentRequest : NSObject
@@ -48,7 +48,7 @@
 @property (nonatomic, readonly) BOOL wantsInstant;
 @property (nonatomic, readonly) BOOL instantValueRequired;
 @property (nonatomic, readonly) BOOL amountValueImmutable;
-@property (nonatomic, readonly) BRPaymentProtocolRequest *protocolRequest; // receiver converted to BIP70 request object
+@property (nonatomic, readonly) DSPaymentProtocolRequest *protocolRequest; // receiver converted to BIP70 request object
 
 + (instancetype)requestWithString:(NSString *)string;
 + (instancetype)requestWithData:(NSData *)data;
@@ -61,10 +61,10 @@
 // fetches a BIP70 request over HTTP and calls completion block
 // https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
 + (void)fetch:(NSString *)url scheme:(NSString*)scheme timeout:(NSTimeInterval)timeout
-completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion;
+completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion;
 
 // posts a BIP70 payment object to the specified URL
-+ (void)postPayment:(BRPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL
-timeout:(NSTimeInterval)timeout completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion;
++ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL
+timeout:(NSTimeInterval)timeout completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion;
 
 @end

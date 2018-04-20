@@ -1,9 +1,9 @@
 //
-//  BRTxMetadataEntity.m
+//  DSPeerEntity.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/22/15.
-//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 10/6/13.
+//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
@@ -25,49 +25,54 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTxMetadataEntity.h"
-#import "DSTransaction.h"
-#import "NSManagedObject+Sugar.h"
+#import "DSPeerEntity.h"
+#import "DSPeer.h"
 #import "NSData+Bitcoin.h"
-#import "NSMutableData+Dash.h"
+#import "NSManagedObject+Sugar.h"
+#import <arpa/inet.h>
 
-@implementation BRTxMetadataEntity
+@implementation DSPeerEntity
 
-@dynamic blob;
-@dynamic txHash;
-@dynamic type;
+@dynamic address;
+@dynamic timestamp;
+@dynamic port;
+@dynamic services;
+@dynamic misbehavin;
+@dynamic lowPreferenceTill;
+@dynamic priority;
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+- (instancetype)setAttributesFromPeer:(DSPeer *)peer
 {
-    NSMutableData *data = [NSMutableData dataWithData:tx.data];
-
-    [data appendUInt32:tx.blockHeight];
-    [data appendUInt32:tx.timestamp];
+    //TODO: store IPv6 addresses
+    if (peer.address.u64[0] != 0 || peer.address.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
 
     [self.managedObjectContext performBlockAndWait:^{
-        self.blob = data;
-        self.type = TX_MDTYPE_MSG;
-        self.txHash = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)];
+        self.address = CFSwapInt32BigToHost(peer.address.u32[3]);
+        self.port = peer.port;
+        self.timestamp = peer.timestamp;
+        self.services = peer.services;
+        self.misbehavin = peer.misbehavin;
+        self.priority = peer.priority;
+        self.lowPreferenceTill = peer.lowPreferenceTill;
     }];
-    
+
     return self;
 }
 
-- (DSTransaction *)transaction
+- (DSPeer *)peer
 {
-    __block DSTransaction *tx = nil;
-    
+    __block DSPeer *peer = nil;
+        
     [self.managedObjectContext performBlockAndWait:^{
-        NSData *data = self.blob;
-    
-        if (data.length > sizeof(uint32_t)*2) {
-            tx = [DSTransaction transactionWithMessage:data];
-            tx.blockHeight = [data UInt32AtOffset:data.length - sizeof(uint32_t)*2];
-            tx.timestamp = [data UInt32AtOffset:data.length - sizeof(uint32_t)];
-        }
+        UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
+
+        peer = [[DSPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
+        peer.misbehavin = self.misbehavin;
+        peer.priority = self.priority;
+        peer.lowPreferenceTill = self.lowPreferenceTill;
     }];
-    
-    return tx;
+
+    return peer;
 }
 
 @end

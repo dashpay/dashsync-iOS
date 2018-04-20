@@ -32,7 +32,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
-#import "BRAddressEntity.h"
+#import "DSAddressEntity.h"
 #import "NSManagedObject+Sugar.h"
 
 #define TX_VERSION    0x00000001u
@@ -134,7 +134,7 @@
         if (!self.associatedShapeshift && [self.outputAddresses count]) {
             NSString * mainOutputAddress = nil;
             NSMutableArray * allAddresses = [NSMutableArray array];
-            for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
+            for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
                 [allAddresses addObject:e.address];
             }
             for (NSString * outputAddress in self.outputAddresses) {

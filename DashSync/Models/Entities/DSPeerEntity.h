@@ -1,8 +1,8 @@
 //
-//  BRAddressEntity.h
+//  DSPeerEntity.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/22/13.
+//  Created by Aaron Voisine on 10/6/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -28,12 +28,19 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@interface BRAddressEntity : NSManagedObject
+@class DSPeer;
 
-@property (nonatomic, retain) NSString *address;
-@property (nonatomic) int32_t purpose;
-@property (nonatomic) int32_t account;
-@property (nonatomic) int32_t index;
-@property (nonatomic) BOOL internal;
+@interface DSPeerEntity : NSManagedObject
+
+@property (nonatomic) int32_t address;
+@property (nonatomic) NSTimeInterval timestamp;
+@property (nonatomic) NSTimeInterval lowPreferenceTill;
+@property (nonatomic) int16_t port;
+@property (nonatomic) int64_t services;
+@property (nonatomic) int16_t misbehavin;
+@property (nonatomic) int32_t priority;
+
+- (instancetype)setAttributesFromPeer:(DSPeer *)peer;
+- (DSPeer *)peer;
 
 @end

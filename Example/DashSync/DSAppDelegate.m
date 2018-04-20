@@ -7,12 +7,14 @@
 //
 
 #import "DSAppDelegate.h"
+#import <DashSync/DashSync.h>
 
 @implementation DSAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    [DSWalletManager sharedInstance].usesAuthentication = FALSE;
     return YES;
 }
 

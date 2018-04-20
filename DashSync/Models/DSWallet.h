@@ -43,12 +43,12 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
 
-typedef struct _BRUTXO {
+typedef struct _DSUTXO {
     UInt256 hash;
     unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
-} BRUTXO;
+} DSUTXO;
 
-#define brutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(BRUTXO)]
+#define brutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
 #define brutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\
     o.hash.u32[0], o.hash.u32[1], o.hash.u32[2], o.hash.u32[3],\
     o.hash.u32[4], o.hash.u32[5], o.hash.u32[6], o.hash.u32[7],\

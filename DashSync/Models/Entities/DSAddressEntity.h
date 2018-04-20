@@ -1,8 +1,8 @@
 //
-//  BRTxOutputEntity.h
+//  DSAddressEntity.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 8/22/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -28,19 +28,12 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class BRTransactionEntity, DSTransaction;
+@interface DSAddressEntity : NSManagedObject
 
-@interface BRTxOutputEntity : NSManagedObject
-
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
 @property (nonatomic, retain) NSString *address;
-@property (nonatomic, retain) NSData *script;
-@property (nonatomic, retain) NSString *shapeshiftOutboundAddress;
-@property (nonatomic) int64_t value;
-@property (nonatomic) BOOL spent;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index;
+@property (nonatomic) int32_t purpose;
+@property (nonatomic) int32_t account;
+@property (nonatomic) int32_t index;
+@property (nonatomic) BOOL internal;
 
 @end

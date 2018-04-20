@@ -1,5 +1,5 @@
 //
-//  BRPaymentProtocol.m
+//  DSPaymentProtocol.m
 //  DashSync
 //
 //  Created by Aaron Voisine on 4/21/14.
@@ -287,14 +287,14 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
 
 @end
 
-@interface BRPaymentProtocolRequest ()
+@interface DSPaymentProtocolRequest ()
 
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, strong) NSString *pkiType;
 
 @end
 
-@implementation BRPaymentProtocolRequest
+@implementation DSPaymentProtocolRequest
 
 + (instancetype)requestWithData:(NSData *)data
 {
@@ -467,13 +467,13 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackSche
 
 @end
 
-@interface BRPaymentProtocolPayment ()
+@interface DSPaymentProtocolPayment ()
 
 @property (nonatomic, strong) NSArray *refundToAmounts;
 
 @end
 
-@implementation BRPaymentProtocolPayment
+@implementation DSPaymentProtocolPayment
 
 + (instancetype)paymentWithData:(NSData *)data
 {
@@ -564,7 +564,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 @end
 
-@implementation BRPaymentProtocolACK
+@implementation DSPaymentProtocolACK
 
 + (instancetype)ackWithData:(NSData *)data
 {
@@ -582,7 +582,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case ack_payment: if (d) _payment = [BRPaymentProtocolPayment paymentWithData:d]; break;
+            case ack_payment: if (d) _payment = [DSPaymentProtocolPayment paymentWithData:d]; break;
             case ack_memo: if (d) _memo = protoBufString(d); break;
             default: break;
         }
@@ -592,7 +592,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     return self;
 }
 
-- (instancetype)initWithPayment:(BRPaymentProtocolPayment *)payment andMemo:(NSString *)memo
+- (instancetype)initWithPayment:(DSPaymentProtocolPayment *)payment andMemo:(NSString *)memo
 {
     if (! payment) return nil; // required
     if (! (self = [self init])) return nil;

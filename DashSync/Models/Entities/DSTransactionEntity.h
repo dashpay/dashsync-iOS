@@ -1,5 +1,5 @@
 //
-//  BRTransactionEntity.h
+//  DSTransactionEntity.h
 //  DashSync
 //
 //  Created by Aaron Voisine on 8/22/13.
@@ -28,12 +28,12 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class BRTxInputEntity;
-@class BRTxOutputEntity;
+@class DSTxInputEntity;
+@class DSTxOutputEntity;
 @class DSTransaction;
 @class DSShapeshiftEntity;
 
-@interface BRTransactionEntity : NSManagedObject
+@interface DSTransactionEntity : NSManagedObject
 
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t blockHeight;
@@ -51,26 +51,26 @@
 // These generated accessors are all broken because NSOrderedSet is not a subclass of NSSet.
 // This known core data bug has remained unaddressed for over three years: http://openradar.appspot.com/10114310
 // Per core data release notes, use [NSObject<NSKeyValueCoding> mutableOrderedSetValueForKey:] instead.
-@interface BRTransactionEntity (CoreDataGeneratedAccessors)
+@interface DSTransactionEntity (CoreDataGeneratedAccessors)
 
-- (void)insertObject:(BRTxInputEntity *)value inInputsAtIndex:(NSUInteger)idx;
+- (void)insertObject:(DSTxInputEntity *)value inInputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromInputsAtIndex:(NSUInteger)idx;
 - (void)insertInputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeInputsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(BRTxInputEntity *)value;
+- (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(DSTxInputEntity *)value;
 - (void)replaceInputsAtIndexes:(NSIndexSet *)indexes withInputs:(NSArray *)values;
-- (void)addInputsObject:(BRTxInputEntity *)value;
-- (void)removeInputsObject:(BRTxInputEntity *)value;
+- (void)addInputsObject:(DSTxInputEntity *)value;
+- (void)removeInputsObject:(DSTxInputEntity *)value;
 - (void)addInputs:(NSOrderedSet *)values;
 - (void)removeInputs:(NSOrderedSet *)values;
-- (void)insertObject:(BRTxOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
+- (void)insertObject:(DSTxOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromOutputsAtIndex:(NSUInteger)idx;
 - (void)insertOutputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeOutputsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(BRTxOutputEntity *)value;
+- (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(DSTxOutputEntity *)value;
 - (void)replaceOutputsAtIndexes:(NSIndexSet *)indexes withOutputs:(NSArray *)values;
-- (void)addOutputsObject:(BRTxOutputEntity *)value;
-- (void)removeOutputsObject:(BRTxOutputEntity *)value;
+- (void)addOutputsObject:(DSTxOutputEntity *)value;
+- (void)removeOutputsObject:(DSTxOutputEntity *)value;
 - (void)addOutputs:(NSOrderedSet *)values;
 - (void)removeOutputs:(NSOrderedSet *)values;
 @end

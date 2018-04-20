@@ -254,7 +254,7 @@
 }
 
 // receiver converted to BIP70 request object
-- (BRPaymentProtocolRequest *)protocolRequest
+- (DSPaymentProtocolRequest *)protocolRequest
 {
     static NSString *network = @"main";
 #if DASH_TESTNET
@@ -272,8 +272,8 @@
     DSPaymentProtocolDetails *details =
         [[DSPaymentProtocolDetails alloc] initWithNetwork:network outputAmounts:@[@(self.amount)]
          outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil];
-    BRPaymentProtocolRequest *request =
-        [[BRPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
+    DSPaymentProtocolRequest *request =
+        [[DSPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
          signature:nil callbackScheme:self.callbackScheme];
     
     return request;
@@ -281,7 +281,7 @@
 
 // fetches the request over HTTP and calls completion block
 + (void)fetch:(NSString *)url scheme:(NSString*)scheme timeout:(NSTimeInterval)timeout
-completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
+completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
 {
     if (! completion) return;
 
@@ -305,7 +305,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
             return;
         }
     
-        BRPaymentProtocolRequest *request = nil;
+        DSPaymentProtocolRequest *request = nil;
         NSString *network = @"main";
         
 #if DASH_TESTNET
@@ -313,7 +313,7 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
 #endif
         
         if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentrequest",scheme]] && data.length <= 50000) {
-            request = [BRPaymentProtocolRequest requestWithData:data];
+            request = [DSPaymentProtocolRequest requestWithData:data];
         }
         else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
             for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
@@ -340,8 +340,8 @@ completion:(void (^)(BRPaymentProtocolRequest *req, NSError *error))completion
     }] resume];
 }
 
-+ (void)postPayment:(BRPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL timeout:(NSTimeInterval)timeout
-completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
++ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL timeout:(NSTimeInterval)timeout
+completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion
 {
     NSURL *u = [NSURL URLWithString:paymentURL];
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
@@ -368,10 +368,10 @@ completion:(void (^)(BRPaymentProtocolACK *ack, NSError *error))completion
             return;
         }
         
-        BRPaymentProtocolACK *ack = nil;
+        DSPaymentProtocolACK *ack = nil;
         
         if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentack",scheme]] && data.length <= 50000) {
-            ack = [BRPaymentProtocolACK ackWithData:data];
+            ack = [DSPaymentProtocolACK ackWithData:data];
         }
 
         if (! ack) {

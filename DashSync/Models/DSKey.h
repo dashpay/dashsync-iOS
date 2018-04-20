@@ -32,27 +32,27 @@ typedef union _UInt160 UInt160;
 
 typedef struct {
     uint8_t p[33];
-} BRECPoint;
+} DSECPoint;
 
 // adds 256bit big endian ints a and b (mod secp256k1 order) and stores the result in a
 // returns true on success
-int BRSecp256k1ModAdd(UInt256 * _Nonnull a, const UInt256 * _Nonnull b);
+int DSSecp256k1ModAdd(UInt256 * _Nonnull a, const UInt256 * _Nonnull b);
 
 // multiplies 256bit big endian ints a and b (mod secp256k1 order) and stores the result in a
 // returns true on success
-int BRSecp256k1ModMul(UInt256 * _Nonnull a, const UInt256 * _Nonnull b);
+int DSSecp256k1ModMul(UInt256 * _Nonnull a, const UInt256 * _Nonnull b);
 
 // multiplies secp256k1 generator by 256bit big endian int i and stores the result in p
 // returns true on success
-int BRSecp256k1PointGen(BRECPoint * _Nonnull p, const UInt256 * _Nonnull i);
+int DSSecp256k1PointGen(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 
 // multiplies secp256k1 generator by 256bit big endian int i and adds the result to ec-point p
 // returns true on success
-int BRSecp256k1PointAdd(BRECPoint * _Nonnull p, const UInt256 * _Nonnull i);
+int DSSecp256k1PointAdd(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 
 // multiplies secp256k1 ec-point p by 256bit big endian int i and stores the result in p
 // returns true on success
-int BRSecp256k1PointMul(BRECPoint * _Nonnull p, const UInt256 * _Nonnull i);
+int DSSecp256k1PointMul(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 
 @interface DSKey : NSObject
 

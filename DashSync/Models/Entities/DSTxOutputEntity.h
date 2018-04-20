@@ -1,8 +1,8 @@
 //
-//  BRMerkleBlockEntity.h
+//  DSTxOutputEntity.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/19/13.
+//  Created by Aaron Voisine on 8/26/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -28,23 +28,19 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSMerkleBlock;
+@class DSTransactionEntity, DSTransaction;
 
-@interface BRMerkleBlockEntity : NSManagedObject
+@interface DSTxOutputEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *blockHash;
-@property (nonatomic) int32_t height;
-@property (nonatomic) int32_t version;
-@property (nonatomic, retain) NSData *prevBlock;
-@property (nonatomic, retain) NSData *merkleRoot;
-@property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic) int32_t target;
-@property (nonatomic) int32_t nonce;
-@property (nonatomic) int32_t totalTransactions;
-@property (nonatomic, retain) NSData *hashes;
-@property (nonatomic, retain) NSData *flags;
+@property (nonatomic, retain) NSData *txHash;
+@property (nonatomic) int32_t n;
+@property (nonatomic, retain) NSString *address;
+@property (nonatomic, retain) NSData *script;
+@property (nonatomic, retain) NSString *shapeshiftOutboundAddress;
+@property (nonatomic) int64_t value;
+@property (nonatomic) BOOL spent;
+@property (nonatomic, retain) DSTransactionEntity *transaction;
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
-- (DSMerkleBlock *)merkleBlock;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index;
 
 @end

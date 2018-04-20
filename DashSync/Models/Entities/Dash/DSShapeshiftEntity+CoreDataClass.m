@@ -7,7 +7,7 @@
 //
 
 #import "DSShapeshiftEntity+CoreDataClass.h"
-#import "BRTransactionEntity.h"
+#import "DSTransactionEntity.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSShapeshiftManager.h"
 #import "DSPeerManager.h"

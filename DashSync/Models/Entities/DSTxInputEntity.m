@@ -1,8 +1,8 @@
 //
-//  BRPeerEntity.h
+//  DSTxInputEntity.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/6/13.
+//  Created by Aaron Voisine on 8/26/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -25,22 +25,37 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSTxInputEntity.h"
+#import "DSTransactionEntity.h"
+#import "DSTransaction.h"
+#import "DSTxOutputEntity.h"
+#import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
 
-@class DSPeer;
+@implementation DSTxInputEntity
 
-@interface BRPeerEntity : NSManagedObject
+@dynamic txHash;
+@dynamic n;
+@dynamic signature;
+@dynamic sequence;
+@dynamic transaction;
 
-@property (nonatomic) int32_t address;
-@property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic) NSTimeInterval lowPreferenceTill;
-@property (nonatomic) int16_t port;
-@property (nonatomic) int64_t services;
-@property (nonatomic) int16_t misbehavin;
-@property (nonatomic) int32_t priority;
-
-- (instancetype)setAttributesFromPeer:(DSPeer *)peer;
-- (DSPeer *)peer;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index
+{
+    [self.managedObjectContext performBlockAndWait:^{
+        UInt256 hash = UINT256_ZERO;
+        
+        [tx.inputHashes[index] getValue:&hash];
+        self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
+        self.n = [tx.inputIndexes[index] intValue];
+        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
+        self.sequence = [tx.inputSequences[index] intValue];
+    
+        // mark previously unspent outputs as spent
+        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
+    }];
+    
+    return self;
+}
 
 @end

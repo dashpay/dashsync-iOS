@@ -1,5 +1,5 @@
 //
-//  BRTxInputEntity.h
+//  DSTxOutputEntity.m
 //  DashSync
 //
 //  Created by Aaron Voisine on 8/26/13.
@@ -25,19 +25,37 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSTxOutputEntity.h"
+#import "DSTransactionEntity.h"
+#import "DSTransaction.h"
+#import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
 
-@class BRTransactionEntity, DSTransaction;
+@implementation DSTxOutputEntity
 
-@interface BRTxInputEntity : NSManagedObject
+@dynamic txHash;
+@dynamic n;
+@dynamic address;
+@dynamic script;
+@dynamic value;
+@dynamic spent;
+@dynamic transaction;
+@dynamic shapeshiftOutboundAddress;
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) BRTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index
+{
+    [self.managedObjectContext performBlockAndWait:^{
+        UInt256 txHash = tx.txHash;
+    
+        self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
+        self.n = (int32_t)index;
+        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
+        self.script = tx.outputScripts[index];
+        self.value = [tx.outputAmounts[index] longLongValue];
+        self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
+    }];
+    
+    return self;
+}
 
 @end

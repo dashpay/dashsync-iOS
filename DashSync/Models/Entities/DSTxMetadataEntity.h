@@ -1,9 +1,9 @@
 //
-//  BRTxInputEntity.m
+//  DSTxMetadataEntity.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Created by Aaron Voisine on 10/22/15.
+//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
@@ -25,37 +25,20 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTxInputEntity.h"
-#import "BRTransactionEntity.h"
-#import "DSTransaction.h"
-#import "BRTxOutputEntity.h"
-#import "NSData+Bitcoin.h"
-#import "NSManagedObject+Sugar.h"
+#import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@implementation BRTxInputEntity
+#define TX_MDTYPE_MSG 0x01
 
-@dynamic txHash;
-@dynamic n;
-@dynamic signature;
-@dynamic sequence;
-@dynamic transaction;
+@class DSTransaction;
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index
-{
-    [self.managedObjectContext performBlockAndWait:^{
-        UInt256 hash = UINT256_ZERO;
-        
-        [tx.inputHashes[index] getValue:&hash];
-        self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
-        self.n = [tx.inputIndexes[index] intValue];
-        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
-        self.sequence = [tx.inputSequences[index] intValue];
-    
-        // mark previously unspent outputs as spent
-        [[BRTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
-    }];
-    
-    return self;
-}
+@interface DSTxMetadataEntity : NSManagedObject
+
+@property (nonatomic, retain) NSData *blob;
+@property (nonatomic, retain) NSData *txHash;
+@property (nonatomic) int32_t type;
+
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx;
+- (DSTransaction *)transaction;
 
 @end

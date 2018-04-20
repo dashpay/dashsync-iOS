@@ -31,9 +31,9 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSBIP32Sequence.h"
 #import "DSTransaction.h"
-#import "BRTransactionEntity.h"
-#import "BRTxMetadataEntity.h"
-#import "BRAddressEntity.h"
+#import "DSTransactionEntity.h"
+#import "DSTxMetadataEntity.h"
+#import "DSAddressEntity.h"
 #import "DSEventManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
@@ -250,6 +250,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     self.mnemonic = [DSBIP39Mnemonic new];
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.failedPins = [NSMutableSet set];
+    self.usesAuthentication = YES;
     _dashFormat = [NSNumberFormatter new];
     self.dashFormat.lenient = YES;
     self.dashFormat.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -390,9 +391,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                 abort(); // don't wipe core data for debug builds
 #else
                 [[NSManagedObject context] performBlockAndWait:^{
-                    [BRAddressEntity deleteAllObjects];
-                    [BRTransactionEntity deleteAllObjects];
-                    [BRTxMetadataEntity deleteAllObjects];
+                    [DSAddressEntity deleteAllObjects];
+                    [DSTransactionEntity deleteAllObjects];
+                    [DSTxMetadataEntity deleteAllObjects];
                     [NSManagedObject saveContext];
                 }];
                 
@@ -505,9 +506,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         if (seedPhrase) seedPhrase = [self.mnemonic normalizePhrase:seedPhrase];
         
         [[NSManagedObject context] performBlockAndWait:^{
-            [BRAddressEntity deleteAllObjects];
-            [BRTransactionEntity deleteAllObjects];
-            [BRTxMetadataEntity deleteAllObjects];
+            [DSAddressEntity deleteAllObjects];
+            [DSTransactionEntity deleteAllObjects];
+            [DSTxMetadataEntity deleteAllObjects];
             [NSManagedObject saveContext];
         }];
         
@@ -663,6 +664,15 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     }
 }
 
+-(NSString*)seedPhraseAfterAuthentication {
+    
+    if (!self.usesAuthentication || self.didAuthenticate) {
+        return getKeychainString(MNEMONIC_KEY, nil);
+    } else {
+        return nil;
+    }
+}
+
 // authenticates user and returns seedPhrase
 - (void)seedPhraseWithPrompt:(NSString *)authprompt completion:(void (^)(NSString * seedPhrase))completion
 {
@@ -679,6 +689,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 // prompts user to authenticate with touch id or passcode
 - (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
 {
+    if (!self.usesAuthentication) { //if we don't have authentication
+        completion(YES,NO);
+        return;
+    }
     if (touchId) {
         NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
         LAContext *context = [[LAContext alloc] init];
@@ -1565,7 +1579,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                                          NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
                                          *scripts = [NSMutableArray array];
-                                         BRUTXO o;
+                                         DSUTXO o;
                                          
                                          if (error || ! [json isKindOfClass:[NSArray class]]) {
                                              NSLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
@@ -1723,7 +1737,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                      
                      //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
                      for (NSValue *output in utxos) {
-                         BRUTXO o;
+                         DSUTXO o;
                          
                          [output getValue:&o];
                          [tx addInputHash:o.hash index:o.n script:scripts[i]];

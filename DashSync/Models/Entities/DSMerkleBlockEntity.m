@@ -1,5 +1,5 @@
 //
-//  BRMerkleBlockEntity.m
+//  DSMerkleBlockEntity.m
 //  DashSync
 //
 //  Created by Aaron Voisine on 10/19/13.
@@ -25,12 +25,12 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRMerkleBlockEntity.h"
+#import "DSMerkleBlockEntity.h"
 #import "DSMerkleBlock.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
-@implementation BRMerkleBlockEntity
+@implementation DSMerkleBlockEntity
 
 @dynamic blockHash;
 @dynamic height;

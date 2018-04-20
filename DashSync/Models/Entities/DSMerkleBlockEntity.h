@@ -1,8 +1,8 @@
 //
-//  BRTxOutputEntity.m
+//  DSMerkleBlockEntity.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
+//  Created by Aaron Voisine on 10/19/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -25,37 +25,26 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTxOutputEntity.h"
-#import "BRTransactionEntity.h"
-#import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
-#import "NSManagedObject+Sugar.h"
+#import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@implementation BRTxOutputEntity
+@class DSMerkleBlock;
 
-@dynamic txHash;
-@dynamic n;
-@dynamic address;
-@dynamic script;
-@dynamic value;
-@dynamic spent;
-@dynamic transaction;
-@dynamic shapeshiftOutboundAddress;
+@interface DSMerkleBlockEntity : NSManagedObject
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index
-{
-    [self.managedObjectContext performBlockAndWait:^{
-        UInt256 txHash = tx.txHash;
-    
-        self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
-        self.n = (int32_t)index;
-        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
-        self.script = tx.outputScripts[index];
-        self.value = [tx.outputAmounts[index] longLongValue];
-        self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
-    }];
-    
-    return self;
-}
+@property (nonatomic, retain) NSData *blockHash;
+@property (nonatomic) int32_t height;
+@property (nonatomic) int32_t version;
+@property (nonatomic, retain) NSData *prevBlock;
+@property (nonatomic, retain) NSData *merkleRoot;
+@property (nonatomic) NSTimeInterval timestamp;
+@property (nonatomic) int32_t target;
+@property (nonatomic) int32_t nonce;
+@property (nonatomic) int32_t totalTransactions;
+@property (nonatomic, retain) NSData *hashes;
+@property (nonatomic, retain) NSData *flags;
+
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
+- (DSMerkleBlock *)merkleBlock;
 
 @end

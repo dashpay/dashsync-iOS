@@ -71,6 +71,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
+@property (nonatomic, assign) BOOL usesAuthentication;
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashSignificantFormat; // dash currency formatter that shows significant digits
@@ -89,6 +90,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 
 - (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the seedPhrase
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
+- (NSString*)seedPhraseAfterAuthentication;
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set

@@ -27,12 +27,12 @@
 
 #import "DSWallet.h"
 #import "DSKey.h"
-#import "BRAddressEntity.h"
+#import "DSAddressEntity.h"
 #import "DSTransaction.h"
-#import "BRTransactionEntity.h"
-#import "BRTxInputEntity.h"
-#import "BRTxOutputEntity.h"
-#import "BRTxMetadataEntity.h"
+#import "DSTransactionEntity.h"
+#import "DSTxInputEntity.h"
+#import "DSTxOutputEntity.h"
+#import "DSTxMetadataEntity.h"
 #import "DSPeerManager.h"
 #import "DSKeySequence.h"
 #import "NSData+Bitcoin.h"
@@ -91,11 +91,11 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     self.usedAddresses = [NSMutableSet set];
     
     [self.moc performBlockAndWait:^{
-        [BRAddressEntity setContext:self.moc];
-        [BRTransactionEntity setContext:self.moc];
-        [BRTxMetadataEntity setContext:self.moc];
+        [DSAddressEntity setContext:self.moc];
+        [DSTransactionEntity setContext:self.moc];
+        [DSTxMetadataEntity setContext:self.moc];
         
-        for (BRAddressEntity *e in [BRAddressEntity allObjects]) {
+        for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
             @autoreleasepool {
                 NSMutableArray *a = (e.purpose == 44)?((e.internal) ? self.internalBIP44Addresses : self.externalBIP44Addresses) : ((e.internal) ? self.internalBIP32Addresses : self.externalBIP32Addresses);
                 
@@ -105,7 +105,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             }
         }
         
-        for (BRTxMetadataEntity *e in [BRTxMetadataEntity allObjects]) {
+        for (DSTxMetadataEntity *e in [DSTxMetadataEntity allObjects]) {
             @autoreleasepool {
                 if (e.type != TX_MDTYPE_MSG) continue;
                 
@@ -120,12 +120,12 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             }
         }
         
-        if ([BRTransactionEntity countAllObjects] > self.allTx.count) {
+        if ([DSTransactionEntity countAllObjects] > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
-            [BRTxInputEntity allObjects];
-            [BRTxOutputEntity allObjects];
+            [DSTxInputEntity allObjects];
+            [DSTxOutputEntity allObjects];
             
-            for (BRTransactionEntity *e in [BRTransactionEntity allObjects]) {
+            for (DSTransactionEntity *e in [DSTransactionEntity allObjects]) {
                 @autoreleasepool {
                     DSTransaction *tx = e.transaction;
                     NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
@@ -145,10 +145,10 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     if (updateTx.count > 0) {
         [self.moc performBlock:^{
             for (DSTransaction *tx in updateTx) {
-                [[BRTxMetadataEntity managedObject] setAttributesFromTx:tx];
+                [[DSTxMetadataEntity managedObject] setAttributesFromTx:tx];
             }
             
-            [BRTxMetadataEntity saveContext];
+            [DSTxMetadataEntity saveContext];
         }];
     }
     
@@ -218,7 +218,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             }
             
             [self.moc performBlock:^{ // store new address in core data
-                BRAddressEntity *e = [BRAddressEntity managedObject];
+                DSAddressEntity *e = [DSAddressEntity managedObject];
                 e.purpose = 44;
                 e.account = 0;
                 e.address = addr;
@@ -262,7 +262,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             }
             
             [self.moc performBlock:^{ // store new address in core data
-                BRAddressEntity *e = [BRAddressEntity managedObject];
+                DSAddressEntity *e = [DSAddressEntity managedObject];
                 e.purpose = 0;
                 e.account = 0;
                 e.address = addr;
@@ -336,7 +336,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             for (NSValue *hash in tx.inputHashes) {
                 n = [tx.inputIndexes[i++] unsignedIntValue];
                 [hash getValue:&h];
-                [spent addObject:brutxo_obj(((BRUTXO) { h, n }))];
+                [spent addObject:brutxo_obj(((DSUTXO) { h, n }))];
             }
             
             inputs = [NSSet setWithArray:tx.inputHashes];
@@ -380,7 +380,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
             for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
                 if ([self containsAddress:address]) {
-                    [utxos addObject:brutxo_obj(((BRUTXO) { tx.txHash, n }))];
+                    [utxos addObject:brutxo_obj(((DSUTXO) { tx.txHash, n }))];
                     balance += [tx.outputAmounts[n] unsignedLongLongValue];
                 }
                 
@@ -393,7 +393,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             
             for (NSValue *output in spent) { // remove any spent outputs from UTXO set
                 DSTransaction *transaction;
-                BRUTXO o;
+                DSUTXO o;
                 
                 [output getValue:&o];
                 transaction = self.allTx[uint256_obj(o.hash)];
@@ -538,7 +538,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     uint64_t amount = 0, balance = 0, feeAmount = 0;
     DSTransaction *transaction = [DSTransaction new], *tx;
     NSUInteger i = 0, cpfpSize = 0;
-    BRUTXO o;
+    DSUTXO o;
     
     if (amounts.count != scripts.count || amounts.count < 1) return nil; // sanity check
     
@@ -745,14 +745,14 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
     [self.moc performBlock:^{ // add the transaction to core data
-        if ([BRTransactionEntity countObjectsMatching:@"txHash == %@",
+        if ([DSTransactionEntity countObjectsMatching:@"txHash == %@",
              [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
-            [[BRTransactionEntity managedObject] setAttributesFromTx:transaction];
+            [[DSTransactionEntity managedObject] setAttributesFromTx:transaction];
         }
         
-        if ([BRTxMetadataEntity countObjectsMatching:@"txHash == %@ && type == %d",
+        if ([DSTxMetadataEntity countObjectsMatching:@"txHash == %@ && type == %d",
              [NSData dataWithBytes:&txHash length:sizeof(txHash)], TX_MDTYPE_MSG] == 0) {
-            [[BRTxMetadataEntity managedObject] setAttributesFromTx:transaction];
+            [[DSTxMetadataEntity managedObject] setAttributesFromTx:transaction];
         }
     }];
     
@@ -785,9 +785,9 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [self updateBalance];
     
     [self.moc performBlock:^{ // remove transaction from core data
-        [BRTransactionEntity deleteObjects:[BRTransactionEntity objectsMatching:@"txHash == %@",
+        [DSTransactionEntity deleteObjects:[DSTransactionEntity objectsMatching:@"txHash == %@",
                                             [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
-        [BRTxMetadataEntity deleteObjects:[BRTxMetadataEntity objectsMatching:@"txHash == %@",
+        [DSTxMetadataEntity deleteObjects:[DSTxMetadataEntity objectsMatching:@"txHash == %@",
                                            [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
 }
@@ -818,7 +818,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
         
         [hash getValue:&h];
         if ((tx && ! [self transactionIsValid:tx]) ||
-            [self.spentOutputs containsObject:brutxo_obj(((BRUTXO) { h, n }))]) return NO;
+            [self.spentOutputs containsObject:brutxo_obj(((DSUTXO) { h, n }))]) return NO;
     }
     
     return YES;
@@ -901,13 +901,13 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             @autoreleasepool {
                 NSMutableSet *entities = [NSMutableSet set];
                 
-                for (BRTransactionEntity *e in [BRTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
+                for (DSTransactionEntity *e in [DSTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
                     e.blockHeight = height;
                     e.timestamp = timestamp;
                     [entities addObject:e];
                 }
                 
-                for (BRTxMetadataEntity *e in [BRTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
+                for (DSTxMetadataEntity *e in [DSTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
                                                TX_MDTYPE_MSG]) {
                     @autoreleasepool {
                         DSTransaction *tx = e.transaction;
@@ -923,7 +923,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
                     // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
                     // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
                     // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
-                    [BRTxMetadataEntity saveContext];
+                    [DSTxMetadataEntity saveContext];
                     
                     for (NSManagedObject *e in entities) {
                         [self.moc refreshObject:e mergeChanges:NO];
@@ -1060,7 +1060,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
 
 - (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend
 {
-    BRUTXO o;
+    DSUTXO o;
     DSTransaction *tx;
     NSUInteger inputCount = 0;
     uint64_t amount = 0, fee;

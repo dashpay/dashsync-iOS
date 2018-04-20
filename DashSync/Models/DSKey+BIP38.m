@@ -286,7 +286,7 @@ static NSData *point_gen(UInt256 factor)
 {
     NSMutableData *d = [NSMutableData secureDataWithLength:33];
     
-    BRSecp256k1PointGen(d.mutableBytes, &factor);
+    DSSecp256k1PointGen(d.mutableBytes, &factor);
     return d;
 }
 
@@ -294,7 +294,7 @@ static NSData *point_mul(NSData *point, UInt256 factor)
 {
     NSMutableData *d = [NSMutableData secureDataWithData:point];
     
-    BRSecp256k1PointGen(d.mutableBytes, &factor);
+    DSSecp256k1PointGen(d.mutableBytes, &factor);
     return d;
 }
 
@@ -438,7 +438,7 @@ passphrase:(NSString *)passphrase
 
         factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
         secret = passfactor;
-        BRSecp256k1ModMul(&secret, &factorb); // secret = passfactor*factorb mod N
+        DSSecp256k1ModMul(&secret, &factorb); // secret = passfactor*factorb mod N
     }
 
     if (! (self = [self initWithSecret:secret compressed:flag & BIP38_COMPRESSED_FLAG])) return nil;

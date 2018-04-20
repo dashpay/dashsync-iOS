@@ -28,7 +28,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@protocol BREventConfirmViewProtocol
+@protocol DSEventConfirmViewProtocol
 
 @property (nonatomic, copy) void(^completionHandler)(BOOL);
 
@@ -36,7 +36,7 @@
 
 @interface DSEventManager : NSObject
 
-@property (nonatomic,strong) UIView<BREventConfirmViewProtocol> * eventConfirmView;
+@property (nonatomic,strong) UIView<DSEventConfirmViewProtocol> * eventConfirmView;
 
 // typically this class is used as a singleton so this is how you should get a handle on the global event manager
 + (instancetype)sharedEventManager;
@@ -45,7 +45,7 @@
 + (void)saveEvent:(NSString *)eventName;
 
 // convenience method for
-// [[BReventManager sharedEventManager] saveEvent:(NSString *) withAttributes:(NSDictionary *)attributes
+// [[DSeventManager sharedEventManager] saveEvent:(NSString *) withAttributes:(NSDictionary *)attributes
 + (void)saveEvent:(NSString *)eventName withAttributes:(NSDictionary *)attributes;
 
 // starts the event manager and begins listening to app lifecycle events if the user has both:

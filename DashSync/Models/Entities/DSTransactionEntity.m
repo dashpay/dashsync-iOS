@@ -1,5 +1,5 @@
 //
-//  BRTransactionEntity.m
+//  DSTransactionEntity.m
 //  DashSync
 //
 //  Created by Aaron Voisine on 8/22/13.
@@ -25,17 +25,17 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "BRTransactionEntity.h"
-#import "BRTxInputEntity.h"
-#import "BRTxOutputEntity.h"
-#import "BRAddressEntity.h"
+#import "DSTransactionEntity.h"
+#import "DSTxInputEntity.h"
+#import "DSTxOutputEntity.h"
+#import "DSAddressEntity.h"
 #import "DSTransaction.h"
 #import "DSMerkleBlock.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 
-@implementation BRTransactionEntity
+@implementation DSTransactionEntity
 
 @dynamic txHash;
 @dynamic blockHeight;
@@ -48,8 +48,8 @@
 + (void)setContext:(NSManagedObjectContext *)context
 {
     [super setContext:context];
-    [BRTxInputEntity setContext:context];
-    [BRTxOutputEntity setContext:context];
+    [DSTxInputEntity setContext:context];
+    [DSTxOutputEntity setContext:context];
 }
 
 - (instancetype)setAttributesFromTx:(DSTransaction *)tx
@@ -66,19 +66,19 @@
         self.associatedShapeshift = tx.associatedShapeshift;
     
         while (inputs.count < tx.inputHashes.count) {
-            [inputs addObject:[BRTxInputEntity managedObject]];
+            [inputs addObject:[DSTxInputEntity managedObject]];
         }
     
         while (inputs.count > tx.inputHashes.count) {
             [inputs removeObjectAtIndex:inputs.count - 1];
         }
     
-        for (BRTxInputEntity *e in inputs) {
+        for (DSTxInputEntity *e in inputs) {
             [e setAttributesFromTx:tx inputIndex:idx++];
         }
 
         while (outputs.count < tx.outputAddresses.count) {
-            [outputs addObject:[BRTxOutputEntity managedObject]];
+            [outputs addObject:[DSTxOutputEntity managedObject]];
         }
     
         while (outputs.count > tx.outputAddresses.count) {
@@ -87,7 +87,7 @@
 
         idx = 0;
         
-        for (BRTxOutputEntity *e in outputs) {
+        for (DSTxOutputEntity *e in outputs) {
             [e setAttributesFromTx:tx outputIndex:idx++];
         }
         
@@ -110,14 +110,14 @@
         tx.timestamp = self.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
     
-        for (BRTxInputEntity *e in self.inputs) {
+        for (DSTxInputEntity *e in self.inputs) {
             txHash = e.txHash;
             if (txHash.length != sizeof(UInt256)) continue;
             [tx addInputHash:*(const UInt256 *)txHash.bytes index:e.n script:nil signature:e.signature
              sequence:e.sequence];
         }
         
-        for (BRTxOutputEntity *e in self.outputs) {
+        for (DSTxOutputEntity *e in self.outputs) {
             [tx addOutputScript:e.script amount:e.value];
         }
     }];
@@ -127,8 +127,8 @@
 
 - (void)deleteObject
 {
-    for (BRTxInputEntity *e in self.inputs) { // mark inputs as unspent
-        [[BRTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
+    for (DSTxInputEntity *e in self.inputs) { // mark inputs as unspent
+        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
     }
 
     [super deleteObject];
