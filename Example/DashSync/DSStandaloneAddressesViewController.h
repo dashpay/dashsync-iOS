@@ -1,5 +1,5 @@
 //
-//  DSWalletViewController.h
+//  DSStandaloneAddressesViewController.h
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 4/20/18.
@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DSWalletViewController : UITableViewController
+@interface DSStandaloneAddressesViewController : UITableViewController
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 
 @end
+

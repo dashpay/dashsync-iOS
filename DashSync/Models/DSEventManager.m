@@ -27,7 +27,7 @@
 
 #import "DSEventManager.h"
 #import "DSPeerManager.h"
-#import "UIImage+Utils.h"
+#import "UIImage+DSUtils.h"
 
 #define HAS_DETERMINED_SAMPLE_GROUP     @"has_determined_sample_group"
 #define IS_IN_SAMPLE_GROUP              @"is_in_sample_group"

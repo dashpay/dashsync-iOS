@@ -25,10 +25,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "UIImage+Utils.h"
+#import "UIImage+DSUtils.h"
 #import <Accelerate/Accelerate.h>
 
-@implementation UIImage (Utils)
+@implementation UIImage (DSUtils)
 
 + (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color
 {

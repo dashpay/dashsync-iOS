@@ -9,7 +9,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Dash Sync Example-->
+        <!--Main-->
         <scene sceneID="Oss-FR-5Lj">
             <objects>
                 <tableViewController id="LhV-Hm-jqG" customClass="DSExampleViewController" sceneMemberID="viewController">
@@ -75,6 +75,9 @@
                                                 <constraint firstItem="HaK-2F-nPq" firstAttribute="top" secondItem="bdr-RP-6QK" secondAttribute="top" constant="17" id="ir8-f5-fm0"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="pQt-5m-3CE" kind="show" id="pBf-Nk-TRe"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="56" id="g33-GV-gLb">
                                         <rect key="frame" x="0.0" y="146" width="375" height="56"/>
@@ -479,7 +482,7 @@
                             <outlet property="delegate" destination="LhV-Hm-jqG" id="BOh-Vc-9cP"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Dash Sync Example" id="pKD-Zb-38g"/>
+                    <navigationItem key="navigationItem" title="Main" id="pKD-Zb-38g"/>
                     <connections>
                         <outlet property="chainTipLabel" destination="nvn-mA-9nN" id="P9a-Qf-lsA"/>
                         <outlet property="connectedPeerCount" destination="z8i-Ii-mr7" id="ZWi-Mg-izm"/>
@@ -500,7 +503,7 @@
             </objects>
             <point key="canvasLocation" x="183.19999999999999" y="375.56221889055473"/>
         </scene>
-        <!--Wallet View Controller-->
+        <!--Wallets-->
         <scene sceneID="bh9-NZ-BZQ">
             <objects>
                 <tableViewController id="PeG-lf-i02" customClass="DSWalletViewController" sceneMemberID="viewController">
@@ -535,10 +538,56 @@
                             <outlet property="delegate" destination="PeG-lf-i02" id="evB-fF-Yvy"/>
                         </connections>
                     </tableView>
+                    <navigationItem key="navigationItem" title="Wallets" id="90H-jm-fcb"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sSx-Dl-zzb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="960.79999999999995" y="404.34782608695656"/>
+        </scene>
+        <!--Addresses-->
+        <scene sceneID="gxw-BS-vWW">
+            <objects>
+                <tableViewController id="pQt-5m-3CE" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="pdG-pE-Lkh">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="AddressCell" id="0u3-hx-IRr" customClass="DSAddressTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0u3-hx-IRr" id="pIR-oc-Ypa">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hpt-2z-CAM">
+                                            <rect key="frame" x="16" y="12" width="343" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="hpt-2z-CAM" secondAttribute="trailing" constant="16" id="2ko-P9-mR4"/>
+                                        <constraint firstItem="hpt-2z-CAM" firstAttribute="top" secondItem="pIR-oc-Ypa" secondAttribute="top" constant="12" id="Pcy-3n-Bjn"/>
+                                        <constraint firstItem="hpt-2z-CAM" firstAttribute="leading" secondItem="pIR-oc-Ypa" secondAttribute="leading" constant="16" id="Yg0-Vu-AZZ"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="addressLabel" destination="hpt-2z-CAM" id="NjV-pB-OZj"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="pQt-5m-3CE" id="xeu-Zt-7x8"/>
+                            <outlet property="delegate" destination="pQt-5m-3CE" id="UEH-CE-qdy"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Addresses" id="X62-Vc-cpN"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1714.4000000000001" y="403.44827586206901"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="0RU-nz-MPM">

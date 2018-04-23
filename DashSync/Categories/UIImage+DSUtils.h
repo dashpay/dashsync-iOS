@@ -1,5 +1,5 @@
 //
-//  UIImage+Utils.h
+//  UIImage+DSUtils.h
 //  DashSync
 //
 //  Created by Aaron Voisine on 11/08/13.
@@ -28,7 +28,7 @@
 #import <UIKit/UIKit.h>
 @class CIColor;
 
-@interface UIImage (Utils)
+@interface UIImage (DSUtils)
 
 + (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color;
 
