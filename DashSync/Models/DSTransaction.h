@@ -28,6 +28,8 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
+@class DSChain;
+
 #define TX_FEE_PER_KB        1000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
@@ -68,15 +70,14 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 @property (nonatomic, readonly) NSString *longDescription;
-
-
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
+@property (nonatomic, strong) DSChain * chain;
 
-+ (instancetype)transactionWithMessage:(NSData *)message;
++ (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
-- (instancetype)initWithMessage:(NSData *)message;
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
-outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts;
+                    outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain*)chain;
 
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script;
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature

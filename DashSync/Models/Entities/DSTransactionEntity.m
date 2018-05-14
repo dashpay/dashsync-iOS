@@ -44,6 +44,7 @@
 @dynamic outputs;
 @dynamic lockTime;
 @dynamic associatedShapeshift;
+@dynamic chain;
 
 + (void)setContext:(NSManagedObjectContext *)context
 {

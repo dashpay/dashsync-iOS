@@ -26,7 +26,7 @@
 //  THE SOFTWARE.
 
 #import "DSEventManager.h"
-#import "DSPeerManager.h"
+#import "DSChainPeerManager.h"
 #import "UIImage+DSUtils.h"
 
 #define HAS_DETERMINED_SAMPLE_GROUP     @"has_determined_sample_group"
@@ -75,9 +75,9 @@
         self.myQueue.maxConcurrentOperationCount = 1;
         self.eventToNotifications = @{@"foreground": UIApplicationDidBecomeActiveNotification,
                                       @"background": UIApplicationDidEnterBackgroundNotification,
-                                      @"sync_started": DSPeerManagerSyncStartedNotification,
-                                      @"sync_finished": DSPeerManagerSyncFinishedNotification,
-                                      @"sync_failed": DSPeerManagerSyncFailedNotification};
+                                      @"sync_started": DSChainPeerManagerSyncStartedNotification,
+                                      @"sync_finished": DSChainPeerManagerSyncFinishedNotification,
+                                      @"sync_failed": DSChainPeerManagerSyncFailedNotification};
         self.isConnected = NO;
         self._buffer = [NSMutableArray array];
     }

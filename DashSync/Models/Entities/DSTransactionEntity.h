@@ -32,6 +32,7 @@
 @class DSTxOutputEntity;
 @class DSTransaction;
 @class DSShapeshiftEntity;
+@class DSChainEntity;
 
 @interface DSTransactionEntity : NSManagedObject
 
@@ -42,6 +43,7 @@
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
+@property (nonatomic, retain) DSShapeshiftEntity *chain;
 
 - (instancetype)setAttributesFromTx:(DSTransaction *)tx;
 - (DSTransaction *)transaction;

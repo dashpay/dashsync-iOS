@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:/Users/samuelw/Documents/src/DashSync/DashSync/Models/Entities/Dash/DSChainEntity+CoreDataProperties.h">
+   </FileRef>
+   <FileRef
+      location = "group:/Users/samuelw/Documents/src/DashSync/DashSync/Models/Entities/Dash/DSChainEntity+CoreDataProperties.m">
+   </FileRef>
+   <FileRef
       location = "group:DashSync.xcodeproj">
    </FileRef>
    <FileRef

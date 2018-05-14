@@ -7,7 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "DSPeerManager.h"
+#import "DSChain.h"
+#import "DSChainPeerManager.h"
+#import "DSChainManager.h"
 #import "DSWalletManager.h"
 #import "DSEventManager.h"
 #import "DSShapeshiftManager.h"

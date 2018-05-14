@@ -30,41 +30,48 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+#import "DSChain.h"
+
+@interface DSPaymentRequest()
+
+@property(nonatomic,strong) DSChain * chain;
+
+@end
 
 // BIP21 bitcoin URI object https://github.com/bitcoin/bips/blob/master/bip-0021.mediawiki
 @implementation DSPaymentRequest
 
-+ (instancetype)requestWithString:(NSString *)string
++ (instancetype)requestWithString:(NSString *)string onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithString:string];
+    return [[self alloc] initWithString:string onChain:chain];
 }
 
-+ (instancetype)requestWithData:(NSData *)data
++ (instancetype)requestWithData:(NSData *)data onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithData:data];
+    return [[self alloc] initWithData:data onChain:chain];
 }
 
-+ (instancetype)requestWithURL:(NSURL *)url
++ (instancetype)requestWithURL:(NSURL *)url onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithURL:url];
+    return [[self alloc] initWithURL:url onChain:chain];
 }
 
-- (instancetype)initWithString:(NSString *)string
+- (instancetype)initWithString:(NSString *)string onChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
-    
+    self.chain = chain;
     self.string = string;
     return self;
 }
 
-- (instancetype)initWithData:(NSData *)data
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
 {
-    return [self initWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+    return [self initWithString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] onChain:chain];
 }
 
-- (instancetype)initWithURL:(NSURL *)url
+- (instancetype)initWithURL:(NSURL *)url onChain:(DSChain*)chain
 {
-    return [self initWithString:url.absoluteString];
+    return [self initWithString:url.absoluteString onChain:chain];
 }
 
 - (void)setString:(NSString *)string
@@ -256,10 +263,6 @@
 // receiver converted to BIP70 request object
 - (DSPaymentProtocolRequest *)protocolRequest
 {
-    static NSString *network = @"main";
-#if DASH_TESTNET
-    network = @"test";
-#endif
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
     if ([self.paymentAddress isValidDashAddress]) {
@@ -270,17 +273,17 @@
     if (script.length == 0) return nil;
     
     DSPaymentProtocolDetails *details =
-        [[DSPaymentProtocolDetails alloc] initWithNetwork:network outputAmounts:@[@(self.amount)]
-         outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil];
+        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(self.amount)]
+         outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil onChain:self.chain];
     DSPaymentProtocolRequest *request =
         [[DSPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
-         signature:nil callbackScheme:self.callbackScheme];
+         signature:nil onChain:self.chain callbackScheme:self.callbackScheme];
     
     return request;
 }
 
 // fetches the request over HTTP and calls completion block
-+ (void)fetch:(NSString *)url scheme:(NSString*)scheme timeout:(NSTimeInterval)timeout
++ (void)fetch:(NSString *)url scheme:(NSString*)scheme onChain:(DSChain*)chain timeout:(NSTimeInterval)timeout
 completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
 {
     if (! completion) return;
@@ -306,20 +309,15 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
         }
     
         DSPaymentProtocolRequest *request = nil;
-        NSString *network = @"main";
-        
-#if DASH_TESTNET
-        network = @"test";
-#endif
         
         if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentrequest",scheme]] && data.length <= 50000) {
-            request = [DSPaymentProtocolRequest requestWithData:data];
+            request = [DSPaymentProtocolRequest requestWithData:data onChain:chain];
         }
         else if ([response.MIMEType.lowercaseString isEqual:@"text/uri-list"] && data.length <= 50000) {
             for (NSString *url in [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
                                    componentsSeparatedByString:@"\n"]) {
                 if ([url hasPrefix:@"#"]) continue; // skip comments
-                request = [DSPaymentRequest requestWithString:url].protocolRequest; // use first url and ignore the rest
+                request = [DSPaymentRequest requestWithString:url onChain:chain].protocolRequest; // use first url and ignore the rest
                 break;
             }
         }
@@ -331,17 +329,17 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
                              [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
                               req.URL.host]}]);
         }
-        else if (! [request.details.network isEqual:network]) {
+        else if (![request.details.chain isActive]) {
             completion(nil, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                             [NSString stringWithFormat:NSLocalizedString(@"requested network \"%@\" instead of \"%@\"",
-                                                                          nil), request.details.network, network]}]);
+                             [NSString stringWithFormat:NSLocalizedString(@"requested network \"%@\" not currently in use",
+                                                                          nil), request.details.chain.networkName]}]);
         }
         else completion(request, nil);
     }] resume];
 }
 
-+ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL timeout:(NSTimeInterval)timeout
-completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion
++ (void)postPayment:(DSPaymentProtocolPayment *)payment scheme:(NSString*)scheme to:(NSString *)paymentURL onChain:(DSChain*)chain
+            timeout:(NSTimeInterval)timeout completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion
 {
     NSURL *u = [NSURL URLWithString:paymentURL];
     NSMutableURLRequest *req = (u) ? [NSMutableURLRequest requestWithURL:u
@@ -371,7 +369,7 @@ completion:(void (^)(DSPaymentProtocolACK *ack, NSError *error))completion
         DSPaymentProtocolACK *ack = nil;
         
         if ([response.MIMEType.lowercaseString isEqual:[NSString stringWithFormat:@"application/%@-paymentack",scheme]] && data.length <= 50000) {
-            ack = [DSPaymentProtocolACK ackWithData:data];
+            ack = [DSPaymentProtocolACK ackWithData:data onChain:chain];
         }
 
         if (! ack) {

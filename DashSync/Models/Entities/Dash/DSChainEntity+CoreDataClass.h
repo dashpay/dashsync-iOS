@@ -1,10 +1,8 @@
 //
-//  DSTxMetadataEntity.h
+//  DSChainEntity+CoreDataClass.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/22/15.
-//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
+//  Created by Quantum Explorer on 05/05/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,17 +26,17 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-#define TX_MDTYPE_MSG 0x01
+@class DSPeerEntity,DSChain;
 
-@class DSTransaction;
+NS_ASSUME_NONNULL_BEGIN
 
-@interface DSTxMetadataEntity : NSManagedObject
+@interface DSChainEntity : NSManagedObject
 
-@property (nonatomic, retain) NSData *blob;
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t type;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx;
-- (DSTransaction *)transaction;
+- (instancetype)setAttributesFromChain:(DSChain *)chain;
+- (DSChain *)chain;
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+#import "DSChainEntity+CoreDataProperties.h"

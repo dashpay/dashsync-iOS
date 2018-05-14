@@ -27,6 +27,8 @@
 
 #import "DSPeerEntity.h"
 #import "DSPeer.h"
+#import "DSChain.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import <arpa/inet.h>
@@ -40,6 +42,7 @@
 @dynamic misbehavin;
 @dynamic lowPreferenceTill;
 @dynamic priority;
+@dynamic chain;
 
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer
 {
@@ -65,8 +68,8 @@
         
     [self.managedObjectContext performBlockAndWait:^{
         UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
-
-        peer = [[DSPeer alloc] initWithAddress:address port:self.port timestamp:self.timestamp services:self.services];
+        DSChain * chain = [self.chain chain];
+        peer = [[DSPeer alloc] initWithAddress:address port:self.port onChain:chain timestamp:self.timestamp services:self.services];
         peer.misbehavin = self.misbehavin;
         peer.priority = self.priority;
         peer.lowPreferenceTill = self.lowPreferenceTill;

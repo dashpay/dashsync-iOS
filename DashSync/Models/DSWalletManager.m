@@ -26,13 +26,14 @@
 //  THE SOFTWARE.
 
 #import "DSWalletManager.h"
+#import "DSChainManager.h"
 #import "DSKey.h"
+#import "DSChain.h"
 #import "DSKey+BIP38.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSBIP32Sequence.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity.h"
-#import "DSTxMetadataEntity.h"
 #import "DSAddressEntity.h"
 #import "DSEventManager.h"
 #import "NSString+Bitcoin.h"
@@ -130,6 +131,23 @@ static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
     return NO;
 }
 
+static BOOL hasKeychainData(NSString *key, NSError **error)
+{
+    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                            (__bridge id)kSecAttrAccount:key,
+                            (__bridge id)kSecReturnRef:@YES};
+    CFDataRef result = nil;
+    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
+    
+    if (status == errSecItemNotFound) return NO;
+    if (status == noErr) return YES;
+    NSLog(@"SecItemCopyMatching error: %@",
+          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
+    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+    return nil;
+}
+
 static NSData *getKeychainData(NSString *key, NSError **error)
 {
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
@@ -208,7 +226,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 
 @interface DSWalletManager()
 
-@property (nonatomic, strong) DSWallet *wallet;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
 @property (nonatomic, assign) BOOL sweepFee;
@@ -355,37 +372,37 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (DSWallet *)wallet
+- (DSWallet *)walletForChain:(DSChain*)chain
 {
-    if (_wallet) return _wallet;
+    if (chain.wallet) return chain.wallet;
     
     uint64_t feePerKb = 0;
     NSData *mpk = self.extendedBIP44PublicKey;
     
-    if (! mpk) return _wallet;
+    if (! mpk) return chain.wallet;
     
     NSData *mpkBIP32 = self.extendedBIP32PublicKey;
     
-    if (! mpkBIP32) return _wallet;
+    if (! mpkBIP32) return chain.wallet;
     
     @synchronized(self) {
-        if (_wallet) return _wallet;
+        if (chain.wallet) return chain.wallet;
         
-        _wallet = [[DSWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence
+        chain.wallet = [[DSWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence onChain:chain
                                masterBIP44PublicKey:mpk masterBIP32PublicKey:mpkBIP32 requestSeedBlock:^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
                                    //this happens when we request the seed
                                    [self seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
                                }];
         
-        _wallet.feePerKb = DEFAULT_FEE_PER_KB;
+        chain.wallet.feePerKb = DEFAULT_FEE_PER_KB;
         feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
-        if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) _wallet.feePerKb = feePerKb;
+        if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) chain.wallet.feePerKb = feePerKb;
         
         // verify that keychain matches core data, with different access and backup policies it's possible to diverge
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
             
-            if (_wallet.allReceiveAddresses.count > 0 && k && ! [_wallet containsAddress:k.address]) {
+            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
                 NSLog(@"wallet doesn't contain address: %@", k.address);
 #if 0
                 abort(); // don't wipe core data for debug builds
@@ -393,11 +410,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                 [[NSManagedObject context] performBlockAndWait:^{
                     [DSAddressEntity deleteAllObjects];
                     [DSTransactionEntity deleteAllObjects];
-                    [DSTxMetadataEntity deleteAllObjects];
                     [NSManagedObject saveContext];
                 }];
                 
-                _wallet = nil;
+                chain.wallet = nil;
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
@@ -409,24 +425,24 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
             }
         });
         
-        return _wallet;
+        return chain.wallet;
     }
 }
 
 // true if keychain is available and we know that no wallet exists on it
-- (BOOL)noWallet
+- (BOOL)noWalletOnChain:(DSChain*)chain
 {
     NSError *error = nil;
-    if (_wallet) return NO;
+    if (chain.wallet) return NO;
     if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, &error) || error) return NO;
     if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32, &error) || error) return NO;
     return YES;
 }
 
-- (BOOL)noOldWallet
+- (BOOL)noOldWallet:(DSChain*)chain
 {
     NSError *error = nil;
-    if (_wallet) return NO;
+    if (chain.wallet) return NO;
     if (getKeychainData(MASTER_PUBKEY_KEY_BIP44, &error) || error) return NO;
     if (getKeychainData(MASTER_PUBKEY_KEY_BIP32, &error) || error) return NO;
     return YES;
@@ -500,6 +516,12 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     [self seedPhraseWithPrompt:nil completion:completion];
 }
 
+-(BOOL)hasSeedPhrase {
+    NSError * error = nil;
+    BOOL hasSeed = hasKeychainData(MNEMONIC_KEY, &error);
+    return hasSeed;
+}
+
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
@@ -508,7 +530,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         [[NSManagedObject context] performBlockAndWait:^{
             [DSAddressEntity deleteAllObjects];
             [DSTransactionEntity deleteAllObjects];
-            [DSTxMetadataEntity deleteAllObjects];
             [NSManagedObject saveContext];
         }];
         
@@ -563,7 +584,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
             setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
             setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
         }
-        _wallet = nil;
+        [[DSChainManager sharedInstance] removeAllWalletsFromChains];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -644,11 +665,15 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     }
 }
 
+-(DSWallet*)mainnetWallet {
+    return [[[[DSChainManager sharedInstance] mainnetManager] chain] wallet];
+}
+
 // authenticates user and returns seed
 - (void)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount completion:(void (^)(NSData * seed))completion
 {
     @autoreleasepool {
-        BOOL touchid = (self.wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
+        BOOL touchid = (self.mainnetWallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
         
         [self authenticateWithPrompt:authprompt andTouchId:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
@@ -656,7 +681,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
             } else {
                 // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
                 // still counts towards the next touch id spending limit
-                if (! touchid) setKeychainInt(self.wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
+                if (! touchid) setKeychainInt(self.mainnetWallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
                 completion([self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil]);
             }
         }];
@@ -1049,7 +1074,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
             uint64_t limit = context.spendingLimit;
             setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
             setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-            if (limit > 0) setKeychainInt(self.wallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
+            if (limit > 0) setKeychainInt(self.mainnetWallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
             [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             if (completion) completion(YES,NO);
@@ -1107,7 +1132,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 
 - (void)setSpendingLimit:(uint64_t)spendingLimit
 {
-    if (setKeychainInt((spendingLimit > 0) ? self.wallet.totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
+    if (setKeychainInt((spendingLimit > 0) ? self.mainnetWallet.totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
         // use setDouble since setInteger won't hold a uint64_t
         [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
     }
@@ -1145,7 +1170,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     }
     else [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
     
-    if (! _wallet) return;
+//    if (! _wallet) return;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
@@ -1349,7 +1374,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         newPrice = @(dashcentralPrice);
     }
     
-    if (! _wallet ) return;
+//    if (! _wallet ) return;
     //if ([newPrice doubleValue] == [_bitcoinDashPrice doubleValue]) return;
     _bitcoinDashPrice = newPrice;
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1635,10 +1660,14 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
+// this can only be done on main chain for now
+- (void)sweepPrivateKey:(NSString *)privKey toChain:(DSChain*)chain withFee:(BOOL)fee
              completion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))completion
 {
     if (! completion) return;
+    if (chain.chainType != DSChainType_MainNet) {
+        return;
+    }
     
     if ([privKey isValidDashBIP38Key]) {
         UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
@@ -1695,7 +1724,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                }];
                                            }
                                            else {
-                                               [self sweepPrivateKey:key.privateKey withFee:self.sweepFee completion:self.sweepCompletion];
+                                               [self sweepPrivateKey:key.privateKey toChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
                                                self.sweepKey = nil;
                                                self.sweepCompletion = nil;
                                            }
@@ -1717,11 +1746,12 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                                                           NSLocalizedString(@"not a valid private key", nil)}]);
         return;
     }
-    
-    if ([self.wallet containsAddress:key.address]) {
-        completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          NSLocalizedString(@"this private key is already in your wallet", nil)}]);
-        return;
+    for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
+        if ([chain.wallet containsAddress:key.address]) {
+            completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                              NSLocalizedString(@"this private key is already in your wallet", nil)}]);
+            return;
+        }
     }
     
     [self utxosForAddresses:@[key.address]
@@ -1751,16 +1781,16 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                      }
                      
                      // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                     if (fee) feeAmount = [self.wallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+                     if (fee) feeAmount = [self.mainnetWallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
                      
-                     if (feeAmount + self.wallet.minOutputAmount > balance) {
+                     if (feeAmount + self.mainnetWallet.minOutputAmount > balance) {
                          completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                            NSLocalizedString(@"transaction fees would cost more than the funds available on this "
                                                                                                                              "private key (due to tiny \"dust\" deposits)",nil)}]);
                          return;
                      }
                      
-                     [tx addOutputAddress:self.wallet.receiveAddress amount:balance - feeAmount];
+                     [tx addOutputAddress:self.mainnetWallet.receiveAddress amount:balance - feeAmount];
                      
                      if (! [tx signWithPrivateKeys:@[privKey]]) {
                          completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:

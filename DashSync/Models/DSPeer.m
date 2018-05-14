@@ -27,6 +27,7 @@
 
 #import "DSPeer.h"
 #import "DSTransaction.h"
+#import "DSChain.h"
 #import "DSMerkleBlock.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
@@ -75,6 +76,7 @@ typedef enum : uint32_t {
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
 @property (nonatomic, strong) void (^mempoolCompletion)(BOOL);
 @property (nonatomic, strong) NSRunLoop *runLoop;
+@property (nonatomic, strong) DSChain * chain;
 
 @end
 
@@ -82,29 +84,31 @@ typedef enum : uint32_t {
 
 @dynamic host;
 
-+ (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port
++ (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithAddress:address andPort:port];
+    return [[self alloc] initWithAddress:address andPort:port onChain:chain];
 }
 
-+ (instancetype)peerWithHost:(NSString *)host
++ (instancetype)peerWithHost:(NSString *)host onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithHost:host];
+    return [[self alloc] initWithHost:host onChain:chain];
 }
 
-- (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port
+- (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
 
     _address = address;
-    _port = (port == 0) ? DASH_STANDARD_PORT : port;
+    _port = (port == 0) ? [chain standardPort] : port;
+    self.chain = chain;
     return self;
 }
 
-- (instancetype)initWithHost:(NSString *)host
+- (instancetype)initWithHost:(NSString *)host onChain:(DSChain*)chain
 {
-    if (! host) return nil;
-    if (! (self = [super init])) return nil;
+    if (!chain) return nil;
+    if (!host) return nil;
+    if (!(self = [super init])) return nil;
     
     NSArray *pair = [host componentsSeparatedByString:@":"];
     struct in_addr addr;
@@ -116,14 +120,15 @@ typedef enum : uint32_t {
 
     if (inet_pton(AF_INET, host.UTF8String, &addr) != 1) return nil;
     _address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr } };
-    if (_port == 0) _port = DASH_STANDARD_PORT;
+    if (_port == 0) _port = MAINNET_STANDARD_PORT;
+    self.chain = chain;
     return self;
 }
 
-- (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
+- (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain*)chain timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services
 {
-    if (! (self = [self initWithAddress:address andPort:port])) return nil;
+    if (! (self = [self initWithAddress:address andPort:port onChain:chain])) return nil;
 
     _timestamp = timestamp;
     _services = services;
@@ -334,7 +339,7 @@ services:(uint64_t)services
     [msg appendUInt64:self.services]; // services of remote peer
     [msg appendBytes:&_address length:sizeof(_address)]; // IPv6 address of remote peer
     [msg appendBytes:&port length:sizeof(port)]; // port of remote peer
-    [msg appendNetAddress:LOCAL_HOST port:DASH_STANDARD_PORT services:ENABLED_SERVICES]; // net address of local peer
+    [msg appendNetAddress:LOCAL_HOST port:self.chain.standardPort services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(); // random nonce
     [msg appendUInt64:self.localNonce];
     [msg appendString:USER_AGENT]; // user agent
@@ -668,7 +673,7 @@ services:(uint64_t)services
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
 
         // subtract two hours and add it to the list
-        [peers addObject:[[DSPeer alloc] initWithAddress:address port:port timestamp:timestamp - 2*60*60
+        [peers addObject:[[DSPeer alloc] initWithAddress:address port:port onChain:self.chain timestamp:timestamp - 2*60*60
          services:services]];
     }
 
@@ -780,7 +785,7 @@ services:(uint64_t)services
 
 - (void)acceptTxMessage:(NSData *)message
 {
-    DSTransaction *tx = [DSTransaction transactionWithMessage:message];
+    DSTransaction *tx = [DSTransaction transactionWithMessage:message onChain:self.chain];
     
     if (! tx) {
         [self error:@"malformed tx message: %@", message];

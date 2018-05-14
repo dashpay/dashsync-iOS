@@ -27,19 +27,22 @@
 
 #import "DSTransaction+Utils.h"
 #import "DSWalletManager.h"
-#import "DSPeerManager.h"
+#import "DSChainPeerManager.h"
+#import "DSChainManager.h"
+#import "DSChain.h"
 
 @implementation DSTransaction (Utils)
 
 - (DSTransactionType)transactionType
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    uint64_t received = [manager.wallet amountReceivedFromTransaction:self],
-             sent = [manager.wallet amountSentByTransaction:self];
+    DSWallet * wallet = [manager walletForChain:self.chain];
+    uint64_t received = [wallet amountReceivedFromTransaction:self],
+             sent = [wallet amountSentByTransaction:self];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
 
-    if (confirms == 0 && ! [manager.wallet transactionIsValid:self]) {
+    if (confirms == 0 && ! [wallet transactionIsValid:self]) {
         return DSTransactionTypeInvalid;
     }
     
@@ -55,9 +58,10 @@
 - (NSString*)localCurrencyTextForAmount
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    uint64_t received = [manager.wallet amountReceivedFromTransaction:self],
+    DSWallet * wallet = [manager walletForChain:self.chain];
+    uint64_t received = [wallet amountReceivedFromTransaction:self],
 
-    sent = [manager.wallet amountSentByTransaction:self];
+    sent = [wallet amountSentByTransaction:self];
 
     if (sent > 0 && received == sent) {
         return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:sent]];
@@ -71,9 +75,10 @@
 - (NSString*)amountText
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    uint64_t received = [manager.wallet amountReceivedFromTransaction:self],
+    DSWallet * wallet = [manager walletForChain:self.chain];
+    uint64_t received = [wallet amountReceivedFromTransaction:self],
 
-    sent = [manager.wallet amountSentByTransaction:self];
+    sent = [wallet amountSentByTransaction:self];
 
     if (sent > 0 && received == sent) {
         return [manager stringForDashAmount:sent];
@@ -87,7 +92,7 @@
 - (uint32_t)lastBlockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = [DSPeerManager sharedInstance].lastBlockHeight;
+    uint32_t h = self.chain.lastBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -100,7 +105,7 @@
     df.dateFormat = dateFormat(@"Mdja");
 
     NSTimeInterval t = (self.timestamp > 1) ? self.timestamp :
-                       [[DSPeerManager sharedInstance] timestampForBlockHeight:self.blockHeight] - 5*60;
+                       [[[DSChainManager sharedInstance] peerManagerForChain:self.chain] timestampForBlockHeight:self.blockHeight] - 5*60;
     NSString *date = [df stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]];
 
     date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];

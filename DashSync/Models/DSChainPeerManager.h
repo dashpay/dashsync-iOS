@@ -1,5 +1,5 @@
 //
-//  DSPeerManager.h
+//  DSChainPeerManager.h
 //  DashSync
 //
 //  Created by Aaron Voisine on 10/6/13.
@@ -28,28 +28,30 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import "DSPeer.h"
+#import "DSChain.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerSyncStartedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerSyncFinishedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerSyncFailedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerTxStatusNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
 
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 
 @class DSTransaction;
 
-@interface DSPeerManager : NSObject <DSPeerDelegate, UIAlertViewDelegate>
+@interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
-@property (nonatomic, readonly) uint32_t lastBlockHeight;
-@property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly) double syncProgress;
 @property (nonatomic, readonly) NSUInteger peerCount; // number of connected peers
 @property (nonatomic, readonly) NSString * _Nullable downloadPeerName;
 @property (nonatomic, readonly) NSString * _Nullable chainTip;
+@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSPeer *downloadPeer, *fixedPeer;
 
-+ (instancetype _Nullable)sharedInstance;
+
+- (instancetype)initWithChain:(DSChain*)chain;
 
 - (void)connect;
 - (void)disconnect;

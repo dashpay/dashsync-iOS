@@ -28,12 +28,12 @@
 #import "DSWallet.h"
 #import "DSKey.h"
 #import "DSAddressEntity.h"
+#import "DSChain.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity.h"
 #import "DSTxInputEntity.h"
 #import "DSTxOutputEntity.h"
-#import "DSTxMetadataEntity.h"
-#import "DSPeerManager.h"
+#import "DSChainPeerManager.h"
 #import "DSKeySequence.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
@@ -64,18 +64,20 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 @property (nonatomic, strong) SeedRequestBlock seed;
 @property (nonatomic, strong) NSManagedObjectContext *moc;
+@property (nonatomic, strong) DSChain * chain;
 
 @end
 
 @implementation DSWallet
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<DSKeySequence>)sequence
+- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<DSKeySequence>)sequence onChain:(DSChain*)chain
                 masterBIP44PublicKey:(NSData *)masterPublicKey masterBIP32PublicKey:(NSData *)masterBIP32PublicKey requestSeedBlock:(SeedRequestBlock)seed
 {
     if (! (self = [super init])) return nil;
     
     NSMutableSet *updateTx = [NSMutableSet set];
     
+    self.chain = chain;
     self.moc = context;
     self.sequence = sequence;
     self.masterPublicKey = masterPublicKey;
@@ -93,7 +95,6 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [self.moc performBlockAndWait:^{
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
-        [DSTxMetadataEntity setContext:self.moc];
         
         for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
             @autoreleasepool {
@@ -102,21 +103,6 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
                 while (e.index >= a.count) [a addObject:[NSNull null]];
                 a[e.index] = e.address;
                 [self.allAddresses addObject:e.address];
-            }
-        }
-        
-        for (DSTxMetadataEntity *e in [DSTxMetadataEntity allObjects]) {
-            @autoreleasepool {
-                if (e.type != TX_MDTYPE_MSG) continue;
-                
-                DSTransaction *tx = e.transaction;
-                NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
-                
-                if (! tx) continue;
-                self.allTx[hash] = tx;
-                [self.transactions addObject:tx];
-                [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
-                [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
             }
         }
         
@@ -141,16 +127,6 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
             }
         }
     }];
-    
-    if (updateTx.count > 0) {
-        [self.moc performBlock:^{
-            for (DSTransaction *tx in updateTx) {
-                [[DSTxMetadataEntity managedObject] setAttributesFromTx:tx];
-            }
-            
-            [DSTxMetadataEntity saveContext];
-        }];
-    }
     
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
@@ -749,11 +725,6 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
              [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
             [[DSTransactionEntity managedObject] setAttributesFromTx:transaction];
         }
-        
-        if ([DSTxMetadataEntity countObjectsMatching:@"txHash == %@ && type == %d",
-             [NSData dataWithBytes:&txHash length:sizeof(txHash)], TX_MDTYPE_MSG] == 0) {
-            [[DSTxMetadataEntity managedObject] setAttributesFromTx:transaction];
-        }
     }];
     
     return YES;
@@ -787,8 +758,6 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [self.moc performBlock:^{ // remove transaction from core data
         [DSTransactionEntity deleteObjects:[DSTransactionEntity objectsMatching:@"txHash == %@",
                                             [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
-        [DSTxMetadataEntity deleteObjects:[DSTxMetadataEntity objectsMatching:@"txHash == %@",
-                                           [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
 }
 
@@ -907,24 +876,11 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
                     [entities addObject:e];
                 }
                 
-                for (DSTxMetadataEntity *e in [DSTxMetadataEntity objectsMatching:@"txHash in %@ && type == %d", hashes,
-                                               TX_MDTYPE_MSG]) {
-                    @autoreleasepool {
-                        DSTransaction *tx = e.transaction;
-                        
-                        tx.blockHeight = height;
-                        tx.timestamp = timestamp;
-                        [e setAttributesFromTx:tx];
-                        [entities addObject:e];
-                    }
-                }
-                
                 if (height != TX_UNCONFIRMED) {
                     // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
                     // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
                     // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
-                    [DSTxMetadataEntity saveContext];
-                    
+
                     for (NSManagedObject *e in entities) {
                         [self.moc refreshObject:e mergeChanges:NO];
                     }
@@ -1052,7 +1008,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = [DSPeerManager sharedInstance].lastBlockHeight;
+    uint32_t h = self.chain.lastBlockHeight;
     
     if (h > height) height = h;
     return height;

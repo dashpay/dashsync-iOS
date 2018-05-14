@@ -28,12 +28,6 @@
 #import <Foundation/Foundation.h>
 
 
-#if DASH_TESTNET
-#define DASH_STANDARD_PORT          19999
-#else
-#define DASH_STANDARD_PORT          9999
-#endif
-
 #define BITCOIN_TIMEOUT_CODE  1001
 
 #define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
@@ -80,7 +74,7 @@
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
-@class DSPeer, DSTransaction, DSMerkleBlock;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -112,7 +106,7 @@ typedef enum : NSInteger {
 @property (nonatomic, readonly) id<DSPeerDelegate> delegate;
 @property (nonatomic, readonly) dispatch_queue_t delegateQueue;
 
-// set this to the timestamp when the wallet was created to improve initial sync time (interval since refrence date)
+// set this to the timestamp when the wallet was created to improve initial sync time (interval since reference date)
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;
 
 @property (nonatomic, readonly) DSPeerStatus status;
@@ -136,13 +130,15 @@ typedef enum : NSInteger {
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)
 @property (nonatomic, assign) BOOL synced; // use this to keep track of peer state
 
-+ (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port;
-+ (instancetype)peerWithHost:(NSString *)host;
+@property (nonatomic, readonly) DSChain * chain;
 
-- (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port;
-- (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port timestamp:(NSTimeInterval)timestamp
++ (instancetype)peerWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain;
++ (instancetype)peerWithHost:(NSString *)host onChain:(DSChain*)chain;
+
+- (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain;
+- (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain*)chain timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
-- (instancetype)initWithHost:(NSString *)host;
+- (instancetype)initWithHost:(NSString *)host onChain:(DSChain*)chain;
 - (void)setDelegate:(id<DSPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;

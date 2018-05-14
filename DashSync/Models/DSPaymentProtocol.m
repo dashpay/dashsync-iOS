@@ -27,6 +27,7 @@
 
 #import "DSPaymentProtocol.h"
 #import "DSTransaction.h"
+#import "DSChain.h"
 #import "NSData+Bitcoin.h"
 
 // BIP70 payment protocol: https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki
@@ -182,26 +183,26 @@ typedef enum : NSUInteger {
 
 @interface DSPaymentProtocolDetails ()
 
-@property (nonatomic, strong) NSString *network;
+@property (nonatomic, strong) DSChain *chain;
 @property (nonatomic, strong) NSArray *outputAmounts;
 
 @end
 
 @implementation DSPaymentProtocolDetails
 
-+ (instancetype)detailsWithData:(NSData *)data
++ (instancetype)detailsWithData:(NSData *)data onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithData:data];
+    return [[self alloc] initWithData:data onChain:chain];
 }
 
-- (instancetype)initWithNetwork:(NSString *)network outputAmounts:(NSArray *)amounts outputScripts:(NSArray *)scripts
-time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo paymentURL:(NSString *)url
-                   merchantData:(NSData *)data
+- (instancetype)initWithOutputAmounts:(NSArray *)amounts outputScripts:(NSArray *)scripts
+                                 time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo paymentURL:(NSString *)url
+                         merchantData:(NSData *)data onChain:(DSChain*)chain
 {
     if (scripts.count == 0 || amounts.count != scripts.count) return nil;
     if (! (self = [self init])) return nil;
 
-    if (network) _network = network;
+    self.chain = chain;
     _outputAmounts = amounts;
     _outputScripts = scripts;
     _time = time;
@@ -211,7 +212,7 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
     return self;
 }
 
-- (instancetype)initWithData:(NSData *)data
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
 {
     if (! (self = [self init])) return nil;
 
@@ -224,7 +225,7 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
         NSUInteger o = 0;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case details_network: if (d) _network = protoBufString(d); break;
+            case details_network: if (d) self.chain = [DSChain chainForNetworkName:protoBufString(d)]; break;
             case details_outputs: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
             case details_time: if (i) _time = i - NSTimeIntervalSince1970; break;
             case details_expires: if (i) _expires = i - NSTimeIntervalSince1970; break;
@@ -241,11 +242,6 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
     _outputAmounts = amounts;
     _outputScripts = scripts;
     return self;
-}
-
-- (NSString *)network
-{
-    return (_network) ? _network : @"main";
 }
 
 - (NSArray *)outputAmounts
@@ -266,7 +262,7 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
     NSMutableData *d = [NSMutableData data];
     NSUInteger i = 0;
 
-    if (_network) [d appendProtoBufString:_network withKey:details_network];
+    if (self.chain) [d appendProtoBufString:self.chain.networkName withKey:details_network];
 
     for (NSData *script in _outputScripts) {
         NSMutableData *output = [NSMutableData data];
@@ -291,17 +287,18 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
 
 @property (nonatomic, assign) uint32_t version;
 @property (nonatomic, strong) NSString *pkiType;
+@property (nonatomic, strong) DSChain * chain;
 
 @end
 
 @implementation DSPaymentProtocolRequest
 
-+ (instancetype)requestWithData:(NSData *)data
++ (instancetype)requestWithData:(NSData *)data onChain:(DSChain *)chain
 {
-    return [[self alloc] initWithData:data];
+    return [[self alloc] initWithData:data onChain:chain];
 }
 
-- (instancetype)initWithData:(NSData *)data
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain *)chain
 {
     if (! (self = [self init])) return nil;
 
@@ -315,7 +312,7 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
             case request_version: if (i) _version = (uint32_t)i; break;
             case request_pki_type: if (d) _pkiType = protoBufString(d); break;
             case request_pki_data: if (d) _pkiData = d; break;
-            case request_details: if (d) _details = [DSPaymentProtocolDetails detailsWithData:d]; break;
+            case request_details: if (d) _details = [DSPaymentProtocolDetails detailsWithData:d onChain:chain]; break;
             case request_signature: if (d) _signature = d; break;
             default: break;
         }
@@ -326,7 +323,7 @@ time:(NSTimeInterval)time expires:(NSTimeInterval)expires memo:(NSString *)memo 
 }
 
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackScheme:(NSString *)callbackScheme
+details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme
 {
     if (! details) return nil; // required
     if (! (self = [self init])) return nil;
@@ -344,6 +341,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackSche
     _details = details;
     _signature = sig;
     _callbackScheme = callbackScheme;
+    self.chain = chain;
     return self;
 }
 
@@ -470,17 +468,19 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackSche
 @interface DSPaymentProtocolPayment ()
 
 @property (nonatomic, strong) NSArray *refundToAmounts;
+@property (nonatomic, strong) DSChain *chain;
 
 @end
 
 @implementation DSPaymentProtocolPayment
 
-+ (instancetype)paymentWithData:(NSData *)data
+
++ (instancetype)paymentWithData:(NSData *)data onChain:(DSChain*)chain
 {
     return [[self alloc] initWithData:data];
 }
 
-- (instancetype)initWithData:(NSData *)data
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
 {
     if (! (self = [self init])) return nil;
 
@@ -495,7 +495,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackSche
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
             case payment_merchant_data: if (d) _merchantData = d; break;
-            case payment_transactions: if (d) tx = [DSTransaction transactionWithMessage:d]; break;
+            case payment_transactions: if (d) tx = [DSTransaction transactionWithMessage:d onChain:chain]; break;
             case payment_refund_to: while (o < d.length) [d protoBufFieldAtOffset:&o int:&amount data:&script]; break;
             case payment_memo: if (d) _memo = protoBufString(d); break;
             default: break;
@@ -505,6 +505,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackSche
         if (script) [amounts addObject:@(amount)], [scripts addObject:script];
     }
 
+    self.chain = chain;
     _transactions = txs;
     _refundToAmounts = amounts;
     _refundToScripts = scripts;
@@ -512,7 +513,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig callbackSche
 }
 
 - (instancetype)initWithMerchantData:(NSData *)data transactions:(NSArray *)transactions
-refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSString *)memo
+refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSString *)memo onChain:(DSChain*)chain;
 {
     if (amounts.count != scripts.count) return nil;
     if (! (self = [self init])) return nil;
@@ -522,6 +523,7 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
     _refundToAmounts = amounts;
     _refundToScripts = scripts;
     _memo = memo;
+    self.chain = chain;
     return self;
 }
 
@@ -564,14 +566,20 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
 
 @end
 
+@interface DSPaymentProtocolACK()
+
+@property(nonatomic,strong) DSChain * chain;
+
+@end
+
 @implementation DSPaymentProtocolACK
 
-+ (instancetype)ackWithData:(NSData *)data
++ (instancetype)ackWithData:(NSData *)data onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithData:data];
+    return [[self alloc] initWithData:data onChain:chain];
 }
 
-- (instancetype)initWithData:(NSData *)data
+- (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
 {
     if (! (self = [self init])) return nil;
 
@@ -582,21 +590,22 @@ refundToAmounts:(NSArray *)amounts refundToScripts:(NSArray *)scripts memo:(NSSt
         NSData *d = nil;
 
         switch ([data protoBufFieldAtOffset:&off int:&i data:&d]) {
-            case ack_payment: if (d) _payment = [DSPaymentProtocolPayment paymentWithData:d]; break;
+            case ack_payment: if (d) _payment = [DSPaymentProtocolPayment paymentWithData:d onChain:chain]; break;
             case ack_memo: if (d) _memo = protoBufString(d); break;
             default: break;
         }
     }
-
+    self.chain = chain;
     if (! _payment) return nil; // required
     return self;
 }
 
-- (instancetype)initWithPayment:(DSPaymentProtocolPayment *)payment andMemo:(NSString *)memo
+- (instancetype)initWithPayment:(DSPaymentProtocolPayment *)payment andMemo:(NSString *)memo onChain:(DSChain*)chain
 {
     if (! payment) return nil; // required
     if (! (self = [self init])) return nil;
 
+    self.chain = chain;
     _payment = payment;
     _memo = memo;
     return self;

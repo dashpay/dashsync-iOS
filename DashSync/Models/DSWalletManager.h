@@ -55,9 +55,6 @@ typedef void (^ResetCancelHandlerBlock)(void);
 
 @interface DSWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
-@property (nonatomic, readonly) DSWallet * _Nullable wallet;
-@property (nonatomic, readonly) BOOL noWallet; // true if keychain is available and we know that no wallet exists on it
-@property (nonatomic, readonly) BOOL noOldWallet; // true if keychain is available and we know that no old wallet exists on it
 @property (nonatomic, readonly) BOOL watchOnly; // true if this is a "watch only" wallet with no signing ability
 @property (nonatomic, strong) id<DSKeySequence> _Nullable sequence;
 @property (nonatomic, strong) id<DSMnemonic> _Nullable mnemonic;
@@ -88,6 +85,9 @@ typedef void (^ResetCancelHandlerBlock)(void);
 
 + (instancetype _Nullable)sharedInstance;
 
+- (BOOL)hasSeedPhrase;
+- (DSWallet*)walletForChain:(DSChain*)chain;
+- (BOOL)noWalletOnChain:(DSChain*)chain;
 - (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the seedPhrase
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (NSString*)seedPhraseAfterAuthentication;
@@ -102,7 +102,7 @@ completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amoun
 
 // given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
+- (void)sweepPrivateKey:(NSString * _Nonnull)privKey toChain:(DSChain*)chain withFee:(BOOL)fee
 completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 - (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;

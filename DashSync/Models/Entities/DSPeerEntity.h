@@ -28,7 +28,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSPeer;
+@class DSPeer,DSChainEntity;
 
 @interface DSPeerEntity : NSManagedObject
 
@@ -39,6 +39,7 @@
 @property (nonatomic) int64_t services;
 @property (nonatomic) int16_t misbehavin;
 @property (nonatomic) int32_t priority;
+@property (nonatomic,retain) DSChainEntity * chain;
 
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer;
 - (DSPeer *)peer;

@@ -55,9 +55,13 @@ typedef struct _DSUTXO {
     CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32_t)]
 
 @class DSTransaction;
+@class DSChain;
 @protocol DSKeySequence;
 
 @interface DSWallet : NSObject
+
+// chain for the wallet
+@property (nonatomic, readonly) DSChain * chain;
 
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
@@ -102,6 +106,7 @@ typedef struct _DSUTXO {
 
 - (instancetype _Nullable)initWithContext:(NSManagedObjectContext * _Nullable)context
                                  sequence:(id<DSKeySequence> _Nonnull)sequence
+                                  onChain:(DSChain*)chain
                           masterBIP44PublicKey:(NSData * _Nonnull)masterPublicKey
                             masterBIP32PublicKey:(NSData * _Nonnull)masterBIP32PublicKey
                             requestSeedBlock:(_Nullable SeedRequestBlock)seed;

@@ -1,10 +1,8 @@
 //
-//  DSTxMetadataEntity.m
+//  DSChainEntity+CoreDataClass.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/22/15.
-//  Copyright (c) 2015 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
+//  Created by Quantum Explorer on 05/05/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,49 +23,28 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTxMetadataEntity.h"
-#import "DSTransaction.h"
-#import "NSManagedObject+Sugar.h"
-#import "NSData+Bitcoin.h"
-#import "NSMutableData+Dash.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSChainPeerManager.h"
+#import "DSChain.h"
+#import "NSString+Dash.h"
 
-@implementation DSTxMetadataEntity
+@implementation DSChainEntity
 
-@dynamic blob;
-@dynamic txHash;
-@dynamic type;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
-{
-    NSMutableData *data = [NSMutableData dataWithData:tx.data];
-
-    [data appendUInt32:tx.blockHeight];
-    [data appendUInt32:tx.timestamp];
-
-    [self.managedObjectContext performBlockAndWait:^{
-        self.blob = data;
-        self.type = TX_MDTYPE_MSG;
-        self.txHash = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)];
-    }];
-    
+- (instancetype)setAttributesFromChain:(DSChain *)chain {
+    self.standardPort = @(chain.standardPort);
+    self.type = @(chain.chainType);
     return self;
 }
-
-- (DSTransaction *)transaction
-{
-    __block DSTransaction *tx = nil;
+- (DSChain *)chain {
+    DSChain *chain = [DSChain new];
     
     [self.managedObjectContext performBlockAndWait:^{
-        NSData *data = self.blob;
-    
-        if (data.length > sizeof(uint32_t)*2) {
-            tx = [DSTransaction transactionWithMessage:data];
-            tx.blockHeight = [data UInt32AtOffset:data.length - sizeof(uint32_t)*2];
-            tx.timestamp = [data UInt32AtOffset:data.length - sizeof(uint32_t)];
-        }
+        chain.standardPort = (uint32_t)[self.standardPort unsignedLongValue];
+        chain.chainType = [self.type integerValue];
+        chain.genesisHash = *(UInt256 *)self.genesisBlockHash.hexToData.bytes;
     }];
     
-    return tx;
+    return chain;
 }
 
 @end

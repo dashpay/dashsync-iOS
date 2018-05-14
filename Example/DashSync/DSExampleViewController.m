@@ -26,6 +26,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *connectedPeerCount;
 @property (strong, nonatomic) IBOutlet UILabel *downloadPeerLabel;
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
+@property (strong, nonatomic) IBOutlet UILabel *networkLabel;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -49,7 +50,7 @@
 
 - (void)showSyncing
 {
-    double progress = [DSPeerManager sharedInstance].syncProgress;
+    double progress = [[DSChainManager sharedInstance] mainnetManager].syncProgress;
     
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.explanationLabel.text = NSLocalizedString(@"Syncing:", nil);
@@ -66,7 +67,7 @@
     }
     
     if (timeout <= DBL_EPSILON) {
-        if ([[DSPeerManager sharedInstance] timestampForBlockHeight:[DSPeerManager sharedInstance].lastBlockHeight] +
+        if ([[DSChainManager sharedInstance] timestampForBlockHeight:[DSChainManager sharedInstance].lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
@@ -84,7 +85,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progressView = [DSPeerManager sharedInstance].syncProgress;
+    double progressView = [DSChainManager sharedInstance].syncProgress;
     
     self.start = self.timeout = 0.0;
     if (progressView > DBL_EPSILON && progressView + DBL_EPSILON < 1.0) return; // not done syncing
@@ -120,9 +121,9 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
-    double progress = [DSPeerManager sharedInstance].syncProgress;
+    double progress = [DSChainManager sharedInstance].syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
-    uint32_t lastBlockHeight = [DSPeerManager sharedInstance].lastBlockHeight;
+    uint32_t lastBlockHeight = [DSChainManager sharedInstance].lastBlockHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     
     if ((counter % 13) == 0) {
@@ -148,15 +149,15 @@
     
     counter++;
     
-    uint64_t connectedPeerCount = [DSPeerManager sharedInstance].peerCount;
+    uint64_t connectedPeerCount = [DSChainManager sharedInstance].peerCount;
     
     self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
     self.connectedPeerCount.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
-    self.downloadPeerLabel.text = [DSPeerManager sharedInstance].downloadPeerName;
-    self.chainTipLabel.text = [DSPeerManager sharedInstance].chainTip;
+    self.downloadPeerLabel.text = [DSChainManager sharedInstance].downloadPeerName;
+    self.chainTipLabel.text = [DSChainManager sharedInstance].chain.ch;
     if (progress + DBL_EPSILON >= 1.0) {
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
     }
@@ -177,4 +178,30 @@
     [[DashSync sharedSyncController] stopSync];
     [[DashSync sharedSyncController] wipeBlockchainData];
 }
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.section) {
+        case 1:
+            {
+                switch (indexPath.row) {
+                    case 4:
+                    {
+                        UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Network" message:NULL preferredStyle:UIAlertControllerStyleActionSheet];
+                        [alertController addAction:[UIAlertAction actionWithTitle:@"Mainnet" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                            <#code#>
+                        }]];
+                    }
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+            break;
+            
+        default:
+            break;
+    }
+}
+
 @end
