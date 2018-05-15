@@ -14,7 +14,7 @@
 		6003F598195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F596195388D20070C39A /* InfoPlist.strings */; };
 		6003F59A195388D20070C39A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F599195388D20070C39A /* main.m */; };
 		6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F59D195388D20070C39A /* DSAppDelegate.m */; };
-		6003F5A7195388D20070C39A /* DSExampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5A6195388D20070C39A /* DSExampleViewController.m */; };
+		6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5A6195388D20070C39A /* DSSyncViewController.m */; };
 		6003F5A9195388D20070C39A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5A8195388D20070C39A /* Images.xcassets */; };
 		6003F5B0195388D20070C39A /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F5AF195388D20070C39A /* XCTest.framework */; };
 		6003F5B1195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
@@ -24,6 +24,9 @@
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
+		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
+		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
+		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
 		FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C512089776A00CDBA57 /* DSWalletViewController.m */; };
 		FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */; };
 		FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */; };
@@ -53,8 +56,8 @@
 		6003F59B195388D20070C39A /* DashSync-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashSync-Prefix.pch"; sourceTree = "<group>"; };
 		6003F59C195388D20070C39A /* DSAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAppDelegate.h; sourceTree = "<group>"; };
 		6003F59D195388D20070C39A /* DSAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAppDelegate.m; sourceTree = "<group>"; };
-		6003F5A5195388D20070C39A /* DSExampleViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSExampleViewController.h; sourceTree = "<group>"; };
-		6003F5A6195388D20070C39A /* DSExampleViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSExampleViewController.m; sourceTree = "<group>"; };
+		6003F5A5195388D20070C39A /* DSSyncViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSyncViewController.h; sourceTree = "<group>"; };
+		6003F5A6195388D20070C39A /* DSSyncViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSyncViewController.m; sourceTree = "<group>"; };
 		6003F5A8195388D20070C39A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		6003F5AE195388D20070C39A /* DashSync_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashSync_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F5AF195388D20070C39A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -71,6 +74,12 @@
 		C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		E47ABFD6469F1FD556CDA6C7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
+		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
+		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
+		FB6DC62820AB64F400E35EED /* DSChainsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainsViewController.m; sourceTree = "<group>"; };
+		FB6DC62A20AB678500E35EED /* DSChainTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainTableViewCell.h; sourceTree = "<group>"; };
+		FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainTableViewCell.m; sourceTree = "<group>"; };
 		FB763C502089776A00CDBA57 /* DSWalletViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletViewController.h; sourceTree = "<group>"; };
 		FB763C512089776A00CDBA57 /* DSWalletViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletViewController.m; sourceTree = "<group>"; };
 		FB763C5420897B0F00CDBA57 /* DSWalletTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletTableViewCell.h; sourceTree = "<group>"; };
@@ -144,13 +153,12 @@
 		6003F593195388D20070C39A /* Example for DashSync */ = {
 			isa = PBXGroup;
 			children = (
+				FB6DC62620AB63B600E35EED /* View Controllers */,
 				FB763C5720897B8600CDBA57 /* Wallet */,
 				FB763C5320897AE500CDBA57 /* Cells */,
 				6003F59C195388D20070C39A /* DSAppDelegate.h */,
 				6003F59D195388D20070C39A /* DSAppDelegate.m */,
 				873B8AEA1B1F5CCA007FD442 /* Main.storyboard */,
-				6003F5A5195388D20070C39A /* DSExampleViewController.h */,
-				6003F5A6195388D20070C39A /* DSExampleViewController.m */,
 				71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
@@ -210,6 +218,19 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		FB6DC62620AB63B600E35EED /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				6003F5A5195388D20070C39A /* DSSyncViewController.h */,
+				6003F5A6195388D20070C39A /* DSSyncViewController.m */,
+				FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */,
+				FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */,
+				FB6DC62720AB64F400E35EED /* DSChainsViewController.h */,
+				FB6DC62820AB64F400E35EED /* DSChainsViewController.m */,
+			);
+			name = "View Controllers";
+			sourceTree = "<group>";
+		};
 		FB763C5320897AE500CDBA57 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
@@ -217,6 +238,8 @@
 				FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */,
 				FB763C632089B0A700CDBA57 /* DSAddressTableViewCell.h */,
 				FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */,
+				FB6DC62A20AB678500E35EED /* DSChainTableViewCell.h */,
+				FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -243,7 +266,6 @@
 				6003F586195388D20070C39A /* Sources */,
 				6003F587195388D20070C39A /* Frameworks */,
 				6003F588195388D20070C39A /* Resources */,
-				3ECD1E242E0238687A0114B5 /* [CP] Embed Pods Frameworks */,
 				F3524DD5332FD019D466B225 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
@@ -263,8 +285,6 @@
 				6003F5AA195388D20070C39A /* Sources */,
 				6003F5AB195388D20070C39A /* Frameworks */,
 				6003F5AC195388D20070C39A /* Resources */,
-				1CF2642D604F1860785FEAFF /* [CP] Embed Pods Frameworks */,
-				0D9A5435CE21D1CDE30FEE21 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -333,21 +353,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0D9A5435CE21D1CDE30FEE21 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		1A450F2773F81BAA9F430A99 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -364,39 +369,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		1CF2642D604F1860785FEAFF /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		3ECD1E242E0238687A0114B5 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/DashSync/DashSync.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DashSync.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		BA464DCB59BC59A2B2C9AAD7 /* [CP] Check Pods Manifest.lock */ = {
@@ -444,10 +416,13 @@
 			files = (
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
+				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
-				6003F5A7195388D20070C39A /* DSExampleViewController.m in Sources */,
+				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
+				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
+				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

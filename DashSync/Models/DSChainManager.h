@@ -14,6 +14,7 @@
 @property (nonatomic,strong) DSChainPeerManager * testnetManager;
 @property (nonatomic,strong) NSArray * devnetManagers;
 @property (nonatomic,readonly) NSArray * chains;
+@property (nonatomic,readonly) NSArray * devnetChains;
 
 -(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
 

@@ -10,6 +10,7 @@
 @interface DSChainManager()
 
 @property (nonatomic,strong) NSMutableArray * knownChains;
+@property (nonatomic,strong) NSMutableArray * knownDevnetChains;
 
 @end
 
@@ -30,6 +31,7 @@
 -(id)init {
     if ([super init] == self) {
         self.knownChains = [NSMutableArray array];
+        self.knownDevnetChains = [NSMutableArray array];
     }
     return self;
 }
@@ -71,6 +73,7 @@
             devnetChainPeerManager = [[DSChainPeerManager alloc] initWithChain:chain];
             chain.peerManagerDelegate = devnetChainPeerManager;
             [self.knownChains addObject:chain];
+            [self.knownDevnetChains addObject:chain];
             [_devnetDictionary setObject:devnetChainPeerManager forKey:genesisValue];
         } else {
             devnetChainPeerManager = [_devnetDictionary objectForKey:genesisValue];
@@ -88,6 +91,10 @@
         return [self devnetManagerForChain:chain];
     }
     return nil;
+}
+
+-(NSArray*)devnetChains {
+    return [self.knownDevnetChains copy];
 }
 
 -(NSArray*)chains {

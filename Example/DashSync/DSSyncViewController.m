@@ -8,10 +8,10 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DSExampleViewController.h"
+#import "DSSyncViewController.h"
 
 
-@interface DSExampleViewController ()
+@interface DSSyncViewController ()
 
 @property (strong, nonatomic) IBOutlet UILabel *explanationLabel;
 @property (strong, nonatomic) IBOutlet UILabel *percentageLabel;
@@ -34,7 +34,7 @@
 
 @end
 
-@implementation DSExampleViewController
+@implementation DSSyncViewController
 
 - (void)viewDidLoad
 {
@@ -48,9 +48,13 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(DSChain*)chain {
+    return self.chainPeerManager.chain;
+}
+
 - (void)showSyncing
 {
-    double progress = [[DSChainManager sharedInstance] mainnetManager].syncProgress;
+    double progress = self.chainPeerManager.syncProgress;
     
     if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.explanationLabel.text = NSLocalizedString(@"Syncing:", nil);
@@ -67,7 +71,7 @@
     }
     
     if (timeout <= DBL_EPSILON) {
-        if ([[DSChainManager sharedInstance] timestampForBlockHeight:[DSChainManager sharedInstance].lastBlockHeight] +
+        if ([[DSChain mainnet] timestampForBlockHeight:[DSChain mainnet].lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
@@ -85,7 +89,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progressView = [DSChainManager sharedInstance].syncProgress;
+    double progressView = self.chainPeerManager.syncProgress;
     
     self.start = self.timeout = 0.0;
     if (progressView > DBL_EPSILON && progressView + DBL_EPSILON < 1.0) return; // not done syncing
@@ -121,9 +125,9 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
-    double progress = [DSChainManager sharedInstance].syncProgress;
+    double progress = self.chainPeerManager.syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
-    uint32_t lastBlockHeight = [DSChainManager sharedInstance].lastBlockHeight;
+    uint32_t lastBlockHeight = self.chain.lastBlockHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
     
     if ((counter % 13) == 0) {
@@ -149,15 +153,15 @@
     
     counter++;
     
-    uint64_t connectedPeerCount = [DSChainManager sharedInstance].peerCount;
+    uint64_t connectedPeerCount = self.chainPeerManager.peerCount;
     
     self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
     self.connectedPeerCount.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
-    self.downloadPeerLabel.text = [DSChainManager sharedInstance].downloadPeerName;
-    self.chainTipLabel.text = [DSChainManager sharedInstance].chain.ch;
+    self.downloadPeerLabel.text = self.chainPeerManager.downloadPeerName;
+    self.chainTipLabel.text = self.chain.chainTip;
     if (progress + DBL_EPSILON >= 1.0) {
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
     }
@@ -188,7 +192,7 @@
                     {
                         UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Network" message:NULL preferredStyle:UIAlertControllerStyleActionSheet];
                         [alertController addAction:[UIAlertAction actionWithTitle:@"Mainnet" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                            <#code#>
+                            
                         }]];
                     }
                         break;

@@ -76,6 +76,7 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 -(void)clearOrphans;
 -(void)setLastBlockHeightForRescan;
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+-(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 @end
 
