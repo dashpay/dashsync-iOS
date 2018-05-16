@@ -106,7 +106,9 @@
     NSInteger index = [self.tableView indexPathForCell:cell].row;
     if ([segue.identifier isEqualToString:@"chainDetailsSegue"]) {
         DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
-        syncViewController.chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:[self chainForIndex:index]];
+        DSChain * chain = [self chainForIndex:index];
+        syncViewController.chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+        syncViewController.title = chain.networkName;
     }
 }
 

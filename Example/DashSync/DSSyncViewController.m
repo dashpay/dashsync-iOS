@@ -18,15 +18,12 @@
 @property (strong, nonatomic) IBOutlet UILabel *dbSizeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *lastBlockHeightLabel;
 @property (strong, nonatomic) IBOutlet UIProgressView *progressView, *pulseView;
-@property (strong, nonatomic) IBOutlet UISwitch *syncSPV;
 @property (assign, nonatomic) NSTimeInterval timeout, start;
-@property (strong, nonatomic) IBOutlet UISwitch *fullBlocksSwitch;
-@property (strong, nonatomic) IBOutlet UISwitch *syncMNListSwitch;
-@property (strong, nonatomic) IBOutlet UISwitch *syncSporksSwitch;
 @property (strong, nonatomic) IBOutlet UILabel *connectedPeerCount;
 @property (strong, nonatomic) IBOutlet UILabel *downloadPeerLabel;
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
-@property (strong, nonatomic) IBOutlet UILabel *networkLabel;
+@property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -181,31 +178,6 @@
 - (IBAction)wipeData:(id)sender {
     [[DashSync sharedSyncController] stopSyncAllChains];
     [[DashSync sharedSyncController] wipeBlockchainData];
-}
-
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    switch (indexPath.section) {
-        case 1:
-            {
-                switch (indexPath.row) {
-                    case 4:
-                    {
-                        UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Network" message:NULL preferredStyle:UIAlertControllerStyleActionSheet];
-                        [alertController addAction:[UIAlertAction actionWithTitle:@"Mainnet" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                            
-                        }]];
-                    }
-                        break;
-                        
-                    default:
-                        break;
-                }
-            }
-            break;
-            
-        default:
-            break;
-    }
 }
 
 @end
