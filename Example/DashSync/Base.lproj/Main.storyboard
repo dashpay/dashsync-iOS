@@ -558,7 +558,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YSU-NW-35K" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2362" y="389"/>
+            <point key="canvasLocation" x="2476" y="375"/>
         </scene>
         <!--Settings-->
         <scene sceneID="qSn-45-5WD">
@@ -690,7 +690,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3894" y="417"/>
+            <point key="canvasLocation" x="3946" y="375"/>
         </scene>
         <!--Chains-->
         <scene sceneID="0RU-nz-MPM">
@@ -714,8 +714,8 @@
         <!--Chains-->
         <scene sceneID="xRA-wi-HvR">
             <objects>
-                <tableViewController id="zT0-bE-k9Q" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="L4Y-id-nuu">
+                <tableViewController id="zT0-bE-k9Q" customClass="DSChainsViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="92" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="L4Y-id-nuu">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -751,7 +751,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Q0e-UX-9lS" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1237.5999999999999" y="377.58620689655174"/>
+            <point key="canvasLocation" x="1342" y="375"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="t5b-f9-9z7">

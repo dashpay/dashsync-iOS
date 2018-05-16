@@ -44,17 +44,24 @@
 
 @property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
+@property (nonatomic, strong) DSChain * chain;
 
 @end
 
 @implementation DSTransaction
 
-+ (instancetype)transactionWithMessage:(NSData *)message
++ (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
-    return [[self alloc] initWithMessage:message];
+    return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-- (instancetype)init
+- (instancetype)init {
+    if (! (self = [super init])) return nil;
+    NSAssert(FALSE, @"this method is not supported");
+    return self;
+}
+
+- (instancetype)initOnChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
     
@@ -67,21 +74,23 @@
     self.outScripts = [NSMutableArray array];
     self.signatures = [NSMutableArray array];
     self.sequences = [NSMutableArray array];
+    self.chain = chain;
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     return self;
 }
 
-- (instancetype)initWithMessage:(NSData *)message
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
-    if (! (self = [self init])) return nil;
+    if (! (self = [self initOnChain:chain])) return nil;
  
     NSString *address = nil;
     NSNumber * l = 0;
     NSUInteger off = 0, count = 0;
     NSData *d = nil;
-
+    
     @autoreleasepool {
+        self.chain = chain;
         _version = [message UInt32AtOffset:off]; // tx version
         off += sizeof(uint32_t);
         count = (NSUInteger)[message varIntAtOffset:off length:&l]; // input count
@@ -153,7 +162,7 @@
 }
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
-outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
+outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain
 {
     if (hashes.count == 0 || hashes.count != indexes.count) return nil;
     if (scripts.count > 0 && hashes.count != scripts.count) return nil;
@@ -161,6 +170,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
 
     if (! (self = [super init])) return nil;
 
+    self.chain = chain;
     _version = TX_VERSION;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
     self.indexes = [NSMutableArray arrayWithArray:indexes];

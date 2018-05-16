@@ -35,16 +35,31 @@
     self.type = @(chain.chainType);
     return self;
 }
+
 - (DSChain *)chain {
-    DSChain *chain = [DSChain new];
-    
+    __block DSChainType type;
+    __block uint32_t port;
+    __block UInt256 genisisHash;
+    __block NSData * data;
     [self.managedObjectContext performBlockAndWait:^{
-        chain.standardPort = (uint32_t)[self.standardPort unsignedLongValue];
-        chain.chainType = [self.type integerValue];
-        chain.genesisHash = *(UInt256 *)self.genesisBlockHash.hexToData.bytes;
-    }];
-    
-    return chain;
+        port = (uint32_t)[self.standardPort unsignedLongValue];
+        type = [self.type integerValue];
+        genisisHash = *(UInt256 *)self.genesisBlockHash.hexToData.bytes;
+        data = self.checkpoints;
+        }];
+    if (type == DSChainType_MainNet) {
+        return [DSChain mainnet];
+    } else if (type == DSChainType_TestNet) {
+        return [DSChain testnet];
+    } else if (type == DSChainType_DevNet) {
+        if ([DSChain devnetWithGenesisHash:genisisHash]) {
+            return [DSChain devnetWithGenesisHash:genisisHash];
+        } else {
+            NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            return [DSChain createDevnetWithCheckpoints:checkpointArray onPort:port];
+        }
+    }
+    return nil;
 }
 
 @end

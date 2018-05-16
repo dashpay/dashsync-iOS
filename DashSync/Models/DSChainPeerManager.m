@@ -75,6 +75,7 @@ static const char *mainnet_dns_seeds[] = {
 @property (nonatomic, assign) uint32_t syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
+@property (nonatomic, strong) DSChain * chain;
 
 @end
 
@@ -83,7 +84,7 @@ static const char *mainnet_dns_seeds[] = {
 - (instancetype)initWithChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
-    _chain = [DSChain lastUsedChain];
+    self.chain = chain;
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.txRequests = [NSMutableDictionary dictionary];

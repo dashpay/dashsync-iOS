@@ -105,7 +105,7 @@
     df.dateFormat = dateFormat(@"Mdja");
 
     NSTimeInterval t = (self.timestamp > 1) ? self.timestamp :
-                       [[[DSChainManager sharedInstance] peerManagerForChain:self.chain] timestampForBlockHeight:self.blockHeight] - 5*60;
+                       [self.chain timestampForBlockHeight:self.blockHeight] - 5*60;
     NSString *date = [df stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]];
 
     date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];

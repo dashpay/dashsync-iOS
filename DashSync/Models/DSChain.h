@@ -39,6 +39,15 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 
 @protocol DSChainDelegate;
 
+@interface DSCheckpoint : NSObject
+
+@property (nonatomic, assign) uint32_t height;
+@property (nonatomic, copy) NSString* checkpointHash;
+@property (nonatomic, assign) uint32_t timestamp;
+@property (nonatomic, assign) uint32_t target;
+
+@end
+
 @interface DSChain : NSObject
 
 @property (nonatomic, strong) DSWallet * _Nullable wallet;
@@ -58,11 +67,12 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
+
 +(DSChain*)devnetWithGenesisHash:(UInt256)genesisHash;
-+(DSChain*)lastUsedChain;
++(DSChain*)createDevnetWithCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
+
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
 
-+(DSChain*)createDevnetWithCheckpoints:(NSArray*)checkpointArray onPort:(NSUInteger)port;
 
 -(BOOL)isMainnet;
 -(BOOL)isTestnet;

@@ -42,8 +42,6 @@
         // start the event manager
         [[DSEventManager sharedEventManager] up];
         
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
-        
         [DSShapeshiftManager sharedInstance];
         if (![[DSWalletManager sharedInstance] hasSeedPhrase]) {
             [self createWallet];
@@ -60,7 +58,6 @@
 #if TARGET_IPHONE_SIMULATOR
         self.deviceIsJailbroken = NO;
 #endif
-        [self startSync];
     }
     return self;
 }
@@ -77,6 +74,12 @@
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] connect];
 }
 
+-(void)stopSyncAllChains {
+    NSArray * chains = [[DSChainManager sharedInstance] chains];
+    for (DSChain * chain in chains) {
+        [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
+    }
+}
 
 -(void)stopSyncForChain:(DSChain*)chain
 {
@@ -93,7 +96,7 @@
 }
 
 -(void)wipeBlockchainData {
-    [self stopSync];
+    [self stopSyncAllChains];
     [DSMerkleBlockEntity deleteAllObjects];
     [DSTransactionEntity deleteAllObjects];
 }

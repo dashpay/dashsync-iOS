@@ -93,6 +93,7 @@
         }
         
         self.lockTime = tx.lockTime;
+        self.chain = tx.chain;
     }];
     
     return self;

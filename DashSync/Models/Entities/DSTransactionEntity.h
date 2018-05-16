@@ -43,7 +43,7 @@
 @property (nonatomic, retain) NSOrderedSet *outputs;
 @property (nonatomic) int32_t lockTime;
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
-@property (nonatomic, retain) DSShapeshiftEntity *chain;
+@property (nonatomic, retain) DSChainEntity *chain;
 
 - (instancetype)setAttributesFromTx:(DSTransaction *)tx;
 - (DSTransaction *)transaction;

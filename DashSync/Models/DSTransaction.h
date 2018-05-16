@@ -71,10 +71,11 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
-@property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, readonly) DSChain * chain;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
+- (instancetype)initOnChain:(DSChain*)chain;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
                     outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain*)chain;

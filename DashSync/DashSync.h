@@ -38,8 +38,9 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 
 + (instancetype _Nullable)sharedSyncController;
 
--(void)startSync;
--(void)stopSync;
+-(void)startSyncForChain:(DSChain*)chain;
+-(void)stopSyncForChain:(DSChain*)chain;
+-(void)stopSyncAllChains;
 
 -(void)addSyncType:(DSSyncType)syncType;
 -(void)clearSyncType:(DSSyncType)syncType;

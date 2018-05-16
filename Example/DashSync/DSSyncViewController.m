@@ -169,17 +169,17 @@
 }
 
 - (IBAction)startSync:(id)sender {
-    [[DashSync sharedSyncController] startSync];
+    [[DashSync sharedSyncController] startSyncForChain:self.chainPeerManager.chain];
     [self startActivityWithTimeout:5.0];
 }
 
 - (IBAction)stopSync:(id)sender {
-    [[DashSync sharedSyncController] stopSync];
+    [[DashSync sharedSyncController] stopSyncForChain:self.chainPeerManager.chain];
     [self startActivityWithTimeout:5.0];
 }
 
 - (IBAction)wipeData:(id)sender {
-    [[DashSync sharedSyncController] stopSync];
+    [[DashSync sharedSyncController] stopSyncAllChains];
     [[DashSync sharedSyncController] wipeBlockchainData];
 }
 
