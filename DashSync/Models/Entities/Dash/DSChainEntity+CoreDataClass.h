@@ -25,6 +25,8 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import "DSChain.h"
+#import "IntTypes.h"
 
 @class DSPeerEntity,DSChain;
 
@@ -32,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainEntity : NSManagedObject
 
++ (DSChainEntity*)chainEntityForType:(DSChainType)type genisisBlock:(UInt256)genisisBlock;
 - (instancetype)setAttributesFromChain:(DSChain *)chain;
 - (DSChain *)chain;
 

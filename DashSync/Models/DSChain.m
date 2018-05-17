@@ -98,6 +98,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 @interface DSChain ()
 
+@property (nonatomic, strong) DSWallet * wallet;
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
@@ -232,6 +233,20 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // MARK: - Info
+
+-(void)removeWallet {
+    _wallet = nil;
+}
+
+-(BOOL)hasWalletSet {
+    return !!_wallet;
+}
+
+-(DSWallet*)wallet {
+    if (_wallet) return _wallet;
+    self.wallet = [[DSWalletManager sharedInstance] createWalletForChain:self];
+    return _wallet;
+}
 
 -(NSString*)networkName {
     switch ([self chainType]) {
@@ -516,7 +531,7 @@ static dispatch_once_t devnetToken = 0;
         NSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
         
         // mark transactions after the join point as unconfirmed
-        for (DSTransaction *tx in [[DSWalletManager sharedInstance] walletForChain:self].allTransactions) {
+        for (DSTransaction *tx in self.wallet.allTransactions) {
             if (tx.blockHeight <= b.height) break;
             [txHashes addObject:uint256_obj(tx.txHash)];
         }

@@ -25,6 +25,7 @@
 
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainPeerManager.h"
+#import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "NSString+Dash.h"
 
@@ -60,6 +61,11 @@
         }
     }
     return nil;
+}
+
++ (DSChainEntity*)chainEntityForType:(DSChainType)type genisisBlock:(UInt256)genisisBlock {
+    return [DSChainEntity objectsMatching:@"type = %@",type];
+    //when I wake up I need to create this properly
 }
 
 @end

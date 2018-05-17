@@ -86,7 +86,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 + (instancetype _Nullable)sharedInstance;
 
 - (BOOL)hasSeedPhrase;
-- (DSWallet*)walletForChain:(DSChain*)chain;
+- (DSWallet *)createWalletForChain:(DSChain*)chain;
 - (BOOL)noWalletOnChain:(DSChain*)chain;
 - (NSString * _Nullable)generateRandomSeed; // generates a random seed and returns the seedPhrase
 - (void)setSeedPhraseToRandomSeed; // generates a random seed and saves it to keychain
@@ -95,6 +95,9 @@ typedef void (^ResetCancelHandlerBlock)(void);
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
+
+
+- (void)startExchangeRateFetching;
 
 // queries api.dashwallet.com and calls the completion block with unspent outputs for the given address
 - (void)utxosForAddresses:(NSArray * _Nonnull)address

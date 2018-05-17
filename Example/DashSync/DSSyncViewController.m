@@ -24,7 +24,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -51,6 +51,14 @@
                                                            NSLog(@"background fetch sync failed");
                                                            [self syncFailed];
                                                        }];
+    
+    self.balanceObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"update balance");
+                                                           [self updateBalance];
+                                                       }];
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -203,6 +211,10 @@
 
 -(void)syncFailed {
     
+}
+
+-(void)updateBalance {
+    self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.wallet.balance];
 }
 
 

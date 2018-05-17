@@ -49,8 +49,8 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 @end
 
 @interface DSChain : NSObject
-
-@property (nonatomic, strong) DSWallet * _Nullable wallet;
+@property (nonatomic, readonly) BOOL hasWalletSet;
+@property (nonatomic, readonly) DSWallet * _Nullable wallet;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) UInt256 genesisHash;
@@ -87,6 +87,8 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 -(void)setLastBlockHeightForRescan;
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 -(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
+
+-(void)removeWallet;
 
 @end
 

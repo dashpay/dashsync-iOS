@@ -35,5 +35,6 @@
 @property (nonatomic) int32_t account;
 @property (nonatomic) int32_t index;
 @property (nonatomic) BOOL internal;
+@property (nonatomic) BOOL standalone;
 
 @end

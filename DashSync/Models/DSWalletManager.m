@@ -358,11 +358,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self updateBitcoinExchangeRate];
-        [self updateDashExchangeRate];
-        [self updateDashCentralExchangeRateFallback];
-    });
+
 }
 
 - (void)dealloc
@@ -372,29 +368,39 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (DSWallet *)walletForChain:(DSChain*)chain
+-(void)startExchangeRateFetching {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateBitcoinExchangeRate];
+        [self updateDashExchangeRate];
+        [self updateDashCentralExchangeRateFallback];
+    });
+}
+
+- (DSWallet *)createWalletForChain:(DSChain*)chain
 {
-    if (chain.wallet) return chain.wallet;
+    if (chain.hasWalletSet) return chain.wallet;
     
     uint64_t feePerKb = 0;
     NSData *mpk = self.extendedBIP44PublicKey;
     
-    if (! mpk) return chain.wallet;
+    if (! mpk) return nil;
     
     NSData *mpkBIP32 = self.extendedBIP32PublicKey;
     
-    if (! mpkBIP32) return chain.wallet;
+    if (! mpkBIP32) return nil;
+    
+    DSWallet * wallet;
     
     @synchronized(self) {
-        if (chain.wallet) return chain.wallet;
+        if (chain.hasWalletSet) return chain.wallet;
         
-        chain.wallet = [[DSWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence onChain:chain
+        wallet = [[DSWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence onChain:chain
                                masterBIP44PublicKey:mpk masterBIP32PublicKey:mpkBIP32 requestSeedBlock:^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
                                    //this happens when we request the seed
                                    [self seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
                                }];
         
-        chain.wallet.feePerKb = DEFAULT_FEE_PER_KB;
+        wallet.feePerKb = DEFAULT_FEE_PER_KB;
         feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
         if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) chain.wallet.feePerKb = feePerKb;
         
@@ -413,7 +419,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                     [NSManagedObject saveContext];
                 }];
                 
-                chain.wallet = nil;
+                [chain removeWallet];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
@@ -425,7 +431,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
             }
         });
         
-        return chain.wallet;
+        return wallet;
     }
 }
 

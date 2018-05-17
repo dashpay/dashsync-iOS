@@ -103,7 +103,7 @@
 
 -(void)removeAllWalletsFromChains {
     for (DSChain * chain in self.chains) {
-        chain.wallet = nil;
+        [chain removeWallet];
     }
 }
 

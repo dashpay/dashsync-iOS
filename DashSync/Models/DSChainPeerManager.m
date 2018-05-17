@@ -368,7 +368,7 @@ static const char *mainnet_dns_seeds[] = {
             UInt256 h = UINT256_ZERO;
             
             [hash getValue:&h];
-            [self addTransactionToPublishList:[[[DSWalletManager sharedInstance] walletForChain:self.chain] transactionForHash:h]];
+            [self addTransactionToPublishList:[self.chain.wallet transactionForHash:h]];
         }
     }
 }
@@ -528,8 +528,7 @@ static const char *mainnet_dns_seeds[] = {
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     BOOL rescan = NO, notify = NO;
     NSValue *hash;
     UInt256 h;
@@ -725,7 +724,6 @@ static const char *mainnet_dns_seeds[] = {
 
 - (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
     DSWallet * wallet = peer.chain.wallet;
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
     // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
@@ -946,8 +944,7 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
@@ -1009,8 +1006,7 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
     DSTransaction *tx = self.publishedTx[hash];
@@ -1051,8 +1047,7 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     DSTransaction *tx = [wallet transactionForHash:txHash];
     NSValue *hash = uint256_obj(txHash);
     
@@ -1144,8 +1139,7 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
     
     for (DSPeer *p in self.connectedPeers) { // find second highest fee rate
@@ -1162,8 +1156,7 @@ static const char *mainnet_dns_seeds[] = {
 
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     NSValue *hash = uint256_obj(txHash);
     DSTransaction *tx = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];

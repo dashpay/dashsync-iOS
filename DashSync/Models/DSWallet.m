@@ -200,6 +200,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
                 e.address = addr;
                 e.index = n;
                 e.internal = internal;
+                e.standalone = NO;
             }];
             
             [self.allAddresses addObject:addr];

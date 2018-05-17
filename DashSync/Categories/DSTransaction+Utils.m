@@ -35,8 +35,7 @@
 
 - (DSTransactionType)transactionType
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     uint64_t received = [wallet amountReceivedFromTransaction:self],
              sent = [wallet amountSentByTransaction:self];
     uint32_t blockHeight = self.blockHeight;
@@ -58,7 +57,7 @@
 - (NSString*)localCurrencyTextForAmount
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     uint64_t received = [wallet amountReceivedFromTransaction:self],
 
     sent = [wallet amountSentByTransaction:self];
@@ -75,7 +74,7 @@
 - (NSString*)amountText
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = [manager walletForChain:self.chain];
+    DSWallet * wallet = self.chain.wallet;
     uint64_t received = [wallet amountReceivedFromTransaction:self],
 
     sent = [wallet amountSentByTransaction:self];

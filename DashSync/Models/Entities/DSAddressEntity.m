@@ -35,5 +35,6 @@
 @dynamic account;
 @dynamic index;
 @dynamic internal;
+@dynamic standalone;
 
 @end
