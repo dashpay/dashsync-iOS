@@ -27,6 +27,7 @@
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
+		FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC63220AE082400E35EED /* DSWalletInputPhraseViewController.m */; };
 		FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C512089776A00CDBA57 /* DSWalletViewController.m */; };
 		FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */; };
 		FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */; };
@@ -80,6 +81,8 @@
 		FB6DC62820AB64F400E35EED /* DSChainsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainsViewController.m; sourceTree = "<group>"; };
 		FB6DC62A20AB678500E35EED /* DSChainTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainTableViewCell.h; sourceTree = "<group>"; };
 		FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainTableViewCell.m; sourceTree = "<group>"; };
+		FB6DC63120AE082400E35EED /* DSWalletInputPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletInputPhraseViewController.h; sourceTree = "<group>"; };
+		FB6DC63220AE082400E35EED /* DSWalletInputPhraseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletInputPhraseViewController.m; sourceTree = "<group>"; };
 		FB763C502089776A00CDBA57 /* DSWalletViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletViewController.h; sourceTree = "<group>"; };
 		FB763C512089776A00CDBA57 /* DSWalletViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletViewController.m; sourceTree = "<group>"; };
 		FB763C5420897B0F00CDBA57 /* DSWalletTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletTableViewCell.h; sourceTree = "<group>"; };
@@ -251,6 +254,8 @@
 				FB763C512089776A00CDBA57 /* DSWalletViewController.m */,
 				FB763C602089AF9500CDBA57 /* DSStandaloneAddressesViewController.h */,
 				FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */,
+				FB6DC63120AE082400E35EED /* DSWalletInputPhraseViewController.h */,
+				FB6DC63220AE082400E35EED /* DSWalletInputPhraseViewController.m */,
 			);
 			name = Wallet;
 			sourceTree = "<group>";
@@ -424,6 +429,7 @@
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
+				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

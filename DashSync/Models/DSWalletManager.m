@@ -525,7 +525,12 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 - (void)setSeedPhrase:(NSString *)seedPhrase
 {
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        if (seedPhrase) seedPhrase = [self.mnemonic normalizePhrase:seedPhrase];
+        if (seedPhrase) {
+            // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
+            NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
+            setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
+            seedPhrase = [self.mnemonic normalizePhrase:seedPhrase];
+        }
         
         [[NSManagedObject context] performBlockAndWait:^{
             [DSAddressEntity deleteAllObjects];
@@ -646,24 +651,27 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
 }
 
+
+
 // generates a random seed, saves to keychain and returns the associated seedPhrase
 - (NSString *)generateRandomSeed
 {
-    @autoreleasepool {
         NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
-        NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
         
         if (SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes) != 0) return nil;
         
         NSString *phrase = [self.mnemonic encodePhrase:entropy];
         
-        self.seedPhrase = phrase;
-        
-        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-        setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
         return phrase;
+}
+
+- (void)setSeedPhraseToRandomSeed
+{
+    @autoreleasepool {
+        self.seedPhrase = [self generateRandomSeed];
     }
 }
+
 
 -(DSWallet*)mainnetWallet {
     return [[[[DSChainManager sharedInstance] mainnetManager] chain] wallet];

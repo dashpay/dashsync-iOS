@@ -611,7 +611,13 @@
                             <outlet property="delegate" destination="PeG-lf-i02" id="evB-fF-Yvy"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Wallets" id="90H-jm-fcb"/>
+                    <navigationItem key="navigationItem" title="Wallets" id="90H-jm-fcb">
+                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="0aZ-cF-Z2f">
+                            <connections>
+                                <segue destination="c3Z-zJ-Q1f" kind="show" id="dqY-2k-FS1"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sSx-Dl-zzb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -661,6 +667,55 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3946" y="375"/>
+        </scene>
+        <!--Passphrase-->
+        <scene sceneID="1v0-Xr-yW0">
+            <objects>
+                <viewController id="c3Z-zJ-Q1f" customClass="DSWalletInputPhraseViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="jHA-TW-Ndi"/>
+                        <viewControllerLayoutGuide type="bottom" id="uZr-gQ-ttZ"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="S8s-QJ-bbh">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="WfC-Vh-YeM">
+                                <rect key="frame" x="16" y="96" width="343" height="292"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                <connections>
+                                    <outlet property="delegate" destination="c3Z-zJ-Q1f" id="YFV-qg-qrN"/>
+                                </connections>
+                            </textView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kjf-wb-cf4">
+                                <rect key="frame" x="64" y="466" width="246" height="52"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <connections>
+                                    <action selector="generateRandomPassphrase:" destination="c3Z-zJ-Q1f" eventType="touchUpInside" id="Sti-yG-HjC"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Passphrase" id="lh8-Xi-nZW">
+                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="save" id="RFC-wO-nca">
+                            <connections>
+                                <action selector="savePassphrase:" destination="c3Z-zJ-Q1f" id="VYL-4U-YTt"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="inputSeedPhraseTextView" destination="WfC-Vh-YeM" id="wHr-9W-xBt"/>
+                        <outlet property="saveButton" destination="RFC-wO-nca" id="kpM-aD-nzu"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Gsi-C1-XB6" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4660" y="140.39408866995075"/>
         </scene>
         <!--Chains-->
         <scene sceneID="0RU-nz-MPM">

@@ -24,6 +24,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -36,7 +37,20 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+	
+    self.syncFinishedObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"background fetch sync finished");
+                                                           [self syncFinished];
+                                                       }];
+    
+    self.syncFailedObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"background fetch sync failed");
+                                                           [self syncFailed];
+                                                       }];
 }
 
 - (void)didReceiveMemoryWarning
@@ -160,6 +174,7 @@
     self.downloadPeerLabel.text = self.chainPeerManager.downloadPeerName;
     self.chainTipLabel.text = self.chain.chainTip;
     if (progress + DBL_EPSILON >= 1.0) {
+        self.percentageLabel.text = @"100%";
         if (self.timeout < 1.0) [self stopActivityWithSuccess:YES];
     }
     else [self performSelector:@selector(updateProgressView) withObject:nil afterDelay:0.2];
@@ -179,5 +194,16 @@
     [[DashSync sharedSyncController] stopSyncAllChains];
     [[DashSync sharedSyncController] wipeBlockchainData];
 }
+
+// MARK: - Blockchain events
+
+-(void)syncFinished {
+    
+}
+
+-(void)syncFailed {
+    
+}
+
 
 @end

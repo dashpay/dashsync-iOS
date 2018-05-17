@@ -34,6 +34,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotifica
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
 
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
@@ -48,7 +49,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotificatio
 @property (nonatomic, readonly) NSString * _Nullable downloadPeerName;
 @property (nonatomic, readonly) NSString * _Nullable chainTip;
 @property (nonatomic, readonly) DSChain * chain;
-@property (nonatomic, readonly) DSPeer *downloadPeer, *fixedPeer;
+@property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
 
 
 - (instancetype)initWithChain:(DSChain*)chain;

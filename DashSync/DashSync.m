@@ -42,11 +42,6 @@
         // start the event manager
         [[DSEventManager sharedEventManager] up];
         
-        [DSShapeshiftManager sharedInstance];
-        if (![[DSWalletManager sharedInstance] hasSeedPhrase]) {
-            [self createWallet];
-        }
-        
         struct stat s;
         self.deviceIsJailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
         
@@ -65,7 +60,7 @@
 -(void)createWallet
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    [manager generateRandomSeed];
+    [manager setSeedPhraseToRandomSeed];
 }
 
 -(void)startSyncForChain:(DSChain*)chain

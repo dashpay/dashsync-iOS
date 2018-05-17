@@ -88,7 +88,8 @@ typedef void (^ResetCancelHandlerBlock)(void);
 - (BOOL)hasSeedPhrase;
 - (DSWallet*)walletForChain:(DSChain*)chain;
 - (BOOL)noWalletOnChain:(DSChain*)chain;
-- (NSString * _Nullable)generateRandomSeed; // generates a random seed, saves to keychain and returns the seedPhrase
+- (NSString * _Nullable)generateRandomSeed; // generates a random seed and returns the seedPhrase
+- (void)setSeedPhraseToRandomSeed; // generates a random seed and saves it to keychain
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (NSString*)seedPhraseAfterAuthentication;
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase

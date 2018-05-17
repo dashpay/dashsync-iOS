@@ -285,7 +285,7 @@ static const char *mainnet_dns_seeds[] = {
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncStartedNotification
-                                                                    object:nil];
+                                                                    object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             });
         }
         
@@ -323,7 +323,7 @@ static const char *mainnet_dns_seeds[] = {
                                                  userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"no peers found", nil)}];
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
-                                                                    object:nil userInfo:@{@"error":error}];
+                                                                    object:nil userInfo:@{@"error":error,DSChainPeerManagerNotificationChainKey:self.chain}];
             });
         }
     });
@@ -499,7 +499,7 @@ static const char *mainnet_dns_seeds[] = {
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerTxStatusNotification object:nil];
+                             postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
                         });
                     }
                     
@@ -508,7 +508,7 @@ static const char *mainnet_dns_seeds[] = {
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil];
+                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
                         });
                     }
                 }];
@@ -518,7 +518,7 @@ static const char *mainnet_dns_seeds[] = {
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter]
-                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil];
+                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
                 });
             }
         }];
@@ -826,7 +826,7 @@ static const char *mainnet_dns_seeds[] = {
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification
-                                                                        object:nil];
+                                                                        object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
                 });
             }];
         }];
@@ -856,7 +856,7 @@ static const char *mainnet_dns_seeds[] = {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             
             dispatch_async(self.q, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
@@ -907,7 +907,7 @@ static const char *mainnet_dns_seeds[] = {
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
-                                                                object:nil userInfo:(error) ? @{@"error":error} : nil];
+                                                                object:nil userInfo:(error) ? @{@"error":error,DSChainPeerManagerNotificationChainKey:self.chain} : @{DSChainPeerManagerNotificationChainKey:self.chain}];
         });
     }
     else if (self.connectFailures < MAX_CONNECT_FAILURES) {
@@ -920,7 +920,7 @@ static const char *mainnet_dns_seeds[] = {
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
     });
 }
 
@@ -980,7 +980,7 @@ static const char *mainnet_dns_seeds[] = {
             NSError *kvErr = nil;
             
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
             
         });
@@ -1039,7 +1039,7 @@ static const char *mainnet_dns_seeds[] = {
             NSError *kvErr = nil;
             
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
 
         });
@@ -1064,7 +1064,7 @@ static const char *mainnet_dns_seeds[] = {
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
 #if DEBUG
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@"transaction rejected"

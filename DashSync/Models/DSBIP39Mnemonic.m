@@ -114,7 +114,9 @@
         y = (i*8/11 + 1 < a.count) ? (uint32_t)[self.words indexOfObject:a[i*8/11 + 1]] : 0;
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
+#if DEBUG
             NSLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)]);
+#endif
             return nil;
         }
 
