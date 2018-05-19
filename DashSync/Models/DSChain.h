@@ -36,7 +36,7 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
     DSChainType_DevNet,
 };
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity;
 
 @protocol DSChainDelegate;
 
@@ -65,6 +65,7 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 @property (nonatomic, readonly) DSMerkleBlock * lastBlock;
 @property (nonatomic, readonly) NSArray * blockLocatorArray;
 @property (nonatomic, readonly) DSMerkleBlock *lastOrphan;
+@property (nonatomic, readonly) DSChainEntity *chainEntity;
 
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
@@ -73,8 +74,6 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 +(DSChain*)createDevnetWithCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
-
--(void)touchChainEntity;
 
 
 -(BOOL)isMainnet;

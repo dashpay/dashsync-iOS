@@ -122,7 +122,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.standardPort = port;
-    
+    [self chainEntity];
     return self;
 }
 
@@ -139,12 +139,12 @@ static checkpoint mainnet_checkpoint_array[] = {
     return [checkpointMutableArray copy];
 }
 
--(void)touchChainEntity {
-    [[DSChainEntity context] performBlock:^{
-        @autoreleasepool {
-            [DSChainEntity chainEntityForType:self.chainType genesisBlock:self.genesisHash checkpoints:self.checkpoints];
-        }
+-(DSChainEntity*)chainEntity {
+    __block DSChainEntity* chainEntity = nil;
+    [[DSChainEntity context] performBlockAndWait:^{
+        chainEntity = [DSChainEntity chainEntityForType:self.chainType genesisBlock:self.genesisHash checkpoints:self.checkpoints];
     }];
+    return chainEntity;
 }
 
 +(DSChain*)mainnet {
@@ -153,7 +153,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     
     dispatch_once(&mainnetToken, ^{
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT];
-        [_mainnet touchChainEntity];
     });
     return _mainnet;
 }
@@ -164,7 +163,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     
     dispatch_once(&testnetToken, ^{
         _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT];
-        [_testnet touchChainEntity];
     });
     return _testnet;
 }
@@ -194,7 +192,6 @@ static dispatch_once_t devnetToken = 0;
         if (![_devnetDictionary objectForKey:genesisValue]) {
             devnetChain = [[DSChain alloc] initWithType:DSChainType_DevNet checkpoints:checkpointArray port:port];
             [_devnetDictionary setObject:devnetChain forKey:genesisValue];
-            [devnetChain touchChainEntity];
         } else {
             devnetChain = [_devnetDictionary objectForKey:genesisValue];
         }

@@ -725,6 +725,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
         if ([DSTransactionEntity countObjectsMatching:@"txHash == %@",
              [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
             [[DSTransactionEntity managedObject] setAttributesFromTx:transaction];
+            [DSTransactionEntity saveContext];
         }
     }];
     

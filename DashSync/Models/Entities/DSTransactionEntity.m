@@ -29,6 +29,8 @@
 #import "DSTxInputEntity.h"
 #import "DSTxOutputEntity.h"
 #import "DSAddressEntity.h"
+#import "DSChain.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "DSTransaction.h"
 #import "DSMerkleBlock.h"
 #import "NSManagedObject+Sugar.h"
@@ -93,7 +95,8 @@
         }
         
         self.lockTime = tx.lockTime;
-        self.chain = tx.chain;
+        self.chain = tx.chain.chainEntity;
+
     }];
     
     return self;
@@ -101,7 +104,8 @@
 
 - (DSTransaction *)transaction
 {
-    DSTransaction *tx = [DSTransaction new];
+    DSChain * chain = [self.chain chain];
+    DSTransaction *tx = [[DSTransaction alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
         NSData *txHash = self.txHash;
