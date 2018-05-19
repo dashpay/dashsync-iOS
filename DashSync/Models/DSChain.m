@@ -38,6 +38,8 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSWallet.h"
 #import "DSChainPeerManager.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "NSCoder+Dash.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -118,7 +120,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.earliestKeyTime = [DSWalletManager sharedInstance].seedCreationTime;
     self.orphans = [NSMutableDictionary dictionary];
     self.checkpoints = checkpoints;
-    self.genesisHash = (*(UInt256 *)self.checkpoints[0].checkpointHash.hexToData.reverse.bytes);
+    self.genesisHash = self.checkpoints[0].checkpointHash;
     self.standardPort = port;
     
     return self;
@@ -129,12 +131,20 @@ static checkpoint mainnet_checkpoint_array[] = {
     for (int i = 0; i <checkpointCount;i++) {
         DSCheckpoint * check = [DSCheckpoint new];
         check.height = checkpoints[i].height;
-        check.checkpointHash = [NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding];
+        check.checkpointHash = *(UInt256 *)[NSString stringWithCString:checkpoints[i].checkpointHash encoding:NSUTF8StringEncoding].hexToData.reverse.bytes;
         check.target = checkpoints[i].target;
         check.timestamp = checkpoints[i].timestamp;
         [checkpointMutableArray addObject:check];
     }
     return [checkpointMutableArray copy];
+}
+
+-(void)touchChainEntity {
+    [[DSChainEntity context] performBlock:^{
+        @autoreleasepool {
+            [DSChainEntity chainEntityForType:self.chainType genesisBlock:self.genesisHash checkpoints:self.checkpoints];
+        }
+    }];
 }
 
 +(DSChain*)mainnet {
@@ -143,6 +153,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     
     dispatch_once(&mainnetToken, ^{
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT];
+        [_mainnet touchChainEntity];
     });
     return _mainnet;
 }
@@ -153,6 +164,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     
     dispatch_once(&testnetToken, ^{
         _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT];
+        [_testnet touchChainEntity];
     });
     return _testnet;
 }
@@ -182,6 +194,7 @@ static dispatch_once_t devnetToken = 0;
         if (![_devnetDictionary objectForKey:genesisValue]) {
             devnetChain = [[DSChain alloc] initWithType:DSChainType_DevNet checkpoints:checkpointArray port:port];
             [_devnetDictionary setObject:devnetChain forKey:genesisValue];
+            [devnetChain touchChainEntity];
         } else {
             devnetChain = [_devnetDictionary objectForKey:genesisValue];
         }
@@ -282,7 +295,7 @@ static dispatch_once_t devnetToken = 0;
         _blocks = [NSMutableDictionary dictionary];
         self.checkpointsDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
-            UInt256 checkpointHash = *(UInt256 *)checkpoint.checkpointHash.hexToData.reverse.bytes;
+            UInt256 checkpointHash = checkpoint.checkpointHash;
             
             _blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash version:1 prevBlock:UINT256_ZERO
                                                                        merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
@@ -341,7 +354,7 @@ static dispatch_once_t devnetToken = 0;
         // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
         for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
             if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
-                UInt256 checkpointHash = *(UInt256 *)self.checkpoints[i].checkpointHash.hexToData.reverse.bytes;
+                UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
                 _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash version:1 prevBlock:UINT256_ZERO
                                                            merkleRoot:UINT256_ZERO timestamp:self.checkpoints[i].timestamp
@@ -628,7 +641,7 @@ static dispatch_once_t devnetToken = 0;
     // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
     for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
         if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
-            UInt256 checkpointHash = *(UInt256 *)self.checkpoints[i].checkpointHash.hexToData.reverse.bytes;
+            UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
             
             _lastBlock = self.blocks[uint256_obj(checkpointHash)];
         }
@@ -642,5 +655,40 @@ static dispatch_once_t devnetToken = 0;
 @end
 
 @implementation DSCheckpoint
+
+#pragma mark NSCoding
+
+#define kHeightKey       @"Height"
+#define kCheckpointHashKey      @"CheckpointHash"
+#define kTimestampKey      @"Timestamp"
+#define kTargetKey      @"Target"
+
+-(instancetype)initWithHash:(UInt256)checkpointHash height:(uint32_t)height timestamp:(uint32_t)timestamp target:(uint32_t)target {
+    if (! (self = [super init])) return nil;
+    
+    self.checkpointHash = checkpointHash;
+    self.height = height;
+    self.timestamp = timestamp;
+    self.target = target;
+    
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    UInt256 checkpointHash = [decoder decodeUInt256ForKey:kCheckpointHashKey];
+    uint32_t height = [decoder decodeInt32ForKey:kHeightKey];
+    uint32_t timestamp = [decoder decodeInt32ForKey:kTimestampKey];
+    uint32_t target = [decoder decodeInt32ForKey:kTargetKey];
+    return [self initWithHash:checkpointHash height:height timestamp:timestamp target:target];
+}
+
+-(void)encodeWithCoder:(NSCoder *)aCoder {
+    [aCoder encodeUInt256:self.checkpointHash forKey:kCheckpointHashKey];
+    [aCoder encodeInt32:self.height forKey:kHeightKey];
+    [aCoder encodeInt32:self.timestamp forKey:kTimestampKey];
+    [aCoder encodeInt32:self.target forKey:kTargetKey];
+}
+
+
 
 @end

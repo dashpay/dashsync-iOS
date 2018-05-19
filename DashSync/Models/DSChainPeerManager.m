@@ -40,6 +40,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSEventManager.h"
 #import "DSChain.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import <netdb.h>
 
 #if ! PEER_LOGGING
@@ -577,10 +578,10 @@ static const char *mainnet_dns_seeds[] = {
                                                                        "This can often be fixed by rescanning the blockchain.", nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                           }];
+                                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                               }];
                 UIAlertAction* rescanButton = [UIAlertAction
                                                actionWithTitle:NSLocalizedString(@"rescan", nil)
                                                style:UIAlertActionStyleDefault
@@ -590,7 +591,7 @@ static const char *mainnet_dns_seeds[] = {
                 [alert addAction:cancelButton];
                 [alert addAction:rescanButton];
                 [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
-
+                
             }
             else {
                 [[DSEventManager sharedEventManager] saveEvent:@"peer_manager_tx_rejected"];
@@ -719,6 +720,10 @@ static const char *mainnet_dns_seeds[] = {
         }
     }];
 }
+
+// MARK: - Chain
+
+
 
 // MARK: - Bloom Filters
 
@@ -970,7 +975,7 @@ static const char *mainnet_dns_seeds[] = {
             [wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
             [wallet transactionForHash:transaction.txHash].timestamp == 0) {
             [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
-                     forTxHashes:@[hash]]; // set timestamp when tx is verified
+                           forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1028,7 +1033,7 @@ static const char *mainnet_dns_seeds[] = {
             [wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
             [wallet transactionForHash:txHash].timestamp == 0) {
             [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
-                     forTxHashes:@[hash]]; // set timestamp when tx is verified
+                           forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1037,7 +1042,7 @@ static const char *mainnet_dns_seeds[] = {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
-
+            
         });
     }
     

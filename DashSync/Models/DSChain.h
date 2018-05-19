@@ -28,6 +28,7 @@
 
 #define MAINNET_STANDARD_PORT 9999
 #define TESTNET_STANDARD_PORT 19999
+#define DEVNET_STANDARD_PORT 19999
 
 typedef NS_ENUM(NSUInteger, DSChainType) {
     DSChainType_MainNet,
@@ -39,10 +40,10 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 
 @protocol DSChainDelegate;
 
-@interface DSCheckpoint : NSObject
+@interface DSCheckpoint : NSObject <NSCoding>
 
 @property (nonatomic, assign) uint32_t height;
-@property (nonatomic, copy) NSString* checkpointHash;
+@property (nonatomic, assign) UInt256 checkpointHash;
 @property (nonatomic, assign) uint32_t timestamp;
 @property (nonatomic, assign) uint32_t target;
 
@@ -72,6 +73,8 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 +(DSChain*)createDevnetWithCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
+
+-(void)touchChainEntity;
 
 
 -(BOOL)isMainnet;

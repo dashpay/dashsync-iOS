@@ -6,6 +6,8 @@
 //
 
 #import "DSChainManager.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @interface DSChainManager()
 
@@ -41,8 +43,10 @@
     static dispatch_once_t mainnetToken = 0;
     
     dispatch_once(&mainnetToken, ^{
-        _mainnetManager = [[DSChainPeerManager alloc] initWithChain:[DSChain mainnet]];
-        [DSChain mainnet].peerManagerDelegate = _mainnetManager;
+        DSChain * mainnet = [DSChain mainnet];
+        _mainnetManager = [[DSChainPeerManager alloc] initWithChain:mainnet];
+        mainnet.peerManagerDelegate = _mainnetManager;
+
         [self.knownChains addObject:[DSChain mainnet]];
     });
     return _mainnetManager;
@@ -53,12 +57,14 @@
     static dispatch_once_t testnetToken = 0;
     
     dispatch_once(&testnetToken, ^{
-        _testnetManager = [[DSChainPeerManager alloc] initWithChain:[DSChain testnet]];
-        [DSChain mainnet].peerManagerDelegate = _testnetManager;
+        DSChain * testnet = [DSChain testnet];
+        _testnetManager = [[DSChainPeerManager alloc] initWithChain:testnet];
+        testnet.peerManagerDelegate = _testnetManager;
         [self.knownChains addObject:[DSChain testnet]];
     });
     return _testnetManager;
 }
+
 
 -(DSChainPeerManager*)devnetManagerForChain:(DSChain*)chain {
     static NSMutableDictionary * _devnetDictionary = nil;

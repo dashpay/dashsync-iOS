@@ -28,6 +28,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "NSString+Dash.h"
+#import "NSData+Bitcoin.h"
 
 @implementation DSChainEntity
 
@@ -40,12 +41,12 @@
 - (DSChain *)chain {
     __block DSChainType type;
     __block uint32_t port;
-    __block UInt256 genisisHash;
+    __block UInt256 genesisHash;
     __block NSData * data;
     [self.managedObjectContext performBlockAndWait:^{
         port = (uint32_t)[self.standardPort unsignedLongValue];
         type = [self.type integerValue];
-        genisisHash = *(UInt256 *)self.genesisBlockHash.hexToData.bytes;
+        genesisHash = *(UInt256 *)self.genesisBlockHash.hexToData.reverse.bytes;
         data = self.checkpoints;
         }];
     if (type == DSChainType_MainNet) {
@@ -53,8 +54,8 @@
     } else if (type == DSChainType_TestNet) {
         return [DSChain testnet];
     } else if (type == DSChainType_DevNet) {
-        if ([DSChain devnetWithGenesisHash:genisisHash]) {
-            return [DSChain devnetWithGenesisHash:genisisHash];
+        if ([DSChain devnetWithGenesisHash:genesisHash]) {
+            return [DSChain devnetWithGenesisHash:genesisHash];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
             return [DSChain createDevnetWithCheckpoints:checkpointArray onPort:port];
@@ -63,9 +64,34 @@
     return nil;
 }
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type genisisBlock:(UInt256)genisisBlock {
-    return [DSChainEntity objectsMatching:@"type = %@",type];
-    //when I wake up I need to create this properly
++ (DSChainEntity*)chainEntityForType:(DSChainType)type genesisBlock:(UInt256)genesisBlock checkpoints:(NSArray*)checkpoints {
+    NSString * genesisBlockString = [NSData dataWithUInt256:genesisBlock].hexString;
+    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || genesisBlockHash = %@)",type,DSChainType_DevNet,genesisBlockString];
+    if (objects.count) {
+        DSChainEntity * chainEntity = [objects objectAtIndex:0];
+        NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
+        if (checkpoints.count > knownCheckpoints.count) {
+            NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
+            chainEntity.checkpoints = archivedCheckpoints;
+        }
+        return chainEntity;
+    }
+    
+    DSChainEntity * chainEntity = [self managedObject];
+    chainEntity.type = @(type);
+    chainEntity.genesisBlockHash = genesisBlockString;
+    if (checkpoints) {
+        NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
+        chainEntity.checkpoints = archivedCheckpoints;
+    }
+    if (type == DSChainType_MainNet) {
+        chainEntity.standardPort = @(MAINNET_STANDARD_PORT);
+    } else if (type == DSChainType_TestNet) {
+        chainEntity.standardPort = @(TESTNET_STANDARD_PORT);
+    } else {
+        chainEntity.standardPort = @(DEVNET_STANDARD_PORT);
+    }
+    return chainEntity;
 }
 
 @end

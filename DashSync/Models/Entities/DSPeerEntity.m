@@ -57,7 +57,7 @@
         self.misbehavin = peer.misbehavin;
         self.priority = peer.priority;
         self.lowPreferenceTill = peer.lowPreferenceTill;
-        self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType genisisBlock:peer.chain.genesisHash];
+        self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType genesisBlock:peer.chain.genesisHash checkpoints:nil];
     }];
 
     return self;

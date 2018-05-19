@@ -34,9 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSChainEntity : NSManagedObject
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type genisisBlock:(UInt256)genisisBlock;
-- (instancetype)setAttributesFromChain:(DSChain *)chain;
-- (DSChain *)chain;
++ (DSChainEntity* _Nonnull)chainEntityForType:(DSChainType)type genesisBlock:(UInt256)genesisBlock checkpoints:(NSArray* _Nullable)checkpoints;
+- (instancetype)setAttributesFromChain:(DSChain * _Nonnull)chain;
+- (DSChain * _Nonnull)chain;
 
 @end
 
