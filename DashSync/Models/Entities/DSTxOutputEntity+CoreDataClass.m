@@ -1,11 +1,8 @@
 //
-//  DSTxInputEntity.m
-//  DashSync
+//  DSTxOutputEntity+CoreDataClass.m
+//  
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,34 +22,25 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTxInputEntity.h"
-#import "DSTransactionEntity.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
+#import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransaction.h"
-#import "DSTxOutputEntity.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
-@implementation DSTxInputEntity
+@implementation DSTxOutputEntity
 
-@dynamic txHash;
-@dynamic n;
-@dynamic signature;
-@dynamic sequence;
-@dynamic transaction;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index
 {
     [self.managedObjectContext performBlockAndWait:^{
-        UInt256 hash = UINT256_ZERO;
+        UInt256 txHash = tx.txHash;
         
-        [tx.inputHashes[index] getValue:&hash];
-        self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
-        self.n = [tx.inputIndexes[index] intValue];
-        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
-        self.sequence = [tx.inputSequences[index] intValue];
-    
-        // mark previously unspent outputs as spent
-        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
+        self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
+        self.n = (int32_t)index;
+        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
+        self.script = tx.outputScripts[index];
+        self.value = [tx.outputAmounts[index] longLongValue];
+        self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
     }];
     
     return self;

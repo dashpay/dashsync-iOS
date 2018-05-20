@@ -71,18 +71,19 @@ inline static int ceil_log2(int x)
 @interface DSMerkleBlock ()
 
 @property (nonatomic, assign) UInt256 blockHash;
+@property (nonatomic, strong) DSChain * chain;
     
 @end
 
 @implementation DSMerkleBlock
 
 // message can be either a merkleblock or header message
-+ (instancetype)blockWithMessage:(NSData *)message
++ (instancetype)blockWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
-    return [[self alloc] initWithMessage:message];
+    return [[self alloc] initWithMessage:message onChain:chain];
 }
 
-- (instancetype)initWithMessage:(NSData *)message
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     if (! (self = [self init])) return nil;
     if (message.length < 80) return nil;
@@ -118,11 +119,12 @@ inline static int ceil_log2(int x)
     [d appendUInt32:_target];
     [d appendUInt32:_nonce];
     _blockHash = d.x11;
+    self.chain = chain;
 
     return self;
 }
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash version:(uint32_t)version prevBlock:(UInt256)prevBlock
+- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
 merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
 {
@@ -139,6 +141,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     _hashes = hashes;
     _flags = flags;
     _height = height;
+    self.chain = chain;
     
     return self;
 }

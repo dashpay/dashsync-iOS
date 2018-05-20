@@ -1,11 +1,8 @@
 //
-//  DSTransactionEntity.m
-//  DashSync
+//  DSTransactionEntity+CoreDataClass.m
+//  
 //
-//  Created by Aaron Voisine on 8/22/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +22,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTransactionEntity.h"
-#import "DSTxInputEntity.h"
-#import "DSTxOutputEntity.h"
-#import "DSAddressEntity.h"
+#import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTxInputEntity+CoreDataClass.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
+#import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransaction.h"
@@ -38,15 +35,6 @@
 #import "NSMutableData+Dash.h"
 
 @implementation DSTransactionEntity
-
-@dynamic txHash;
-@dynamic blockHeight;
-@dynamic timestamp;
-@dynamic inputs;
-@dynamic outputs;
-@dynamic lockTime;
-@dynamic associatedShapeshift;
-@dynamic chain;
 
 + (void)setContext:(NSManagedObjectContext *)context
 {
@@ -67,27 +55,27 @@
         self.blockHeight = tx.blockHeight;
         self.timestamp = tx.timestamp;
         self.associatedShapeshift = tx.associatedShapeshift;
-    
+        
         while (inputs.count < tx.inputHashes.count) {
             [inputs addObject:[DSTxInputEntity managedObject]];
         }
-    
+        
         while (inputs.count > tx.inputHashes.count) {
             [inputs removeObjectAtIndex:inputs.count - 1];
         }
-    
+        
         for (DSTxInputEntity *e in inputs) {
             [e setAttributesFromTx:tx inputIndex:idx++];
         }
-
+        
         while (outputs.count < tx.outputAddresses.count) {
             [outputs addObject:[DSTxOutputEntity managedObject]];
         }
-    
+        
         while (outputs.count > tx.outputAddresses.count) {
             [self removeObjectFromOutputsAtIndex:outputs.count - 1];
         }
-
+        
         idx = 0;
         
         for (DSTxOutputEntity *e in outputs) {
@@ -96,10 +84,14 @@
         
         self.lockTime = tx.lockTime;
         self.chain = tx.chain.chainEntity;
-
+        
     }];
     
     return self;
+}
+
++ (NSArray<DSTransaction*> *)transactionsForChain:(DSChainEntity*)chain {
+    return [self objectsMatching:@"chain == %@",chain];
 }
 
 - (DSTransaction *)transaction
@@ -115,12 +107,12 @@
         tx.blockHeight = self.blockHeight;
         tx.timestamp = self.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
-    
+        
         for (DSTxInputEntity *e in self.inputs) {
             txHash = e.txHash;
             if (txHash.length != sizeof(UInt256)) continue;
             [tx addInputHash:*(const UInt256 *)txHash.bytes index:e.n script:nil signature:e.signature
-             sequence:e.sequence];
+                    sequence:e.sequence];
         }
         
         for (DSTxOutputEntity *e in self.outputs) {
@@ -136,7 +128,7 @@
     for (DSTxInputEntity *e in self.inputs) { // mark inputs as unspent
         [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
     }
-
+    
     [super deleteObject];
 }
 

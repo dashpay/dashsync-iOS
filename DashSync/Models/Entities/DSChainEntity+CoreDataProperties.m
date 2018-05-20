@@ -1,11 +1,8 @@
 //
-//  DSAddressEntity.h
-//  DashSync
+//  DSChainEntity+CoreDataProperties.m
+//  
 //
-//  Created by Aaron Voisine on 8/22/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +22,21 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSChainEntity+CoreDataProperties.h"
 
-@interface DSAddressEntity : NSManagedObject
+@implementation DSChainEntity (CoreDataProperties)
 
-@property (nonatomic, retain) NSString *address;
-@property (nonatomic) int32_t purpose;
-@property (nonatomic) int32_t account;
-@property (nonatomic) int32_t index;
-@property (nonatomic) BOOL internal;
-@property (nonatomic) BOOL standalone;
++ (NSFetchRequest<DSChainEntity *> *)fetchRequest {
+	return [NSFetchRequest fetchRequestWithEntityName:@"DSChainEntity"];
+}
+
+@dynamic checkpoints;
+@dynamic genesisBlockHash;
+@dynamic standardPort;
+@dynamic type;
+@dynamic peers;
+@dynamic transactions;
+@dynamic blocks;
+@dynamic accounts;
 
 @end

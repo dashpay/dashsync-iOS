@@ -35,10 +35,14 @@
 #define BIP32_PURPOSE_ACCOUNT_DEPTH      1
 #define ADDRESS_DEFAULT      BIP44_PURPOSE
 
+@class DSDerivationPath;
+
 @protocol DSKeySequence<NSObject>
 
+@property (nonatomic,readonly) DSDerivationPath * derivationPath;
+
 @optional
-- (NSData *)deprecatedIncorrectExtendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose;
+- (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed;
 
 @required
 

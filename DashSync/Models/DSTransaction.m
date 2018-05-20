@@ -32,7 +32,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
-#import "DSAddressEntity.h"
+#import "DSAddressEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
 #define TX_VERSION    0x00000001u

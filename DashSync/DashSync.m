@@ -10,8 +10,8 @@
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 #import "NSManagedObject+Sugar.h"
-#import "DSMerkleBlockEntity.h"
-#import "DSTransactionEntity.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "DSTransactionEntity+CoreDataClass.h"
 
 @interface DashSync ()
 

@@ -33,19 +33,23 @@
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
+@class DSDerivationPath;
+
 @interface DSBIP32Sequence : NSObject<DSKeySequence>
 
-- (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData * _Nullable)seed purpose:(uint32_t)purpose;
-- (NSData * _Nullable)extendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData * _Nullable)seed purpose:(uint32_t)purpose;
+@property (nonatomic,readonly) DSDerivationPath * derivationPath;
+
+- (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
+- (NSData * _Nullable)extendedPublicKeyFromSeed:(NSData * _Nonnull)seed;
 - (NSData * _Nullable)publicKey:(uint32_t)n internal:(BOOL)internal masterPublicKey:(NSData * _Nonnull)masterPublicKey;
 - (NSString * _Nullable)privateKey:(uint32_t)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 - (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n purpose:(uint32_t)purpose internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
-- (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed;
++ (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed;
 
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-- (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString * _Nonnull)uri fromSeed:(NSData * _Nonnull)seed;
++ (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString * _Nonnull)uri fromSeed:(NSData * _Nonnull)seed;
 
 - (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
 - (NSString * _Nullable)serializedMasterPublicKey:(NSData * _Nonnull)masterPublicKey depth:(NSUInteger)depth;

@@ -1,9 +1,8 @@
 //
-//  DSChainEntity+CoreDataClass.h
-//  DashSync
+//  DSAccountEntity+CoreDataClass.m
+//  
 //
-//  Created by Quantum Explorer on 05/05/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +22,16 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSAccountEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "DSChain.h"
-#import "IntTypes.h"
 
-@class DSPeerEntity,DSChain;
+@implementation DSAccountEntity
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSChainEntity : NSManagedObject
-
-+ (DSChainEntity* _Nonnull)chainEntityForType:(DSChainType)type genesisBlock:(UInt256)genesisBlock checkpoints:(NSArray* _Nullable)checkpoints;
-- (instancetype)setAttributesFromChain:(DSChain * _Nonnull)chain;
-- (DSChain * _Nonnull)chain;
++ (DSAccountEntity* _Nonnull)accountEntityForDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain
+    chain.c
+    [chain.accounts object]
+    
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
-
-#import "DSChainEntity+CoreDataProperties.h"

@@ -1,11 +1,9 @@
 //
-//  DSPeerEntity.h
+//  DSShapeshiftEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/6/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 1/31/17.
+//  Copyright © 2018 Dash Core. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +23,25 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSShapeshiftEntity+CoreDataProperties.h"
 
-@class DSPeer,DSChainEntity;
+@implementation DSShapeshiftEntity (CoreDataProperties)
 
-@interface DSPeerEntity : NSManagedObject
++ (NSFetchRequest<DSShapeshiftEntity *> *)fetchRequest {
+	return [[NSFetchRequest alloc] initWithEntityName:@"DSShapeshiftEntity"];
+}
 
-@property (nonatomic) int32_t address;
-@property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic) NSTimeInterval lowPreferenceTill;
-@property (nonatomic) int16_t port;
-@property (nonatomic) int64_t services;
-@property (nonatomic) int16_t misbehavin;
-@property (nonatomic) int32_t priority;
-@property (nonatomic,retain) DSChainEntity * chain;
-
-- (instancetype)setAttributesFromPeer:(DSPeer *)peer;
-- (DSPeer *)peer;
+@dynamic errorMessage;
+@dynamic expiresAt;
+@dynamic inputAddress;
+@dynamic inputCoinAmount;
+@dynamic inputCoinType;
+@dynamic isFixedAmount;
+@dynamic outputCoinAmount;
+@dynamic outputCoinType;
+@dynamic outputTransactionId;
+@dynamic shapeshiftStatus;
+@dynamic withdrawalAddress;
+@dynamic transaction;
 
 @end

@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14133" systemVersion="17E199" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
+        <attribute name="derivationPath" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="account" inverseEntity="DSAddressEntity" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="accounts" inverseEntity="DSChainEntity" syncable="YES"/>
+    </entity>
     <entity name="DSAddressEntity" representedClassName="DSAddressEntity" syncable="YES">
-        <attribute name="account" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="address" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="internal" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="purpose" attributeType="Integer 32" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="addresses" inverseEntity="DSAccountEntity" syncable="YES"/>
     </entity>
     <entity name="DSChainEntity" representedClassName="DSChainEntity" syncable="YES">
         <attribute name="checkpoints" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="genesisBlockHash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="standardPort" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="accounts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="chain" inverseEntity="DSAccountEntity" syncable="YES"/>
+        <relationship name="blocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="peers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSPeerEntity" inverseName="chain" inverseEntity="DSPeerEntity" syncable="YES"/>
-        <relationship name="transactions" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="chain" inverseEntity="DSTransactionEntity" syncable="YES"/>
+        <relationship name="transactions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="chain" inverseEntity="DSTransactionEntity" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="genesisBlockHash"/>
@@ -33,6 +39,7 @@
         <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="blocks" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
     <entity name="DSPeerEntity" representedClassName="DSPeerEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -86,13 +93,14 @@
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="135"/>
-        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="135"/>
-        <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="210"/>
+        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="120"/>
+        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="165"/>
+        <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="165"/>
         <element name="DSShapeshiftEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSTransactionEntity" positionX="0" positionY="0" width="128" height="165"/>
         <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="120"/>
         <element name="DSTxOutputEntity" positionX="0" positionY="0" width="128" height="165"/>
+        <element name="DSAccountEntity" positionX="9" positionY="99" width="128" height="90"/>
     </elements>
 </model>

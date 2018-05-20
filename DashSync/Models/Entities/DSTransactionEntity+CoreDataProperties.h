@@ -1,11 +1,8 @@
 //
-//  DSTransactionEntity.h
-//  DashSync
+//  DSTransactionEntity+CoreDataProperties.h
+//  
 //
-//  Created by Aaron Voisine on 8/22/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,54 +22,50 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSTransactionEntity+CoreDataClass.h"
 
-@class DSTxInputEntity;
-@class DSTxOutputEntity;
-@class DSTransaction;
-@class DSShapeshiftEntity;
-@class DSChainEntity;
 
-@interface DSTransactionEntity : NSManagedObject
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DSTransactionEntity (CoreDataProperties)
+
++ (NSFetchRequest<DSTransactionEntity *> *)fetchRequest;
 
 @property (nonatomic, retain) NSData *txHash;
 @property (nonatomic) int32_t blockHeight;
 @property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic, retain) NSOrderedSet *inputs;
-@property (nonatomic, retain) NSOrderedSet *outputs;
+@property (nonatomic, retain) NSOrderedSet<DSTxInputEntity *> *inputs;
+@property (nonatomic, retain) NSOrderedSet<DSTxOutputEntity *> *outputs;
 @property (nonatomic) int32_t lockTime;
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
 @property (nonatomic, retain) DSChainEntity *chain;
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx;
-- (DSTransaction *)transaction;
-
 @end
 
-// These generated accessors are all broken because NSOrderedSet is not a subclass of NSSet.
-// This known core data bug has remained unaddressed for over three years: http://openradar.appspot.com/10114310
-// Per core data release notes, use [NSObject<NSKeyValueCoding> mutableOrderedSetValueForKey:] instead.
 @interface DSTransactionEntity (CoreDataGeneratedAccessors)
 
 - (void)insertObject:(DSTxInputEntity *)value inInputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromInputsAtIndex:(NSUInteger)idx;
-- (void)insertInputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
+- (void)insertInputs:(NSArray<DSTxInputEntity *> *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeInputsAtIndexes:(NSIndexSet *)indexes;
 - (void)replaceObjectInInputsAtIndex:(NSUInteger)idx withObject:(DSTxInputEntity *)value;
-- (void)replaceInputsAtIndexes:(NSIndexSet *)indexes withInputs:(NSArray *)values;
+- (void)replaceInputsAtIndexes:(NSIndexSet *)indexes withInputs:(NSArray<DSTxInputEntity *> *)values;
 - (void)addInputsObject:(DSTxInputEntity *)value;
 - (void)removeInputsObject:(DSTxInputEntity *)value;
-- (void)addInputs:(NSOrderedSet *)values;
-- (void)removeInputs:(NSOrderedSet *)values;
+- (void)addInputs:(NSOrderedSet<DSTxInputEntity *> *)values;
+- (void)removeInputs:(NSOrderedSet<DSTxInputEntity *> *)values;
+
 - (void)insertObject:(DSTxOutputEntity *)value inOutputsAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromOutputsAtIndex:(NSUInteger)idx;
-- (void)insertOutputs:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
+- (void)insertOutputs:(NSArray<DSTxOutputEntity *> *)value atIndexes:(NSIndexSet *)indexes;
 - (void)removeOutputsAtIndexes:(NSIndexSet *)indexes;
 - (void)replaceObjectInOutputsAtIndex:(NSUInteger)idx withObject:(DSTxOutputEntity *)value;
-- (void)replaceOutputsAtIndexes:(NSIndexSet *)indexes withOutputs:(NSArray *)values;
+- (void)replaceOutputsAtIndexes:(NSIndexSet *)indexes withOutputs:(NSArray<DSTxOutputEntity *> *)values;
 - (void)addOutputsObject:(DSTxOutputEntity *)value;
 - (void)removeOutputsObject:(DSTxOutputEntity *)value;
-- (void)addOutputs:(NSOrderedSet *)values;
-- (void)removeOutputs:(NSOrderedSet *)values;
+- (void)addOutputs:(NSOrderedSet<DSTxOutputEntity *> *)values;
+- (void)removeOutputs:(NSOrderedSet<DSTxOutputEntity *> *)values;
+
 @end
+
+NS_ASSUME_NONNULL_END

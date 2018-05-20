@@ -33,6 +33,8 @@
 
 typedef union _UInt256 UInt256;
 
+@class DSChain;
+
 @interface DSMerkleBlock : NSObject
 
 @property (nonatomic, readonly) UInt256 blockHash;
@@ -46,6 +48,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSData *hashes;
 @property (nonatomic, readonly) NSData *flags;
 @property (nonatomic, assign) uint32_t height;
+@property (nonatomic, readonly) DSChain *chain;
 
 @property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
 
@@ -57,10 +60,10 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 // message can be either a merkleblock or header message
-+ (instancetype)blockWithMessage:(NSData *)message;
++ (instancetype)blockWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
-- (instancetype)initWithMessage:(NSData *)message;
-- (instancetype)initWithBlockHash:(UInt256)blockHash version:(uint32_t)version prevBlock:(UInt256)prevBlock
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
+- (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
 merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height;
 

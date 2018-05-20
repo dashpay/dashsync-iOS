@@ -1,11 +1,8 @@
 //
-//  DSTxOutputEntity.m
-//  DashSync
+//  DSTxOutputEntity+CoreDataProperties.m
+//  
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,37 +22,21 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTxOutputEntity.h"
-#import "DSTransactionEntity.h"
-#import "DSTransaction.h"
-#import "NSData+Bitcoin.h"
-#import "NSManagedObject+Sugar.h"
+#import "DSTxOutputEntity+CoreDataProperties.h"
 
-@implementation DSTxOutputEntity
+@implementation DSTxOutputEntity (CoreDataProperties)
 
-@dynamic txHash;
-@dynamic n;
-@dynamic address;
-@dynamic script;
-@dynamic value;
-@dynamic spent;
-@dynamic transaction;
-@dynamic shapeshiftOutboundAddress;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index
-{
-    [self.managedObjectContext performBlockAndWait:^{
-        UInt256 txHash = tx.txHash;
-    
-        self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
-        self.n = (int32_t)index;
-        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
-        self.script = tx.outputScripts[index];
-        self.value = [tx.outputAmounts[index] longLongValue];
-        self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
-    }];
-    
-    return self;
++ (NSFetchRequest<DSTxOutputEntity *> *)fetchRequest {
+	return [NSFetchRequest fetchRequestWithEntityName:@"DSTxOutputEntity"];
 }
+
+@dynamic address;
+@dynamic n;
+@dynamic script;
+@dynamic shapeshiftOutboundAddress;
+@dynamic spent;
+@dynamic txHash;
+@dynamic value;
+@dynamic transaction;
 
 @end

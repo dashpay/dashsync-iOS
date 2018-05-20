@@ -1,11 +1,7 @@
 //
-//  DSMerkleBlockEntity.m
-//  DashSync
-//
-//  Created by Aaron Voisine on 10/19/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  DSMerkleBlockEntity+CoreDataClass.m
+//  
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +21,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSMerkleBlockEntity.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "NSData+Bitcoin.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSChain.h"
 
 @implementation DSMerkleBlockEntity
-
-@dynamic blockHash;
-@dynamic height;
-@dynamic version;
-@dynamic prevBlock;
-@dynamic merkleRoot;
-@dynamic timestamp;
-@dynamic target;
-@dynamic nonce;
-@dynamic totalTransactions;
-@dynamic hashes;
-@dynamic flags;
 
 - (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
 {
@@ -58,8 +44,9 @@
         self.hashes = [NSData dataWithData:block.hashes];
         self.flags = [NSData dataWithData:block.flags];
         self.height = block.height;
+        self.chain = [block.chain chainEntity];
     }];
-
+    
     return self;
 }
 
@@ -70,12 +57,12 @@
     [self.managedObjectContext performBlockAndWait:^{
         NSData *blockHash = self.blockHash, *prevBlock = self.prevBlock, *merkleRoot = self.merkleRoot;
         UInt256 hash = (blockHash.length == sizeof(UInt256)) ? *(const UInt256 *)blockHash.bytes : UINT256_ZERO,
-                prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
-                root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
+        prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
+        root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
         
-        block = [[DSMerkleBlock alloc] initWithBlockHash:hash version:self.version prevBlock:prev merkleRoot:root
-                 timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce
-                 totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
+        block = [[DSMerkleBlock alloc] initWithBlockHash:hash onChain:self.chain.chain version:self.version prevBlock:prev merkleRoot:root
+                                               timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce
+                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];
     
     return block;

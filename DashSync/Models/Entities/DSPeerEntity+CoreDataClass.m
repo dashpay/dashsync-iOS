@@ -1,11 +1,8 @@
 //
-//  DSPeerEntity.m
-//  DashSync
+//  DSPeerEntity+CoreDataClass.m
+//  
 //
-//  Created by Aaron Voisine on 10/6/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSPeerEntity.h"
+#import "DSPeerEntity+CoreDataClass.h"
 #import "DSPeer.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -35,20 +32,11 @@
 
 @implementation DSPeerEntity
 
-@dynamic address;
-@dynamic timestamp;
-@dynamic port;
-@dynamic services;
-@dynamic misbehavin;
-@dynamic lowPreferenceTill;
-@dynamic priority;
-@dynamic chain;
-
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer
 {
     //TODO: store IPv6 addresses
     if (peer.address.u64[0] != 0 || peer.address.u32[2] != CFSwapInt32HostToBig(0xffff)) return nil;
-
+    
     [self.managedObjectContext performBlockAndWait:^{
         self.address = CFSwapInt32BigToHost(peer.address.u32[3]);
         self.port = peer.port;
@@ -59,14 +47,14 @@
         self.lowPreferenceTill = peer.lowPreferenceTill;
         self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType genesisBlock:peer.chain.genesisHash checkpoints:nil];
     }];
-
+    
     return self;
 }
 
 - (DSPeer *)peer
 {
     __block DSPeer *peer = nil;
-        
+    
     [self.managedObjectContext performBlockAndWait:^{
         UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
         DSChain * chain = [self.chain chain];
@@ -75,7 +63,7 @@
         peer.priority = self.priority;
         peer.lowPreferenceTill = self.lowPreferenceTill;
     }];
-
+    
     return peer;
 }
 

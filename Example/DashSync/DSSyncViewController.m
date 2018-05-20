@@ -38,6 +38,8 @@
 {
     [super viewDidLoad];
 	
+    [self updateBalance];
+    
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
@@ -90,7 +92,7 @@
     }
     
     if (timeout <= DBL_EPSILON) {
-        if ([[DSChain mainnet] timestampForBlockHeight:[DSChain mainnet].lastBlockHeight] +
+        if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
             if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
@@ -215,6 +217,7 @@
 
 -(void)updateBalance {
     self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.wallet.balance];
+    self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.wallet.allTransactions count]];
 }
 
 

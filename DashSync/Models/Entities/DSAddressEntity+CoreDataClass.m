@@ -1,11 +1,8 @@
 //
-//  DSAddressEntity.m
-//  DashSync
+//  DSAddressEntity+CoreDataClass.m
+//  
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +22,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSAddressEntity.h"
-#import "NSManagedObject+Sugar.h"
+#import "DSAddressEntity+CoreDataClass.h"
 
 @implementation DSAddressEntity
-
-@dynamic address;
-@dynamic purpose;
-@dynamic account;
-@dynamic index;
-@dynamic internal;
-@dynamic standalone;
 
 @end

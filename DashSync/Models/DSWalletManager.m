@@ -33,8 +33,8 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSBIP32Sequence.h"
 #import "DSTransaction.h"
-#import "DSTransactionEntity.h"
-#import "DSAddressEntity.h"
+#import "DSTransactionEntity+CoreDataClass.h"
+#import "DSAddressEntity+CoreDataClass.h"
 #import "DSEventManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
@@ -263,7 +263,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (! (self = [super init])) return nil;
     
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    self.sequence = [DSBIP32Sequence new];
     self.mnemonic = [DSBIP39Mnemonic new];
     self.reachability = [Reachability reachabilityForInternetConnection];
     self.failedPins = [NSMutableSet set];
@@ -622,7 +621,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         if (! privKey) {
             NSData *seed = [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
             
-            privKey = [[DSBIP32Sequence new] authPrivateKeyFromSeed:seed];
+            privKey = [DSBIP32Sequence authPrivateKeyFromSeed:seed];
             setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
         }
         

@@ -31,7 +31,7 @@
 #import "DSBloomFilter.h"
 #import "DSKeySequence.h"
 #import "DSTransaction.h"
-#import "DSTransactionEntity.h"
+#import "DSTransactionEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity.h"
 #import "DSWalletManager.h"
@@ -957,8 +957,8 @@ static const char *mainnet_dns_seeds[] = {
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
     
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
-    if (syncing && ! [wallet containsTransaction:transaction]) return;
-    if (! [wallet registerTransaction:transaction]) return;
+    if (syncing && ![wallet containsTransaction:transaction]) return;
+    if (![wallet registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     
     if ([wallet amountSentByTransaction:transaction] > 0 && [wallet transactionIsValid:transaction]) {
@@ -1020,7 +1020,7 @@ static const char *mainnet_dns_seeds[] = {
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
     if (! tx) tx = [wallet transactionForHash:txHash];
     if (! tx || (syncing && ! [wallet containsTransaction:tx])) return;
-    if (! [wallet registerTransaction:tx]) return;
+    if (![wallet registerTransaction:tx]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm

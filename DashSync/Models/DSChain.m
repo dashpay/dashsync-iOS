@@ -31,9 +31,9 @@
 #import "DSBloomFilter.h"
 #import "DSKeySequence.h"
 #import "DSTransaction.h"
-#import "DSTransactionEntity.h"
+#import "DSTransactionEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
-#import "DSMerkleBlockEntity.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSWalletManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSWallet.h"
@@ -45,8 +45,7 @@ typedef const struct checkpoint { uint32_t height; const char *checkpointHash; u
 
 static checkpoint testnet_checkpoint_array[] = {
     {           0, "00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c", 1390666206, 0x1e0ffff0u },
-    {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu },
-    {        5000, "0000000097e4be8abd515e45947b165b367955457ef7b7efedf9e7e30fc059d0", 1507271366, 0x1d014188u }
+    {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -204,8 +203,8 @@ static dispatch_once_t devnetToken = 0;
     DSChainEntity * chainEntity = [DSChainEntity managedObject];
     chainEntity.checkpoints = checkpointData;
     chainEntity.genesisBlockHash = [[checkpointArray firstObject] objectForKey:@"checkpointHash"];
-    chainEntity.standardPort = @(port);
-    chainEntity.type = @(DSChainType_DevNet);
+    chainEntity.standardPort = port;
+    chainEntity.type = DSChainType_DevNet;
     NSError * error = nil;
     [chainEntity.managedObjectContext save:&error];
     if (error) {
@@ -294,7 +293,7 @@ static dispatch_once_t devnetToken = 0;
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
-            _blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash version:1 prevBlock:UINT256_ZERO
+            _blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                        merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
                                                                             flags:nil height:checkpoint.height];
@@ -353,7 +352,7 @@ static dispatch_once_t devnetToken = 0;
             if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
                 UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
-                _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash version:1 prevBlock:UINT256_ZERO
+                _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                            merkleRoot:UINT256_ZERO timestamp:self.checkpoints[i].timestamp
                                                                target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
                                                                height:self.checkpoints[i].height];

@@ -1,9 +1,8 @@
 //
 //  DSChainEntity+CoreDataClass.m
-//  DashSync
+//  
 //
-//  Created by Quantum Explorer on 05/05/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +47,7 @@
         type = [self.type integerValue];
         genesisHash = *(UInt256 *)self.genesisBlockHash.hexToData.reverse.bytes;
         data = self.checkpoints;
-        }];
+    }];
     if (type == DSChainType_MainNet) {
         return [DSChain mainnet];
     } else if (type == DSChainType_TestNet) {

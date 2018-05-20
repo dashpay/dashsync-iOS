@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "DSWallet.h"
 #import "DSMnemonic.h"
+#import "DSKeySequence.h"
 
 #define DASH         @"DASH"     // capital D with stroke (utf-8)
 #define BTC          @"\xC9\x83"     // capital B with stroke (utf-8)
@@ -56,10 +57,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 @interface DSWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @property (nonatomic, readonly) BOOL watchOnly; // true if this is a "watch only" wallet with no signing ability
-@property (nonatomic, strong) id<DSKeySequence> _Nullable sequence;
 @property (nonatomic, strong) id<DSMnemonic> _Nullable mnemonic;
-@property (nonatomic, readonly) NSData * _Nullable extendedBIP44PublicKey;//master public key used to generate wallet addresses
-@property (nonatomic, readonly) NSData * _Nullable extendedBIP32PublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 @property (nonatomic ,readonly) BOOL lockedOut;

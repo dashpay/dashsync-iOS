@@ -1,11 +1,8 @@
 //
-//  DSTxInputEntity.h
+//  DSDerivationPath.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 8/26/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +23,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 
-@class DSTransactionEntity, DSTransaction;
-
-@interface DSTxInputEntity : NSManagedObject
-
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t n;
-@property (nonatomic, retain) NSData *signature;
-@property (nonatomic) int32_t sequence;
-@property (nonatomic, retain) DSTransactionEntity *transaction;
-
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index;
+@interface DSDerivationPath : NSIndexPath
 
 @end

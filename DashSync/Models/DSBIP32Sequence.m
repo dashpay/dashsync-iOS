@@ -31,6 +31,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+#import "DSDerivationPath.h"
 
 #define useDarkCoinSeed 0
 
@@ -170,16 +171,28 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return TRUE;
 }
 
+@interface DSBIP32Sequence()
+
+@property (nonatomic,strong) DSDerivationPath * derivationPath;
+
+@end
+
 @implementation DSBIP32Sequence
+
+- (instancetype)initWithDerivationPath:(DSDerivationPath* _Nonnull)derivationPath {
+    if (! (self = [super init])) return nil;
+    self.derivationPath = derivationPath;
+    return self;
+}
 
 // MARK: - DSKeySequence
 
 
 //this is for upgrade purposes only
-- (NSData *)deprecatedIncorrectExtendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose
+- (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed
 {
     if (! seed) return nil;
-    if (purpose && purpose != 44) return nil; //currently only support purpose 0 and 44
+    if (![self.derivationPath length]) return nil; //there needs to be at least 1 length
     NSMutableData *mpk = [NSMutableData secureData];
     UInt512 I;
     
@@ -189,11 +202,10 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
-    if (purpose == 44) {
-        CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
-        CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
+    for (NSInteger i = 0;i<[self.derivationPath length];i++) {
+        uint32_t derivation = (uint32_t)[self.derivationPath indexAtPosition:i];
+        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
     }
-    CKDpriv(&secret, &chain, 0 | BIP32_HARD); // account 0H
     
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
@@ -203,10 +215,10 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
 // the values are taken from BIP32 account m/44H/5H/0H
-- (NSData *)extendedPublicKeyForAccount:(uint32_t)account fromSeed:(NSData *)seed purpose:(uint32_t)purpose
+- (NSData *)extendedPublicKeyForDerivationPath:(DSDerivationPath*)derivationPath fromSeed:(NSData *)seed
 {
     if (! seed) return nil;
-    if (purpose && purpose != 44) return nil; //currently only support purpose 0 and 44
+    if (![derivationPath length]) return nil; //there needs to be at least 1 length
     NSMutableData *mpk = [NSMutableData secureData];
     UInt512 I;
 
@@ -214,12 +226,12 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     
-    if (purpose == 44) {
-        CKDpriv(&secret, &chain, 44 | BIP32_HARD); // purpose 44H
-        CKDpriv(&secret, &chain, 5 | BIP32_HARD); // dash 5H
+    for (NSInteger i = 0;i<[derivationPath length] - 1;i++) {
+        uint32_t derivation = (uint32_t)[derivationPath indexAtPosition:i];
+        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
     }
     [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-    CKDpriv(&secret, &chain, account | BIP32_HARD); // account 0H
+    CKDpriv(&secret, &chain, (uint32_t)[derivationPath indexAtPosition:[derivationPath length] - 1] | BIP32_HARD); // account 0H
 
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
@@ -287,7 +299,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - authentication key
 
-- (NSString *)authPrivateKeyFromSeed:(NSData *)seed
++ (NSString *)authPrivateKeyFromSeed:(NSData *)seed
 {
     if (! seed) return nil;
     
@@ -315,7 +327,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 }
 
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-- (NSString *)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed
++ (NSString *)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed
 {
     NSUInteger len = [uri lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *data = [NSMutableData dataWithCapacity:sizeof(n) + len];

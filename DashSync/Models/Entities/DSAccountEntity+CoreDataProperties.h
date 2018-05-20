@@ -1,11 +1,8 @@
 //
-//  DSMerkleBlockEntity.h
-//  DashSync
+//  DSAccountEntity+CoreDataProperties.h
+//  
 //
-//  Created by Aaron Voisine on 10/19/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
-//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
+//  Created by Sam Westrich on 5/20/18.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +22,28 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSAccountEntity+CoreDataClass.h"
 
-@class DSMerkleBlock;
 
-@interface DSMerkleBlockEntity : NSManagedObject
+NS_ASSUME_NONNULL_BEGIN
 
-@property (nonatomic, retain) NSData *blockHash;
-@property (nonatomic) int32_t height;
-@property (nonatomic) int32_t version;
-@property (nonatomic, retain) NSData *prevBlock;
-@property (nonatomic, retain) NSData *merkleRoot;
-@property (nonatomic) NSTimeInterval timestamp;
-@property (nonatomic) int32_t target;
-@property (nonatomic) int32_t nonce;
-@property (nonatomic) int32_t totalTransactions;
-@property (nonatomic, retain) NSData *hashes;
-@property (nonatomic, retain) NSData *flags;
+@interface DSAccountEntity (CoreDataProperties)
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
-- (DSMerkleBlock *)merkleBlock;
++ (NSFetchRequest<DSAccountEntity *> *)fetchRequest;
+
+@property (nullable, nonatomic, retain) NSData *derivationPath;
+@property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
+@property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
+
+@interface DSAccountEntity (CoreDataGeneratedAccessors)
+
+- (void)addAddressesObject:(DSAddressEntity *)value;
+- (void)removeAddressesObject:(DSAddressEntity *)value;
+- (void)addAddresses:(NSSet<DSAddressEntity *> *)values;
+- (void)removeAddresses:(NSSet<DSAddressEntity *> *)values;
+
+@end
+
+NS_ASSUME_NONNULL_END
