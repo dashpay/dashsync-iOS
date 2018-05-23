@@ -36,7 +36,7 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
     DSChainType_DevNet,
 };
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath;
 
 @protocol DSChainDelegate;
 
@@ -91,6 +91,8 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 -(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 -(void)removeWallet;
+
+-(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
 
 @end
 

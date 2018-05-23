@@ -29,7 +29,6 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSEventManager.h"
 #import "DSBloomFilter.h"
-#import "DSKeySequence.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
@@ -40,6 +39,7 @@
 #import "DSChainPeerManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSCoder+Dash.h"
+#import "DSDerivationPath.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -215,9 +215,13 @@ static dispatch_once_t devnetToken = 0;
 }
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName {
-    if ([networkName isEqualToString:@"main"] || [networkName isEqualToString:@"live"] || [networkName isEqualToString:@"livenet"] || [networkName isEqualToString:@"mainnet"] ) return [self mainnet];
+    if ([networkName isEqualToString:@"main"] || [networkName isEqualToString:@"live"] || [networkName isEqualToString:@"livenet"] || [networkName isEqualToString:@"mainnet"]) return [self mainnet];
     if ([networkName isEqualToString:@"test"] || [networkName isEqualToString:@"testnet"]) return [self testnet];
     return nil;
+}
+
+-(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
+    return @[[DSDerivationPath bip32DerivationPathForAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathForChainType:self.chainType forAccountNumber:accountNumber]];
 }
 
 // MARK: - Check Type

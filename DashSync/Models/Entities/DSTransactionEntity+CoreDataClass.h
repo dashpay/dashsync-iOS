@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)setAttributesFromTx:(DSTransaction *)tx;
 - (DSTransaction *)transaction;
-+ (NSArray<DSTransaction*> *)transactionsForChain:(DSChainEntity*)chain;
++ (NSArray<DSTransaction*> * _Nonnull)transactionsForChain:(DSChainEntity*)chain;
 
 @end
 

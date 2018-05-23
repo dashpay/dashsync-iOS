@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain) NSData *signature;
 @property (nonatomic) int32_t sequence;
 @property (nonatomic, retain) DSTransactionEntity *transaction;
+@property (nonatomic, retain) DSDerivationPathEntity * derivationPath;
 
 @end
 

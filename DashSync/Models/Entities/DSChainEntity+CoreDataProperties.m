@@ -37,6 +37,6 @@
 @dynamic peers;
 @dynamic transactions;
 @dynamic blocks;
-@dynamic accounts;
+@dynamic derivationPaths;
 
 @end

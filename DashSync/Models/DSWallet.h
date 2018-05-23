@@ -24,6 +24,9 @@
 
 #import <Foundation/Foundation.h>
 
+typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
+typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
+
 FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 #define DUFFS           100000000LL
@@ -32,12 +35,26 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 #define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
 #define MAX_FEE_PER_KB     ((100100ULL*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
 
+@class DSChain,DSAccount,DSTransaction;
+
 @interface DSWallet : NSObject
 
-@property (nonatomic,strong) NSArray * accounts;
+@property (nonatomic, readonly) NSArray * accounts;
+
+// chain for the wallet
+@property (nonatomic, readonly) DSChain * chain;
 
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
+
+// all previously generated external addresses
+@property (nonatomic, readonly) NSSet * _Nonnull allReceiveAddresses;
+
+// all previously generated internal addresses
+@property (nonatomic, readonly) NSSet * _Nonnull allChangeAddresses;
+
+// NSValue objects containing UTXO structs
+@property (nonatomic, readonly) NSArray * _Nonnull unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * _Nonnull recentTransactions;
@@ -59,6 +76,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 
+@property (nonatomic, strong) SeedRequestBlock seed;
+
++(DSWallet*)standardWalletForChain:(DSChain*)chain;
+
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
 
@@ -70,5 +91,19 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 // as unverified (not 0-conf safe)
 - (NSArray * _Nonnull)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp
                          forTxHashes:(NSArray * _Nonnull)txHashes;
+
+//add an account to the wallet
+- (void)addAccount:(DSAccount*)account;
+
+// returns an account to which the given transaction is associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
+- (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction * _Nonnull)transaction;
+
+// returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
+- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction;
+
+// returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
+- (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
+
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
 @end

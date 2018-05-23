@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t index;
 @property (nonatomic, assign) BOOL internal;
 @property (nonatomic, assign) BOOL standalone;
-@property (nullable, nonatomic, retain) DSAccountEntity *account;
+@property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 
 @end
 

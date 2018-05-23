@@ -35,10 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *genesisBlockHash;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) uint32_t type;
-@property (nullable, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
-@property (nullable, nonatomic, retain) NSSet<DSTransactionEntity *> *transactions;
-@property (nullable, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
-@property (nullable, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *accounts;
+@property (nonnull, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
+@property (nonnull, nonatomic, retain) NSSet<DSTransactionEntity *> *transactions;
+@property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
+@property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *derivationPaths;
 
 @end
 

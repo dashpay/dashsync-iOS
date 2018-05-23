@@ -1,5 +1,5 @@
 //
-//  DSAccountEntity+CoreDataProperties.h
+//  DSDerivationPathEntity+CoreDataClass.m
 //  
 //
 //  Created by Sam Westrich on 5/20/18.
@@ -22,28 +22,15 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSAccountEntity+CoreDataClass.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSChain.h"
 
+@implementation DSDerivationPathEntity
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSAccountEntity (CoreDataProperties)
-
-+ (NSFetchRequest<DSAccountEntity *> *)fetchRequest;
-
-@property (nullable, nonatomic, retain) NSData *derivationPath;
-@property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
-@property (nullable, nonatomic, retain) DSChainEntity *chain;
++ (DSDerivationPathEntity* _Nonnull)accountEntityForDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain
+    [chain.chai]
+    
+}
 
 @end
-
-@interface DSAccountEntity (CoreDataGeneratedAccessors)
-
-- (void)addAddressesObject:(DSAddressEntity *)value;
-- (void)removeAddressesObject:(DSAddressEntity *)value;
-- (void)addAddresses:(NSSet<DSAddressEntity *> *)values;
-- (void)removeAddresses:(NSSet<DSAddressEntity *> *)values;
-
-@end
-
-NS_ASSUME_NONNULL_END

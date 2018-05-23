@@ -34,6 +34,6 @@
 @dynamic index;
 @dynamic internal;
 @dynamic standalone;
-@dynamic account;
+@dynamic derivationPath;
 
 @end

@@ -2,9 +2,7 @@
 //  DSWallet.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 5/12/13.
-//  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
-//  Updated by Quantum Explorer on 05/11/18.
+//  Created by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,9 +23,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+#import "DSDerivationPath.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSDerivationPath.h"
 #import "DSKey.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
@@ -35,98 +33,78 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
-#import "DSAccountEntity+CoreDataClass.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSChainPeerManager.h"
-#import "DSKeySequence.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSWalletManager.h"
 
-// chain position of first tx output address that appears in chain
-static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
-    for (NSString *addr in tx.outputAddresses) {
-        NSUInteger i = [chain indexOfObject:addr];
-        
-        if (i != NSNotFound) return i;
-    }
-    
-    return NSNotFound;
-}
 
-@interface DSAccount ()
+@class DSDerivationPath,DSAccount;
 
-@property (nonatomic, strong) id<DSKeySequence> sequence;
-@property (nonatomic, strong) NSData *masterPublicKey;
-@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
+@interface DSAccount()
+
+// BIP 43 derivation paths
+@property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mDerivationPaths;
+
+@property (nonatomic, weak) DSWallet * wallet; //weak because wallet owns accounts;
+
+@property (nonatomic, strong) NSArray *balanceHistory;
+
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
+
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
-@property (nonatomic, strong) NSArray *balanceHistory;
-@property (nonatomic, strong) SeedRequestBlock seed;
-@property (nonatomic, strong) NSManagedObjectContext *moc;
-@property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) DSWallet * wallet;
-@property (nonatomic, strong) DSDerivationPath * derivationPath;
-@property (nonatomic, strong) NSData * extendedPublicKey;//master public key used to generate wallet addresses
+
+@property (nonatomic, strong) NSManagedObjectContext * moc;
 
 @end
 
-@implementation DSAccount
+@implementation DSAccount : NSObject
 
-// MARK: - Account initialization
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet {
+    return [[self alloc] initWithDerivationPaths:derivationPaths onWallet:wallet];
+}
 
-- (instancetype)initWithContext:(NSManagedObjectContext *)context sequence:(id<DSKeySequence>)sequence onChain:(DSChain*)chain
-                masterPublicKey:(NSData *)masterPublicKey requestSeedBlock:(SeedRequestBlock)seed
-{
+-(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet {
     if (! (self = [super init])) return nil;
+    NSAssert([derivationPaths count], @"derivationPaths can not be empty");
+    _accountNumber = (uint32_t)[[derivationPaths firstObject] indexAtPosition:[[derivationPaths firstObject] length] - 1];
     
-    NSMutableSet *updateTx = [NSMutableSet set];
-    
-    self.chain = chain;
-    self.moc = context;
-    self.sequence = sequence;
-    self.masterPublicKey = masterPublicKey;
-    self.seed = seed;
-    self.allTx = [NSMutableDictionary dictionary];
-    self.transactions = [NSMutableOrderedSet orderedSet];
-    self.internalAddresses = [NSMutableArray array];
-    self.externalAddresses = [NSMutableArray array];
-    self.allAddresses = [NSMutableSet set];
-    self.usedAddresses = [NSMutableSet set];
-    
+    for (int i = 1;i<[derivationPaths count];i++) {
+        DSDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
+        NSAssert([derivationPath indexAtPosition:[derivationPath length] - 1] == _accountNumber, @"all derivationPaths need to be on same account");
+    }
+    self.wallet = wallet;
+    self.mDerivationPaths = [derivationPaths mutableCopy];
+    self.moc = [NSManagedObject context];
     [self.moc performBlockAndWait:^{
-        [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
-        DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForDerivationPath:self.derivationPath onChain:self.chain];
-        for (DSAddressEntity *e in accountEntity.addresses) {
-            @autoreleasepool {
-                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
-                
-                while (e.index >= a.count) [a addObject:[NSNull null]];
-                a[e.index] = e.address;
-                [self.allAddresses addObject:e.address];
-            }
-        }
         
         if ([DSTransactionEntity countAllObjects] > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
             [DSTxInputEntity allObjects];
             [DSTxOutputEntity allObjects];
             
-            for (DSTransactionEntity *e in [DSTransactionEntity transactionsForChain:chain.chainEntity]) {
+            for (DSTransactionEntity *e in [DSTransactionEntity transactionsForChain:self.wallet.chain.chainEntity]) {
                 @autoreleasepool {
-                    DSTransaction *tx = e.transaction;
-                    NSValue *hash = (tx) ? uint256_obj(tx.txHash) : nil;
                     
-                    if (! tx || self.allTx[hash] != nil) continue;
+                    DSTransaction *transaction = e.transaction;
+                    NSValue *hash = (transaction) ? uint256_obj(tx.txHash) : nil;
                     
-                    [updateTx addObject:tx];
-                    self.allTx[hash] = tx;
-                    [self.transactions addObject:tx];
-                    [self.usedAddresses addObjectsFromArray:tx.inputAddresses];
-                    [self.usedAddresses addObjectsFromArray:tx.outputAddresses];
+                    if (! transaction || self.allTx[hash] != nil) continue;
+                    self.allTx[hash] = transaction;
+                    [self.transactions addObject:transaction];
+                    NSOrderedSet<DSTxInputEntity*> * inputs = e.inputs;
+                    for (DSTxInputEntity * input in inputs) {
+                        input.derivationPath
+                        DSDerivationPath * derivationPath = ;
+                        derivationPath.used
+                    }
+                    [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
+                    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
                 }
             }
         }
@@ -135,117 +113,101 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
-    
     return self;
 }
 
-- (void)dealloc
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+-(void)addDerivationPath:(DSDerivationPath*)derivationPath {
+    [self.mDerivationPaths addObject:derivationPath];
 }
 
-
-// Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
-// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
-// following the last used address in the chain. The internal chain is used for change addresses and the external chain
-// for receive addresses.
-- (NSArray *)addressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
-{
-    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
-    NSUInteger i = a.count;
-    
-    // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
-        i--;
-    }
-    
-    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-    
-    if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-        [self receiveAddress];
-        [self changeAddress];
-    }
-    
-    @synchronized(self) {
-        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
-        i = a.count;
-        
-        unsigned n = (unsigned)i;
-        
-        // keep only the trailing contiguous block of addresses with no transactions
-        while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
-            i--;
-        }
-        
-        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-        
-        while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self.sequence publicKey:n internal:internal masterPublicKey:self.masterPublicKey];
-            NSString *addr = [DSKey keyWithPublicKey:pubKey].address;
-            
-            if (! addr) {
-                NSLog(@"error generating keys");
-                return nil;
-            }
-            
-            [self.moc performBlock:^{ // store new address in core data
-                DSAddressEntity *e = [DSAddressEntity managedObject];
-                e.account = 0;
-                e.address = addr;
-                e.index = n;
-                e.internal = internal;
-                e.standalone = NO;
-                e.account = [DSAccountEntity accountEntityForDerivationPath:self.derivationPath onChain:self.chain];
-            }];
-            
-            [self.allAddresses addObject:addr];
-            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
-            [a addObject:addr];
-            n++;
-        }
-        
-        return a;
-    }
+-(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
+    [self.mDerivationPaths addObjectsFromArray:derivationPaths];
 }
 
-// this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
-// each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
-- (void)sortTransactions
-{
-    BOOL (^isAscending)(id, id);
-    __block __weak BOOL (^_isAscending)(id, id) = isAscending = ^BOOL(DSTransaction *tx1, DSTransaction *tx2) {
-        if (! tx1 || ! tx2) return NO;
-        if (tx1.blockHeight > tx2.blockHeight) return YES;
-        if (tx1.blockHeight < tx2.blockHeight) return NO;
-        
-        NSValue *hash1 = uint256_obj(tx1.txHash), *hash2 = uint256_obj(tx2.txHash);
-        
-        if ([tx1.inputHashes containsObject:hash2]) return YES;
-        if ([tx2.inputHashes containsObject:hash1]) return NO;
-        if ([self.invalidTx containsObject:hash1] && ! [self.invalidTx containsObject:hash2]) return YES;
-        if ([self.pendingTx containsObject:hash1] && ! [self.pendingTx containsObject:hash2]) return YES;
-        
-        for (NSValue *hash in tx1.inputHashes) {
-            if (_isAscending(self.allTx[hash], tx2)) return YES;
-        }
-        
-        return NO;
-    };
-    
-    [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
-        if (isAscending(tx1, tx2)) return NSOrderedAscending;
-        if (isAscending(tx2, tx1)) return NSOrderedDescending;
-        
-        NSUInteger i = txAddressIndex(tx1, self.internalAddresses),
-        j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
-        
-        if (i == NSNotFound && j != NSNotFound) i = txAddressIndex(tx1, self.externalAddresses);
-        if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
-        return (i > j) ? NSOrderedAscending : NSOrderedDescending;
-    }];
+-(NSArray*)derivationPaths {
+    return [self.mDerivationPaths copy];
 }
+
+-(void)setDefaultDerivationPath:(DSDerivationPath *)defaultDerivationPath {
+    NSAssert([self.mDerivationPaths containsObject:defaultDerivationPath], @"The derivationPath is not in the account");
+    _defaultDerivationPath = defaultDerivationPath;
+}
+
+// MARK: - Combining Derivation Paths
+
+-(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        [mArray addObjectsFromArray:[derivationPath registerAddressesWithGapLimit:gapLimit internal:internal]];
+    }
+    return [mArray copy];
+}
+
+// all previously generated external addresses
+-(NSSet *)allReceiveAddresses {
+    NSMutableSet * mSet = [NSMutableSet set];
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        [mSet addObjectsFromArray:[[derivationPath allReceiveAddresses] allObjects]];
+    }
+    return [mSet copy];
+}
+
+// all previously generated internal addresses
+-(NSSet *)allChangeAddresses {
+    NSMutableSet * mSet = [NSMutableSet set];
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        [mSet addObjectsFromArray:[[derivationPath allChangeAddresses] allObjects]];
+    }
+    return [mSet copy];
+}
+
+- (NSString *)receiveAddress
+{
+    return self.defaultDerivationPath.receiveAddress;
+}
+
+// returns the first unused internal address
+- (NSString *)changeAddress {
+    return self.defaultDerivationPath.changeAddress;
+}
+
+// NSData objects containing serialized UTXOs
+- (NSArray *)unspentOutputs
+{
+    return self.utxos.array;
+}
+
+// last 100 transactions sorted by date, most recent first
+- (NSArray *)recentTransactions
+{
+    //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
+    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
+                                                                  self.transactions.count)];
+}
+
+// all wallet transactions sorted by date, most recent first
+- (NSArray *)allTransactions
+{
+    return self.transactions.array;
+}
+
+// true if the address is controlled by the wallet
+- (BOOL)containsAddress:(NSString *)address {
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        if ([derivationPath containsAddress:address]) return TRUE;
+    }
+    return FALSE;
+}
+
+// true if the address was previously used as an input or output in any wallet transaction
+- (BOOL)addressIsUsed:(NSString *)address {
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        if ([derivationPath addressIsUsed:address]) return TRUE;
+    }
+    return FALSE;
+}
+
+// MARK: - Balance
 
 - (void)updateBalance
 {
@@ -361,77 +323,45 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
 }
 
-// MARK: - Wallet Info
-
-// returns the first unused external address
-- (NSString *)receiveAddress
-{
-    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-#if ADDRESS_DEFAULT == BIP32_PURPOSE
-    NSString *addr = [self addressesBIP32NoPurposeWithGapLimit:1 internal:NO].lastObject;
-    return (addr) ? addr : self.externalBIP32Addresses.lastObject;
-#else
-    NSString *addr = [self addressesWithGapLimit:1 internal:NO].lastObject;
-    return (addr) ? addr : self.externalAddresses.lastObject;
-#endif
-}
-
-// returns the first unused internal address
-- (NSString *)changeAddress
-{
-    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-#if ADDRESS_DEFAULT == BIP32_PURPOSE
-    return [self addressesBIP32NoPurposeWithGapLimit:1 internal:YES].lastObject;
-#else
-    return [self addressesWithGapLimit:1 internal:YES].lastObject;
-#endif
-}
-
-// all previously generated external addresses
-- (NSSet *)allReceiveAddresses
-{
-    return [NSSet setWithArray:self.externalAddresses];
-}
-
-// all previously generated external addresses
-- (NSSet *)allChangeAddresses
-{
-    return [NSSet setWithArray:self.internalAddresses];
-}
-
-// NSData objects containing serialized UTXOs
-- (NSArray *)unspentOutputs
-{
-    return self.utxos.array;
-}
-
-// last 100 transactions sorted by date, most recent first
-- (NSArray *)recentTransactions
-{
-    //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
-    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
-                                                                  self.transactions.count)];
-}
-
-// all wallet transactions sorted by date, most recent first
-- (NSArray *)allTransactions
-{
-    return self.transactions.array;
-}
-
-// true if the address is controlled by the wallet
-- (BOOL)containsAddress:(NSString *)address
-{
-    return (address && [self.allAddresses containsObject:address]) ? YES : NO;
-}
-
-// true if the address was previously used as an input or output in any wallet transaction
-- (BOOL)addressIsUsed:(NSString *)address
-{
-    return (address && [self.usedAddresses containsObject:address]) ? YES : NO;
-}
-
 // MARK: - Transactions
+
+// this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
+// each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
+- (void)sortTransactions
+{
+    BOOL (^isAscending)(id, id);
+    __block __weak BOOL (^_isAscending)(id, id) = isAscending = ^BOOL(DSTransaction *tx1, DSTransaction *tx2) {
+        if (! tx1 || ! tx2) return NO;
+        if (tx1.blockHeight > tx2.blockHeight) return YES;
+        if (tx1.blockHeight < tx2.blockHeight) return NO;
+        
+        NSValue *hash1 = uint256_obj(tx1.txHash), *hash2 = uint256_obj(tx2.txHash);
+        
+        if ([tx1.inputHashes containsObject:hash2]) return YES;
+        if ([tx2.inputHashes containsObject:hash1]) return NO;
+        if ([self.invalidTx containsObject:hash1] && ! [self.invalidTx containsObject:hash2]) return YES;
+        if ([self.pendingTx containsObject:hash1] && ! [self.pendingTx containsObject:hash2]) return YES;
+        
+        for (NSValue *hash in tx1.inputHashes) {
+            if (_isAscending(self.allTx[hash], tx2)) return YES;
+        }
+        
+        return NO;
+    };
+    
+    [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
+        if (isAscending(tx1, tx2)) return NSOrderedAscending;
+        if (isAscending(tx2, tx1)) return NSOrderedDescending;
+        
+        NSUInteger i = txAddressIndex(tx1, self.internalAddresses),
+        j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
+        
+        if (i == NSNotFound && j != NSNotFound) i = txAddressIndex(tx1, self.externalAddresses);
+        if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
+        return (i > j) ? NSOrderedAscending : NSOrderedDescending;
+    }];
+}
+
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (DSTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
@@ -593,7 +523,7 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     return NO;
 }
 
-// records the transaction in the wallet, or returns false if it isn't associated with the wallet
+// records the transaction in the account, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(DSTransaction *)transaction
 {
     UInt256 txHash = transaction.txHash;
@@ -618,8 +548,8 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [self updateBalance];
     
     // when a wallet address is used in a transaction, generate a new address to replace it
-    [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-    [self addressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+    [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
     [self.moc performBlock:^{ // add the transaction to core data
         if ([DSTransactionEntity countObjectsMatching:@"txHash == %@",
@@ -885,6 +815,62 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
     [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
     fee = [self feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
     return (amount > fee) ? amount - fee : 0;
+}
+
+// set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
+// indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
+{
+    NSMutableArray *hashes = [NSMutableArray array], *updated = [NSMutableArray array];
+    BOOL needsUpdate = NO;
+    
+    for (NSValue *hash in txHashes) {
+        DSTransaction *tx = self.allTx[hash];
+        UInt256 h;
+        
+        if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
+        tx.blockHeight = height;
+        tx.timestamp = timestamp;
+        
+        if ([self containsTransaction:tx]) {
+            [hash getValue:&h];
+            [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
+            [updated addObject:hash];
+            if ([self.pendingTx containsObject:hash] || [self.invalidTx containsObject:hash]) needsUpdate = YES;
+        }
+        else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
+    }
+    
+    if (hashes.count > 0) {
+        if (needsUpdate) {
+            [self sortTransactions];
+            [self updateBalance];
+        }
+        
+        [self.moc performBlockAndWait:^{
+            @autoreleasepool {
+                NSMutableSet *entities = [NSMutableSet set];
+                
+                for (DSTransactionEntity *e in [DSTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
+                    e.blockHeight = height;
+                    e.timestamp = timestamp;
+                    [entities addObject:e];
+                }
+                
+                if (height != TX_UNCONFIRMED) {
+                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
+                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
+                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
+                    
+                    for (NSManagedObject *e in entities) {
+                        [self.moc refreshObject:e mergeChanges:NO];
+                    }
+                }
+            }
+        }];
+    }
+    
+    return updated;
 }
 
 @end

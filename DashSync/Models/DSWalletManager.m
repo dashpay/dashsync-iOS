@@ -375,6 +375,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     });
 }
 
+-(NSData*)extendedPublicKeyForStorageKey:(NSString*)key {
+    return getKeychainData([NSString stringWithFormat:@"extendedPubKey%@",key], nil);
+}
+
 - (DSWallet *)createWalletForChain:(DSChain*)chain
 {
     if (chain.hasWalletSet) return chain.wallet;
@@ -501,20 +505,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 {
     return (self.extendedBIP44PublicKey && self.extendedBIP44PublicKey.length == 0) ? YES : NO;
 }
-
-// master public key used to generate wallet addresses m/44'/5'/0'
-- (NSData *)extendedBIP44PublicKey
-{
-    return getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, nil);
-    
-}
-
-// master public key using old non BIP 43/44 m/0'
-- (NSData *)extendedBIP32PublicKey
-{
-    return getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32, nil);
-}
-
 
 - (void)seedPhraseAfterAuthentication:(void (^)(NSString * _Nullable))completion
 {

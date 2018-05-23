@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int64_t value;
 @property (nonatomic) BOOL spent;
 @property (nonatomic, retain) DSTransactionEntity *transaction;
+@property (nonatomic, retain) DSDerivationPathEntity * derivationPath;
 
 @end
 

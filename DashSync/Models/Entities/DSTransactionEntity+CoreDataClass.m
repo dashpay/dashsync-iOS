@@ -91,7 +91,7 @@
 }
 
 + (NSArray<DSTransaction*> *)transactionsForChain:(DSChainEntity*)chain {
-    return [self objectsMatching:@"chain == %@",chain];
+    return [chain.transactions allObjects];
 }
 
 - (DSTransaction *)transaction

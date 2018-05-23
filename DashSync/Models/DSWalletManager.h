@@ -29,7 +29,6 @@
 #import <Foundation/Foundation.h>
 #import "DSWallet.h"
 #import "DSMnemonic.h"
-#import "DSKeySequence.h"
 
 #define DASH         @"DASH"     // capital D with stroke (utf-8)
 #define BTC          @"\xC9\x83"     // capital B with stroke (utf-8)
@@ -133,5 +132,7 @@ completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError
 
 -(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 -(NSTimeInterval)lockoutWaitTime;
+
+-(NSData*)extendedPublicKeyForStorageKey:(NSString* _Nonnull)key;
 
 @end

@@ -1,5 +1,5 @@
 //
-//  DSAccountEntity+CoreDataClass.m
+//  DSDerivationPathEntity+CoreDataClass.h
 //  
 //
 //  Created by Sam Westrich on 5/20/18.
@@ -22,16 +22,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSAccountEntity+CoreDataClass.h"
-#import "DSChainEntity+CoreDataClass.h"
-#import "DSChain.h"
+#import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@implementation DSAccountEntity
+@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain,DSTxInputEntity,DSTxOutputEntity;
 
-+ (DSAccountEntity* _Nonnull)accountEntityForDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain
-    chain.c
-    [chain.accounts object]
-    
-}
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DSDerivationPathEntity : NSManagedObject
+
++ (DSDerivationPathEntity* _Nonnull)accountEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain;
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+#import "DSDerivationPathEntity+CoreDataProperties.h"

@@ -1,5 +1,5 @@
 //
-//  DSAccountEntity+CoreDataClass.h
+//  DSDerivationPathEntity+CoreDataProperties.m
 //  
 //
 //  Created by Sam Westrich on 5/20/18.
@@ -22,19 +22,18 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
+#import "DSDerivationPathEntity+CoreDataProperties.h"
 
-@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain;
+@implementation DSDerivationPathEntity (CoreDataProperties)
 
-NS_ASSUME_NONNULL_BEGIN
++ (NSFetchRequest<DSDerivationPathEntity *> *)fetchRequest {
+	return [NSFetchRequest fetchRequestWithEntityName:@"DSDerivationPathEntity"];
+}
 
-@interface DSAccountEntity : NSManagedObject
-
-+ (DSAccountEntity* _Nonnull)accountEntityForDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain;
+@dynamic derivationPath;
+@dynamic addresses;
+@dynamic txInputs;
+@dynamic txOutputs;
+@dynamic chain;
 
 @end
-
-NS_ASSUME_NONNULL_END
-
-#import "DSAccountEntity+CoreDataProperties.h"

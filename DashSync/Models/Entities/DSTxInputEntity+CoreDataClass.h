@@ -25,7 +25,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSTransactionEntity;
+@class DSTransactionEntity,DSDerivationPathEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
