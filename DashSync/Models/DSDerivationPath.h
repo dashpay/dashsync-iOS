@@ -77,18 +77,11 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
 @property (nonatomic, readonly) NSString * _Nullable changeAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSSet * _Nonnull allReceiveAddresses;
+@property (nonatomic, readonly) NSArray * _Nonnull allReceiveAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSSet * _Nonnull allChangeAddresses;
+@property (nonatomic, readonly) NSArray * _Nonnull allChangeAddresses;
 
-
-
-// the total amount spent from the account (excluding change)
-@property (nonatomic, readonly) uint64_t totalSent;
-
-// the total amount received to the wallet (excluding change)
-@property (nonatomic, readonly) uint64_t totalReceived;
 
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber;
 

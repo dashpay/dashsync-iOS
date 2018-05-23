@@ -60,6 +60,13 @@
 
 @property (nonatomic, strong) NSManagedObjectContext * moc;
 
+// the total amount spent from the account (excluding change)
+@property (nonatomic, readonly) uint64_t totalSent;
+
+// the total amount received to the account (excluding change)
+@property (nonatomic, readonly) uint64_t totalReceived;
+
+
 @end
 
 @implementation DSAccount : NSObject
@@ -144,19 +151,19 @@
 }
 
 // all previously generated external addresses
--(NSSet *)allReceiveAddresses {
+-(NSMutableArray *)allReceiveAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath allReceiveAddresses] allObjects]];
+        [mSet addObjectsFromArray:[derivationPath allReceiveAddresses]];
     }
     return [mSet copy];
 }
 
 // all previously generated internal addresses
--(NSSet *)allChangeAddresses {
+-(NSMutableArray *)allChangeAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        [mSet addObjectsFromArray:[[derivationPath allChangeAddresses] allObjects]];
+        [mSet addObjectsFromArray:[derivationPath allChangeAddresses]];
     }
     return [mSet copy];
 }
@@ -325,6 +332,18 @@
 
 // MARK: - Transactions
 
+// chain position of first tx output address that appears in chain
+static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *addressChain) {
+    for (NSString *address in transaction.outputAddresses) {
+        NSUInteger i = [addressChain indexOfObject:address];
+        
+        if (i != NSNotFound) return i;
+    }
+    
+    return NSNotFound;
+}
+
+
 // this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
 // each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
 - (void)sortTransactions
@@ -353,10 +372,10 @@
         if (isAscending(tx1, tx2)) return NSOrderedAscending;
         if (isAscending(tx2, tx1)) return NSOrderedDescending;
         
-        NSUInteger i = txAddressIndex(tx1, self.internalAddresses),
-        j = txAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
+        NSUInteger i = transactionAddressIndex(tx1, self.allChangeAddresses);
+        NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? self.allReceiveAddresses : self.allChangeAddresses);
         
-        if (i == NSNotFound && j != NSNotFound) i = txAddressIndex(tx1, self.externalAddresses);
+        if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, self.allReceiveAddresses);
         if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
         return (i > j) ? NSOrderedAscending : NSOrderedDescending;
     }];
@@ -478,12 +497,12 @@
     *internalIndexes = [NSMutableOrderedSet orderedSet];
     
     for (NSString *addr in transaction.inputAddresses) {
-        NSInteger index = [self.internalAddresses indexOfObject:addr];
+        NSInteger index = [self.defaultDerivationPath.allChangeAddresses indexOfObject:addr];
         if (index != NSNotFound) {
             [internalIndexes addObject:@(index)];
             continue;
         }
-        index = [self.externalAddresses indexOfObject:addr];
+        index = [self.defaultDerivationPath.allReceiveAddresses indexOfObject:addr];
         if (index != NSNotFound) {
             [externalIndexes addObject:@(index)];
             continue;
@@ -491,13 +510,13 @@
     }
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.seed(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+        self.wallet.seed(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
             if (! seed) {
                 if (completion) completion(YES);
             } else {
                 NSMutableArray *privkeys = [NSMutableArray array];
-                [privkeys addObjectsFromArray:[self.sequence privateKeys:externalIndexes.array purpose:BIP44_PURPOSE internal:NO fromSeed:seed]];
-                [privkeys addObjectsFromArray:[self.sequence privateKeys:internalIndexes.array purpose:BIP44_PURPOSE internal:YES fromSeed:seed]];
+                [privkeys addObjectsFromArray:[self.defaultDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                [privkeys addObjectsFromArray:[self.defaultDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
                 
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
                 if (completion) completion(signedSuccessfully);

@@ -204,17 +204,6 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return _extendedPubKeyString;
 }
 
-// chain position of first tx output address that appears in chain
-static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
-    for (NSString *addr in tx.outputAddresses) {
-        NSUInteger i = [chain indexOfObject:addr];
-        
-        if (i != NSNotFound) return i;
-    }
-    
-    return NSNotFound;
-}
-
 // MARK: - Entity
 
 -(DSDerivationPathEntity*)entity {
@@ -391,15 +380,15 @@ static NSUInteger txAddressIndex(DSTransaction *tx, NSArray *chain) {
 }
 
 // all previously generated external addresses
-- (NSSet *)allReceiveAddresses
+- (NSArray *)allReceiveAddresses
 {
-    return [NSSet setWithArray:self.externalAddresses];
+    return [self.externalAddresses copy];
 }
 
 // all previously generated external addresses
-- (NSSet *)allChangeAddresses
+- (NSArray *)allChangeAddresses
 {
-    return [NSSet setWithArray:self.internalAddresses];
+    return [self.internalAddresses copy];
 }
 
 // true if the address is controlled by the wallet
