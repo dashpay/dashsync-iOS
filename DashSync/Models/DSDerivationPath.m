@@ -240,7 +240,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 }
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                              type:(DSDerivationPathFundsType)type {
+                                               type:(DSDerivationPathFundsType)type {
     return [[self alloc] initWithIndexes:indexes length:length type:type];
 }
 
@@ -252,7 +252,6 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
         if (! (self = [super init])) return nil;
     }
     
-    NSMutableSet *updateTx = [NSMutableSet set];
     _type = type;
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
@@ -268,23 +267,13 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
                 
                 while (e.index >= a.count) [a addObject:[NSNull null]];
                 a[e.index] = e.address;
-                [self.allAddresses addObject:e.address];
+                [self->_allAddresses addObject:e.address];
+                if ([e.usedInInputs count] || [e.usedInOutputs count]) {
+                    [self->_usedAddresses addObject:e.address];
+                }
             }
         }
-        for (DSTxInputEntity *e in derivationPathEntity.txInputs) {
-            @autoreleasepool {
-                
-                [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
-
-            }
-        }
-        for (DSTxOutputEntity *e in derivationPathEntity.txOutputs) {
-            @autoreleasepool {
-                [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
-                
-            }
-        }
-       
+        
     }];
     
     return self;
@@ -332,29 +321,30 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
         
-            while (a.count < gapLimit) { // generate new addresses up to gapLimit
-                NSData *pubKey = [self generatePublicKeyAtIndex:n internal:internal];
-                NSString *addr = [DSKey keyWithPublicKey:pubKey].address;
-                
-                if (! addr) {
-                    NSLog(@"error generating keys");
-                    return nil;
-                }
-                
-                [self.moc performBlock:^{ // store new address in core data
-                    DSAddressEntity *e = [DSAddressEntity managedObject];
-                    e.derivationPath = self.derivationPathEntity;
-                    e.address = addr;
-                    e.index = n;
-                    e.internal = internal;
-                    e.standalone = NO;
-                }];
-                
-                [_allAddresses addObject:addr];
-                [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
-                [a addObject:addr];
-                n++;
+        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+            NSData *pubKey = [self generatePublicKeyAtIndex:n internal:internal];
+            NSString *addr = [DSKey keyWithPublicKey:pubKey].address;
+            
+            if (! addr) {
+                NSLog(@"error generating keys");
+                return nil;
             }
+            
+            [self.moc performBlock:^{ // store new address in core data
+                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self onChain:self.account.wallet.chain];
+                DSAddressEntity *e = [DSAddressEntity managedObject];
+                e.derivationPath = derivationPathEntity;
+                e.address = addr;
+                e.index = n;
+                e.internal = internal;
+                e.standalone = NO;
+            }];
+            
+            [_allAddresses addObject:addr];
+            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
+            [a addObject:addr];
+            n++;
+        }
         
         return a;
     }

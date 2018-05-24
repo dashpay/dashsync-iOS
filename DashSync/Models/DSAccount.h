@@ -115,7 +115,7 @@
 // returns the transaction with the given hash if it's been registered in the account (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
-// true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
+// true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
 
 // true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
@@ -124,10 +124,10 @@
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(DSTransaction * _Nonnull)transaction;
 
-// returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
+// returns the amount received by the account from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction * _Nonnull)transaction;
 
-// retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
+// retuns the amount sent from the account by the trasaction (total account outputs consumed, change and fee included)
 - (uint64_t)amountSentByTransaction:(DSTransaction * _Nonnull)transaction;
 
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
@@ -138,9 +138,6 @@
 
 // returns the block height after which the transaction is likely to be processed without including a fee
 - (uint32_t)blockHeightUntilFree:(DSTransaction * _Nonnull)transaction;
-
-// fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
 
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 

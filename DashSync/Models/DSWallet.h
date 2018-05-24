@@ -106,4 +106,16 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
+// returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
+- (uint64_t)amountReceivedFromTransaction:(DSTransaction * _Nonnull)transaction;
+
+// retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountSentByTransaction:(DSTransaction * _Nonnull)transaction;
+
+// true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
+- (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
+
+// fee that will be added for a transaction of the given size in bytes
+- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
+
 @end

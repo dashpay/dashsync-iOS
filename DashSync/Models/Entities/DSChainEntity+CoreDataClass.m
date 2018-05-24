@@ -32,8 +32,8 @@
 @implementation DSChainEntity
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
-    self.standardPort = @(chain.standardPort);
-    self.type = @(chain.chainType);
+    self.standardPort = chain.standardPort;
+    self.type = chain.chainType;
     return self;
 }
 
@@ -43,8 +43,8 @@
     __block UInt256 genesisHash;
     __block NSData * data;
     [self.managedObjectContext performBlockAndWait:^{
-        port = (uint32_t)[self.standardPort unsignedLongValue];
-        type = [self.type integerValue];
+        port = self.standardPort;
+        type = self.type;
         genesisHash = *(UInt256 *)self.genesisBlockHash.hexToData.reverse.bytes;
         data = self.checkpoints;
     }];

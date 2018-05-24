@@ -104,14 +104,6 @@
                     if (! transaction || self.allTx[hash] != nil) continue;
                     self.allTx[hash] = transaction;
                     [self.transactions addObject:transaction];
-                    NSOrderedSet<DSTxInputEntity*> * inputs = e.inputs;
-                    for (DSTxInputEntity * input in inputs) {
-                        input.derivationPath
-                        DSDerivationPath * derivationPath = ;
-                        derivationPath.used
-                    }
-                    [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
-                    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
                 }
             }
         }
@@ -251,7 +243,7 @@
             for (NSValue *hash in tx.inputHashes) {
                 n = [tx.inputIndexes[i++] unsignedIntValue];
                 [hash getValue:&h];
-                [spent addObject:brutxo_obj(((DSUTXO) { h, n }))];
+                [spent addObject:dsutxo_obj(((DSUTXO) { h, n }))];
             }
             
             inputs = [NSSet setWithArray:tx.inputHashes];
@@ -295,7 +287,7 @@
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
             for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
                 if ([self containsAddress:address]) {
-                    [utxos addObject:brutxo_obj(((DSUTXO) { tx.txHash, n }))];
+                    [utxos addObject:dsutxo_obj(((DSUTXO) { tx.txHash, n }))];
                     balance += [tx.outputAmounts[n] unsignedLongLongValue];
                 }
                 
@@ -451,9 +443,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*34;
             
             // check for sufficient total funds before building a smaller transaction
-            if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
+            if (self.balance < amount + [self.wallet feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
                 NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
-                      amount + [self feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
+                      amount + [self.wallet feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
                 return nil;
             }
             
@@ -477,7 +469,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) {
-            feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+            feeAmount = [self.wallet feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
             if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
@@ -666,7 +658,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         [hash getValue:&h];
         if ((tx && ! [self transactionIsValid:tx]) ||
-            [self.spentOutputs containsObject:brutxo_obj(((DSUTXO) { h, n }))]) return NO;
+            [self.spentOutputs containsObject:dsutxo_obj(((DSUTXO) { h, n }))]) return NO;
     }
     
     return YES;
@@ -796,23 +788,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
 }
 
-// fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
-{
-    if (isInstant) {
-        return TX_FEE_PER_INPUT*inputCount;
-    } else {
-        uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB; // standard fee based on tx size rounded up to nearest kb
-#if (!!FEE_PER_KB_URL)
-        uint64_t fee = (((size*self.feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
-        return (fee > standardFee) ? fee : standardFee;
-#else
-        return standardFee;
-#endif
-        
-    }
-}
-
 - (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
 {
     return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend];
@@ -852,7 +827,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
     [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
-    fee = [self feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
+    fee = [self.wallet feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
     return (amount > fee) ? amount - fee : 0;
 }
 

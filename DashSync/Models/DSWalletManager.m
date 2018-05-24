@@ -31,7 +31,6 @@
 #import "DSChain.h"
 #import "DSKey+BIP38.h"
 #import "DSBIP39Mnemonic.h"
-#import "DSBIP32Sequence.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSAddressEntity+CoreDataClass.h"
@@ -43,6 +42,7 @@
 #import "NSAttributedString+Attachments.h"
 #import "NSString+Dash.h"
 #import "Reachability.h"
+#import "DSChainPeerManager.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
@@ -384,55 +384,53 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (chain.hasWalletSet) return chain.wallet;
     
     uint64_t feePerKb = 0;
-    NSData *mpk = self.extendedBIP44PublicKey;
-    
-    if (! mpk) return nil;
-    
-    NSData *mpkBIP32 = self.extendedBIP32PublicKey;
-    
-    if (! mpkBIP32) return nil;
+//    NSData *mpk = self.extendedBIP44PublicKey;
+//
+//    if (! mpk) return nil;
     
     DSWallet * wallet;
     
     @synchronized(self) {
         if (chain.hasWalletSet) return chain.wallet;
         
-        wallet = [[DSWallet alloc] initWithContext:[NSManagedObject context] sequence:self.sequence onChain:chain
-                               masterBIP44PublicKey:mpk masterBIP32PublicKey:mpkBIP32 requestSeedBlock:^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
-                                   //this happens when we request the seed
-                                   [self seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
-                               }];
+        wallet = [DSWallet standardWalletForChain:chain];
+        wallet.seed = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
+            //this happens when we request the seed
+            [self seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
+        };
+        
         
         wallet.feePerKb = DEFAULT_FEE_PER_KB;
         feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
         if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) chain.wallet.feePerKb = feePerKb;
         
-        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
-            
-            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
-                NSLog(@"wallet doesn't contain address: %@", k.address);
-#if 0
-                abort(); // don't wipe core data for debug builds
-#else
-                [[NSManagedObject context] performBlockAndWait:^{
-                    [DSAddressEntity deleteAllObjects];
-                    [DSTransactionEntity deleteAllObjects];
-                    [NSManagedObject saveContext];
-                }];
-                
-                [chain removeWallet];
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
-                                                                        object:nil];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
-                                                                        object:nil];
-                });
-#endif
-            }
-        });
+        //TODO: reimplement this safeguard
+//        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
+//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
+//
+//            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
+//                NSLog(@"wallet doesn't contain address: %@", k.address);
+//#if 0
+//                abort(); // don't wipe core data for debug builds
+//#else
+//                [[NSManagedObject context] performBlockAndWait:^{
+//                    [DSAddressEntity deleteAllObjects];
+//                    [DSTransactionEntity deleteAllObjects];
+//                    [NSManagedObject saveContext];
+//                }];
+//
+//                [chain removeWallet];
+//
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
+//                                                                        object:nil];
+//                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
+//                                                                        object:nil];
+//                });
+//#endif
+//            }
+//        });
         
         return wallet;
     }
@@ -1118,7 +1116,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     };
     
     [self presentAlertController:self.pinAlertController animated:YES completion:^{
-        if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
+        if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
     }];
 }
 
@@ -1194,7 +1192,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         if (_pinField) self.pinField = nil; // reset pinField so a new one is created
         [self.pinAlertController.view addSubview:self.pinField];
         [self presentAlertController:self.pinAlertController animated:YES completion:^{
-            [_pinField becomeFirstResponder];
+            [self->_pinField becomeFirstResponder];
         }];
     } else {
         self.pinField.delegate = nil;
@@ -1542,10 +1540,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
             [rates addObject:d[@"rate"]];
         }
         
-        _currencyCodes = codes;
-        _currencyNames = names;
-        _currencyPrices = rates;
-        self.localCurrencyCode = _localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
+        self->_currencyCodes = codes;
+        self->_currencyNames = names;
+        self->_currencyPrices = rates;
+        self.localCurrencyCode = self->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
         [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
         [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
         [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
@@ -1646,7 +1644,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                              
                                              o.hash = *(const UInt256 *)[utxo[@"txid"] hexToData].reverse.bytes;
                                              o.n = [utxo[@"vout"] unsignedIntValue];
-                                             [utxos addObject:brutxo_obj(o)];
+                                             [utxos addObject:dsutxo_obj(o)];
                                              if (amount) {
                                                  [amounts addObject:[amount decimalNumberByMultiplyingByPowerOf10:8]];
                                              } else if (utxo[@"duffs"]) {
@@ -1723,7 +1721,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                [alert addAction:okButton];
                                                [alert addAction:cancelButton];
                                                [self presentAlertController:alert animated:YES completion:^{
-                                                   if (_pinField && ! _pinField.isFirstResponder) [_pinField becomeFirstResponder];
+                                                   if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
                                                }];
                                            }
                                            else {
@@ -1784,7 +1782,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                      }
                      
                      // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                     if (fee) feeAmount = [self.mainnetWallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+                     if (fee) feeAmount = [chain.wallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
                      
                      if (feeAmount + self.mainnetWallet.minOutputAmount > balance) {
                          completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:

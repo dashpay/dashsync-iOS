@@ -762,7 +762,7 @@ static const char *mainnet_dns_seeds[] = {
             DSTransaction *t = [wallet transactionForHash:o.hash];
             
             if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
-                [inputs addObject:brutxo_data(o)];
+                [inputs addObject:dsutxo_data(o)];
                 elemCount++;
             }
         }
@@ -780,7 +780,7 @@ static const char *mainnet_dns_seeds[] = {
     
     for (NSValue *utxo in wallet.unspentOutputs) { // add UTXOs to watch for tx sending money from the wallet
         [utxo getValue:&o];
-        d = brutxo_data(o);
+        d = dsutxo_data(o);
         if (! [filter containsData:d]) [filter insertData:d];
     }
     
