@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
 @property (nonnull, nonatomic, retain) NSSet<DSTransactionEntity *> *transactions;
 @property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
-@property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *derivationPaths;
+@property (nonnull, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 
 @end
 

@@ -25,7 +25,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSDerivationPathEntity;
+@class DSDerivationPathEntity,DSTxInputEntity,DSTxOutputEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

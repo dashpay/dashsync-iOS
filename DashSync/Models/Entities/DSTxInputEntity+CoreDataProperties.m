@@ -35,5 +35,6 @@
 @dynamic signature;
 @dynamic txHash;
 @dynamic transaction;
+@dynamic localAddress;
 
 @end

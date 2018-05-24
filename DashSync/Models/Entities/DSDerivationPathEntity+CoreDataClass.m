@@ -25,12 +25,23 @@
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChain.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSDerivationPathEntity
 
-+ (DSDerivationPathEntity* _Nonnull)accountEntityForDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain
-    [chain.chai]
-    
++ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain {
+    DSChainEntity * chainEntity = chain.chainEntity;
+    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
+    NSSet * derivationPathEntities = [chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
+        return ([obj.derivationPath isEqualToData:archivedDerivationPath]);
+    }];
+    if ([derivationPathEntities count]) {
+        return [derivationPathEntities anyObject];
+    } else {
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
+        derivationPathEntity.derivationPath = archivedDerivationPath;
+        return derivationPathEntity;
+    }
 }
 
 @end

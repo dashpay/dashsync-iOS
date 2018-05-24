@@ -33,8 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *derivationPath;
 @property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
-@property (nonnull, nonatomic, retain) NSSet<DSTxInputEntity *> *txInputs;
-@property (nonnull, nonatomic, retain) NSSet<DSTxOutputEntity *> *txOutputs;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
@@ -45,16 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeAddressesObject:(DSAddressEntity *)value;
 - (void)addAddresses:(NSSet<DSAddressEntity *> *)values;
 - (void)removeAddresses:(NSSet<DSAddressEntity *> *)values;
-
-- (void)addTxInputsObject:(DSTxInputEntity *)value;
-- (void)removeTxInputsObject:(DSTxInputEntity *)value;
-- (void)addTxInputs:(NSSet<DSTxInputEntity *> *)values;
-- (void)removeTxInputs:(NSSet<DSTxInputEntity *> *)values;
-
-- (void)addTxOutputsObject:(DSTxOutputEntity *)value;
-- (void)removeTxOutputsObject:(DSTxOutputEntity *)value;
-- (void)addTxOutputs:(NSSet<DSTxOutputEntity *> *)values;
-- (void)removeTxOutputs:(NSSet<DSTxOutputEntity *> *)values;
 
 @end
 

@@ -32,8 +32,6 @@
 
 @dynamic derivationPath;
 @dynamic addresses;
-@dynamic txInputs;
-@dynamic txOutputs;
 @dynamic chain;
 
 @end

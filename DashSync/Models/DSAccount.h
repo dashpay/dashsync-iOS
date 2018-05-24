@@ -61,10 +61,10 @@
 @property (nonatomic, readonly) NSString * _Nullable changeAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSMutableArray * _Nonnull allReceiveAddresses;
+@property (nonatomic, readonly) NSArray * _Nonnull externalAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSMutableArray * _Nonnull allChangeAddresses;
+@property (nonatomic, readonly) NSArray * _Nonnull internalAddresses;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 

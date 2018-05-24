@@ -82,6 +82,11 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray * _Nonnull allChangeAddresses;
 
+// all previously generated addresses
+@property (nonatomic, readonly) NSSet * _Nonnull allAddresses;
+
+// all previously used addresses
+@property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber;
 
@@ -98,6 +103,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
 
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString * _Nonnull)address;
+
+// inform the derivation path that the address has been used by a transaction
+- (void)registerTransactionAddress:(NSString * _Nonnull)address;
 
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses

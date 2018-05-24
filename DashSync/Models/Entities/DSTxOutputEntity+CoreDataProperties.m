@@ -38,5 +38,6 @@
 @dynamic txHash;
 @dynamic value;
 @dynamic transaction;
+@dynamic localAddress;
 
 @end

@@ -99,7 +99,7 @@
                 @autoreleasepool {
                     
                     DSTransaction *transaction = e.transaction;
-                    NSValue *hash = (transaction) ? uint256_obj(tx.txHash) : nil;
+                    NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
                     
                     if (! transaction || self.allTx[hash] != nil) continue;
                     self.allTx[hash] = transaction;
@@ -151,19 +151,35 @@
 }
 
 // all previously generated external addresses
--(NSMutableArray *)allReceiveAddresses {
+-(NSArray *)externalddresses {
     NSMutableSet * mSet = [NSMutableSet set];
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[derivationPath allReceiveAddresses]];
     }
-    return [mSet copy];
+    return [mSet allObjects];
 }
 
 // all previously generated internal addresses
--(NSMutableArray *)allChangeAddresses {
+-(NSArray *)internalAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[derivationPath allChangeAddresses]];
+    }
+    return [mSet allObjects];
+}
+
+-(NSSet *)allAddresses {
+    NSMutableSet * mSet = [NSMutableSet set];
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        [mSet addObjectsFromArray:[[derivationPath allAddresses] allObjects]];
+    }
+    return [mSet copy];
+}
+
+-(NSSet *)usedAddresses {
+    NSMutableSet * mSet = [NSMutableSet set];
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        [mSet addObjectsFromArray:[[derivationPath usedAddresses] allObjects]];
     }
     return [mSet copy];
 }
@@ -372,10 +388,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (isAscending(tx1, tx2)) return NSOrderedAscending;
         if (isAscending(tx2, tx1)) return NSOrderedDescending;
         
-        NSUInteger i = transactionAddressIndex(tx1, self.allChangeAddresses);
-        NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? self.allReceiveAddresses : self.allChangeAddresses);
+        NSUInteger i = transactionAddressIndex(tx1, self.internalAddresses);
+        NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
         
-        if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, self.allReceiveAddresses);
+        if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, self.externalAddresses);
         if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
         return (i > j) ? NSOrderedAscending : NSOrderedDescending;
     }];
@@ -445,7 +461,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             NSArray *newAmounts = [amounts subarrayWithRange:NSMakeRange(0, amounts.count - 1)],
             *newScripts = [scripts subarrayWithRange:NSMakeRange(0, scripts.count - 1)];
             
-            if (lastAmount > amount + feeAmount + self.minOutputAmount - balance) { // reduce final output amount
+            if (lastAmount > amount + feeAmount + self.wallet.minOutputAmount - balance) { // reduce final output amount
                 newAmounts = [newAmounts arrayByAddingObject:@(lastAmount - (amount + feeAmount - balance))];
                 newScripts = [newScripts arrayByAddingObject:scripts.lastObject];
             }
@@ -465,7 +481,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
-        if (balance == amount + feeAmount || balance >= amount + feeAmount + self.minOutputAmount) break;
+        if (balance == amount + feeAmount || balance >= amount + feeAmount + self.wallet.minOutputAmount) break;
     }
     
     transaction.isInstant = isInstant;
@@ -479,7 +495,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         [transaction addOutputShapeshiftAddress:shapeshiftAddress];
     }
     
-    if (balance - (amount + feeAmount) >= self.minOutputAmount) {
+    if (balance - (amount + feeAmount) >= self.wallet.minOutputAmount) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
         [transaction shuffleOutputOrder];
     }
@@ -525,7 +541,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 }
 
-// true if the given transaction is associated with the wallet (even if it hasn't been registered), false otherwise
+// true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(DSTransaction *)transaction
 {
     if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
@@ -562,8 +578,20 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
-    [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
-    [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
+    for (NSString * address in transaction.inputAddresses) {
+        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+            if ([derivationPath containsAddress:address]) {
+                [derivationPath registerTransactionAddress:address];
+            }
+        }
+    }
+    for (NSString * address in transaction.outputAddresses) {
+        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+            if ([derivationPath containsAddress:address]) {
+                [derivationPath registerTransactionAddress:address];
+            }
+        }
+    }
     [self updateBalance];
     
     // when a wallet address is used in a transaction, generate a new address to replace it
@@ -785,14 +813,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 }
 
-// outputs below this amount are uneconomical due to fees
-- (uint64_t)minOutputAmount
-{
-    uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerKb + MIN_FEE_PER_KB - 1)/MIN_FEE_PER_KB;
-    
-    return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
-}
-
 - (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
 {
     return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend];
@@ -801,7 +821,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.chain.lastBlockHeight;
+    uint32_t h = self.wallet.chain.lastBlockHeight;
     
     if (h > height) height = h;
     return height;

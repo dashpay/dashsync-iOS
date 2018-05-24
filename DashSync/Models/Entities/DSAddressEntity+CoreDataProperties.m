@@ -35,5 +35,7 @@
 @dynamic internal;
 @dynamic standalone;
 @dynamic derivationPath;
+@dynamic usedInInputs;
+@dynamic usedInOutputs;
 
 @end

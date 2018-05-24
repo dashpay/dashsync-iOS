@@ -149,4 +149,12 @@
     return nil;
 }
 
+// outputs below this amount are uneconomical due to fees
+- (uint64_t)minOutputAmount
+{
+    uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerKb + MIN_FEE_PER_KB - 1)/MIN_FEE_PER_KB;
+    
+    return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
+}
+
 @end

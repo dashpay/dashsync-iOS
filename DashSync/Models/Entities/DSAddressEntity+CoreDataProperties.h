@@ -36,6 +36,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL internal;
 @property (nonatomic, assign) BOOL standalone;
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
+@property (nonnull, nonatomic, retain) NSSet<DSTxInputEntity *> *usedInInputs;
+@property (nonnull, nonatomic, retain) NSSet<DSTxOutputEntity *> *usedInOutputs;
+
+- (void)addUsedInInputsObject:(DSTxInputEntity *)value;
+- (void)removeUsedInInputsObject:(DSTxInputEntity *)value;
+- (void)addUsedInInputs:(NSSet<DSTxInputEntity *> *)values;
+- (void)removeUsedInInputs:(NSSet<DSTxInputEntity *> *)values;
+
+- (void)addUsedInOutputsObject:(DSTxOutputEntity *)value;
+- (void)removeUsedInOutputsObject:(DSTxOutputEntity *)value;
+- (void)addUsedInOutputs:(NSSet<DSTxOutputEntity *> *)values;
+- (void)removeUsedInOutputs:(NSSet<DSTxOutputEntity *> *)values;
 
 @end
 

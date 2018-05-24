@@ -204,19 +204,19 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return _extendedPubKeyString;
 }
 
-// MARK: - Entity
-
--(DSDerivationPathEntity*)entity {
-    NSData * derivationData = [NSKeyedArchiver archivedDataWithRootObject:self];
-    NSArray * array = [DSDerivationPathEntity objectsMatching:@"derivationPath == %@",derivationData];
-    if ([array count]) {
-        return [array objectAtIndex:0];
-    } else {
-        DSDerivationPathEntity * entity = [DSDerivationPathEntity managedObject];
-        entity.derivationPath = derivationData;
-        return entity;
-    }
-}
+//// MARK: - Entity
+//
+//-(DSDerivationPathEntity*)entity {
+//    NSData * derivationData = [NSKeyedArchiver archivedDataWithRootObject:self];
+//    NSArray * array = [DSDerivationPathEntity objectsMatching:@"derivationPath == %@",derivationData];
+//    if ([array count]) {
+//        return [array objectAtIndex:0];
+//    } else {
+//        DSDerivationPathEntity * entity = [DSDerivationPathEntity managedObject];
+//        entity.derivationPath = derivationData;
+//        return entity;
+//    }
+//}
 
 // MARK: - Account initialization
 
@@ -261,8 +261,8 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     [self.moc performBlockAndWait:^{
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
-        DSDerivationPathEntity * accountEntity = [DSDerivationPathEntity accountEntityMatchingDerivationPath:self.derivationPath onChain:self.chain];
-        for (DSAddressEntity *e in accountEntity.addresses) {
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self onChain:self.account.wallet.chain];
+        for (DSAddressEntity *e in derivationPathEntity.addresses) {
             @autoreleasepool {
                 NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
                 
@@ -271,14 +271,14 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
                 [self.allAddresses addObject:e.address];
             }
         }
-        for (DSTxInputEntity *e in self.entity.txInputs) {
+        for (DSTxInputEntity *e in derivationPathEntity.txInputs) {
             @autoreleasepool {
                 
                 [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
 
             }
         }
-        for (DSTxInputEntity *e in self.entity.txInputs) {
+        for (DSTxOutputEntity *e in derivationPathEntity.txOutputs) {
             @autoreleasepool {
                 [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
                 
@@ -350,7 +350,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
                     e.standalone = NO;
                 }];
                 
-                [self.allAddresses addObject:addr];
+                [_allAddresses addObject:addr];
                 [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
                 [a addObject:addr];
                 n++;
@@ -401,6 +401,10 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 - (BOOL)addressIsUsed:(NSString *)address
 {
     return (address && [self.usedAddresses containsObject:address]) ? YES : NO;
+}
+
+- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+    [_usedAddresses addObject:address];
 }
 
 // MARK: - authentication key
