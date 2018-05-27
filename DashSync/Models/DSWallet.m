@@ -24,6 +24,7 @@
 
 #import "DSWallet.h"
 #import "DSAccount.h"
+#import "DSWalletManager.h"
 
 @interface DSWallet()
 
@@ -36,9 +37,22 @@
 
 +(DSWallet*)standardWalletForChain:(DSChain*)chain {
     DSWallet * wallet = [[DSWallet alloc] init];
+    wallet.chain = chain;
     DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] onWallet:wallet];
     [wallet addAccount:account];
     return wallet;
+}
+
+-(void)generateExtendedPublicKeys {
+    self.seedRequestBlock(@"Please authorize", 0, ^(NSData * _Nullable seed) {
+        if (seed) {
+        for (DSAccount * account in self.accounts) {
+            for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                [[DSWalletManager sharedInstance] setExtendedPublicKeyData:[derivationPath generateExtendedPublicKeyFromSeed:seed] forDerivationPath:derivationPath];
+            }
+        }
+        }
+    });
 }
 
 -(instancetype)init {
@@ -48,11 +62,12 @@
 }
 
 -(NSArray *)accounts {
-    return [self.mAccounts allKeys];
+    return [self.mAccounts allValues];
 }
 
 -(void)addAccount:(DSAccount*)account {
     [self.mAccounts setObject:account forKey:@(account.accountNumber)];
+    account.wallet = self;
 }
 
 - (DSAccount* _Nullable)accountWithNumber:(NSUInteger)accountNumber {
@@ -100,6 +115,14 @@
         [mArray addObjectsFromArray:account.allTransactions];
     }
     return mArray;
+}
+
+- (DSTransaction *)transactionForHash:(UInt256)txHash {
+    for (DSAccount * account in self.accounts) {
+        DSTransaction * transaction = [account transactionForHash:txHash];
+        if (transaction) return transaction;
+    }
+    return nil;
 }
 
 -(NSArray *) unspentOutputs {

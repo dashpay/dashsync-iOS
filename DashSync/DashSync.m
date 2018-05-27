@@ -57,12 +57,6 @@
     return self;
 }
 
--(void)createWallet
-{
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
-    [manager setSeedPhraseToRandomSeed];
-}
-
 -(void)startSyncForChain:(DSChain*)chain
 {
     if (!chain.wallet) return;

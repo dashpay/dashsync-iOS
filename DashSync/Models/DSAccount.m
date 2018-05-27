@@ -48,8 +48,6 @@
 // BIP 43 derivation paths
 @property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mDerivationPaths;
 
-@property (nonatomic, weak) DSWallet * wallet; //weak because wallet owns accounts;
-
 @property (nonatomic, strong) NSArray *balanceHistory;
 
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
@@ -114,6 +112,9 @@
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.wallet = wallet;
     self.mDerivationPaths = [derivationPaths mutableCopy];
+    for (DSDerivationPath * derivationPath in derivationPaths) {
+        derivationPath.account = self;
+    }
     self.moc = [NSManagedObject context];
     [self.moc performBlockAndWait:^{
         [DSTransactionEntity setContext:self.moc];
@@ -160,6 +161,12 @@
 -(void)setDefaultDerivationPath:(DSDerivationPath *)defaultDerivationPath {
     NSAssert([self.mDerivationPaths containsObject:defaultDerivationPath], @"The derivationPath is not in the account");
     _defaultDerivationPath = defaultDerivationPath;
+}
+
+-(void)setWallet:(DSWallet *)wallet {
+    if (!_wallet) {
+        _wallet = wallet;
+    }
 }
 
 // MARK: - Combining Derivation Paths
@@ -548,7 +555,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.wallet.seed(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+        self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
             if (! seed) {
                 if (completion) completion(YES);
             } else {

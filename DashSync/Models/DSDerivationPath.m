@@ -182,8 +182,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 @interface DSDerivationPath()
 
-@property (nonatomic,copy) NSString * extendedPubKeyString;
-@property (nonatomic, strong) NSData * masterPublicKey;
+@property (nonatomic,copy) NSString * extendedPublicKeyString;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
 @property (nonatomic, weak) DSAccount * account;
@@ -194,14 +193,14 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 @implementation DSDerivationPath
 
--(NSString*)extendedPubKeyString {
-    if (_extendedPubKeyString) return _extendedPubKeyString;
+-(NSString*)extendedPublicKeyString {
+    if (_extendedPublicKeyString) return _extendedPublicKeyString;
     NSMutableString * mutableString = [NSMutableString string];
     for (NSInteger i = 0;i<self.length;i++) {
         [mutableString appendFormat:@"_%lu",(unsigned long)[self indexAtPosition:i]];
     }
-    _extendedPubKeyString = [NSString stringWithFormat:@"%@",mutableString];
-    return _extendedPubKeyString;
+    _extendedPublicKeyString = [NSString stringWithFormat:@"%@",mutableString];
+    return _extendedPublicKeyString;
 }
 
 //// MARK: - Entity
@@ -219,11 +218,6 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 //}
 
 // MARK: - Account initialization
-
-- (NSData *)extendedPublicKey
-{
-    return [[DSWalletManager sharedInstance] extendedPublicKeyForDerivationPath:self forWallet:self.account.wallet];
-}
 
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber {
     NSUInteger indexes[] = {accountNumber};
@@ -280,9 +274,28 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return self;
 }
 
+- (void)setAccount:(DSAccount *)account {
+    if (!_account) {
+        NSAssert(account.accountNumber == [self accountNumber], @"account number doesn't match derivation path ending");
+        _account = account;
+    }
+}
+
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
+}
+
+-(NSUInteger)accountNumber {
+    return [self indexAtPosition:[self length] - 1];
+}
+
+-(NSData*)extendedPublicKey {
+    if (!_extendedPublicKey) {
+        _extendedPublicKey = [[DSWalletManager sharedInstance] extendedPublicKeyForDerivationPath:self];
+    }
+    NSAssert(_extendedPublicKey, @"master public key not set");
+    return _extendedPublicKey;
 }
 
 
@@ -427,10 +440,10 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
 // the values are taken from BIP32 account m/44H/5H/0H
-- (NSData *)extendedPublicKeyForDerivationPath:(DSDerivationPath*)derivationPath fromSeed:(NSData *)seed
+- (NSData *)generateExtendedPublicKeyFromSeed:(NSData *)seed
 {
     if (! seed) return nil;
-    if (![derivationPath length]) return nil; //there needs to be at least 1 length
+    if (![self length]) return nil; //there needs to be at least 1 length
     NSMutableData *mpk = [NSMutableData secureData];
     UInt512 I;
     
@@ -438,12 +451,12 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     
-    for (NSInteger i = 0;i<[derivationPath length] - 1;i++) {
-        uint32_t derivation = (uint32_t)[derivationPath indexAtPosition:i];
+    for (NSInteger i = 0;i<[self length] - 1;i++) {
+        uint32_t derivation = (uint32_t)[self indexAtPosition:i];
         CKDpriv(&secret, &chain, derivation | BIP32_HARD);
     }
     [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-    CKDpriv(&secret, &chain, (uint32_t)[derivationPath indexAtPosition:[derivationPath length] - 1] | BIP32_HARD); // account 0H
+    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
     
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
@@ -453,10 +466,10 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 - (NSData *)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal
 {
-    if (self.masterPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
+    if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
     
-    UInt256 chain = *(const UInt256 *)((const uint8_t *)self.masterPublicKey.bytes + 4);
-    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.masterPublicKey.bytes + 36);
+    UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
     
     CKDpub(&pubKey, &chain, internal ? 1 : 0); // internal or external chain
     CKDpub(&pubKey, &chain, n); // nth key in chain

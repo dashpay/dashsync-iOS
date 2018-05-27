@@ -83,7 +83,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // all previously used addresses
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
-@property (nonatomic, readonly) NSString * _Nullable extendedPubKeyString;
+// the extendedPubKeyString is the key used to store the public key in nsuserdefaults
+@property (nonatomic, readonly) NSString * _Nullable extendedPublicKeyString;
 
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;
@@ -98,8 +99,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
-// the extendedPubKeyString is the key used to store the public key in nsuserdefaults
--(NSString*)extendedPubKeyString;
+// set the account, can not be later changed
+- (void)setAccount:(DSAccount *)account;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
@@ -117,7 +118,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
 - (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
-- (NSData * _Nullable)extendedPublicKeyFromSeed:(NSData * _Nonnull)seed;
+- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed;
 - (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
 - (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 - (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;

@@ -76,7 +76,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 
-@property (nonatomic, strong) SeedRequestBlock seed;
+@property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 
 +(DSWallet*)standardWalletForChain:(DSChain*)chain;
 
@@ -120,5 +120,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
+
+// generate extended public keys and stores them in the keychain
+-(void)generateExtendedPublicKeys;
 
 @end

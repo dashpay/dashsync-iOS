@@ -90,7 +90,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 - (BOOL)noWalletOnChain:(DSChain*)chain;
 - (NSString * _Nullable)generateRandomSeed; // generates a random seed and returns the seedPhrase
 - (void)setSeedPhraseToRandomSeed; // generates a random seed and saves it to keychain
-- (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
+- (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet* _Nonnull)wallet forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (NSString*)seedPhraseAfterAuthentication;
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
@@ -136,6 +136,8 @@ completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError
 -(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 -(NSTimeInterval)lockoutWaitTime;
 
--(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath* _Nonnull)derivationPath forWallet:(DSWallet* _Nonnull)wallet;
+-(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
+
+-(void)setExtendedPublicKeyData:(NSData* _Nonnull)data forDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
 
 @end

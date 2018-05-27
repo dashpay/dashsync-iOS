@@ -42,7 +42,7 @@
 
 @property (nonatomic, readonly) DSDerivationPath * bip32DerivationPath;
 
-@property (nonatomic, readonly, weak) DSWallet * wallet;
+@property (nonatomic, weak) DSWallet * wallet;
 
 @property (nonatomic, readonly) uint32_t accountNumber;
 
