@@ -14,6 +14,7 @@
 #import "DSAuthenticationManager.h"
 #import "DSEventManager.h"
 #import "DSShapeshiftManager.h"
+#import "DSBIP39Mnemonic.h"
 
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;

@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <DashSync/DashSync.h>
 
 @interface DSWalletInputPhraseViewController : UIViewController <UITextViewDelegate>
+
+@property (nonatomic, strong) DSChain * chain;
 
 @end

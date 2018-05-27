@@ -219,8 +219,8 @@
 }
 
 -(void)updateBalance {
-    self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.wallet.balance];
-    self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.wallet.allTransactions count]];
+    self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
+    self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
 }
 
 

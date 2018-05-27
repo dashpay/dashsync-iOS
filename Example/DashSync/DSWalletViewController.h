@@ -7,9 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <DashSync/DashSync.h>
 
 @interface DSWalletViewController : UITableViewController
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
+@property (nonatomic, strong) DSChain * chain;
 
 @end

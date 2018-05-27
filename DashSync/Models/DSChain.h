@@ -97,6 +97,9 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 // all wallet transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * _Nonnull allTransactions;
 
+// current wallet balance excluding transactions known to be invalid
+@property (nonatomic, readonly) uint64_t balance;
+
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
 

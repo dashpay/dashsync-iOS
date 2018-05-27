@@ -13,7 +13,7 @@
 @property (strong, nonatomic) IBOutlet UITextView *inputSeedPhraseTextView;
 - (IBAction)generateRandomPassphrase:(id)sender;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *saveButton;
-- (IBAction)savePassphrase:(id)sender;
+- (IBAction)createWallet:(id)sender;
 
 @end
 
@@ -41,25 +41,25 @@
  */
 
 - (IBAction)generateRandomPassphrase:(id)sender {
-    self.inputSeedPhraseTextView.text = [[DSWalletManager sharedInstance] generateRandomSeed];
+    self.inputSeedPhraseTextView.text = [DSWallet generateRandomSeed];
     self.saveButton.enabled = TRUE;
 }
 
--(IBAction)saveSeedPhrase:(id)sender {
-    [[DSWalletManager sharedInstance] setSeedPhrase:self.inputSeedPhraseTextView.text];
-}
 
 -(void)textViewDidChange:(UITextView *)textView {
-    if ([[DSWalletManager sharedInstance].mnemonic phraseIsValid:textView.text]) {
+    if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:textView.text]) {
         self.saveButton.enabled = TRUE;
     } else {
         self.saveButton.enabled = FALSE;
     }
 }
 
-- (IBAction)savePassphrase:(id)sender {
-    [[DSWalletManager sharedInstance] setSeedPhrase:self.inputSeedPhraseTextView.text];
-    [self.navigationController popViewControllerAnimated:TRUE];
+- (IBAction)createWallet:(id)sender {
+    if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:self.inputSeedPhraseTextView.text]) {
+        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE];
+        [self.chain addWallet:wallet];
+        [self.navigationController popViewControllerAnimated:TRUE];
+    }
 }
 
 @end

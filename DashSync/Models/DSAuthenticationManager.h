@@ -49,7 +49,6 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 
 - (NSString * _Nullable)authPrivateKeyForChain:(DSChain* _Nonnull)chain;
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet* _Nonnull)wallet forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
-- (NSString*)seedPhraseAfterAuthentication;
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set

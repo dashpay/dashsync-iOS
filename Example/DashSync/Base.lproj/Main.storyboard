@@ -705,7 +705,7 @@
                     <navigationItem key="navigationItem" title="Passphrase" id="lh8-Xi-nZW">
                         <barButtonItem key="rightBarButtonItem" style="plain" systemItem="save" id="RFC-wO-nca">
                             <connections>
-                                <action selector="savePassphrase:" destination="c3Z-zJ-Q1f" id="VYL-4U-YTt"/>
+                                <action selector="createWallet:" destination="c3Z-zJ-Q1f" id="vfc-O7-JDN"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>

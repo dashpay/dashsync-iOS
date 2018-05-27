@@ -382,7 +382,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     }
 }
 
--(NSString*)seedPhraseAfterAuthentication {
+-(NSString*)seedPhraseIfAuthenticated {
     
     if (![DSAuthenticationManager sharedInstance].usesAuthentication || [DSAuthenticationManager sharedInstance].didAuthenticate) {
         return getKeychainString(MNEMONIC_KEY, nil);

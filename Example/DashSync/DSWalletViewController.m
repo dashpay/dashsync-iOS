@@ -94,7 +94,7 @@
 //}
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [DSWalletManager sharedInstance].seedPhraseAfterAuthentication?1:0;
+    return [self.chain.wallets count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -112,15 +112,18 @@
 }
 
 -(void)configureCell:(UITableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSWalletTableViewCell * walletCell = (DSWalletTableViewCell*)cell;
-    NSString * passphrase = [DSWalletManager sharedInstance].seedPhraseAfterAuthentication;
-    NSArray * components = [passphrase componentsSeparatedByString:@" "];
-    NSMutableArray * lines = [NSMutableArray array];
-    for (int i = 0;i<[components count];i+=4) {
-        [lines addObject:[[components subarrayWithRange:NSMakeRange(i, 4)] componentsJoinedByString:@" "]];
+    @autoreleasepool {
+        DSWalletTableViewCell * walletCell = (DSWalletTableViewCell*)cell;
+        DSWallet * wallet = [[self.chain wallets] objectAtIndex:indexPath.row];
+        NSString * passphrase = [wallet seedPhraseIfAuthenticated];
+        NSArray * components = [passphrase componentsSeparatedByString:@" "];
+        NSMutableArray * lines = [NSMutableArray array];
+        for (int i = 0;i<[components count];i+=4) {
+            [lines addObject:[[components subarrayWithRange:NSMakeRange(i, 4)] componentsJoinedByString:@" "]];
+        }
+        
+        walletCell.passphraseLabel.text = [lines componentsJoinedByString:@"\n"];
     }
-    
-    walletCell.passphraseLabel.text = [lines componentsJoinedByString:@"\n"];
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -133,7 +136,6 @@
 
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        [[DSWalletManager sharedInstance] setSeedPhrase:nil];
         [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     }
 }

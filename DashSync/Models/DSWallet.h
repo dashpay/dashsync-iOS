@@ -122,5 +122,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 //returns the seed phrase after authenticating
 -(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 
+-(NSString* _Nullable)seedPhraseIfAuthenticated;
+
+//generate a random Mnemonic seed
++ (NSString *)generateRandomSeed;
+
 
 @end
