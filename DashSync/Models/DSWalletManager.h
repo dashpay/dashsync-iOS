@@ -45,6 +45,8 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSWalletManagerSeedChangedNotification;
 
+@class DSDerivationPath;
+
 @protocol DSMnemonic;
 
 typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL authenticated,BOOL cancelled); //success is true is neededUpgrade is true and we upgraded, or we didn't need upgrade
@@ -55,6 +57,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 
 @interface DSWalletManager : NSObject<UIAlertViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
+@property (nonatomic, readonly) NSArray<DSWallet*>* allWallets;
 @property (nonatomic, readonly) BOOL watchOnly; // true if this is a "watch only" wallet with no signing ability
 @property (nonatomic, strong) id<DSMnemonic> _Nullable mnemonic;
 @property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
@@ -103,7 +106,7 @@ completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amoun
 
 // given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString * _Nonnull)privKey toChain:(DSChain*)chain withFee:(BOOL)fee
+- (void)sweepPrivateKey:(NSString * _Nonnull)privKey onChain:(DSChain*)chain withFee:(BOOL)fee
 completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 - (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;
@@ -128,11 +131,11 @@ completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError
 -(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 -(void)setSeedPhrase:(NSString* _Nullable)seedPhrase;
 
--(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion;
+-(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion forChain:(DSChain*)chain;;
 
 -(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 -(NSTimeInterval)lockoutWaitTime;
 
--(NSData*)extendedPublicKeyForStorageKey:(NSString* _Nonnull)key;
+-(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath* _Nonnull)derivationPath forWallet:(DSWallet* _Nonnull)wallet;
 
 @end

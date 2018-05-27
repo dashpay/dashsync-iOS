@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, copy) NSString *genesisBlockHash;
 @property (nonatomic, assign) uint32_t standardPort;
-@property (nonatomic, assign) uint32_t type;
+@property (nonatomic, assign) uint16_t type;
 @property (nonnull, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
 @property (nonnull, nonatomic, retain) NSSet<DSTransactionEntity *> *transactions;
 @property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;

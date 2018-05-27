@@ -46,6 +46,12 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
     DSDerivationPathFundsType_Anonymous
 };
 
+typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
+    DSDerivationPathReference_Unknown = 0,
+    DSDerivationPathReference_BIP32 = 1,
+    DSDerivationPathReference_BIP44 = 2
+};
+
 @interface DSDerivationPath : NSIndexPath
 
 //is this an open account
@@ -77,15 +83,23 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
 // all previously used addresses
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
+@property (nonatomic, readonly) NSString * _Nullable extendedPubKeyString;
+
+// the reference of type of derivation path
+@property (nonatomic, readonly) DSDerivationPathReference reference;
+
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber;
 
 + (instancetype _Nonnull)bip44DerivationPathForChainType:(DSChainType)chain forAccountNumber:(uint32_t)accountNumber;
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathFundsType)type;
+                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                     type:(DSDerivationPathFundsType)type;
+                                     type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
+
+// the extendedPubKeyString is the key used to store the public key in nsuserdefaults
+-(NSString*)extendedPubKeyString;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;

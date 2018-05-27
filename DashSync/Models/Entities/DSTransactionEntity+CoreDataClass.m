@@ -90,7 +90,7 @@
     return self;
 }
 
-+ (NSArray<DSTransaction*> *)transactionsForChain:(DSChainEntity*)chain {
++ (NSArray<DSTransactionEntity*> *)transactionsForChain:(DSChainEntity*)chain {
     return [chain.transactions allObjects];
 }
 

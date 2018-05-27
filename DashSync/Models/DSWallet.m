@@ -28,7 +28,7 @@
 @interface DSWallet()
 
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) NSMutableArray * mAccounts;
+@property (nonatomic, strong) NSMutableDictionary * mAccounts;
 
 @end
 
@@ -43,16 +43,20 @@
 
 -(instancetype)init {
     if (! (self = [super init])) return nil;
-    self.mAccounts = [NSMutableArray array];
+    self.mAccounts = [NSMutableDictionary dictionary];
     return self;
 }
 
 -(NSArray *)accounts {
-    return [self.mAccounts copy];
+    return [self.mAccounts allKeys];
 }
 
--(void)addAccount:(id)account {
-    [self.mAccounts addObject:account];
+-(void)addAccount:(DSAccount*)account {
+    [self.mAccounts setObject:account forKey:@(account.accountNumber)];
+}
+
+- (DSAccount* _Nullable)accountWithNumber:(NSUInteger)accountNumber {
+    return [self.mAccounts objectForKey:@(accountNumber)];
 }
 
 // MARK: - Combining Accounts

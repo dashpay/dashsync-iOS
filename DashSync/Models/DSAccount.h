@@ -38,6 +38,10 @@
 
 @property (nonatomic, strong) DSDerivationPath * defaultDerivationPath;
 
+@property (nonatomic, readonly) DSDerivationPath * bip44DerivationPath;
+
+@property (nonatomic, readonly) DSDerivationPath * bip32DerivationPath;
+
 @property (nonatomic, readonly, weak) DSWallet * wallet;
 
 @property (nonatomic, readonly) uint32_t accountNumber;

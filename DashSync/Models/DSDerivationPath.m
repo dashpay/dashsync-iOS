@@ -220,38 +220,39 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - Account initialization
 
-- (NSData *)extendedPublicKeyForSequence:(id<DSKeySequence>)sequence
+- (NSData *)extendedPublicKey
 {
-    return [[DSWalletManager sharedInstance] extendedPublicKeyForStorageKey:sequence.derivationPath.extendedPubKeyString];
+    return [[DSWalletManager sharedInstance] extendedPublicKeyForDerivationPath:self forWallet:self.account.wallet];
 }
 
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber {
     NSUInteger indexes[] = {accountNumber};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathFundsType_Clear];
+    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP32];
 }
 + (instancetype _Nonnull)bip44DerivationPathForChainType:(DSChainType)chain forAccountNumber:(uint32_t)accountNumber {
     if (chain == DSChainType_MainNet) {
         NSUInteger indexes[] = {44,5,accountNumber};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear];
+        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44];
     } else {
         NSUInteger indexes[] = {44,1,accountNumber};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear];
+        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44];
     }
 }
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathFundsType)type {
-    return [[self alloc] initWithIndexes:indexes length:length type:type];
+                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
+    return [[self alloc] initWithIndexes:indexes length:length type:type reference:(DSDerivationPathReference)reference];
 }
 
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathFundsType)type {
+                           type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
     if (length) {
         if (! (self = [super initWithIndexes:indexes length:length])) return nil;
     } else {
         if (! (self = [super init])) return nil;
     }
     
+    _reference = reference;
     _type = type;
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];

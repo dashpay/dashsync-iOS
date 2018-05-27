@@ -95,6 +95,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 //add an account to the wallet
 - (void)addAccount:(DSAccount*)account;
 
+// returns an account where all derivation paths have the following account number
+- (DSAccount* _Nullable)accountWithNumber:(NSUInteger)accountNumber;
+
 // returns an account to which the given transaction is associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction * _Nonnull)transaction;
 

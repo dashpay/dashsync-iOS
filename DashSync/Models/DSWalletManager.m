@@ -27,6 +27,7 @@
 
 #import "DSWalletManager.h"
 #import "DSChainManager.h"
+#import "DSAccount.h"
 #import "DSKey.h"
 #import "DSChain.h"
 #import "DSKey+BIP38.h"
@@ -43,6 +44,7 @@
 #import "NSString+Dash.h"
 #import "Reachability.h"
 #import "DSChainPeerManager.h"
+#import "DSDerivationPath.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
@@ -75,10 +77,10 @@
 
 #define MNEMONIC_KEY        @"mnemonic"
 #define CREATION_TIME_KEY   @"creationtime"
-#define MASTER_PUBKEY_KEY_BIP44   @"masterpubkeyBIP44" //these are old and need to be retired
-#define MASTER_PUBKEY_KEY_BIP32   @"masterpubkeyBIP32" //these are old and need to be retired
-#define EXTENDED_0_PUBKEY_KEY_BIP44   @"extended0pubkeyBIP44"
-#define EXTENDED_0_PUBKEY_KEY_BIP32   @"extended0pubkeyBIP32"
+#define EXTENDED_0_PUBKEY_KEY_BIP44_V0   @"masterpubkeyBIP44" //these are old and need to be retired
+#define EXTENDED_0_PUBKEY_KEY_BIP32_V0   @"masterpubkeyBIP32" //these are old and need to be retired
+#define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
+#define EXTENDED_0_PUBKEY_KEY_BIP32_V1   @"extended0pubkeyBIP32"
 #define SPEND_LIMIT_KEY     @"spendlimit"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
@@ -357,7 +359,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-
+    
 }
 
 - (void)dealloc
@@ -375,8 +377,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     });
 }
 
--(NSData*)extendedPublicKeyForStorageKey:(NSString*)key {
-    return getKeychainData([NSString stringWithFormat:@"extendedPubKey%@",key], nil);
+-(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath*)derivationPath forWallet:(DSWallet*)wallet {
+    NSAssert(wallet.chain, @"The wallet has no chain");
+    return getKeychainData([NSString stringWithFormat:@"extendedPubKey%@_%@",wallet.chain.uniqueID,derivationPath.extendedPubKeyString], nil);
 }
 
 - (DSWallet *)createWalletForChain:(DSChain*)chain
@@ -384,9 +387,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (chain.hasWalletSet) return chain.wallet;
     
     uint64_t feePerKb = 0;
-//    NSData *mpk = self.extendedBIP44PublicKey;
-//
-//    if (! mpk) return nil;
+    //    NSData *mpk = self.extendedBIP44PublicKey;
+    //
+    //    if (! mpk) return nil;
     
     DSWallet * wallet;
     
@@ -405,32 +408,32 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) chain.wallet.feePerKb = feePerKb;
         
         //TODO: reimplement this safeguard
-//        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
-//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
-//
-//            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
-//                NSLog(@"wallet doesn't contain address: %@", k.address);
-//#if 0
-//                abort(); // don't wipe core data for debug builds
-//#else
-//                [[NSManagedObject context] performBlockAndWait:^{
-//                    [DSAddressEntity deleteAllObjects];
-//                    [DSTransactionEntity deleteAllObjects];
-//                    [NSManagedObject saveContext];
-//                }];
-//
-//                [chain removeWallet];
-//
-//                dispatch_async(dispatch_get_main_queue(), ^{
-//                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
-//                                                                        object:nil];
-//                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
-//                                                                        object:nil];
-//                });
-//#endif
-//            }
-//        });
+        //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
+        //        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        //            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
+        //
+        //            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
+        //                NSLog(@"wallet doesn't contain address: %@", k.address);
+        //#if 0
+        //                abort(); // don't wipe core data for debug builds
+        //#else
+        //                [[NSManagedObject context] performBlockAndWait:^{
+        //                    [DSAddressEntity deleteAllObjects];
+        //                    [DSTransactionEntity deleteAllObjects];
+        //                    [NSManagedObject saveContext];
+        //                }];
+        //
+        //                [chain removeWallet];
+        //
+        //                dispatch_async(dispatch_get_main_queue(), ^{
+        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
+        //                                                                        object:nil];
+        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
+        //                                                                        object:nil];
+        //                });
+        //#endif
+        //            }
+        //        });
         
         return wallet;
     }
@@ -441,8 +444,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 {
     NSError *error = nil;
     if (chain.wallet) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, &error) || error) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V1, &error) || error) return NO;
     return YES;
 }
 
@@ -450,22 +453,40 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 {
     NSError *error = nil;
     if (chain.wallet) return NO;
-    if (getKeychainData(MASTER_PUBKEY_KEY_BIP44, &error) || error) return NO;
-    if (getKeychainData(MASTER_PUBKEY_KEY_BIP32, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V0, &error) || error) return NO;
     return YES;
 }
 
+-(NSArray<DSWallet*>*)allWallets {
+    NSMutableArray * wallets = [NSMutableArray array];
+    for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
+        if ([chain hasWalletSet]) {
+            [wallets addObject:chain.wallet];
+        }
+    }
+    return [wallets copy];
+}
+
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
--(void)upgradeExtendedKeysWithCompletion:(UpgradeCompletionBlock)completion;
+-(void)upgradeExtendedKeysWithCompletion:(UpgradeCompletionBlock)completion forChain:(DSChain*)chain;
 {
+    DSAccount * account = [chain.wallet accountWithNumber:0];
+    NSString * keyString = [[account bip44DerivationPath] extendedPubKeyString];
     NSError * error = nil;
-    NSData * data = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44, &error);
+    BOOL hasV2BIP44Data = hasKeychainData(keyString, &error);
     if (error) {
         completion(NO,NO,NO,NO);
         return;
     }
-    NSData * oldData = (data)?nil:getKeychainData(MASTER_PUBKEY_KEY_BIP44, nil);
-    if (!data && oldData) {
+    error = nil;
+    BOOL hasV1BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error);
+    if (error) {
+        completion(NO,NO,NO,NO);
+        return;
+    }
+    BOOL hasV0BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
+    if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
         NSLog(@"fixing public key");
         //upgrade scenario
         [self authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
@@ -481,13 +502,22 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                 }
                 NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
                                                          deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
+                BOOL failed = NO;
+                for (DSAccount * account in chain.wallet.accounts) {
+                    for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                        NSData * data = [derivationPath extendedPublicKeyFromSeed:derivedKeyData];
+                        failed = failed | !setKeychainData(data, [derivationPath extendedPubKeyString], NO);
+                    }
+                }
+                if (hasV0BIP44Data) {
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //old keys
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //old keys
+                }
+                if (hasV1BIP44Data) {
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
+                }
                 
-                NSData *masterPubKeyBIP44 = (seedPhrase) ? [self.sequence extendedPublicKeyForAccount:0 fromSeed:derivedKeyData purpose:BIP44_PURPOSE] : nil;
-                NSData *masterPubKeyBIP32 = (seedPhrase) ? [self.sequence extendedPublicKeyForAccount:0 fromSeed:derivedKeyData purpose:BIP32_PURPOSE] : nil;
-                BOOL failed = !setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO); //new keys
-                failed = failed | !setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO); //new keys
-                failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO); //old keys
-                failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO); //old keys
                 completion(!failed,YES,YES,NO);
                 
             }
@@ -501,7 +531,17 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 // true if this is a "watch only" wallet with no signing ability
 - (BOOL)watchOnly
 {
-    return (self.extendedBIP44PublicKey && self.extendedBIP44PublicKey.length == 0) ? YES : NO;
+    @autoreleasepool {
+        for (DSWallet * wallet in [self allWallets]) {
+            DSAccount * account = [wallet accountWithNumber:0];
+            NSString * keyString = [[account bip44DerivationPath] extendedPubKeyString];
+            NSError * error = nil;
+            NSData * v2BIP44Data = getKeychainData(keyString, &error);
+            
+            return (v2BIP44Data && v2BIP44Data.length == 0) ? YES : NO;
+        }
+    }
+    return NO;
 }
 
 - (void)seedPhraseAfterAuthentication:(void (^)(NSString * _Nullable))completion
@@ -535,10 +575,18 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         [[NSUserDefaults standardUserDefaults] synchronize];
         
         setKeychainData(nil, CREATION_TIME_KEY, NO);
-        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
-        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
-        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO); //for sanity
-        setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO); //for sanity
+        for (DSWallet * wallet in [self allWallets]) {
+            for (DSAccount * account in wallet.accounts) {
+                for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                    setKeychainData(nil, [derivationPath extendedPubKeyString], NO);
+                }
+            }
+        }
+        
+        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //for sanity
+        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //for sanity
+        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //for sanity
+        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //for sanity
         setKeychainData(nil, SPEND_LIMIT_KEY, NO);
         setKeychainData(nil, PIN_KEY, NO);
         setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
@@ -571,16 +619,19 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
                                                  deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
         
-        NSData *masterPubKeyBIP44 = (seedPhrase) ? [self.sequence extendedPublicKeyForAccount:0 fromSeed:derivedKeyData purpose:BIP44_PURPOSE] : nil;
-        NSData *masterPubKeyBIP32 = (seedPhrase) ? [self.sequence extendedPublicKeyForAccount:0 fromSeed:derivedKeyData purpose:BIP32_PURPOSE] : nil;
-        
-        if ([seedPhrase isEqual:@"wipe"]) {
-            masterPubKeyBIP44 = [NSData data]; // watch only wallet
-            masterPubKeyBIP32 = [NSData data];
-        }
         if (seedPhrase) {
-            setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO);
-            setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO);
+            for (DSWallet * wallet in [self allWallets]) {
+                for (DSAccount * account in wallet.accounts) {
+                    for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                        if ([seedPhrase isEqual:@"wipe"]) {
+                            setKeychainData([NSData data], [derivationPath extendedPubKeyString], NO);
+                        } else {
+                            NSData * data = [derivationPath extendedPublicKeyFromSeed:derivedKeyData];
+                            setKeychainData(data, [derivationPath extendedPubKeyString], NO);
+                        }
+                    }
+                }
+            }
         }
         [[DSChainManager sharedInstance] removeAllWalletsFromChains];
     }
@@ -609,7 +660,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         if (! privKey) {
             NSData *seed = [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
             
-            privKey = [DSBIP32Sequence authPrivateKeyFromSeed:seed];
+            privKey = [DSDerivationPath authPrivateKeyFromSeed:seed];
             setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
         }
         
@@ -649,13 +700,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 // generates a random seed, saves to keychain and returns the associated seedPhrase
 - (NSString *)generateRandomSeed
 {
-        NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
-        
-        if (SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes) != 0) return nil;
-        
-        NSString *phrase = [self.mnemonic encodePhrase:entropy];
-        
-        return phrase;
+    NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
+    
+    if (SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes) != 0) return nil;
+    
+    NSString *phrase = [self.mnemonic encodePhrase:entropy];
+    
+    return phrase;
 }
 
 - (void)setSeedPhraseToRandomSeed
@@ -917,7 +968,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        if (resetCancelHandlerBlock) {
-                                            resetCancelHandlerBlock();
+                                           resetCancelHandlerBlock();
                                        }
                                    }];
     [alertController addAction:cancelButton];
@@ -1171,7 +1222,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     }
     else [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
     
-//    if (! _wallet) return;
+    //    if (! _wallet) return;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
@@ -1187,7 +1238,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (!self.pinAlertController) {
         self.pinAlertController = [UIAlertController
                                    alertControllerWithTitle:title
-                                    message:nil
+                                   message:nil
                                    preferredStyle:UIAlertControllerStyleAlert];
         if (_pinField) self.pinField = nil; // reset pinField so a new one is created
         [self.pinAlertController.view addSubview:self.pinField];
@@ -1375,7 +1426,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         newPrice = @(dashcentralPrice);
     }
     
-//    if (! _wallet ) return;
+    //    if (! _wallet ) return;
     //if ([newPrice doubleValue] == [_bitcoinDashPrice doubleValue]) return;
     _bitcoinDashPrice = newPrice;
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1660,9 +1711,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 }
 
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
-// that will sweep the balance into the wallet (doesn't publish the tx)
+// that will sweep the balance into the account (doesn't publish the tx)
 // this can only be done on main chain for now
-- (void)sweepPrivateKey:(NSString *)privKey toChain:(DSChain*)chain withFee:(BOOL)fee
+- (void)sweepPrivateKey:(NSString *)privKey onChain:(DSChain*)chain toAccount:(DSAccount*)account withFee:(BOOL)fee
              completion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))completion
 {
     if (! completion) return;
@@ -1725,7 +1776,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                }];
                                            }
                                            else {
-                                               [self sweepPrivateKey:key.privateKey toChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
+                                               [self sweepPrivateKey:key.privateKey onChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
                                                self.sweepKey = nil;
                                                self.sweepCompletion = nil;
                                            }
@@ -1791,7 +1842,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                          return;
                      }
                      
-                     [tx addOutputAddress:self.mainnetWallet.receiveAddress amount:balance - feeAmount];
+                     [tx addOutputAddress:account.receiveAddress amount:balance - feeAmount];
                      
                      if (! [tx signWithPrivateKeys:@[privKey]]) {
                          completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
@@ -2038,26 +2089,38 @@ replacementString:(NSString *)string
             NSString *phrase = [self.mnemonic cleanupPhrase:textField.text];
             
             if (! [phrase isEqual:textField.text]) textField.text = phrase;
-            NSData * oldData = getKeychainData(MASTER_PUBKEY_KEY_BIP44, nil);
+            NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
             NSData * seed = [self.mnemonic deriveKeyFromPhrase:[self.mnemonic
                                                                 normalizePhrase:phrase] withPassphrase:nil];
-            if (self.extendedBIP44PublicKey && ![[self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE] isEqual:self.extendedBIP44PublicKey]) {
+            DSWallet * wallet = [[self allWallets] firstObject];
+            DSAccount * account = [wallet.accounts firstObject];
+            DSDerivationPath * derivationPath = [account.derivationPaths firstObject];
+            NSData * extendedPublicKey = [self extendedPublicKeyForDerivationPath:derivationPath forWallet:wallet];
+            if (extendedPublicKey && ![[derivationPath extendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
                                                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            } else if (oldData && ![[self.sequence deprecatedIncorrectExtendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE] isEqual:oldData]) {
+            } else if (extendedPublicKey && ![[derivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
                                                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             }
             else {
                 if (oldData) {
-                    NSData *masterPubKeyBIP44 = [self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP44_PURPOSE];
-                    NSData *masterPubKeyBIP32 = [self.sequence extendedPublicKeyForAccount:0 fromSeed:seed purpose:BIP32_PURPOSE];
-                    BOOL failed = !setKeychainData(masterPubKeyBIP44, EXTENDED_0_PUBKEY_KEY_BIP44, NO); //new keys
-                    failed = failed | !setKeychainData(masterPubKeyBIP32, EXTENDED_0_PUBKEY_KEY_BIP32, NO); //new keys
-                    failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP44, NO); //old keys
-                    failed = failed | !setKeychainData(nil, MASTER_PUBKEY_KEY_BIP32, NO); //old keys
+                    BOOL failed = NO;
+                    for (DSWallet * wallet in [self allWallets]) {
+                    for (DSAccount * account in wallet.accounts) {
+                        for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                            NSData * data = [derivationPath extendedPublicKeyFromSeed:seed];
+                            failed = failed | !setKeychainData(data, [derivationPath extendedPubKeyString], NO);
+                        }
+                    }
+                    }
+                    
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //new keys
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //new keys
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
+                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
                 }
                 setKeychainData(nil, SPEND_LIMIT_KEY, NO);
                 setKeychainData(nil, PIN_KEY, NO);

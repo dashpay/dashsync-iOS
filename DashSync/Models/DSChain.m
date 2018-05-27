@@ -104,6 +104,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;
+@property (nonatomic, copy) NSString * uniqueID;
+@property (nonatomic, copy) NSString * networkName;
 
 @end
 
@@ -235,6 +237,13 @@ static dispatch_once_t devnetToken = 0;
 
 -(BOOL)isDevnetAny {
     return [self chainType] == DSChainType_DevNet;
+}
+
+-(NSString*)uniqueID {
+    if (!_uniqueID) {
+        _uniqueID = [[NSData dataWithUInt256:[self genesisHash]] shortHexString];
+    }
+    return _uniqueID;
 }
 
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash {

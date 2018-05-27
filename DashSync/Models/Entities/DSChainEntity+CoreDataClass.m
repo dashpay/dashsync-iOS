@@ -22,7 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSChainEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainPeerManager.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
@@ -77,18 +77,18 @@
     }
     
     DSChainEntity * chainEntity = [self managedObject];
-    chainEntity.type = @(type);
+    chainEntity.type = type;
     chainEntity.genesisBlockHash = genesisBlockString;
     if (checkpoints) {
         NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
         chainEntity.checkpoints = archivedCheckpoints;
     }
     if (type == DSChainType_MainNet) {
-        chainEntity.standardPort = @(MAINNET_STANDARD_PORT);
+        chainEntity.standardPort = MAINNET_STANDARD_PORT;
     } else if (type == DSChainType_TestNet) {
-        chainEntity.standardPort = @(TESTNET_STANDARD_PORT);
+        chainEntity.standardPort = TESTNET_STANDARD_PORT;
     } else {
-        chainEntity.standardPort = @(DEVNET_STANDARD_PORT);
+        chainEntity.standardPort = DEVNET_STANDARD_PORT;
     }
     return chainEntity;
 }

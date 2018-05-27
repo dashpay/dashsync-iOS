@@ -41,7 +41,7 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 19999
 
-typedef NS_ENUM(NSUInteger, DSChainType) {
+typedef NS_ENUM(uint16_t, DSChainType) {
     DSChainType_MainNet,
     DSChainType_TestNet,
     DSChainType_DevNet,
@@ -69,7 +69,8 @@ typedef NS_ENUM(NSUInteger, DSChainType) {
 @property (nonatomic, readonly) NSString * _Nullable chainTip;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
-@property (nonatomic, copy) NSString * networkName;
+@property (nonatomic, readonly) NSString * networkName;
+@property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
 @property (nonatomic, weak) DSChainPeerManager * peerManagerDelegate;
 @property (nonatomic, readonly) NSTimeInterval earliestKeyTime;

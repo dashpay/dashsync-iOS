@@ -66,6 +66,10 @@
 // the total amount received to the account (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived;
 
+@property (nonatomic, strong) DSDerivationPath * bip44DerivationPath;
+
+@property (nonatomic, strong) DSDerivationPath * bip32DerivationPath;
+
 
 @end
 
@@ -75,15 +79,39 @@
     return [[self alloc] initWithDerivationPaths:derivationPaths onWallet:wallet];
 }
 
+-(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+    if (![self.mDerivationPaths count])
+        _accountNumber = (uint32_t)[[derivationPaths firstObject] indexAtPosition:[[derivationPaths firstObject] length] - 1];
+    for (int i = 0;i<[derivationPaths count];i++) {
+        DSDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
+        if (derivationPath.reference == DSDerivationPathReference_BIP32) {
+            if (self.bip32DerivationPath) {
+                NSAssert(TRUE,@"There should only be one BIP 32 derivation path");
+            }
+            self.bip32DerivationPath = derivationPath;
+        } else if (derivationPath.reference == DSDerivationPathReference_BIP44) {
+            if (self.bip44DerivationPath) {
+                NSAssert(TRUE,@"There should only be one BIP 44 derivation path");
+            }
+            self.bip44DerivationPath = derivationPath;
+        }
+        for (int j = i + 1;j<[derivationPaths count];j++) {
+            DSDerivationPath * derivationPath2 = [derivationPaths objectAtIndex:j];
+            NSAssert(![derivationPath isEqual:derivationPath2],@"Derivation paths should all be different");
+        }
+        for (DSDerivationPath * derivationPath3 in self.mDerivationPaths) {
+            NSAssert(![derivationPath isEqual:derivationPath3],@"Added derivation paths should be different from existing ones on account");
+        }
+        if ([self.mDerivationPaths count] || i != 0) {
+            NSAssert([derivationPath indexAtPosition:[derivationPath length] - 1] == _accountNumber, @"all derivationPaths need to be on same account");
+        }
+    }
+}
+
 -(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet {
     if (! (self = [super init])) return nil;
     NSAssert([derivationPaths count], @"derivationPaths can not be empty");
-    _accountNumber = (uint32_t)[[derivationPaths firstObject] indexAtPosition:[[derivationPaths firstObject] length] - 1];
-    
-    for (int i = 1;i<[derivationPaths count];i++) {
-        DSDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
-        NSAssert([derivationPath indexAtPosition:[derivationPath length] - 1] == _accountNumber, @"all derivationPaths need to be on same account");
-    }
+    [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.wallet = wallet;
     self.mDerivationPaths = [derivationPaths mutableCopy];
     self.moc = [NSManagedObject context];
@@ -116,10 +144,12 @@
 }
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {
+    [self verifyAndAssignAddedDerivationPaths:@[derivationPath]];
     [self.mDerivationPaths addObject:derivationPath];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
+    [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     [self.mDerivationPaths addObjectsFromArray:derivationPaths];
 }
 
