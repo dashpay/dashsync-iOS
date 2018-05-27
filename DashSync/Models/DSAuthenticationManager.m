@@ -871,4 +871,67 @@ replacementString:(NSString *)string
     }];
 }
 
+-(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
+
+UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+[alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+    textField.secureTextEntry = true;
+    textField.returnKeyType = UIReturnKeyDone;
+    textField.placeholder = NSLocalizedString(@"password", nil);
+}];
+UIAlertAction* cancelButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                               style:UIAlertActionStyleCancel
+                               handler:^(UIAlertAction * action) {
+                                   cancel();
+                               }];
+UIAlertAction* okButton = [UIAlertAction
+                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                           style:UIAlertActionStyleDefault
+                           handler:^(UIAlertAction * action) {
+                               NSString *password = alert.textFields[0].text;
+                               completion(password);
+                               
+                    
+                           }];
+[alert addAction:cancelButton];
+[alert addAction:okButton];
+[[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+    
+}
+
+
+-(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel {
+
+UIAlertController * alert = [UIAlertController
+                             alertControllerWithTitle:NSLocalizedString(@"password protected key", nil)
+                             message:NSLocalizedString(@"bad password, try again", nil)
+                             preferredStyle:UIAlertControllerStyleAlert];
+UIAlertAction* cancelButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                               style:UIAlertActionStyleCancel
+                               handler:^(UIAlertAction * action) {
+                                   if (cancel) completion();
+
+                               }];
+UIAlertAction* okButton = [UIAlertAction
+                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                           style:UIAlertActionStyleDefault
+                           handler:^(UIAlertAction * action) {
+                               if (completion) completion();
+                           }];
+[alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+    textField.secureTextEntry = true;
+    textField.placeholder = @"password";
+    textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    textField.borderStyle = UITextBorderStyleRoundedRect;
+    textField.returnKeyType = UIReturnKeyDone;
+}];
+[alert addAction:okButton];
+[alert addAction:cancelButton];
+[[self presentingViewController] presentViewController:alert animated:YES completion:^{
+    if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
+}];
+}
+
 @end

@@ -113,7 +113,6 @@ completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError
 -(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion forChain:(DSChain*)chain;;
 
 -(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
--(NSTimeInterval)lockoutWaitTime;
 -(UIViewController*)presentingViewController;
 - (uint64_t)spendingLimit;
 

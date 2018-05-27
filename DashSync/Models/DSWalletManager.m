@@ -895,69 +895,28 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     if (! completion) return;
     
     if ([privKey isValidDashBIP38Key]) {
-        UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
-        [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-            textField.secureTextEntry = true;
-            textField.returnKeyType = UIReturnKeyDone;
-            textField.placeholder = NSLocalizedString(@"password", nil);
+        [[DSAuthenticationManager sharedInstance] requestKeyPasswordForSweepCompletion:^(NSString *password) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                DSKey *key = [DSKey keyWithBIP38Key:self.sweepKey andPassphrase:password];
+                
+                if (! key) {
+                    [[DSAuthenticationManager sharedInstance] badKeyPasswordForSweepCompletion:^{
+                        [self sweepPrivateKey:privKey onChain:chain toAccount:account withFee:fee completion:completion];
+                    } cancel:^{
+                        if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
+                        self.sweepKey = nil;
+                        self.sweepCompletion = nil;
+                    }];
+                     }
+                     else {
+                         [self sweepPrivateKey:[key privateKeyForChain:chain] onChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
+                         self.sweepKey = nil;
+                         self.sweepCompletion = nil;
+                     }
+            });
+        } cancel:^{
+            
         }];
-        UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           
-                                       }];
-        UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"ok", nil)
-                                   style:UIAlertActionStyleDefault
-                                   handler:^(UIAlertAction * action) {
-                                       NSString *passphrase = alert.textFields[0].text;
-                                       
-                                       dispatch_async(dispatch_get_main_queue(), ^{
-                                           DSKey *key = [DSKey keyWithBIP38Key:self.sweepKey andPassphrase:passphrase];
-                                           
-                                           if (! key) {
-                                               UIAlertController * alert = [UIAlertController
-                                                                            alertControllerWithTitle:NSLocalizedString(@"password protected key", nil)
-                                                                            message:NSLocalizedString(@"bad password, try again", nil)
-                                                                            preferredStyle:UIAlertControllerStyleAlert];
-                                               UIAlertAction* cancelButton = [UIAlertAction
-                                                                              actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                                                              style:UIAlertActionStyleCancel
-                                                                              handler:^(UIAlertAction * action) {
-                                                                                  if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
-                                                                                  self.sweepKey = nil;
-                                                                                  self.sweepCompletion = nil;
-                                                                              }];
-                                               UIAlertAction* okButton = [UIAlertAction
-                                                                          actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                                          style:UIAlertActionStyleDefault
-                                                                          handler:^(UIAlertAction * action) {
-                                                                              
-                                                                          }];
-                                               [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-                                                   textField.secureTextEntry = true;
-                                                   textField.placeholder = @"password";
-                                                   textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-                                                   textField.borderStyle = UITextBorderStyleRoundedRect;
-                                                   textField.returnKeyType = UIReturnKeyDone;
-                                               }];
-                                               [alert addAction:okButton];
-                                               [alert addAction:cancelButton];
-                                               [self presentAlertController:alert animated:YES completion:^{
-                                                   if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
-                                               }];
-                                           }
-                                           else {
-                                               [self sweepPrivateKey:key.privateKey onChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
-                                               self.sweepKey = nil;
-                                               self.sweepCompletion = nil;
-                                           }
-                                       });
-                                   }];
-        [alert addAction:cancelButton];
-        [alert addAction:okButton];
-        [self presentAlertController:alert animated:YES completion:nil];
         self.sweepKey = privKey;
         self.sweepFee = fee;
         self.sweepCompletion = completion;

@@ -43,6 +43,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 @property (nonatomic ,readonly) BOOL lockedOut;
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
+@property (nonatomic, readonly) NSTimeInterval lockoutWaitTime;
 
 + (instancetype _Nullable)sharedInstance;
 
@@ -52,7 +53,8 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 - (void)seedPhraseWithPrompt:(NSString * _Nullable)authprompt completion:(_Nullable SeedPhraseCompletionBlock)completion;; // authenticates user, returns seedPhrase
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
+-(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(NSString * password))completion cancel:(void (^_Nonnull)(void))cancel;
 
-
+-(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel;
 
 @end
