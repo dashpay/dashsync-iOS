@@ -30,17 +30,37 @@
 #import "DSChainPeerManager.h"
 #import "DSChainManager.h"
 #import "DSChain.h"
+#import "DSAccount.h"
 
 @implementation DSTransaction (Utils)
 
-- (DSTransactionType)transactionType
+- (DSTransactionType)transactionTypeInAccount:(DSAccount*)account
 {
-    DSWallet * wallet = self.chain.wallet;
-    uint64_t received = [wallet amountReceivedFromTransaction:self],
-             sent = [wallet amountSentByTransaction:self];
+    uint64_t received = [account amountReceivedFromTransaction:self],
+             sent = [account amountSentByTransaction:self];
     uint32_t blockHeight = self.blockHeight;
     uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
 
+    if (confirms == 0 && ! [account transactionIsValid:self]) {
+        return DSTransactionTypeInvalid;
+    }
+    
+    if (sent > 0 && received == sent) {
+        return DSTransactionTypeMove;
+    }
+    else if (sent > 0) {
+        return DSTransactionTypeSent;
+    }
+    else return DSTransactionTypeReceive;
+}
+
+- (DSTransactionType)transactionTypeInWallet:(DSWallet*)wallet
+{
+    uint64_t received = [wallet amountReceivedFromTransaction:self],
+    sent = [wallet amountSentByTransaction:self];
+    uint32_t blockHeight = self.blockHeight;
+    uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
+    
     if (confirms == 0 && ! [wallet transactionIsValid:self]) {
         return DSTransactionTypeInvalid;
     }
@@ -54,13 +74,12 @@
     else return DSTransactionTypeReceive;
 }
 
-- (NSString*)localCurrencyTextForAmount
+- (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = self.chain.wallet;
-    uint64_t received = [wallet amountReceivedFromTransaction:self],
+    uint64_t received = [account amountReceivedFromTransaction:self],
 
-    sent = [wallet amountSentByTransaction:self];
+    sent = [account amountSentByTransaction:self];
 
     if (sent > 0 && received == sent) {
         return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:sent]];
@@ -71,13 +90,12 @@
     else return [NSString stringWithFormat:@"(%@)", [manager localCurrencyStringForDashAmount:received]];
 }
 
-- (NSString*)amountText
+- (NSString*)amountTextReceivedInAccount:(DSAccount*)account
 {
     DSWalletManager *manager = [DSWalletManager sharedInstance];
-    DSWallet * wallet = self.chain.wallet;
-    uint64_t received = [wallet amountReceivedFromTransaction:self],
+    uint64_t received = [account amountReceivedFromTransaction:self],
 
-    sent = [wallet amountSentByTransaction:self];
+    sent = [account amountSentByTransaction:self];
 
     if (sent > 0 && received == sent) {
         return [manager stringForDashAmount:sent];

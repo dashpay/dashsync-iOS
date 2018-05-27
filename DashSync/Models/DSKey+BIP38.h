@@ -49,6 +49,6 @@ passphrase:(NSString *)passphrase;
 - (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase;
 
 // encrypts receiver with passphrase and returns BIP38 key
-- (NSString *)BIP38KeyWithPassphrase:(NSString *)passphrase;
+- (NSString *)BIP38KeyWithPassphrase:(NSString *)passphrase onChain:(DSChain*)chain;
 
 @end

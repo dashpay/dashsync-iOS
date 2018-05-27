@@ -28,6 +28,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSChain.h"
 
 static const UniChar base58chars[] = {
     '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P',
@@ -100,18 +101,20 @@ static const UniChar base58chars[] = {
 // miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
 // we are unable to correctly sign later, then the entire wallet balance after that point would become stuck with the
 // current coin selection code
-+ (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script
++ (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script forChain:(DSChain*)chain
 {
     if (script == (id)[NSNull null]) return nil;
 
     NSArray *elem = [script scriptElements];
     NSUInteger l = elem.count;
     NSMutableData *d = [NSMutableData data];
-    uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+    uint8_t v;
 
-#if DASH_TESTNET
-    v = BITCOIN_PUBKEY_ADDRESS_TEST;
-#endif
+    if ([chain isMainnet]) {
+        v = BITCOIN_PUBKEY_ADDRESS;
+    } else {
+        v = BITCOIN_PUBKEY_ADDRESS_TEST;
+    }
 
     if (l == 5 && [elem[0] intValue] == OP_DUP && [elem[1] intValue] == OP_HASH160 && [elem[2] intValue] == 20 &&
         [elem[3] intValue] == OP_EQUALVERIFY && [elem[4] intValue] == OP_CHECKSIG) {
@@ -121,10 +124,12 @@ static const UniChar base58chars[] = {
     }
     else if (l == 3 && [elem[0] intValue] == OP_HASH160 && [elem[1] intValue] == 20 && [elem[2] intValue] == OP_EQUAL) {
         // pay-to-script-hash scriptPubKey
-        v = BITCOIN_SCRIPT_ADDRESS;
-#if DASH_TESTNET
-        v = BITCOIN_SCRIPT_ADDRESS_TEST;
-#endif
+        
+        if ([chain isMainnet]) {
+            v = BITCOIN_SCRIPT_ADDRESS;
+        } else {
+            v = BITCOIN_SCRIPT_ADDRESS_TEST;
+        }
         [d appendBytes:&v length:1];
         [d appendData:elem[1]];
     }
@@ -138,18 +143,20 @@ static const UniChar base58chars[] = {
     return [self base58checkWithData:d];
 }
 
-+ (NSString *)bitcoinAddressWithScriptSig:(NSData *)script
++ (NSString *)bitcoinAddressWithScriptSig:(NSData *)script forChain:(DSChain*)chain
 {
     if (script == (id)[NSNull null]) return nil;
 
     NSArray *elem = [script scriptElements];
     NSUInteger l = elem.count;
     NSMutableData *d = [NSMutableData data];
-    uint8_t v = BITCOIN_PUBKEY_ADDRESS;
-
-#if DASH_TESTNET
-    v = BITCOIN_PUBKEY_ADDRESS_TEST;
-#endif
+    uint8_t v;
+    
+    if ([chain isMainnet]) {
+        v = BITCOIN_PUBKEY_ADDRESS;
+    } else {
+        v = BITCOIN_PUBKEY_ADDRESS_TEST;
+    }
 
     if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
         ([elem[l - 1] intValue] == 65 || [elem[l - 1] intValue] == 33)) { // pay-to-pubkey-hash scriptSig
@@ -158,10 +165,11 @@ static const UniChar base58chars[] = {
     }
     else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
              [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-script-hash scriptSig
-        v = BITCOIN_SCRIPT_ADDRESS;
-#if DASH_TESTNET
-        v = BITCOIN_SCRIPT_ADDRESS_TEST;
-#endif
+        if ([chain isMainnet]) {
+            v = BITCOIN_SCRIPT_ADDRESS;
+        } else {
+            v = BITCOIN_SCRIPT_ADDRESS_TEST;
+        }
         [d appendBytes:&v length:1];
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     }
@@ -304,7 +312,7 @@ static const UniChar base58chars[] = {
     return (d.length == 160/8 + 1) ? [d subdataWithRange:NSMakeRange(1, d.length - 1)] : nil;
 }
 
-- (BOOL)isValidBitcoinAddress
+- (BOOL)isValidBitcoinAddressOnChain:(DSChain*)chain
 {
     if (self.length > 35) return NO;
     
@@ -313,24 +321,25 @@ static const UniChar base58chars[] = {
     if (d.length != 21) return NO;
     
     uint8_t version = *(const uint8_t *)d.bytes;
-        
-#if DASH_TESTNET
-    return (version == BITCOIN_PUBKEY_ADDRESS_TEST || version == BITCOIN_SCRIPT_ADDRESS_TEST) ? YES : NO;
-#endif
-
-    return (version == BITCOIN_PUBKEY_ADDRESS || version == BITCOIN_SCRIPT_ADDRESS) ? YES : NO;
+    
+    if ([chain isMainnet]) {
+        return (version == BITCOIN_PUBKEY_ADDRESS || version == BITCOIN_SCRIPT_ADDRESS) ? YES : NO;
+    } else {
+        return (version == BITCOIN_PUBKEY_ADDRESS_TEST || version == BITCOIN_SCRIPT_ADDRESS_TEST) ? YES : NO;
+    }
+    
 }
 
-- (BOOL)isValidBitcoinPrivateKey
+- (BOOL)isValidBitcoinPrivateKeyOnChain:(DSChain*)chain
 {
     NSData *d = self.base58checkToData;
     
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
-#if DASH_TESTNET
-        return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
-#else
-        return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY) ? YES : NO;
-#endif
+        if ([chain isMainnet]) {
+            return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY) ? YES : NO;
+        } else{
+            return (*(const uint8_t *)d.bytes == BITCOIN_PRIVKEY_TEST) ? YES : NO;
+        }
     }
     else if ((self.length == 30 || self.length == 22) && [self characterAtIndex:0] == 'S') { // mini private key format
         NSMutableData *d = [NSMutableData secureDataWithCapacity:self.length + 1];

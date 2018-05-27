@@ -54,26 +54,29 @@ int DSSecp256k1PointAdd(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 // returns true on success
 int DSSecp256k1PointMul(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 
+@class DSChain;
+
 @interface DSKey : NSObject
 
-@property (nullable, nonatomic, readonly) NSString *privateKey;
 @property (nullable, nonatomic, readonly) NSData *publicKey;
 @property (nullable, nonatomic, readonly) NSString *address;
 @property (nonatomic, readonly) UInt160 hash160;
 @property (nonatomic, readonly, nullable) const UInt256 *secretKey;
 
-+ (nullable instancetype)keyWithPrivateKey:(nonnull NSString *)privateKey;
++ (nullable instancetype)keyWithPrivateKey:(nonnull NSString *)privateKey onChain:(DSChain*)chain;
 + (nullable instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 + (nullable instancetype)keyWithPublicKey:(nonnull NSData *)publicKey;
 + (nullable instancetype)keyRecoveredFromCompactSig:(nonnull NSData *)compactSig andMessageDigest:(UInt256)md;
 
-- (nullable instancetype)initWithPrivateKey:(nonnull NSString *)privateKey;
+- (nullable instancetype)initWithPrivateKey:(nonnull NSString *)privateKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithSecret:(UInt256)secret compressed:(BOOL)compressed;
 - (nullable instancetype)initWithPublicKey:(nonnull NSData *)publicKey;
 - (nullable instancetype)initWithCompactSig:(nonnull NSData *)compactSig andMessageDigest:(UInt256)md;
 
 - (nullable NSData *)sign:(UInt256)md;
 - (BOOL)verify:(UInt256)md signature:(nonnull NSData *)sig;
+
+- (NSString *)privateKeyForChain:(DSChain*)chain;
 
 // Pieter Wuille's compact signature encoding used for bitcoin message signing
 // to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey

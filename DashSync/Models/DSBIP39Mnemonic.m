@@ -45,6 +45,18 @@
 
 @implementation DSBIP39Mnemonic
 
++ (instancetype)sharedInstance
+{
+    static id singleton = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        singleton = [self new];
+    });
+    
+    return singleton;
+}
+
 - (NSArray *)words
 {
     if (! _words) {

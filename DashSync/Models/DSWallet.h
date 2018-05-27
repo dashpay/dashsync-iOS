@@ -31,11 +31,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
-#define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
-#define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
-#define MAX_FEE_PER_KB     ((100100ULL*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
 
-@class DSChain,DSAccount,DSTransaction;
+@class DSChain,DSAccount,DSTransaction,DSDerivationPath;
 
 @interface DSWallet : NSObject
 
@@ -68,17 +65,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 // the total amount received by the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived;
 
-// fee per kb of transaction size to use when including tx fee
-@property (nonatomic, assign) uint64_t feePerKb;
-
-// outputs below this amount are uneconomical due to fees
-@property (nonatomic, readonly) uint64_t minOutputAmount;
-
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 
-+(DSWallet*)standardWalletForChain:(DSChain*)chain;
++ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase;
++ (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
@@ -118,10 +110,17 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
 
-// fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
-
 // generate extended public keys and stores them in the keychain
 -(void)generateExtendedPublicKeys;
+
+//get the top level extended public keys at a derivation path;
+-(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
+
+//set the top level extended public keys at a derivation path;
+-(void)setExtendedPublicKeyData:(NSData* _Nonnull)data forDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
+
+//returns the seed phrase after authenticating
+-(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
+
 
 @end

@@ -28,7 +28,7 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-@class DSChain;
+@class DSChain,DSAccount,DSWallet;
 
 #define TX_FEE_PER_KB        1000ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input

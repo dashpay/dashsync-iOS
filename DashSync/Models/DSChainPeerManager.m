@@ -207,10 +207,11 @@ static const char *mainnet_dns_seeds[] = {
             
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
             
-#if DASH_TESTNET
-            [self sortPeers];
-            return _peers;
-#endif
+            if (![self.chain isMainnet]) {
+                [self sortPeers];
+                return _peers;
+            }
+
             // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
             if (_peers.count < PEER_MAX_CONNECTIONS) {
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
@@ -370,7 +371,7 @@ static const char *mainnet_dns_seeds[] = {
             UInt256 h = UINT256_ZERO;
             
             [hash getValue:&h];
-            [self addTransactionToPublishList:[self.chain.wallet transactionForHash:h]];
+            [self addTransactionToPublishList:[self.chain transactionForHash:h]];
         }
     }
 }
@@ -530,7 +531,6 @@ static const char *mainnet_dns_seeds[] = {
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
-    DSWallet * wallet = self.chain.wallet;
     BOOL rescan = NO, notify = NO;
     NSValue *hash;
     UInt256 h;
@@ -542,33 +542,35 @@ static const char *mainnet_dns_seeds[] = {
         if (! p.synced) return;
     }
     
-    for (DSAccount * account in wallet.accounts) {
-    for (DSTransaction *transaction in account.allTransactions) {
-        if (transaction.blockHeight != TX_UNCONFIRMED) break;
-        hash = uint256_obj(transaction.txHash);
-        if (self.publishedCallback[hash] != NULL) continue;
-        
-        if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
-            // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
-            if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-                NSLog(@"failed transaction %@", tx);
-                rescan = notify = YES;
+    for (DSWallet * wallet in self.chain.wallets) {
+        for (DSAccount * account in wallet.accounts) {
+            for (DSTransaction *transaction in account.allTransactions) {
+                if (transaction.blockHeight != TX_UNCONFIRMED) break;
+                hash = uint256_obj(transaction.txHash);
+                if (self.publishedCallback[hash] != NULL) continue;
                 
-                for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
-                    [hash getValue:&h];
-                    if ([wallet transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
-                    rescan = NO;
-                    break;
+                if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
+                    // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
+                    if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
+                        NSLog(@"failed transaction %@", tx);
+                        rescan = notify = YES;
+                        
+                        for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
+                            [hash getValue:&h];
+                            if ([wallet transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
+                            rescan = NO;
+                            break;
+                        }
+                    }
+                    
+                    [account removeTransaction:transaction.txHash];
+                }
+                else if ([self.txRelays[hash] count] < self.maxConnectCount) {
+                    // set timestamp 0 to mark as unverified
+                    [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
                 }
             }
-            
-            [account removeTransaction:transaction.txHash];
         }
-        else if ([self.txRelays[hash] count] < self.maxConnectCount) {
-            // set timestamp 0 to mark as unverified
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
-        }
-    }
     }
     
     if (notify) {
@@ -732,13 +734,19 @@ static const char *mainnet_dns_seeds[] = {
 
 - (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer
 {
-    DSWallet * wallet = peer.chain.wallet;
+    NSMutableSet * allAddresses = [NSMutableSet set];
+    NSMutableSet * allUTXOs = [NSMutableSet set];
+    for (DSWallet * wallet in self.chain.wallets) {
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
     // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
     // transaction is encountered during the blockchain download
     [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
     [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
-
+        NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
+        [allAddresses addObjectsFromArray:[addresses allObjects]];
+        [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
+    }
+    
     
     [self.chain clearOrphans];
     self.filterUpdateHeight = self.chain.lastBlockHeight;
@@ -746,10 +754,10 @@ static const char *mainnet_dns_seeds[] = {
     
     DSUTXO o;
     NSData *d;
-    NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
-    NSUInteger i, elemCount = addresses.count + wallet.unspentOutputs.count;
+    NSUInteger i, elemCount = allAddresses.count + allUTXOs.count;
     NSMutableArray *inputs = [NSMutableArray new];
     
+    for (DSWallet * wallet in self.chain.wallets) {
     for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
         [self addTransactionToPublishList:tx]; // also populate the tx publish list
         if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.chain.lastBlockHeight) break;
@@ -767,18 +775,19 @@ static const char *mainnet_dns_seeds[] = {
             }
         }
     }
+    }
     
     DSBloomFilter *filter = [[DSBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
                                                              forElementCount:(elemCount < 200 ? 300 : elemCount + 100) tweak:(uint32_t)peer.hash
                                                                        flags:BLOOM_UPDATE_ALL];
     
-    for (NSString *addr in addresses) {// add addresses to watch for tx receiveing money to the wallet
+    for (NSString *addr in allAddresses) {// add addresses to watch for tx receiveing money to the wallet
         NSData *hash = addr.addressToHash160;
         
         if (hash && ! [filter containsData:hash]) [filter insertData:hash];
     }
     
-    for (NSValue *utxo in wallet.unspentOutputs) { // add UTXOs to watch for tx sending money from the wallet
+    for (NSValue *utxo in allUTXOs) { // add UTXOs to watch for tx sending money from the wallet
         [utxo getValue:&o];
         d = dsutxo_data(o);
         if (! [filter containsData:d]) [filter insertData:d];
@@ -950,7 +959,6 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction
 {
-    DSWallet * wallet = self.chain.wallet;
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
@@ -960,7 +968,7 @@ static const char *mainnet_dns_seeds[] = {
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
     DSAccount * account = nil;
     if (syncing) {
-        account = [wallet accountContainingTransaction:transaction];
+        account = [self.chain accountContainingTransaction:transaction];
         if (!account) return;
     }
     if (![account registerTransaction:transaction]) return;
@@ -977,9 +985,9 @@ static const char *mainnet_dns_seeds[] = {
         if (callback) [self.publishedCallback removeObjectForKey:hash];
         
         if ([self.txRelays[hash] count] >= self.maxConnectCount &&
-            [wallet transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
-            [wallet transactionForHash:transaction.txHash].timestamp == 0) {
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+            [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
+            [account transactionForHash:transaction.txHash].timestamp == 0) {
+            [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
                            forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
@@ -998,8 +1006,8 @@ static const char *mainnet_dns_seeds[] = {
     
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
-    NSArray *external = [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-    *internal = [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    NSArray *external = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
+    *internal = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
     for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
         NSData *hash = address.addressToHash160;
@@ -1013,18 +1021,17 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash
 {
-    DSWallet * wallet = self.chain.wallet;
     NSValue *hash = uint256_obj(txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
     DSTransaction *transaction = self.publishedTx[hash];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
-    if (!transaction) transaction = [wallet transactionForHash:txHash];
+    if (!transaction) transaction = [self.chain transactionForHash:txHash];
     if (!transaction) return;
     DSAccount * account = nil;
     if (syncing) {
-        account = [wallet accountContainingTransaction:transaction];
+        account = [self.chain accountContainingTransaction:transaction];
         if (!account) return;
     }
     if (![account registerTransaction:transaction]) return;
@@ -1037,8 +1044,8 @@ static const char *mainnet_dns_seeds[] = {
         if (callback) [self.publishedCallback removeObjectForKey:hash];
         
         if ([self.txRelays[hash] count] >= self.maxConnectCount &&
-            [wallet transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
-            [wallet transactionForHash:txHash].timestamp == 0) {
+            [self.chain transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
+            [self.chain transactionForHash:txHash].timestamp == 0) {
             [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
                            forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
@@ -1058,9 +1065,8 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
 {
-    DSWallet * wallet = self.chain.wallet;
     DSTransaction *transaction = nil;
-    DSAccount * account = [wallet accountForTransactionHash:txHash transaction:&transaction];
+    DSAccount * account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
     NSValue *hash = uint256_obj(txHash);
     
     if ([self.txRelays[hash] containsObject:peer]) {
@@ -1096,7 +1102,7 @@ static const char *mainnet_dns_seeds[] = {
             UInt256 h = UINT256_ZERO;
             
             [hash getValue:&h];
-            if ([wallet transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
+            if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
         }
         
         [self peerMisbehavin:peer];
@@ -1151,7 +1157,6 @@ static const char *mainnet_dns_seeds[] = {
 
 - (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb
 {
-    DSWallet * wallet = self.chain.wallet;
     uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
     
     for (DSPeer *p in self.connectedPeers) { // find second highest fee rate
@@ -1160,18 +1165,17 @@ static const char *mainnet_dns_seeds[] = {
     }
     
     if (secondFeePerKb*2 > MIN_FEE_PER_KB && secondFeePerKb*2 <= MAX_FEE_PER_KB &&
-        secondFeePerKb*2 > wallet.feePerKb) {
+        secondFeePerKb*2 > self.chain.feePerKb) {
         NSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerKb*2);
-        wallet.feePerKb = secondFeePerKb*2;
+        self.chain.feePerKb = secondFeePerKb*2;
     }
 }
 
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
 {
-    DSWallet * wallet = self.chain.wallet;
     NSValue *hash = uint256_obj(txHash);
     DSTransaction *transaction = self.publishedTx[hash];
-    DSAccount * account = [wallet accountContainingTransaction:transaction];
+    DSAccount * account = [self.chain accountContainingTransaction:transaction];
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     NSError *error = nil;
     

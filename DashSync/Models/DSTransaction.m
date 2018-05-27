@@ -119,7 +119,7 @@
             d = [message dataAtOffset:off length:&l];
             [self.outScripts addObject:(d) ? d : [NSNull null]]; // output script
             off += l.unsignedIntegerValue;
-            address = [NSString addressWithScriptPubKey:d]; // address from output script if applicable
+            address = [NSString addressWithScriptPubKey:d onChain:self.chain]; // address from output script if applicable
             [self.addresses addObject:(address) ? address : [NSNull null]];
         }
 
@@ -190,7 +190,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(D
 
     for (int i = 0; i < addresses.count; i++) {
         [self.outScripts addObject:[NSMutableData data]];
-        [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i]];
+        [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i] forChain:chain];
     }
 
     self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
@@ -313,7 +313,7 @@ sequence:(uint32_t)sequence
     [self.amounts addObject:@(amount)];
     [self.addresses addObject:address];
     [self.outScripts addObject:[NSMutableData data]];
-    [self.outScripts.lastObject appendScriptPubKeyForAddress:address];
+    [self.outScripts.lastObject appendScriptPubKeyForAddress:address forChain:self.chain];
 }
 
 - (void)addOutputShapeshiftAddress:(NSString *)address
@@ -326,7 +326,7 @@ sequence:(uint32_t)sequence
 
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 {
-    NSString *address = [NSString addressWithScriptPubKey:script];
+    NSString *address = [NSString addressWithScriptPubKey:script onChain:self.chain];
 
     [self.amounts addObject:@(amount)];
     [self.outScripts addObject:script];
@@ -337,7 +337,7 @@ sequence:(uint32_t)sequence
 {
     NSMutableData *d = [NSMutableData data];
 
-    [d appendScriptPubKeyForAddress:address];
+    [d appendScriptPubKeyForAddress:address forChain:self.chain];
     self.inScripts[index] = d;
 }
 
@@ -347,9 +347,9 @@ sequence:(uint32_t)sequence
     NSInteger i = 0;
 
     for (NSData *script in self.inScripts) {
-        NSString *addr = [NSString addressWithScriptPubKey:script];
+        NSString *addr = [NSString addressWithScriptPubKey:script onChain:self.chain];
 
-        if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i]];
+        if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i] onChain:self.chain];
         [addresses addObject:(addr) ? addr : [NSNull null]];
         i++;
     }
@@ -418,7 +418,7 @@ sequence:(uint32_t)sequence
                    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     for (NSString *pk in privateKeys) {
-        DSKey *key = [DSKey keyWithPrivateKey:pk];
+        DSKey *key = [DSKey keyWithPrivateKey:pk onChain:self.chain];
         
         if (! key) continue;
         [keys addObject:key];
@@ -426,7 +426,7 @@ sequence:(uint32_t)sequence
     }
     
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i]];
+        NSString *addr = [NSString addressWithScriptPubKey:self.inScripts[i] onChain:self.chain];
         NSUInteger keyIdx = (addr) ? [addresses indexOfObject:addr] : NSNotFound;
         
         if (keyIdx == NSNotFound) continue;

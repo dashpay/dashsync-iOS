@@ -93,10 +93,10 @@
     NSURL *url = [NSURL URLWithString:s];
     
     if (! url || ! url.scheme) {
-        if ([s isValidBitcoinAddress] || [s isValidBitcoinPrivateKey]) {
+        if ([s isValidBitcoinAddressOnChain:self.chain] || [s isValidBitcoinPrivateKeyOnChain:self.chain]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
             self.scheme = @"bitcoin";
-        } else if ([s isValidDashAddress] || [s isValidDashPrivateKey] || [s isValidDashBIP38Key]) {
+        } else if ([s isValidDashAddressOnChain:self.chain] || [s isValidDashPrivateKeyOnChain:self.chain] || [s isValidDashBIP38Key]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
         }
@@ -243,13 +243,13 @@
 - (BOOL)isValid
 {
     if ([self.scheme isEqualToString:@"dash"]) {
-        BOOL valid = ([self.paymentAddress isValidDashAddress] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
+        BOOL valid = ([self.paymentAddress isValidDashAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
             NSLog(@"Not a valid dash request");
         }
         return valid;
     } else if ([self.scheme isEqualToString:@"bitcoin"]) {
-        BOOL valid = ([self.paymentAddress isValidBitcoinAddress] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
+        BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
             NSLog(@"Not a valid bitcoin request");
             
@@ -265,10 +265,10 @@
 {
     NSData *name = [self.label dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *script = [NSMutableData data];
-    if ([self.paymentAddress isValidDashAddress]) {
-        [script appendScriptPubKeyForAddress:self.paymentAddress];
-    } else if ([self.paymentAddress isValidBitcoinAddress]) {
-        [script appendBitcoinScriptPubKeyForAddress:self.paymentAddress];
+    if ([self.paymentAddress isValidDashAddressOnChain:self.chain]) {
+        [script appendScriptPubKeyForAddress:self.paymentAddress forChain:self.chain];
+    } else if ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain]) {
+        [script appendBitcoinScriptPubKeyForAddress:self.paymentAddress forChain:self.chain];
     }
     if (script.length == 0) return nil;
     

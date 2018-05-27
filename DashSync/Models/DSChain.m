@@ -39,6 +39,7 @@
 #import "DSChainPeerManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSCoder+Dash.h"
+#import "DSAccount.h"
 #import "DSDerivationPath.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
@@ -97,15 +98,17 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 760000, "000000000000011131c4a8c6446e6ce4597a192296ecad0fb47a23ae4b506682", 1508998683, 0x1a014ed1u }
 };
 
+#define FEE_PER_KB_KEY          @"FEE_PER_KB"
+
 @interface DSChain ()
 
-@property (nonatomic, strong) DSWallet * wallet;
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
+@property (nonatomic, strong) NSMutableArray<DSWallet *> * wallets;
 
 @end
 
@@ -123,6 +126,12 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.standardPort = port;
+    _wallets = [NSMutableArray array];
+    
+    self.feePerKb = DEFAULT_FEE_PER_KB;
+    uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
+    if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) self.feePerKb = feePerKb;
+    
     [self chainEntity];
     return self;
 }
@@ -254,20 +263,33 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
-// MARK: - Info
-
--(void)removeWallet {
-    _wallet = nil;
+-(uint32_t)magicNumber {
+    switch (_chainType) {
+        case DSChainType_MainNet:
+            return DASH_MAGIC_NUMBER_MAINNET;
+            break;
+        
+        default:
+            return DASH_MAGIC_NUMBER_TESTNET;
+            break;
+    }
 }
 
--(BOOL)hasWalletSet {
-    return !!_wallet;
+// MARK: - Wallet
+
+-(BOOL)hasAWallet {
+    return !![_wallets count];
 }
 
--(DSWallet*)wallet {
-    if (_wallet) return _wallet;
-    self.wallet = [[DSWalletManager sharedInstance] createWalletForChain:self];
-    return _wallet;
+-(void)removeWallet:(DSWallet*)wallet {
+    [_wallets removeObject:wallet];
+}
+-(void)addWallet:(DSWallet*)wallet {
+    [_wallets addObject:wallet];
+}
+
+-(NSSet*)wallets {
+    return [_wallets copy];
 }
 
 -(NSString*)networkName {
@@ -425,8 +447,13 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
-    NSArray *updatedTx = [self.wallet setBlockHeight:height andTimestamp:timestamp
-                                                                     forTxHashes:txHashes];
+    //need to reverify this works
+    NSMutableArray *updatedTx = [NSMutableArray array];
+    for (DSWallet * wallet in self.wallets) {
+        [updatedTx addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
+                                                  forTxHashes:txHashes]];
+    }
+    
     
     [self.peerManagerDelegate chain:self didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
 }
@@ -553,9 +580,11 @@ static dispatch_once_t devnetToken = 0;
         NSLog(@"reorganizing chain from height %d, new height is %d", b.height, block.height);
         
         // mark transactions after the join point as unconfirmed
-        for (DSTransaction *tx in self.wallet.allTransactions) {
+        for (DSWallet * wallet in self.wallets) {
+        for (DSTransaction *tx in wallet.allTransactions) {
             if (tx.blockHeight <= b.height) break;
             [txHashes addObject:uint256_obj(tx.txHash)];
+        }
         }
         
         [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:txHashes];
@@ -659,6 +688,70 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer {
     _estimatedBlockHeight = estimatedBlockHeight;
+}
+
+- (DSTransaction *)transactionForHash:(UInt256)txHash {
+    for (DSWallet * wallet in self.wallets) {
+        DSTransaction * transaction = [wallet transactionForHash:txHash];
+        if (transaction) return transaction;
+    }
+    return nil;
+}
+
+- (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction * _Nonnull)transaction {
+    for (DSWallet * wallet in self.wallets) {
+        DSAccount * account = [wallet accountContainingTransaction:transaction];
+        if (account) return account;
+    }
+    return nil;
+}
+
+// returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
+- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction wallet:(DSWallet **)wallet {
+    for (DSWallet * lWallet in self.wallets) {
+    for (DSAccount * account in lWallet.accounts) {
+        DSTransaction * lTransaction = [account transactionForHash:txHash];
+        if (lTransaction) {
+            if (transaction) *transaction = lTransaction;
+             if (wallet) *wallet = lWallet;
+            return account;
+        }
+    }
+    }
+    return nil;
+}
+
+-(NSArray *) allTransactions {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DSWallet * wallet in self.wallets) {
+        [mArray addObjectsFromArray:wallet.allTransactions];
+    }
+    return mArray;
+}
+
+// fee that will be added for a transaction of the given size in bytes
+- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
+{
+    if (isInstant) {
+        return TX_FEE_PER_INPUT*inputCount;
+    } else {
+        uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB; // standard fee based on tx size rounded up to nearest kb
+#if (!!FEE_PER_KB_URL)
+        uint64_t fee = (((size*self.feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
+        return (fee > standardFee) ? fee : standardFee;
+#else
+        return standardFee;
+#endif
+        
+    }
+}
+
+// outputs below this amount are uneconomical due to fees
+- (uint64_t)minOutputAmount
+{
+    uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerKb + MIN_FEE_PER_KB - 1)/MIN_FEE_PER_KB;
+    
+    return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
 
 @end

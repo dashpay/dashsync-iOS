@@ -28,6 +28,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
 #import "NSString+Dash.h"
+#import "DSChain.h"
 
 static void *secureAllocate(CFIndex allocSize, CFOptionFlags hint, void *info)
 {
@@ -206,9 +207,9 @@ CFAllocatorRef SecureAllocator()
     [self appendData:d];
 }
 
-- (void)appendScriptPubKeyForAddress:(NSString *)address
+- (void)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
 {
-    static uint8_t pubkeyAddress = DASH_PUBKEY_ADDRESS, scriptAddress = DASH_SCRIPT_ADDRESS;
+    uint8_t pubkeyAddress, scriptAddress;
     NSData *d = address.base58checkToData;
 
     if (d.length != 21) return;
@@ -216,10 +217,13 @@ CFAllocatorRef SecureAllocator()
     uint8_t version = *(const uint8_t *)d.bytes;
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
 
-#if DASH_TESTNET
-    pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
-    scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
-#endif
+    if ([chain isMainnet]) {
+        pubkeyAddress = DASH_PUBKEY_ADDRESS;
+        scriptAddress = DASH_SCRIPT_ADDRESS;
+    } else {
+        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
+        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
+    }
 
     if (version == pubkeyAddress) {
         [self appendUInt8:OP_DUP];
@@ -256,9 +260,9 @@ CFAllocatorRef SecureAllocator()
 }
 
 
-- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address
+- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
 {
-    static uint8_t pubkeyAddress = BITCOIN_PUBKEY_ADDRESS, scriptAddress = BITCOIN_SCRIPT_ADDRESS;
+    uint8_t pubkeyAddress, scriptAddress;
     NSData *d = address.base58checkToData;
     
     if (d.length != 21) return;
@@ -266,10 +270,14 @@ CFAllocatorRef SecureAllocator()
     uint8_t version = *(const uint8_t *)d.bytes;
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
     
-#if DASH_TESTNET
-    pubkeyAddress = BITCOIN_PUBKEY_ADDRESS_TEST;
-    scriptAddress = BITCOIN_SCRIPT_ADDRESS_TEST;
-#endif
+    
+    if ([chain isMainnet]) {
+        pubkeyAddress = BITCOIN_PUBKEY_ADDRESS;
+        scriptAddress = BITCOIN_SCRIPT_ADDRESS;
+    } else {
+        pubkeyAddress = BITCOIN_PUBKEY_ADDRESS_TEST;
+        scriptAddress = BITCOIN_SCRIPT_ADDRESS_TEST;
+    }
     
     if (version == pubkeyAddress) {
         [self appendUInt8:OP_DUP];
@@ -286,9 +294,9 @@ CFAllocatorRef SecureAllocator()
 }
 // MARK: - dash protocol
 
-- (void)appendMessage:(NSData *)message type:(NSString *)type;
+- (void)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain
 {
-    [self appendUInt32:DASH_MAGIC_NUMBER];
+    [self appendUInt32:chain.magicNumber];
     [self appendNullPaddedString:type length:12];
     [self appendUInt32:(uint32_t)message.length];
     [self appendBytes:message.SHA256_2.u32 length:4];

@@ -316,7 +316,7 @@ services:(uint64_t)services
         NSLog(@"%@:%u sending %@", self.host, self.port, type);
 #endif
 
-        [self.outputBuffer appendMessage:message type:type];
+        [self.outputBuffer appendMessage:message type:type forChain:self.chain];
         
         while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
@@ -1185,7 +1185,7 @@ services:(uint64_t)services
                         
                         // consume one byte at a time, up to the magic number that starts a new message header
                         while (self.msgHeader.length >= sizeof(uint32_t) &&
-                               [self.msgHeader UInt32AtOffset:0] != DASH_MAGIC_NUMBER) {
+                               [self.msgHeader UInt32AtOffset:0] != self.chain.magicNumber) {
 #if DEBUG
                             printf("%c", *(const char *)self.msgHeader.bytes);
 #endif

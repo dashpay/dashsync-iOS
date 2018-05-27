@@ -41,13 +41,22 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 19999
 
+
+#define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
+#define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
+
+
+#define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
+#define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
+#define MAX_FEE_PER_KB     ((100100ULL*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
+
 typedef NS_ENUM(uint16_t, DSChainType) {
     DSChainType_MainNet,
     DSChainType_TestNet,
     DSChainType_DevNet,
 };
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount;
 
 @protocol DSChainDelegate;
 
@@ -61,8 +70,8 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 @end
 
 @interface DSChain : NSObject
-@property (nonatomic, readonly) BOOL hasWalletSet;
-@property (nonatomic, readonly) DSWallet * _Nullable wallet;
+
+@property (nonatomic, readonly) NSArray<DSWallet *> * _Nullable wallets;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) UInt256 genesisHash;
@@ -78,6 +87,15 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 @property (nonatomic, readonly) NSArray * blockLocatorArray;
 @property (nonatomic, readonly) DSMerkleBlock *lastOrphan;
 @property (nonatomic, readonly) DSChainEntity *chainEntity;
+@property (nonatomic, readonly) uint32_t magicNumber;
+@property (nonatomic, readonly) BOOL hasAWallet;
+@property (nonatomic, assign) uint64_t feePerKb;
+
+// outputs below this amount are uneconomical due to fees
+@property (nonatomic, readonly) uint64_t minOutputAmount;
+
+// all wallet transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray * _Nonnull allTransactions;
 
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
@@ -102,9 +120,26 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 -(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
--(void)removeWallet;
+-(void)removeWallet:(DSWallet*)wallet;
+-(void)addWallet:(DSWallet*)objects;
+
+
+
+// returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
+- (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
+
+// returns an account to which the given transaction is associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
+- (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction * _Nonnull)transaction;
+
+// returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
+- (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction wallet:(DSWallet **)wallet;
+
 
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
+
+// fee that will be added for a transaction of the given size in bytes
+- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
+
 
 @end
 

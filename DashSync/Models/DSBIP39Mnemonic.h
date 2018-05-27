@@ -35,6 +35,8 @@
 
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
 
++ (instancetype _Nullable)sharedInstance;
+
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase; // phrase must be normalized
 - (BOOL)wordIsValid:(NSString *)word; // true if word is a member of any known word list

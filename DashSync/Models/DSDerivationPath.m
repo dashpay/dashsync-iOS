@@ -42,24 +42,27 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 
-#define useDarkCoinSeed 0
+#define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago
 
 #if useDarkCoinSeed
 
 #define BIP32_SEED_KEY "Darkcoin seed"
-#define BIP32_XPRV     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
-#define BIP32_XPUB     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
+
+#define BIP32_XPRV_MAINNET     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
+#define BIP32_XPUB_MAINNET     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
+#define BIP32_XPRV_TESTNET     "\x02\xFE\x52\xCC"
+#define BIP32_XPUB_TESTNET     "\x02\xFE\x52\xF8"
 
 #else
 
 #define BIP32_SEED_KEY "Bitcoin seed"
-#if DASH_TESTNET
-#define BIP32_XPRV     "\x04\x35\x83\x94"
-#define BIP32_XPUB     "\x04\x35\x87\xCF"
-#else
-#define BIP32_XPRV     "\x04\x88\xAD\xE4"
-#define BIP32_XPUB     "\x04\x88\xB2\x1E"
-#endif
+
+#define BIP32_XPRV_TESTNET     "\x04\x35\x83\x94"
+#define BIP32_XPUB_TESTNET     "\x04\x35\x87\xCF"
+
+#define BIP32_XPRV_MAINNET     "\x04\x88\xAD\xE4"
+#define BIP32_XPUB_MAINNET     "\x04\x88\xB2\x1E"
+
 
 #endif
 
@@ -136,14 +139,14 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 // helper function for serializing BIP32 master public/private keys to standard export format
-static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key)
+static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key,BOOL mainnet)
 {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + sizeof(chain)];
     
     fingerprint = CFSwapInt32HostToBig(fingerprint);
     child = CFSwapInt32HostToBig(child);
     
-    [d appendBytes:key.length < 33 ? BIP32_XPRV : BIP32_XPUB length:4]; //4
+    [d appendBytes:key.length < 33 ? mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET : mainnet?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET length:4]; //4
     [d appendBytes:&depth length:1]; //5
     [d appendBytes:&fingerprint length:sizeof(fingerprint)]; // 9
     [d appendBytes:&child length:sizeof(child)]; // 13
@@ -155,7 +158,7 @@ static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, 
 }
 
 // helper function for serializing BIP32 master public/private keys to standard export format
-static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uint32_t * child, UInt256 * chain, NSData **key)
+static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uint32_t * child, UInt256 * chain, NSData **key,BOOL mainnet)
 {
     NSData * allData = [NSData dataWithBase58String:string];
     if (allData.length != 82) return false;
@@ -163,7 +166,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     NSData * checkData = [allData subdataWithRange:NSMakeRange(allData.length - 4, 4)];
     if ((*(uint32_t*)data.SHA256_2.u32) != *(uint32_t*)checkData.bytes) return FALSE;
     uint8_t * bytes = (uint8_t *)[data bytes];
-    if (memcmp(bytes,BIP32_XPRV,4) != 0 && memcmp(bytes,BIP32_XPUB,4) != 0) {
+    if (memcmp(bytes,mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) != 0 && memcmp(bytes,mainnet?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET,4) != 0) {
         return FALSE;
     }
     NSUInteger offset = 4;
@@ -175,7 +178,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     offset += sizeof(uint32_t);
     *chain = *(UInt256*)(&bytes[offset]);
     offset += sizeof(UInt256);
-    if (memcmp(bytes,BIP32_XPRV,4) == 0) offset++;
+    if (memcmp(bytes,mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) == 0) offset++;
     *key = [data subdataWithRange:NSMakeRange(offset, data.length - offset)];
     return TRUE;
 }
@@ -292,7 +295,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
-        _extendedPublicKey = [[DSWalletManager sharedInstance] extendedPublicKeyForDerivationPath:self];
+        _extendedPublicKey = [self.account.wallet extendedPublicKeyForDerivationPath:self];
     }
     NSAssert(_extendedPublicKey, @"master public key not set");
     return _extendedPublicKey;
@@ -493,11 +496,12 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version = DASH_PRIVKEY;
-    
-#if DASH_TESTNET
-    version = DASH_PRIVKEY_TEST;
-#endif
+    uint8_t version;
+    if ([self.account.wallet.chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
     
     for (NSInteger i = 0;i<[self length] - 1;i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
@@ -523,7 +527,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - authentication key
 
-+ (NSString *)authPrivateKeyFromSeed:(NSData *)seed
++ (NSString *)authPrivateKeyFromSeed:(NSData *)seed forChain:(DSChain*)chain
 {
     if (! seed) return nil;
     
@@ -531,16 +535,18 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version = DASH_PRIVKEY;
+    UInt256 secret = *(UInt256 *)&I, chainHash = *(UInt256 *)&I.u8[sizeof(UInt256)];
     
-#if DASH_TESTNET
-    version = DASH_PRIVKEY_TEST;
-#endif
+    uint8_t version;
+    if ([chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
     
     // path m/1H/0 (same as copay uses for bitauth)
-    CKDpriv(&secret, &chain, 1 | BIP32_HARD);
-    CKDpriv(&secret, &chain, 0);
+    CKDpriv(&secret, &chainHash, 1 | BIP32_HARD);
+    CKDpriv(&secret, &chainHash, 0);
     
     NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
     
@@ -551,7 +557,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 }
 
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-+ (NSString *)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed
++ (NSString *)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain
 {
     NSUInteger len = [uri lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *data = [NSMutableData dataWithCapacity:sizeof(n) + len];
@@ -564,18 +570,19 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version = DASH_PRIVKEY;
+    UInt256 secret = *(UInt256 *)&I, chainHash = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    uint8_t version;
+    if ([chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
     
-#if DASH_TESTNET
-    version = DASH_PRIVKEY_TEST;
-#endif
-    
-    CKDpriv(&secret, &chain, 13 | BIP32_HARD); // m/13H
-    CKDpriv(&secret, &chain, CFSwapInt32LittleToHost(hash.u32[0]) | BIP32_HARD); // m/13H/aH
-    CKDpriv(&secret, &chain, CFSwapInt32LittleToHost(hash.u32[1]) | BIP32_HARD); // m/13H/aH/bH
-    CKDpriv(&secret, &chain, CFSwapInt32LittleToHost(hash.u32[2]) | BIP32_HARD); // m/13H/aH/bH/cH
-    CKDpriv(&secret, &chain, CFSwapInt32LittleToHost(hash.u32[3]) | BIP32_HARD); // m/13H/aH/bH/cH/dH
+    CKDpriv(&secret, &chainHash, 13 | BIP32_HARD); // m/13H
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[0]) | BIP32_HARD); // m/13H/aH
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[1]) | BIP32_HARD); // m/13H/aH/bH
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[2]) | BIP32_HARD); // m/13H/aH/bH/cH
+    CKDpriv(&secret, &chainHash, CFSwapInt32LittleToHost(hash.u32[3]) | BIP32_HARD); // m/13H/aH/bH/cH/dH
     
     NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
     
@@ -597,7 +604,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     
-    return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)]);
+    return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.account.wallet.chain isMainnet]);
 }
 
 - (NSString *)serializedMasterPublicKey:(NSData *)masterPublicKey depth:(NSUInteger)depth
@@ -608,7 +615,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     UInt256 chain = *(UInt256 *)((const uint8_t *)masterPublicKey.bytes + 4);
     DSECPoint pubKey = *(DSECPoint *)((const uint8_t *)masterPublicKey.bytes + 36);
     
-    return serialize(depth, fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)]);
+    return serialize(depth, fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)],[self.account.wallet.chain isMainnet]);
 }
 
 - (NSData *)deserializedMasterPublicKey:(NSString *)masterPublicKeyString
@@ -619,7 +626,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     UInt256 chain;
     NSData * pubkey = nil;
     NSMutableData * masterPublicKey = [NSMutableData secureData];
-    BOOL valid = deserialize(masterPublicKeyString, &depth, &fingerprint, &child, &chain, &pubkey);
+    BOOL valid = deserialize(masterPublicKeyString, &depth, &fingerprint, &child, &chain, &pubkey,[self.account.wallet.chain isMainnet]);
     if (!valid) return nil;
     [masterPublicKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
     [masterPublicKey appendBytes:&chain length:32];

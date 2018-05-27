@@ -59,7 +59,7 @@
 
 -(void)startSyncForChain:(DSChain*)chain
 {
-    if (!chain.wallet) return;
+    if (![chain hasAWallet]) return;
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] connect];
 }
 
@@ -72,7 +72,7 @@
 
 -(void)stopSyncForChain:(DSChain*)chain
 {
-    if (!chain.wallet) return;
+    if (![chain hasAWallet]) return;
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
 }
 

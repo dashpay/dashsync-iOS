@@ -31,6 +31,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSChain.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
@@ -107,9 +108,9 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 @implementation DSKey
 
-+ (instancetype)keyWithPrivateKey:(NSString *)privateKey
++ (instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithPrivateKey:privateKey];
+    return [[self alloc] initWithPrivateKey:privateKey onChain:chain];
 }
 
 + (instancetype)keyWithSecret:(UInt256)secret compressed:(BOOL)compressed
@@ -142,14 +143,14 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return (secp256k1_ec_seckey_verify(_ctx, _seckey.u8)) ? self : nil;
 }
 
-- (instancetype)initWithPrivateKey:(NSString *)privateKey
+- (instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain
 {
     if (privateKey.length == 0) return nil;
     if (! (self = [self init])) return nil;
     
     // mini private key format
     if ((privateKey.length == 30 || privateKey.length == 22) && [privateKey characterAtIndex:0] == 'L') {
-        if (! [privateKey isValidDashPrivateKey]) return nil;
+        if (! [privateKey isValidDashPrivateKeyOnChain:chain]) return nil;
         
         _seckey = [CFBridgingRelease(CFStringCreateExternalRepresentation(SecureAllocator(), (CFStringRef)privateKey,
                                                                           kCFStringEncodingUTF8, 0)) SHA256];
@@ -158,11 +159,12 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     }
     
     NSData *d = privateKey.base58checkToData;
-    uint8_t version = DASH_PRIVKEY;
-    
-#if DASH_TESTNET
-    version = DASH_PRIVKEY_TEST;
-#endif
+    uint8_t version;
+    if ([chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
     
     if (! d || d.length == 28) d = privateKey.base58ToData;
     if (d.length < sizeof(UInt256) || d.length > sizeof(UInt256) + 2) d = privateKey.hexToData;
@@ -213,16 +215,17 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return nil;
 }
 
-- (NSString *)privateKey
+- (NSString *)privateKeyForChain:(DSChain*)chain
 {
     if (uint256_is_zero(_seckey)) return nil;
 
     NSMutableData *d = [NSMutableData secureDataWithCapacity:sizeof(UInt256) + 2];
-    uint8_t version = DASH_PRIVKEY;
-
-#if DASH_TESTNET
-    version = DASH_PRIVKEY_TEST;
-#endif
+    uint8_t version;
+    if ([chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
 
     [d appendBytes:&version length:1];
     [d appendBytes:&_seckey length:sizeof(_seckey)];
@@ -257,15 +260,17 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return &_seckey;
 }
 
-- (NSString *)address
+- (NSString *)addressForChain:(DSChain*)chain
 {
     NSMutableData *d = [NSMutableData secureDataWithCapacity:160/8 + 1];
-    uint8_t version = DASH_PUBKEY_ADDRESS;
+    uint8_t version;
     UInt160 hash160 = self.hash160;
 
-#if DASH_TESTNET
-    version = DASH_PUBKEY_ADDRESS_TEST;
-#endif
+    if ([chain isMainnet]) {
+        version = DASH_PUBKEY_ADDRESS;
+    } else {
+        version = DASH_PUBKEY_ADDRESS_TEST;
+    }
     
     [d appendBytes:&version length:1];
     [d appendBytes:&hash160 length:sizeof(hash160)];

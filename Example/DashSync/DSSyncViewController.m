@@ -24,6 +24,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *walletCountLabel;
 @property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver;
 
 - (IBAction)startSync:(id)sender;
@@ -39,6 +40,8 @@
     [super viewDidLoad];
 	
     [self updateBalance];
+    
+    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSWalletManager sharedInstance] allWallets] count]];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil

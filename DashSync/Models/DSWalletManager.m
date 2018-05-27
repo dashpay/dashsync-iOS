@@ -45,21 +45,17 @@
 #import "Reachability.h"
 #import "DSChainPeerManager.h"
 #import "DSDerivationPath.h"
-#import <LocalAuthentication/LocalAuthentication.h>
+#import "DSAuthenticationManager.h"
 
-#define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
-#define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
 
+#define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
 #define UNSPENT_URL          @"http://insight.dash.org/insight-api-dash/addrs/utxo"
 #define UNSPENT_FAILOVER_URL @"https://insight.dash.siampm.com/api/addrs/utxo"
-#define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
 #define TICKER_REFRESH_TIME 60.0
 
-#define SEED_ENTROPY_LENGTH   (128/8)
-#define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
 #define DEFAULT_CURRENCY_CODE @"USD"
 #define DEFAULT_SPENT_LIMIT   DUFFS
 
@@ -72,20 +68,7 @@
 #define DASHCENTRAL_DASH_BTC_PRICE_KEY @"DASHCENTRAL_DASH_BTC_PRICE"
 #define DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY @"DASHCENTRAL_DASH_BTC_UPDATE_TIME"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
-#define SECURE_TIME_KEY         @"SECURE_TIME"
-#define FEE_PER_KB_KEY          @"FEE_PER_KB"
 
-#define MNEMONIC_KEY        @"mnemonic"
-#define CREATION_TIME_KEY   @"creationtime"
-#define EXTENDED_0_PUBKEY_KEY_BIP44_V0   @"masterpubkeyBIP44" //these are old and need to be retired
-#define EXTENDED_0_PUBKEY_KEY_BIP32_V0   @"masterpubkeyBIP32" //these are old and need to be retired
-#define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
-#define EXTENDED_0_PUBKEY_KEY_BIP32_V1   @"extended0pubkeyBIP32"
-#define SPEND_LIMIT_KEY     @"spendlimit"
-#define PIN_KEY             @"pin"
-#define PIN_FAIL_COUNT_KEY  @"pinfailcount"
-#define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
-#define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define USER_ACCOUNT_KEY    @"https://api.dashwallet.com"
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
@@ -224,8 +207,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     }
 }
 
-typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletManager * context);
-
 @interface DSWalletManager()
 
 @property (nonatomic, strong) Reachability *reachability;
@@ -233,12 +214,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 @property (nonatomic, assign) BOOL sweepFee;
 @property (nonatomic, strong) NSString *sweepKey;
 @property (nonatomic, strong) void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error);
-@property (nonatomic, strong) UIAlertController *pinAlertController;
-@property (nonatomic, strong) UIAlertController *resetAlertController;
-@property (nonatomic, strong) UITextField *pinField;
-@property (nonatomic, strong) NSMutableSet *failedPins;
-@property (nonatomic, strong) id protectedObserver, keyboardObserver;
-@property (nonatomic, copy) PinVerificationBlock pinVerificationBlock;
+@property (nonatomic, strong) id protectedObserver;
 
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
@@ -265,10 +241,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (! (self = [super init])) return nil;
     
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    self.mnemonic = [DSBIP39Mnemonic new];
     self.reachability = [Reachability reachabilityForInternetConnection];
-    self.failedPins = [NSMutableSet set];
-    self.usesAuthentication = YES;
     _dashFormat = [NSNumberFormatter new];
     self.dashFormat.lenient = YES;
     self.dashFormat.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -332,18 +305,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self protectedInit];
                                                        }];
-    self.keyboardObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillChangeFrameNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if ([self pinAlertControllerIsVisible]) {
-            CGFloat alertHeight = self.pinAlertController.view.frame.size.height;
-            CGFloat keyboardHeight = [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue].size.height;
-            CGFloat difference = ([UIScreen mainScreen].bounds.size.height + alertHeight)/2.0 - ([UIScreen mainScreen].bounds.size.height - keyboardHeight) + 20;
-            if (difference > 0) {
-                [UIView animateWithDuration:0.2 animations:^{
-                    self.pinAlertController.view.superview.center = CGPointMake([UIScreen mainScreen].bounds.size.width/2.0, [UIScreen mainScreen].bounds.size.height/2.0 - difference);
-                }];
-            }
-        }
-    }];
     if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedInit];
     return self;
 }
@@ -365,7 +326,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 - (void)dealloc
 {
     if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
-    if (self.keyboardObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.keyboardObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
@@ -377,108 +337,77 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     });
 }
 
--(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath*)derivationPath {
-    NSAssert(derivationPath.account.wallet.chain, @"The wallet has no chain");
-    return getKeychainData([NSString stringWithFormat:@"extendedPubKey%@_%@",derivationPath.account.wallet.chain.uniqueID,derivationPath.extendedPublicKeyString], nil);
-}
+//- (DSWallet *)createWalletForChain:(DSChain*)chain
+//{
+//
+//    __block DSWallet * wallet;
+//
+//    @synchronized(self) {
+//
+//        wallet = [DSWallet standardWalletForChain:chain];
+//
+//
+//        //TODO: reimplement this safeguard
+//        //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
+//        //        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        //            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
+//        //
+//        //            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
+//        //                NSLog(@"wallet doesn't contain address: %@", k.address);
+//        //#if 0
+//        //                abort(); // don't wipe core data for debug builds
+//        //#else
+//        //                [[NSManagedObject context] performBlockAndWait:^{
+//        //                    [DSAddressEntity deleteAllObjects];
+//        //                    [DSTransactionEntity deleteAllObjects];
+//        //                    [NSManagedObject saveContext];
+//        //                }];
+//        //
+//        //                [chain removeWallet];
+//        //
+//        //                dispatch_async(dispatch_get_main_queue(), ^{
+//        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
+//        //                                                                        object:nil];
+//        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
+//        //                                                                        object:nil];
+//        //                });
+//        //#endif
+//        //            }
+//        //        });
+//
+//        return wallet;
+//    }
+//}
 
--(void)setExtendedPublicKeyData:(NSData*)data forDerivationPath:(DSDerivationPath*)derivationPath {
-    NSAssert(derivationPath.account.wallet.chain, @"The wallet has no chain");
-    setKeychainData(data,[NSString stringWithFormat:@"extendedPubKey%@_%@",derivationPath.account.wallet.chain.uniqueID,derivationPath.extendedPublicKeyString],NO);
-}
-
-- (DSWallet *)createWalletForChain:(DSChain*)chain
-{
-    if (chain.hasWalletSet) return chain.wallet;
-    
-    uint64_t feePerKb = 0;
-    //    NSData *mpk = self.extendedBIP44PublicKey;
-    //
-    //    if (! mpk) return nil;
-    
-    __block DSWallet * wallet;
-    
-    @synchronized(self) {
-        if (chain.hasWalletSet) return chain.wallet;
-        
-        wallet = [DSWallet standardWalletForChain:chain];
-        wallet.seedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
-            //this happens when we request the seed
-            [self seedWithPrompt:authprompt forWallet:wallet forAmount:amount completion:seedCompletion];
-        };
-        
-        
-        wallet.feePerKb = DEFAULT_FEE_PER_KB;
-        feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
-        if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) chain.wallet.feePerKb = feePerKb;
-        
-        [wallet generateExtendedPublicKeys];
-        
-        //TODO: reimplement this safeguard
-        //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
-        //        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        //            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
-        //
-        //            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
-        //                NSLog(@"wallet doesn't contain address: %@", k.address);
-        //#if 0
-        //                abort(); // don't wipe core data for debug builds
-        //#else
-        //                [[NSManagedObject context] performBlockAndWait:^{
-        //                    [DSAddressEntity deleteAllObjects];
-        //                    [DSTransactionEntity deleteAllObjects];
-        //                    [NSManagedObject saveContext];
-        //                }];
-        //
-        //                [chain removeWallet];
-        //
-        //                dispatch_async(dispatch_get_main_queue(), ^{
-        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
-        //                                                                        object:nil];
-        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
-        //                                                                        object:nil];
-        //                });
-        //#endif
-        //            }
-        //        });
-        
-        return wallet;
+- (void)clearKeychainWalletData {
+    BOOL failed = NO;
+    for (DSWallet * wallet in [self allWallets]) {
+        for (DSAccount * account in wallet.accounts) {
+            for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                failed = failed | !setKeychainData(nil, [derivationPath extendedPublicKeyString], NO);
+            }
+        }
     }
-}
-
-// true if keychain is available and we know that no wallet exists on it
-- (BOOL)noWalletOnChain:(DSChain*)chain
-{
-    NSError *error = nil;
-    if (chain.wallet) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error) || error) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V1, &error) || error) return NO;
-    return YES;
-}
-
-- (BOOL)noOldWallet:(DSChain*)chain
-{
-    NSError *error = nil;
-    if (chain.wallet) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, &error) || error) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V0, &error) || error) return NO;
-    return YES;
+    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //new keys
+    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //new keys
+    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
+    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
 }
 
 -(NSArray<DSWallet*>*)allWallets {
     NSMutableArray * wallets = [NSMutableArray array];
     for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
-        if ([chain hasWalletSet]) {
-            [wallets addObject:chain.wallet];
+        if ([chain hasAWallet]) {
+            [wallets addObjectsFromArray:chain.wallets];
         }
     }
     return [wallets copy];
 }
 
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
--(void)upgradeExtendedKeysWithCompletion:(UpgradeCompletionBlock)completion forChain:(DSChain*)chain;
+-(void)upgradeExtendedKeysForWallet:(DSWallet*)wallet withCompletion:(UpgradeCompletionBlock)completion
 {
-    DSAccount * account = [chain.wallet accountWithNumber:0];
+    DSAccount * account = [wallet accountWithNumber:0];
     NSString * keyString = [[account bip44DerivationPath] extendedPublicKeyString];
     NSError * error = nil;
     BOOL hasV2BIP44Data = hasKeychainData(keyString, &error);
@@ -496,7 +425,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
         NSLog(@"fixing public key");
         //upgrade scenario
-        [self authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
                 completion(NO,YES,NO,cancelled);
                 return;
@@ -507,10 +436,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                     completion(NO,YES,YES,NO);
                     return;
                 }
-                NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
+                NSData * derivedKeyData = (seedPhrase) ?[[DSBIP39Mnemonic sharedInstance]
                                                          deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
                 BOOL failed = NO;
-                for (DSAccount * account in chain.wallet.accounts) {
+                for (DSAccount * account in wallet.accounts) {
                     for (DSDerivationPath * derivationPath in account.derivationPaths) {
                         NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData];
                         failed = failed | !setKeychainData(data, [derivationPath extendedPublicKeyString], NO);
@@ -551,130 +480,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     return NO;
 }
 
-- (void)seedPhraseAfterAuthentication:(void (^)(NSString * _Nullable))completion
-{
-    [self seedPhraseWithPrompt:nil completion:completion];
-}
-
--(BOOL)hasSeedPhrase {
-    NSError * error = nil;
-    BOOL hasSeed = hasKeychainData(MNEMONIC_KEY, &error);
-    return hasSeed;
-}
-
-- (void)setSeedPhrase:(NSString *)seedPhrase
-{
-    @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
-        if (seedPhrase) {
-            // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
-            NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
-            setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], CREATION_TIME_KEY, NO);
-            seedPhrase = [self.mnemonic normalizePhrase:seedPhrase];
-        }
-        
-        [[NSManagedObject context] performBlockAndWait:^{
-            [DSAddressEntity deleteAllObjects];
-            [DSTransactionEntity deleteAllObjects];
-            [NSManagedObject saveContext];
-        }];
-        
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:PIN_UNLOCK_TIME_KEY];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-        
-        setKeychainData(nil, CREATION_TIME_KEY, NO);
-        for (DSWallet * wallet in [self allWallets]) {
-            for (DSAccount * account in wallet.accounts) {
-                for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                    setKeychainData(nil, [derivationPath extendedPublicKeyString], NO);
-                }
-            }
-        }
-        
-        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //for sanity
-        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //for sanity
-        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //for sanity
-        setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //for sanity
-        setKeychainData(nil, SPEND_LIMIT_KEY, NO);
-        setKeychainData(nil, PIN_KEY, NO);
-        setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
-        setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
-        setKeychainData(nil, AUTH_PRIVKEY_KEY, NO);
-        
-        self.pinAlertController = nil;
-        
-        if (! setKeychainString(seedPhrase, MNEMONIC_KEY, YES)) {
-            NSLog(@"error setting wallet seed");
-            
-            if (seedPhrase) {
-                UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:@"couldn't create wallet"
-                                             message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-                                             preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:@"abort"
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                               exit(0);
-                                           }];
-                [alert addAction:okButton];
-                [self presentAlertController:alert animated:YES completion:nil];
-            }
-            
-            return;
-        }
-        
-        NSData * derivedKeyData = (seedPhrase) ?[self.mnemonic
-                                                 deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
-        
-        if (seedPhrase) {
-            for (DSWallet * wallet in [self allWallets]) {
-                for (DSAccount * account in wallet.accounts) {
-                    for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                        if ([seedPhrase isEqual:@"wipe"]) {
-                            setKeychainData([NSData data], [derivationPath extendedPublicKeyString], NO);
-                        } else {
-                            NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData];
-                            setKeychainData(data, [derivationPath extendedPublicKeyString], NO);
-                        }
-                    }
-                }
-            }
-        }
-        [[DSChainManager sharedInstance] removeAllWalletsFromChains];
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification object:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
-    });
-}
-
-// interval since refrence date, 00:00:00 01/01/01 GMT
-- (NSTimeInterval)seedCreationTime
-{
-    NSData *d = getKeychainData(CREATION_TIME_KEY, nil);
-    
-    if (d.length == sizeof(NSTimeInterval)) return *(const NSTimeInterval *)d.bytes;
-    return (self.watchOnly) ? 0 : BIP39_CREATION_TIME;
-}
-
-// private key for signing authenticated api calls
-- (NSString *)authPrivateKey
-{
-    @autoreleasepool {
-        NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
-        
-        if (! privKey) {
-            NSData *seed = [self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
-            
-            privKey = [DSDerivationPath authPrivateKeyFromSeed:seed];
-            setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
-        }
-        
-        return privKey;
-    }
-}
-
 - (NSDictionary *)userAccount
 {
     return getKeychainDict(USER_ACCOUNT_KEY, nil);
@@ -685,500 +490,29 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     setKeychainDict(userAccount, USER_ACCOUNT_KEY, NO);
 }
 
-// true if touch id is enabled
-- (BOOL)isTouchIdEnabled
-{
-    return ([LAContext class] &&
-            [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
-}
-
-// true if device passcode is enabled
-- (BOOL)isPasscodeEnabled
+- (BOOL)hasAOldWallet
 {
     NSError *error = nil;
-    
-    if (! [LAContext class]) return YES; // we can only check for passcode on iOS 8 and above
-    if ([[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) return YES;
-    return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V1, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, &error) || error) return NO;
+    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V0, &error) || error) return NO;
+    return YES;
 }
 
+// MARK: - Spending Limit
 
+//makes sense to be here, since we have the limits per chain
+-(void)resetSpendingLimit {
 
-// generates a random seed, saves to keychain and returns the associated seedPhrase
-- (NSString *)generateRandomSeed
-{
-    NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
-    
-    if (SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes) != 0) return nil;
-    
-    NSString *phrase = [self.mnemonic encodePhrase:entropy];
-    
-    return phrase;
+    uint64_t limit = self.spendingLimit;
+    uint64_t totalSent = 0;
+    for (DSWallet * wallet in self.allWallets) {
+        totalSent += wallet.totalSent;
+    }
+    if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
+
 }
-
-- (void)setSeedPhraseToRandomSeed
-{
-    @autoreleasepool {
-        self.seedPhrase = [self generateRandomSeed];
-    }
-}
-
-
--(DSWallet*)mainnetWallet {
-    return [[[[DSChainManager sharedInstance] mainnetManager] chain] wallet];
-}
-
-// authenticates user and returns seed
-- (void)seedWithPrompt:(NSString *)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount completion:(void (^)(NSData * seed))completion
-{
-    @autoreleasepool {
-        BOOL touchid = (wallet.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
-        
-        [self authenticateWithPrompt:authprompt andTouchId:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-            if (!authenticated) {
-                completion(nil);
-            } else {
-                // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
-                // still counts towards the next touch id spending limit
-                if (! touchid) setKeychainInt(wallet.totalSent + amount + self.spendingLimit, SPEND_LIMIT_KEY, NO);
-                completion([self.mnemonic deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil]);
-            }
-        }];
-        
-    }
-}
-
--(NSString*)seedPhraseAfterAuthentication {
-    
-    if (!self.usesAuthentication || self.didAuthenticate) {
-        return getKeychainString(MNEMONIC_KEY, nil);
-    } else {
-        return nil;
-    }
-}
-
-// authenticates user and returns seedPhrase
-- (void)seedPhraseWithPrompt:(NSString *)authprompt completion:(void (^)(NSString * seedPhrase))completion
-{
-    @autoreleasepool {
-        [self authenticateWithPrompt:authprompt andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-            NSString * rSeedPhrase = authenticated?getKeychainString(MNEMONIC_KEY, nil):nil;
-            completion(rSeedPhrase);
-        }];
-    }
-}
-
-// MARK: - authentication
-
-// prompts user to authenticate with touch id or passcode
-- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
-{
-    if (!self.usesAuthentication) { //if we don't have authentication
-        completion(YES,NO);
-        return;
-    }
-    if (touchId) {
-        NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
-        LAContext *context = [[LAContext alloc] init];
-        NSError *error = nil;
-        if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSinceReferenceDate] &&
-            getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
-            
-            void(^localAuthBlock)(void) = ^{
-                [self performLocalAuthenticationSynchronously:context
-                                                       prompt:authprompt
-                                                   completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
-                                                       if (shouldTryAnotherMethod) {
-                                                           [self authenticateWithPrompt:authprompt
-                                                                             andTouchId:NO
-                                                                         alertIfLockout:alertIfLockout
-                                                                             completion:completion];
-                                                       }
-                                                       else {
-                                                           completion(authenticated, NO);
-                                                       }
-                                                   }];
-            };
-            
-            BOOL shouldPreprompt = NO;
-            if (@available(iOS 11.0, *)) {
-                if (context.biometryType == LABiometryTypeFaceID) {
-                    shouldPreprompt = YES;
-                }
-            }
-            if (authprompt && shouldPreprompt) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"confirm", nil)
-                                                                               message:authprompt
-                                                                        preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                                                       style:UIAlertActionStyleCancel
-                                                                     handler:^(UIAlertAction * action) {
-                                                                         completion(NO, YES);
-                                                                     }];
-                [alert addAction:cancelAction];
-                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"ok", nil)
-                                                                   style:UIAlertActionStyleDefault
-                                                                 handler:^(UIAlertAction * action) {
-                                                                     localAuthBlock();
-                                                                 }];
-                [alert addAction:okAction];
-                [self presentAlertController:alert animated:YES completion:nil];
-            }
-            else {
-                localAuthBlock();
-            }
-        }
-        else {
-            NSLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
-            
-            [self authenticateWithPrompt:authprompt
-                              andTouchId:NO
-                          alertIfLockout:alertIfLockout
-                              completion:completion];
-        }
-    }
-    else {
-        // TODO explain reason when touch id is disabled after 30 days without pin unlock
-        [self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
-                                        DISPLAY_NAME] message:authprompt alertIfLockout:alertIfLockout completion:^(BOOL authenticated, BOOL cancelled) {
-            if (authenticated) {
-                [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    completion(YES,NO);
-                }];
-            } else {
-                completion(NO,cancelled);
-            }
-        }];
-    }
-}
-
-- (void)performLocalAuthenticationSynchronously:(LAContext *)context
-                                         prompt:(NSString *)prompt
-                                     completion:(void(^)(BOOL authenticated, BOOL shouldTryAnotherMethod))completion {
-    [DSEventManager saveEvent:@"wallet_manager:touchid_auth"];
-    
-    __block NSInteger result = 0;
-    context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
-    [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-            localizedReason:(prompt.length > 0 ? prompt : @" ")
-                      reply:^(BOOL success, NSError *error) {
-                          result = success ? 1 : error.code;
-                      }];
-    
-    while (result == 0) {
-        [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
-                              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-    }
-    
-    if (result == LAErrorAuthenticationFailed) {
-        setKeychainInt(0, SPEND_LIMIT_KEY, NO); // require pin entry for next spend
-    }
-    else if (result == 1) {
-        self.didAuthenticate = YES;
-        completion(YES, NO);
-        return;
-    }
-    else if (result == LAErrorUserCancel || result == LAErrorSystemCancel) {
-        completion(NO, NO);
-        return;
-    }
-    
-    completion(NO, YES);
-}
-
-- (BOOL)isTestnet {
-#if DASH_TESTNET
-    return true;
-#else
-    return false;
-#endif
-}
-
-- (UITextField *)pinField
-{
-    if (_pinField) return _pinField;
-    _pinField = [UITextField new];
-    _pinField.alpha = 0.0;
-    _pinField.font = [UIFont systemFontOfSize:0.1];
-    _pinField.keyboardType = UIKeyboardTypeNumberPad;
-    _pinField.secureTextEntry = YES;
-    _pinField.delegate = self;
-    return _pinField;
-}
-
--(BOOL)pinAlertControllerIsVisible {
-    if ([[[self presentingViewController] presentedViewController] isKindOfClass:[UIAlertController class]]) {
-        // UIAlertController is presenting.Here
-        return TRUE;
-    }
-    return FALSE;
-}
-
--(UIViewController*)presentingViewController {
-    UIViewController *topController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-    while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
-        topController = topController.presentedViewController;
-    }
-    if ([topController isKindOfClass:[UINavigationController class]]) {
-        topController = ((UINavigationController*)topController).topViewController;
-    }
-    return topController;
-}
-
--(void)presentAlertController:(UIAlertController*)alertController animated:(BOOL)animated completion:(void (^ __nullable)(void))completion {
-    [[self presentingViewController] presentViewController:alertController animated:animated completion:completion];
-}
-
--(void)shakeEffectWithCompletion:(void (^ _Nullable)(void))completion {
-    // walking the view hierarchy is prone to breaking, but it's still functional even if the animation doesn't work
-    UIView *v = [self pinTitleView].superview;
-    CGPoint p = v.center;
-    
-    [UIView animateWithDuration:0.05 delay:0.1 options:UIViewAnimationOptionCurveEaseInOut animations:^{ // shake
-        v.center = CGPointMake(p.x + 30.0, p.y);
-    } completion:^(BOOL finished) {
-        [UIView animateWithDuration:0.5 delay:0.0 usingSpringWithDamping:0.2 initialSpringVelocity:0.0 options:0
-                         animations:^{ v.center = p; } completion:^(BOOL finished) {
-                             completion();
-                         }];
-    }];
-    
-}
-
--(NSTimeInterval)lockoutWaitTime {
-    NSError * error = nil;
-    uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
-    if (error) {
-        return NSIntegerMax;
-    }
-    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
-    if (error) {
-        return NSIntegerMax;
-    }
-    NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0 -
-    (self.secureTime + NSTimeIntervalSince1970);
-    return wait;
-}
-
--(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
-                                                                       preferredStyle:UIAlertControllerStyleAlert];
-    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-        textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        textField.returnKeyType = UIReturnKeyDone;
-        textField.font = [UIFont systemFontOfSize:15.0];
-        textField.delegate = self;
-    }];
-    UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                       if (resetCancelHandlerBlock) {
-                                           resetCancelHandlerBlock();
-                                       }
-                                   }];
-    [alertController addAction:cancelButton];
-    [self presentAlertController:alertController animated:YES completion:nil];
-    self.resetAlertController = alertController;
-}
-
--(void)userLockedOut {
-    NSError * error = nil;
-    uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
-    if (error) {
-        return;
-    }
-    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
-    if (error) {
-        return;
-    }
-    NSTimeInterval wait = [self lockoutWaitTime];
-    NSString *unit = NSLocalizedString(@"minutes", nil);
-    
-    if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-    if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
-    
-    if (wait >= 60.0) {
-        wait /= 60.0;
-        unit = (wait < 2.0) ? NSLocalizedString(@"hour", nil) : NSLocalizedString(@"hours", nil);
-    }
-    UIAlertController * alertController = [UIAlertController
-                                           alertControllerWithTitle:NSLocalizedString(@"wallet disabled", nil)
-                                           message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
-                                                    (int)wait, unit]
-                                           preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction* resetButton = [UIAlertAction
-                                  actionWithTitle:NSLocalizedString(@"reset", nil)
-                                  style:UIAlertActionStyleDefault
-                                  handler:^(UIAlertAction * action) {
-                                      [self showResetWalletWithCancelHandler:nil];
-                                  }];
-    UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"ok", nil)
-                               style:UIAlertActionStyleCancel
-                               handler:^(UIAlertAction * action) {
-                                   
-                               }];
-    [alertController addAction:resetButton];
-    [alertController addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-    
-    if ([self pinAlertControllerIsVisible]) {
-        [_pinField resignFirstResponder];
-        [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-            [self presentAlertController:alertController animated:YES completion:nil];
-        }];
-    } else {
-        [self presentAlertController:alertController animated:YES completion:nil];
-    }
-}
-
-- (void)authenticatePinWithTitle:(NSString *)title message:(NSString *)message alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion
-{
-    
-    //authentication logic is as follows
-    //you have 3 failed attempts initially
-    //after that you get locked out once immediately with a message saying
-    //then you have 4 attempts with exponentially increasing intervals to get your password right
-    
-    [DSEventManager saveEvent:@"wallet_manager:pin_auth"];
-    
-    NSError *error = nil;
-    NSString *pin = getKeychainString(PIN_KEY, &error);
-    
-    if (error) {
-        completion(NO,NO); // error reading pin from keychain
-        return;
-    }
-    if (pin.length != 4) {
-        [self setPinWithCompletion:^(BOOL success) {
-            completion(success,NO);
-        }];
-        return;
-    }
-    
-    uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
-    
-    if (error) {
-        completion(NO,NO);
-        return; // error reading failCount from keychain
-    }
-    
-    //// Logic explanation
-    
-    //  If we have failed 3 or more times
-    if (failCount >= 3) {
-        
-        // When was the last time we failed?
-        uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
-        
-        if (error) {
-            completion(NO,NO);
-            return; // error reading failHeight from keychain
-        }
-        NSLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime - NSTimeIntervalSince1970);
-        if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
-            if (alertIfLockout) {
-                [self userLockedOut];
-            }
-            completion(NO,NO);
-            return;
-        } else {
-            //no longer locked out, give the user a try
-            message = [(failCount >= 7 ? NSLocalizedString(@"\n1 attempt remaining\n", nil) :
-                        [NSString stringWithFormat:NSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
-                       stringByAppendingString:(message) ? message : @""];
-        }
-    }
-    
-    UIAlertController * alert = [UIAlertController
-                                 alertControllerWithTitle:[NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                                           (title) ? title : @""]
-                                 message:message
-                                 preferredStyle:UIAlertControllerStyleAlert];
-    self.pinAlertController = alert;
-    self.pinField = nil; // reset pinField so a new one is created
-    [self.pinAlertController.view addSubview:self.pinField];
-    UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                       completion(NO,YES);
-                                   }];
-    [self.pinAlertController addAction:cancelButton];
-    
-    self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSWalletManager * context) {
-        NSError * error = nil;
-        uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
-        
-        if (error) {
-            completion(NO,NO); // error reading failCount from keychain
-            [alert dismissViewControllerAnimated:TRUE completion:nil];
-            return FALSE;
-        }
-        
-        NSString *pin = getKeychainString(PIN_KEY, &error);
-        
-        if (error) {
-            completion(NO,NO); // error reading pin from keychain
-            [alert dismissViewControllerAnimated:TRUE completion:nil];
-            return FALSE;
-        }
-        // count unique attempts before checking success
-        if (! [context.failedPins containsObject:currentPin]) setKeychainInt(++failCount, PIN_FAIL_COUNT_KEY, NO);
-        
-        if ([currentPin isEqual:pin]) { // successful pin attempt
-            [context.failedPins removeAllObjects];
-            context.didAuthenticate = YES;
-            uint64_t limit = context.spendingLimit;
-            setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
-            setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
-            if (limit > 0) setKeychainInt(self.mainnetWallet.totalSent + limit, SPEND_LIMIT_KEY, NO);
-            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
-                                                      forKey:PIN_UNLOCK_TIME_KEY];
-            if (completion) completion(YES,NO);
-            return TRUE;
-        }
-        
-        if (! [context.failedPins containsObject:currentPin]) {
-            [context.failedPins addObject:currentPin];
-            
-            if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
-                context.seedPhrase = nil;
-                
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                    exit(0);
-                });
-                if (completion) completion(NO,NO);
-                return FALSE;
-            }
-            
-            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
-                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
-            }
-            
-            if (failCount >= 3) {
-                [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    if (alertIfLockout) {
-                        [context userLockedOut]; // wallet disabled
-                    }
-                    completion(NO,NO);
-                }];
-                return FALSE;
-            }
-        }
-        [context shakeEffectWithCompletion:^{
-            context.pinField.text = @"";
-        }];
-        return FALSE;
-    };
-    
-    [self presentAlertController:self.pinAlertController animated:YES completion:^{
-        if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
-    }];
-}
-
-
 
 // amount that can be spent using touch id without pin entry
 - (uint64_t)spendingLimit
@@ -1191,16 +525,14 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 
 - (void)setSpendingLimit:(uint64_t)spendingLimit
 {
-    if (setKeychainInt((spendingLimit > 0) ? self.mainnetWallet.totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
+    uint64_t totalSent = 0;
+    for (DSWallet * wallet in self.allWallets) {
+        totalSent += wallet.totalSent;
+    }
+    if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
         // use setDouble since setInteger won't hold a uint64_t
         [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
     }
-}
-
-// last known time from an ssl server connection
-- (NSTimeInterval)secureTime
-{
-    return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
 }
 
 // MARK: - exchange rate
@@ -1214,7 +546,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
     _localCurrencyCode = [code copy];
     
-    if (i < _currencyPrices.count && self.secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
+    if (i < _currencyPrices.count && [DSAuthenticationManager sharedInstance].secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
         self.localCurrencyBitcoinPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
     }
     else self.localCurrencyBitcoinPrice = @(0);
@@ -1234,169 +566,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
     });
-}
-
-// MARK: - new pin
-
-// prompts the user to set or change their wallet pin and returns true if the pin was successfully set
-- (void)setBrandNewPinWithCompletion:(void (^ _Nullable)(BOOL success))completion {
-    NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
-    if (!self.pinAlertController) {
-        self.pinAlertController = [UIAlertController
-                                   alertControllerWithTitle:title
-                                   message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-        if (_pinField) self.pinField = nil; // reset pinField so a new one is created
-        [self.pinAlertController.view addSubview:self.pinField];
-        [self presentAlertController:self.pinAlertController animated:YES completion:^{
-            [self->_pinField becomeFirstResponder];
-        }];
-    } else {
-        self.pinField.delegate = nil;
-        self.pinField.text = @"";
-        self.pinField.delegate = self;
-        self.pinAlertController.title = title;
-    }
-    self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSWalletManager * context) {
-        [context setVerifyPin:currentPin withCompletion:completion];
-        return TRUE;
-    };
-}
-
-- (void)setVerifyPin:(NSString*)previousPin withCompletion:(void (^ _Nullable)(BOOL success))completion {
-    self.pinField.text = nil;
-    
-    UIView *v = [self pinTitleView].superview;
-    CGPoint p = v.center;
-    
-    [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{ // verify pin
-        v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
-    } completion:^(BOOL finished) {
-        self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                         NSLocalizedString(@"verify passcode", nil)];
-        v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
-        [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
-        [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-                         animations:^{ v.center = p; } completion:nil];
-    }];
-    
-    self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSWalletManager * context) {
-        if ([currentPin isEqual:previousPin]) {
-            context.pinField.text = nil;
-            setKeychainString(previousPin, PIN_KEY, NO);
-            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
-                                                      forKey:PIN_UNLOCK_TIME_KEY];
-            [context.pinField resignFirstResponder];
-            [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
-                if (completion) completion(YES);
-            }];
-            return TRUE;
-        }
-        
-        [context shakeEffectWithCompletion:^{
-            [context setBrandNewPinWithCompletion:completion];
-        }];
-        return FALSE;
-    };
-}
-
--(UIView*)getSubviewForView:(UIView*)view withText:(NSString*)text {
-    for (UIView * subView in view.subviews) {
-        if ([subView isKindOfClass:[UILabel class]] && [((UILabel*)subView).text isEqualToString:text]) return subView;
-        UIView * foundView = [self getSubviewForView:subView withText:text];
-        if (foundView != nil) return foundView;
-    }
-    return nil;
-}
-
--(UIView*)pinTitleView {
-    return [self getSubviewForView:self.pinAlertController.view withText:self.pinAlertController.title];
-}
-
-// prompts the user to set or change their wallet pin and returns true if the pin was successfully set
-- (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion
-{
-    NSError *error = nil;
-    NSString *pin = getKeychainString(PIN_KEY, &error);
-    
-    if (error) {
-        if (completion) completion(NO);
-        return; // error reading existing pin from keychain
-    }
-    
-    [DSEventManager saveEvent:@"wallet_manager:set_pin"];
-    
-    if (pin.length == 4) { //already had a pin, replacing it
-        [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-            if (authenticated) {
-                self.didAuthenticate = FALSE;
-                UIView *v = [self pinTitleView].superview;
-                CGPoint p = v.center;
-                
-                [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                    v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
-                } completion:^(BOOL finished) {
-                    self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                                     [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
-                    self.pinAlertController.message = nil;
-                    v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
-                    [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-                                     animations:^{ v.center = p; } completion:nil];
-                }];
-                [self setBrandNewPinWithCompletion:completion];
-            } else {
-                if (completion) completion(NO);
-            }
-        }];
-    }
-    else { //didn't have a pin yet
-        [self setBrandNewPinWithCompletion:completion];
-    }
-}
-
-// MARK: - floating fees
-
-- (void)updateFeePerKb
-{
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
-    
-#if (!!FEE_PER_KB_URL)
-    
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
-                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
-    
-    //    NSLog(@"%@", req.URL.absoluteString);
-    
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                                         if (error != nil) {
-                                             NSLog(@"unable to fetch fee-per-kb: %@", error);
-                                             return;
-                                         }
-                                         
-                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                         
-                                         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
-                                             ! [json[@"fee_per_kb"] isKindOfClass:[NSNumber class]]) {
-                                             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                                             return;
-                                         }
-                                         
-                                         uint64_t newFee = [json[@"fee_per_kb"] unsignedLongLongValue];
-                                         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                         
-                                         if (newFee >= MIN_FEE_PER_KB && newFee <= MAX_FEE_PER_KB && newFee != [defs doubleForKey:FEE_PER_KB_KEY]) {
-                                             NSLog(@"setting new fee-per-kb %lld", newFee);
-                                             [defs setDouble:newFee forKey:FEE_PER_KB_KEY]; // use setDouble since setInteger won't hold a uint64_t
-                                             _wallet.feePerKb = newFee;
-                                         }
-                                     }] resume];
-    
-#else
-    return;
-#endif
 }
 
 -(NSNumber*)bitcoinDashPrice {
@@ -1466,7 +635,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                                     matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
                                                                    date].timeIntervalSinceReferenceDate;
                                              
-                                             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+                                             if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
                                          }
                                          NSError *error = nil;
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
@@ -1524,7 +693,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                                                     matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
                                                                    date].timeIntervalSinceReferenceDate;
                                              
-                                             if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+                                             if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
                                          }
                                          
                                          NSError *error = nil;
@@ -1575,7 +744,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                                    matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
                                   date].timeIntervalSinceReferenceDate;
             
-            if (now > self.secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+            if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }
         
         if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
@@ -1724,9 +893,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
              completion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))completion
 {
     if (! completion) return;
-    if (chain.chainType != DSChainType_MainNet) {
-        return;
-    }
     
     if ([privKey isValidDashBIP38Key]) {
         UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
@@ -1798,20 +964,18 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
         return;
     }
     
-    DSKey *key = [DSKey keyWithPrivateKey:privKey];
+    DSKey *key = [DSKey keyWithPrivateKey:privKey onChain:chain];
     
     if (! key.address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
                                                                                           NSLocalizedString(@"not a valid private key", nil)}]);
         return;
     }
-    for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
-        if ([chain.wallet containsAddress:key.address]) {
+        if ([account.wallet containsAddress:key.address]) {
             completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
                                                                                               NSLocalizedString(@"this private key is already in your wallet", nil)}]);
             return;
         }
-    }
     
     [self utxosForAddresses:@[key.address]
                  completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
@@ -1840,9 +1004,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
                      }
                      
                      // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                     if (fee) feeAmount = [chain.wallet feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+                     if (fee) feeAmount = [chain feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
                      
-                     if (feeAmount + self.mainnetWallet.minOutputAmount > balance) {
+                     if (feeAmount + chain.minOutputAmount > balance) {
                          completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                            NSLocalizedString(@"transaction fees would cost more than the funds available on this "
                                                                                                                              "private key (due to tiny \"dust\" deposits)",nil)}]);
@@ -1862,8 +1026,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
 }
 
 // MARK: - string helpers
-
-#pragma mark - string helpers
 
 - (int64_t)amountForUnknownCurrencyString:(NSString *)string
 {
@@ -2059,88 +1221,17 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSWalletMana
     return n;
 }
 
-// MARK: - UITextFieldDelegate
+// MARK: - Quick Shortcuts
 
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
-replacementString:(NSString *)string
-{
-    if (textField == self.pinField) {
-        NSString * currentPin = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        NSUInteger l = currentPin.length;
-        
-        self.pinAlertController.title = [NSString stringWithFormat:@"%@\t%@\t%@\t%@%@", (l > 0 ? DOT : CIRCLE),
-                                         (l > 1 ? DOT : CIRCLE), (l > 2 ? DOT : CIRCLE), (l > 3 ? DOT : CIRCLE),
-                                         [self.pinAlertController.title substringFromIndex:7]];
-        
-        if (currentPin.length == 4) {
-            
-            BOOL verified = self.pinVerificationBlock(currentPin,self);
-            self.pinField.delegate = nil;
-            self.pinField.text = @"";
-            self.pinField.delegate = self;
-            if (verified) {
-                return NO;
-            } else {
-                self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"%@",
-                                                 [self.pinAlertController.title substringFromIndex:7]];
-            }
-        }
+-(UIViewController*)presentingViewController {
+    UIViewController *topController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+    while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
+        topController = topController.presentedViewController;
     }
-    return YES;
-}
-
--(BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-    if (!textField.secureTextEntry) { //not the pin
-        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            NSString *phrase = [self.mnemonic cleanupPhrase:textField.text];
-            
-            if (! [phrase isEqual:textField.text]) textField.text = phrase;
-            NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
-            NSData * seed = [self.mnemonic deriveKeyFromPhrase:[self.mnemonic
-                                                                normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * wallet = [[self allWallets] firstObject];
-            DSAccount * account = [wallet.accounts firstObject];
-            DSDerivationPath * derivationPath = [account.derivationPaths firstObject];
-            NSData * extendedPublicKey = [self extendedPublicKeyForDerivationPath:derivationPath];
-            if (extendedPublicKey && ![[derivationPath generateExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
-                self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
-                [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            } else if (extendedPublicKey && ![[derivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
-                self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
-                [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            }
-            else {
-                if (oldData) {
-                    BOOL failed = NO;
-                    for (DSWallet * wallet in [self allWallets]) {
-                    for (DSAccount * account in wallet.accounts) {
-                        for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                            NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:seed];
-                            failed = failed | !setKeychainData(data, [derivationPath extendedPublicKeyString], NO);
-                        }
-                    }
-                    }
-                    
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //new keys
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //new keys
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
-                }
-                setKeychainData(nil, SPEND_LIMIT_KEY, NO);
-                setKeychainData(nil, PIN_KEY, NO);
-                setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
-                setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
-                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    self.pinAlertController = nil;
-                    [self setBrandNewPinWithCompletion:nil];
-                }];
-            }
-        }
+    if ([topController isKindOfClass:[UINavigationController class]]) {
+        topController = ((UINavigationController*)topController).topViewController;
     }
-    return TRUE;
+    return topController;
 }
 
 @end

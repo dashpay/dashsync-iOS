@@ -48,7 +48,7 @@
 @property (nonatomic, readonly) BOOL wantsInstant;
 @property (nonatomic, readonly) BOOL instantValueRequired;
 @property (nonatomic, readonly) BOOL amountValueImmutable;
-@property (nonatomic, readonly) DSPaymentProtocolRequest *protocolRequest; // receiver converted to BIP70 request object
+@property (nonatomic, readonly) DSPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, readonly) DSChain * chain;
 
 + (instancetype)requestWithString:(NSString *)string onChain:(DSChain*)chain;

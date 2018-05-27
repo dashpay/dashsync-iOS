@@ -27,17 +27,13 @@
 
 #import <Foundation/Foundation.h>
 
-#if DASH_TESTNET
-#define DASH_MAGIC_NUMBER 0xffcae2ce
-#else
-#define DASH_MAGIC_NUMBER 0xbd6b0cbf
-#endif
-
 CF_IMPLICIT_BRIDGING_ENABLED
 
 CFAllocatorRef SecureAllocator(void);
 
 CF_IMPLICIT_BRIDGING_DISABLED
+
+@class DSChain;
 
 @interface NSMutableData (Dash)
 
@@ -55,13 +51,13 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;
 
-- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address;
-- (void)appendScriptPubKeyForAddress:(NSString *)address;
+- (void)appendBitcoinScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
+- (void)appendScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain;
 - (void)appendScriptPushData:(NSData *)d;
 
 - (void)appendShapeshiftMemoForAddress:(NSString *)address;
 
-- (void)appendMessage:(NSData *)message type:(NSString *)type;
+- (void)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain;
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;
 - (void)appendNetAddress:(uint32_t)address port:(uint16_t)port services:(uint64_t)services;
 

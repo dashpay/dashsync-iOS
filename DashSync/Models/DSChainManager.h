@@ -18,8 +18,8 @@
 
 -(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
 
--(void)removeAllWalletsFromChains;
-
 + (instancetype _Nullable)sharedInstance;
+
+-(void)resetSpendingLimits;
 
 @end

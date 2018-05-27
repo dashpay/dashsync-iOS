@@ -36,9 +36,10 @@ typedef enum : NSInteger {
 
 @interface DSTransaction (Utils)
 
-- (DSTransactionType)transactionType;
-- (NSString*)amountText;
-- (NSString*)localCurrencyTextForAmount;
+- (DSTransactionType)transactionTypeInWallet:(DSWallet*)wallet;
+- (DSTransactionType)transactionTypeInAccount:(DSAccount*)account;
+- (NSString*)amountTextReceivedInAccount:(DSAccount*)account;
+- (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account;
 - (NSString*)dateText;
 - (NSDate*)transactionDate;
 

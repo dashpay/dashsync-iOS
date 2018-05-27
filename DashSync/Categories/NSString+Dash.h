@@ -46,16 +46,16 @@
 @interface NSString (Dash)
 
 
-+ (NSString *)addressWithScriptPubKey:(NSData *)script;
-+ (NSString *)addressWithScriptSig:(NSData *)script;
++ (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain*)chain;
++ (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain;
 
 - (NSAttributedString*)attributedStringForDashSymbol;
 - (NSAttributedString*)attributedStringForDashSymbolWithTintColor:(UIColor*)color;
 - (NSAttributedString*)attributedStringForDashSymbolWithTintColor:(UIColor*)color dashSymbolSize:(CGSize)dashSymbolSize;
 + (NSAttributedString*)dashSymbolAttributedStringWithTintColor:(UIColor*)color forDashSymbolSize:(CGSize)dashSymbolSize;
 
-- (BOOL)isValidDashAddress;
-- (BOOL)isValidDashPrivateKey;
+- (BOOL)isValidDashAddressOnChain:(DSChain*)chain;
+- (BOOL)isValidDashPrivateKeyOnChain:(DSChain*)chain;
 - (BOOL)isValidDashBIP38Key; // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
 -(NSInteger)indexOfCharacter:(unichar)character;

@@ -27,6 +27,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class DSChain;
+
 #define BITCOIN_PUBKEY_ADDRESS      0
 #define BITCOIN_SCRIPT_ADDRESS      5
 #define BITCOIN_PUBKEY_ADDRESS_TEST 111
@@ -46,16 +48,16 @@
 + (NSString *)base58WithData:(NSData *)d;
 + (NSString *)base58checkWithData:(NSData *)d;
 + (NSString *)hexWithData:(NSData *)d;
-+ (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script;
-+ (NSString *)bitcoinAddressWithScriptSig:(NSData *)script;
++ (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script forChain:(DSChain*)chain;
++ (NSString *)bitcoinAddressWithScriptSig:(NSData *)script forChain:(DSChain*)chain;
 
 - (NSData *)base58ToData;
 - (NSData *)base58checkToData;
 - (NSData *)hexToData;
 - (NSData *)addressToHash160;
 
-- (BOOL)isValidBitcoinAddress;
-- (BOOL)isValidBitcoinPrivateKey;
+- (BOOL)isValidBitcoinAddressOnChain:(DSChain*)chain;
+- (BOOL)isValidBitcoinPrivateKeyOnChain:(DSChain*)chain;
 - (BOOL)isValidBitcoinBIP38Key; // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
 @end

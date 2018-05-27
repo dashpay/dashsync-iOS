@@ -30,6 +30,7 @@
 #import "NSMutableData+Dash.h"
 #import "UIImage+DSUtils.h"
 #import "DSWalletManager.h"
+#import "DSChain.h"
 
 @implementation NSString (Dash)
 
@@ -37,18 +38,20 @@
 // miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
 // we are unable to correctly sign later, then the entire wallet balance after that point would become stuck with the
 // current coin selection code
-+ (NSString *)addressWithScriptPubKey:(NSData *)script
++ (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain*)chain
 {
     if (script == (id)[NSNull null]) return nil;
     
     NSArray *elem = [script scriptElements];
     NSUInteger l = elem.count;
     NSMutableData *d = [NSMutableData data];
-    uint8_t v = DASH_PUBKEY_ADDRESS;
+    uint8_t v;
     
-#if DASH_TESTNET
-    v = DASH_PUBKEY_ADDRESS_TEST;
-#endif
+    if ([chain isMainnet]) {
+        v = DASH_PUBKEY_ADDRESS;
+    } else {
+        v = DASH_PUBKEY_ADDRESS_TEST;
+    }
     
     if (l == 5 && [elem[0] intValue] == OP_DUP && [elem[1] intValue] == OP_HASH160 && [elem[2] intValue] == 20 &&
         [elem[3] intValue] == OP_EQUALVERIFY && [elem[4] intValue] == OP_CHECKSIG) {
@@ -58,10 +61,11 @@
     }
     else if (l == 3 && [elem[0] intValue] == OP_HASH160 && [elem[1] intValue] == 20 && [elem[2] intValue] == OP_EQUAL) {
         // pay-to-script-hash scriptPubKey
-        v = DASH_SCRIPT_ADDRESS;
-#if DASH_TESTNET
-        v = DASH_SCRIPT_ADDRESS_TEST;
-#endif
+        if ([chain isMainnet]) {
+            v = DASH_SCRIPT_ADDRESS;
+        } else {
+            v = DASH_SCRIPT_ADDRESS_TEST;
+        }
         [d appendBytes:&v length:1];
         [d appendData:elem[1]];
     }
@@ -76,18 +80,21 @@
 }
 
 
-+ (NSString *)addressWithScriptSig:(NSData *)script
++ (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain
 {
     if (script == (id)[NSNull null]) return nil;
     
     NSArray *elem = [script scriptElements];
     NSUInteger l = elem.count;
     NSMutableData *d = [NSMutableData data];
-    uint8_t v = DASH_PUBKEY_ADDRESS;
+    uint8_t v;
     
-#if DASH_TESTNET
-    v = DASH_PUBKEY_ADDRESS_TEST;
-#endif
+    if ([chain isMainnet]) {
+        v = DASH_PUBKEY_ADDRESS;
+    } else {
+        v = DASH_PUBKEY_ADDRESS_TEST;
+    }
+
     
     if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
         ([elem[l - 1] intValue] == 65 || [elem[l - 1] intValue] == 33)) { // pay-to-pubkey-hash scriptSig
@@ -96,10 +103,11 @@
     }
     else if (l >= 2 && [elem[l - 2] intValue] <= OP_PUSHDATA4 && [elem[l - 2] intValue] > 0 &&
              [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) { // pay-to-script-hash scriptSig
-        v = DASH_SCRIPT_ADDRESS;
-#if DASH_TESTNET
-        v = DASH_SCRIPT_ADDRESS_TEST;
-#endif
+        if ([chain isMainnet]) {
+            v = DASH_SCRIPT_ADDRESS;
+        } else {
+            v = DASH_SCRIPT_ADDRESS_TEST;
+        }
         [d appendBytes:&v length:1];
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     }
@@ -112,7 +120,7 @@
     return [self base58checkWithData:d];
 }
 
-- (BOOL)isValidDashAddress
+- (BOOL)isValidDashAddressOnChain:(DSChain *)chain
 {
     if (self.length > 35) return NO;
     
@@ -121,24 +129,23 @@
     if (d.length != 21) return NO;
     
     uint8_t version = *(const uint8_t *)d.bytes;
-    
-#if DASH_TESTNET
-    return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST) ? YES : NO;
-#endif
-    
-    return (version == DASH_PUBKEY_ADDRESS || version == DASH_SCRIPT_ADDRESS) ? YES : NO;
+    if ([chain isMainnet]) {
+        return (version == DASH_PUBKEY_ADDRESS || version == DASH_SCRIPT_ADDRESS) ? YES : NO;
+    } else {
+        return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST) ? YES : NO;
+    }
 }
 
-- (BOOL)isValidDashPrivateKey
+- (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain
 {
     NSData *d = self.base58checkToData;
     
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
-#if DASH_TESNET
-        return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST) ? YES : NO;
-#else
-        return (*(const uint8_t *)d.bytes == DASH_PRIVKEY) ? YES : NO;
-#endif
+        if ([chain isMainnet]) {
+            return (*(const uint8_t *)d.bytes == DASH_PRIVKEY) ? YES : NO;
+        } else {
+            return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST) ? YES : NO;
+        }
     }
     else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
 }

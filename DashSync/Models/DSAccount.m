@@ -432,7 +432,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 {
     NSMutableData *script = [NSMutableData data];
     
-    [script appendScriptPubKeyForAddress:address];
+    [script appendScriptPubKeyForAddress:address forChain:self.wallet.chain];
     
     return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
 }
@@ -480,9 +480,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*34;
             
             // check for sufficient total funds before building a smaller transaction
-            if (self.balance < amount + [self.wallet feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
+            if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
                 NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
-                      amount + [self.wallet feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
+                      amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
                 return nil;
             }
             
@@ -490,7 +490,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             NSArray *newAmounts = [amounts subarrayWithRange:NSMakeRange(0, amounts.count - 1)],
             *newScripts = [scripts subarrayWithRange:NSMakeRange(0, scripts.count - 1)];
             
-            if (lastAmount > amount + feeAmount + self.wallet.minOutputAmount - balance) { // reduce final output amount
+            if (lastAmount > amount + feeAmount + self.wallet.chain.minOutputAmount - balance) { // reduce final output amount
                 newAmounts = [newAmounts arrayByAddingObject:@(lastAmount - (amount + feeAmount - balance))];
                 newScripts = [newScripts arrayByAddingObject:scripts.lastObject];
             }
@@ -506,11 +506,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) {
-            feeAmount = [self.wallet feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+            feeAmount = [self.wallet.chain feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
             if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
-        if (balance == amount + feeAmount || balance >= amount + feeAmount + self.wallet.minOutputAmount) break;
+        if (balance == amount + feeAmount || balance >= amount + feeAmount + self.wallet.chain.minOutputAmount) break;
     }
     
     transaction.isInstant = isInstant;
@@ -524,7 +524,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         [transaction addOutputShapeshiftAddress:shapeshiftAddress];
     }
     
-    if (balance - (amount + feeAmount) >= self.wallet.minOutputAmount) {
+    if (balance - (amount + feeAmount) >= self.wallet.chain.minOutputAmount) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
         [transaction shuffleOutputOrder];
     }
@@ -864,7 +864,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
     [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
-    fee = [self.wallet feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
+    fee = [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
     return (amount > fee) ? amount - fee : 0;
 }
 
