@@ -25,7 +25,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver;
+@property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -62,6 +63,12 @@
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"update balance");
                                                            [self updateBalance];
+                                                       }];
+    self.sporkObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkManagerSporkUpdateNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"update spork count");
+                                                           [self updateSporks];
                                                        }];
     
 }
@@ -221,6 +228,10 @@
 -(void)updateBalance {
     self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
     self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
+}
+
+-(void)updateSporks {
+    
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
