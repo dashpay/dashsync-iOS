@@ -189,7 +189,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]];
     NSString * uniqueId = [self setSeedPhrase:seedPhrase withAccounts:@[account]]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
-    DSWallet * wallet = [[DSWallet alloc] initWithUniqueId:uniqueId forAccount:account forChain:chain storeSeedPhrase:store];
+    DSWallet * wallet = [[DSWallet alloc] initWithUniqueId:uniqueId andAccount:account forChain:chain storeSeedPhrase:store];
     return wallet;
 }
 
@@ -204,9 +204,10 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     return self;
 }
 
--(instancetype)initWithUniqueId:(NSString*)identifier forAccount:(DSAccount*)account forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
+-(instancetype)initWithUniqueId:(NSString*)identifier andAccount:(DSAccount*)account forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
     if (! (self = [self initWithChain:chain])) return nil;
     [self addAccount:account];
+    self.uniqueID = identifier;
     if (store) {
         __weak typeof(self) weakSelf = self;
         self.seedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
@@ -250,8 +251,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 }
 
 +(void)setExtendedPublicKeyData:(NSData*)data forDerivationPath:(DSDerivationPath*)derivationPath {
-    NSAssert(derivationPath.account.wallet.chain, @"The wallet has no chain");
-    NSAssert(derivationPath.account.wallet == self, @"The derivation path isn't in this wallet");
     setKeychainData(data,[NSString stringWithFormat:@"extendedPubKey%@_%@",derivationPath.account.wallet.chain.uniqueID,derivationPath.extendedPublicKeyString],NO);
 }
 

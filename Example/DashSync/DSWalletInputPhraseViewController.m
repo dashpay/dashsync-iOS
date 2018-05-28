@@ -57,7 +57,7 @@
 - (IBAction)createWallet:(id)sender {
     if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:self.inputSeedPhraseTextView.text]) {
         DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE];
-        [self.chain addWallet:wallet];
+        [self.chain registerWallet:wallet];
         [self.navigationController popViewControllerAnimated:TRUE];
     }
 }

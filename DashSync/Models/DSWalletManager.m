@@ -357,15 +357,15 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
 
 
 
-- (void)registerWallet:(DSWallet*)wallet onChain:(DSChain*)chain
-{
-    if ([chain.wallets indexOfObject:wallet] == NSNotFound) {
-        [chain addWallet:wallet];
-    }
-    NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(chain.chainWalletsKey, &error) mutableCopy];
-    [keyChainArray addObject:wallet.uniqueID];
-    setKeychainArray(keyChainArray, chain.chainWalletsKey, NO);
+//- (void)registerWallet:(DSWallet*)wallet
+//{
+//    if ([chain.wallets indexOfObject:wallet] == NSNotFound) {
+//        [chain addWallet:wallet];
+//    }
+//    NSError * error = nil;
+//    NSMutableArray * keyChainArray = [getKeychainArray(chain.chainWalletsKey, &error) mutableCopy];
+//    [keyChainArray addObject:wallet.uniqueID];
+//    setKeychainArray(keyChainArray, chain.chainWalletsKey, NO);
 
         //TODO: reimplement this safeguard
         //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
@@ -395,7 +395,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
         //            }
         //        });
 
-}
+//
 
 - (void)clearKeychainWalletData {
     BOOL failed = NO;

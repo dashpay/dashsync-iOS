@@ -122,7 +122,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="PeG-lf-i02" kind="show" id="lRe-2s-I4N"/>
+                                            <segue destination="PeG-lf-i02" kind="show" identifier="WalletsListSegue" id="lRe-2s-I4N"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="sce-cL-dfo">
@@ -154,7 +154,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="pQt-5m-3CE" kind="show" id="pBf-Nk-TRe"/>
+                                            <segue destination="pQt-5m-3CE" kind="show" identifier="WalletAddressesSegue" id="pBf-Nk-TRe"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="g33-GV-gLb">
@@ -615,7 +615,7 @@
                     <navigationItem key="navigationItem" title="Wallets" id="90H-jm-fcb">
                         <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="0aZ-cF-Z2f">
                             <connections>
-                                <segue destination="c3Z-zJ-Q1f" kind="show" id="dqY-2k-FS1"/>
+                                <segue destination="c3Z-zJ-Q1f" kind="show" identifier="AddWalletSegue" id="dqY-2k-FS1"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -667,7 +667,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3946" y="375"/>
+            <point key="canvasLocation" x="5634" y="562"/>
         </scene>
         <!--Passphrase-->
         <scene sceneID="1v0-Xr-yW0">

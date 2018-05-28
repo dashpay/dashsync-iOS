@@ -9,7 +9,7 @@
 #import <DashSync/DashSync.h>
 
 #import "DSSyncViewController.h"
-
+#import "DSWalletViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -221,6 +221,13 @@
 -(void)updateBalance {
     self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
     self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"WalletsListSegue"]) {
+        DSWalletViewController * walletViewController = (DSWalletViewController*)segue.destinationViewController;
+        walletViewController.chain = self.chainPeerManager.chain;
+    }
 }
 
 

@@ -100,6 +100,87 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
+#define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
+
+static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
+{
+    if (! key) return NO;
+    
+    id accessible = (authenticated) ? (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+    : (__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly;
+    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                            (__bridge id)kSecAttrAccount:key};
+    
+    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL) == errSecItemNotFound) {
+        if (! data) return YES;
+        
+        NSDictionary *item = @{(__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
+                               (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                               (__bridge id)kSecAttrAccount:key,
+                               (__bridge id)kSecAttrAccessible:accessible,
+                               (__bridge id)kSecValueData:data};
+        OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
+        
+        if (status == noErr) return YES;
+        NSLog(@"SecItemAdd error: %@",
+              [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
+        return NO;
+    }
+    
+    if (! data) {
+        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
+        
+        if (status == noErr) return YES;
+        NSLog(@"SecItemDelete error: %@",
+              [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
+        return NO;
+    }
+    
+    NSDictionary *update = @{(__bridge id)kSecAttrAccessible:accessible,
+                             (__bridge id)kSecValueData:data};
+    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
+    
+    if (status == noErr) return YES;
+    NSLog(@"SecItemUpdate error: %@",
+          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
+    return NO;
+}
+
+static NSData *getKeychainData(NSString *key, NSError **error)
+{
+    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
+                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
+                            (__bridge id)kSecAttrAccount:key,
+                            (__bridge id)kSecReturnData:@YES};
+    CFDataRef result = nil;
+    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
+    
+    if (status == errSecItemNotFound) return nil;
+    if (status == noErr) return CFBridgingRelease(result);
+    NSLog(@"SecItemCopyMatching error: %@",
+          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
+    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+    return nil;
+}
+
+static BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated)
+{
+    @autoreleasepool {
+        NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array] : nil;
+        
+        return setKeychainData(d, key, authenticated);
+    }
+}
+
+static NSArray *getKeychainArray(NSString *key, NSError **error)
+{
+    @autoreleasepool {
+        NSData *d = getKeychainData(key, error);
+        
+        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+    }
+}
 
 @interface DSChain ()
 
@@ -291,6 +372,17 @@ static dispatch_once_t devnetToken = 0;
 }
 -(void)addWallet:(DSWallet*)wallet {
     [_wallets addObject:wallet];
+}
+
+- (void)registerWallet:(DSWallet*)wallet
+{
+    if ([self.wallets indexOfObject:wallet] == NSNotFound) {
+        [self addWallet:wallet];
+    }
+    NSError * error = nil;
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
+    [keyChainArray addObject:wallet.uniqueID];
+    setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
 }
 
 -(NSSet*)wallets {

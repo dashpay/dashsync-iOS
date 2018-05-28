@@ -10,6 +10,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSWalletTableViewCell.h"
 #import <DashSync/DashSync.h>
+#import "DSWalletInputPhraseViewController.h"
 
 @interface DSWalletViewController ()
 
@@ -137,6 +138,13 @@
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"AddWalletSegue"]) {
+        DSWalletInputPhraseViewController * walletInputViewController = (DSWalletInputPhraseViewController*)segue.destinationViewController;
+        walletInputViewController.chain = self.chain;
     }
 }
 
