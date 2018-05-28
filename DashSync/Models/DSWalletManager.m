@@ -207,6 +207,24 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     }
 }
 
+static BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated)
+{
+    @autoreleasepool {
+        NSData *d = (array) ? [NSKeyedArchiver archivedDataWithRootObject:array] : nil;
+        
+        return setKeychainData(d, key, authenticated);
+    }
+}
+
+static NSArray *getKeychainArray(NSString *key, NSError **error)
+{
+    @autoreleasepool {
+        NSData *d = getKeychainData(key, error);
+        
+        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+    }
+}
+
 @interface DSWalletManager()
 
 @property (nonatomic, strong) Reachability *reachability;
@@ -337,47 +355,47 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
     });
 }
 
-//- (DSWallet *)createWalletForChain:(DSChain*)chain
-//{
-//
-//    __block DSWallet * wallet;
-//
-//    @synchronized(self) {
-//
-//        wallet = [DSWallet standardWalletForChain:chain];
-//
-//
-//        //TODO: reimplement this safeguard
-//        //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
-//        //        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        //            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
-//        //
-//        //            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
-//        //                NSLog(@"wallet doesn't contain address: %@", k.address);
-//        //#if 0
-//        //                abort(); // don't wipe core data for debug builds
-//        //#else
-//        //                [[NSManagedObject context] performBlockAndWait:^{
-//        //                    [DSAddressEntity deleteAllObjects];
-//        //                    [DSTransactionEntity deleteAllObjects];
-//        //                    [NSManagedObject saveContext];
-//        //                }];
-//        //
-//        //                [chain removeWallet];
-//        //
-//        //                dispatch_async(dispatch_get_main_queue(), ^{
-//        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
-//        //                                                                        object:nil];
-//        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
-//        //                                                                        object:nil];
-//        //                });
-//        //#endif
-//        //            }
-//        //        });
-//
-//        return wallet;
-//    }
-//}
+
+
+- (void)registerWallet:(DSWallet*)wallet onChain:(DSChain*)chain
+{
+    if ([chain.wallets indexOfObject:wallet] == NSNotFound) {
+        [chain addWallet:wallet];
+    }
+    NSError * error = nil;
+    NSMutableArray * keyChainArray = [getKeychainArray(chain.chainWalletsKey, &error) mutableCopy];
+    [keyChainArray addObject:wallet.uniqueID];
+    setKeychainArray(keyChainArray, chain.chainWalletsKey, NO);
+
+        //TODO: reimplement this safeguard
+        //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
+        //        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        //            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
+        //
+        //            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
+        //                NSLog(@"wallet doesn't contain address: %@", k.address);
+        //#if 0
+        //                abort(); // don't wipe core data for debug builds
+        //#else
+        //                [[NSManagedObject context] performBlockAndWait:^{
+        //                    [DSAddressEntity deleteAllObjects];
+        //                    [DSTransactionEntity deleteAllObjects];
+        //                    [NSManagedObject saveContext];
+        //                }];
+        //
+        //                [chain removeWallet];
+        //
+        //                dispatch_async(dispatch_get_main_queue(), ^{
+        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
+        //                                                                        object:nil];
+        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
+        //                                                                        object:nil];
+        //                });
+        //#endif
+        //            }
+        //        });
+
+}
 
 - (void)clearKeychainWalletData {
     BOOL failed = NO;
@@ -431,7 +449,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                 return;
             }
             @autoreleasepool {
-                NSString * seedPhrase = authenticated?getKeychainString(MNEMONIC_KEY, nil):nil;
+                NSString * seedPhrase = authenticated?getKeychainString(wallet.uniqueID, nil):nil;
                 if (!seedPhrase) {
                     completion(NO,YES,YES,NO);
                     return;

@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
   s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
-  s.compiler_flags = '-Wno-comma', '-Wno-format'
+  s.compiler_flags = '-Wno-comma'
   s.dependency 'secp256k1_dash', '0.1.0'
   
 end

@@ -72,9 +72,9 @@
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet;
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet;
+-(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
 

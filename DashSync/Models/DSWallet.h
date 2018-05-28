@@ -38,6 +38,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 @property (nonatomic, readonly) NSArray * accounts;
 
+@property (nonatomic, readonly) NSString * uniqueID;
+
 // chain for the wallet
 @property (nonatomic, readonly) DSChain * chain;
 
@@ -68,6 +70,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
+
+-(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
 + (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain;
@@ -110,19 +114,17 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 // true if no previous wallet transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
 
-// generate extended public keys and stores them in the keychain
--(void)generateExtendedPublicKeys;
-
 //get the top level extended public keys at a derivation path;
--(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
++(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
 
 //set the top level extended public keys at a derivation path;
--(void)setExtendedPublicKeyData:(NSData* _Nonnull)data forDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
++(void)setExtendedPublicKeyData:(NSData* _Nonnull)data forDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
 
 //returns the seed phrase after authenticating
 -(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 
 -(NSString* _Nullable)seedPhraseIfAuthenticated;
+
 
 //generate a random Mnemonic seed
 + (NSString *)generateRandomSeed;

@@ -73,8 +73,8 @@
 
 @implementation DSAccount : NSObject
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet {
-    return [[self alloc] initWithDerivationPaths:derivationPaths onWallet:wallet];
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+    return [[self alloc] initWithDerivationPaths:derivationPaths];
 }
 
 -(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
@@ -106,11 +106,10 @@
     }
 }
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths onWallet:(DSWallet*)wallet {
+-(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
     if (! (self = [super init])) return nil;
     NSAssert([derivationPaths count], @"derivationPaths can not be empty");
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
-    self.wallet = wallet;
     self.mDerivationPaths = [derivationPaths mutableCopy];
     for (DSDerivationPath * derivationPath in derivationPaths) {
         derivationPath.account = self;

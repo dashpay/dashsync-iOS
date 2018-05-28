@@ -37,6 +37,30 @@
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
 #define EXTENDED_0_PUBKEY_KEY_BIP32_V1   @"extended0pubkeyBIP32"
 
+#define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago
+
+#if useDarkCoinSeed
+
+#define BIP32_SEED_KEY "Darkcoin seed"
+
+#define BIP32_XPRV_MAINNET     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
+#define BIP32_XPUB_MAINNET     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
+#define BIP32_XPRV_TESTNET     "\x02\xFE\x52\xCC"
+#define BIP32_XPUB_TESTNET     "\x02\xFE\x52\xF8"
+
+#else
+
+#define BIP32_SEED_KEY "Bitcoin seed"
+
+#define BIP32_XPRV_TESTNET     "\x04\x35\x83\x94"
+#define BIP32_XPUB_TESTNET     "\x04\x35\x87\xCF"
+
+#define BIP32_XPRV_MAINNET     "\x04\x88\xAD\xE4"
+#define BIP32_XPUB_MAINNET     "\x04\x88\xB2\x1E"
+
+
+#endif
+
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define BIP32_HARD 0x80000000

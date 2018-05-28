@@ -99,6 +99,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 };
 
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
+#define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
 
 @interface DSChain ()
 
@@ -273,6 +274,10 @@ static dispatch_once_t devnetToken = 0;
             return DASH_MAGIC_NUMBER_TESTNET;
             break;
     }
+}
+
+-(NSString*)chainWalletsKey {
+    return [NSString stringWithFormat:@"%@_%@",[self uniqueID],CHAIN_WALLETS_KEY];
 }
 
 // MARK: - Wallet

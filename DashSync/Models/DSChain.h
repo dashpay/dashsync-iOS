@@ -88,6 +88,7 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 @property (nonatomic, readonly) DSMerkleBlock *lastOrphan;
 @property (nonatomic, readonly) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
+@property (nonatomic, readonly) NSString * chainWalletsKey;
 @property (nonatomic, readonly) BOOL hasAWallet;
 @property (nonatomic, assign) uint64_t feePerKb;
 

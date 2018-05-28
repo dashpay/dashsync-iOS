@@ -39,7 +39,6 @@
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
-#define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
 
@@ -241,23 +240,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 - (NSTimeInterval)secureTime
 {
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
-}
-
-// private key for signing authenticated api calls
-- (NSString *)authPrivateKeyForChain:(DSChain*)chain
-{
-    @autoreleasepool {
-        NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
-        
-        if (! privKey) {
-            NSData *seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(MNEMONIC_KEY, nil) withPassphrase:nil];
-            
-            privKey = [DSDerivationPath authPrivateKeyFromSeed:seed forChain:chain];
-            setKeychainString(privKey, AUTH_PRIVKEY_KEY, NO);
-        }
-        
-        return privKey;
-    }
 }
 
 // MARK: - Device
@@ -529,7 +511,7 @@ replacementString:(NSString *)string
             DSWallet * wallet = [[[DSWalletManager sharedInstance] allWallets] firstObject];
             DSAccount * account = [wallet.accounts firstObject];
             DSDerivationPath * derivationPath = [account.derivationPaths firstObject];
-            NSData * extendedPublicKey = [wallet extendedPublicKeyForDerivationPath:derivationPath];
+            NSData * extendedPublicKey = [DSWallet extendedPublicKeyForDerivationPath:derivationPath];
             if (extendedPublicKey && ![[derivationPath generateExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)

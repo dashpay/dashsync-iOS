@@ -42,29 +42,6 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 
-#define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago
-
-#if useDarkCoinSeed
-
-#define BIP32_SEED_KEY "Darkcoin seed"
-
-#define BIP32_XPRV_MAINNET     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
-#define BIP32_XPUB_MAINNET     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
-#define BIP32_XPRV_TESTNET     "\x02\xFE\x52\xCC"
-#define BIP32_XPUB_TESTNET     "\x02\xFE\x52\xF8"
-
-#else
-
-#define BIP32_SEED_KEY "Bitcoin seed"
-
-#define BIP32_XPRV_TESTNET     "\x04\x35\x83\x94"
-#define BIP32_XPUB_TESTNET     "\x04\x35\x87\xCF"
-
-#define BIP32_XPRV_MAINNET     "\x04\x88\xAD\xE4"
-#define BIP32_XPUB_MAINNET     "\x04\x88\xB2\x1E"
-
-
-#endif
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -295,7 +272,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
-        _extendedPublicKey = [self.account.wallet extendedPublicKeyForDerivationPath:self];
+        _extendedPublicKey = [DSWallet extendedPublicKeyForDerivationPath:self];
     }
     NSAssert(_extendedPublicKey, @"master public key not set");
     return _extendedPublicKey;
