@@ -36,6 +36,8 @@
 #define DASH_PRIVKEY             204
 #define DASH_PRIVKEY_TEST        239
 
+#define DASH_MESSAGE_MAGIC @"DarkCoin Signed Message:\n"
+
 #define BIP38_NOEC_PREFIX      0x0142
 #define BIP38_EC_PREFIX        0x0143
 #define BIP38_NOEC_FLAG        (0x80 | 0x40)

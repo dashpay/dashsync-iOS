@@ -65,6 +65,41 @@
 #define MSG_SENDHEADERS @"sendheaders" // BIP130: https://github.com/bitcoin/bips/blob/master/bip-0130.mediawiki
 #define MSG_FEEFILTER   @"feefilter"   // BIP133: https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
 
+//Dash specific
+
+//Control
+
+#define MSG_SPORK      @"spork"
+#define MSG_GETSPORKS  @"getsporks"
+
+//Masternode
+
+#define MSG_DSEG        @"dseg"
+#define MSG_MNB         @"mnb"
+#define MSG_MNGET       @"mnget"
+#define MSG_MNP         @"mnp"
+#define MSG_MNV         @"mnv"
+#define MSG_MNW         @"mnw"
+#define MSG_MNWB        @"mnwb"
+#define MSG_SSC         @"ssc"
+
+//Governance
+
+#define MSG_GOVOBJ      @"govobj"
+#define MSG_GOVOBJVOTE  @"govobjvote"
+#define MSG_GOVOBJSYNC  @"govsync"
+
+//Private send
+
+#define MSG_DARKSENDANNOUNCE       @"dsa"
+#define MSG_DARKSENDCONTROL        @"dsc"
+#define MSG_DARKSENDFINISH         @"dsf"
+#define MSG_DARKSENDINITIATE       @"dsi"
+#define MSG_DARKSENDQUORUM         @"dsq"
+#define MSG_DARKSENDSESSION        @"dss"
+#define MSG_DARKSENDSESSIONUPDATE  @"dssu"
+#define MSG_DARKSENDTX             @"dstx"
+
 #define REJECT_INVALID     0x10 // transaction is invalid for some reason (invalid signature, output value > input, etc)
 #define REJECT_SPENT       0x12 // an input is already spent
 #define REJECT_NONSTANDARD 0x40 // not mined/relayed because it is "non-standard" (type or version unknown by server)
@@ -74,7 +109,7 @@
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -92,6 +127,8 @@ typedef union _UInt128 UInt128;
 - (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
+
+- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 
 @end
 
@@ -151,8 +188,11 @@ services:(uint64_t)services;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 - (void)sendGetaddrMessage;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
+- (void)sendGetSporks;
 - (void)rerequestBlocksFrom:(UInt256)blockHash; // useful to get additional transactions after a bloom filter update
 
 -(NSString*)chainTip;
+
+
 
 @end

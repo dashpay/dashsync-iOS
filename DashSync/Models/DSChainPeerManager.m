@@ -39,6 +39,8 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSEventManager.h"
 #import "DSChain.h"
+#import "DSSpork.h"
+#import "DSSporkManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import <netdb.h>
 #import "DSDerivationPath.h"
@@ -528,6 +530,30 @@ static const char *mainnet_dns_seeds[] = {
     }
 }
 
+-(void)getSporks {
+    for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
+        if (p.status != DSPeerStatusConnected) continue;
+        
+        [p sendPingMessageWithPongHandler:^(BOOL success) {
+            if (success) {
+                [p sendGetSporks];
+            }
+        }];
+    }
+}
+
+-(void)startMasternodeSync {
+    for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
+        if (p.status != DSPeerStatusConnected) continue;
+        
+        [p sendPingMessageWithPongHandler:^(BOOL success) {
+            if (success) {
+                [p sendGetblocksMessageWithLocators:@[] andHashStop:UINT256_ZERO];
+            }
+        }];
+    }
+}
+
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
 - (void)removeUnrelayedTransactions
 {
@@ -883,6 +909,7 @@ static const char *mainnet_dns_seeds[] = {
         self.syncStartHeight = 0;
         [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
         [self loadMempools];
+        [self getSporks];
     }
 }
 
@@ -1211,6 +1238,17 @@ static const char *mainnet_dns_seeds[] = {
     return transaction;
 }
 
+// MARK: Dash Specific
+
+- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
+    if (spork.isValid) {
+        [[DSSporkManager sharedInstance] peer:(DSPeer*)peer relayedSpork:spork];
+    } else {
+        [self peerMisbehavin:peer];
+    }
+}
+
+
 
 // MARK: - DSChainDelegate
 
@@ -1233,6 +1271,7 @@ static const char *mainnet_dns_seeds[] = {
     if (onMainChain && (peer == self.downloadPeer)) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     self.syncStartHeight = 0;
     [self loadMempools];
+    [self getSporks];
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {

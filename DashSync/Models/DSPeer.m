@@ -28,6 +28,7 @@
 #import "DSPeer.h"
 #import "DSTransaction.h"
 #import "DSChain.h"
+#import "DSSpork.h"
 #import "DSMerkleBlock.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
@@ -49,6 +50,24 @@
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
 
+typedef NS_ENUM(uint32_t,DSInvType) {
+    DSInvType_Error = 0,
+    DSInvType_Tx = 1,
+    DSInvType_Block = 2,
+    DSInvType_Merkleblock = 3,
+    DSInvType_TxLockRequest = 4,
+    DSInvType_TxLockVote = 5,
+    DSInvType_Spork = 6,
+    DSInvType_MasternodePaymentVote = 7,
+    DSInvType_MasternodePaymentBlock = 8,
+    DSInvType_MasternodeAnnounce = 14,
+    DSInvType_MasternodePing = 15,
+    DSInvType_DSTx = 16,
+    DSInvType_GovernanceObject = 17,
+    DSInvType_GovernanceObjectVote = 18,
+    DSInvType_MasternodeVerify = 19,
+};
+
 typedef enum : uint32_t {
     inv_error = 0,
     inv_tx,
@@ -65,13 +84,14 @@ typedef enum : uint32_t {
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdata, sentMempool, sentGetblocks;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdata, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
 @property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
 @property (nonatomic, strong) void (^mempoolCompletion)(BOOL);
@@ -196,10 +216,12 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.gotVerack = self.sentVerack = NO;
-    self.sentFilter = self.sentGetaddr = self.sentGetdata = self.sentMempool = self.sentGetblocks = NO;
+    self.sentFilter = self.sentGetaddr = self.sentGetdata = self.sentMempool = self.sentGetblocks = self.sentGovObjAndGovObjVoteGetdata = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
+    self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
+    self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
     self.currentBlockTxHashes = nil;
 
@@ -548,6 +570,23 @@ services:(uint64_t)services
     }
 }
 
+// MARK: - send Dash Masternode
+
+-(void)sendGetSporks {
+    [self sendMessage:[NSData data] type:MSG_GETSPORKS];
+}
+
+// MARK: - send Dash Governance
+
+- (void)sendGovSync {
+    NSMutableData *msg = [NSMutableData data];
+    UInt256 h = UINT256_ZERO;
+    
+    [msg appendBytes:&h length:sizeof(h)];
+    
+    [self sendMessage:msg type:MSG_GOVOBJSYNC];
+}
+
 // MARK: - accept
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
@@ -575,6 +614,24 @@ services:(uint64_t)services
     else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
     else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
     else if ([MSG_FEEFILTER isEqual:type]) [self acceptFeeFilterMessage:message];
+    //control
+    else if ([MSG_SPORK isEqual:type]) [self acceptSporkMessage:message];
+    //masternode
+    
+    //governance
+    //else if ([MSG_GOVOBJVOTE isEqual:type]) [self acceptGov:message];
+    else if ([MSG_GOVOBJ isEqual:type]) [self acceptGovObjectMessage:message];
+    //else if ([MSG_GOVOBJSYNC isEqual:type]) [self acceptGovObjectSyncMessage:message];
+    
+    //private send
+    else if ([MSG_DARKSENDANNOUNCE isEqual:type]) [self acceptDarksendAnnounceMessage:message];
+    else if ([MSG_DARKSENDCONTROL isEqual:type]) [self acceptDarksendControlMessage:message];
+    else if ([MSG_DARKSENDFINISH isEqual:type]) [self acceptDarksendFinishMessage:message];
+    else if ([MSG_DARKSENDINITIATE isEqual:type]) [self acceptDarksendInitiateMessage:message];
+    else if ([MSG_DARKSENDQUORUM isEqual:type]) [self acceptDarksendQuorumMessage:message];
+    else if ([MSG_DARKSENDSESSION isEqual:type]) [self acceptDarksendSessionMessage:message];
+    else if ([MSG_DARKSENDSESSIONUPDATE isEqual:type]) [self acceptDarksendSessionUpdateMessage:message];
+    else if ([MSG_DARKSENDTX isEqual:type]) [self acceptDarksendTransactionMessage:message];
     else {
 #if DROP_MESSAGE_LOGGING
         NSLog(@"%@:%u dropping %@, len:%u, not implemented", self.host, self.port, type, (int)message.length);
@@ -686,7 +743,11 @@ services:(uint64_t)services
 {
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
-    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet], *blockHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *sporkHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *governanceObjectHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *governanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
     
     if (l.unsignedIntegerValue == 0 || message.length < l.unsignedIntegerValue + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
@@ -702,21 +763,24 @@ services:(uint64_t)services
     //NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
-        inv_type type = [message UInt32AtOffset:off];
+        DSInvType type = [message UInt32AtOffset:off];
         UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
         
         if (uint256_is_zero(hash)) continue;
         
         switch (type) {
-            case inv_tx:
-            case inv_txlock_request:
+            case DSInvType_Tx:
+            case DSInvType_TxLockRequest:
                 [txHashes addObject:uint256_obj(hash)]; break;
-            case inv_block: [blockHashes addObject:uint256_obj(hash)]; break;
-            case inv_merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_Spork: [sporkHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_GovernanceObject: [governanceObjectHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:uint256_obj(hash)]; break;
             default: break;
         }
     }
-
+    
     if (! self.sentFilter && ! self.sentMempool && ! self.sentGetblocks) {
         if (txHashes.count > 0) [self error:@"got inv message before loading a filter"];
         return;
@@ -731,32 +795,32 @@ services:(uint64_t)services
         [self error:@"non-standard inv, %u is fewer block hashes than expected", (int)blockHashes.count];
         return;
     }
-
+    
     if (blockHashes.count == 1 && [self.lastBlockHash isEqual:blockHashes[0]]) [blockHashes removeAllObjects];
     if (blockHashes.count == 1) self.lastBlockHash = blockHashes[0];
     
     if (blockHashes.count > 0) { // remember blockHashes in case we need to re-request them with an updated bloom filter
         dispatch_async(self.delegateQueue, ^{
             [self.knownBlockHashes unionOrderedSet:blockHashes];
-        
+            
             while (self.knownBlockHashes.count > MAX_GETDATA_HASHES) {
                 [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, self.knownBlockHashes.count/3)];
             }
         });
     }
-
+    
     if ([txHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
         for (NSValue *hash in txHashes) {
             UInt256 h;
             
             if (! [self.knownTxHashes containsObject:hash]) continue;
             [hash getValue:&h];
-
+            
             dispatch_async(self.delegateQueue, ^{
                 if (_status == DSPeerStatusConnected) [self.delegate peer:self hasTransaction:h];
             });
         }
-    
+        
         [txHashes minusOrderedSet:self.knownTxHashes];
     }
     
@@ -764,22 +828,34 @@ services:(uint64_t)services
     
     if (txHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
         [self sendGetdataMessageWithTxHashes:txHashes.array
-         andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+                              andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
         [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject]
-         andHashStop:UINT256_ZERO];
+                                   andHashStop:UINT256_ZERO];
     }
     
     if (self.mempoolCompletion && (txHashes.count > 0 || blockHashes.count == 0)) {
         dispatch_async(self.delegateQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self];
         });
-
+        
         [self sendPingMessageWithPongHandler:self.mempoolCompletion];
         self.mempoolCompletion = nil;
+    }
+    
+    if (governanceObjectHashes.count > 0) {
+        dispatch_async(self.delegateQueue, ^{
+            [self.knownGovernanceObjectHashes unionOrderedSet:blockHashes];
+            
+            while (self.knownGovernanceObjectHashes.count > MAX_GETDATA_HASHES) {
+                [self.knownGovernanceObjectHashes removeObjectsInRange:NSMakeRange(0, self.knownGovernanceObjectHashes.count/3)];
+            }
+        });
+        [self sendGetdataMessageWithTxHashes:txHashes.array
+                              andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
 }
 
@@ -1096,6 +1172,133 @@ services:(uint64_t)services
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self setFeePerKb:self.feePerKb];
     });
+}
+
+// MARK: - accept Control
+
+- (void)acceptSporkMessage:(NSData *)message
+{
+    DSSpork * spork = [DSSpork sporkWithMessage:message];
+    [self.delegate peer:self relayedSpork:spork];
+}
+
+// MARK: - accept Masternode
+
+// MARK: - accept Governance
+
+- (void)acceptSSCMessage:(NSData *)message
+{
+    uint32_t itemId = [message UInt32AtOffset:0];
+    uint32_t count = [message UInt64AtOffset:4];
+    
+}
+
+// https://dash-docs.github.io/en/developer-reference#govobj
+
+- (void)acceptGovObjectMessage:(NSData *)message
+{
+    //    DWGovObject *govObject = [DWGovObject govObjWithMessage:message];
+    //
+    //    if (! govObject.valid) {
+    //        [self error:@"invalid govObject: %@", uint256_obj(govObject.hash)];
+    //        return;
+    //    }
+    //    else if (! self.sentGovObjAndGovObjVoteGetdata) {
+    //        [self error:@"got govObject message before sending getdata"];
+    //        return;
+    //    }
+    //    //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
+    //
+    //    NSMutableOrderedSet *govObjHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
+    //
+    //    [govObjHashes minusOrderedSet:self.knownGovernanceObjectHashes];
+    //
+    //    if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
+    //        self.currentBlock = block;
+    //        self.currentBlockTxHashes = txHashes;
+    //    }
+    //    else {
+    //        dispatch_async(self.delegateQueue, ^{
+    //            [self.delegate peer:self relayedBlock:block];
+    //        });
+    //    }
+}
+
+- (void)acceptGovObjectSyncMessage:(NSData *)message
+{
+    
+}
+
+// MARK: - Accept Dark send
+
+- (void)acceptDarksendAnnounceMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendControlMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendFinishMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendInitiateMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendQuorumMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendSessionMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendSessionUpdateMessage:(NSData *)message
+{
+    
+}
+
+- (void)acceptDarksendTransactionMessage:(NSData *)message
+{
+//    BRTransaction *tx = [BRTransaction transactionWithMessage:message];
+//
+//    if (! tx) {
+//        [self error:@"malformed tx message: %@", message];
+//        return;
+//    }
+//    else if (! self.sentFilter && ! self.sentTxAndBlockGetdata) {
+//        [self error:@"got tx message before loading a filter"];
+//        return;
+//    }
+//
+//    NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+//
+//    dispatch_async(self.delegateQueue, ^{
+//        [self.delegate peer:self relayedTransaction:tx];
+//    });
+//
+//    if (self.currentBlock) { // we're collecting tx messages for a merkleblock
+//        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+//
+//        if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
+//            BRMerkleBlock *block = self.currentBlock;
+//
+//            self.currentBlock = nil;
+//            self.currentBlockTxHashes = nil;
+//
+//            dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
+//                [self.delegate peer:self relayedBlock:block];
+//            });
+//        }
+//    }
 }
 
 // MARK: - hash

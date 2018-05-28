@@ -11,6 +11,7 @@
 #import "DSChain.h"
 #import "DSChainManager.h"
 #import "DSWalletManager.h"
+#import "DSSporkManager.h"
 #import "DSAuthenticationManager.h"
 #import "DSEventManager.h"
 #import "DSShapeshiftManager.h"
