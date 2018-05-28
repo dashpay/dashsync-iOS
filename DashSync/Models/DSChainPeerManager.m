@@ -211,7 +211,7 @@ static const char *mainnet_dns_seeds[] = {
                 [self sortPeers];
                 return _peers;
             }
-
+            
             // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
             if (_peers.count < PEER_MAX_CONNECTIONS) {
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
@@ -264,7 +264,7 @@ static const char *mainnet_dns_seeds[] = {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
     dispatch_async(self.q, ^{
-        if ([[DSWalletManager sharedInstance] noWalletOnChain:self.chain]) return; // check to make sure the wallet has been created
+        if (![self.chain hasAWallet]) return; // check to make sure the wallet has been created
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
         
         if (self.syncProgress < 1.0) {
@@ -726,8 +726,6 @@ static const char *mainnet_dns_seeds[] = {
     }];
 }
 
-// MARK: - Chain
-
 
 
 // MARK: - Bloom Filters
@@ -737,11 +735,11 @@ static const char *mainnet_dns_seeds[] = {
     NSMutableSet * allAddresses = [NSMutableSet set];
     NSMutableSet * allUTXOs = [NSMutableSet set];
     for (DSWallet * wallet in self.chain.wallets) {
-    // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
-    // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-    // transaction is encountered during the blockchain download
-    [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
-    [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
+        // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
+        // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
+        // transaction is encountered during the blockchain download
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddresses addObjectsFromArray:[addresses allObjects]];
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
@@ -758,23 +756,23 @@ static const char *mainnet_dns_seeds[] = {
     NSMutableArray *inputs = [NSMutableArray new];
     
     for (DSWallet * wallet in self.chain.wallets) {
-    for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
-        [self addTransactionToPublishList:tx]; // also populate the tx publish list
-        if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.chain.lastBlockHeight) break;
-        i = 0;
-        
-        for (NSValue *hash in tx.inputHashes) {
-            [hash getValue:&o.hash];
-            o.n = [tx.inputIndexes[i++] unsignedIntValue];
+        for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
+            [self addTransactionToPublishList:tx]; // also populate the tx publish list
+            if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.chain.lastBlockHeight) break;
+            i = 0;
             
-            DSTransaction *t = [wallet transactionForHash:o.hash];
-            
-            if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
-                [inputs addObject:dsutxo_data(o)];
-                elemCount++;
+            for (NSValue *hash in tx.inputHashes) {
+                [hash getValue:&o.hash];
+                o.n = [tx.inputIndexes[i++] unsignedIntValue];
+                
+                DSTransaction *t = [wallet transactionForHash:o.hash];
+                
+                if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
+                    [inputs addObject:dsutxo_data(o)];
+                    elemCount++;
+                }
             }
         }
-    }
     }
     
     DSBloomFilter *filter = [[DSBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
@@ -988,7 +986,7 @@ static const char *mainnet_dns_seeds[] = {
             [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
             [account transactionForHash:transaction.txHash].timestamp == 0) {
             [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
-                           forTxHashes:@[hash]]; // set timestamp when tx is verified
+                        forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{

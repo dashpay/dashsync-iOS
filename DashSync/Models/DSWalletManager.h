@@ -73,7 +73,6 @@ typedef void (^ResetCancelHandlerBlock)(void);
 
 - (BOOL)hasSeedPhrase;
 - (DSWallet *)createWalletForChain:(DSChain*)chain;
-- (BOOL)noWalletOnChain:(DSChain*)chain;
 - (void)clearKeychainWalletData;
 
 - (void)startExchangeRateFetching;
