@@ -17,6 +17,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkManagerSporkUpdateNotification
     
 @property (nonatomic,assign) BOOL instantSendActive;
 
+@property (nonatomic,readonly) NSDictionary * sporkDictionary;
+
 + (instancetype _Nullable)sharedInstance;
 
 - (void)peer:(DSPeer * _Nullable)peer relayedSpork:(DSSpork * _Nonnull)spork;

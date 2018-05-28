@@ -40,6 +40,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSCoder+Dash.h"
 #import "DSAccount.h"
+#import "DSBIP39Mnemonic.h"
 #import "DSDerivationPath.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
@@ -402,8 +403,19 @@ static dispatch_once_t devnetToken = 0;
     });
 }
 
--(NSSet*)wallets {
+-(NSArray*)wallets {
     return [_wallets copy];
+}
+
+-(NSTimeInterval)earliestWalletCreationTime {
+    if (![self.wallets count]) return BIP39_CREATION_TIME;
+    NSTimeInterval timeInterval = [[NSDate date] timeIntervalSince1970];
+    for (DSWallet * wallet in self.wallets) {
+        if (timeInterval > wallet.walletCreationTime) {
+            timeInterval = wallet.walletCreationTime;
+        }
+    }
+    return timeInterval;
 }
 
 -(NSString*)networkName {

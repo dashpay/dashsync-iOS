@@ -38,7 +38,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 @property (nonatomic, readonly) NSArray * accounts;
 
-@property (nonatomic, readonly) NSString * uniqueID;
+@property (nonatomic, readonly) NSString * mnemonicUniqueID;
+
+@property (nonatomic, readonly) NSString * creationTimeUniqueID;
+
+@property (nonatomic, readonly) NSTimeInterval walletCreationTime;
 
 // chain for the wallet
 @property (nonatomic, readonly) DSChain * chain;
@@ -73,7 +77,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
-+ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase;
++ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase isNewSeedPhrase:(BOOL)isNewSeedPhrase;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain;
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain;

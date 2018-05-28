@@ -34,11 +34,11 @@
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
-    self.sporkDictionary = [NSMutableDictionary dictionary];
+    _sporkDictionary = [NSMutableDictionary dictionary];
     NSArray * sporkEntities = [DSSporkEntity allObjects];
     for (DSSporkEntity * sporkEntity in sporkEntities) {
         DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature];
-        self.sporkDictionary[@(spork.identifier)] = spork;
+        _sporkDictionary[@(spork.identifier)] = spork;
     }
     return self;
 }
@@ -47,6 +47,10 @@
     DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork2InstantSendEnabled)];
     if (!instantSendSpork) return TRUE;//assume true
     return !!instantSendSpork.value;
+}
+
+-(NSDictionary*)sporkDictionary {
+    return [_sporkDictionary copy];
 }
     
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
@@ -57,7 +61,7 @@
     if (currentSpork) {
         //there was already a spork
         if (![currentSpork isEqualToSpork:spork]) {
-            self.sporkDictionary[@(spork.identifier)] = spork; //set it to new one
+            _sporkDictionary[@(spork.identifier)] = spork; //set it to new one
             updatedSpork = TRUE;
             [dictionary setObject:currentSpork forKey:@"old"];
         } else {

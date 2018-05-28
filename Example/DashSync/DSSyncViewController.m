@@ -41,6 +41,7 @@
     [super viewDidLoad];
 	
     [self updateBalance];
+    [self updateSporks];
     
     self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSWalletManager sharedInstance] allWallets] count]];
     
@@ -231,7 +232,7 @@
 }
 
 -(void)updateSporks {
-    
+    self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSSporkManager sharedInstance].sporkDictionary allKeys] count]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
