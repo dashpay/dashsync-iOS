@@ -13,5 +13,5 @@ NSString* const DSChainPeerManagerSyncFinishedNotification =     @"DSChainPeerMa
 NSString* const DSChainPeerManagerSyncFailedNotification =       @"DSChainPeerManagerSyncFailedNotification";
 NSString* const DSChainPeerManagerTxStatusNotification =         @"DSChainPeerManagerTxStatusNotification";
 NSString* const DSChainPeerManagerNotificationChainKey =         @"DSChainPeerManagerNotificationChainKey";
-NSString* const DSWalletManagerSeedChangedNotification =    @"DSWalletManagerSeedChangedNotification";
+NSString* const DSChainWalletAddedNotification =    @"DSChainWalletAddedNotification";
 NSString* const DSWalletBalanceChangedNotification =        @"DSWalletBalanceChangedNotification";

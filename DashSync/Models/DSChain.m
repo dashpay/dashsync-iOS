@@ -215,6 +215,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) self.feePerKb = feePerKb;
     
     [self chainEntity];
+    [self retrieveWallets];
     return self;
 }
 
@@ -358,16 +359,28 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(NSString*)chainWalletsKey {
-    return [NSString stringWithFormat:@"%@_%@",[self uniqueID],CHAIN_WALLETS_KEY];
+    return [NSString stringWithFormat:@"%@_%@",CHAIN_WALLETS_KEY,[self uniqueID]];
 }
 
 // MARK: - Wallet
+
+-(void)retrieveWallets {
+    NSError * error = nil;
+    NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey, &error);
+    if (!error) {
+        for (NSString * walletIdentifier in walletIdentifiers) {
+            DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:walletIdentifier forChain:self];
+            [self addWallet:wallet];
+        }
+    }
+}
 
 -(BOOL)hasAWallet {
     return !![_wallets count];
 }
 
 -(void)removeWallet:(DSWallet*)wallet {
+    NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
     [_wallets removeObject:wallet];
 }
 -(void)addWallet:(DSWallet*)wallet {
@@ -381,8 +394,12 @@ static dispatch_once_t devnetToken = 0;
     }
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
+    if (!keyChainArray) keyChainArray = [NSMutableArray array];
     [keyChainArray addObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletAddedNotification object:nil];
+    });
 }
 
 -(NSSet*)wallets {

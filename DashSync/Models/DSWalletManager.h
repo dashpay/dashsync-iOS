@@ -43,8 +43,6 @@
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 #define SPEND_LIMIT_KEY     @"spendlimit"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSWalletManagerSeedChangedNotification;
-
 @class DSDerivationPath;
 
 @protocol DSMnemonic;

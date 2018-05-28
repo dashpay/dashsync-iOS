@@ -14,12 +14,20 @@
 
 @interface DSWalletViewController ()
 
+@property (nonatomic,strong) id<NSObject> chainObserver;
+
 @end
 
 @implementation DSWalletViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.chainObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           [self.tableView reloadData];
+                                                       }];
+    
     // Do any additional setup after loading the view.
 }
 

@@ -111,7 +111,7 @@ static const char *mainnet_dns_seeds[] = {
                                                        }];
     
     self.seedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletManagerSeedChangedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.chain wipeChain];
                                                            [[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
