@@ -570,10 +570,26 @@ services:(uint64_t)services
     }
 }
 
-// MARK: - send Dash Masternode
+// MARK: - send Dash Sporks
 
 -(void)sendGetSporks {
     [self sendMessage:[NSData data] type:MSG_GETSPORKS];
+}
+
+// MARK: - send Dash Masternode list
+
+-(void)sendDSegMessage:(DSUTXO)utxo {
+    NSMutableData *msg = [NSMutableData data];
+    [msg appendUInt256:utxo.hash];
+    if (uint256_is_zero(utxo.hash)) {
+        [msg appendUInt32:UINT32_MAX];
+    } else {
+        [msg appendUInt32:(uint32_t)utxo.n];
+    }
+    
+    [msg appendUInt8:0];
+    [msg appendUInt32:UINT32_MAX];
+    [self sendMessage:[NSData data] type:MSG_DSEG];
 }
 
 // MARK: - send Dash Governance

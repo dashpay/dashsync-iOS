@@ -27,7 +27,9 @@
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver;
+@property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -72,6 +74,11 @@
                                                            NSLog(@"update spork count");
                                                            [self updateSporks];
                                                        }];
+    self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListChangedNotification object:nil
+                                                                                     queue:nil usingBlock:^(NSNotification *note) {
+                                                                                         NSLog(@"update spork count");
+                                                                                         [self updateSporks];
+                                                                                     }];
     
 }
 
@@ -225,6 +232,11 @@
 
 -(void)syncFailed {
     
+}
+
+-(void)updateMasternodes {
+    self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
+    self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
 }
 
 -(void)updateBalance {

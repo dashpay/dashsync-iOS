@@ -143,6 +143,12 @@ CFAllocatorRef SecureAllocator()
     [self appendBytes:&i length:sizeof(i)];
 }
 
+- (void)appendUInt256:(UInt256)i
+{
+    [self appendBytes:&i length:sizeof(i)];
+}
+
+
 - (void)appendVarInt:(uint64_t)i
 {
     if (i < VAR_INT16_HEADER) {
