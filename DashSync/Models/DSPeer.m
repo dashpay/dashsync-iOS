@@ -1200,14 +1200,14 @@ services:(uint64_t)services
 
 // MARK: - accept Masternode
 
-// MARK: - accept Governance
-
 - (void)acceptSSCMessage:(NSData *)message
 {
     uint32_t itemId = [message UInt32AtOffset:0];
-    uint32_t count = [message UInt64AtOffset:4];
+    uint32_t count = [message UInt32AtOffset:4];
     
 }
+
+// MARK: - accept Governance
 
 // https://dash-docs.github.io/en/developer-reference#govobj
 

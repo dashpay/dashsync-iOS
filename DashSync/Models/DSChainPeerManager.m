@@ -45,6 +45,7 @@
 #import <netdb.h>
 #import "DSDerivationPath.h"
 #import "DSAccount.h"
+#import "DSMasternodeManager.h"
 
 #if ! PEER_LOGGING
 #define NSLog(...)
@@ -1248,6 +1249,9 @@ static const char *mainnet_dns_seeds[] = {
     }
 }
 
+- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count {
+    [[DSMasternodeManager sharedInstance] setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
+}
 
 
 // MARK: - DSChainDelegate

@@ -26,7 +26,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-
+#import "DSMasternodeManager.h"
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -129,6 +129,8 @@ typedef union _UInt128 UInt128;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
 
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
+
+- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count;
 
 @end
 
