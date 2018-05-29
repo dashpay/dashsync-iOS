@@ -449,7 +449,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
                 return;
             }
             @autoreleasepool {
-                NSString * seedPhrase = authenticated?getKeychainString(wallet.uniqueID, nil):nil;
+                NSString * seedPhrase = authenticated?getKeychainString(wallet.mnemonicUniqueID, nil):nil;
                 if (!seedPhrase) {
                     completion(NO,YES,YES,NO);
                     return;

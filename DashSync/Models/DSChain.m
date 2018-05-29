@@ -188,7 +188,6 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
 @property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
-@property (nonatomic, assign) NSTimeInterval earliestKeyTime;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * wallets;
@@ -204,7 +203,6 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     if (! (self = [super init])) return nil;
     
     _chainType = type;
-    self.earliestKeyTime = [DSWalletManager sharedInstance].seedCreationTime;
     self.orphans = [NSMutableDictionary dictionary];
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
@@ -396,7 +394,7 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray addObject:wallet.uniqueID];
+    [keyChainArray addObject:wallet.mnemonicUniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletAddedNotification object:nil];
@@ -510,7 +508,7 @@ static dispatch_once_t devnetToken = 0;
         _lastBlock = [[DSMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
         // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
         for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
+            if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestWalletCreationTime + NSTimeIntervalSince1970) {
                 UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
                 _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
@@ -787,7 +785,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)wipeChain {
-    self.earliestKeyTime = [DSWalletManager sharedInstance].seedCreationTime;
+    self.wallets = [NSMutableArray array];
     [DSMerkleBlockEntity deleteAllObjects];
     [DSMerkleBlockEntity saveContext];
     _blocks = nil;
@@ -804,7 +802,7 @@ static dispatch_once_t devnetToken = 0;
     _lastBlock = nil;
     // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
     for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-        if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
+        if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestWalletCreationTime + NSTimeIntervalSince1970) {
             UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
             
             _lastBlock = self.blocks[uint256_obj(checkpointHash)];

@@ -72,5 +72,31 @@
     DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
     return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
 }
+
+-(NSString*) identifierString {
+    switch (self.identifier) {
+        case DSSporkIdentifier_Spork2InstantSendEnabled:
+            return @"Instant Send enabled";
+        case DSSporkIdentifier_Spork3InstantSendBlockFiltering:
+            return @"Instant Send block filtering";
+        case DSSporkIdentifier_Spork5InstantSendMaxValue:
+            return @"Instant Send max value";
+        case DSSporkIdentifier_Spork8MasternodePaymentEnforcement:
+            return @"Masternode payment enforcement";
+        case DSSporkIdentifier_Spork9SuperblocksEnabled:
+            return @"Superblocks enabled";
+        case DSSporkIdentifier_Spork10MasternodePayUpdatedNodes:
+            return @"Masternode pay updated nodes";
+        case DSSporkIdentifier_Spork12ReconsiderBlocks:
+            return @"Reconsider blocks";
+        case DSSporkIdentifier_Spork13OldSuperblockFlag:
+            return @"Old superblock flag";
+        case DSSporkIdentifier_Spork14RequireSentinelFlag:
+            return @"Require sentinel flag";
+        default:
+            return @"Unknown spork";
+            break;
+    }
+}
     
 @end

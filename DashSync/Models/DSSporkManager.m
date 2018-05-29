@@ -57,7 +57,7 @@
     if (!spork.isValid) return; //sanity check
     DSSpork * currentSpork = self.sporkDictionary[@(spork.identifier)];
     BOOL updatedSpork = FALSE;
-    NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
+    __block NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
     if (currentSpork) {
         //there was already a spork
         if (![currentSpork isEqualToSpork:spork]) {
@@ -75,7 +75,9 @@
             [[DSSporkEntity managedObject] setAttributesFromSpork:spork]; // add new peers
         }
         [DSSporkEntity saveContext];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkManagerSporkUpdateNotification object:nil userInfo:dictionary];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkManagerSporkUpdateNotification object:nil userInfo:dictionary];
+        });
     }
 }
     

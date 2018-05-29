@@ -32,6 +32,8 @@
 		FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */; };
 		FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */; };
 		FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */; };
+		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
+		FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +93,10 @@
 		FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneAddressesViewController.m; sourceTree = "<group>"; };
 		FB763C632089B0A700CDBA57 /* DSAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressTableViewCell.m; sourceTree = "<group>"; };
+		FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporksViewController.h; sourceTree = "<group>"; };
+		FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSporksViewController.m; sourceTree = "<group>"; };
+		FB90D2B520BD2CFA002B7956 /* DSSporkTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporkTableViewCell.h; sourceTree = "<group>"; };
+		FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSporkTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +162,7 @@
 		6003F593195388D20070C39A /* Example for DashSync */ = {
 			isa = PBXGroup;
 			children = (
+				FB90D2B120BD2BA5002B7956 /* Sporks */,
 				FB6DC62620AB63B600E35EED /* View Controllers */,
 				FB763C5720897B8600CDBA57 /* Wallet */,
 				FB763C5320897AE500CDBA57 /* Cells */,
@@ -243,6 +250,8 @@
 				FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */,
 				FB6DC62A20AB678500E35EED /* DSChainTableViewCell.h */,
 				FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */,
+				FB90D2B520BD2CFA002B7956 /* DSSporkTableViewCell.h */,
+				FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -258,6 +267,15 @@
 				FB6DC63220AE082400E35EED /* DSWalletInputPhraseViewController.m */,
 			);
 			name = Wallet;
+			sourceTree = "<group>";
+		};
+		FB90D2B120BD2BA5002B7956 /* Sporks */ = {
+			isa = PBXGroup;
+			children = (
+				FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */,
+				FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */,
+			);
+			name = Sporks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -422,6 +440,7 @@
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
+				FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
@@ -430,6 +449,7 @@
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
+				FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

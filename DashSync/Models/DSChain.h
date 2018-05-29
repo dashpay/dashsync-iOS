@@ -84,7 +84,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletAddedNotification;
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
 @property (nonatomic, weak) DSChainPeerManager * peerManagerDelegate;
-@property (nonatomic, readonly) NSTimeInterval earliestKeyTime;
 @property (nonatomic, readonly) DSMerkleBlock * lastBlock;
 @property (nonatomic, readonly) NSArray * blockLocatorArray;
 @property (nonatomic, readonly) DSMerkleBlock *lastOrphan;

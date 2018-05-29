@@ -1,21 +1,21 @@
 //
-//  DSChainsViewController.m
+//  DSSporksViewController.m
 //  DashSync_Example
 //
-//  Created by Sam Westrich on 5/16/18.
+//  Created by Sam Westrich on 5/29/18.
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import "DSChainsViewController.h"
-#import <DashSync/DashSync.h>
-#import "DSChainTableViewCell.h"
-#import "DSSyncViewController.h"
+#import "DSSporksViewController.h"
+#import "DSSporkTableViewCell.h"
 
-@interface DSChainsViewController ()
+@interface DSSporksViewController ()
+
+
 
 @end
 
-@implementation DSChainsViewController
+@implementation DSSporksViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -35,27 +35,27 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 2 + [[[DSChainManager sharedInstance] devnetChains] count];
+
+    return [self.sporksArray count];
 }
 
--(DSChain*)chainForIndex:(NSInteger)index {
-    if (index == 0) return [DSChain mainnet];
-    if (index == 1) return [DSChain testnet];
-    NSInteger devnetIndex = index - 2;
-    NSArray * devnetChains = [[DSChainManager sharedInstance] devnetChains];
-    return [devnetChains objectAtIndex:devnetIndex];
-}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSChainTableViewCell *cell = (DSChainTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"chainTableViewCell" forIndexPath:indexPath];
-    DSChain * chain = [self chainForIndex:indexPath.row];
-    if (cell) {
-        cell.chainNameLabel.text = chain.networkName;
-    }
+    DSSporkTableViewCell *cell = (DSSporkTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"SporkCellIdentifier" forIndexPath:indexPath];
+    DSSpork * spork = [_sporksArray objectAtIndex:indexPath.row];
+    // Configure the cell...
+    cell.sporkNameLabel.text = spork.identifierString;
+    cell.sporkValueLabel.text = [NSString stringWithFormat:@"%llu",spork.value];
+    cell.sporkIdentifierLabel.text = [NSString stringWithFormat:@"%u",spork.identifier];
+    NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateStyle:NSDateFormatterShortStyle];
+    NSString * signedTime = [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:spork.timeSigned]];
+    cell.sporkTimeSignedLabel.text = signedTime;
     
     return cell;
 }
@@ -95,22 +95,14 @@
 }
 */
 
-
+/*
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
-    UITableViewCell * cell = (UITableViewCell*)sender;
-    NSInteger index = [self.tableView indexPathForCell:cell].row;
-    if ([segue.identifier isEqualToString:@"chainDetailsSegue"]) {
-        DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
-        DSChain * chain = [self chainForIndex:index];
-        syncViewController.chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
-        syncViewController.title = chain.networkName;
-    }
 }
-
+*/
 
 @end

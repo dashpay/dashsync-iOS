@@ -312,7 +312,7 @@ static const char *mainnet_dns_seeds[] = {
             
             if (p && ! [self.connectedPeers containsObject:p]) {
                 [p setDelegate:self queue:self.q];
-                p.earliestKeyTime = self.chain.earliestKeyTime;
+                p.earliestKeyTime = self.chain.earliestWalletCreationTime;
                 [self.connectedPeers addObject:p];
                 [p connect];
             }
@@ -898,7 +898,7 @@ static const char *mainnet_dns_seeds[] = {
             dispatch_async(self.q, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
                 // BUG: XXX headers can timeout on slow connections (each message is over 160k)
-                if (self.chain.lastBlock.timestamp + 7*24*60*60 >= self.chain.earliestKeyTime + NSTimeIntervalSince1970) {
+                if (self.chain.lastBlock.timestamp + 7*24*60*60 >= self.chain.earliestWalletCreationTime + NSTimeIntervalSince1970) {
                     [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
                 }
                 else [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
@@ -1138,7 +1138,7 @@ static const char *mainnet_dns_seeds[] = {
 {
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
-        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestKeyTime + NSTimeIntervalSince1970 + HOUR_TIME_INTERVAL/2) {
+        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + NSTimeIntervalSince1970 + HOUR_TIME_INTERVAL/2) {
         return;
     }
     

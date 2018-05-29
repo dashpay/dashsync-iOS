@@ -3,7 +3,7 @@
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 5/18/18.
-//  Copyright © 2018 Andrew Podkovyrin. All rights reserved.
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
 #import "DSWalletInputPhraseViewController.h"
@@ -56,7 +56,7 @@
 
 - (IBAction)createWallet:(id)sender {
     if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:self.inputSeedPhraseTextView.text]) {
-        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE];
+        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE isNewSeedPhrase:YES];
         [self.chain registerWallet:wallet];
         [self.navigationController popViewControllerAnimated:TRUE];
     }

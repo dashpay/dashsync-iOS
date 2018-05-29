@@ -24,6 +24,7 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
 @interface DSSpork : NSObject
 
 @property (nonatomic,assign,readonly) DSSporkIdentifier identifier;
+@property (nonatomic,readonly) NSString* identifierString;
 @property (nonatomic,assign,readonly,getter=isValid) BOOL valid;
 @property (nonatomic,assign,readonly) uint64_t timeSigned;
 @property (nonatomic,assign,readonly) uint64_t value;

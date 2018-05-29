@@ -10,6 +10,7 @@
 
 #import "DSSyncViewController.h"
 #import "DSWalletViewController.h"
+#import "DSSporksViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -88,7 +89,7 @@
 {
     double progress = self.chainPeerManager.syncProgress;
     
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && [DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
         self.explanationLabel.text = NSLocalizedString(@"Syncing:", nil);
     }
 }
@@ -239,6 +240,10 @@
     if ([segue.identifier isEqualToString:@"WalletsListSegue"]) {
         DSWalletViewController * walletViewController = (DSWalletViewController*)segue.destinationViewController;
         walletViewController.chain = self.chainPeerManager.chain;
+    } else if ([segue.identifier isEqualToString:@"SporksListSegue"]) {
+        DSSporksViewController * sporksViewController = (DSSporksViewController*)segue.destinationViewController;
+        sporksViewController.chain = self.chainPeerManager.chain;
+        sporksViewController.sporksArray = [[[[[DSSporkManager sharedInstance] sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
     }
 }
 

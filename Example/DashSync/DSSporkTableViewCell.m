@@ -1,18 +1,14 @@
 //
-//  DSChainTableViewCell.m
+//  DSSporkTableViewCell.m
 //  DashSync_Example
 //
-//  Created by Sam Westrich on 5/16/18.
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Created by Sam Westrich on 5/29/18.
+//  Copyright © 2018 Andrew Podkovyrin. All rights reserved.
 //
 
-#import "DSChainTableViewCell.h"
+#import "DSSporkTableViewCell.h"
 
-@interface DSChainTableViewCell()
-
-@end
-
-@implementation DSChainTableViewCell
+@implementation DSSporkTableViewCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];

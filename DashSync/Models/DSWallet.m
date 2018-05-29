@@ -311,12 +311,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
         return ([DSWalletManager sharedInstance].watchOnly) ? 0 : BIP39_CREATION_TIME;
 }
 
--(void)setWalletCreationTime:(NSTimeInterval)walletCreationTime {
-    NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
-    setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], self.creationTimeUniqueID, NO);
-    _walletCreationTime = walletCreationTime;
-}
-
 + (NSString*)setSeedPhrase:(NSString *)seedPhrase withAccounts:(NSArray*)accounts
 {
     NSString * uniqueID = nil;

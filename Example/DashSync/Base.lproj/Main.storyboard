@@ -238,6 +238,9 @@
                                                 <constraint firstAttribute="trailing" secondItem="wi7-Di-7Vu" secondAttribute="trailing" constant="16" id="wSp-fe-YJT"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="FoV-AM-lCH" kind="show" identifier="SporksListSegue" id="ncq-MU-UI1"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -651,6 +654,78 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sSx-Dl-zzb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3254" y="375"/>
+        </scene>
+        <!--Sporks View Controller-->
+        <scene sceneID="qPI-fL-yi8">
+            <objects>
+                <tableViewController id="FoV-AM-lCH" customClass="DSSporksViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="Sni-Va-Ng6">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SporkCellIdentifier" rowHeight="77" id="OfO-eE-mxA" customClass="DSSporkTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="77"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="OfO-eE-mxA" id="gjg-DB-t0G">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="76.666666666666671"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kVe-Qo-Vdu">
+                                            <rect key="frame" x="16" y="12" width="45" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ON" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j53-5e-1US">
+                                            <rect key="frame" x="334" y="12" width="25" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Identifier" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L93-Ya-GHh">
+                                            <rect key="frame" x="16" y="45" width="67.666666666666671" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Time Signed" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bHZ-gI-nqE">
+                                            <rect key="frame" x="263.66666666666669" y="41" width="95.333333333333314" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="j53-5e-1US" secondAttribute="trailing" constant="16" id="D5I-7P-3KX"/>
+                                        <constraint firstItem="L93-Ya-GHh" firstAttribute="leading" secondItem="gjg-DB-t0G" secondAttribute="leading" constant="16" id="DQv-6h-CCO"/>
+                                        <constraint firstItem="bHZ-gI-nqE" firstAttribute="top" secondItem="j53-5e-1US" secondAttribute="bottom" constant="8" id="PD5-Nk-zHs"/>
+                                        <constraint firstItem="kVe-Qo-Vdu" firstAttribute="top" secondItem="gjg-DB-t0G" secondAttribute="top" constant="12" id="YWx-E2-TXv"/>
+                                        <constraint firstItem="j53-5e-1US" firstAttribute="top" secondItem="gjg-DB-t0G" secondAttribute="top" constant="12" id="bzz-Xt-f2f"/>
+                                        <constraint firstItem="L93-Ya-GHh" firstAttribute="top" secondItem="kVe-Qo-Vdu" secondAttribute="bottom" constant="12" id="nZD-pc-8PE"/>
+                                        <constraint firstItem="kVe-Qo-Vdu" firstAttribute="leading" secondItem="gjg-DB-t0G" secondAttribute="leading" constant="16" id="p1v-XR-1It"/>
+                                        <constraint firstAttribute="trailing" secondItem="bHZ-gI-nqE" secondAttribute="trailing" constant="16" id="qhp-TU-ykz"/>
+                                        <constraint firstItem="j53-5e-1US" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="kVe-Qo-Vdu" secondAttribute="trailing" constant="10" id="scW-Af-P5E"/>
+                                        <constraint firstItem="bHZ-gI-nqE" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="L93-Ya-GHh" secondAttribute="trailing" constant="10" id="zUY-ug-OMO"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="sporkIdentifierLabel" destination="L93-Ya-GHh" id="87e-tG-OnD"/>
+                                    <outlet property="sporkNameLabel" destination="kVe-Qo-Vdu" id="Khx-Lc-qOI"/>
+                                    <outlet property="sporkTimeSignedLabel" destination="bHZ-gI-nqE" id="79W-P1-RXI"/>
+                                    <outlet property="sporkValueLabel" destination="j53-5e-1US" id="M1k-qf-sZ7"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="FoV-AM-lCH" id="gdq-qs-Ew0"/>
+                            <outlet property="delegate" destination="FoV-AM-lCH" id="7qf-tX-m1l"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="eVr-Tw-bpw" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4125.6000000000004" y="947.29064039408865"/>
         </scene>
         <!--Addresses-->
         <scene sceneID="gxw-BS-vWW">
