@@ -27,6 +27,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSMasternodeManager.h"
+#import "DSChain.h"
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -164,6 +165,7 @@ typedef enum : NSInteger {
 @property (nonatomic, assign) int16_t misbehavin;
 @property (nonatomic, assign) uint32_t priority;
 @property (nonatomic, assign) NSTimeInterval lowPreferenceTill;
+@property (nonatomic, assign) NSTimeInterval lastRequestedMasternodeList;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate; // set this when wallet addresses need to be added to bloom filter
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)
@@ -191,6 +193,7 @@ services:(uint64_t)services;
 - (void)sendGetaddrMessage;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
+- (void)sendDSegMessage:(DSUTXO)utxo;
 - (void)rerequestBlocksFrom:(UInt256)blockHash; // useful to get additional transactions after a bloom filter update
 
 -(NSString*)chainTip;

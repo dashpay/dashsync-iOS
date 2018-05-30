@@ -38,5 +38,6 @@
 @dynamic services;
 @dynamic timestamp;
 @dynamic chain;
+@dynamic lastRequestedMasternodeList;
 
 @end

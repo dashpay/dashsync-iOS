@@ -45,6 +45,7 @@
     </entity>
     <entity name="DSPeerEntity" representedClassName="DSPeerEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="lastRequestedMasternodeList" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="lowPreferenceTill" optional="YES" attributeType="Date" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="misbehavin" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -107,7 +108,7 @@
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="165"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="90"/>
         <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
-        <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="165"/>
+        <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="180"/>
         <element name="DSShapeshiftEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSTransactionEntity" positionX="0" positionY="0" width="128" height="165"/>
         <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="135"/>

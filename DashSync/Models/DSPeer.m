@@ -68,14 +68,6 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_MasternodeVerify = 19,
 };
 
-typedef enum : uint32_t {
-    inv_error = 0,
-    inv_tx,
-    inv_block,
-    inv_merkleblock,
-    inv_txlock_request,
-} inv_type;
-
 @interface DSPeer ()
 
 @property (nonatomic, assign) id<DSPeerDelegate> delegate;
@@ -84,7 +76,7 @@ typedef enum : uint32_t {
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdata, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -216,7 +208,7 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.gotVerack = self.sentVerack = NO;
-    self.sentFilter = self.sentGetaddr = self.sentGetdata = self.sentMempool = self.sentGetblocks = self.sentGovObjAndGovObjVoteGetdata = NO ;
+    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGovObjAndGovObjVoteGetdata = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
@@ -500,7 +492,7 @@ services:(uint64_t)services
     [msg appendVarInt:hashes.count];
 
     for (NSValue *hash in hashes) {
-        [msg appendUInt32:inv_tx];
+        [msg appendUInt32:DSInvType_Tx];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -524,20 +516,51 @@ services:(uint64_t)services
     [msg appendVarInt:txHashes.count + blockHashes.count];
     
     for (NSValue *hash in txHashes) {
-        [msg appendUInt32:inv_tx];
+        [msg appendUInt32:DSInvType_Tx];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
     
     for (NSValue *hash in blockHashes) {
-        [msg appendUInt32:inv_merkleblock];
+        [msg appendUInt32:DSInvType_Merkleblock];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
 
-    self.sentGetdata = YES;
+    self.sentGetdataTxBlocks = YES;
     [self sendMessage:msg type:MSG_GETDATA];
 }
+
+- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray *)masternodeBroadcastHashes andMasternodePingHashes:(NSArray *)masternodePingHashes
+{
+    if (masternodeBroadcastHashes.count + masternodePingHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+        NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
+              (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+        return;
+    }
+    else if (masternodeBroadcastHashes.count + masternodePingHashes.count == 0) return;
+    
+    NSMutableData *msg = [NSMutableData data];
+    UInt256 h;
+    
+    [msg appendVarInt:masternodeBroadcastHashes.count + masternodePingHashes.count];
+    
+    for (NSValue *hash in masternodeBroadcastHashes) {
+        [msg appendUInt32:DSInvType_MasternodeAnnounce];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
+    }
+    
+    for (NSValue *hash in masternodePingHashes) {
+        [msg appendUInt32:DSInvType_MasternodePing];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
+    }
+    
+    self.sentGetdataMasternode = YES;
+    [self sendMessage:msg type:MSG_GETDATA];
+}
+
 
 - (void)sendGetaddrMessage
 {
@@ -582,6 +605,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:utxo.hash];
     if (uint256_is_zero(utxo.hash)) {
+        NSLog(@"Requesting Masternode List");
         [msg appendUInt32:UINT32_MAX];
     } else {
         [msg appendUInt32:(uint32_t)utxo.n];
@@ -589,7 +613,7 @@ services:(uint64_t)services
     
     [msg appendUInt8:0];
     [msg appendUInt32:UINT32_MAX];
-    [self sendMessage:[NSData data] type:MSG_DSEG];
+    [self sendMessage:msg type:MSG_DSEG];
 }
 
 // MARK: - send Dash Governance
@@ -633,7 +657,8 @@ services:(uint64_t)services
     //control
     else if ([MSG_SPORK isEqual:type]) [self acceptSporkMessage:message];
     //masternode
-    
+    else if ([MSG_SSC isEqual:type]) [self acceptSSCMessage:message];
+    else if ([MSG_MNB isEqual:type]) [self acceptMNBMessage:message];
     //governance
     //else if ([MSG_GOVOBJVOTE isEqual:type]) [self acceptGov:message];
     else if ([MSG_GOVOBJ isEqual:type]) [self acceptGovObjectMessage:message];
@@ -764,6 +789,9 @@ services:(uint64_t)services
     NSMutableOrderedSet *sporkHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *governanceObjectHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *governanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *masternodePings = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *masternodeVerifications = [NSMutableOrderedSet orderedSet]; //mnv messages
+    NSMutableOrderedSet *masternodeAnnounces = [NSMutableOrderedSet orderedSet]; //mnb messages
     
     if (l.unsignedIntegerValue == 0 || message.length < l.unsignedIntegerValue + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
@@ -793,7 +821,15 @@ services:(uint64_t)services
             case DSInvType_Spork: [sporkHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_GovernanceObject: [governanceObjectHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:uint256_obj(hash)]; break;
-            default: break;
+            case DSInvType_MasternodePing: [masternodePings addObject:uint256_obj(hash)]; break;
+            case DSInvType_MasternodePaymentVote: break;
+            case DSInvType_MasternodeVerify: [masternodeVerifications addObject:uint256_obj(hash)]; break;
+            case DSInvType_MasternodeAnnounce: [masternodeAnnounces addObject:uint256_obj(hash)]; break;
+            default:
+            {
+                NSAssert(FALSE, @"inventory type not dealt with");
+                break;
+            }
         }
     }
     
@@ -873,6 +909,11 @@ services:(uint64_t)services
         [self sendGetdataMessageWithTxHashes:txHashes.array
                               andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
+    if (masternodePings.count > 0 || masternodeAnnounces.count > 0) {
+        [self sendGetdataMessageWithMasternodeBroadcastHashes:masternodeAnnounces.array andMasternodePingHashes:masternodePings.array];
+
+        NSLog(@"%@",masternodePings);
+    }
 }
 
 - (void)acceptTxMessage:(NSData *)message
@@ -883,7 +924,7 @@ services:(uint64_t)services
         [self error:@"malformed tx message: %@", message];
         return;
     }
-    else if (! self.sentFilter && ! self.sentGetdata) {
+    else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
         [self error:@"got tx message before loading a filter"];
         return;
     }
@@ -1008,15 +1049,15 @@ services:(uint64_t)services
         NSMutableData *notfound = [NSMutableData data];
     
         for (NSUInteger off = l; off < l + count*36; off += 36) {
-            inv_type type = [message UInt32AtOffset:off];
+            DSInvType type = [message UInt32AtOffset:off];
             UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
             DSTransaction *transaction = nil;
         
             if (uint256_is_zero(hash)) continue;
         
             switch (type) {
-                case inv_tx:
-                case inv_txlock_request:
+                case DSInvType_Tx:
+                case DSInvType_TxLockRequest:
                     transaction = [self.delegate peer:self requestedTransaction:hash];
                 
                     if (transaction) {
@@ -1058,10 +1099,10 @@ services:(uint64_t)services
     NSLog(@"%@:%u got notfound with %u items", self.host, self.port, (int)count);
 
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
-        if ([message UInt32AtOffset:off] == inv_tx) {
+        if ([message UInt32AtOffset:off] == DSInvType_Tx) {
             [txHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
-        else if ([message UInt32AtOffset:off] == inv_merkleblock) {
+        else if ([message UInt32AtOffset:off] == DSInvType_Merkleblock) {
             [blockHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
     }
@@ -1130,7 +1171,7 @@ services:(uint64_t)services
         [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
         return;
     }
-    else if (! self.sentFilter && ! self.sentGetdata) {
+    else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
         [self error:@"got merkleblock message before loading a filter"];
         return;
     }
@@ -1202,8 +1243,55 @@ services:(uint64_t)services
 
 - (void)acceptSSCMessage:(NSData *)message
 {
-    uint32_t itemId = [message UInt32AtOffset:0];
+    DSMasternodeSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
+    [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+}
+
+-(void)acceptMNBMessage:(NSData *)message
+{
+    DSUTXO masternodeUTXO;
+    NSUInteger offset = 0;
+    masternodeUTXO.hash = [message UInt256AtOffset:offset];
+    offset += 32;
+    masternodeUTXO.n = [message UInt32AtOffset:offset];
+    offset += 4;
+    uint8_t sigscriptSize = [message UInt8AtOffset:offset];
+    offset += 1;
+    NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
+    offset += sigscriptSize;
+    uint32_t sequenceNumber = [message UInt32AtOffset:offset];
+    offset += 4;
+    UInt128 masternodeAddress = [message UInt128AtOffset:offset];
+    offset += 16;
+    uint16_t port = [message UInt16AtOffset:offset];
+    offset += 2;
+    //Collateral Public Key
+    uint8_t collateralPublicKeySize = [message UInt8AtOffset:offset];
+    offset += 1;
+    uint8_t collateralPublicKeyType = [message UInt8AtOffset:offset];
+    offset += 1;
+    NSData * collateralPublicKey = [message subdataWithRange:NSMakeRange(offset, collateralPublicKeySize)];
+    offset += collateralPublicKeySize;
+    //Masternode Public Key
+    uint8_t masternodePublicKeySize = [message UInt8AtOffset:offset];
+    offset += 1;
+    uint8_t masternodePublicKeyType = [message UInt8AtOffset:offset];
+    offset += 1;
+    NSData * masternodePublicKey = [message subdataWithRange:NSMakeRange(offset, masternodePublicKeySize)];
+    offset += masternodePublicKeySize;
+    //Message Signature
+    uint8_t messageSignatureSize = [message UInt8AtOffset:offset];
+    offset += 1;
+    NSData * messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
+    offset+= messageSignatureSize;
+    
+    uint64_t timestamp = [message UInt64AtOffset:offset];
+    offset += 8;
+    
+    uint32_t protocolVersion = [message UInt32AtOffset:offset];
+    offset += 4;
+    
     
 }
 

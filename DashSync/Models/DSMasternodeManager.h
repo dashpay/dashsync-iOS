@@ -9,7 +9,7 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListChangedNotification;
 
-typedef NS_ENUM(NSUInteger, DSMasternodeSyncCountInfo) {
+typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
     DSMasternodeSyncCountInfo_List = 2,
     DSMasternodeSyncCountInfo_MNW = 3,
     DSMasternodeSyncCountInfo_GovernanceObject = 10,

@@ -543,6 +543,21 @@ static const char *mainnet_dns_seeds[] = {
     }
 }
 
+-(void)getMasternodeList {
+    NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedMasternodeList" ascending:YES]]];
+    for (DSPeer * peer in sortedPeers) {
+        if (peer.status != DSPeerStatusConnected) continue;
+        if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedMasternodeList < 10800) continue; //don't request less than every 3 hours from a peer
+        peer.lastRequestedMasternodeList = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
+        DSUTXO emptyUTXO;
+        emptyUTXO.hash = UINT256_ZERO;
+        emptyUTXO.n = 0;
+        [peer sendDSegMessage:emptyUTXO];
+        [self savePeer:peer];
+        break;
+    }
+}
+
 -(void)startMasternodeSync {
     for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
         if (p.status != DSPeerStatusConnected) continue;
@@ -713,6 +728,8 @@ static const char *mainnet_dns_seeds[] = {
         if (p1.priority < p2.priority) return NSOrderedDescending;
         if (p1.timestamp > p2.timestamp) return NSOrderedAscending;
         if (p1.timestamp < p2.timestamp) return NSOrderedDescending;
+        if (p1.lastRequestedMasternodeList > p2.lastRequestedMasternodeList) return NSOrderedAscending;
+        if (p1.lastRequestedMasternodeList < p2.lastRequestedMasternodeList) return NSOrderedDescending;
         return NSOrderedSame;
     }];
 }
@@ -739,6 +756,9 @@ static const char *mainnet_dns_seeds[] = {
                     e.timestamp = p.timestamp;
                     e.services = p.services;
                     e.misbehavin = p.misbehavin;
+                    e.priority = p.priority;
+                    e.lowPreferenceTill = p.lowPreferenceTill;
+                    e.lastRequestedMasternodeList = p.lastRequestedMasternodeList;
                     [peers removeObject:p];
                 }
                 else [e deleteObject];
@@ -753,7 +773,28 @@ static const char *mainnet_dns_seeds[] = {
     }];
 }
 
+-(void)savePeer:(DSPeer*)peer
+{
+    [[DSPeerEntity context] performBlock:^{
+        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@", @(CFSwapInt32BigToHost(peer.address.u32[3]))];
+        if ([peerEntities count]) {
+            DSPeerEntity * e = [peerEntities firstObject];
 
+            @autoreleasepool {
+                    e.timestamp = peer.timestamp;
+                    e.services = peer.services;
+                    e.misbehavin = peer.misbehavin;
+                    e.priority = peer.priority;
+                    e.lowPreferenceTill = peer.lowPreferenceTill;
+                    e.lastRequestedMasternodeList = peer.lastRequestedMasternodeList;
+            }
+        } else {
+            @autoreleasepool {
+                [[DSPeerEntity managedObject] setAttributesFromPeer:peer]; // add new peers
+            }
+        }
+    }];
+}
 
 // MARK: - Bloom Filters
 
@@ -911,6 +952,7 @@ static const char *mainnet_dns_seeds[] = {
         [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
         [self loadMempools];
         [self getSporks];
+        [self getMasternodeList];
     }
 }
 
@@ -1276,6 +1318,7 @@ static const char *mainnet_dns_seeds[] = {
     self.syncStartHeight = 0;
     [self loadMempools];
     [self getSporks];
+    [self getMasternodeList];
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
