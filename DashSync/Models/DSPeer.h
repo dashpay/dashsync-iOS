@@ -110,7 +110,7 @@
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -132,6 +132,8 @@ typedef union _UInt128 UInt128;
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count;
+- (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
+- (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing;
 
 @end
 

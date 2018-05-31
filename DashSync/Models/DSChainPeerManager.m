@@ -1296,6 +1296,14 @@ static const char *mainnet_dns_seeds[] = {
 }
 
 
+- (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
+    
+}
+
+- (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {
+    
+}
+
 // MARK: - DSChainDelegate
 
 -(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {

@@ -34,7 +34,9 @@
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
 #import "Reachability.h"
+#import "DSMasternodeBroadcast.h"
 #import <arpa/inet.h>
+#import "DSMasternodePing.h"
 
 #if ! PEER_LOGGING
 #define NSLog(...)
@@ -1250,50 +1252,11 @@ services:(uint64_t)services
 
 -(void)acceptMNBMessage:(NSData *)message
 {
-    DSUTXO masternodeUTXO;
-    NSUInteger offset = 0;
-    masternodeUTXO.hash = [message UInt256AtOffset:offset];
-    offset += 32;
-    masternodeUTXO.n = [message UInt32AtOffset:offset];
-    offset += 4;
-    uint8_t sigscriptSize = [message UInt8AtOffset:offset];
-    offset += 1;
-    NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
-    offset += sigscriptSize;
-    uint32_t sequenceNumber = [message UInt32AtOffset:offset];
-    offset += 4;
-    UInt128 masternodeAddress = [message UInt128AtOffset:offset];
-    offset += 16;
-    uint16_t port = [message UInt16AtOffset:offset];
-    offset += 2;
-    //Collateral Public Key
-    uint8_t collateralPublicKeySize = [message UInt8AtOffset:offset];
-    offset += 1;
-    uint8_t collateralPublicKeyType = [message UInt8AtOffset:offset];
-    offset += 1;
-    NSData * collateralPublicKey = [message subdataWithRange:NSMakeRange(offset, collateralPublicKeySize)];
-    offset += collateralPublicKeySize;
-    //Masternode Public Key
-    uint8_t masternodePublicKeySize = [message UInt8AtOffset:offset];
-    offset += 1;
-    uint8_t masternodePublicKeyType = [message UInt8AtOffset:offset];
-    offset += 1;
-    NSData * masternodePublicKey = [message subdataWithRange:NSMakeRange(offset, masternodePublicKeySize)];
-    offset += masternodePublicKeySize;
-    //Message Signature
-    uint8_t messageSignatureSize = [message UInt8AtOffset:offset];
-    offset += 1;
-    NSData * messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
-    offset+= messageSignatureSize;
-    
-    uint64_t timestamp = [message UInt64AtOffset:offset];
-    offset += 8;
-    
-    uint32_t protocolVersion = [message UInt32AtOffset:offset];
-    offset += 4;
-    
-    
+    DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message];
+
 }
+
+
 
 // MARK: - accept Governance
 

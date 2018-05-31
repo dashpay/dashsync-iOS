@@ -704,11 +704,6 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
     return CFSwapInt16LittleToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
 }
 
-- (uint16_t)UInt16AtOffsetUnswapped:(NSUInteger)offset
-{
-    if (self.length < offset + sizeof(uint16_t)) return 0;
-    return CFSwapInt16LittleToHost(*(const uint16_t *)((const uint8_t *)self.bytes + offset));
-}
 
 - (uint32_t)UInt32AtOffset:(NSUInteger)offset
 {
