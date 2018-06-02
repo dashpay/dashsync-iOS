@@ -47,7 +47,7 @@
 
 
 -(void)textViewDidChange:(UITextView *)textView {
-    if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:textView.text]) {
+    if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:textView.text] || [textView.text isValidDashExtendedPublicKeyOnChain:self.chain]) {
         self.saveButton.enabled = TRUE;
     } else {
         self.saveButton.enabled = FALSE;
@@ -56,8 +56,11 @@
 
 - (IBAction)createWallet:(id)sender {
     if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:self.inputSeedPhraseTextView.text]) {
-        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE isNewSeedPhrase:YES];
+        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE];
         [self.chain registerWallet:wallet];
+        [self.navigationController popViewControllerAnimated:TRUE];
+    } else if ([self.inputSeedPhraseTextView.text isValidDashExtendedPublicKeyOnChain:self.chain])
+        DSDerivationPath * derivationPath = [DSDerivationPath derivationPathWithSerializedExtendedPublicKey:self.inputSeedPhraseTextView.text];
         [self.navigationController popViewControllerAnimated:TRUE];
     }
 }

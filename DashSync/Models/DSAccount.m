@@ -179,7 +179,7 @@
 }
 
 // all previously generated external addresses
--(NSArray *)externalddresses {
+-(NSArray *)externalAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[derivationPath allReceiveAddresses]];

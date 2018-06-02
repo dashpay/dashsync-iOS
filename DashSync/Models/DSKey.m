@@ -215,7 +215,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return nil;
 }
 
-- (NSString *)privateKeyForChain:(DSChain*)chain
+- (NSString *)privateKeyStringForChain:(DSChain*)chain
 {
     if (uint256_is_zero(_seckey)) return nil;
 

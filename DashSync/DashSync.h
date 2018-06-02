@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "DSChainPeerManager.h"
 #import "DSChain.h"
+#import "DSDerivationPath.h"
 #import "DSChainManager.h"
 #import "DSWalletManager.h"
 #import "DSSporkManager.h"
@@ -19,6 +20,9 @@
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSDerivationPath.h"
+#import "NSString+Dash.h"
+#import "NSMutableData+Dash.h"
+#import "NSData+Dash.h"
 
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;

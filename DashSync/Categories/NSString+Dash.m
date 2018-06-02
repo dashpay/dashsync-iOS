@@ -31,6 +31,7 @@
 #import "UIImage+DSUtils.h"
 #import "DSWalletManager.h"
 #import "DSChain.h"
+#import "DSDerivationPath.h"
 
 @implementation NSString (Dash)
 
@@ -148,6 +149,21 @@
         }
     }
     else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
+}
+
+- (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain*)chain
+{
+    if (![self isValidBase58]) return false;
+    NSData * allData = self.base58ToData;
+    if (allData.length != 82) return false;
+    NSData * data = [allData subdataWithRange:NSMakeRange(0, allData.length - 4)];
+    NSData * checkData = [allData subdataWithRange:NSMakeRange(allData.length - 4, 4)];
+    if ((*(uint32_t*)data.SHA256_2.u32) != *(uint32_t*)checkData.bytes) return FALSE;
+    uint8_t * bytes = (uint8_t *)[data bytes];
+    if (memcmp(bytes,[chain isMainnet]?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) != 0 && memcmp(bytes,[chain isMainnet]?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET,4) != 0) {
+        return FALSE;
+    }
+    return TRUE;
 }
 
 // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki

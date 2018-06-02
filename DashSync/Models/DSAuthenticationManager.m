@@ -507,11 +507,11 @@ replacementString:(NSString *)string
             NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
             NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
                                                                 normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * wallet = [[[DSWalletManager sharedInstance] allWallets] firstObject];
-            DSAccount * account = [wallet.accounts firstObject];
-            DSDerivationPath * derivationPath = [account.derivationPaths firstObject];
-            NSData * extendedPublicKey = [DSWallet extendedPublicKeyForDerivationPath:derivationPath];
-            if (extendedPublicKey && ![[derivationPath generateExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
+            DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase forChain:[DSChain mainnet] storeSeedPhrase:NO];
+            DSAccount * account = [wallet accountWithNumber:0];
+            DSDerivationPath * derivationPath = [account bip44DerivationPath];
+            NSData * extendedPublicKey = derivationPath.extendedPublicKey;
+            if (extendedPublicKey && ![extendedPublicKey isEqual:oldData]) {
                 self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
                                                 withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];

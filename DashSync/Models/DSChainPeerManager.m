@@ -76,7 +76,7 @@ static const char *mainnet_dns_seeds[] = {
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, assign) NSTimeInterval lastRelayTime;
 @property (nonatomic, strong) dispatch_queue_t q;
-@property (nonatomic, strong) id backgroundObserver, seedObserver;
+@property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, assign) uint32_t syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
@@ -115,11 +115,10 @@ static const char *mainnet_dns_seeds[] = {
                                                            }
                                                        }];
     
-    self.seedObserver =
+    self.walletAddedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           [self.chain wipeChain];
-                                                           [[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
+                                                           //[[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
                                                        }];
     
     return self;
@@ -129,7 +128,7 @@ static const char *mainnet_dns_seeds[] = {
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
-    if (self.seedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.seedObserver];
+    if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
 }
 
 -(const char **)dnsSeeds {

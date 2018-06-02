@@ -189,7 +189,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
-@property (nonatomic, strong) NSMutableArray<DSWallet *> * wallets;
+@property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
 
 @end
 
@@ -206,7 +206,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.standardPort = port;
-    _wallets = [NSMutableArray array];
+    self.mWallets = [NSMutableArray array];
     
     self.feePerKb = DEFAULT_FEE_PER_KB;
     uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
@@ -377,20 +377,20 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(BOOL)hasAWallet {
-    return !![_wallets count];
+    return !![self.mWallets count];
 }
 
 -(void)removeWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
-    [_wallets removeObject:wallet];
+    [self.mWallets removeObject:wallet];
 }
 -(void)addWallet:(DSWallet*)wallet {
-    [_wallets addObject:wallet];
+    [self.mWallets addObject:wallet];
 }
 
 - (void)registerWallet:(DSWallet*)wallet
 {
-    if ([self.wallets indexOfObject:wallet] == NSNotFound) {
+    if ([self.mWallets indexOfObject:wallet] == NSNotFound) {
         [self addWallet:wallet];
     }
     NSError * error = nil;
@@ -404,7 +404,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(NSArray*)wallets {
-    return [_wallets copy];
+    return [self.mWallets copy];
 }
 
 -(NSTimeInterval)earliestWalletCreationTime {
@@ -787,7 +787,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)wipeChain {
-    self.wallets = [NSMutableArray array];
+    self.mWallets = [NSMutableArray array];
     [DSMerkleBlockEntity deleteAllObjects];
     [DSMerkleBlockEntity saveContext];
     _blocks = nil;

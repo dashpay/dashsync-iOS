@@ -182,6 +182,19 @@ static const UniChar base58chars[] = {
     return [self base58checkWithData:d];
 }
 
+-(BOOL)isValidBase58 {
+    static NSString * base58characters = @"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    NSCharacterSet * characterSet = [NSCharacterSet characterSetWithCharactersInString:base58characters];
+    size_t i, z = 0;
+    while (z < self.length && [self characterAtIndex:z] == base58chars[0]) z++; // count leading zeroes
+    BOOL r = TRUE;
+    for (i = z; i < self.length; i++) {
+        r &= [characterSet characterIsMember:[self characterAtIndex:i]];
+        if (!r) return r;
+    }
+    return r;
+}
+
 - (NSData *)base58ToData
 {
     size_t i, z = 0;

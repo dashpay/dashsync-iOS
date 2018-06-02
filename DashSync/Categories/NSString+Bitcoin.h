@@ -51,6 +51,7 @@
 + (NSString *)bitcoinAddressWithScriptPubKey:(NSData *)script forChain:(DSChain*)chain;
 + (NSString *)bitcoinAddressWithScriptSig:(NSData *)script forChain:(DSChain*)chain;
 
+- (BOOL)isValidBase58;
 - (NSData *)base58ToData;
 - (NSData *)base58checkToData;
 - (NSData *)hexToData;

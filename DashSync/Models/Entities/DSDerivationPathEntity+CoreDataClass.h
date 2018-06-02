@@ -25,13 +25,13 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain,DSTxInputEntity,DSTxOutputEntity;
+@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain,DSWallet,DSTxInputEntity,DSTxOutputEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDerivationPathEntity : NSManagedObject
 
-+ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain;
++ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath;
 
 @end
 

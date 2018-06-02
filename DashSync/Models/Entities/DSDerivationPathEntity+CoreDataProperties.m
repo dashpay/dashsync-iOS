@@ -33,5 +33,7 @@
 @dynamic derivationPath;
 @dynamic addresses;
 @dynamic chain;
+@dynamic walletUniqueID;
+@dynamic publicKeyIdentifier;
 
 @end

@@ -26,6 +26,8 @@
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
         <attribute name="derivationPath" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="publicKeyIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="walletUniqueID" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="account" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="derivationPaths" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
@@ -115,7 +117,7 @@
     <elements>
         <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="165"/>
-        <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="90"/>
+        <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="118"/>
         <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="180"/>
         <element name="DSShapeshiftEntity" positionX="0" positionY="0" width="128" height="225"/>

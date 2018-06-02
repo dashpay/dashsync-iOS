@@ -456,7 +456,7 @@ passphrase:(NSString *)passphrase
 // encrypts receiver with passphrase and returns BIP38 key
 - (NSString *)BIP38KeyWithPassphrase:(NSString *)passphrase onChain:(DSChain*)chain
 {
-    NSData *priv = [self privateKeyForChain:chain].base58checkToData;
+    NSData *priv = [self privateKeyStringForChain:chain].base58checkToData;
 
     if (priv.length < 33 || ! passphrase) return nil;
 

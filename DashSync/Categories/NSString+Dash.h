@@ -59,6 +59,7 @@
 - (BOOL)isValidDashAddressOnChain:(DSChain*)chain;
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain*)chain;
 - (BOOL)isValidDashBIP38Key; // BIP38 encrypted keys: https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
+- (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain*)chain;
 
 -(NSInteger)indexOfCharacter:(unichar)character;
 

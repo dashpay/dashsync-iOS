@@ -25,21 +25,35 @@
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChain.h"
+#import "DSWallet.h"
+#import "DSAccount.h"
+#import "DSDerivationPath.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSDerivationPathEntity
 
-+ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath onChain:(DSChain* _Nonnull)chain {
-    DSChainEntity * chainEntity = chain.chainEntity;
++ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath {
+    DSWallet * wallet = derivationPath.account.wallet;
+    NSArray * derivationPathEntities;
     NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
-    NSSet * derivationPathEntities = [chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
-        return ([obj.derivationPath isEqualToData:archivedDerivationPath]);
-    }];
+    if (wallet) {
+    DSChainEntity * chainEntity = derivationPath.account.wallet.chain.chainEntity;
+    
+        derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
+            return ([obj.publicKeyIdentifier isEqualToString:derivationPath.extendedPublicKeyIdentifier]);
+        }] allObjects];
+    } else {
+        derivationPathEntities = [self objectsMatching:@"publicKeyIdentifier == %@",derivationPath.extendedPublicKeyIdentifier];
+    }
+    
+    //&& [obj.derivationPath isEqualToData:archivedDerivationPath]
     if ([derivationPathEntities count]) {
-        return [derivationPathEntities anyObject];
+        return [derivationPathEntities firstObject];
     } else {
         DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
         derivationPathEntity.derivationPath = archivedDerivationPath;
+        derivationPathEntity.publicKeyIdentifier = derivationPath.extendedPublicKeyIdentifier;
+        derivationPathEntity.walletUniqueID = wallet.uniqueID;
         return derivationPathEntity;
     }
 }

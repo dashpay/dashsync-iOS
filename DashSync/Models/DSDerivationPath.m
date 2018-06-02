@@ -291,6 +291,15 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return [[self alloc] initWithIndexes:indexes length:length type:type reference:(DSDerivationPathReference)reference];
 }
 
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString*)serializedExtendedPublicKey onChain:(DSChain*)chain {
+    NSData * extendedPublicKey = [self deserializedExtendedPublicKey:serializedExtendedPublicKey onChain:chain];
+    NSUInteger indexes[] = {};
+    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown];
+    derivationPath.extendedPublicKey = extendedPublicKey;
+    [derivationPath saveExtendedPublicKeyToKeyChain];
+    return derivationPath;
+}
+
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                            type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
     if (length) {
@@ -301,6 +310,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     _reference = reference;
     _type = type;
+    _derivationPathIsKnown = YES;
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
     self.moc = [NSManagedObject context];
@@ -308,7 +318,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     [self.moc performBlockAndWait:^{
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self onChain:self.account.wallet.chain];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
         for (DSAddressEntity *e in derivationPathEntity.addresses) {
             @autoreleasepool {
                 NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
@@ -327,6 +337,8 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return self;
 }
 
+
+
 - (void)setAccount:(DSAccount *)account {
     if (!_account) {
         NSAssert(account.accountNumber == [self accountNumber], @"account number doesn't match derivation path ending");
@@ -344,22 +356,17 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 }
 
 -(NSData*)extendedPublicKey {
-    
     if (!_extendedPublicKey) {
-        NSAssert(self.account.wallet.chain, @"The wallet has no chain");
         _extendedPublicKey = getKeychainData([self extendedPublicKeyKeychainString], nil);
     }
     NSAssert(_extendedPublicKey, @"extended public key not set");
     return _extendedPublicKey;
 }
 
--(void)setExtendedPublicKey:(NSData*)data {
-    
-    setKeychainData(data,[self extendedPublicKeyKeychainString],NO);
-    _extendedPublicKey = data;
-    
+-(void)saveExtendedPublicKeyToKeyChain {
+    if (!_extendedPublicKey) return;
+    setKeychainData(_extendedPublicKey, [self extendedPublicKeyKeychainString], NO);
 }
-
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
@@ -407,7 +414,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
             }
             
             [self.moc performBlock:^{ // store new address in core data
-                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self onChain:self.account.wallet.chain];
+                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
                 DSAddressEntity *e = [DSAddressEntity managedObject];
                 e.derivationPath = derivationPathEntity;
                 e.address = addr;
@@ -428,21 +435,29 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - Identifiers
 
+-(NSString *) extendedPublicKeyIdentifier {
+    return [self extendedPublicKey].shortHexString;
+}
+
 +(NSString*)extendedPublicKeyUniqueIDForUniqueID:(NSString*)uniqueID {
     return [NSString stringWithFormat:@"%@_%@",DERIVATION_PATH_EXTENDED_PUBLIC_KEY,uniqueID];
 }
 
 -(NSString*)extendedPublicKeyUniqueID {
-    return [DSDerivationPath extendedPublicKeyUniqueIDForUniqueID:self.account.wallet.uniqueID];
+    return [DSDerivationPath extendedPublicKeyUniqueIDForUniqueID:self.extendedPublicKeyIdentifier];
 }
 
--(NSString*)extendedPublicKeyKeychainString {
-    if (_extendedPublicKeyKeychainString) return _extendedPublicKeyKeychainString;
+-(NSString*)extendedPublicKeyKeychainStringForUniqueID:(NSString*)uniqueID {
     NSMutableString * mutableString = [NSMutableString string];
     for (NSInteger i = 0;i<self.length;i++) {
         [mutableString appendFormat:@"_%lu",(unsigned long)[self indexAtPosition:i]];
     }
-    _extendedPublicKeyKeychainString = [NSString stringWithFormat:@"%@_%@",[self extendedPublicKeyUniqueID],mutableString];
+    return [NSString stringWithFormat:@"%@%@",[DSDerivationPath extendedPublicKeyUniqueIDForUniqueID:uniqueID],mutableString];
+}
+
+-(NSString*)extendedPublicKeyKeychainString {
+    if (_extendedPublicKeyKeychainString) return _extendedPublicKeyKeychainString;
+    _extendedPublicKeyKeychainString = [self extendedPublicKeyKeychainStringForUniqueID:self.extendedPublicKeyIdentifier];
     return _extendedPublicKeyKeychainString;
 }
 
@@ -521,7 +536,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
 // the values are taken from BIP32 account m/44H/5H/0H
-- (NSData *)generateExtendedPublicKeyFromSeed:(NSData *)seed
+- (NSData *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
@@ -542,7 +557,10 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
     
-    [self setExtendedPublicKey:mpk];
+    _extendedPublicKey = mpk;
+    if (walletUniqueId) {
+        setKeychainData(mpk,[self extendedPublicKeyKeychainStringForUniqueID:walletUniqueId],NO);
+    }
     
     return mpk;
 }
@@ -698,20 +716,25 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return serialize([self length], fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)],[self.account.wallet.chain isMainnet]);
 }
 
-- (NSData *)deserializedMasterPublicKey:(NSString *)masterPublicKeyString
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain
 {
     uint8_t depth;
     uint32_t fingerprint;
     uint32_t child;
-    UInt256 chain;
+    UInt256 chainHash;
     NSData * pubkey = nil;
     NSMutableData * masterPublicKey = [NSMutableData secureData];
-    BOOL valid = deserialize(masterPublicKeyString, &depth, &fingerprint, &child, &chain, &pubkey,[self.account.wallet.chain isMainnet]);
+    BOOL valid = deserialize(extendedPublicKeyString, &depth, &fingerprint, &child, &chainHash, &pubkey,[chain isMainnet]);
     if (!valid) return nil;
     [masterPublicKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
-    [masterPublicKey appendBytes:&chain length:32];
+    [masterPublicKey appendBytes:&chainHash length:32];
     [masterPublicKey appendData:pubkey];
     return [masterPublicKey copy];
+}
+
+- (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString
+{
+    return [DSDerivationPath deserializedExtendedPublicKey:extendedPublicKeyString onChain:self.account.wallet.chain];
 }
 
 @end

@@ -458,7 +458,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
                 BOOL failed = NO;
                 for (DSAccount * account in wallet.accounts) {
                     for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                        NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData];
+                        NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:wallet.uniqueID];
                         failed = failed | !setKeychainData(data, [derivationPath extendedPublicKeyKeychainString], NO);
                     }
                 }
@@ -926,7 +926,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
                     }];
                      }
                      else {
-                         [self sweepPrivateKey:[key privateKeyForChain:chain] onChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
+                         [self sweepPrivateKey:[key privateKeyStringForChain:chain] onChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
                          self.sweepKey = nil;
                          self.sweepCompletion = nil;
                      }

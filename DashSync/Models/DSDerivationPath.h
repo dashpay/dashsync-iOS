@@ -71,7 +71,8 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
     DSDerivationPathFundsType_Clear,
-    DSDerivationPathFundsType_Anonymous
+    DSDerivationPathFundsType_Anonymous,
+    DSDerivationPathFundsType_ViewOnly
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
@@ -85,8 +86,15 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //is this an open account
 @property (nonatomic,assign,readonly) DSDerivationPathFundsType type;
 
-// account for the account
+// account for the derivation path
 @property (nonatomic, readonly, weak) DSAccount * account;
+
+// extended Public Key
+@property (nonatomic, readonly) NSData * extendedPublicKey;
+
+// extended Public Key Identifier, which is just the short hex string of the extended public key
+@property (nonatomic, readonly) NSString * extendedPublicKeyIdentifier;
+
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 
@@ -108,11 +116,14 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // all previously used addresses
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
-// the extendedPubKeyString is the key used to store the public key in nsuserdefaults
+// the extendedPublicKeyKeychainString is the key used to store the public key in nsuserdefaults
 @property (nonatomic, readonly) NSString * _Nullable extendedPublicKeyKeychainString;
 
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;
+
+// there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
+@property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber;
 
@@ -121,8 +132,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString* _Nonnull)serializedExtendedPublicKey onChain:(DSChain* _Nonnull)chain;;
+
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
+
+// the extendedPublicKeyKeychainString is the key used to store the public key in nsuserdefaults, use this when setting for a new derivation path
+- (NSString*)extendedPublicKeyKeychainStringForUniqueID:(NSString*)uniqueID;
 
 // set the account, can not be later changed
 - (void)setAccount:(DSAccount *)account;
@@ -143,7 +159,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
 - (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
-- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed;
+
+//you can set wallet unique Id to nil if you don't wish to store the extended Public Key
+- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 - (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
 - (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 - (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
@@ -156,7 +174,10 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 - (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
 - (NSString * _Nullable)serializedExtendedPublicKey;
+
++ (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
 - (NSData * _Nullable)deserializedMasterPublicKey:(NSString * _Nonnull)masterPublicKeyString;
+
 
 
 @end
