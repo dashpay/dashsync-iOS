@@ -59,8 +59,8 @@
         DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text forChain:self.chain storeSeedPhrase:TRUE];
         [self.chain registerWallet:wallet];
         [self.navigationController popViewControllerAnimated:TRUE];
-    } else if ([self.inputSeedPhraseTextView.text isValidDashExtendedPublicKeyOnChain:self.chain])
-        DSDerivationPath * derivationPath = [DSDerivationPath derivationPathWithSerializedExtendedPublicKey:self.inputSeedPhraseTextView.text];
+    } else if ([self.inputSeedPhraseTextView.text isValidDashExtendedPublicKeyOnChain:self.chain]) {
+        DSDerivationPath * derivationPath = [DSDerivationPath derivationPathWithSerializedExtendedPublicKey:self.inputSeedPhraseTextView.text onChain:self.chain];
         [self.navigationController popViewControllerAnimated:TRUE];
     }
 }

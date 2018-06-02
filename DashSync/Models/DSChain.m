@@ -101,6 +101,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
+#define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
@@ -190,6 +191,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
+@property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mStandaloneDerivationPaths;
 
 @end
 
@@ -360,18 +362,55 @@ static dispatch_once_t devnetToken = 0;
     return [NSString stringWithFormat:@"%@_%@",CHAIN_WALLETS_KEY,[self uniqueID]];
 }
 
+-(NSString*)chainStandaloneDerivationPathsKey {
+    return [NSString stringWithFormat:@"%@_%@",CHAIN_STANDALONE_DERIVATIONS_KEY,[self uniqueID]];
+}
+
+
+// MARK: - Standalone Derivation Paths
+
+-(void)retrieveStandaloneDerivationPaths {
+    NSError * error = nil;
+    NSArray * standaloneIdentifiers = getKeychainArray(self.chainStandaloneDerivationPathsKey, &error);
+    if (!error) {
+        for (NSString * derivationPathIdentifier in standaloneIdentifiers) {
+            DSDerivationPath * derivationPath = [[DSDerivationPath alloc] initWithExtendedPublicKeyIdentifier:derivationPathIdentifier onChain:self];
+            if (derivationPath) [self addStandaloneDerivationPath:derivationPath];
+        }
+    }
+}
+
+-(void)removeStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
+    [self.mStandaloneDerivationPaths removeObject:derivationPath];
+}
+-(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
+    [self.mStandaloneDerivationPaths addObject:derivationPath];
+}
+
+- (void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath
+{
+    if ([self.mStandaloneDerivationPaths indexOfObject:derivationPath] == NSNotFound) {
+        [self addStandaloneDerivationPath:derivationPath];
+    }
+    NSError * error = nil;
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey, &error) mutableCopy];
+    if (!keyChainArray) keyChainArray = [NSMutableArray array];
+    [keyChainArray addObject:derivationPath.extendedPublicKeyIdentifier];
+    setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletAddedNotification object:nil];
+    });
+}
+
 // MARK: - Wallet
 
 -(void)retrieveWallets {
     NSError * error = nil;
     NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey, &error);
     if (!error) {
-        for (NSString * walletIdentifier in walletIdentifiers) {
-            if ([walletIdentifier length] == 27) {
-                NSString * uniqueID = [walletIdentifier substringFromIndex:20];
+        for (NSString * uniqueID in walletIdentifiers) {
                 DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];
                 [self addWallet:wallet];
-            }
         }
     }
 }
@@ -396,7 +435,7 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray addObject:wallet.mnemonicUniqueID];
+    [keyChainArray addObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletAddedNotification object:nil];

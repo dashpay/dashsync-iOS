@@ -300,6 +300,14 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return derivationPath;
 }
 
+- (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain {
+    NSUInteger indexes[] = {};
+    if (!(self = [self initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown])) return nil;
+    NSError * error = nil;
+    _extendedPublicKey = getKeychainData(extendedPublicKeyIdentifier, &error);
+    return self;
+}
+
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                            type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
     if (length) {

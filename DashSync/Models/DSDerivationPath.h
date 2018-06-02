@@ -132,7 +132,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
-+ (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString* _Nonnull)serializedExtendedPublicKey onChain:(DSChain* _Nonnull)chain;;
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString* _Nonnull)serializedExtendedPublicKey onChain:(DSChain* _Nonnull)chain;
+
+- (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain;
 
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
