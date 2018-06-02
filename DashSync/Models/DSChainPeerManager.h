@@ -35,6 +35,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotific
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
+FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListChangedNotification;
 
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
@@ -60,5 +61,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (void)publishTransaction:(DSTransaction * _Nonnull)transaction
                 completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
+
+
+// Masternodes
+-(uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;
+-(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;
 
 @end

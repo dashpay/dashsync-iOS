@@ -11,5 +11,6 @@
 @interface DSWalletTableViewCell : UITableViewCell
 
 @property (strong, nonatomic) IBOutlet UILabel *passphraseLabel;
+@property (strong, nonatomic) IBOutlet UILabel *xPublicKeyLabel;
 
 @end

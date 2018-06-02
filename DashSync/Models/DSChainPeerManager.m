@@ -45,7 +45,7 @@
 #import <netdb.h>
 #import "DSDerivationPath.h"
 #import "DSAccount.h"
-#import "DSMasternodeManager.h"
+
 
 #if ! PEER_LOGGING
 #define NSLog(...)
@@ -81,6 +81,7 @@ static const char *mainnet_dns_seeds[] = {
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic,strong) NSMutableDictionary * masternodeSyncCountInfo;
 
 @end
 
@@ -90,6 +91,7 @@ static const char *mainnet_dns_seeds[] = {
 {
     if (! (self = [super init])) return nil;
     self.chain = chain;
+    self.masternodeSyncCountInfo = [NSMutableDictionary dictionary];
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.txRequests = [NSMutableDictionary dictionary];
@@ -159,7 +161,7 @@ static const char *mainnet_dns_seeds[] = {
         [[DSPeerEntity context] performBlockAndWait:^{
             for (DSPeerEntity *e in [DSPeerEntity allObjects]) {
                 @autoreleasepool {
-                    if (e.misbehavin == 0) [_peers addObject:[e peer]];
+                    if (e.misbehavin == 0) [self->_peers addObject:[e peer]];
                     else [self.misbehavinPeers addObject:[e peer]];
                 }
             }
@@ -240,7 +242,7 @@ static const char *mainnet_dns_seeds[] = {
 - (double)syncProgress
 {
     if (! self.downloadPeer && self.syncStartHeight == 0) return 0.0;
-    if (self.downloadPeer.status != DSPeerStatusConnected) return 0.05;
+    if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
     if (self.chain.lastBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     return 0.1 + 0.9*(self.chain.lastBlockHeight - self.syncStartHeight)/(self.chain.estimatedBlockHeight - self.syncStartHeight);
 }
@@ -251,7 +253,7 @@ static const char *mainnet_dns_seeds[] = {
     NSUInteger count = 0;
     
     for (DSPeer *peer in [self.connectedPeers copy]) {
-        if (peer.status == DSPeerStatusConnected) count++;
+        if (peer.status == DSPeerStatus_Connected) count++;
     }
     
     return count;
@@ -296,7 +298,7 @@ static const char *mainnet_dns_seeds[] = {
         }
         
         [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-            return ([obj status] == DSPeerStatusDisconnected) ? YES : NO;
+            return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
         }]];
         
         self.fixedPeer = [DSPeer peerWithHost:[defs stringForKey:SETTINGS_FIXED_PEER_KEY] onChain:self.chain];
@@ -417,7 +419,7 @@ static const char *mainnet_dns_seeds[] = {
         [self performSelector:@selector(txTimeout:) withObject:hash afterDelay:PROTOCOL_TIMEOUT];
         
         for (DSPeer *p in peers) {
-            if (p.status != DSPeerStatusConnected) continue;
+            if (p.status != DSPeerStatus_Connected) continue;
             [p sendInvMessageWithTxHashes:txHashes];
             [p sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) return;
@@ -488,7 +490,7 @@ static const char *mainnet_dns_seeds[] = {
 - (void)loadMempools
 {
     for (DSPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
-        if (p.status != DSPeerStatusConnected) continue;
+        if (p.status != DSPeerStatus_Connected) continue;
         
         if (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
             [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
@@ -533,7 +535,7 @@ static const char *mainnet_dns_seeds[] = {
 
 -(void)getSporks {
     for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
-        if (p.status != DSPeerStatusConnected) continue;
+        if (p.status != DSPeerStatus_Connected) continue;
         
         [p sendPingMessageWithPongHandler:^(BOOL success) {
             if (success) {
@@ -546,7 +548,7 @@ static const char *mainnet_dns_seeds[] = {
 -(void)getMasternodeList {
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedMasternodeList" ascending:YES]]];
     for (DSPeer * peer in sortedPeers) {
-        if (peer.status != DSPeerStatusConnected) continue;
+        if (peer.status != DSPeerStatus_Connected) continue;
         if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedMasternodeList < 10800) continue; //don't request less than every 3 hours from a peer
         peer.lastRequestedMasternodeList = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
         DSUTXO emptyUTXO;
@@ -560,7 +562,7 @@ static const char *mainnet_dns_seeds[] = {
 
 -(void)startMasternodeSync {
     for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
-        if (p.status != DSPeerStatusConnected) continue;
+        if (p.status != DSPeerStatus_Connected) continue;
         
         [p sendPingMessageWithPongHandler:^(BOOL success) {
             if (success) {
@@ -667,7 +669,7 @@ static const char *mainnet_dns_seeds[] = {
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
         NSLog(@"updating filter with newly created wallet addresses");
-        _bloomFilter = nil;
+        self->_bloomFilter = nil;
         
         if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:[self bloomFilterForPeer:self.downloadPeer].data];
@@ -684,7 +686,7 @@ static const char *mainnet_dns_seeds[] = {
         }
         else {
             for (DSPeer *p in self.connectedPeers) {
-                if (p.status != DSPeerStatusConnected) continue;
+                if (p.status != DSPeerStatus_Connected) continue;
                 [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
                 [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
                     if (! success) return;
@@ -794,6 +796,17 @@ static const char *mainnet_dns_seeds[] = {
             }
         }
     }];
+}
+
+// MARK: - Masternodes
+
+- (uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
+    if (![self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)]) return 0;
+    return (uint32_t)[[self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)] unsignedLongValue];
+}
+
+-(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
+    [self.masternodeSyncCountInfo setObject:@(count) forKey:@(masternodeSyncCountInfo)];
 }
 
 // MARK: - Bloom Filters
@@ -917,7 +930,7 @@ static const char *mainnet_dns_seeds[] = {
     // BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if two
     // peers agree on lastblock, use one of them instead
     for (DSPeer *p in self.connectedPeers) {
-        if (p.status != DSPeerStatusConnected) continue;
+        if (p.status != DSPeerStatus_Connected) continue;
         if ((p.pingTime < peer.pingTime && p.lastblock >= peer.lastblock) || p.lastblock > peer.lastblock) peer = p;
     }
     
@@ -1197,7 +1210,7 @@ static const char *mainnet_dns_seeds[] = {
         self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*fp.count/1400;
         
         // false positive rate sanity check
-        if (self.downloadPeer.status == DSPeerStatusConnected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
+        if (self.downloadPeer.status == DSPeerStatus_Connected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
                   peer.port, self.fpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.downloadPeer disconnect];
@@ -1228,7 +1241,7 @@ static const char *mainnet_dns_seeds[] = {
     uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
     
     for (DSPeer *p in self.connectedPeers) { // find second highest fee rate
-        if (p.status != DSPeerStatusConnected) continue;
+        if (p.status != DSPeerStatus_Connected) continue;
         if (p.feePerKb > maxFeePerKb) secondFeePerKb = maxFeePerKb, maxFeePerKb = p.feePerKb;
     }
     
@@ -1292,12 +1305,13 @@ static const char *mainnet_dns_seeds[] = {
 }
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count {
-    [[DSMasternodeManager sharedInstance] setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
+    [self setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
 }
 
 
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
-    
+    NSUInteger peerCount = [self.peers count];
+    peerCount++;
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {

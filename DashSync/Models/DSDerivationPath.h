@@ -85,9 +85,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //is this an open account
 @property (nonatomic,assign,readonly) DSDerivationPathFundsType type;
 
-// master public key
-@property (nonatomic, readonly) NSDictionary * extendedPublicKeys;//master public key used to generate wallet addresses
-
 // account for the account
 @property (nonatomic, readonly, weak) DSAccount * account;
 // current wallet balance excluding transactions known to be invalid
@@ -112,7 +109,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
 // the extendedPubKeyString is the key used to store the public key in nsuserdefaults
-@property (nonatomic, readonly) NSString * _Nullable extendedPublicKeyString;
+@property (nonatomic, readonly) NSString * _Nullable extendedPublicKeyKeychainString;
 
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;
@@ -158,7 +155,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString * _Nonnull)uri fromSeed:(NSData * _Nonnull)seed forChain:(DSChain* _Nonnull)chain;
 
 - (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
-- (NSString * _Nullable)serializedMasterPublicKey:(NSData * _Nonnull)masterPublicKey depth:(NSUInteger)depth;
+- (NSString * _Nullable)serializedExtendedPublicKey;
 - (NSData * _Nullable)deserializedMasterPublicKey:(NSString * _Nonnull)masterPublicKeyString;
 
 

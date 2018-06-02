@@ -402,7 +402,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     for (DSWallet * wallet in [self allWallets]) {
         for (DSAccount * account in wallet.accounts) {
             for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                failed = failed | !setKeychainData(nil, [derivationPath extendedPublicKeyString], NO);
+                failed = failed | !setKeychainData(nil, [derivationPath extendedPublicKeyKeychainString], NO);
             }
         }
     }
@@ -426,7 +426,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
 -(void)upgradeExtendedKeysForWallet:(DSWallet*)wallet withCompletion:(UpgradeCompletionBlock)completion
 {
     DSAccount * account = [wallet accountWithNumber:0];
-    NSString * keyString = [[account bip44DerivationPath] extendedPublicKeyString];
+    NSString * keyString = [[account bip44DerivationPath] extendedPublicKeyKeychainString];
     NSError * error = nil;
     BOOL hasV2BIP44Data = hasKeychainData(keyString, &error);
     if (error) {
@@ -460,7 +460,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
                 for (DSAccount * account in wallet.accounts) {
                     for (DSDerivationPath * derivationPath in account.derivationPaths) {
                         NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData];
-                        failed = failed | !setKeychainData(data, [derivationPath extendedPublicKeyString], NO);
+                        failed = failed | !setKeychainData(data, [derivationPath extendedPublicKeyKeychainString], NO);
                     }
                 }
                 if (hasV0BIP44Data) {
@@ -488,7 +488,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     @autoreleasepool {
         for (DSWallet * wallet in [self allWallets]) {
             DSAccount * account = [wallet accountWithNumber:0];
-            NSString * keyString = [[account bip44DerivationPath] extendedPublicKeyString];
+            NSString * keyString = [[account bip44DerivationPath] extendedPublicKeyKeychainString];
             NSError * error = nil;
             NSData * v2BIP44Data = getKeychainData(keyString, &error);
             

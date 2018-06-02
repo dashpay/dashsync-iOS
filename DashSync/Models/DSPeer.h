@@ -26,7 +26,6 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "DSMasternodeManager.h"
 #import "DSChain.h"
 
 #define BITCOIN_TIMEOUT_CODE  1001
@@ -110,6 +109,13 @@
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
+typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
+    DSMasternodeSyncCountInfo_List = 2,
+    DSMasternodeSyncCountInfo_MNW = 3,
+    DSMasternodeSyncCountInfo_GovernanceObject = 10,
+    DSMasternodeSyncCountInfo_GovernanceObjectVote = 11,
+};
+
 @class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing;
 
 @protocol DSPeerDelegate<NSObject>
@@ -137,11 +143,16 @@ typedef union _UInt128 UInt128;
 
 @end
 
-typedef enum : NSInteger {
-    DSPeerStatusDisconnected = 0,
-    DSPeerStatusConnecting,
-    DSPeerStatusConnected
-} DSPeerStatus;
+typedef NS_ENUM(NSUInteger, DSPeerStatus) {
+    DSPeerStatus_Disconnected = 0,
+    DSPeerStatus_Connecting,
+    DSPeerStatus_Connected
+};
+
+typedef NS_ENUM(NSUInteger, DSPeerType) {
+    DSPeerType_FullNode = 0,
+    DSPeerType_MasterNode
+};
 
 @interface DSPeer : NSObject<NSStreamDelegate>
 
@@ -152,6 +163,7 @@ typedef enum : NSInteger {
 @property (nonatomic, assign) NSTimeInterval earliestKeyTime;
 
 @property (nonatomic, readonly) DSPeerStatus status;
+@property (nonatomic, readonly) DSPeerType type;
 @property (nonatomic, readonly) NSString *host;
 @property (nonatomic, readonly) UInt128 address;
 @property (nonatomic, readonly) uint16_t port;

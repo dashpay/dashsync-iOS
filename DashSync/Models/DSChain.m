@@ -368,8 +368,11 @@ static dispatch_once_t devnetToken = 0;
     NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey, &error);
     if (!error) {
         for (NSString * walletIdentifier in walletIdentifiers) {
-            DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:walletIdentifier forChain:self];
-            [self addWallet:wallet];
+            if ([walletIdentifier length] == 27) {
+                NSString * uniqueID = [walletIdentifier substringFromIndex:20];
+                DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];
+                [self addWallet:wallet];
+            }
         }
     }
 }

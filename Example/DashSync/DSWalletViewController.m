@@ -132,11 +132,13 @@
         }
         
         walletCell.passphraseLabel.text = [lines componentsJoinedByString:@"\n"];
+        DSAccount * account0 = [wallet accountWithNumber:0];
+        walletCell.xPublicKeyLabel.text = [[account0 bip44DerivationPath] serializedExtendedPublicKey];
     }
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 120;
+    return 200;
 }
 
 -(BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {

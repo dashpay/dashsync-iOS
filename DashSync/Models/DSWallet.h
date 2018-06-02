@@ -135,5 +135,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 //generate a random Mnemonic seed
 + (NSString *)generateRandomSeed;
 
+//get the MNEMONIC KEY prefixed unique ID
++ (NSString*)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
+
+//get the CREATION TIME KEY prefixed unique ID
++ (NSString*)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
 @end

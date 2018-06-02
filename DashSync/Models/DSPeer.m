@@ -174,8 +174,8 @@ services:(uint64_t)services
 
 - (void)connect
 {
-    if (self.status != DSPeerStatusDisconnected) return;
-    _status = DSPeerStatusConnecting;
+    if (self.status != DSPeerStatus_Disconnected) return;
+    _status = DSPeerStatus_Connecting;
     _pingTime = DBL_MAX;
     if (! self.reachability) self.reachability = [Reachability reachabilityForInternetConnection];
     
@@ -188,7 +188,7 @@ services:(uint64_t)services
                     [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
                     queue:nil usingBlock:^(NSNotification *note) {
                         if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
-                            _status = DSPeerStatusDisconnected;
+                            _status = DSPeerStatus_Disconnected;
                             [self connect];
                         }
                     }];
@@ -258,8 +258,8 @@ services:(uint64_t)services
     NSLog(@"Disconnected with error %@",error);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
-    if (_status == DSPeerStatusDisconnected) return;
-    _status = DSPeerStatusDisconnected;
+    if (_status == DSPeerStatus_Disconnected) return;
+    _status = DSPeerStatus_Disconnected;
 
     if (self.reachabilityObserver) {
         [self.reachability stopNotifier];
@@ -275,7 +275,7 @@ services:(uint64_t)services
     [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
     CFRunLoopStop([self.runLoop getCFRunLoop]);
         
-    _status = DSPeerStatusDisconnected;
+    _status = DSPeerStatus_Disconnected;
     dispatch_async(self.delegateQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
         
@@ -302,14 +302,14 @@ services:(uint64_t)services
 
 - (void)didConnect
 {
-    if (self.status != DSPeerStatusConnecting || ! self.sentVerack || ! self.gotVerack) return;
+    if (self.status != DSPeerStatus_Connecting || ! self.sentVerack || ! self.gotVerack) return;
 
     NSLog(@"%@:%u handshake completed", self.host, self.port);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
-    _status = DSPeerStatusConnected;
+    _status = DSPeerStatus_Connected;
 
     dispatch_async(self.delegateQueue, ^{
-        if (_status == DSPeerStatusConnected) [self.delegate peerConnected:self];
+        if (_status == DSPeerStatus_Connected) [self.delegate peerConnected:self];
     });
 }
 
@@ -396,7 +396,7 @@ services:(uint64_t)services
     if (completion) {
         if (self.mempoolCompletion) {
             dispatch_async(self.delegateQueue, ^{
-                if (_status == DSPeerStatusConnected) completion(NO);
+                if (_status == DSPeerStatus_Connected) completion(NO);
             });
         }
         else {
@@ -778,7 +778,7 @@ services:(uint64_t)services
     }
 
     dispatch_async(self.delegateQueue, ^{
-        if (_status == DSPeerStatusConnected) [self.delegate peer:self relayedPeers:peers];
+        if (_status == DSPeerStatus_Connected) [self.delegate peer:self relayedPeers:peers];
     });
 }
 
@@ -871,7 +871,7 @@ services:(uint64_t)services
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (_status == DSPeerStatusConnected) [self.delegate peer:self hasTransaction:h];
+                if (_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
             });
         }
         
@@ -1155,7 +1155,7 @@ services:(uint64_t)services
 #endif
 
     dispatch_async(self.delegateQueue, ^{
-        if (_status == DSPeerStatusConnected && self.pongHandlers.count) {
+        if (_status == DSPeerStatus_Connected && self.pongHandlers.count) {
             ((void (^)(BOOL))self.pongHandlers[0])(YES);
             [self.pongHandlers removeObjectAtIndex:0];
         }
@@ -1253,7 +1253,9 @@ services:(uint64_t)services
 -(void)acceptMNBMessage:(NSData *)message
 {
     DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message];
-
+    if (broadcast) {
+        [self.delegate peer:self relayedMasternodeBroadcast:broadcast];
+    }
 }
 
 
