@@ -35,7 +35,6 @@
 #import "NSMutableData+Dash.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#define SEC_ATTR_SERVICE    @"org.dashfoundation.dash"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"

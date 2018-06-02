@@ -101,7 +101,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
-#define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {

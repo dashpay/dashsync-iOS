@@ -32,11 +32,15 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
+#define SEC_ATTR_SERVICE    @"org.dashfoundation.dash"
+
 @class DSChain,DSAccount,DSTransaction,DSDerivationPath;
 
 @interface DSWallet : NSObject
 
 @property (nonatomic, readonly) NSArray * accounts;
+
+@property (nonatomic, readonly) NSString * uniqueID;
 
 @property (nonatomic, readonly) NSString * mnemonicUniqueID;
 

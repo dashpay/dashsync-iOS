@@ -33,10 +33,11 @@
 #import "DSTransactionEntity+CoreDataProperties.h"
 #import "DSKey.h"
 
+
 #define SEED_ENTROPY_LENGTH   (128/8)
-#define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
 #define AUTH_PRIVKEY_KEY    @"authprivkey"
+#define WALLET_MNEMONIC_KEY        @"WALLET_MNEMONIC_KEY"
 #define WALLET_MNEMONIC_KEY        @"WALLET_MNEMONIC_KEY"
 
 static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
@@ -222,7 +223,7 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
-    if (! (self = [self initWithUniqueID:uniqueID andAccount:nil forChain:chain storeSeedPhrase:YES])) return nil;
+    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]] forChain:chain storeSeedPhrase:YES])) return nil;
     return self;
 }
 
@@ -251,15 +252,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
 
 - (DSAccount* _Nullable)accountWithNumber:(NSUInteger)accountNumber {
     return [self.mAccounts objectForKey:@(accountNumber)];
-}
-
-+(NSData*)extendedPublicKeyForDerivationPath:(DSDerivationPath*)derivationPath {
-    NSAssert(derivationPath.account.wallet.chain, @"The wallet has no chain");
-    return getKeychainData([NSString stringWithFormat:@"extendedPubKey%@_%@",derivationPath.account.wallet.chain.uniqueID,derivationPath.extendedPublicKeyKeychainString], nil);
-}
-
-+(void)setExtendedPublicKeyData:(NSData*)data forDerivationPath:(DSDerivationPath*)derivationPath {
-    setKeychainData(data,[NSString stringWithFormat:@"extendedPubKey%@_%@",derivationPath.account.wallet.chain.uniqueID,derivationPath.extendedPublicKeyKeychainString],NO);
 }
 
 // MARK: - Unique Identifiers

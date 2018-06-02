@@ -48,7 +48,6 @@
 #import "DSAuthenticationManager.h"
 
 
-#define SEC_ATTR_SERVICE      @"org.dashfoundation.dash"
 #define UNSPENT_URL          @"http://insight.dash.org/insight-api-dash/addrs/utxo"
 #define UNSPENT_FAILOVER_URL @"https://insight.dash.siampm.com/api/addrs/utxo"
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
