@@ -141,7 +141,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain;
 
-- (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
+- (instancetype _Nullable)initFromWalletWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
 // set the account, can not be later changed
@@ -182,6 +182,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString;
 
-
+//this loads the derivation path once it is set to an account that has a wallet;
+-(void)loadAddresses;
 
 @end

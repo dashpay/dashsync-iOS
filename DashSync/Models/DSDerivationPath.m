@@ -172,6 +172,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 @property (nonatomic, weak) DSAccount * account;
 @property (nonatomic, strong) NSManagedObjectContext * moc;
 @property (nonatomic, strong) NSData * extendedPublicKey;//master public key used to generate wallet addresses
+@property (nonatomic, assign) BOOL addressesLoaded;
 
 @end
 
@@ -246,6 +247,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     _reference = reference;
     _type = type;
     _derivationPathIsKnown = YES;
+    _addressesLoaded = FALSE;
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
     self.moc = [NSManagedObject context];
@@ -253,12 +255,35 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return self;
 }
 
-
+-(void)loadAddresses {
+    if (!_addressesLoaded) {
+    [self.moc performBlockAndWait:^{
+        [DSAddressEntity setContext:self.moc];
+        [DSTransactionEntity setContext:self.moc];
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+        for (DSAddressEntity *e in derivationPathEntity.addresses) {
+            @autoreleasepool {
+                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
+                
+                while (e.index >= a.count) [a addObject:[NSNull null]];
+                a[e.index] = e.address;
+                [self->_allAddresses addObject:e.address];
+                if ([e.usedInInputs count] || [e.usedInOutputs count]) {
+                    [self->_usedAddresses addObject:e.address];
+                }
+            }
+        }
+    }];
+        _addressesLoaded = TRUE;
+    }
+}
 
 - (void)setAccount:(DSAccount *)account {
     if (!_account) {
         NSAssert(account.accountNumber == [self accountNumber], @"account number doesn't match derivation path ending");
         _account = account;
+        //when we set the account load addresses
+        
     }
 }
 

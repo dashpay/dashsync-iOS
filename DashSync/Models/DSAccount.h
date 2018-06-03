@@ -145,5 +145,7 @@
 
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 
+// This loads the derivation paths addresses once the account is set to a wallet
+- (void)loadDerivationPaths;
 
 @end

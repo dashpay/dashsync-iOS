@@ -73,7 +73,6 @@
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID andAccount:(DSAccount*)account forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
     if (! (self = [self initWithChain:chain])) return nil;
-    if (account) [self addAccount:account];
     self.uniqueID = uniqueID;
     if (store) {
         __weak typeof(self) weakSelf = self;
@@ -82,6 +81,7 @@
             [weakSelf seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
         };
     }
+    if (account) [self addAccount:account]; //this must be last, as adding the account queries the wallet unique ID
     return self;
 }
 

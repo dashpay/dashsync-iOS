@@ -165,6 +165,13 @@
 -(void)setWallet:(DSWallet *)wallet {
     if (!_wallet) {
         _wallet = wallet;
+        [self loadDerivationPaths];
+    }
+}
+
+- (void)loadDerivationPaths {
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        [derivationPath loadAddresses];
     }
 }
 
