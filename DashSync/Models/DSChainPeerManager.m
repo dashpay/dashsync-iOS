@@ -46,6 +46,7 @@
 #import "DSDerivationPath.h"
 #import "DSAccount.h"
 
+#define PEER_LOGGING 1
 
 #if ! PEER_LOGGING
 #define NSLog(...)
@@ -53,13 +54,9 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-static const char *testnet_dns_seeds[] = {
-    "testnet-seed.dashdot.io", "test.dnsseed.masternode.io" //,"testnet-seed.dashpay.info"
-};
+#define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io", @"test.dnsseed.masternode.io"]
 
-static const char *mainnet_dns_seeds[] = {
-    "dnsseed.dashpay.io","dnsseed.masternode.io","dnsseed.dashdot.io"
-};
+#define MAINNET_DNS_SEEDS @[@"dnsseed.dashpay.io",@"dnsseed.masternode.io",@"dnsseed.dashdot.io"]
 
 
 #define FIXED_PEERS          @"FixedPeers"
@@ -131,13 +128,13 @@ static const char *mainnet_dns_seeds[] = {
     if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
 }
 
--(const char **)dnsSeeds {
+-(NSArray*)dnsSeeds {
     switch (self.chain.chainType) {
         case DSChainType_MainNet:
-            return mainnet_dns_seeds;
+            return MAINNET_DNS_SEEDS;
             break;
         case DSChainType_TestNet:
-            return testnet_dns_seeds;
+            return TESTNET_DNS_SEEDS;
             break;
         case DSChainType_DevNet:
             return nil; //todo
@@ -171,10 +168,9 @@ static const char *mainnet_dns_seeds[] = {
         // DNS peer discovery
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
         NSMutableArray *peers = [NSMutableArray arrayWithObject:[NSMutableArray array]];
-        const char** dnsSeeds = [self dnsSeeds];
-        if (_peers.count < PEER_MAX_CONNECTIONS ||
-            ((DSPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*24*60*60 < now) {
-            while (peers.count < sizeof(dnsSeeds)/sizeof(*dnsSeeds)) [peers addObject:[NSMutableArray array]];
+        NSArray * dnsSeeds = [self dnsSeeds];
+        if (_peers.count < PEER_MAX_CONNECTIONS || ((DSPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*24*60*60 < now) {
+            while (peers.count < dnsSeeds.count) [peers addObject:[NSMutableArray array]];
         }
         
         if (peers.count > 0) {
@@ -183,9 +179,10 @@ static const char *mainnet_dns_seeds[] = {
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                 
-                NSLog(@"DNS lookup %s", dns_seeds[i]);
-                
-                if (getaddrinfo(dnsSeeds[i], servname.UTF8String, &hints, &servinfo) == 0) {
+                NSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
+                NSString * dnsSeed = [dnsSeeds objectAtIndex:i];
+
+                if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
                     for (p = servinfo; p != NULL; p = p->ai_next) {
                         if (p->ai_family == AF_INET) {
                             addr.u64[0] = 0;
@@ -206,6 +203,8 @@ static const char *mainnet_dns_seeds[] = {
                     }
                     
                     freeaddrinfo(servinfo);
+                } else {
+                    NSLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
                 }
             });
             
@@ -595,7 +594,7 @@ static const char *mainnet_dns_seeds[] = {
                 if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
                     // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
                     if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-                        NSLog(@"failed transaction %@", tx);
+                        NSLog(@"failed transaction %@", transaction);
                         rescan = notify = YES;
                         
                         for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
@@ -1211,7 +1210,7 @@ static const char *mainnet_dns_seeds[] = {
         // false positive rate sanity check
         if (self.downloadPeer.status == DSPeerStatus_Connected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                  peer.port, self.fpRate, self.lastBlockHeight + 1 - self.filterUpdateHeight);
+                  peer.port, self.fpRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
             [self.downloadPeer disconnect];
         }
         else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {

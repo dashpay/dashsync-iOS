@@ -594,7 +594,7 @@ static dispatch_once_t devnetToken = 0;
     
     // verify block difficulty if block is past last checkpoint
     if ((block.height > ([self lastCheckpoint].height + DGW_PAST_BLOCKS_MAX)) &&
-        ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
+        ![block verifyDifficultyWithPreviousBlocks:self.blocks] && ![self isTestnet]) {
         uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
         NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
               block.height,block.target,foundDifficulty, blockHash);

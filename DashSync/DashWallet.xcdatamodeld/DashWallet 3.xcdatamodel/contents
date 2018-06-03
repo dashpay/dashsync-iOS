@@ -30,11 +30,13 @@
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="derivationPath" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="derivationPaths" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
-    <entity name="DSMasternodeBroadcastEntity" syncable="YES">
-        <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="mnbHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+    <entity name="DSMasternodeBroadcastEntity" representedClassName="DSMasternodeBroadcastEntity" syncable="YES">
+        <attribute name="address" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="mnbHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="port" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="protocolVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="signatureTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="utxo" attributeType="Binary" syncable="YES"/>
     </entity>
     <entity name="DSMasternodePingEntity" syncable="YES">
         <attribute name="chaintip" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -117,14 +119,14 @@
         <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="148"/>
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="165"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="103"/>
+        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="135"/>
+        <element name="DSMasternodePingEntity" positionX="27" positionY="135" width="128" height="60"/>
         <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="180"/>
         <element name="DSShapeshiftEntity" positionX="0" positionY="0" width="128" height="225"/>
+        <element name="DSSporkEntity" positionX="9" positionY="117" width="128" height="105"/>
         <element name="DSTransactionEntity" positionX="0" positionY="0" width="128" height="165"/>
         <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="135"/>
         <element name="DSTxOutputEntity" positionX="0" positionY="0" width="128" height="180"/>
-        <element name="DSSporkEntity" positionX="9" positionY="117" width="128" height="105"/>
-        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="105"/>
-        <element name="DSMasternodePingEntity" positionX="27" positionY="135" width="128" height="60"/>
     </elements>
 </model>

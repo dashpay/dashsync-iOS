@@ -385,6 +385,9 @@ UInt256 multiplyThis32 (UInt256 a,uint32_t b)
 {
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
     int32_t diff = self.target - darkGravityWaveTarget;
+    if (abs(diff) > 1) {
+        NSLog(@"weird difficulty for block at height %u (off by %u)",self.height,diff);
+    }
     return (abs(diff) < 2); //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
 }
 

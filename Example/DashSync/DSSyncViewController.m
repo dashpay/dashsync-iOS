@@ -46,7 +46,7 @@
     [self updateBalance];
     [self updateSporks];
     
-    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSWalletManager sharedInstance] allWallets] count]];
+    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
@@ -84,7 +84,7 @@
     self.chainWalletObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSWalletManager sharedInstance] allWallets] count]];
+                                                               self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
                                                            }];
     
 }

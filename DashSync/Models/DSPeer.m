@@ -791,9 +791,9 @@ services:(uint64_t)services
     NSMutableOrderedSet *sporkHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *governanceObjectHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *governanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
-    NSMutableOrderedSet *masternodePings = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *masternodePingHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *masternodeVerifications = [NSMutableOrderedSet orderedSet]; //mnv messages
-    NSMutableOrderedSet *masternodeAnnounces = [NSMutableOrderedSet orderedSet]; //mnb messages
+    NSMutableOrderedSet *masternodeBroadcastHashes = [NSMutableOrderedSet orderedSet]; //mnb messages
     
     if (l.unsignedIntegerValue == 0 || message.length < l.unsignedIntegerValue + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
@@ -816,6 +816,7 @@ services:(uint64_t)services
         
         switch (type) {
             case DSInvType_Tx:
+            case DSInvType_DSTx:
             case DSInvType_TxLockRequest:
                 [txHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
@@ -823,10 +824,10 @@ services:(uint64_t)services
             case DSInvType_Spork: [sporkHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_GovernanceObject: [governanceObjectHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:uint256_obj(hash)]; break;
-            case DSInvType_MasternodePing: [masternodePings addObject:uint256_obj(hash)]; break;
+            case DSInvType_MasternodePing: [masternodePingHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_MasternodePaymentVote: break;
             case DSInvType_MasternodeVerify: [masternodeVerifications addObject:uint256_obj(hash)]; break;
-            case DSInvType_MasternodeAnnounce: [masternodeAnnounces addObject:uint256_obj(hash)]; break;
+            case DSInvType_MasternodeAnnounce: [masternodeBroadcastHashes addObject:uint256_obj(hash)]; break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");
@@ -911,8 +912,8 @@ services:(uint64_t)services
         [self sendGetdataMessageWithTxHashes:txHashes.array
                               andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
-    if (masternodePings.count > 0 || masternodeAnnounces.count > 0) {
-        [self sendGetdataMessageWithMasternodeBroadcastHashes:masternodeAnnounces.array andMasternodePingHashes:masternodePings.array];
+    if (masternodePingHashes.count > 0 || masternodeBroadcastHashes.count > 0) {
+        [self sendGetdataMessageWithMasternodeBroadcastHashes:masternodeBroadcastHashes.array andMasternodePingHashes:masternodePingHashes.array];
 
         NSLog(@"%@",masternodePings);
     }
