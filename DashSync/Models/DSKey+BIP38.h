@@ -27,13 +27,15 @@
 
 #import "DSKey.h"
 
+@class DSChain;
+
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
 @interface DSKey (BIP38)
 
 // decrypts a BIP38 key using the given passphrase or retuns nil if passphrase is incorrect
-+ (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase;
++ (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain* _Nonnull)chain;
 
 // generates an "intermediate code" for an EC multiply mode key, salt should be 64bits of random data
 + (NSString *)BIP38IntermediateCodeWithSalt:(uint64_t)salt andPassphrase:(NSString *)passphrase;
@@ -44,9 +46,9 @@
 passphrase:(NSString *)passphrase;
 
 // generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),
-+ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb;
++ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb onChain:(DSChain* _Nonnull)chain;
 
-- (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase;
+- (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain* _Nonnull)chain;
 
 // encrypts receiver with passphrase and returns BIP38 key
 - (NSString *)BIP38KeyWithPassphrase:(NSString *)passphrase onChain:(DSChain*)chain;

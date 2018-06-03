@@ -422,7 +422,7 @@ sequence:(uint32_t)sequence
         
         if (! key) continue;
         [keys addObject:key];
-        [addresses addObject:key.address];
+        [addresses addObject:[key addressForChain:self.chain]];
     }
     
     for (NSUInteger i = 0; i < self.hashes.count; i++) {

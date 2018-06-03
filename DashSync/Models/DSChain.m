@@ -237,7 +237,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
-    return @[[DSDerivationPath bip32DerivationPathForAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathForChainType:self.chainType forAccountNumber:accountNumber]];
+    return @[[DSDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
 }
 
 // MARK: - Check Type

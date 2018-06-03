@@ -761,7 +761,7 @@
     if ([privKey isValidDashBIP38Key]) {
         [[DSAuthenticationManager sharedInstance] requestKeyPasswordForSweepCompletion:^(NSString *password) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                DSKey *key = [DSKey keyWithBIP38Key:self.sweepKey andPassphrase:password];
+                DSKey *key = [DSKey keyWithBIP38Key:self.sweepKey andPassphrase:password onChain:chain];
                 
                 if (! key) {
                     [[DSAuthenticationManager sharedInstance] badKeyPasswordForSweepCompletion:^{
@@ -788,19 +788,19 @@
     }
     
     DSKey *key = [DSKey keyWithPrivateKey:privKey onChain:chain];
-    
-    if (! key.address) {
+    NSString * address = [key addressForChain:chain];
+    if (! address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
                                                                                           NSLocalizedString(@"not a valid private key", nil)}]);
         return;
     }
-        if ([account.wallet containsAddress:key.address]) {
+        if ([account.wallet containsAddress:address]) {
             completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
                                                                                               NSLocalizedString(@"this private key is already in your wallet", nil)}]);
             return;
         }
     
-    [self utxosForAddresses:@[key.address]
+    [self utxosForAddresses:@[address]
                  completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
                      DSTransaction *tx = [DSTransaction new];
                      uint64_t balance = 0, feeAmount = 0;

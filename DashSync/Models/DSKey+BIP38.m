@@ -29,6 +29,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSChain.h"
 
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
@@ -301,9 +302,9 @@ static NSData *point_mul(NSData *point, UInt256 factor)
 @implementation DSKey (BIP38)
 
 // decrypts a BIP38 key using the given passphrase or retuns nil if passphrase is incorrect
-+ (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase
++ (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithBIP38Key:key andPassphrase:passphrase];
+    return [[self alloc] initWithBIP38Key:key andPassphrase:passphrase onChain:chain];
 }
 
 // generates an "intermediate code" for an EC multiply mode key, salt should be 64bits of random data
@@ -344,7 +345,7 @@ passphrase:(NSString *)passphrase
 
 // generates a BIP38 key from an "intermediate code" and 24 bytes of cryptographically random data (seedb),
 // compressed indicates if compressed pubKey format should be used for the dash address
-+ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb
++ (NSString *)BIP38KeyWithIntermediateCode:(NSString *)code seedb:(NSData *)seedb onChain:(DSChain*)chain
 {
     NSData *d = code.base58checkToData; // d = 0x2C 0xE9 0xB3 0xE1 0xFF 0x39 0xE2 0x51|0x53 + entropy + passpoint
 
@@ -353,7 +354,7 @@ passphrase:(NSString *)passphrase
     NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
     UInt256 factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
     NSData *pubKey = point_mul(passpoint, factorb), // pubKey = passpoint*factorb
-           *address = [[DSKey keyWithPublicKey:pubKey].address dataUsingEncoding:NSUTF8StringEncoding];
+           *address = [[[DSKey keyWithPublicKey:pubKey] addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = BIP38_COMPRESSED_FLAG;
     uint32_t addresshash = (address) ? address.SHA256_2.u32[0] : 0;
@@ -384,7 +385,7 @@ passphrase:(NSString *)passphrase
     return [NSString base58checkWithData:key];
 }
 
-- (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase
+- (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain*)chain
 {
     NSData *d = key.base58checkToData;
 
@@ -443,7 +444,7 @@ passphrase:(NSString *)passphrase
 
     if (! (self = [self initWithSecret:secret compressed:flag & BIP38_COMPRESSED_FLAG])) return nil;
 
-    NSData *address = [self.address dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *address = [[self addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
 
     if (! address || address.SHA256_2.u32[0] != addresshash) {
         NSLog(@"BIP38 bad passphrase");
@@ -463,7 +464,7 @@ passphrase:(NSString *)passphrase
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_NOEC_PREFIX);
     uint8_t flag = BIP38_NOEC_FLAG;
     NSData *pw = normalize_passphrase(passphrase),
-           *address = [self.address dataUsingEncoding:NSUTF8StringEncoding];
+           *address = [[self addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
     uint32_t salt = address.SHA256_2.u32[0];
     UInt512 derived;
     

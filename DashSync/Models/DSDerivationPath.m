@@ -173,6 +173,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 @property (nonatomic, strong) NSManagedObjectContext * moc;
 @property (nonatomic, strong) NSData * extendedPublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, assign) BOOL addressesLoaded;
+@property (nonatomic, strong) DSChain * chain;
 
 @end
 
@@ -181,29 +182,29 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - Account initialization
 
-+ (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber {
++ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
     NSUInteger indexes[] = {accountNumber};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP32];
+    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
-+ (instancetype _Nonnull)bip44DerivationPathForChainType:(DSChainType)chain forAccountNumber:(uint32_t)accountNumber {
-    if (chain == DSChainType_MainNet) {
++ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
+    if (chain.chainType == DSChainType_MainNet) {
         NSUInteger indexes[] = {44,5,accountNumber};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44];
+        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44 onChain:chain];
     } else {
         NSUInteger indexes[] = {44,1,accountNumber};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44];
+        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44 onChain:chain];
     }
 }
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
-    return [[self alloc] initWithIndexes:indexes length:length type:type reference:(DSDerivationPathReference)reference];
+                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+    return [[self alloc] initWithIndexes:indexes length:length type:type reference:reference onChain:chain];
 }
 
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString*)serializedExtendedPublicKey onChain:(DSChain*)chain {
     NSData * extendedPublicKey = [self deserializedExtendedPublicKey:serializedExtendedPublicKey onChain:chain];
     NSUInteger indexes[] = {};
-    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown];
+    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown onChain:chain];
     derivationPath.extendedPublicKey = extendedPublicKey;
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
@@ -211,7 +212,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain {
     NSUInteger indexes[] = {};
-    if (!(self = [self initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown])) return nil;
+    if (!(self = [self initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown onChain:chain])) return nil;
     NSError * error = nil;
     _walletBasedExtendedPublicKeyLocationString = extendedPublicKeyIdentifier;
     _extendedPublicKey = getKeychainData([DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
@@ -237,13 +238,14 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 }
 
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
+                           type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
     if (length) {
         if (! (self = [super initWithIndexes:indexes length:length])) return nil;
     } else {
         if (! (self = [super init])) return nil;
     }
     
+    _chain = chain;
     _reference = reference;
     _type = type;
     _derivationPathIsKnown = YES;
@@ -362,7 +364,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self generatePublicKeyAtIndex:n internal:internal];
-            NSString *addr = [DSKey keyWithPublicKey:pubKey].address;
+            NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
             if (! addr) {
                 NSLog(@"error generating keys");

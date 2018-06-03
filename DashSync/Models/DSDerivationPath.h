@@ -87,6 +87,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic,assign,readonly) DSDerivationPathFundsType type;
 
 // account for the derivation path
+@property (nonatomic, readonly) DSChain * chain;
+// account for the derivation path
 @property (nonatomic, readonly, weak) DSAccount * account;
 
 // extended Public Key
@@ -130,19 +132,19 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
-+ (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber;
++ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
-+ (instancetype _Nonnull)bip44DerivationPathForChainType:(DSChainType)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
+                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString* _Nonnull)serializedExtendedPublicKey onChain:(DSChain* _Nonnull)chain;
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain;
 
-- (instancetype _Nullable)initFromWalletWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                     type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
+- (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
+                                     type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
 // set the account, can not be later changed
 - (void)setAccount:(DSAccount *)account;
