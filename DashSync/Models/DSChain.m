@@ -209,6 +209,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.standardPort = port;
     self.mWallets = [NSMutableArray array];
+    self.mStandaloneDerivationPaths = [NSMutableArray array];
     
     self.feePerKb = DEFAULT_FEE_PER_KB;
     uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
@@ -216,6 +217,7 @@ static NSArray *getKeychainArray(NSString *key, NSError **error)
     
     [self chainEntity];
     [self retrieveWallets];
+    [self retrieveStandaloneDerivationPaths];
     return self;
 }
 
@@ -395,11 +397,15 @@ static dispatch_once_t devnetToken = 0;
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray addObject:derivationPath.extendedPublicKeyIdentifier];
+    [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletAddedNotification object:nil];
     });
+}
+
+-(NSArray*)standaloneDerivationPaths {
+    return [_mStandaloneDerivationPaths copy];
 }
 
 // MARK: - Wallet

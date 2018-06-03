@@ -61,6 +61,7 @@
         [self.navigationController popViewControllerAnimated:TRUE];
     } else if ([self.inputSeedPhraseTextView.text isValidDashExtendedPublicKeyOnChain:self.chain]) {
         DSDerivationPath * derivationPath = [DSDerivationPath derivationPathWithSerializedExtendedPublicKey:self.inputSeedPhraseTextView.text onChain:self.chain];
+        [self.chain registerStandaloneDerivationPath:derivationPath];
         [self.navigationController popViewControllerAnimated:TRUE];
     }
 }

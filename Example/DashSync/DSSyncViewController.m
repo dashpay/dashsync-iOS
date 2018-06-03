@@ -29,7 +29,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver, chainWalletObserver;;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -79,6 +79,13 @@
                                                                                          NSLog(@"update spork count");
                                                                                          [self updateSporks];
                                                                                      }];
+    
+
+    self.chainWalletObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+                                                               self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSWalletManager sharedInstance] allWallets] count]];
+                                                           }];
     
 }
 

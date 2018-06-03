@@ -40,10 +40,10 @@
     DSChainEntity * chainEntity = derivationPath.account.wallet.chain.chainEntity;
     
         derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
-            return ([obj.publicKeyIdentifier isEqualToString:derivationPath.extendedPublicKeyIdentifier]);
+            return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
         }] allObjects];
     } else {
-        derivationPathEntities = [self objectsMatching:@"publicKeyIdentifier == %@",derivationPath.extendedPublicKeyIdentifier];
+        derivationPathEntities = [self objectsMatching:@"publicKeyIdentifier == %@",derivationPath.standaloneExtendedPublicKeyUniqueID];
     }
     
     //&& [obj.derivationPath isEqualToData:archivedDerivationPath]
@@ -52,7 +52,7 @@
     } else {
         DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
         derivationPathEntity.derivationPath = archivedDerivationPath;
-        derivationPathEntity.publicKeyIdentifier = derivationPath.extendedPublicKeyIdentifier;
+        derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.walletUniqueID = wallet.uniqueID;
         return derivationPathEntity;
     }

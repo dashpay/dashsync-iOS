@@ -348,7 +348,6 @@ static NSDictionary *getKeychainDict(NSString *key, NSError **error)
                 }
             }
         }
-        
     }
     return uniqueID;
 }

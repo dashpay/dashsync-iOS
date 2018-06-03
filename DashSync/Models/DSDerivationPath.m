@@ -241,11 +241,12 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return TRUE;
 }
 
-#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY"
+#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION"
+#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION"
 
 @interface DSDerivationPath()
 
-@property (nonatomic, copy) NSString * extendedPublicKeyKeychainString;
+@property (nonatomic, copy) NSString * walletBasedExtendedPublicKeyLocationString;
 @property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
 @property (nonatomic, weak) DSAccount * account;
@@ -296,7 +297,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     NSUInteger indexes[] = {};
     DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown];
     derivationPath.extendedPublicKey = extendedPublicKey;
-    [derivationPath saveExtendedPublicKeyToKeyChain];
+    [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
 }
 
@@ -304,25 +305,8 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     NSUInteger indexes[] = {};
     if (!(self = [self initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown])) return nil;
     NSError * error = nil;
-    _extendedPublicKey = getKeychainData(extendedPublicKeyIdentifier, &error);
-    return self;
-}
-
-- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
-    if (length) {
-        if (! (self = [super initWithIndexes:indexes length:length])) return nil;
-    } else {
-        if (! (self = [super init])) return nil;
-    }
-    
-    _reference = reference;
-    _type = type;
-    _derivationPathIsKnown = YES;
-    self.allAddresses = [NSMutableSet set];
-    self.usedAddresses = [NSMutableSet set];
-    self.moc = [NSManagedObject context];
-    
+    _walletBasedExtendedPublicKeyLocationString = extendedPublicKeyIdentifier;
+    _extendedPublicKey = getKeychainData([DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
     [self.moc performBlockAndWait:^{
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
@@ -341,6 +325,23 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
         }
         
     }];
+    return self;
+}
+
+- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
+                           type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference {
+    if (length) {
+        if (! (self = [super initWithIndexes:indexes length:length])) return nil;
+    } else {
+        if (! (self = [super init])) return nil;
+    }
+    
+    _reference = reference;
+    _type = type;
+    _derivationPathIsKnown = YES;
+    self.allAddresses = [NSMutableSet set];
+    self.usedAddresses = [NSMutableSet set];
+    self.moc = [NSManagedObject context];
     
     return self;
 }
@@ -365,15 +366,22 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
-        _extendedPublicKey = getKeychainData([self extendedPublicKeyKeychainString], nil);
+        if (self.account.wallet) {
+            _extendedPublicKey = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
+        }
     }
     NSAssert(_extendedPublicKey, @"extended public key not set");
     return _extendedPublicKey;
 }
 
--(void)saveExtendedPublicKeyToKeyChain {
+-(void)standaloneSaveExtendedPublicKeyToKeyChain {
     if (!_extendedPublicKey) return;
-    setKeychainData(_extendedPublicKey, [self extendedPublicKeyKeychainString], NO);
+    setKeychainData(_extendedPublicKey, [self standaloneExtendedPublicKeyLocationString], NO);
+    
+    [self.moc performBlockAndWait:^{
+        [DSDerivationPathEntity setContext:self.moc];
+        [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+    }];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
@@ -443,30 +451,37 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - Identifiers
 
--(NSString *) extendedPublicKeyIdentifier {
+//Derivation paths can be stored based on the wallet and derivation or based solely on the public key
+
+
+-(NSString *)standaloneExtendedPublicKeyUniqueID {
     return [self extendedPublicKey].shortHexString;
 }
 
-+(NSString*)extendedPublicKeyUniqueIDForUniqueID:(NSString*)uniqueID {
-    return [NSString stringWithFormat:@"%@_%@",DERIVATION_PATH_EXTENDED_PUBLIC_KEY,uniqueID];
++(NSString*)standaloneExtendedPublicKeyLocationStringForUniqueID:(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@",DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION,uniqueID];
 }
 
--(NSString*)extendedPublicKeyUniqueID {
-    return [DSDerivationPath extendedPublicKeyUniqueIDForUniqueID:self.extendedPublicKeyIdentifier];
+-(NSString*)standaloneExtendedPublicKeyLocationString {
+    return [DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:self.standaloneExtendedPublicKeyUniqueID];
 }
 
--(NSString*)extendedPublicKeyKeychainStringForUniqueID:(NSString*)uniqueID {
++(NSString*)walletBasedExtendedPublicKeyLocationStringForUniqueID:(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@",DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION,uniqueID];
+}
+
+-(NSString*)walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:(NSString*)uniqueID {
     NSMutableString * mutableString = [NSMutableString string];
     for (NSInteger i = 0;i<self.length;i++) {
         [mutableString appendFormat:@"_%lu",(unsigned long)[self indexAtPosition:i]];
     }
-    return [NSString stringWithFormat:@"%@%@",[DSDerivationPath extendedPublicKeyUniqueIDForUniqueID:uniqueID],mutableString];
+    return [NSString stringWithFormat:@"%@%@",[DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID],mutableString];
 }
 
--(NSString*)extendedPublicKeyKeychainString {
-    if (_extendedPublicKeyKeychainString) return _extendedPublicKeyKeychainString;
-    _extendedPublicKeyKeychainString = [self extendedPublicKeyKeychainStringForUniqueID:self.extendedPublicKeyIdentifier];
-    return _extendedPublicKeyKeychainString;
+-(NSString*)walletBasedExtendedPublicKeyLocationString {
+    if (_walletBasedExtendedPublicKeyLocationString) return _walletBasedExtendedPublicKeyLocationString;
+    _walletBasedExtendedPublicKeyLocationString = [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:self.account.wallet.uniqueID];
+    return _walletBasedExtendedPublicKeyLocationString;
 }
 
 
@@ -567,7 +582,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     
     _extendedPublicKey = mpk;
     if (walletUniqueId) {
-        setKeychainData(mpk,[self extendedPublicKeyKeychainStringForUniqueID:walletUniqueId],NO);
+        setKeychainData(mpk,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
     }
     
     return mpk;

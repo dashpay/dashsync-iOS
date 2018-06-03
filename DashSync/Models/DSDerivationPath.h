@@ -93,7 +93,10 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly) NSData * extendedPublicKey;
 
 // extended Public Key Identifier, which is just the short hex string of the extended public key
-@property (nonatomic, readonly) NSString * extendedPublicKeyIdentifier;
+@property (nonatomic, readonly) NSString * _Nullable standaloneExtendedPublicKeyUniqueID;
+
+// the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in nsuserdefaults
+@property (nonatomic, readonly) NSString * _Nullable walletBasedExtendedPublicKeyLocationString;
 
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
@@ -116,8 +119,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // all previously used addresses
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
-// the extendedPublicKeyKeychainString is the key used to store the public key in nsuserdefaults
-@property (nonatomic, readonly) NSString * _Nullable extendedPublicKeyKeychainString;
+
 
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;
@@ -140,7 +142,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
 // the extendedPublicKeyKeychainString is the key used to store the public key in nsuserdefaults, use this when setting for a new derivation path
-- (NSString*)extendedPublicKeyKeychainStringForUniqueID:(NSString*)uniqueID;
+- (NSString*)extendedPublicKeyKeychainStringForWalletUniqueID:(NSString*)uniqueID;
 
 // set the account, can not be later changed
 - (void)setAccount:(DSAccount *)account;

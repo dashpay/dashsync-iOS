@@ -14,7 +14,7 @@
 
 @interface DSWalletViewController ()
 
-@property (nonatomic,strong) id<NSObject> chainObserver;
+@property (nonatomic,strong) id<NSObject> chainWalletObserver;
 
 @end
 
@@ -22,7 +22,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.chainObserver =
+    self.chainWalletObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.tableView reloadData];
@@ -103,11 +103,26 @@
 //}
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.chain.wallets count];
+    if (section == 0) return [self.chain.wallets count];
+    else return [self.chain.standaloneDerivationPaths count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
+    return 2;
+}
+
+-(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    switch (section) {
+        case 0:
+            return @"Wallets";
+            break;
+        case 1:
+            return @"Standalone derivation paths";
+            break;
+        default:
+            return @"";
+            break;
+    };
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -121,6 +136,7 @@
 }
 
 -(void)configureCell:(UITableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0) {
     @autoreleasepool {
         DSWalletTableViewCell * walletCell = (DSWalletTableViewCell*)cell;
         DSWallet * wallet = [[self.chain wallets] objectAtIndex:indexPath.row];
@@ -134,6 +150,11 @@
         walletCell.passphraseLabel.text = [lines componentsJoinedByString:@"\n"];
         DSAccount * account0 = [wallet accountWithNumber:0];
         walletCell.xPublicKeyLabel.text = [[account0 bip44DerivationPath] serializedExtendedPublicKey];
+    }
+    } else {
+        DSWalletTableViewCell * walletCell = (DSWalletTableViewCell*)cell;
+        DSDerivationPath * derivationPath = [[self.chain standaloneDerivationPaths] objectAtIndex:indexPath.row];
+        walletCell.xPublicKeyLabel.text = [derivationPath serializedExtendedPublicKey];
     }
 }
 

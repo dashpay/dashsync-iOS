@@ -74,6 +74,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletAddedNotification;
 @interface DSChain : NSObject
 
 @property (nonatomic, readonly) NSArray<DSWallet *> * _Nullable wallets;
+@property (nonatomic, readonly) NSArray<DSDerivationPath *> * _Nullable standaloneDerivationPaths;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) UInt256 genesisHash;
@@ -129,6 +130,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletAddedNotification;
 -(void)removeWallet:(DSWallet* _Nonnull)wallet;
 -(void)addWallet:(DSWallet* _Nonnull)objects;
 -(void)registerWallet:(DSWallet* _Nonnull)wallet;
+
+-(void)removeStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+-(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+-(void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 
 
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
