@@ -1,22 +1,19 @@
 //
-//  DSAccountsViewController.m
+//  DSAccountsDerivationPathsViewController.m
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 6/3/18.
 //  Copyright © 2018 Andrew Podkovyrin. All rights reserved.
 //
 
-#import "DSAccountsViewController.h"
-#import "DSAccountTableViewCell.h"
 #import "DSAccountsDerivationPathsViewController.h"
+#import "DSDerivationPathTableViewCell.h"
 
-@interface DSAccountsViewController ()
-
-@property (nonatomic,strong) NSArray <DSAccount*> * accounts;
+@interface DSAccountsDerivationPathsViewController ()
 
 @end
 
-@implementation DSAccountsViewController
+@implementation DSAccountsDerivationPathsViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -41,28 +38,24 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.wallet.accounts count];
+
+    return [self.account.derivationPaths count];
 }
 
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSAccountTableViewCell *cell = (DSAccountTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"AccountCellIdentifier" forIndexPath:indexPath];
+    DSDerivationPathTableViewCell *cell = (DSDerivationPathTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"DerivationPathCellIdentifier" forIndexPath:indexPath];
     
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(NSArray*)accounts {
-    if (_accounts) return _accounts;
-    _accounts = [self.wallet.accounts sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"accountNumber" ascending:TRUE]]];
-    return _accounts;
-}
 
--(void)configureCell:(DSAccountTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSAccount * account = [[self accounts] objectAtIndex:indexPath.row];
-    cell.accountNumberLabel.text = [NSString stringWithFormat:@"%u",account.accountNumber];
-    cell.balanceLabel.text = [NSString stringWithFormat:@"%llu",account.balance];
+-(void)configureCell:(DSDerivationPathTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+    DSDerivationPath * derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
+    cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
+    cell.derivationPathLabel.text = derivationPath.stringRepresentation;
+    cell.balanceLabel.text = [NSString stringWithFormat:@"%llu",derivationPath.balance];
 }
 
 
@@ -100,14 +93,14 @@
 }
 */
 
-
+/*
 #pragma mark - Navigation
 
- -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- if ([segue.identifier isEqualToString:@"ViewAccountsDerivationPathsSegue"]) {
- NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
- DSAccountsDerivationPathsViewController * accountsDerivationPathsViewController = (DSAccountsDerivationPathsViewController*)segue.destinationViewController;
- accountsDerivationPathsViewController.account = [self.accounts objectAtIndex:indexPath.row];
- }
- }
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
 @end

@@ -92,6 +92,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // extended Public Key
 @property (nonatomic, readonly) NSData * extendedPublicKey;
 
+// this returns the derivation path's visual representation (e.g. m/44'/5'/0')
+@property (nonatomic, readonly) NSString * _Nonnull stringRepresentation;
+
 // extended Public Key Identifier, which is just the short hex string of the extended public key
 @property (nonatomic, readonly) NSString * _Nullable standaloneExtendedPublicKeyUniqueID;
 

@@ -364,6 +364,14 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return [self indexAtPosition:[self length] - 1];
 }
 
+-(NSString*)stringRepresentation {
+    NSMutableString * mutableString = [NSMutableString stringWithFormat:@"m"];
+    for (NSInteger i = 0;i<self.length;i++) {
+        [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i]];
+    }
+    return [mutableString copy];
+}
+
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
         if (self.account.wallet) {

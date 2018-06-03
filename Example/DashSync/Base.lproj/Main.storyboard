@@ -824,10 +824,10 @@
             </objects>
             <point key="canvasLocation" x="4125.6000000000004" y="947.29064039408865"/>
         </scene>
-        <!--Accounts View Controller-->
+        <!--Accounts-->
         <scene sceneID="TUT-9K-lor">
             <objects>
-                <tableViewController id="YPy-fW-iQe" customClass="DSAccountsViewController" sceneMemberID="viewController">
+                <tableViewController title="Accounts" id="YPy-fW-iQe" customClass="DSAccountsViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="M5A-yt-xHk">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -879,6 +879,7 @@
                                 <connections>
                                     <outlet property="accountNumberLabel" destination="ocN-8l-mmg" id="3Dq-mO-5lj"/>
                                     <outlet property="balanceLabel" destination="Y5I-UK-EYR" id="U0e-48-XJE"/>
+                                    <segue destination="Jv3-Wc-EO7" kind="show" identifier="ViewAccountsDerivationPathsSegue" id="6AQ-Df-AvI"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -892,22 +893,77 @@
             </objects>
             <point key="canvasLocation" x="4917.6000000000004" y="750"/>
         </scene>
-        <!--Table View Controller-->
+        <!--Derivation Paths-->
         <scene sceneID="06d-rS-3wM">
             <objects>
-                <tableViewController id="Jv3-Wc-EO7" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="08j-xc-tS7">
+                <tableViewController title="Derivation Paths" id="Jv3-Wc-EO7" customClass="DSAccountsDerivationPathsViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="120" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="08j-xc-tS7">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="bPa-Cj-3Kl">
-                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DerivationPathCellIdentifier" rowHeight="127" id="bPa-Cj-3Kl" customClass="DSDerivationPathTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="127"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bPa-Cj-3Kl" id="Ykn-Id-rvo">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="126.66666666666667"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iUL-jC-pQg">
+                                            <rect key="frame" x="16" y="47" width="61" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VCw-oX-5Fg">
+                                            <rect key="frame" x="348" y="47" width="11" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Path" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="952-70-ZHR">
+                                            <rect key="frame" x="16" y="16" width="35" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="m/0'" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vL9-Aq-oQG">
+                                            <rect key="frame" x="325" y="16" width="34" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XPUB" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="8" translatesAutoresizingMaskIntoConstraints="NO" id="ewW-PZ-jhn">
+                                            <rect key="frame" x="16" y="75" width="343" height="41"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="41" id="UrC-VM-lCZ"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="ewW-PZ-jhn" firstAttribute="top" secondItem="iUL-jC-pQg" secondAttribute="bottom" constant="7" id="IAo-53-mpx"/>
+                                        <constraint firstItem="952-70-ZHR" firstAttribute="leading" secondItem="Ykn-Id-rvo" secondAttribute="leading" constant="16" id="K8W-hv-wYI"/>
+                                        <constraint firstItem="VCw-oX-5Fg" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="iUL-jC-pQg" secondAttribute="trailing" constant="10" id="Llc-zq-0ly"/>
+                                        <constraint firstItem="952-70-ZHR" firstAttribute="top" secondItem="Ykn-Id-rvo" secondAttribute="top" constant="16" id="T07-gw-OMn"/>
+                                        <constraint firstItem="iUL-jC-pQg" firstAttribute="leading" secondItem="Ykn-Id-rvo" secondAttribute="leading" constant="16" id="THM-K0-1fi"/>
+                                        <constraint firstItem="ewW-PZ-jhn" firstAttribute="leading" secondItem="Ykn-Id-rvo" secondAttribute="leading" constant="16" id="dzh-s6-t3p"/>
+                                        <constraint firstItem="vL9-Aq-oQG" firstAttribute="top" secondItem="Ykn-Id-rvo" secondAttribute="top" constant="16" id="gl1-5x-ud6"/>
+                                        <constraint firstAttribute="trailing" secondItem="vL9-Aq-oQG" secondAttribute="trailing" constant="16" id="hs6-BC-giG"/>
+                                        <constraint firstItem="iUL-jC-pQg" firstAttribute="top" secondItem="952-70-ZHR" secondAttribute="bottom" constant="10" id="pSH-aT-rD4"/>
+                                        <constraint firstItem="vL9-Aq-oQG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="952-70-ZHR" secondAttribute="trailing" constant="10" id="pqY-ko-9P9"/>
+                                        <constraint firstAttribute="trailing" secondItem="ewW-PZ-jhn" secondAttribute="trailing" constant="16" id="wQP-Pq-8R1"/>
+                                        <constraint firstItem="VCw-oX-5Fg" firstAttribute="top" secondItem="vL9-Aq-oQG" secondAttribute="bottom" constant="10" id="we7-Xv-GLw"/>
+                                        <constraint firstAttribute="trailing" secondItem="VCw-oX-5Fg" secondAttribute="trailing" constant="16" id="z1j-fg-55J"/>
+                                    </constraints>
                                 </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="balanceLabel" destination="VCw-oX-5Fg" id="gSu-xJ-x37"/>
+                                    <outlet property="derivationPathLabel" destination="vL9-Aq-oQG" id="Thb-qP-paG"/>
+                                    <outlet property="xPublicKeyLabel" destination="ewW-PZ-jhn" id="PJh-Fc-Gta"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -918,7 +974,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="shC-cp-14Q" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5846" y="588"/>
+            <point key="canvasLocation" x="5845.6000000000004" y="587.4384236453202"/>
         </scene>
         <!--Addresses-->
         <scene sceneID="gxw-BS-vWW">
@@ -963,7 +1019,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6374" y="541"/>
+            <point key="canvasLocation" x="6913" y="635"/>
         </scene>
         <!--Passphrase-->
         <scene sceneID="1v0-Xr-yW0">
