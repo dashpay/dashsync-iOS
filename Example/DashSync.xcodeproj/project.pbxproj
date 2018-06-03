@@ -34,6 +34,7 @@
 		FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */; };
 		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
 		FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */; };
+		FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2C520C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +98,8 @@
 		FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSporksViewController.m; sourceTree = "<group>"; };
 		FB90D2B520BD2CFA002B7956 /* DSSporkTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporkTableViewCell.h; sourceTree = "<group>"; };
 		FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSporkTableViewCell.m; sourceTree = "<group>"; };
+		FB90D2C420C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSStandaloneDerivationPathTableViewCell.h; sourceTree = "<group>"; };
+		FB90D2C520C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -244,6 +247,8 @@
 		FB763C5320897AE500CDBA57 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
+				FB90D2C420C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.h */,
+				FB90D2C520C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m */,
 				FB763C5420897B0F00CDBA57 /* DSWalletTableViewCell.h */,
 				FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */,
 				FB763C632089B0A700CDBA57 /* DSAddressTableViewCell.h */,
@@ -450,6 +455,7 @@
 				6003F59A195388D20070C39A /* main.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */,
+				FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

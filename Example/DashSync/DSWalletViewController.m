@@ -126,9 +126,20 @@
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *CellIdentifier = @"WalletCell";
+    NSString *cellIdentifier = nil;
+    switch (indexPath.section) {
+        case 0:
+            cellIdentifier = @"WalletCell";
+            break;
+        case 1:
+            cellIdentifier = @"StandaloneDerivationPathCell";
+            break;
+        default:
+            break;
+    }
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     // Set up the cell...
     [self configureCell:cell atIndexPath:indexPath];
@@ -159,7 +170,8 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 200;
+    if (indexPath.section == 0) return 200;
+    return 50;
 }
 
 -(BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
