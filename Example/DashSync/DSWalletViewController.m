@@ -11,6 +11,7 @@
 #import "DSWalletTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import "DSWalletInputPhraseViewController.h"
+#import "DSAccountsViewController.h"
 
 @interface DSWalletViewController ()
 
@@ -188,6 +189,10 @@
     if ([segue.identifier isEqualToString:@"AddWalletSegue"]) {
         DSWalletInputPhraseViewController * walletInputViewController = (DSWalletInputPhraseViewController*)segue.destinationViewController;
         walletInputViewController.chain = self.chain;
+    } else if ([segue.identifier isEqualToString:@"ViewAccountsSegue"]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        DSAccountsViewController * accountsViewController = (DSAccountsViewController*)segue.destinationViewController;
+        accountsViewController.wallet = [self.chain.wallets objectAtIndex:indexPath.row];
     }
 }
 
