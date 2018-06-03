@@ -337,6 +337,7 @@ static dispatch_once_t devnetToken = 0;
         for (NSString * uniqueID in walletIdentifiers) {
                 DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];
                 [self addWallet:wallet];
+            
         }
     }
 }

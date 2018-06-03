@@ -981,7 +981,7 @@
         <scene sceneID="gxw-BS-vWW">
             <objects>
                 <tableViewController id="pQt-5m-3CE" customClass="DSDerivationPathsAddressesViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="pdG-pE-Lkh">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="120" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="pdG-pE-Lkh">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1005,7 +1005,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="128.66666666666666"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XSAAA..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hpt-2z-CAM">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XSAAA..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="hpt-2z-CAM">
                                             <rect key="frame" x="16" y="53" width="343" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
@@ -1064,6 +1064,7 @@
                                 <connections>
                                     <outlet property="addressLabel" destination="hpt-2z-CAM" id="NjV-pB-OZj"/>
                                     <outlet property="balanceLabel" destination="Joq-ET-Xpp" id="mMT-qR-dIs"/>
+                                    <outlet property="derivationPathLabel" destination="dX3-aF-9am" id="t59-2P-3Ij"/>
                                     <outlet property="inLabel" destination="y0N-zg-7Tx" id="fsf-fh-C5r"/>
                                     <outlet property="outLabel" destination="UU5-IX-f9t" id="wcM-N7-nq6"/>
                                 </connections>

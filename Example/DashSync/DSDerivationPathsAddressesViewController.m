@@ -13,6 +13,7 @@
 @interface DSDerivationPathsAddressesViewController ()
 
 @property (nonatomic,strong) NSArray * addresses;
+@property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 
 @end
 
@@ -41,13 +42,13 @@
 
 -(NSPredicate*)searchPredicate {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
-    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+    DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath];
     return [NSPredicate predicateWithFormat:@"(derivationPath == %@)",entity];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
 {
-    
+    if (_fetchedResultsController) return _fetchedResultsController;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
     NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSAddressEntity" inManagedObjectContext:self.managedObjectContext];
@@ -59,16 +60,17 @@
     // Edit the sort key as appropriate.
     NSSortDescriptor *indexSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"index" ascending:YES];
     NSSortDescriptor *internalSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"internal" ascending:NO];
-    NSArray *sortDescriptors = @[indexSortDescriptor,internalSortDescriptor];
+    NSArray *sortDescriptors = @[internalSortDescriptor,indexSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
     NSPredicate *filterPredicate = [self searchPredicate];
-    //[fetchRequest setPredicate:filterPredicate];
+    [fetchRequest setPredicate:filterPredicate];
     
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
     NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
+    _fetchedResultsController = aFetchedResultsController;
     aFetchedResultsController.delegate = self;
     NSError *error = nil;
     if (![aFetchedResultsController performFetch:&error]) {
@@ -112,7 +114,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 
-    return [[self.derivationPath.allAddresses allObjects] count];
+    return [[self.fetchedResultsController fetchedObjects] count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

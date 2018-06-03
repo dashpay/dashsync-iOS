@@ -33,18 +33,15 @@
 @implementation DSDerivationPathEntity
 
 + (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath {
-    DSWallet * wallet = derivationPath.account.wallet;
+    NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
+    DSChain * chain = derivationPath.chain;
     NSArray * derivationPathEntities;
     NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
-    if (wallet) {
-    DSChainEntity * chainEntity = derivationPath.account.wallet.chain.chainEntity;
-    
+    DSChainEntity * chainEntity = derivationPath.chain.chainEntity;
+        NSUInteger count = [chainEntity.derivationPaths count];
         derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
             return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
         }] allObjects];
-    } else {
-        derivationPathEntities = [self objectsMatching:@"publicKeyIdentifier == %@",derivationPath.standaloneExtendedPublicKeyUniqueID];
-    }
     
     //&& [obj.derivationPath isEqualToData:archivedDerivationPath]
     if ([derivationPathEntities count]) {
@@ -52,8 +49,8 @@
     } else {
         DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
         derivationPathEntity.derivationPath = archivedDerivationPath;
+        derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
-        derivationPathEntity.walletUniqueID = wallet.uniqueID;
         return derivationPathEntity;
     }
 }

@@ -5,7 +5,7 @@
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="internal" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
         <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
     </entity>
@@ -27,8 +27,7 @@
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
         <attribute name="derivationPath" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="publicKeyIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="walletUniqueID" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="account" inverseEntity="DSAddressEntity" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="derivationPath" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="derivationPaths" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
     <entity name="DSMasternodeBroadcastEntity" syncable="YES">
@@ -115,9 +114,9 @@
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
+        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="148"/>
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="165"/>
-        <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="118"/>
+        <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="103"/>
         <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="180"/>
         <element name="DSShapeshiftEntity" positionX="0" positionY="0" width="128" height="225"/>

@@ -252,6 +252,8 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     _addressesLoaded = FALSE;
     self.allAddresses = [NSMutableSet set];
     self.usedAddresses = [NSMutableSet set];
+    self.internalAddresses = [NSMutableArray array];
+    self.externalAddresses = [NSMutableArray array];
     self.moc = [NSManagedObject context];
     
     return self;
@@ -277,6 +279,9 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
         }
     }];
         _addressesLoaded = TRUE;
+        [self registerAddressesWithGapLimit:100 internal:YES];
+        [self registerAddressesWithGapLimit:100 internal:NO];
+        
     }
 }
 
@@ -332,6 +337,7 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 // for receive addresses.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
+    NSAssert(_addressesLoaded, @"addresses must be loaded before calling this function");
     NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
     NSUInteger i = a.count;
     

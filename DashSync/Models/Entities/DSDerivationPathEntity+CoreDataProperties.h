@@ -33,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *derivationPath;
 @property (nonnull, nonatomic, retain) NSString *publicKeyIdentifier;
-@property (nullable, nonatomic, retain) NSString *walletUniqueID;
 @property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 
