@@ -23,6 +23,9 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
+#import "DSAddressEntity+CoreDataProperties.h"
+#import "DSDerivationPathEntity+CoreDataProperties.h"
+#import "NSManagedObject+Sugar.h"
 
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;

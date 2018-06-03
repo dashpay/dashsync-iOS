@@ -39,6 +39,7 @@
 		FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CB20C3F0D3002B7956 /* DSAccountTableViewCell.m */; };
 		FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */; };
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
+		FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +113,8 @@
 		FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAccountsDerivationPathsViewController.m; sourceTree = "<group>"; };
 		FB90D2D020C3F76E002B7956 /* DSDerivationPathTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDerivationPathTableViewCell.h; sourceTree = "<group>"; };
 		FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathTableViewCell.m; sourceTree = "<group>"; };
+		FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
+		FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -290,6 +293,8 @@
 				FB6DC63220AE082400E35EED /* DSWalletInputPhraseViewController.m */,
 				FB90D2CD20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.h */,
 				FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */,
+				FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */,
+				FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */,
 			);
 			name = Wallet;
 			sourceTree = "<group>";
@@ -473,6 +478,7 @@
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
+				FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,

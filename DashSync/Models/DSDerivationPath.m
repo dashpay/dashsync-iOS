@@ -41,87 +41,7 @@
 #import "DSWalletManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
-
-
-
-static BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
-{
-    if (! key) return NO;
-    
-    id accessible = (authenticated) ? (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-    : (__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly;
-    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
-                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                            (__bridge id)kSecAttrAccount:key};
-    
-    if (SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL) == errSecItemNotFound) {
-        if (! data) return YES;
-        
-        NSDictionary *item = @{(__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
-                               (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                               (__bridge id)kSecAttrAccount:key,
-                               (__bridge id)kSecAttrAccessible:accessible,
-                               (__bridge id)kSecValueData:data};
-        OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
-        
-        if (status == noErr) return YES;
-        NSLog(@"SecItemAdd error: %@",
-              [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
-        return NO;
-    }
-    
-    if (! data) {
-        OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
-        
-        if (status == noErr) return YES;
-        NSLog(@"SecItemDelete error: %@",
-              [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
-        return NO;
-    }
-    
-    NSDictionary *update = @{(__bridge id)kSecAttrAccessible:accessible,
-                             (__bridge id)kSecValueData:data};
-    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
-    
-    if (status == noErr) return YES;
-    NSLog(@"SecItemUpdate error: %@",
-          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
-    return NO;
-}
-
-static BOOL hasKeychainData(NSString *key, NSError **error)
-{
-    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
-                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                            (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnRef:@YES};
-    CFDataRef result = nil;
-    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
-    
-    if (status == errSecItemNotFound) return NO;
-    if (status == noErr) return YES;
-    NSLog(@"SecItemCopyMatching error: %@",
-          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
-    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
-    return nil;
-}
-
-static NSData *getKeychainData(NSString *key, NSError **error)
-{
-    NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
-                            (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
-                            (__bridge id)kSecAttrAccount:key,
-                            (__bridge id)kSecReturnData:@YES};
-    CFDataRef result = nil;
-    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&result);
-    
-    if (status == errSecItemNotFound) return nil;
-    if (status == noErr) return CFBridgingRelease(result);
-    NSLog(@"SecItemCopyMatching error: %@",
-          [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
-    if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
-    return nil;
-}
+#import "NSData+Bitcoin.h"
 
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
@@ -257,19 +177,6 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 @implementation DSDerivationPath
 
-//// MARK: - Entity
-//
-//-(DSDerivationPathEntity*)entity {
-//    NSData * derivationData = [NSKeyedArchiver archivedDataWithRootObject:self];
-//    NSArray * array = [DSDerivationPathEntity objectsMatching:@"derivationPath == %@",derivationData];
-//    if ([array count]) {
-//        return [array objectAtIndex:0];
-//    } else {
-//        DSDerivationPathEntity * entity = [DSDerivationPathEntity managedObject];
-//        entity.derivationPath = derivationData;
-//        return entity;
-//    }
-//}
 
 // MARK: - Account initialization
 

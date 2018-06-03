@@ -8,6 +8,7 @@
 
 #import "DSAccountsDerivationPathsViewController.h"
 #import "DSDerivationPathTableViewCell.h"
+#import "DSDerivationPathsAddressesViewController.h"
 
 @interface DSAccountsDerivationPathsViewController ()
 
@@ -93,14 +94,13 @@
 }
 */
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"ViewAddressesSegue"]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        DSDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSDerivationPathsAddressesViewController*)segue.destinationViewController;
+        derivationPathsAddressesViewController.derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
+    }
 }
-*/
+
 
 @end

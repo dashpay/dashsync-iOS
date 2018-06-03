@@ -28,6 +28,8 @@
 #import <Foundation/Foundation.h>
 #import "IntTypes.h"
 
+#define SEC_ATTR_SERVICE    @"org.dashfoundation.dash"
+
 #define RMD160_DIGEST_LENGTH (160/8)
 #define MD5_DIGEST_LENGTH    (128/8)
 
@@ -48,6 +50,22 @@
 
 #define OP_SHAPESHIFT  0xb1 //not a bitcoin op code, used to identify shapeshift when placed after OP_RETURN
 #define OP_SHAPESHIFT_SCRIPT 0xb3
+
+//Keychain
+
+BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated);
+BOOL hasKeychainData(NSString *key, NSError **error);
+NSData *getKeychainData(NSString *key, NSError **error);
+BOOL setKeychainInt(int64_t i, NSString *key, BOOL authenticated);
+int64_t getKeychainInt(NSString *key, NSError **error);
+BOOL setKeychainString(NSString *s, NSString *key, BOOL authenticated);
+NSString *getKeychainString(NSString *key, NSError **error);
+BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated);
+NSDictionary *getKeychainDict(NSString *key, NSError **error);
+BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated);
+NSArray *getKeychainArray(NSString *key, NSError **error);
+
+//Hashing
 
 void SHA1(void *_Nonnull md, const void *_Nonnull data, size_t len);
 void SHA256(void *_Nonnull md, const void *_Nonnull data, size_t len);

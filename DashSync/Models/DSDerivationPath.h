@@ -144,9 +144,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference;
 
-// the extendedPublicKeyKeychainString is the key used to store the public key in nsuserdefaults, use this when setting for a new derivation path
-- (NSString*)extendedPublicKeyKeychainStringForWalletUniqueID:(NSString*)uniqueID;
-
 // set the account, can not be later changed
 - (void)setAccount:(DSAccount *)account;
 
@@ -183,7 +180,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSString * _Nullable)serializedExtendedPublicKey;
 
 + (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
-- (NSData * _Nullable)deserializedMasterPublicKey:(NSString * _Nonnull)masterPublicKeyString;
+- (NSData * _Nullable)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString;
 
 
 

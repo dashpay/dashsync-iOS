@@ -10,6 +10,10 @@
 
 @interface DSAddressTableViewCell : UITableViewCell
 
+@property (strong, nonatomic) IBOutlet UILabel *balanceLabel;
+@property (strong, nonatomic) IBOutlet UILabel *inLabel;
+@property (strong, nonatomic) IBOutlet UILabel *outLabel;
+@property (strong, nonatomic) IBOutlet UILabel *derivationPathLabel;
 @property (strong, nonatomic) IBOutlet UILabel *addressLabel;
 
 @end
