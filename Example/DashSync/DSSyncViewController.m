@@ -11,6 +11,7 @@
 #import "DSSyncViewController.h"
 #import "DSWalletViewController.h"
 #import "DSSporksViewController.h"
+#import "DSBlockchainExplorerViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -263,6 +264,9 @@
         DSSporksViewController * sporksViewController = (DSSporksViewController*)segue.destinationViewController;
         sporksViewController.chain = self.chainPeerManager.chain;
         sporksViewController.sporksArray = [[[[[DSSporkManager sharedInstance] sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
+    } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
+        DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
+        blockchainExplorerViewController.chain = self.chainPeerManager.chain;
     }
 }
 

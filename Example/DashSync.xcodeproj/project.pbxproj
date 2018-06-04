@@ -40,6 +40,8 @@
 		FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */; };
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
 		FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */; };
+		FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */; };
+		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,6 +117,10 @@
 		FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathTableViewCell.m; sourceTree = "<group>"; };
 		FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
 		FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
+		FBB25BEE20C5CDC60037F5BE /* DSBlockchainExplorerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainExplorerViewController.h; sourceTree = "<group>"; };
+		FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainExplorerViewController.m; sourceTree = "<group>"; };
+		FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlockTableViewCell.h; sourceTree = "<group>"; };
+		FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMerkleBlockTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,9 +186,7 @@
 		6003F593195388D20070C39A /* Example for DashSync */ = {
 			isa = PBXGroup;
 			children = (
-				FB90D2B120BD2BA5002B7956 /* Sporks */,
-				FB6DC62620AB63B600E35EED /* View Controllers */,
-				FB763C5720897B8600CDBA57 /* Wallet */,
+				FBB25BED20C5CD290037F5BE /* View Controllers */,
 				FB763C5320897AE500CDBA57 /* Cells */,
 				6003F59C195388D20070C39A /* DSAppDelegate.h */,
 				6003F59D195388D20070C39A /* DSAppDelegate.m */,
@@ -246,7 +250,7 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
-		FB6DC62620AB63B600E35EED /* View Controllers */ = {
+		FB6DC62620AB63B600E35EED /* Main */ = {
 			isa = PBXGroup;
 			children = (
 				6003F5A5195388D20070C39A /* DSSyncViewController.h */,
@@ -256,7 +260,7 @@
 				FB6DC62720AB64F400E35EED /* DSChainsViewController.h */,
 				FB6DC62820AB64F400E35EED /* DSChainsViewController.m */,
 			);
-			name = "View Controllers";
+			name = Main;
 			sourceTree = "<group>";
 		};
 		FB763C5320897AE500CDBA57 /* Cells */ = {
@@ -276,6 +280,8 @@
 				FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */,
 				FB90D2CA20C3F0D3002B7956 /* DSAccountTableViewCell.h */,
 				FB90D2CB20C3F0D3002B7956 /* DSAccountTableViewCell.m */,
+				FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */,
+				FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -306,6 +312,26 @@
 				FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */,
 			);
 			name = Sporks;
+			sourceTree = "<group>";
+		};
+		FBB25BEC20C5CD040037F5BE /* Blocks */ = {
+			isa = PBXGroup;
+			children = (
+				FBB25BEE20C5CDC60037F5BE /* DSBlockchainExplorerViewController.h */,
+				FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */,
+			);
+			name = Blocks;
+			sourceTree = "<group>";
+		};
+		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				FBB25BEC20C5CD040037F5BE /* Blocks */,
+				FB90D2B120BD2BA5002B7956 /* Sporks */,
+				FB6DC62620AB63B600E35EED /* Main */,
+				FB763C5720897B8600CDBA57 /* Wallet */,
+			);
+			name = "View Controllers";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -472,9 +498,11 @@
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */,
 				FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */,
+				FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
+				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,

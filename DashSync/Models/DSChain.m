@@ -47,7 +47,9 @@ typedef const struct checkpoint { uint32_t height; const char *checkpointHash; u
 
 static checkpoint testnet_checkpoint_array[] = {
     {           0, "00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c", 1390666206, 0x1e0ffff0u },
-    {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu }
+    {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu },
+    {       50000, "0000000002367c252a878312997591d342ff9a8c21691c542ac1c0e48d2144d7", 1514581337, 0x1c0a37beu },
+    {      100000, "0000000003aa53e24b6e60ef97642e4193611f2bcb75ea1fa8105f0b5ffd5242", 1522497809, 0x1c07b767u },
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
