@@ -77,14 +77,6 @@
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
 }
 
--(void)addSyncType:(DSSyncType)addSyncType {
-    self.syncType = self.syncType | addSyncType;
-}
-
--(void)clearSyncType:(DSSyncType)clearSyncType {
-    self.syncType = self.syncType & ~clearSyncType;
-}
-
 -(void)wipeBlockchainData {
     [self stopSyncAllChains];
     [DSMerkleBlockEntity deleteAllObjects];

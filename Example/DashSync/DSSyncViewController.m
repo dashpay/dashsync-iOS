@@ -46,6 +46,7 @@
 	
     [self updateBalance];
     [self updateSporks];
+    [self updateBlockHeight];
     
     self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
     
@@ -250,6 +251,10 @@
 -(void)updateBalance {
     self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
     self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
+}
+
+-(void)updateBlockHeight {
+    self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastBlockHeight];
 }
 
 -(void)updateSporks {

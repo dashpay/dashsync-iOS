@@ -2,8 +2,8 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14133" systemVersion="17E202" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAddressEntity" representedClassName="DSAddressEntity" syncable="YES">
         <attribute name="address" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="index" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="internal" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="internal" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
@@ -116,7 +116,7 @@
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="148"/>
+        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="165"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="103"/>
         <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="135"/>

@@ -16,6 +16,7 @@
     // Override point for customization after application launch.
     [DSAuthenticationManager sharedInstance].usesAuthentication = FALSE;
     [DashSync sharedSyncController];
+    [DSOptionsManager sharedInstance];
     return YES;
 }
 

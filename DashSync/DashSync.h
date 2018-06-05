@@ -22,6 +22,7 @@
 #import "DSDerivationPath.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+#import "DSOptionsManager.h"
 #import "NSData+Dash.h"
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
@@ -36,28 +37,15 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <dashsync/PublicHeader.h>
 
-typedef NS_ENUM(NSUInteger, DSSyncType) {
-    DSSyncTypeNone = 0,
-    DSSyncTypeSPV = 1,
-    DSSyncTypeFullBlocks = 1 << 1,
-    DSSyncTypeGovernance = 1 << 2,
-    DSSyncTypeSporks = 1 << 3,
-    DSSyncTypeDefault = DSSyncTypeSPV | DSSyncTypeGovernance | DSSyncTypeSporks,
-};
-
 @interface DashSync : NSObject
 
 @property (nonatomic,assign) BOOL deviceIsJailbroken;
-@property (nonatomic,assign) DSSyncType syncType;
 
 + (instancetype _Nullable)sharedSyncController;
 
 -(void)startSyncForChain:(DSChain*)chain;
 -(void)stopSyncForChain:(DSChain*)chain;
 -(void)stopSyncAllChains;
-
--(void)addSyncType:(DSSyncType)syncType;
--(void)clearSyncType:(DSSyncType)syncType;
 
 -(void)wipeBlockchainData;
 

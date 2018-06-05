@@ -11,6 +11,7 @@
 #define OPTION_KEEP_HEADERS_DEFAULT FALSE
 #define OPTION_SYNC_FROM_GENESIS @"OPTION_SYNC_FROM_GENESIS"
 #define OPTION_SYNC_FROM_GENESIS_DEFAULT FALSE
+#define OPTION_SYNC_TYPE @"OPTION_SYNC_TYPE"
 
 @implementation DSOptionsManager
 
@@ -55,6 +56,26 @@
     } else {
         return OPTION_SYNC_FROM_GENESIS_DEFAULT;
     }
+}
+
+-(DSSyncType)syncType {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:OPTION_SYNC_TYPE]) {
+        return (DSSyncType)[[NSUserDefaults standardUserDefaults] integerForKey:OPTION_SYNC_TYPE];
+    } else {
+        return DSSyncType_Default;
+    }
+}
+
+-(void)addSyncType:(DSSyncType)addSyncType {
+    [[NSUserDefaults standardUserDefaults] setInteger:self.syncType | addSyncType forKey:OPTION_SYNC_TYPE];
+}
+
+-(void)clearSyncType:(DSSyncType)clearSyncType {
+    [[NSUserDefaults standardUserDefaults] setInteger:self.syncType & ~clearSyncType forKey:OPTION_SYNC_TYPE];
+}
+
+-(void)setSyncType:(DSSyncType)syncType {
+    
 }
 
 @end
