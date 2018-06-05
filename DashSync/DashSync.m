@@ -35,7 +35,6 @@
 - (id)init
 {
     if (self == [super init]) {
-        self.syncType = DSSyncTypeDefault;
         // use background fetch to stay synced with the blockchain
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         

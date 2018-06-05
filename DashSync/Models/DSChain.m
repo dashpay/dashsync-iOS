@@ -376,6 +376,7 @@ static dispatch_once_t devnetToken = 0;
     return [self.mWallets copy];
 }
 
+// This is a time interval since the reference date 2001
 -(NSTimeInterval)earliestWalletCreationTime {
     if (![self.wallets count]) return BIP39_CREATION_TIME;
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSince1970];
@@ -386,6 +387,16 @@ static dispatch_once_t devnetToken = 0;
     }
     return timeInterval;
 }
+
+
+-(NSTimeInterval)startSyncFromTime {
+    if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
+        return self.checkpoints[0].timestamp - NSTimeIntervalSince1970;
+    } else {
+        return [self earliestWalletCreationTime];
+    }
+}
+
 
 -(NSString*)networkName {
     switch ([self chainType]) {
@@ -479,7 +490,7 @@ static dispatch_once_t devnetToken = 0;
         _lastBlock = [[DSMerkleBlockEntity fetchObjects:req].lastObject merkleBlock];
         // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
         for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestWalletCreationTime + NSTimeIntervalSince1970) {
+            if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
                 UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
                 _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
@@ -783,7 +794,7 @@ static dispatch_once_t devnetToken = 0;
     _lastBlock = nil;
     // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
     for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-        if (i == 0 || self.checkpoints[i].timestamp + 7*24*60*60 < self.earliestWalletCreationTime + NSTimeIntervalSince1970) {
+        if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
             UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
             
             _lastBlock = self.blocks[uint256_obj(checkpointHash)];
