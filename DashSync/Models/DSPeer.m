@@ -819,6 +819,7 @@ services:(uint64_t)services
             case DSInvType_DSTx:
             case DSInvType_TxLockRequest:
                 [txHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_TxLockVote: break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Spork: [sporkHashes addObject:uint256_obj(hash)]; break;

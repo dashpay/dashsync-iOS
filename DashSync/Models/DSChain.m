@@ -42,6 +42,7 @@
 #import "DSAccount.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSDerivationPath.h"
+#import "DSOptionsManager.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -581,7 +582,7 @@ static dispatch_once_t devnetToken = 0;
     txTime = block.timestamp/2 + prev.timestamp/2;
     
     if ((block.height % 1000) == 0) { //free up some memory from time to time
-        
+        [self saveBlocks];
         DSMerkleBlock *b = block;
         
         for (uint32_t i = 0; b && i < (DGW_PAST_BLOCKS_MAX + 50); i++) {
@@ -727,15 +728,25 @@ static dispatch_once_t devnetToken = 0;
     NSLog(@"[DSChain] save blocks");
     NSMutableDictionary *blocks = [NSMutableDictionary dictionary];
     DSMerkleBlock *b = self.lastBlock;
-    
+    uint32_t startHeight = 0;
     while (b) {
         blocks[[NSData dataWithBytes:b.blockHash.u8 length:sizeof(UInt256)]] = b;
+        startHeight = b.height;
         b = self.blocks[uint256_obj(b.prevBlock)];
     }
     
     [[DSMerkleBlockEntity context] performBlock:^{
-        [DSMerkleBlockEntity deleteObjects:[DSMerkleBlockEntity objectsMatching:@"! (blockHash in %@)",
-                                            blocks.allKeys]];
+        if ([[DSOptionsManager sharedInstance] keepHeaders]) {
+            //only remove orphan chains
+        NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"! (blockHash in %@) && (height > %u)",
+                                               blocks.allKeys,startHeight];
+            if ([recentOrphans count])  NSLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
+        [DSMerkleBlockEntity deleteObjects:recentOrphans];
+        } else {
+            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"! (blockHash in %@)",
+                                                              blocks.allKeys];
+            [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
+        }
         
         for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsMatching:@"blockHash in %@", blocks.allKeys]) {
             @autoreleasepool {

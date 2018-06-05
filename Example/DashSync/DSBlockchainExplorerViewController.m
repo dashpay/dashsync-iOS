@@ -42,11 +42,11 @@
 
 -(NSPredicate*)searchPredicate {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
-    if (self.searchString) {
+    if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            return [NSPredicate predicateWithFormat:@"(height == %@)",@([self.searchString longLongValue])];
+            return [NSPredicate predicateWithFormat:@"chain == %@ && (height == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
         } else {
-            return [[NSPredicate alloc] init];
+            return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
         }
 //        else {
 //            return [NSPredicate predicateWithFormat:@"(blockHash == %@)",self.searchString];
