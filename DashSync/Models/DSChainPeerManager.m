@@ -533,6 +533,7 @@
 }
 
 -(void)getSporks {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
     for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
         if (p.status != DSPeerStatus_Connected) continue;
         
@@ -545,6 +546,7 @@
 }
 
 -(void)getMasternodeList {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) return; // make sure we care about masternode list
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedMasternodeList" ascending:YES]]];
     for (DSPeer * peer in sortedPeers) {
         if (peer.status != DSPeerStatus_Connected) continue;

@@ -67,14 +67,16 @@
         } else {
             return; //nothing more to do
         }
+    } else {
+        _sporkDictionary[@(spork.identifier)] = spork;
     }
     [dictionary setObject:spork forKey:@"new"];
     
     if (!currentSpork || updatedSpork) {
         @autoreleasepool {
             [[DSSporkEntity managedObject] setAttributesFromSpork:spork]; // add new peers
+            [DSSporkEntity saveContext];
         }
-        [DSSporkEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkManagerSporkUpdateNotification object:nil userInfo:dictionary];
         });
