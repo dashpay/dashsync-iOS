@@ -34,7 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
 - (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
 - (DSMerkleBlock *)merkleBlock;
+
 + (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity;
++ (DSMerkleBlock *)lastBlockOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

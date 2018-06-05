@@ -45,6 +45,7 @@
 #import <netdb.h>
 #import "DSDerivationPath.h"
 #import "DSAccount.h"
+#import "DSOptionsManager.h"
 
 #define PEER_LOGGING 1
 
@@ -267,7 +268,8 @@
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
     dispatch_async(self.q, ^{
-        if (![self.chain hasAWallet]) return; // check to make sure the wallet has been created
+        
+        if ([self.chain needsOldBlockSync] && ![self.chain hasAWallet]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
         
         if (self.syncProgress < 1.0) {
@@ -279,8 +281,7 @@
             }
             
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
-                self.taskId =
-                [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.q, ^{
                         [self.chain saveBlocks];
                     });

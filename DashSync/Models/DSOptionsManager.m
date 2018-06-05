@@ -75,7 +75,7 @@
 }
 
 -(void)setSyncType:(DSSyncType)syncType {
-    
+    [[NSUserDefaults standardUserDefaults] setInteger:syncType forKey:OPTION_SYNC_TYPE];
 }
 
 @end

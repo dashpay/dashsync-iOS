@@ -16,8 +16,9 @@
     // Override point for customization after application launch.
     [DSAuthenticationManager sharedInstance].usesAuthentication = FALSE;
     [DashSync sharedSyncController];
-    [[DSOptionsManager sharedInstance] setKeepHeaders:TRUE];
-    [[DSOptionsManager sharedInstance] setSyncFromGenesis:TRUE];
+    [[DSOptionsManager sharedInstance] setKeepHeaders:NO];
+    [[DSOptionsManager sharedInstance] setSyncFromGenesis:NO];
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_MasternodeList];
     return YES;
 }
 
