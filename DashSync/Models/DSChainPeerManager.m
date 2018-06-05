@@ -269,7 +269,7 @@
     
     dispatch_async(self.q, ^{
         
-        if ([self.chain needsOldBlockSync] && ![self.chain hasAWallet]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
+        if ([self.chain syncsBlockchain] && ![self.chain hasAWallet]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
         
         if (self.syncProgress < 1.0) {
@@ -488,6 +488,7 @@
 
 - (void)loadMempools
 {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
     for (DSPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
         if (p.status != DSPeerStatus_Connected) continue;
         
@@ -533,6 +534,7 @@
 }
 
 -(void)getSporks {
+    NSLog(@"%d",[[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks);
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
     for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
         if (p.status != DSPeerStatus_Connected) continue;
@@ -907,14 +909,18 @@
     
     if (self.connected && (self.chain.estimatedBlockHeight >= peer.lastblock || self.chain.lastBlockHeight >= peer.lastblock)) {
         if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) return; // don't load bloom filter yet if we're syncing
-        [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
-        [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
+        if ([self.chain syncsBlockchain] && [self.chain hasAWallet]) {
+            [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
+            [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
+        }
         [peer sendPingMessageWithPongHandler:^(BOOL success) {
             if (! success) return;
             [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
                 if (! success) return;
                 peer.synced = YES;
-                [self removeUnrelayedTransactions];
+                if ([self.chain syncsBlockchain]) {
+                    [self removeUnrelayedTransactions];
+                }
                 [peer sendGetaddrMessage]; // request a list of other bitcoin peers
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -942,7 +948,7 @@
     [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
     peer.currentBlockHeight = self.chain.lastBlockHeight;
     
-    if (self.chain.lastBlockHeight < peer.lastblock) { // start blockchain sync
+    if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastblock)) { // start blockchain sync
         self.lastRelayTime = 0;
         
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls

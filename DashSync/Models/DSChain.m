@@ -358,7 +358,7 @@ static dispatch_once_t devnetToken = 0;
     return !![self.mWallets count];
 }
 
--(BOOL)needsOldBlockSync { //required for SPV wallets
+-(BOOL)syncsBlockchain { //required for SPV wallets
     return !([[DSOptionsManager sharedInstance] syncType] & ~DSSyncType_NeedsWalletSyncType);
 }
 
@@ -405,7 +405,7 @@ static dispatch_once_t devnetToken = 0;
 -(NSTimeInterval)startSyncFromTime {
     if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
         return self.checkpoints[0].timestamp - NSTimeIntervalSince1970;
-    } else if ([self needsOldBlockSync]) {
+    } else if ([self syncsBlockchain]) {
         return [self earliestWalletCreationTime];
     } else {
         return self.checkpoints.lastObject.timestamp - NSTimeIntervalSince1970;
@@ -502,7 +502,7 @@ static dispatch_once_t devnetToken = 0;
         }];
         // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
         for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || ![self needsOldBlockSync] || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
+            if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
                 UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
                 _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO

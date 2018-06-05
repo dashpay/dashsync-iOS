@@ -92,7 +92,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletAddedNotification;
 @property (nonatomic, readonly) uint32_t magicNumber;
 @property (nonatomic, readonly) NSString * chainWalletsKey;
 @property (nonatomic, readonly) BOOL hasAWallet;
-@property (nonatomic, readonly) BOOL needsOldBlockSync;
+@property (nonatomic, readonly) BOOL syncsBlockchain;
 @property (nonatomic, assign) uint64_t feePerKb;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
 

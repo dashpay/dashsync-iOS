@@ -839,7 +839,7 @@ services:(uint64_t)services
         }
     }
     
-    if (! self.sentFilter && ! self.sentMempool && ! self.sentGetblocks) {
+    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks) {
         if (txHashes.count > 0) [self error:@"got inv message before loading a filter"];
         return;
     }
