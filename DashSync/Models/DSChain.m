@@ -121,6 +121,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
 @property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mStandaloneDerivationPaths;
+@property (nonatomic, strong) DSChainEntity * mainThreadChainEntity;
 @property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 
 @end
@@ -132,7 +133,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 - (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints port:(uint32_t)port
 {
     if (! (self = [super init])) return nil;
-    
+    NSAssert([NSThread isMainThread], @"Chains should only be created on main thread (for chain entity optimizations)");
     _chainType = type;
     self.orphans = [NSMutableDictionary dictionary];
     self.checkpoints = checkpoints;
@@ -145,7 +146,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
     if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) self.feePerKb = feePerKb;
     
-    [self chainEntity];
+    self.mainThreadChainEntity = [self chainEntity];
     [self retrieveWallets];
     [self retrieveStandaloneDerivationPaths];
     return self;
@@ -165,6 +166,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 }
 
 -(DSChainEntity*)chainEntity {
+    if ([NSThread isMainThread]) return self.mainThreadChainEntity;
     __block DSChainEntity* chainEntity = nil;
     [[DSChainEntity context] performBlockAndWait:^{
         chainEntity = [DSChainEntity chainEntityForType:self.chainType genesisBlock:self.genesisHash checkpoints:self.checkpoints];

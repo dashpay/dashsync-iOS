@@ -97,7 +97,7 @@
     self.misbehavinPeers = [NSMutableSet set];
     self.nonFpTx = [NSMutableSet set];
     self.taskId = UIBackgroundTaskInvalid;
-    self.q = dispatch_queue_create("peermanager", NULL);
+    self.q = dispatch_queue_create("org.dashcore.dashsync.peermanager", DISPATCH_QUEUE_SERIAL);
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
     
     self.backgroundObserver =

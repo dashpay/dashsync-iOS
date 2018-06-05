@@ -141,9 +141,10 @@
     DSMerkleBlockEntity *merkleBlockEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.blockHeightLabel.text = [NSString stringWithFormat:@"%u",merkleBlockEntity.height];
     cell.blockHashLabel.text = merkleBlockEntity.blockHash.reverse.hexString;
-    NSDate * date = [NSDate dateWithTimeIntervalSince1970:merkleBlockEntity.timestamp];
+    NSDate * date = [NSDate dateWithTimeIntervalSinceReferenceDate:merkleBlockEntity.timestamp];
     NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateStyle:NSDateFormatterShortStyle];
+    [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
     cell.timestampLabel.text = [dateFormatter stringFromDate:date];
     
 }
