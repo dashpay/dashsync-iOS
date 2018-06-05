@@ -50,6 +50,25 @@
     return self;
 }
 
+- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity {
+    [self.managedObjectContext performBlockAndWait:^{
+        self.blockHash = [NSData dataWithBytes:block.blockHash.u8 length:sizeof(UInt256)];
+        self.version = block.version;
+        self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
+        self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
+        self.timestamp = block.timestamp - NSTimeIntervalSince1970;
+        self.target = block.target;
+        self.nonce = block.nonce;
+        self.totalTransactions = block.totalTransactions;
+        self.hashes = [NSData dataWithData:block.hashes];
+        self.flags = [NSData dataWithData:block.flags];
+        self.height = block.height;
+        self.chain = chainEntity;
+    }];
+    
+    return self;
+}
+
 - (DSMerkleBlock *)merkleBlock
 {
     __block DSMerkleBlock *block = nil;
@@ -66,6 +85,10 @@
     }];
     
     return block;
+}
+
++ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity {
+    return [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > max(height) - 51)",chainEntity];
 }
 
 @end

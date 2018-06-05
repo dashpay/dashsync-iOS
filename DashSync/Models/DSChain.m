@@ -115,6 +115,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
 @property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mStandaloneDerivationPaths;
+@property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 
 @end
 
@@ -440,8 +441,8 @@ static dispatch_once_t devnetToken = 0;
                                                                             flags:nil height:checkpoint.height];
             self.checkpointsDictionary[@(checkpoint.height)] = uint256_obj(checkpointHash);
         }
-        
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity allObjects]) {
+        self.delegateQueueChainEntity = [self chainEntity];
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:50 onChain:self.delegateQueueChainEntity]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -566,6 +567,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer
 {
+    //All blocks will be added from same delegateQueue
     NSArray *txHashes = block.txHashes;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
@@ -599,11 +601,13 @@ static dispatch_once_t devnetToken = 0;
         for (uint32_t i = 0; b && i < (DGW_PAST_BLOCKS_MAX + 50); i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
-        
+        NSMutableArray * blocksToRemove = [NSMutableArray array];
         while (b) { // free up some memory
+            [blocksToRemove addObject:uint256_obj(b.blockHash)];
             b = self.blocks[uint256_obj(b.prevBlock)];
-            if (b) [self.blocks removeObjectForKey:uint256_obj(b.prevBlock)];
         }
+        [self.blocks removeObjectsForKeys:blocksToRemove];
+        NSLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
     }
     
     // verify block difficulty if block is past last checkpoint
@@ -749,26 +753,24 @@ static dispatch_once_t devnetToken = 0;
     [[DSMerkleBlockEntity context] performBlock:^{
         if ([[DSOptionsManager sharedInstance] keepHeaders]) {
             //only remove orphan chains
-        NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"! (blockHash in %@) && (height > %u)",
-                                               blocks.allKeys,startHeight];
+        NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) ",self.delegateQueueChainEntity,startHeight,blocks.allKeys];
             if ([recentOrphans count])  NSLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
         [DSMerkleBlockEntity deleteObjects:recentOrphans];
         } else {
-            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"! (blockHash in %@)",
-                                                              blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"!(blockHash in %@)",blocks.allKeys];
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
         }
         
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsMatching:@"blockHash in %@", blocks.allKeys]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity objectsMatching:@"blockHash in %@",blocks.allKeys]) {
             @autoreleasepool {
-                [e setAttributesFromBlock:blocks[e.blockHash]];
+                [e setAttributesFromBlock:blocks[e.blockHash] forChain:self.delegateQueueChainEntity];
                 [blocks removeObjectForKey:e.blockHash];
             }
         }
         
         for (DSMerkleBlock *b in blocks.allValues) {
             @autoreleasepool {
-                [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:b];
+                [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:b forChain:self.delegateQueueChainEntity];
             }
         }
         
