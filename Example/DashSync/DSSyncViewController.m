@@ -30,7 +30,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver, chainWalletObserver;;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver;;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -47,6 +47,7 @@
     [self updateBalance];
     [self updateSporks];
     [self updateBlockHeight];
+    [self updateMasternodeCount];
     
     self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
     
@@ -81,7 +82,11 @@
                                                                                          NSLog(@"update spork count");
                                                                                          [self updateSporks];
                                                                                      }];
-    
+    self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
+                                                                                 queue:nil usingBlock:^(NSNotification *note) {
+                                                                                     NSLog(@"update spork count");
+                                                                                     [self updateMasternodeCount];
+                                                                                 }];
 
     self.chainWalletObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
@@ -259,6 +264,14 @@
 
 -(void)updateSporks {
     self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[self.chainPeerManager.sporkManager.sporkDictionary allKeys] count]];
+}
+
+-(void)updateMasternodeCount {
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
+}
+
+-(void)updateMasternodeBroadcastsCount {
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

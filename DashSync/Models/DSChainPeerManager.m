@@ -1317,6 +1317,17 @@
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count {
     [self setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
+    switch (masternodeSyncCountInfo) {
+        case DSMasternodeSyncCountInfo_List:
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:self userInfo:@{@(masternodeSyncCountInfo):@(count)}];
+            });
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 

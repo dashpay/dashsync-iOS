@@ -17,3 +17,4 @@ NSString* const DSChainWalletAddedNotification =    @"DSChainWalletAddedNotifica
 NSString* const DSWalletBalanceChangedNotification =        @"DSWalletBalanceChangedNotification";
 NSString* const DSSporkManagerSporkUpdateNotification =     @"DSSporkManagerSporkUpdateNotification";
 NSString* const DSMasternodeListChangedNotification = @"DSMasternodeListChangedNotification";
+NSString* const DSMasternodeListCountUpdateNotification = @"DSMasternodeListCountUpdateNotification";
