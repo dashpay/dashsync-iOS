@@ -19,6 +19,8 @@
 @dynamic port;
 @dynamic protocolVersion;
 @dynamic signatureTimestamp;
-@dynamic utxo;
+@dynamic utxoHash;
+@dynamic utxoIndex;
+@dynamic chain;
 
 @end

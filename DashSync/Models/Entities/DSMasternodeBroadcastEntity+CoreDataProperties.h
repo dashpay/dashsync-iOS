@@ -15,12 +15,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSMasternodeBroadcastEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, copy) NSNumber *address;
+@property (nonatomic, assign) uint32_t address;
 @property (nullable, nonatomic, retain) NSData *mnbHash;
-@property (nullable, nonatomic, copy) NSNumber *port;
-@property (nullable, nonatomic, copy) NSNumber *protocolVersion;
-@property (nullable, nonatomic, copy) NSNumber *signatureTimestamp;
-@property (nullable, nonatomic, retain) NSData *utxo;
+@property (nonatomic, assign) uint16_t port;
+@property (nonatomic, assign) uint32_t protocolVersion;
+@property (nonatomic, assign) uint64_t signatureTimestamp;
+@property (nonatomic, assign) uint32_t utxoIndex;
+@property (nullable, nonatomic, retain) NSData *utxoHash;
+@property (nullable, nonatomic, retain) NSData *publicKey;
+@property (nullable, nonatomic, retain) NSData *signature;
+@property (nonatomic, retain) DSChainEntity * chain;
 
 @end
 

@@ -17,6 +17,7 @@
 @property (nonatomic,assign) UInt128 ipAddress;
 @property (nonatomic,assign) uint16_t port;
 @property (nonatomic,assign) uint32_t protocolVersion;
+@property (nonatomic,assign) UInt256 masternodeBroadcastHash;
 
 @end
 

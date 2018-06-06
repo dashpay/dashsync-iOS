@@ -16,8 +16,9 @@
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="blocks" toMany="YES" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="derivationPaths" toMany="YES" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="chain" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="masternodeBroadcasts" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeBroadcastEntity" inverseName="chain" inverseEntity="DSMasternodeBroadcastEntity" syncable="YES"/>
         <relationship name="peers" toMany="YES" deletionRule="Cascade" destinationEntity="DSPeerEntity" inverseName="chain" inverseEntity="DSPeerEntity" syncable="YES"/>
-        <relationship name="sporks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSporkEntity" inverseName="chain" inverseEntity="DSSporkEntity" syncable="YES"/>
+        <relationship name="sporks" toMany="YES" deletionRule="Nullify" destinationEntity="DSSporkEntity" inverseName="chain" inverseEntity="DSSporkEntity" syncable="YES"/>
         <relationship name="transactions" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="chain" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
@@ -31,8 +32,12 @@
         <attribute name="mnbHash" attributeType="Binary" syncable="YES"/>
         <attribute name="port" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="protocolVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="signatureTimestamp" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="utxo" attributeType="Binary" syncable="YES"/>
+        <attribute name="utxoHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="utxoIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="masternodeBroadcasts" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
     <entity name="DSMasternodePingEntity" syncable="YES">
         <attribute name="chaintip" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -126,9 +131,9 @@
     </entity>
     <elements>
         <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
-        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="180"/>
+        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="195"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="103"/>
-        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="135"/>
+        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="195"/>
         <element name="DSMasternodePingEntity" positionX="27" positionY="135" width="128" height="60"/>
         <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="180"/>

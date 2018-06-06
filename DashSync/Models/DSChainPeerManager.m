@@ -46,7 +46,7 @@
 #import "DSDerivationPath.h"
 #import "DSAccount.h"
 #import "DSOptionsManager.h"
-
+#import "DSMasternodeManager.h"
 
 #define PEER_LOGGING 1
 
@@ -80,8 +80,8 @@
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) NSMutableDictionary * masternodeSyncCountInfo;
 @property (nonatomic, strong) DSSporkManager * sporkManager;
+@property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 
 @end
 
@@ -92,7 +92,7 @@
     if (! (self = [super init])) return nil;
     self.chain = chain;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
-    self.masternodeSyncCountInfo = [NSMutableDictionary dictionary];
+    self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.txRequests = [NSMutableDictionary dictionary];
@@ -1332,8 +1332,7 @@
 
 
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
-    NSUInteger peerCount = [self.peers count];
-    peerCount++;
+
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {

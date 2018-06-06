@@ -21,6 +21,7 @@
 @property (nonatomic,readonly) uint16_t port;
 @property (nonatomic,readonly) uint32_t protocolVersion;
 @property (nonatomic,readonly) NSData * publicKey;
+@property (nonatomic,readonly) UInt256 masternodeBroadcastHash;
 
 +(DSMasternodeBroadcast*)masternodeBroadcastFromMessage:(NSData *)message;
 -(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData* _Nonnull)publicKey signature:(NSData* _Nonnull)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp;
