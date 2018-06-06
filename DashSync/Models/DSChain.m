@@ -883,6 +883,11 @@ static dispatch_once_t devnetToken = 0;
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
 
+- (BOOL)isEqual:(id)obj
+{
+    return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
+}
+
 @end
 
 @implementation DSCheckpoint

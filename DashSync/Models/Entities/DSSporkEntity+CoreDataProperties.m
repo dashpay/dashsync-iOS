@@ -18,5 +18,6 @@
 @dynamic signature;
 @dynamic timeSigned;
 @dynamic value;
+@dynamic chain;
 
 @end

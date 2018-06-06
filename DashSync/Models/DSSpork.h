@@ -20,6 +20,7 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
     DSSporkIdentifier_Spork14RequireSentinelFlag = 10013
 };
 
+@class DSChain;
 
 @interface DSSpork : NSObject
 
@@ -29,10 +30,11 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
 @property (nonatomic,assign,readonly) uint64_t timeSigned;
 @property (nonatomic,assign,readonly) uint64_t value;
 @property (nonatomic,strong,readonly) NSData * signature;
+@property (nonatomic,readonly) DSChain * chain;
 
-+ (instancetype)sporkWithMessage:(NSData *)message;
++ (instancetype)sporkWithMessage:(NSData *)message onChain:(DSChain*)chain;
     
-- (instancetype)initWithIdentifier:(DSSporkIdentifier)identifier value:(uint64_t)value timeSigned:(uint64_t)timeSigned signature:(NSData*)signature;
+- (instancetype)initWithIdentifier:(DSSporkIdentifier)identifier value:(uint64_t)value timeSigned:(uint64_t)timeSigned signature:(NSData*)signature onChain:(DSChain*)chain;
     
 -(BOOL)isEqualToSpork:(DSSpork*)spork;
 

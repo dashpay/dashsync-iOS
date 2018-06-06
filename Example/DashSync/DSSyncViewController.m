@@ -258,7 +258,7 @@
 }
 
 -(void)updateSporks {
-    self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[[DSSporkManager sharedInstance].sporkDictionary allKeys] count]];
+    self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[self.chainPeerManager.sporkManager.sporkDictionary allKeys] count]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -268,7 +268,7 @@
     } else if ([segue.identifier isEqualToString:@"SporksListSegue"]) {
         DSSporksViewController * sporksViewController = (DSSporksViewController*)segue.destinationViewController;
         sporksViewController.chain = self.chainPeerManager.chain;
-        sporksViewController.sporksArray = [[[[[DSSporkManager sharedInstance] sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
+        sporksViewController.sporksArray = [[[[self.chainPeerManager.sporkManager sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
     } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
         blockchainExplorerViewController.chain = self.chainPeerManager.chain;

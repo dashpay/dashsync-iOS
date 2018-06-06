@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "DSPeer.h"
 #import "DSChain.h"
+#import "DSSporkManager.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
@@ -51,6 +52,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListChangedNotification;
 @property (nonatomic, readonly) NSString * _Nullable chainTip;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
+@property (nonatomic, readonly) DSSporkManager * sporkManager;
 
 
 - (instancetype)initWithChain:(DSChain*)chain;

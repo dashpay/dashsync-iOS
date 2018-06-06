@@ -11,15 +11,16 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSSporkManagerSporkUpdateNotification;
 
-@class DSPeer;
+@class DSPeer,DSChain;
 
 @interface DSSporkManager : NSObject
     
 @property (nonatomic,assign) BOOL instantSendActive;
 
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
+@property (nonatomic,readonly) DSChain * chain;
 
-+ (instancetype _Nullable)sharedInstance;
+-(instancetype)initWithChain:(DSChain*)chain;
 
 - (void)peer:(DSPeer * _Nullable)peer relayedSpork:(DSSpork * _Nonnull)spork;
 

@@ -10,34 +10,25 @@
 #import "DSSpork.h"
 #import "DSSporkEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSChain.h"
 
 @interface DSSporkManager()
     
 @property (nonatomic,strong) NSMutableDictionary * sporkDictionary;
+@property (nonatomic,strong) DSChain * chain;
     
 @end
 
 @implementation DSSporkManager
-    
-+ (instancetype)sharedInstance
-{
-    static id singleton = nil;
-    static dispatch_once_t onceToken = 0;
-    
-    dispatch_once(&onceToken, ^{
-        singleton = [self new];
-    });
-    
-    return singleton;
-}
-    
-- (instancetype)init
+
+- (instancetype)initWithChain:(id)chain
 {
     if (! (self = [super init])) return nil;
+    _chain = chain;
     _sporkDictionary = [NSMutableDictionary dictionary];
     NSArray * sporkEntities = [DSSporkEntity allObjects];
     for (DSSporkEntity * sporkEntity in sporkEntities) {
-        DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature];
+        DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
         _sporkDictionary[@(spork.identifier)] = spork;
     }
     return self;

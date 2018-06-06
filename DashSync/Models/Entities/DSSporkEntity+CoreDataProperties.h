@@ -11,6 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSChainEntity;
+
 @interface DSSporkEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSSporkEntity *> *)fetchRequest;
@@ -19,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int64_t timeSigned;
 @property (nonatomic) int64_t value;
 @property (nonatomic) int32_t identifier;
+@property (nonatomic,retain) DSChainEntity * chain;
 
 @end
 

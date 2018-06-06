@@ -47,6 +47,7 @@
 #import "DSAccount.h"
 #import "DSOptionsManager.h"
 
+
 #define PEER_LOGGING 1
 
 #if ! PEER_LOGGING
@@ -79,7 +80,8 @@
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic,strong) NSMutableDictionary * masternodeSyncCountInfo;
+@property (nonatomic, strong) NSMutableDictionary * masternodeSyncCountInfo;
+@property (nonatomic, strong) DSSporkManager * sporkManager;
 
 @end
 
@@ -89,6 +91,7 @@
 {
     if (! (self = [super init])) return nil;
     self.chain = chain;
+    self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeSyncCountInfo = [NSMutableDictionary dictionary];
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
@@ -492,7 +495,7 @@
     for (DSPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
         if (p.status != DSPeerStatus_Connected) continue;
         
-        if (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
+        if ([self.chain hasAWallet] && (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
             [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
         }
         
@@ -534,7 +537,6 @@
 }
 
 -(void)getSporks {
-    NSLog(@"%d",[[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks);
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
     for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
         if (p.status != DSPeerStatus_Connected) continue;
@@ -945,7 +947,9 @@
     self.downloadPeer = peer;
     _connected = YES;
     [self.chain setEstimatedBlockHeight:peer.lastblock fromPeer:peer];
-    [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
+    if ([self.chain syncsBlockchain] && [self.chain hasAWallet]) {
+        [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
+    }
     peer.currentBlockHeight = self.chain.lastBlockHeight;
     
     if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastblock)) { // start blockchain sync
@@ -1227,7 +1231,7 @@
         }
     }
     
-    if (! _bloomFilter) { // ingore potentially incomplete blocks when a filter update is pending
+    if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
         if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
         return;
     }
@@ -1305,7 +1309,7 @@
 
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
     if (spork.isValid) {
-        [[DSSporkManager sharedInstance] peer:(DSPeer*)peer relayedSpork:spork];
+        [self.sporkManager peer:(DSPeer*)peer relayedSpork:spork];
     } else {
         [self peerMisbehavin:peer];
     }

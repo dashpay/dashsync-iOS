@@ -1241,7 +1241,7 @@ services:(uint64_t)services
 
 - (void)acceptSporkMessage:(NSData *)message
 {
-    DSSpork * spork = [DSSpork sporkWithMessage:message];
+    DSSpork * spork = [DSSpork sporkWithMessage:message onChain:self.chain];
     [self.delegate peer:self relayedSpork:spork];
 }
 
