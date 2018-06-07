@@ -91,6 +91,8 @@
             return @"Instant Send block filtering";
         case DSSporkIdentifier_Spork5InstantSendMaxValue:
             return @"Instant Send max value";
+        case DSSporkIdentifier_Spork6NewSigs:
+            return @"New Signature/Message Format";
         case DSSporkIdentifier_Spork8MasternodePaymentEnforcement:
             return @"Masternode payment enforcement";
         case DSSporkIdentifier_Spork9SuperblocksEnabled:

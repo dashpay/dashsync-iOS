@@ -12,6 +12,7 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
     DSSporkIdentifier_Spork2InstantSendEnabled = 10001,
     DSSporkIdentifier_Spork3InstantSendBlockFiltering = 10002,
     DSSporkIdentifier_Spork5InstantSendMaxValue = 10004,
+    DSSporkIdentifier_Spork6NewSigs = 10005,
     DSSporkIdentifier_Spork8MasternodePaymentEnforcement = 10007,
     DSSporkIdentifier_Spork9SuperblocksEnabled = 10008,
     DSSporkIdentifier_Spork10MasternodePayUpdatedNodes = 10009,
