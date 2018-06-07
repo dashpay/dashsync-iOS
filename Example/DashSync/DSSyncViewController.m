@@ -267,11 +267,11 @@
 }
 
 -(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager.masternodeManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
 }
 
 -(void)updateMasternodeBroadcastsCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager.masternodeManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

@@ -32,23 +32,39 @@
     return self;
 }
 
--(NSArray*)masternodeHashes {
-    
-}
+//-(NSArray*)masternodeHashes {
+//
+//}
 
 -(void)loadMasternodes:(NSUInteger)count {
     NSFetchRequest * fetchRequest = [[DSMasternodeBroadcastEntity fetchRequest] copy];
     [fetchRequest setFetchLimit:count];
         NSArray * masternodeBroadcastEntities = [DSMasternodeBroadcastEntity fetchObjects:fetchRequest];
     for (DSMasternodeBroadcastEntity * masternodeBroadcastEntity in masternodeBroadcastEntities) {
-        DSUTXO utxo = dsutxo_obj(masternodeBroadcastEntity.utxo);
-        DSMasternodeBroadcast * masternodeBroadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:utxo ipAddress:masternodeBroadcastEntity.address port:masternodeBroadcastEntity.port protocolVersion:masternodeBroadcastEntity.protocolVersion publicKey:masternodeBroadcastEntity. signature:<#(NSData * _Nonnull)#> signatureTimestamp:masternodeBroadcastEntity.signature];
+        DSUTXO utxo;
+        utxo.hash = *(UInt256 *)masternodeBroadcastEntity.utxoHash.bytes;
+        utxo.n = masternodeBroadcastEntity.utxoIndex;
+        UInt128 ipv6address = UINT128_ZERO;
+        ipv6address.u32[3] = masternodeBroadcastEntity.address;
+        DSMasternodeBroadcast * masternodeBroadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:utxo ipAddress:ipv6address port:masternodeBroadcastEntity.port protocolVersion:masternodeBroadcastEntity.protocolVersion publicKey:masternodeBroadcastEntity.publicKey signature:masternodeBroadcastEntity.signature signatureTimestamp:masternodeBroadcastEntity.signatureTimestamp onChain:self.chain];
         [_masternodeBroadcasts addObject:masternodeBroadcast];
     }
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
     
+}
+
+
+// MARK: - Masternodes
+
+- (uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
+    if (![self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)]) return 0;
+    return (uint32_t)[[self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)] unsignedLongValue];
+}
+
+-(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
+    [self.masternodeSyncCountInfo setObject:@(count) forKey:@(masternodeSyncCountInfo)];
 }
 
 @end

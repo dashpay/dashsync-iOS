@@ -18,12 +18,13 @@
 @property (nonatomic,assign) uint16_t port;
 @property (nonatomic,assign) uint32_t protocolVersion;
 @property (nonatomic,assign) UInt256 masternodeBroadcastHash;
+@property (nonatomic,strong) DSChain * chain;
 
 @end
 
 @implementation DSMasternodeBroadcast
 
--(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData*)publicKey signature:(NSData*)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp {
+-(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData*)publicKey signature:(NSData*)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     _utxo = utxo;
     _ipAddress = ipAddress;
@@ -32,11 +33,12 @@
     _signatureTimestamp = signatureTimestamp;
     _protocolVersion = protocolVersion;
     _publicKey = publicKey;
+    _chain = chain;
     
     return self;
 }
 
-+(DSMasternodeBroadcast*)masternodeBroadcastFromMessage:(NSData *)message {
++(DSMasternodeBroadcast*)masternodeBroadcastFromMessage:(NSData *)message onChain:(DSChain *)chain {
     NSUInteger length = message.length;
     DSUTXO masternodeUTXO;
     NSUInteger offset = 0;
@@ -91,7 +93,7 @@
     uint32_t protocolVersion = [message UInt32AtOffset:offset];
     offset += 4;
     
-    DSMasternodeBroadcast * broadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:masternodeUTXO ipAddress:masternodeAddress port:port protocolVersion:protocolVersion publicKey:masternodePublicKey signature:messageSignature signatureTimestamp:timestamp];
+    DSMasternodeBroadcast * broadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:masternodeUTXO ipAddress:masternodeAddress port:port protocolVersion:protocolVersion publicKey:masternodePublicKey signature:messageSignature signatureTimestamp:timestamp onChain:chain];
 
     NSData * restOfData = [message subdataWithRange:NSMakeRange(offset, length-offset)];
     DSMasternodePing * ping = [DSMasternodePing masternodePingFromMessage:restOfData];

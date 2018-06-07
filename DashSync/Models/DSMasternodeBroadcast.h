@@ -22,8 +22,9 @@
 @property (nonatomic,readonly) uint32_t protocolVersion;
 @property (nonatomic,readonly) NSData * publicKey;
 @property (nonatomic,readonly) UInt256 masternodeBroadcastHash;
+@property (nonatomic,readonly) DSChain * chain;
 
-+(DSMasternodeBroadcast*)masternodeBroadcastFromMessage:(NSData *)message;
--(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData* _Nonnull)publicKey signature:(NSData* _Nonnull)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp;
++(DSMasternodeBroadcast* _Nullable)masternodeBroadcastFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
+-(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData* _Nonnull)publicKey signature:(NSData* _Nonnull)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp onChain:(DSChain* _Nonnull)chain;
 
 @end

@@ -803,17 +803,6 @@
     }];
 }
 
-// MARK: - Masternodes
-
-- (uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
-    if (![self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)]) return 0;
-    return (uint32_t)[[self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)] unsignedLongValue];
-}
-
--(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
-    [self.masternodeSyncCountInfo setObject:@(count) forKey:@(masternodeSyncCountInfo)];
-}
-
 // MARK: - Bloom Filters
 
 - (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer
@@ -1316,7 +1305,7 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count {
-    [self setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
+    [self.masternodeManager setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
     switch (masternodeSyncCountInfo) {
         case DSMasternodeSyncCountInfo_List:
         {

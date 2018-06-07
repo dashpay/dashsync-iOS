@@ -1256,7 +1256,7 @@ services:(uint64_t)services
 
 -(void)acceptMNBMessage:(NSData *)message
 {
-    DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message];
+    DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message onChain:self.chain];
     if (broadcast) {
         [self.delegate peer:self relayedMasternodeBroadcast:broadcast];
     }
