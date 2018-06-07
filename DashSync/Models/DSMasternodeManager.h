@@ -14,7 +14,7 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
     DSMasternodeSyncCountInfo_GovernanceObjectVote = 11,
 };
 
-@class DSPeer,DSChain,DSMasternodeBroadcast;
+@class DSPeer,DSChain,DSMasternodeBroadcast,DSMasternodePing;
 
 @interface DSMasternodeManager : NSObject
 
@@ -23,6 +23,8 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
 -(instancetype)initWithChain:(DSChain*)chain;
 
 -(void)peer:(DSPeer * _Nullable)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * _Nonnull)masternodeBroadcast;
+
+-(void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing;
 
 // Masternodes
 -(uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;

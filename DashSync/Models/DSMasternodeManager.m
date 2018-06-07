@@ -52,9 +52,15 @@
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
+
     
+    NSValue *masternodeBroadcastHash = uint256_obj(masternodeBroadcast.masternodeBroadcastHash);
+
 }
 
+- (void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing {
+    
+}
 
 // MARK: - Masternodes
 

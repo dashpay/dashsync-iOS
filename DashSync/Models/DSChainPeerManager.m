@@ -1321,11 +1321,11 @@
 
 
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
-
+    [self.masternodeManager peer:peer relayedMasternodeBroadcast:masternodeBroadcast];
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {
-    
+    [self.masternodeManager peer:peer relayedMasternodePing:masternodePing];
 }
 
 // MARK: - DSChainDelegate

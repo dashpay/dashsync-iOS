@@ -38,6 +38,8 @@
 #import <arpa/inet.h>
 #import "DSMasternodePing.h"
 
+#define PEER_LOGGING 1
+
 #if ! PEER_LOGGING
 #define NSLog(...)
 #endif
@@ -535,28 +537,22 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
-- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray *)masternodeBroadcastHashes andMasternodePingHashes:(NSArray *)masternodePingHashes
+- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray *)masternodeBroadcastHashes
 {
-    if (masternodeBroadcastHashes.count + masternodePingHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+    if (masternodeBroadcastHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
-              (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+            (int)masternodeBroadcastHashes.count, MAX_GETDATA_HASHES);
         return;
     }
-    else if (masternodeBroadcastHashes.count + masternodePingHashes.count == 0) return;
+    else if (masternodeBroadcastHashes.count == 0) return;
     
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
-    [msg appendVarInt:masternodeBroadcastHashes.count + masternodePingHashes.count];
+    [msg appendVarInt:masternodeBroadcastHashes.count];
     
     for (NSValue *hash in masternodeBroadcastHashes) {
         [msg appendUInt32:DSInvType_MasternodeAnnounce];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-    
-    for (NSValue *hash in masternodePingHashes) {
-        [msg appendUInt32:DSInvType_MasternodePing];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -793,7 +789,7 @@ services:(uint64_t)services
     NSMutableOrderedSet *sporkHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *governanceObjectHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *governanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
-    NSMutableOrderedSet *masternodePingHashes = [NSMutableOrderedSet orderedSet];
+    //NSMutableOrderedSet *masternodePingHashes = [NSMutableOrderedSet orderedSet]; //we don't care about ping messages
     NSMutableOrderedSet *masternodeVerifications = [NSMutableOrderedSet orderedSet]; //mnv messages
     NSMutableOrderedSet *masternodeBroadcastHashes = [NSMutableOrderedSet orderedSet]; //mnb messages
     
@@ -827,7 +823,7 @@ services:(uint64_t)services
             case DSInvType_Spork: [sporkHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_GovernanceObject: [governanceObjectHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:uint256_obj(hash)]; break;
-            case DSInvType_MasternodePing: [masternodePingHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_MasternodePing: break;//[masternodePingHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_MasternodePaymentVote: break;
             case DSInvType_MasternodeVerify: [masternodeVerifications addObject:uint256_obj(hash)]; break;
             case DSInvType_MasternodeAnnounce: [masternodeBroadcastHashes addObject:uint256_obj(hash)]; break;
@@ -915,10 +911,9 @@ services:(uint64_t)services
         [self sendGetdataMessageWithTxHashes:txHashes.array
                               andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
-    if (masternodePingHashes.count > 0 || masternodeBroadcastHashes.count > 0) {
-        [self sendGetdataMessageWithMasternodeBroadcastHashes:masternodeBroadcastHashes.array andMasternodePingHashes:masternodePingHashes.array];
-
-        NSLog(@"%@",masternodePings);
+    if (masternodeBroadcastHashes.count > 0) {
+        NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);
+        [self sendGetdataMessageWithMasternodeBroadcastHashes:masternodeBroadcastHashes.array];
     }
 }
 
