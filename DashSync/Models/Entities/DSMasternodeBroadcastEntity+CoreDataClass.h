@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChainEntity;
+@class DSChainEntity,DSMasternodeBroadcastHashEntity;
 
 @interface DSMasternodeBroadcastEntity : NSManagedObject
 

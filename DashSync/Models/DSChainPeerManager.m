@@ -1319,6 +1319,9 @@
     }
 }
 
+- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes {
+    [self.masternodeManager peer:peer hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
+}
 
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
     [self.masternodeManager peer:peer relayedMasternodeBroadcast:masternodeBroadcast];

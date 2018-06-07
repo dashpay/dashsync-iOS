@@ -9,6 +9,7 @@
 #import "DSMasternodeBroadcast.h"
 #import "DSMasternodePing.h"
 #import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
+#import "DSMasternodeBroadcastHashEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 
@@ -49,6 +50,21 @@
         DSMasternodeBroadcast * masternodeBroadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:utxo ipAddress:ipv6address port:masternodeBroadcastEntity.port protocolVersion:masternodeBroadcastEntity.protocolVersion publicKey:masternodeBroadcastEntity.publicKey signature:masternodeBroadcastEntity.signature signatureTimestamp:masternodeBroadcastEntity.signatureTimestamp onChain:self.chain];
         [_masternodeBroadcasts addObject:masternodeBroadcast];
     }
+}
+
+- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes {
+    NSArray<DSMasternodeBroadcastHashEntity *> * knownHashes = [DSMasternodeBroadcastHashEntity allObjects];
+    NSMutableOrderedSet * masternodeBroadcastHashesToInsert = [masternodeBroadcastHashes mutableCopy];
+    for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in knownHashes) {
+        if ([masternodeBroadcastHashesToInsert containsObject:masternodeBroadcastHashEntity.masternodeBroadcastHash]) {
+            [masternodeBroadcastHashesToInsert removeObject:masternodeBroadcastHashEntity];
+        }
+    }
+    [[DSMasternodeBroadcastHashEntity context] performBlockAndWait:^{
+        [DSMasternodeBroadcastHashEntity masternodeBroadcastHashEntitiesWithHashes:masternodeBroadcastHashesToInsert];
+        [DSMasternodeBroadcastHashEntity saveContext];
+    }];
+    
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {

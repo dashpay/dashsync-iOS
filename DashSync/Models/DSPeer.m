@@ -913,7 +913,7 @@ services:(uint64_t)services
     }
     if (masternodeBroadcastHashes.count > 0) {
         NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);
-        [self sendGetdataMessageWithMasternodeBroadcastHashes:masternodeBroadcastHashes.array];
+        [self.delegate peer:self hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
     }
 }
 

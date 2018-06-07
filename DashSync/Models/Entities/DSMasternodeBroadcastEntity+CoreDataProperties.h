@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSMasternodeBroadcastEntity *> *)fetchRequest;
 
 @property (nonatomic, assign) uint32_t address;
-@property (nullable, nonatomic, retain) NSData *mnbHash;
+@property (nonatomic, retain) DSMasternodeBroadcastHashEntity *masternodeBroadcastHash;
 @property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, assign) uint64_t signatureTimestamp;

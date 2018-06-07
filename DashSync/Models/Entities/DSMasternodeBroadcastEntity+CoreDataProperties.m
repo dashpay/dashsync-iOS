@@ -15,12 +15,14 @@
 }
 
 @dynamic address;
-@dynamic mnbHash;
+@dynamic masternodeBroadcastHash;
 @dynamic port;
 @dynamic protocolVersion;
 @dynamic signatureTimestamp;
 @dynamic utxoHash;
 @dynamic utxoIndex;
 @dynamic chain;
+@dynamic publicKey;
+@dynamic signature;
 
 @end

@@ -135,6 +135,8 @@ typedef union _UInt128 UInt128;
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing;
 
+- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes;
+
 @end
 
 typedef NS_ENUM(NSUInteger, DSPeerStatus) {

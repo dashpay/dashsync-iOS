@@ -7,15 +7,19 @@
 //
 
 #import "DSMasternodeBroadcastEntity+CoreDataClass.h"
+#import "DSMasternodeBroadcastHashEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSMasternodeBroadcastEntity
 
 - (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast *)masternodeBroadcast forChain:(DSChainEntity*)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
+        DSMasternodeBroadcastHashEntity * hashEntity = [[DSMasternodeBroadcastHashEntity objectsMatching:@"masternodeBroadcastHash = %@",uint256_obj(masternodeBroadcast.masternodeBroadcastHash)] firstObject];
+        NSAssert(hashEntity,@"hashEntity needs to exist");
         self.utxoHash = [NSData dataWithBytes:masternodeBroadcast.utxo.hash.u8 length:sizeof(UInt256)];
         self.utxoIndex = (uint32_t)masternodeBroadcast.utxo.n;
         self.address = masternodeBroadcast.ipAddress.u8[2];
-        self.mnbHash = [NSData dataWithBytes:masternodeBroadcast.masternodeBroadcastHash.u8 length:sizeof(UInt256)];
+        self.masternodeBroadcastHash = hashEntity;
         self.port = masternodeBroadcast.port;
         self.protocolVersion = masternodeBroadcast.protocolVersion;
         self.signature = masternodeBroadcast.signature;
