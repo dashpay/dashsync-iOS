@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *masternodeBroadcastHash;
 @property (nullable, nonatomic, retain) DSMasternodeBroadcastEntity *masternodeBroadcast;
+@property (nonatomic, assign) uint64_t timestamp;
 @property (nonatomic, retain) DSChainEntity * chain;
 
 @end

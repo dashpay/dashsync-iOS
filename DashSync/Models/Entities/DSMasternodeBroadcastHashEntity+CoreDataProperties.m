@@ -17,5 +17,6 @@
 @dynamic masternodeBroadcastHash;
 @dynamic masternodeBroadcast;
 @dynamic chain;
+@dynamic timestamp;
 
 @end

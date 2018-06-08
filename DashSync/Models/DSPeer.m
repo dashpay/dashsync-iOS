@@ -604,9 +604,10 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:utxo.hash];
     if (uint256_is_zero(utxo.hash)) {
-        NSLog(@"Requesting Masternode List");
+        NSLog(@"%@:%u Requesting Masternode List",self.host, self.port);
         [msg appendUInt32:UINT32_MAX];
     } else {
+        NSLog(@"%@:%u Requesting Masternode Entry",self.host, self.port);
         [msg appendUInt32:(uint32_t)utxo.n];
     }
     

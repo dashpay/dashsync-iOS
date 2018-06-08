@@ -11,13 +11,41 @@
 
 @implementation DSMasternodeBroadcastHashEntity
 
-+(NSArray*)masternodeBroadcastHashEntitiesWithHashes:(NSOrderedSet*)masternodeBroadcastHashes {
++(NSArray*)masternodeBroadcastHashEntitiesWithHashes:(NSOrderedSet*)masternodeBroadcastHashes onChain:(DSChainEntity*)chainEntity {
     NSMutableArray * rArray = [NSMutableArray arrayWithCapacity:masternodeBroadcastHashes.count];
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     for (NSData * masternodeBroadcastHash in masternodeBroadcastHashes) {
         DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity = [self managedObject];
         masternodeBroadcastHashEntity.masternodeBroadcastHash = masternodeBroadcastHash;
+        masternodeBroadcastHashEntity.timestamp = now;
+        masternodeBroadcastHashEntity.chain = chainEntity;
+        [rArray addObject:masternodeBroadcastHashEntity];
     }
     return [rArray copy];
+}
+
++(void)updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes onChain:(DSChainEntity*)chainEntity {
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    NSArray * entitiesToUpdate = [self objectsMatching:@"masternodeBroadcastHash in %@",masternodeBroadcastHashes];
+    for (DSMasternodeBroadcastHashEntity * entityToUpdate in entitiesToUpdate) {
+        entityToUpdate.timestamp = now;
+    }
+}
+
++(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity {
+    NSFetchRequest * fetchRequest = [self fetchReq];
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@",chainEntity]];
+    [fetchRequest setFetchLimit:count];
+    [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:TRUE]]];
+    NSArray * oldObjects = [self fetchObjects:fetchRequest];
+    for (NSManagedObject *obj in oldObjects) {
+        [self.context deleteObject:obj];
+    }
+}
+
++(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity {
+    NSTimeInterval aMinuteAgo = [[NSDate date] timeIntervalSince1970] - 60;
+    return [self countObjectsMatching:@"chain == %@ && timestamp > %@",chainEntity,@(aMinuteAgo)];
 }
 
 @end

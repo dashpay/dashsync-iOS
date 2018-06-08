@@ -15,7 +15,7 @@
 #import "DSPeer.h"
 #import "NSData+Dash.h"
 
-#define REQUEST_MASTERNODE_BROADCAST_COUNT 500
+#define REQUEST_MASTERNODE_BROADCAST_COUNT 1
 
 @interface DSMasternodeManager()
 
@@ -53,7 +53,8 @@
         utxo.n = masternodeBroadcastEntity.utxoIndex;
         UInt128 ipv6address = UINT128_ZERO;
         ipv6address.u32[3] = masternodeBroadcastEntity.address;
-        DSMasternodeBroadcast * masternodeBroadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:utxo ipAddress:ipv6address port:masternodeBroadcastEntity.port protocolVersion:masternodeBroadcastEntity.protocolVersion publicKey:masternodeBroadcastEntity.publicKey signature:masternodeBroadcastEntity.signature signatureTimestamp:masternodeBroadcastEntity.signatureTimestamp onChain:self.chain];
+        UInt256 masternodeBroadcastHash = *(UInt256 *)masternodeBroadcastEntity.masternodeBroadcastHash.masternodeBroadcastHash.bytes;
+        DSMasternodeBroadcast * masternodeBroadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:utxo ipAddress:ipv6address port:masternodeBroadcastEntity.port protocolVersion:masternodeBroadcastEntity.protocolVersion publicKey:masternodeBroadcastEntity.publicKey signature:masternodeBroadcastEntity.signature signatureTimestamp:masternodeBroadcastEntity.signatureTimestamp masternodeBroadcastHash:masternodeBroadcastHash onChain:self.chain];
         [_masternodeBroadcasts addObject:masternodeBroadcast];
     }
 }
@@ -103,20 +104,29 @@
 }
 
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
+    NSLog(@"peer relayed masternode broadcasts");
     NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
+    NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
     NSMutableOrderedSet <NSData*> * rHashes = [_knownHashes mutableCopy];
     [hashesToInsert minusOrderedSet:self.knownHashes];
-    if ([hashesToInsert count]) {
+    [hashesToUpdate minusOrderedSet:hashesToInsert];
+    if ([masternodeBroadcastHashes count]) {
     [[DSMasternodeBroadcastHashEntity context] performBlockAndWait:^{
-        [DSMasternodeBroadcastHashEntity masternodeBroadcastHashEntitiesWithHashes:hashesToInsert];
+        if ([hashesToInsert count]) {
+            [DSMasternodeBroadcastHashEntity masternodeBroadcastHashEntitiesWithHashes:hashesToInsert onChain:self.chain.chainEntity];
+        } else {
+            [DSMasternodeBroadcastHashEntity updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:hashesToUpdate onChain:self.chain.chainEntity];
+        }
         [DSMasternodeBroadcastHashEntity saveContext];
     }];
+        if ([hashesToInsert count]) {
         [rHashes addObjectsFromArray:[hashesToInsert array]];
         [rHashes sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
             UInt256 a = *(UInt256 *)((NSData*)obj1).bytes;
             UInt256 b = *(UInt256 *)((NSData*)obj2).bytes;
             return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
         }];
+        }
     }
     
 
@@ -130,7 +140,18 @@
     }];
     self.knownHashes = rHashes;
     self.needsRequestsHashes = rNeedsRequestsHashes;
-    if ([self.knownHashes count] == [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
+    NSLog(@"-> %d - %d",[self.knownHashes count],[self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]);
+    NSUInteger countAroundNow = [DSMasternodeBroadcastHashEntity countAroundNowOnChain:self.chain.chainEntity];
+    if ([self.knownHashes count] > [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
+        [[DSMasternodeBroadcastHashEntity context] performBlockAndWait:^{
+            
+            NSLog(@"countAroundNow -> %d - %d",countAroundNow,[self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]);
+        if (countAroundNow == [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
+            [DSMasternodeBroadcastHashEntity removeOldest:[self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List] - [self.knownHashes count] onChain:self.chain.chainEntity];
+            [self requestMasternodeBroadcastsFromPeer:peer];
+        }
+        }];
+    } else if (countAroundNow == [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
         NSLog(@"%@",@"All masternode broadcast hashes received");
         //we have all hashes, let's request objects.
         [self requestMasternodeBroadcastsFromPeer:peer];

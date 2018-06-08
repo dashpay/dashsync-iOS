@@ -15,7 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeBroadcastHashEntity : NSManagedObject
 
-+(NSArray*)masternodeBroadcastHashEntitiesWithHashes:(NSOrderedSet*)masternodeBroadcastHashes;
++(NSArray*)masternodeBroadcastHashEntitiesWithHashes:(NSOrderedSet*)masternodeBroadcastHashes onChain:(DSChainEntity*)chainEntity;
++(void)updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes onChain:(DSChainEntity*)chainEntity;
++(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity;
++(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

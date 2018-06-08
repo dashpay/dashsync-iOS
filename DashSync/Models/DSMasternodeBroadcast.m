@@ -24,7 +24,7 @@
 
 @implementation DSMasternodeBroadcast
 
--(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData*)publicKey signature:(NSData*)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp onChain:(DSChain *)chain {
+-(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData*)publicKey signature:(NSData*)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp masternodeBroadcastHash:(UInt256)masternodeBroadcastHash onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     _utxo = utxo;
     _ipAddress = ipAddress;
@@ -34,7 +34,7 @@
     _protocolVersion = protocolVersion;
     _publicKey = publicKey;
     _chain = chain;
-    
+    _masternodeBroadcastHash = masternodeBroadcastHash;
     return self;
 }
 
@@ -64,12 +64,13 @@
     offset += 2;
     if (length - offset < 1) return nil;
     //Collateral Public Key
+    NSData * collateralPublicKeySizeData = [message subdataWithRange:NSMakeRange(offset, 1)];
     uint8_t collateralPublicKeySize = [message UInt8AtOffset:offset];
     offset += 1;
     
     if (length - offset < collateralPublicKeySize) return nil;
     //uint8_t collateralPublicKeyType = [message UInt8AtOffset:offset];
-    //NSData * collateralPublicKey = [message subdataWithRange:NSMakeRange(offset, collateralPublicKeySize)];
+    NSData * collateralPublicKey = [message subdataWithRange:NSMakeRange(offset, collateralPublicKeySize)];
     offset += collateralPublicKeySize;
     //Masternode Public Key
     if (length - offset < 1) return nil;
@@ -87,17 +88,35 @@
     NSData * messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
     offset+= messageSignatureSize;
     if (length - offset < 8) return nil;
+    NSData * timestampData = [message subdataWithRange:NSMakeRange(offset, 8)];
     uint64_t timestamp = [message UInt64AtOffset:offset];
     offset += 8;
     if (length - offset < 4) return nil;
     uint32_t protocolVersion = [message UInt32AtOffset:offset];
     offset += 4;
     
-    DSMasternodeBroadcast * broadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:masternodeUTXO ipAddress:masternodeAddress port:port protocolVersion:protocolVersion publicKey:masternodePublicKey signature:messageSignature signatureTimestamp:timestamp onChain:chain];
+    //hash calculation
+        NSMutableData * hashImportantData = [NSMutableData data];
+        uint32_t index = (uint32_t)masternodeUTXO.n;
+        [hashImportantData appendData:[NSData dataWithUInt256:masternodeUTXO.hash]];
+        [hashImportantData appendBytes:&index length:4];
+        uint8_t emptyByte = 0;
+        uint32_t fullBits = UINT32_MAX;
+        [hashImportantData appendBytes:&emptyByte length:1];
+        [hashImportantData appendBytes:&fullBits length:4];
+        [hashImportantData appendData:collateralPublicKeySizeData];
+        [hashImportantData appendData:collateralPublicKey];
+        [hashImportantData appendData:timestampData];
+    UInt256 masternodeBroadcastHash = hashImportantData.SHA256;
+    
+    
+    
+    DSMasternodeBroadcast * broadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:masternodeUTXO ipAddress:masternodeAddress port:port protocolVersion:protocolVersion publicKey:masternodePublicKey signature:messageSignature signatureTimestamp:timestamp masternodeBroadcastHash:masternodeBroadcastHash onChain:chain];
 
     NSData * restOfData = [message subdataWithRange:NSMakeRange(offset, length-offset)];
     DSMasternodePing * ping = [DSMasternodePing masternodePingFromMessage:restOfData];
     if (ping) broadcast.lastPing = ping;
+    
     return broadcast;
 }
 

@@ -159,7 +159,7 @@
         _peers = [NSMutableOrderedSet orderedSet];
         
         [[DSPeerEntity context] performBlockAndWait:^{
-            for (DSPeerEntity *e in [DSPeerEntity allObjects]) {
+            for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"chain == %@",self.chain.chainEntity]) {
                 @autoreleasepool {
                     if (e.misbehavin == 0) [self->_peers addObject:[e peer]];
                     else [self.misbehavinPeers addObject:[e peer]];
@@ -552,6 +552,7 @@
 -(void)getMasternodeList {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) return; // make sure we care about masternode list
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedMasternodeList" ascending:YES]]];
+    BOOL requestedMasternodeList = FALSE;
     for (DSPeer * peer in sortedPeers) {
         if (peer.status != DSPeerStatus_Connected) continue;
         if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedMasternodeList < 10800) continue; //don't request less than every 3 hours from a peer
@@ -561,7 +562,16 @@
         emptyUTXO.n = 0;
         [peer sendDSegMessage:emptyUTXO];
         [self savePeer:peer];
+        requestedMasternodeList = TRUE;
         break;
+    }
+    if (!requestedMasternodeList) { //we have requested masternode list from connected peers too recently, let's connect to different peers
+        for (DSPeer * peer in sortedPeers) {
+            peer.lowPreferenceTill = peer.lastRequestedMasternodeList + 10800;
+            [peer disconnect];
+        }
+        [self sortPeers];
+        [self connect];
     }
 }
 
@@ -730,15 +740,21 @@
 
 - (void)sortPeers
 {
+    NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
+    BOOL syncsMasternodeList = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
     [_peers sortUsingComparator:^NSComparisonResult(DSPeer *p1, DSPeer *p2) {
+        //the following is to make sure we get
+        if (syncsMasternodeList) {
+            if ((!p1.lastRequestedMasternodeList || p1.lastRequestedMasternodeList < threeHoursAgo) && p2.lastRequestedMasternodeList > threeHoursAgo) return NSOrderedDescending;
+            if (p1.lastRequestedMasternodeList > threeHoursAgo && (!p2.lastRequestedMasternodeList || p2.lastRequestedMasternodeList < threeHoursAgo)) return NSOrderedAscending;
+        }
         if (p1.priority > p2.priority) return NSOrderedAscending;
         if (p1.priority < p2.priority) return NSOrderedDescending;
         if (p1.timestamp > p2.timestamp) return NSOrderedAscending;
         if (p1.timestamp < p2.timestamp) return NSOrderedDescending;
-        if (p1.lastRequestedMasternodeList > p2.lastRequestedMasternodeList) return NSOrderedAscending;
-        if (p1.lastRequestedMasternodeList < p2.lastRequestedMasternodeList) return NSOrderedDescending;
         return NSOrderedSame;
     }];
+    NSLog(@"peers sorted");
 }
 
 - (void)savePeers
