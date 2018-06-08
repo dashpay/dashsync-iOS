@@ -24,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *utxoHash;
 @property (nullable, nonatomic, retain) NSData *publicKey;
 @property (nullable, nonatomic, retain) NSData *signature;
-@property (nonatomic, retain) DSChainEntity * chain;
 
 @end
 

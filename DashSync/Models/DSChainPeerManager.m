@@ -1319,7 +1319,7 @@
     }
 }
 
-- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes {
+- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
     [self.masternodeManager peer:peer hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
 }
 

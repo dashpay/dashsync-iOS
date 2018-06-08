@@ -135,7 +135,7 @@ typedef union _UInt128 UInt128;
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing;
 
-- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes;
+- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
 
 @end
 
@@ -200,6 +200,7 @@ services:(uint64_t)services;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendInvMessageWithTxHashes:(NSArray *)txHashes;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
+- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray *)masternodeBroadcastHashes;
 - (void)sendGetaddrMessage;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;

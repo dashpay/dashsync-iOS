@@ -748,7 +748,6 @@ static dispatch_once_t devnetToken = 0;
     return TRUE;
 }
 
-
 - (void)saveBlocks
 {
     NSLog(@"[DSChain] save blocks");

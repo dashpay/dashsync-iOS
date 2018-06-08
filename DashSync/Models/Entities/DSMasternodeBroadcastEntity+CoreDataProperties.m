@@ -21,7 +21,6 @@
 @dynamic signatureTimestamp;
 @dynamic utxoHash;
 @dynamic utxoIndex;
-@dynamic chain;
 @dynamic publicKey;
 @dynamic signature;
 

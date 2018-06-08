@@ -26,7 +26,7 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
 
 -(void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing;
 
--(void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSArray*)masternodeBroadcastHashes;
+-(void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
 
 // Masternodes
 -(uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;

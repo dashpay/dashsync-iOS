@@ -14,7 +14,7 @@
 
 - (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast *)masternodeBroadcast forChain:(DSChainEntity*)chainEntity {
     [self.managedObjectContext performBlockAndWait:^{
-        DSMasternodeBroadcastHashEntity * hashEntity = [[DSMasternodeBroadcastHashEntity objectsMatching:@"masternodeBroadcastHash = %@",uint256_obj(masternodeBroadcast.masternodeBroadcastHash)] firstObject];
+        DSMasternodeBroadcastHashEntity * hashEntity = [[DSMasternodeBroadcastHashEntity objectsMatching:@"chain == %@ && masternodeBroadcastHash = %@",chainEntity,uint256_obj(masternodeBroadcast.masternodeBroadcastHash)] firstObject];
         NSAssert(hashEntity,@"hashEntity needs to exist");
         self.utxoHash = [NSData dataWithBytes:masternodeBroadcast.utxo.hash.u8 length:sizeof(UInt256)];
         self.utxoIndex = (uint32_t)masternodeBroadcast.utxo.n;
@@ -25,7 +25,6 @@
         self.signature = masternodeBroadcast.signature;
         self.signatureTimestamp = masternodeBroadcast.signatureTimestamp;
         self.publicKey = masternodeBroadcast.publicKey;
-        self.chain = chainEntity;
     }];
 }
 

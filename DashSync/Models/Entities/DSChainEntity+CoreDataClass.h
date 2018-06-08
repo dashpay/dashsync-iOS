@@ -26,7 +26,7 @@
 #import <CoreData/CoreData.h>
 #import "DSChain.h"
 
-@class DSDerivationPathEntity, DSMerkleBlockEntity, DSPeerEntity, DSTransactionEntity,DSMasternodeBroadcastEntity;
+@class DSDerivationPathEntity, DSMerkleBlockEntity, DSPeerEntity, DSTransactionEntity,DSMasternodeBroadcastHashEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

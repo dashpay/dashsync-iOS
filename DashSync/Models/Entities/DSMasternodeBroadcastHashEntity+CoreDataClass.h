@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSMasternodeBroadcastEntity;
+@class DSMasternodeBroadcastEntity, DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
