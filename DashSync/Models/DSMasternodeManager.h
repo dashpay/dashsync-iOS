@@ -19,6 +19,8 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
 @interface DSMasternodeManager : NSObject
 
 @property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic,readonly) NSUInteger recentMasternodeBroadcastHashesCount;
+@property (nonatomic,readonly) NSUInteger last3HoursStandaloneBroadcastHashesCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
 
@@ -27,6 +29,8 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
 -(void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing;
 
 -(void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
+
+-(void)requestMasternodeBroadcastsFromPeer:(DSPeer*)peer;
 
 // Masternodes
 -(uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;

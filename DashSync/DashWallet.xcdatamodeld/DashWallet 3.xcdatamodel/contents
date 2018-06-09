@@ -48,6 +48,11 @@
                 <index value="chain"/>
                 <index value="masternodeBroadcastHash"/>
             </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="masternodeBroadcastHash"/>
+                <index value="masternodeBroadcast"/>
+            </compoundIndex>
         </compoundIndexes>
         <uniquenessConstraints>
             <uniquenessConstraint>

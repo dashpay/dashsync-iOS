@@ -566,12 +566,20 @@
         break;
     }
     if (!requestedMasternodeList) { //we have requested masternode list from connected peers too recently, let's connect to different peers
-        for (DSPeer * peer in sortedPeers) {
-            peer.lowPreferenceTill = peer.lastRequestedMasternodeList + 10800;
-            [peer disconnect];
+        NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.masternodeManager last3HoursStandaloneBroadcastHashesCount];
+        if (last3HoursStandaloneBroadcastHashesCount) {
+            for (DSPeer * peer in sortedPeers) {
+                if (peer.status != DSPeerStatus_Connected) continue;
+                [self.masternodeManager requestMasternodeBroadcastsFromPeer:peer];
+                break;
+            }
         }
-        [self sortPeers];
-        [self connect];
+//        for (DSPeer * peer in sortedPeers) {
+//            peer.lowPreferenceTill = peer.lastRequestedMasternodeList + 10800;
+//            [peer disconnect];
+//        }
+//        [self sortPeers];
+//        [self connect];
     }
 }
 

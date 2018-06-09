@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 +(void)updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes onChain:(DSChainEntity*)chainEntity;
 +(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity;
 +(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity;
++(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

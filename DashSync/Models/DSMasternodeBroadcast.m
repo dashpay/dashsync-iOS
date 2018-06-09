@@ -24,6 +24,24 @@
 
 @implementation DSMasternodeBroadcast
 
++(UInt256)hashWithUTXO:(DSUTXO)masternodeUTXO collateralPublicKey:(NSData*)collateralPublicKey timeStampData:(NSData*)timestampData {
+    //hash calculation
+    NSMutableData * hashImportantData = [NSMutableData data];
+    uint32_t index = (uint32_t)masternodeUTXO.n;
+    [hashImportantData appendData:[NSData dataWithUInt256:masternodeUTXO.hash]];
+    [hashImportantData appendBytes:&index length:4];
+    uint8_t emptyByte = 0;
+    uint32_t fullBits = UINT32_MAX;
+    [hashImportantData appendBytes:&emptyByte length:1];
+    [hashImportantData appendBytes:&fullBits length:4];
+    uint8_t length = (uint8_t)collateralPublicKey.length;
+    [hashImportantData appendBytes:&length length:1];
+    [hashImportantData appendData:collateralPublicKey];
+    [hashImportantData appendData:timestampData];
+    return hashImportantData.SHA256;
+}
+
+
 -(instancetype)initWithUTXO:(DSUTXO)utxo ipAddress:(UInt128)ipAddress port:(uint16_t)port protocolVersion:(uint32_t)protocolVersion publicKey:(NSData*)publicKey signature:(NSData*)signature signatureTimestamp:(NSTimeInterval)signatureTimestamp masternodeBroadcastHash:(UInt256)masternodeBroadcastHash onChain:(DSChain *)chain {
     if (!(self = [super init])) return nil;
     _utxo = utxo;
@@ -95,24 +113,11 @@
     uint32_t protocolVersion = [message UInt32AtOffset:offset];
     offset += 4;
     
-    //hash calculation
-        NSMutableData * hashImportantData = [NSMutableData data];
-        uint32_t index = (uint32_t)masternodeUTXO.n;
-        [hashImportantData appendData:[NSData dataWithUInt256:masternodeUTXO.hash]];
-        [hashImportantData appendBytes:&index length:4];
-        uint8_t emptyByte = 0;
-        uint32_t fullBits = UINT32_MAX;
-        [hashImportantData appendBytes:&emptyByte length:1];
-        [hashImportantData appendBytes:&fullBits length:4];
-        [hashImportantData appendData:collateralPublicKeySizeData];
-        [hashImportantData appendData:collateralPublicKey];
-        [hashImportantData appendData:timestampData];
-    UInt256 masternodeBroadcastHash = hashImportantData.SHA256;
-    
+    UInt256 masternodeBroadcastHash = [DSMasternodeBroadcast hashWithUTXO:masternodeUTXO collateralPublicKey:collateralPublicKey timeStampData:timestampData];
     
     
     DSMasternodeBroadcast * broadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:masternodeUTXO ipAddress:masternodeAddress port:port protocolVersion:protocolVersion publicKey:masternodePublicKey signature:messageSignature signatureTimestamp:timestamp masternodeBroadcastHash:masternodeBroadcastHash onChain:chain];
-
+    
     NSData * restOfData = [message subdataWithRange:NSMakeRange(offset, length-offset)];
     DSMasternodePing * ping = [DSMasternodePing masternodePingFromMessage:restOfData];
     if (ping) broadcast.lastPing = ping;

@@ -48,4 +48,9 @@
     return [self countObjectsMatching:@"chain == %@ && timestamp > %@",chainEntity,@(aMinuteAgo)];
 }
 
++(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity {
+    NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
+    return [self countObjectsMatching:@"chain == %@ && timestamp > %@ && masternodeBroadcast == nil",chainEntity,@(threeHoursAgo)];
+}
+
 @end
