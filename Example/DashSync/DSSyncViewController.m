@@ -29,6 +29,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *walletCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *masternodeBroadcastsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
 @property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver;;
 
@@ -48,6 +49,7 @@
     [self updateSporks];
     [self updateBlockHeight];
     [self updateMasternodeCount];
+    [self updateMasternodeBroadcastsCount];
     
     self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
     
@@ -80,7 +82,7 @@
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListChangedNotification object:nil
                                                                                      queue:nil usingBlock:^(NSNotification *note) {
                                                                                          NSLog(@"update spork count");
-                                                                                         [self updateSporks];
+                                                                                         [self updateMasternodeBroadcastsCount];
                                                                                      }];
     self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
@@ -271,7 +273,7 @@
 }
 
 -(void)updateMasternodeBroadcastsCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager.masternodeManager countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]];
+    self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager masternodeBroadcastsCount]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

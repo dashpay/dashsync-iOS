@@ -14,6 +14,9 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
     DSMasternodeSyncCountInfo_GovernanceObjectVote = 11,
 };
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListChangedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
+
 @class DSPeer,DSChain,DSMasternodeBroadcast,DSMasternodePing;
 
 @interface DSMasternodeManager : NSObject
@@ -21,6 +24,7 @@ typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger recentMasternodeBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneBroadcastHashesCount;
+@property (nonatomic,readonly) NSUInteger masternodeBroadcastsCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
 

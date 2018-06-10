@@ -23,6 +23,7 @@
 @property (nonatomic,strong) NSOrderedSet * knownHashes, * needsRequestsHashes;
 @property (nonatomic,strong) NSMutableArray * requestHashes;
 @property (nonatomic,strong) NSMutableArray<DSMasternodeBroadcast *> * masternodeBroadcasts;
+@property (nonatomic,assign) NSUInteger masternodeBroadcastsCount;
 @property (nonatomic,strong) NSMutableDictionary * masternodeSyncCountInfo;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 
@@ -59,6 +60,16 @@
     }];
     return count;
 }
+
+-(NSUInteger)masternodeBroadcastsCount {
+    
+    __block NSUInteger count = 0;
+    [self.managedObjectContext performBlockAndWait:^{
+        count = [DSMasternodeBroadcastEntity countForChain:self.chain.chainEntity];
+    }];
+    return count;
+}
+
 
 -(void)loadMasternodes:(NSUInteger)count {
     NSFetchRequest * fetchRequest = [[DSMasternodeBroadcastEntity fetchRequest] copy];
@@ -196,6 +207,7 @@
 
 -(void)saveBroadcasts {
     NSLog(@"[DSMasternodeManager] save broadcasts");
+    if ([self.masternodeBroadcasts count]) {
     [[DSMasternodeBroadcastEntity context] performBlock:^{
         
         //                NSArray<DSMasternodeBroadcastEntity *> * recentOrphans = [DSMasternodeBroadcastEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) ",self.delegateQueueChainEntity,startHeight,blocks.allKeys];
@@ -203,15 +215,20 @@
         //                [DSMasternodeBroadcastEntity deleteObjects:recentOrphans];
         //
         DSChainEntity * chainEntity = self.chain.chainEntity;
-        for (DSMasternodeBroadcast *masternodeBroadcast in self.masternodeBroadcasts) {
+        for (DSMasternodeBroadcast *masternodeBroadcast in [self.masternodeBroadcasts copy]) {
             @autoreleasepool {
                 [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forChain:chainEntity];
             }
         }
         
         [DSMasternodeBroadcastEntity saveContext];
+        dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListChangedNotification object:self userInfo:nil];
+        });
     }];
+    }
 }
+
 
 // MARK: - Masternodes
 

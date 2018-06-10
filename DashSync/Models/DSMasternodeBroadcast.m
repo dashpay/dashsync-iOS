@@ -38,7 +38,7 @@
     [hashImportantData appendBytes:&length length:1];
     [hashImportantData appendData:collateralPublicKey];
     [hashImportantData appendData:timestampData];
-    return hashImportantData.SHA256;
+    return hashImportantData.SHA256_2;
 }
 
 
@@ -82,7 +82,6 @@
     offset += 2;
     if (length - offset < 1) return nil;
     //Collateral Public Key
-    NSData * collateralPublicKeySizeData = [message subdataWithRange:NSMakeRange(offset, 1)];
     uint8_t collateralPublicKeySize = [message UInt8AtOffset:offset];
     offset += 1;
     
