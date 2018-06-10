@@ -9,6 +9,7 @@
 #import "DSMasternodeViewController.h"
 #import "DSMasternodeTableViewCell.h"
 #import <DashSync/DashSync.h>
+#import <arpa/inet.h>
 
 @interface DSMasternodeViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -38,16 +39,16 @@
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            return [NSPredicate predicateWithFormat:@"chain == %@ && (height == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
+            return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@ && (address == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
         } else {
-            return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@",self.chain.chainEntity];
         }
         //        else {
         //            return [NSPredicate predicateWithFormat:@"(blockHash == %@)",self.searchString];
         //        }
         
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@",self.chain.chainEntity];
     }
     
 }
@@ -123,7 +124,7 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSMasternodeTableViewCell *cell = (DSMasternodeTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"DSMasternodeTableViewCellIdentifier" forIndexPath:indexPath];
+    DSMasternodeTableViewCell *cell = (DSMasternodeTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"MasternodeTableViewCellIdentifier" forIndexPath:indexPath];
     
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
@@ -133,8 +134,11 @@
 
 -(void)configureCell:(DSMasternodeTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSMasternodeBroadcastEntity *masternodeBroadcastEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.ipAddressLabel.text = masternodeBroadcastEntity.address;
-    
+    char s[INET6_ADDRSTRLEN];
+    uint32_t ipAddress = masternodeBroadcastEntity.address;
+    cell.ipAddressLabel.text = [NSString stringWithFormat:@"%s",inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
+    cell.protocolLabel.text = [NSString stringWithFormat:@"%u",masternodeBroadcastEntity.protocolVersion];
+    cell.outputLabel.text = [NSString stringWithFormat:@"%@:%u",masternodeBroadcastEntity.utxoHash.hexString,masternodeBroadcastEntity.utxoIndex];
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {

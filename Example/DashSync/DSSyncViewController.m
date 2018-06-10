@@ -12,6 +12,7 @@
 #import "DSWalletViewController.h"
 #import "DSSporksViewController.h"
 #import "DSBlockchainExplorerViewController.h"
+#import "DSMasternodeViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -287,6 +288,9 @@
     } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
         blockchainExplorerViewController.chain = self.chainPeerManager.chain;
+    } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
+        DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;
+        masternodeViewController.chain = self.chainPeerManager.chain;
     }
 }
 

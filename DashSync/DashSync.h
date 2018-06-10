@@ -28,6 +28,7 @@
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "DSMerkleBlockEntity+CoreDataProperties.h"
 #import "DSMasternodeBroadcastHashEntity+CoreDataProperties.h"
+#import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 
 //! Project version number for dashsync.
