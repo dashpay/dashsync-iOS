@@ -16,6 +16,7 @@
 #import "NSData+Dash.h"
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
+#define MASTERNODE_SYNC_COUNT_INFO @"MASTERNODE_SYNC_COUNT_INFO"
 
 @interface DSMasternodeManager()
 
@@ -119,7 +120,7 @@
         [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && masternodeBroadcast == nil",self.chain.chainEntity]];
         [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
         self.needsRequestsHashEntities = [[DSMasternodeBroadcastHashEntity fetchObjects:request] mutableCopy];
-
+        
     }];
     return _needsRequestsHashEntities;
 }
@@ -246,7 +247,7 @@
             break;
         }
     }
-    NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
+    //NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
     if (!relatedHashEntity) return;
     [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
     [self.needsRequestsHashEntities removeObject:relatedHashEntity];
@@ -281,11 +282,23 @@
 // MARK: - Masternodes
 
 - (uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
-    if (![self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)]) return 0;
+    if (![self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)]) {
+        NSString * storageKey = [NSString stringWithFormat:@"%@_%d",MASTERNODE_SYNC_COUNT_INFO,masternodeSyncCountInfo];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:storageKey]) {
+            NSInteger value = [[NSUserDefaults standardUserDefaults] integerForKey:storageKey];
+            [self.masternodeSyncCountInfo setObject:@(value) forKey:@(masternodeSyncCountInfo)];
+            return (uint32_t)value;
+        } else {
+            [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:storageKey];
+            return 0;
+        }
+    }
     return (uint32_t)[[self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)] unsignedLongValue];
 }
 
 -(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
+    NSString * storageKey = [NSString stringWithFormat:@"%@_%d",MASTERNODE_SYNC_COUNT_INFO,masternodeSyncCountInfo];
+    [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
     [self.masternodeSyncCountInfo setObject:@(count) forKey:@(masternodeSyncCountInfo)];
 }
 
