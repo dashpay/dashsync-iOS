@@ -81,12 +81,12 @@
                                                        }];
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListChangedNotification object:nil
                                                                                      queue:nil usingBlock:^(NSNotification *note) {
-                                                                                         NSLog(@"update spork count");
+                                                                                         NSLog(@"update masternode broadcast count");
                                                                                          [self updateMasternodeBroadcastsCount];
                                                                                      }];
     self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
-                                                                                     NSLog(@"update spork count");
+                                                                                     NSLog(@"update masternode count");
                                                                                      [self updateMasternodeCount];
                                                                                  }];
 

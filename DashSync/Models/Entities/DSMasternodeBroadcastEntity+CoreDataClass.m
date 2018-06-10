@@ -14,11 +14,8 @@
 
 @implementation DSMasternodeBroadcastEntity
 
-- (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast *)masternodeBroadcast forChain:(DSChainEntity*)chainEntity {
+- (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast *)masternodeBroadcast forHashEntity:(DSMasternodeBroadcastHashEntity*)hashEntity {
     [self.managedObjectContext performBlockAndWait:^{
-        NSData * data = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
-        DSMasternodeBroadcastHashEntity * hashEntity = [[DSMasternodeBroadcastHashEntity objectsMatching:@"chain == %@ && masternodeBroadcastHash = %@",chainEntity,data] firstObject];
-        NSAssert(hashEntity,@"hashEntity needs to exist");
         self.utxoHash = [NSData dataWithBytes:masternodeBroadcast.utxo.hash.u8 length:sizeof(UInt256)];
         self.utxoIndex = (uint32_t)masternodeBroadcast.utxo.n;
         self.address = masternodeBroadcast.ipAddress.u8[2];
@@ -35,7 +32,7 @@
     __block NSUInteger count = 0;
     [chain.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSMasternodeBroadcastEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain = %@",chain]];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain = %@",chain]];
         count = [DSMasternodeBroadcastEntity countObjects:fetchRequest];
     }];
     return count;

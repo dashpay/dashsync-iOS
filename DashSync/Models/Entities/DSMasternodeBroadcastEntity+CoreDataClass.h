@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeBroadcastEntity : NSManagedObject
 
-- (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast * _Nonnull)masternodeBroadcast forChain:(DSChainEntity* _Nonnull)chainEntity;
+- (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast *)masternodeBroadcast forHashEntity:(DSMasternodeBroadcastHashEntity*)hashEntity;
 + (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
 
 @end

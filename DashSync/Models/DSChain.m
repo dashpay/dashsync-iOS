@@ -166,7 +166,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 }
 
 -(DSChainEntity*)chainEntity {
-    if ([NSThread isMainThread]) return self.mainThreadChainEntity;
+    if ([NSThread isMainThread] && _mainThreadChainEntity) return self.mainThreadChainEntity;
     __block DSChainEntity* chainEntity = nil;
     [[DSChainEntity context] performBlockAndWait:^{
         chainEntity = [DSChainEntity chainEntityForType:self.chainType genesisBlock:self.genesisHash checkpoints:self.checkpoints];
