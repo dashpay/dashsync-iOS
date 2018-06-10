@@ -18,7 +18,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         self.utxoHash = [NSData dataWithBytes:masternodeBroadcast.utxo.hash.u8 length:sizeof(UInt256)];
         self.utxoIndex = (uint32_t)masternodeBroadcast.utxo.n;
-        self.address = masternodeBroadcast.ipAddress.u8[2];
+        self.address = masternodeBroadcast.ipAddress.u32[3];
         self.masternodeBroadcastHash = hashEntity;
         self.port = masternodeBroadcast.port;
         self.protocolVersion = masternodeBroadcast.protocolVersion;
