@@ -116,51 +116,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
-// helper function for serializing BIP32 master public/private keys to standard export format
-static NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key,BOOL mainnet)
-{
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + sizeof(chain)];
-    
-    fingerprint = CFSwapInt32HostToBig(fingerprint);
-    child = CFSwapInt32HostToBig(child);
-    
-    [d appendBytes:key.length < 33 ? mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET : mainnet?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET length:4]; //4
-    [d appendBytes:&depth length:1]; //5
-    [d appendBytes:&fingerprint length:sizeof(fingerprint)]; // 9
-    [d appendBytes:&child length:sizeof(child)]; // 13
-    [d appendBytes:&chain length:sizeof(chain)]; // 45
-    if (key.length < 33) [d appendBytes:"\0" length:1]; //46 (prv) / 45 (pub)
-    [d appendData:key]; //78 (prv) / 78 (pub)
-    
-    return [NSString base58checkWithData:d];
-}
-
-// helper function for serializing BIP32 master public/private keys to standard export format
-static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uint32_t * child, UInt256 * chain, NSData **key,BOOL mainnet)
-{
-    NSData * allData = [NSData dataWithBase58String:string];
-    if (allData.length != 82) return false;
-    NSData * data = [allData subdataWithRange:NSMakeRange(0, allData.length - 4)];
-    NSData * checkData = [allData subdataWithRange:NSMakeRange(allData.length - 4, 4)];
-    if ((*(uint32_t*)data.SHA256_2.u32) != *(uint32_t*)checkData.bytes) return FALSE;
-    uint8_t * bytes = (uint8_t *)[data bytes];
-    if (memcmp(bytes,mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) != 0 && memcmp(bytes,mainnet?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET,4) != 0) {
-        return FALSE;
-    }
-    NSUInteger offset = 4;
-    *depth = bytes[4];
-    offset++;
-    *fingerprint = CFSwapInt32BigToHost(*(uint32_t*)(&bytes[offset]));
-    offset += sizeof(uint32_t);
-    *child = CFSwapInt32BigToHost(*(uint32_t*)(&bytes[offset]));
-    offset += sizeof(uint32_t);
-    *chain = *(UInt256*)(&bytes[offset]);
-    offset += sizeof(UInt256);
-    if (memcmp(bytes,mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) == 0) offset++;
-    *key = [data subdataWithRange:NSMakeRange(offset, data.length - offset)];
-    return TRUE;
-}
-
 #define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION"
 #define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION"
 
@@ -174,6 +129,8 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 @property (nonatomic, strong) NSData * extendedPublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, assign) BOOL addressesLoaded;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSNumber * depth;
+@property (nonatomic, assign) uint32_t child;
 
 @end
 
@@ -201,11 +158,23 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     return [[self alloc] initWithIndexes:indexes length:length type:type reference:reference onChain:chain];
 }
 
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathFundsType)fundsType onChain:(DSChain*)chain {
+    NSData * extendedPrivateKey = [self deserializedExtendedPrivateKey:serializedExtendedPrivateKey onChain:chain];
+    NSUInteger indexes[] = {};
+    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:fundsType reference:DSDerivationPathReference_Unknown onChain:chain];
+    derivationPath.extendedPublicKey = [DSKey keyWithSecret:*(UInt256*)extendedPrivateKey.bytes compressed:YES].publicKey;
+    [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
+    return derivationPath;
+}
+
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString*)serializedExtendedPublicKey onChain:(DSChain*)chain {
-    NSData * extendedPublicKey = [self deserializedExtendedPublicKey:serializedExtendedPublicKey onChain:chain];
+    uint8_t depth = 0;
+    uint32_t child = 0;
+    NSData * extendedPublicKey = [self deserializedExtendedPublicKey:serializedExtendedPublicKey onChain:chain rDepth:&depth rChild:&child];
     NSUInteger indexes[] = {};
     DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown onChain:chain];
     derivationPath.extendedPublicKey = extendedPublicKey;
+    derivationPath.depth = @(depth);
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
 }
@@ -297,6 +266,11 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 - (void)dealloc
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
+}
+
+-(NSNumber*)depth {
+    if (_depth) return _depth;
+    else return @(self.length);
 }
 
 -(NSUInteger)accountNumber {
@@ -663,8 +637,9 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
 
 // MARK: - serializations
 
-- (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed
+- (NSString *)serializedExtendedPrivateKeyFromSeed:(NSData *)seed
 {
+    @autoreleasepool {
     if (! seed) return nil;
     
     UInt512 I;
@@ -672,8 +647,40 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    uint8_t version;
+    if ([self.account.wallet.chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
     
-    return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.account.wallet.chain isMainnet]);
+    for (NSInteger i = 0;i<[self length] - 1;i++) {
+        uint32_t derivation = (uint32_t)[self indexAtPosition:i];
+        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+    }
+    uint32_t fingerprint = [DSKey keyWithSecret:secret compressed:YES].hash160.u32[0];
+    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
+    
+    return serialize([self length], fingerprint, self.account.accountNumber | BIP32_HARD, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.account.wallet.chain isMainnet]);
+    }
+}
+
++ (NSData *)deserializedExtendedPrivateKey:(NSString *)extendedPrivateKeyString onChain:(DSChain*)chain
+{
+    @autoreleasepool {
+    uint8_t depth;
+    uint32_t fingerprint;
+    uint32_t child;
+    UInt256 chainHash;
+    NSData * privkey = nil;
+    NSMutableData * masterPrivateKey = [NSMutableData secureData];
+    BOOL valid = deserialize(extendedPrivateKeyString, &depth, &fingerprint, &child, &chainHash, &privkey,[chain isMainnet]);
+    if (!valid) return nil;
+    [masterPrivateKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
+    [masterPrivateKey appendBytes:&chainHash length:32];
+    [masterPrivateKey appendData:privkey];
+    return [masterPrivateKey copy];
+    }
 }
 
 - (NSString *)serializedExtendedPublicKey
@@ -683,19 +690,18 @@ static BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerpri
     uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)self.extendedPublicKey.bytes);
     UInt256 chain = *(UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
     DSECPoint pubKey = *(DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-    
-    return serialize([self length], fingerprint, 0 | BIP32_HARD, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)],[self.account.wallet.chain isMainnet]);
+    uint32_t child = self.account.accountNumber | BIP32_HARD;
+    return serialize([self.depth unsignedCharValue], fingerprint, child, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)],[self.chain isMainnet]);
 }
 
-+ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain rDepth:(uint8_t*)depth rChild:(uint32_t*)child
 {
-    uint8_t depth;
     uint32_t fingerprint;
-    uint32_t child;
+
     UInt256 chainHash;
     NSData * pubkey = nil;
     NSMutableData * masterPublicKey = [NSMutableData secureData];
-    BOOL valid = deserialize(extendedPublicKeyString, &depth, &fingerprint, &child, &chainHash, &pubkey,[chain isMainnet]);
+    BOOL valid = deserialize(extendedPublicKeyString, depth, &fingerprint, child, &chainHash, &pubkey,[chain isMainnet]);
     if (!valid) return nil;
     [masterPublicKey appendUInt32:CFSwapInt32HostToBig(fingerprint)];
     [masterPublicKey appendBytes:&chainHash length:32];

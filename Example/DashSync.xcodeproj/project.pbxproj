@@ -26,6 +26,8 @@
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */; };
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
+		FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */; };
+		FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -91,6 +93,10 @@
 		FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeTableViewCell.m; sourceTree = "<group>"; };
 		FB12FEE520CD3EC100C1E0F0 /* DSMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeViewController.h; sourceTree = "<group>"; };
 		FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeViewController.m; sourceTree = "<group>"; };
+		FB12FEE820CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSStandaloneDerivationPathController.h; sourceTree = "<group>"; };
+		FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathController.m; sourceTree = "<group>"; };
+		FB12FEEB20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSStandaloneDerivationPathKeyInputViewController.h; sourceTree = "<group>"; };
+		FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathKeyInputViewController.m; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -318,6 +324,10 @@
 				FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */,
 				FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */,
 				FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */,
+				FB12FEE820CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.h */,
+				FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */,
+				FB12FEEB20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.h */,
+				FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */,
 			);
 			name = Wallet;
 			sourceTree = "<group>";
@@ -520,12 +530,14 @@
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
+				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
 				FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */,
+				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,

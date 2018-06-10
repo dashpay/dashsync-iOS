@@ -752,6 +752,51 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
     return outLen;
 }
 
+// helper function for serializing BIP32 master public/private keys to standard export format
+NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key,BOOL mainnet)
+{
+    NSMutableData *d = [NSMutableData secureDataWithCapacity:14 + key.length + sizeof(chain)];
+    
+    fingerprint = CFSwapInt32HostToBig(fingerprint);
+    child = CFSwapInt32HostToBig(child);
+    
+    [d appendBytes:key.length < 33 ? mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET : mainnet?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET length:4]; //4
+    [d appendBytes:&depth length:1]; //5
+    [d appendBytes:&fingerprint length:sizeof(fingerprint)]; // 9
+    [d appendBytes:&child length:sizeof(child)]; // 13
+    [d appendBytes:&chain length:sizeof(chain)]; // 45
+    if (key.length < 33) [d appendBytes:"\0" length:1]; //46 (prv) / 45 (pub)
+    [d appendData:key]; //78 (prv) / 78 (pub)
+    
+    return [NSString base58checkWithData:d];
+}
+
+// helper function for serializing BIP32 master public/private keys to standard export format
+BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uint32_t * child, UInt256 * chain, NSData **key,BOOL mainnet)
+{
+    NSData * allData = [NSData dataWithBase58String:string];
+    if (allData.length != 82) return false;
+    NSData * data = [allData subdataWithRange:NSMakeRange(0, allData.length - 4)];
+    NSData * checkData = [allData subdataWithRange:NSMakeRange(allData.length - 4, 4)];
+    if ((*(uint32_t*)data.SHA256_2.u32) != *(uint32_t*)checkData.bytes) return FALSE;
+    uint8_t * bytes = (uint8_t *)[data bytes];
+    if (memcmp(bytes,mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) != 0 && memcmp(bytes,mainnet?BIP32_XPUB_MAINNET:BIP32_XPUB_TESTNET,4) != 0) {
+        return FALSE;
+    }
+    NSUInteger offset = 4;
+    *depth = bytes[4];
+    offset++;
+    *fingerprint = CFSwapInt32BigToHost(*(uint32_t*)(&bytes[offset]));
+    offset += sizeof(uint32_t);
+    *child = CFSwapInt32BigToHost(*(uint32_t*)(&bytes[offset]));
+    offset += sizeof(uint32_t);
+    *chain = *(UInt256*)(&bytes[offset]);
+    offset += sizeof(UInt256);
+    if (memcmp(bytes,mainnet?BIP32_XPRV_MAINNET:BIP32_XPRV_TESTNET,4) == 0) offset++;
+    *key = [data subdataWithRange:NSMakeRange(offset, data.length - offset)];
+    return TRUE;
+}
+
 @implementation NSData (Bitcoin)
 
 + (instancetype)dataWithUInt256:(UInt256)n
@@ -1016,6 +1061,7 @@ size_t chacha20Poly1305AEADDecrypt(void *out, size_t outLen, const void *key32, 
 {
     return [NSString hexWithData:self];
 }
+
 
 @end
 

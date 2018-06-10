@@ -139,6 +139,7 @@
 
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain
 {
+    if (![self isValidBase58]) return FALSE;
     NSData *d = self.base58checkToData;
     
     if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
@@ -153,9 +154,9 @@
 
 - (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain*)chain
 {
-    if (![self isValidBase58]) return false;
+    if (![self isValidBase58]) return FALSE;
     NSData * allData = self.base58ToData;
-    if (allData.length != 82) return false;
+    if (allData.length != 82) return FALSE;
     NSData * data = [allData subdataWithRange:NSMakeRange(0, allData.length - 4)];
     NSData * checkData = [allData subdataWithRange:NSMakeRange(allData.length - 4, 4)];
     if ((*(uint32_t*)data.SHA256_2.u32) != *(uint32_t*)checkData.bytes) return FALSE;

@@ -37,30 +37,6 @@
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
 #define EXTENDED_0_PUBKEY_KEY_BIP32_V1   @"extended0pubkeyBIP32"
 
-#define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago
-
-#if useDarkCoinSeed
-
-#define BIP32_SEED_KEY "Darkcoin seed"
-
-#define BIP32_XPRV_MAINNET     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
-#define BIP32_XPUB_MAINNET     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
-#define BIP32_XPRV_TESTNET     "\x02\xFE\x52\xCC"
-#define BIP32_XPUB_TESTNET     "\x02\xFE\x52\xF8"
-
-#else
-
-#define BIP32_SEED_KEY "Bitcoin seed"
-
-#define BIP32_XPRV_TESTNET     "\x04\x35\x83\x94"
-#define BIP32_XPUB_TESTNET     "\x04\x35\x87\xCF"
-
-#define BIP32_XPRV_MAINNET     "\x04\x88\xAD\xE4"
-#define BIP32_XPUB_MAINNET     "\x04\x88\xB2\x1E"
-
-
-#endif
-
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define BIP32_HARD 0x80000000
@@ -139,6 +115,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString* _Nonnull)serializedExtendedPrivateKey fundsType:(DSDerivationPathFundsType)fundsType onChain:(DSChain* _Nonnull)chain;
+
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString* _Nonnull)serializedExtendedPublicKey onChain:(DSChain* _Nonnull)chain;
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain;
@@ -178,8 +156,10 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
 + (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString * _Nonnull)uri fromSeed:(NSData * _Nonnull)seed forChain:(DSChain* _Nonnull)chain;
 
-- (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
 - (NSString * _Nullable)serializedExtendedPublicKey;
+
+- (NSString * _Nullable)serializedExtendedPrivateKeyFromSeed:(NSData * _Nullable)seed;
++ (NSData * _Nullable)deserializedExtendedPrivateKey:(NSString * _Nonnull)extendedPrivateKeyString onChain:(DSChain* _Nonnull)chain;
 
 + (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString;

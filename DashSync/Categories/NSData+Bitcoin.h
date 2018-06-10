@@ -30,6 +30,30 @@
 
 #define SEC_ATTR_SERVICE    @"org.dashfoundation.dash"
 
+#define useDarkCoinSeed 0 //the darkcoin seed was retired quite a while ago
+
+#if useDarkCoinSeed
+
+#define BIP32_SEED_KEY "Darkcoin seed"
+
+#define BIP32_XPRV_MAINNET     "\x02\xFE\x52\xCC" //// Dash BIP32 prvkeys start with 'drkp'
+#define BIP32_XPUB_MAINNET     "\x02\xFE\x52\xF8" //// Dash BIP32 pubkeys start with 'drkv'
+#define BIP32_XPRV_TESTNET     "\x02\xFE\x52\xCC"
+#define BIP32_XPUB_TESTNET     "\x02\xFE\x52\xF8"
+
+#else
+
+#define BIP32_SEED_KEY "Bitcoin seed"
+
+#define BIP32_XPRV_TESTNET     "\x04\x35\x83\x94"
+#define BIP32_XPUB_TESTNET     "\x04\x35\x87\xCF"
+
+#define BIP32_XPRV_MAINNET     "\x04\x88\xAD\xE4"
+#define BIP32_XPUB_MAINNET     "\x04\x88\xB2\x1E"
+
+
+#endif
+
 #define RMD160_DIGEST_LENGTH (160/8)
 #define MD5_DIGEST_LENGTH    (128/8)
 
@@ -64,6 +88,13 @@ BOOL setKeychainDict(NSDictionary *dict, NSString *key, BOOL authenticated);
 NSDictionary *getKeychainDict(NSString *key, NSError **error);
 BOOL setKeychainArray(NSArray *array, NSString *key, BOOL authenticated);
 NSArray *getKeychainArray(NSString *key, NSError **error);
+
+//Serialization
+
+// helper function for serializing BIP32 master public/private keys to standard export format
+NSString *serialize(uint8_t depth, uint32_t fingerprint, uint32_t child, UInt256 chain, NSData *key,BOOL mainnet);
+// helper function for deserializing BIP32 master public/private keys to standard export format
+BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uint32_t * child, UInt256 * chain, NSData **key,BOOL mainnet);
 
 //Hashing
 

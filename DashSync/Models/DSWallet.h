@@ -137,4 +137,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
 //get the CREATION TIME KEY prefixed unique ID
 + (NSString*)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
+- (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
+
 @end

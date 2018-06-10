@@ -314,8 +314,16 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
--(void)removeStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
+-(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
+    NSError * error = nil;
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainStandaloneDerivationPathsKey, &error) mutableCopy];
+    if (!keyChainArray) return;
+    [keyChainArray removeObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
+    setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     [self.mStandaloneDerivationPaths removeObject:derivationPath];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathModifiedNotification object:nil];
+    });
 }
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
     [self.mStandaloneDerivationPaths addObject:derivationPath];
@@ -332,7 +340,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletAddedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathModifiedNotification object:nil];
     });
 }
 
