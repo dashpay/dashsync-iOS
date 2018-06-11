@@ -56,8 +56,9 @@ typedef NS_ENUM(uint16_t, DSChainType) {
     DSChainType_DevNet,
 };
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletAddedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneDerivationPathModifiedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletsDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneDerivationPathsDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNotification;
 
 @class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount;
 

@@ -117,7 +117,7 @@
                                                        }];
     
     self.walletAddedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            //[[self.connectedPeers copy] makeObjectsPerformSelector:@selector(disconnect)];
                                                        }];

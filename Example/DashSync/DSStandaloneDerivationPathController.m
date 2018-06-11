@@ -13,12 +13,24 @@
 
 @interface DSStandaloneDerivationPathController ()
 
+@property (strong, nonatomic) id chainStandaloneDerivationPathObserver;
+
 @end
 
 @implementation DSStandaloneDerivationPathController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.chainStandaloneDerivationPathObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           [self.tableView reloadData];
+                                                       }];
+}
+     
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self.chainStandaloneDerivationPathObserver];
 }
 
 - (void)didReceiveMemoryWarning {

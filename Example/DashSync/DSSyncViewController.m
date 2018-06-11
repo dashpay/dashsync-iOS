@@ -29,11 +29,13 @@
 @property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *standaloneDerivationPathsCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *standaloneAddressesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeBroadcastsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver;;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -52,8 +54,10 @@
     [self updateBlockHeight];
     [self updateMasternodeCount];
     [self updateMasternodeBroadcastsCount];
-    
-    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+    [self updateWalletCount];
+    [self updateStandaloneDerivationPathsCount];
+    [self updateSingleAddressesCount];
+
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
@@ -93,10 +97,19 @@
                                                                                  }];
 
     self.chainWalletObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+                                                               [self updateWalletCount];
                                                            }];
+    self.chainStandaloneDerivationPathObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           [self updateStandaloneDerivationPathsCount];
+                                                       }];
+    self.chainSingleAddressObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
+                                                                                         queue:nil usingBlock:^(NSNotification *note) {
+                                                                                             [self updateStandaloneDerivationPathsCount];
+                                                                                         }];
     
 }
 
@@ -276,6 +289,18 @@
 
 -(void)updateMasternodeBroadcastsCount {
     self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager masternodeBroadcastsCount]];
+}
+
+-(void)updateWalletCount {
+    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+}
+
+-(void)updateStandaloneDerivationPathsCount {
+    self.standaloneDerivationPathsCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.standaloneDerivationPaths count]];
+}
+
+-(void)updateSingleAddressesCount {
+    self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

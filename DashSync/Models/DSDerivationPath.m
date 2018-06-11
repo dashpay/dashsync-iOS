@@ -116,8 +116,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
-#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION"
-#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION"
+#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION @"DP_EPK_WBL"
+#define DERIVATION_PATH_EXTENDED_PUBLIC_KEY_STANDALONE_BASED_LOCATION @"DP_EPK_SBL"
+#define DERIVATION_PATH_STANDALONE_INFO_DICTIONARY_LOCATION @"DP_SIDL"
+#define DERIVATION_PATH_STANDALONE_INFO_CHILD @"DP_SI_CHILD"
+#define DERIVATION_PATH_STANDALONE_INFO_DEPTH @"DP_SI_DEPTH"
 
 @interface DSDerivationPath()
 
@@ -130,7 +133,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 @property (nonatomic, assign) BOOL addressesLoaded;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSNumber * depth;
-@property (nonatomic, assign) uint32_t child;
+@property (nonatomic, assign) NSNumber * child;
 
 @end
 
@@ -175,6 +178,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown onChain:chain];
     derivationPath.extendedPublicKey = extendedPublicKey;
     derivationPath.depth = @(depth);
+    derivationPath.child = @(child);
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
 }
@@ -185,6 +189,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     NSError * error = nil;
     _walletBasedExtendedPublicKeyLocationString = extendedPublicKeyIdentifier;
     _extendedPublicKey = getKeychainData([DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
+    if (error) return nil;
+    NSDictionary * infoDictionary = getKeychainDict([DSDerivationPath standaloneInfoDictionaryLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
+    if (error) return nil;
+    _depth = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_DEPTH];
+    _child = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_CHILD];
     [self.moc performBlockAndWait:^{
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
@@ -298,7 +307,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 -(void)standaloneSaveExtendedPublicKeyToKeyChain {
     if (!_extendedPublicKey) return;
     setKeychainData(_extendedPublicKey, [self standaloneExtendedPublicKeyLocationString], NO);
-    
+    setKeychainDict(@{DERIVATION_PATH_STANDALONE_INFO_CHILD:self.child,DERIVATION_PATH_STANDALONE_INFO_DEPTH:self.depth}, [self standaloneInfoDictionaryLocationString], NO);
     [self.moc performBlockAndWait:^{
         [DSDerivationPathEntity setContext:self.moc];
         [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
@@ -388,6 +397,14 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return [DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:self.standaloneExtendedPublicKeyUniqueID];
 }
 
++(NSString*)standaloneInfoDictionaryLocationStringForUniqueID:(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@",DERIVATION_PATH_STANDALONE_INFO_DICTIONARY_LOCATION,uniqueID];
+}
+
+-(NSString*)standaloneInfoDictionaryLocationString {
+    return [DSDerivationPath standaloneInfoDictionaryLocationStringForUniqueID:self.standaloneExtendedPublicKeyUniqueID];
+}
+
 +(NSString*)walletBasedExtendedPublicKeyLocationStringForUniqueID:(NSString*)uniqueID {
     return [NSString stringWithFormat:@"%@_%@",DERIVATION_PATH_EXTENDED_PUBLIC_KEY_WALLET_BASED_LOCATION,uniqueID];
 }
@@ -450,6 +467,18 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
     [_usedAddresses addObject:address];
+}
+
+-(BOOL)isDerivationPathEqual:(id)object {
+    return [super isEqual:object];
+}
+
+-(BOOL)isEqual:(id)object {
+    return [self.standaloneExtendedPublicKeyUniqueID isEqualToString:((DSDerivationPath*)object).standaloneExtendedPublicKeyUniqueID];
+}
+
+-(NSUInteger)hash {
+    return [self.standaloneExtendedPublicKeyUniqueID hash];
 }
 
 // MARK: - authentication key
@@ -697,7 +726,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 + (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain rDepth:(uint8_t*)depth rChild:(uint32_t*)child
 {
     uint32_t fingerprint;
-
     UInt256 chainHash;
     NSData * pubkey = nil;
     NSMutableData * masterPublicKey = [NSMutableData secureData];

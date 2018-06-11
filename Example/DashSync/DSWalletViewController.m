@@ -24,7 +24,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.chainWalletObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletAddedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            [self.tableView reloadData];
                                                        }];
