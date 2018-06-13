@@ -95,10 +95,10 @@
         }
         for (int j = i + 1;j<[derivationPaths count];j++) {
             DSDerivationPath * derivationPath2 = [derivationPaths objectAtIndex:j];
-            NSAssert(![derivationPath isEqual:derivationPath2],@"Derivation paths should all be different");
+            NSAssert(![derivationPath isDerivationPathEqual:derivationPath2],@"Derivation paths should all be different");
         }
         for (DSDerivationPath * derivationPath3 in self.mDerivationPaths) {
-            NSAssert(![derivationPath isEqual:derivationPath3],@"Added derivation paths should be different from existing ones on account");
+            NSAssert(![derivationPath isDerivationPathEqual:derivationPath3],@"Added derivation paths should be different from existing ones on account");
         }
         if ([self.mDerivationPaths count] || i != 0) {
             NSAssert([derivationPath indexAtPosition:[derivationPath length] - 1] == _accountNumber, @"all derivationPaths need to be on same account");

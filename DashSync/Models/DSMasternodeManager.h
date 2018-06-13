@@ -7,13 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(uint32_t, DSMasternodeSyncCountInfo) {
-    DSMasternodeSyncCountInfo_List = 2,
-    DSMasternodeSyncCountInfo_MNW = 3,
-    DSMasternodeSyncCountInfo_GovernanceObject = 10,
-    DSMasternodeSyncCountInfo_GovernanceObjectVote = 11,
-};
-
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListChangedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
 
@@ -25,6 +18,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger recentMasternodeBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger masternodeBroadcastsCount;
+@property (nonatomic,assign) NSUInteger totalMasternodeCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
 
@@ -35,9 +29,5 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
 
 -(void)requestMasternodeBroadcastsFromPeer:(DSPeer*)peer;
-
-// Masternodes
--(uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;
--(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo;
 
 @end

@@ -24,7 +24,6 @@
 
 #import "DSPeerEntity+CoreDataClass.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSPeerEntity (CoreDataProperties)
@@ -34,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int32_t address;
 @property (nonatomic) NSTimeInterval timestamp;
 @property (nonatomic) NSTimeInterval lastRequestedMasternodeList;
+@property (nonatomic) NSTimeInterval lastRequestedGovernanceSync;
 @property (nonatomic) NSTimeInterval lowPreferenceTill;
 @property (nonatomic) int16_t port;
 @property (nonatomic) int64_t services;

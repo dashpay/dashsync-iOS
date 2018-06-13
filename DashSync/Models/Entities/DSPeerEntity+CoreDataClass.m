@@ -46,6 +46,7 @@
         self.priority = peer.priority;
         self.lowPreferenceTill = peer.lowPreferenceTill;
         self.lastRequestedMasternodeList = peer.lastRequestedMasternodeList;
+        self.lastRequestedGovernanceSync = peer.lastRequestedGovernanceSync;
         self.chain = [DSChainEntity chainEntityForType:peer.chain.chainType genesisBlock:peer.chain.genesisHash checkpoints:nil];
     }];
     

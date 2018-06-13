@@ -16,7 +16,7 @@
 #import "NSData+Dash.h"
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
-#define MASTERNODE_SYNC_COUNT_INFO @"MASTERNODE_SYNC_COUNT_INFO"
+
 
 @interface DSMasternodeManager()
 
@@ -27,7 +27,6 @@
 @property (nonatomic,strong) NSMutableArray * requestHashEntities;
 @property (nonatomic,strong) NSMutableArray<DSMasternodeBroadcast *> * masternodeBroadcasts;
 @property (nonatomic,assign) NSUInteger masternodeBroadcastsCount;
-@property (nonatomic,strong) NSMutableDictionary * masternodeSyncCountInfo;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -39,7 +38,6 @@
     if (! (self = [super init])) return nil;
     _chain = chain;
     _masternodeBroadcasts = [NSMutableArray array];
-    self.masternodeSyncCountInfo = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     return self;
 }
@@ -219,18 +217,18 @@
     }];
     self.knownHashes = rHashes;
     self.needsRequestsHashEntities = rNeedsRequestsHashEntities;
-    NSLog(@"-> %lu - %d",(unsigned long)[self.knownHashes count],[self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]);
+    NSLog(@"-> %lu - %d",(unsigned long)[self.knownHashes count],[self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]);
     NSUInteger countAroundNow = [self recentMasternodeBroadcastHashesCount];
-    if ([self.knownHashes count] > [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
+    if ([self.knownHashes count] > [self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]) {
         [self.managedObjectContext performBlockAndWait:^{
             [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-            NSLog(@"countAroundNow -> %lu - %d",(unsigned long)countAroundNow,[self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]);
-            if (countAroundNow == [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
-                [DSMasternodeBroadcastHashEntity removeOldest:[self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List] - [self.knownHashes count] onChain:self.chain.chainEntity];
+            NSLog(@"countAroundNow -> %lu - %d",(unsigned long)countAroundNow,[self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]);
+            if (countAroundNow == [self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]) {
+                [DSMasternodeBroadcastHashEntity removeOldest:[self countForMasternodeSyncCountInfo:DSSyncCountInfo_List] - [self.knownHashes count] onChain:self.chain.chainEntity];
                 [self requestMasternodeBroadcastsFromPeer:peer];
             }
         }];
-    } else if (countAroundNow == [self countForMasternodeSyncCountInfo:DSMasternodeSyncCountInfo_List]) {
+    } else if (countAroundNow == [self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]) {
         NSLog(@"%@",@"All masternode broadcast hashes received");
         //we have all hashes, let's request objects.
         [self requestMasternodeBroadcastsFromPeer:peer];
@@ -277,29 +275,5 @@
 //
 //    }
 //}
-
-
-// MARK: - Masternodes
-
-- (uint32_t)countForMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
-    if (![self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)]) {
-        NSString * storageKey = [NSString stringWithFormat:@"%@_%d",MASTERNODE_SYNC_COUNT_INFO,masternodeSyncCountInfo];
-        if ([[NSUserDefaults standardUserDefaults] objectForKey:storageKey]) {
-            NSInteger value = [[NSUserDefaults standardUserDefaults] integerForKey:storageKey];
-            [self.masternodeSyncCountInfo setObject:@(value) forKey:@(masternodeSyncCountInfo)];
-            return (uint32_t)value;
-        } else {
-            [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:storageKey];
-            return 0;
-        }
-    }
-    return (uint32_t)[[self.masternodeSyncCountInfo objectForKey:@(masternodeSyncCountInfo)] unsignedLongValue];
-}
-
--(void)setCount:(uint32_t)count forMasternodeSyncCountInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo {
-    NSString * storageKey = [NSString stringWithFormat:@"%@_%d",MASTERNODE_SYNC_COUNT_INFO,masternodeSyncCountInfo];
-    [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
-    [self.masternodeSyncCountInfo setObject:@(count) forKey:@(masternodeSyncCountInfo)];
-}
 
 @end

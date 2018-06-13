@@ -104,43 +104,15 @@
 //}
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0) return [self.chain.wallets count];
-    else return [self.chain.standaloneDerivationPaths count];
+    return [self.chain.wallets count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
-}
-
--(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    switch (section) {
-        case 0:
-            return @"Wallets";
-            break;
-        case 1:
-            return @"Standalone derivation paths";
-            break;
-        default:
-            return @"";
-            break;
-    };
+    return 1;
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString *cellIdentifier = nil;
-    switch (indexPath.section) {
-        case 0:
-            cellIdentifier = @"WalletCell";
-            break;
-        case 1:
-            cellIdentifier = @"StandaloneDerivationPathCell";
-            break;
-        default:
-            break;
-    }
-    
-    
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"WalletCell"];
     
     // Set up the cell...
     [self configureCell:cell atIndexPath:indexPath];
@@ -148,7 +120,6 @@
 }
 
 -(void)configureCell:(UITableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0) {
     @autoreleasepool {
         DSWalletTableViewCell * walletCell = (DSWalletTableViewCell*)cell;
         DSWallet * wallet = [[self.chain wallets] objectAtIndex:indexPath.row];
@@ -162,11 +133,6 @@
         walletCell.passphraseLabel.text = [lines componentsJoinedByString:@"\n"];
         DSAccount * account0 = [wallet accountWithNumber:0];
         walletCell.xPublicKeyLabel.text = [[account0 bip44DerivationPath] serializedExtendedPublicKey];
-    }
-    } else {
-        DSWalletTableViewCell * walletCell = (DSWalletTableViewCell*)cell;
-        DSDerivationPath * derivationPath = [[self.chain standaloneDerivationPaths] objectAtIndex:indexPath.row];
-        walletCell.xPublicKeyLabel.text = [derivationPath serializedExtendedPublicKey];
     }
 }
 

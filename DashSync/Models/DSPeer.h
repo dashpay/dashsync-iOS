@@ -27,7 +27,6 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
-#import "DSMasternodeManager.h"
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -110,6 +109,8 @@
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
+typedef NS_ENUM(uint32_t, DSSyncCountInfo);
+
 @class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing;
 
 @protocol DSPeerDelegate<NSObject>
@@ -131,7 +132,7 @@ typedef union _UInt128 UInt128;
 
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 
-- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count;
+- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing;
 
@@ -176,6 +177,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, assign) uint32_t priority;
 @property (nonatomic, assign) NSTimeInterval lowPreferenceTill;
 @property (nonatomic, assign) NSTimeInterval lastRequestedMasternodeList;
+@property (nonatomic, assign) NSTimeInterval lastRequestedGovernanceSync;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate; // set this when wallet addresses need to be added to bloom filter
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)
@@ -200,8 +202,10 @@ services:(uint64_t)services;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendInvMessageWithTxHashes:(NSArray *)txHashes;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
-- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray *)masternodeBroadcastHashes;
+- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray<NSData*> *)masternodeBroadcastHashes;
+- (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
 - (void)sendGetaddrMessage;
+- (void)sendGovSync;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
 - (void)sendDSegMessage:(DSUTXO)utxo;

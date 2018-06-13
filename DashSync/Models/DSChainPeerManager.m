@@ -47,6 +47,7 @@
 #import "DSAccount.h"
 #import "DSOptionsManager.h"
 #import "DSMasternodeManager.h"
+#import "DSGovernanceSyncManager.h"
 
 #define PEER_LOGGING 1
 
@@ -65,6 +66,8 @@
 #define PROTOCOL_TIMEOUT     20.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
+#define SYNC_COUNT_INFO @"SYNC_COUNT_INFO"
+
 @interface DSChainPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
@@ -82,6 +85,8 @@
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
+@property (nonatomic, strong) NSMutableDictionary * syncCountInfo;
+@property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
 
 @end
 
@@ -90,9 +95,12 @@
 - (instancetype)initWithChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
+    
+    self.syncCountInfo = [NSMutableDictionary dictionary];
     self.chain = chain;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
+    self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.txRequests = [NSMutableDictionary dictionary];
@@ -549,6 +557,37 @@
     }
 }
 
+-(void)startGovernanceSync {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
+    NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
+    BOOL startedGovernanceSync = FALSE;
+    for (DSPeer * peer in sortedPeers) {
+        if (peer.status != DSPeerStatus_Connected) continue;
+        if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedGovernanceSync < 10800) continue; //don't request less than every 3 hours from a peer
+        peer.lastRequestedGovernanceSync = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
+        [peer sendGovSync];
+        [self savePeer:peer];
+        startedGovernanceSync = TRUE;
+        break;
+    }
+    if (!startedGovernanceSync) { //we have requested masternode list from connected peers too recently, let's connect to different peers
+        NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.masternodeManager last3HoursStandaloneBroadcastHashesCount];
+        if (last3HoursStandaloneBroadcastHashesCount) {
+            for (DSPeer * peer in sortedPeers) {
+                if (peer.status != DSPeerStatus_Connected) continue;
+                [self.masternodeManager requestMasternodeBroadcastsFromPeer:peer];
+                break;
+            }
+        }
+        //        for (DSPeer * peer in sortedPeers) {
+        //            peer.lowPreferenceTill = peer.lastRequestedGovernanceSync + 10800;
+        //            [peer disconnect];
+        //        }
+        //        [self sortPeers];
+        //        [self connect];
+    }
+}
+
 -(void)getMasternodeList {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) return; // make sure we care about masternode list
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedMasternodeList" ascending:YES]]];
@@ -580,18 +619,6 @@
 //        }
 //        [self sortPeers];
 //        [self connect];
-    }
-}
-
--(void)startMasternodeSync {
-    for (DSPeer *p in self.connectedPeers) { // after syncing, get sporks from other peers
-        if (p.status != DSPeerStatus_Connected) continue;
-        
-        [p sendPingMessageWithPongHandler:^(BOOL success) {
-            if (success) {
-                [p sendGetblocksMessageWithLocators:@[] andHashStop:UINT256_ZERO];
-            }
-        }];
     }
 }
 
@@ -750,11 +777,16 @@
 {
     NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
     BOOL syncsMasternodeList = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
+    BOOL syncsGovernanceObjects = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance);
     [_peers sortUsingComparator:^NSComparisonResult(DSPeer *p1, DSPeer *p2) {
         //the following is to make sure we get
         if (syncsMasternodeList) {
             if ((!p1.lastRequestedMasternodeList || p1.lastRequestedMasternodeList < threeHoursAgo) && p2.lastRequestedMasternodeList > threeHoursAgo) return NSOrderedDescending;
             if (p1.lastRequestedMasternodeList > threeHoursAgo && (!p2.lastRequestedMasternodeList || p2.lastRequestedMasternodeList < threeHoursAgo)) return NSOrderedAscending;
+        }
+        if (syncsGovernanceObjects) {
+            if ((!p1.lastRequestedGovernanceSync || p1.lastRequestedGovernanceSync < threeHoursAgo) && p2.lastRequestedGovernanceSync > threeHoursAgo) return NSOrderedDescending;
+            if (p1.lastRequestedGovernanceSync > threeHoursAgo && (!p2.lastRequestedGovernanceSync || p2.lastRequestedGovernanceSync < threeHoursAgo)) return NSOrderedAscending;
         }
         if (p1.priority > p2.priority) return NSOrderedAscending;
         if (p1.priority < p2.priority) return NSOrderedDescending;
@@ -790,6 +822,7 @@
                     e.priority = p.priority;
                     e.lowPreferenceTill = p.lowPreferenceTill;
                     e.lastRequestedMasternodeList = p.lastRequestedMasternodeList;
+                    e.lastRequestedGovernanceSync = p.lastRequestedGovernanceSync;
                     [peers removeObject:p];
                 }
                 else [e deleteObject];
@@ -818,6 +851,7 @@
                     e.priority = peer.priority;
                     e.lowPreferenceTill = peer.lowPreferenceTill;
                     e.lastRequestedMasternodeList = peer.lastRequestedMasternodeList;
+                e.lastRequestedGovernanceSync = peer.lastRequestedGovernanceSync;
             }
         } else {
             @autoreleasepool {
@@ -1328,13 +1362,13 @@
     }
 }
 
-- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSMasternodeSyncCountInfo)masternodeSyncCountInfo count:(uint32_t)count {
-    [self.masternodeManager setCount:count forMasternodeSyncCountInfo:masternodeSyncCountInfo];
-    switch (masternodeSyncCountInfo) {
-        case DSMasternodeSyncCountInfo_List:
+- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
+    [self setCount:count forSyncCountInfo:syncCountInfo];
+    switch (syncCountInfo) {
+        case DSSyncCountInfo_List:
         {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:self userInfo:@{@(masternodeSyncCountInfo):@(count)}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
             });
             break;
         }
@@ -1393,6 +1427,39 @@
     if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         NSLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+    }
+}
+
+// MARK: - Masternodes
+
+- (uint32_t)countForSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+    if (![self.syncCountInfo objectForKey:@(syncCountInfo)]) {
+        NSString * storageKey = [NSString stringWithFormat:@"%@_%d",SYNC_COUNT_INFO,syncCountInfo];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:storageKey]) {
+            NSInteger value = [[NSUserDefaults standardUserDefaults] integerForKey:storageKey];
+            [self.syncCountInfo setObject:@(value) forKey:@(syncCountInfo)];
+            return (uint32_t)value;
+        } else {
+            [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:storageKey];
+            return 0;
+        }
+    }
+    return (uint32_t)[[self.syncCountInfo objectForKey:@(syncCountInfo)] unsignedLongValue];
+}
+
+-(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+    NSString * storageKey = [NSString stringWithFormat:@"%@_%d",SYNC_COUNT_INFO,syncCountInfo];
+    [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
+    [self.syncCountInfo setObject:@(count) forKey:@(syncCountInfo)];
+    switch (syncCountInfo) {
+        case DSSyncCountInfo_List:
+            self.masternodeManager.totalMasternodeCount = count;
+            break;
+        case DSSyncCountInfo_GovernanceObject:
+            self.governanceSyncManager.totalGovernanceObjectCount = count;
+            break;
+        default:
+            break;
     }
 }
 

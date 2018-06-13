@@ -167,4 +167,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //this loads the derivation path once it is set to an account that has a wallet;
 -(void)loadAddresses;
 
+-(BOOL)isDerivationPathEqual:(id)object;
+
 @end

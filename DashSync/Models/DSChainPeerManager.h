@@ -27,10 +27,15 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import "DSPeer.h"
 #import "DSChain.h"
-#import "DSSporkManager.h"
-#import "DSMasternodeManager.h"
+#import "DSPeer.h"
+
+typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
+    DSSyncCountInfo_List = 2,
+    DSSyncCountInfo_MNW = 3,
+    DSSyncCountInfo_GovernanceObject = 10,
+    DSSyncCountInfo_GovernanceObjectVote = 11,
+};
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
@@ -41,7 +46,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 
-@class DSTransaction;
+@class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer;
 
 @interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
 
@@ -54,7 +59,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 @property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
-
+@property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
@@ -65,6 +70,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
                 completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
-
+// Masternodes
+-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+-(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 @end

@@ -82,7 +82,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -557,6 +557,29 @@ services:(uint64_t)services
     }
     
     self.sentGetdataMasternode = YES;
+    [self sendMessage:msg type:MSG_GETDATA];
+}
+
+- (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes
+{
+    if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+        NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
+              (int)governanceObjectHashes.count, MAX_GETDATA_HASHES);
+        return;
+    }
+    else if (governanceObjectHashes.count == 0) return;
+    
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendVarInt:governanceObjectHashes.count];
+    
+    for (NSData *dataHash in governanceObjectHashes) {
+        [msg appendUInt32:DSInvType_GovernanceObject];
+        
+        [msg appendBytes:dataHash.bytes length:sizeof(UInt256)];
+    }
+    
+    self.sentGetdataGovernance = YES;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -1244,7 +1267,7 @@ services:(uint64_t)services
 
 - (void)acceptSSCMessage:(NSData *)message
 {
-    DSMasternodeSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
+    DSSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
     [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
 }
