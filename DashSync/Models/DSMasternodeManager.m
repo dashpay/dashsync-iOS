@@ -217,18 +217,18 @@
     }];
     self.knownHashes = rHashes;
     self.needsRequestsHashEntities = rNeedsRequestsHashEntities;
-    NSLog(@"-> %lu - %d",(unsigned long)[self.knownHashes count],[self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]);
+    NSLog(@"-> %lu - %lu",(unsigned long)[self.knownHashes count],(unsigned long)self.totalMasternodeCount);
     NSUInteger countAroundNow = [self recentMasternodeBroadcastHashesCount];
-    if ([self.knownHashes count] > [self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]) {
+    if ([self.knownHashes count] > self.totalMasternodeCount) {
         [self.managedObjectContext performBlockAndWait:^{
             [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-            NSLog(@"countAroundNow -> %lu - %d",(unsigned long)countAroundNow,[self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]);
-            if (countAroundNow == [self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]) {
-                [DSMasternodeBroadcastHashEntity removeOldest:[self countForMasternodeSyncCountInfo:DSSyncCountInfo_List] - [self.knownHashes count] onChain:self.chain.chainEntity];
+            NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalMasternodeCount);
+            if (countAroundNow == self.totalMasternodeCount) {
+                [DSMasternodeBroadcastHashEntity removeOldest:self.totalMasternodeCount - [self.knownHashes count] onChain:self.chain.chainEntity];
                 [self requestMasternodeBroadcastsFromPeer:peer];
             }
         }];
-    } else if (countAroundNow == [self countForMasternodeSyncCountInfo:DSSyncCountInfo_List]) {
+    } else if (countAroundNow == self.totalMasternodeCount) {
         NSLog(@"%@",@"All masternode broadcast hashes received");
         //we have all hashes, let's request objects.
         [self requestMasternodeBroadcastsFromPeer:peer];
@@ -254,7 +254,7 @@
         [self requestMasternodeBroadcastsFromPeer:peer];
         [DSMasternodeBroadcastEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListChangedNotification object:self userInfo:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:nil];
         });
     }
 }

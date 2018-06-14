@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
 
 @class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
 

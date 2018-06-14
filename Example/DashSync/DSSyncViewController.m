@@ -85,7 +85,7 @@
                                                            NSLog(@"update spork count");
                                                            [self updateSporks];
                                                        }];
-    self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListChangedNotification object:nil
+    self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
                                                                                      queue:nil usingBlock:^(NSNotification *note) {
                                                                                          NSLog(@"update masternode broadcast count");
                                                                                          [self updateMasternodeBroadcastsCount];
@@ -284,7 +284,7 @@
 }
 
 -(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager.masternodeManager countForMasternodeSyncCountInfo:DSSyncCountInfo_List]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForMasternodeSyncCountInfo:DSSyncCountInfo_List]];
 }
 
 -(void)updateMasternodeBroadcastsCount {

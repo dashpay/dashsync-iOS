@@ -10,7 +10,7 @@
 #import <CoreData/CoreData.h>
 #import "DSGovernanceObject.h"
 
-@class DSGovernanceObjectHashEntity;
+@class DSChainEntity, DSGovernanceObjectHashEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListChangedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
 
 @class DSPeer,DSChain,DSMasternodeBroadcast,DSMasternodePing;

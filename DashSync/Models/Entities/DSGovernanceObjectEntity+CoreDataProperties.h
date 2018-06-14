@@ -17,11 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *collateralHash;
 @property (nullable, nonatomic, retain) NSData *parentHash;
-@property (nonatomic, assign) uint16_t revision;
+@property (nonatomic, assign) uint32_t revision;
 @property (nullable, nonatomic, retain) NSData *signature;
 @property (nonatomic, assign) uint64_t timestamp;
-@property (nonatomic, assign) uint16_t type;
+@property (nonatomic, assign) uint32_t type;
 @property (nullable, nonatomic, retain) DSGovernanceObjectHashEntity *governanceObjectHash;
+@property (nullable, nonatomic, retain) NSString * governanceMessage;
 
 @end
 

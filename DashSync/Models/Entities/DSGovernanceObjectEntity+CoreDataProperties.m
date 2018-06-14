@@ -21,5 +21,6 @@
 @dynamic timestamp;
 @dynamic type;
 @dynamic governanceObjectHash;
+@dynamic governanceMessage;
 
 @end

@@ -73,21 +73,21 @@
 }
 
 
--(void)loadGovernanceObjects:(NSUInteger)count {
-    NSFetchRequest * fetchRequest = [[DSGovernanceObjectEntity fetchRequest] copy];
-    [fetchRequest setFetchLimit:count];
-    NSArray * governanceObjectEntities = [DSGovernanceObjectEntity fetchObjects:fetchRequest];
-    for (DSGovernanceObjectEntity * governanceObjectEntity in governanceObjectEntities) {
-        DSUTXO utxo;
-        utxo.hash = *(UInt256 *)governanceObjectEntity.utxoHash.bytes;
-        utxo.n = governanceObjectEntity.utxoIndex;
-        UInt128 ipv6address = UINT128_ZERO;
-        ipv6address.u32[3] = governanceObjectEntity.address;
-        UInt256 governanceObjectHash = *(UInt256 *)governanceObjectEntity.governanceObjectHash.governanceObjectHash.bytes;
-        DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithUTXO:utxo ipAddress:ipv6address port:governanceObjectEntity.port protocolVersion:governanceObjectEntity.protocolVersion publicKey:governanceObjectEntity.publicKey signature:governanceObjectEntity.signature signatureTimestamp:governanceObjectEntity.signatureTimestamp governanceObjectHash:governanceObjectHash onChain:self.chain];
-        [_governanceObjects addObject:governanceObject];
-    }
-}
+//-(void)loadGovernanceObjects:(NSUInteger)count {
+//    NSFetchRequest * fetchRequest = [[DSGovernanceObjectEntity fetchRequest] copy];
+//    [fetchRequest setFetchLimit:count];
+//    NSArray * governanceObjectEntities = [DSGovernanceObjectEntity fetchObjects:fetchRequest];
+//    for (DSGovernanceObjectEntity * governanceObjectEntity in governanceObjectEntities) {
+//        DSUTXO utxo;
+//        utxo.hash = *(UInt256 *)governanceObjectEntity.utxoHash.bytes;
+//        utxo.n = governanceObjectEntity.utxoIndex;
+//        UInt128 ipv6address = UINT128_ZERO;
+//        ipv6address.u32[3] = governanceObjectEntity.address;
+//        UInt256 governanceObjectHash = *(UInt256 *)governanceObjectEntity.governanceObjectHash.governanceObjectHash.bytes;
+//        DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithUTXO:utxo ipAddress:ipv6address port:governanceObjectEntity.port protocolVersion:governanceObjectEntity.protocolVersion publicKey:governanceObjectEntity.publicKey signature:governanceObjectEntity.signature signatureTimestamp:governanceObjectEntity.signatureTimestamp governanceObjectHash:governanceObjectHash onChain:self.chain];
+//        [_governanceObjects addObject:governanceObject];
+//    }
+//}
 
 -(NSOrderedSet*)knownHashes {
     if (_knownHashes) return _knownHashes;
@@ -216,18 +216,18 @@
     }];
     self.knownHashes = rHashes;
     self.needsRequestsHashEntities = rNeedsRequestsHashEntities;
-    NSLog(@"-> %lu - %d",(unsigned long)[self.knownHashes count],[self countForSyncCountInfo:DSSyncCountInfo_List]);
+    NSLog(@"-> %lu - %lu",(unsigned long)[self.knownHashes count],(unsigned long)self.totalGovernanceObjectCount);
     NSUInteger countAroundNow = [self recentGovernanceObjectHashesCount];
-    if ([self.knownHashes count] > [self countForSyncCountInfo:DSSyncCountInfo_List]) {
+    if ([self.knownHashes count] > self.totalGovernanceObjectCount) {
         [self.managedObjectContext performBlockAndWait:^{
             [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
-            NSLog(@"countAroundNow -> %lu - %d",(unsigned long)countAroundNow,[self countForSyncCountInfo:DSSyncCountInfo_List]);
-            if (countAroundNow == [self countForSyncCountInfo:DSSyncCountInfo_List]) {
-                [DSGovernanceObjectHashEntity removeOldest:[self countForSyncCountInfo:DSSyncCountInfo_List] - [self.knownHashes count] onChain:self.chain.chainEntity];
+            NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalGovernanceObjectCount);
+            if (countAroundNow == self.totalGovernanceObjectCount) {
+                [DSGovernanceObjectHashEntity removeOldest:self.totalGovernanceObjectCount - [self.knownHashes count] onChain:self.chain.chainEntity];
                 [self requestgovernanceObjectsFromPeer:peer];
             }
         }];
-    } else if (countAroundNow == [self countForSyncCountInfo:DSSyncCountInfo_List]) {
+    } else if (countAroundNow == self.totalGovernanceObjectCount) {
         NSLog(@"%@",@"All masternode broadcast hashes received");
         //we have all hashes, let's request objects.
         [self requestgovernanceObjectsFromPeer:peer];
@@ -253,7 +253,7 @@
         [self requestgovernanceObjectsFromPeer:peer];
         [DSGovernanceObjectEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListChangedNotification object:self userInfo:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:self userInfo:nil];
         });
     }
 }

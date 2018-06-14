@@ -16,11 +16,12 @@
 
 - (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity*)hashEntity {
     [self.managedObjectContext performBlockAndWait:^{
-        self.collateralHash = governanceObject.collateralHash;
-        self.parentHash = governanceObject.parentHash;
+        self.collateralHash = [NSData dataWithUInt256:governanceObject.collateralHash];
+        self.parentHash = [NSData dataWithUInt256:governanceObject.parentHash];
         self.revision = governanceObject.revision;
         self.signature = governanceObject.signature;
         self.timestamp = governanceObject.timestamp;
+        self.governanceMessage = governanceObject.governanceMessage;
         self.type = governanceObject.type;
         self.governanceObjectHash = hashEntity;
     }];

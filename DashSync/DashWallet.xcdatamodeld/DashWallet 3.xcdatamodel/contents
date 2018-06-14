@@ -30,11 +30,12 @@
     </entity>
     <entity name="DSGovernanceObjectEntity" representedClassName="DSGovernanceObjectEntity" syncable="YES">
         <attribute name="collateralHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="governanceMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="parentHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="revision" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="revision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="governanceObjectHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
     </entity>
     <entity name="DSGovernanceObjectHashEntity" representedClassName="DSGovernanceObjectHashEntity" syncable="YES">
@@ -182,7 +183,7 @@
         <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="210"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="103"/>
-        <element name="DSGovernanceObjectEntity" positionX="36" positionY="162" width="128" height="150"/>
+        <element name="DSGovernanceObjectEntity" positionX="36" positionY="162" width="128" height="165"/>
         <element name="DSGovernanceObjectHashEntity" positionX="27" positionY="153" width="128" height="105"/>
         <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="180"/>
         <element name="DSMasternodeBroadcastHashEntity" positionX="9" positionY="144" width="128" height="105"/>
