@@ -284,7 +284,7 @@
 }
 
 -(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForMasternodeSyncCountInfo:DSSyncCountInfo_List]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_List]];
 }
 
 -(void)updateMasternodeBroadcastsCount {

@@ -575,7 +575,7 @@
         if (last3HoursStandaloneBroadcastHashesCount) {
             for (DSPeer * peer in sortedPeers) {
                 if (peer.status != DSPeerStatus_Connected) continue;
-                [self.masternodeManager requestMasternodeBroadcastsFromPeer:peer];
+                [self.governanceSyncManager requestGovernanceObjectsFromPeer:peer];
                 break;
             }
         }
@@ -1023,6 +1023,7 @@
         [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
         [self loadMempools];
         [self getSporks];
+        [self startGovernanceSync];
         [self getMasternodeList];
     }
 }
@@ -1381,6 +1382,14 @@
     [self.masternodeManager peer:peer hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
 }
 
+- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject {
+    [self.governanceSyncManager peer:peer relayedGovernanceObject:governanceObject];
+}
+
+- (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
+    [self.governanceSyncManager peer:peer hasGovernanceObjectHashes:governanceObjectHashes];
+}
+
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
     [self.masternodeManager peer:peer relayedMasternodeBroadcast:masternodeBroadcast];
 }
@@ -1411,6 +1420,7 @@
     self.syncStartHeight = 0;
     [self loadMempools];
     [self getSporks];
+    [self startGovernanceSync];
     [self getMasternodeList];
 }
 

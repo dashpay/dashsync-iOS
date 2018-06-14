@@ -198,6 +198,15 @@ flags:(uint8_t)flags
     return d;
 }
 
++(NSData *) emptyBloomFilterData {
+    NSMutableData *d = [NSMutableData data];
+    [d appendVarInt:0];
+    [d appendUInt32:0];
+    [d appendUInt32:0];
+    [d appendUInt8:0];
+    return d;
+}
+
 - (NSUInteger)length
 {
     return self.filter.length;

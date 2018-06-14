@@ -13,6 +13,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "DSPeer.h"
+#import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Dash.h"
 
 #define REQUEST_GOVERNANCE_OBJECT_COUNT 500
@@ -154,7 +155,7 @@
     return [mOrderedSet copy];
 }
 
--(void)requestgovernanceObjectsFromPeer:(DSPeer*)peer {
+-(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer {
     if (![self.needsRequestsHashEntities count]) {
         //we are done syncing
         return;
@@ -179,8 +180,10 @@
     NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
     [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
     NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
+    NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsHashEntities mutableCopy];
     if ([governanceObjectHashes count]) {
         [self.managedObjectContext performBlockAndWait:^{
+            [DSChainEntity setContext:self.managedObjectContext];
             [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
             if ([hashesToInsert count]) {
                 NSArray * novelGovernanceObjectHashEntities = [DSGovernanceObjectHashEntity governanceObjectHashEntitiesWithHashes:hashesToInsert onChain:self.chain.chainEntity];
@@ -205,9 +208,6 @@
         }
     }
     
-    
-    
-    NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsHashEntities mutableCopy];
     [rNeedsRequestsHashEntities addObjectsFromArray:hashEntitiesToQuery];
     [rNeedsRequestsHashEntities sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         UInt256 a = *(UInt256 *)((NSData*)((DSGovernanceObjectHashEntity*)obj1).governanceObjectHash).bytes;
@@ -224,13 +224,13 @@
             NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalGovernanceObjectCount);
             if (countAroundNow == self.totalGovernanceObjectCount) {
                 [DSGovernanceObjectHashEntity removeOldest:self.totalGovernanceObjectCount - [self.knownHashes count] onChain:self.chain.chainEntity];
-                [self requestgovernanceObjectsFromPeer:peer];
+                [self requestGovernanceObjectsFromPeer:peer];
             }
         }];
     } else if (countAroundNow == self.totalGovernanceObjectCount) {
-        NSLog(@"%@",@"All masternode broadcast hashes received");
+        NSLog(@"%@",@"All governance object hashes received");
         //we have all hashes, let's request objects.
-        [self requestgovernanceObjectsFromPeer:peer];
+        [self requestGovernanceObjectsFromPeer:peer];
     }
 }
 
@@ -250,7 +250,7 @@
     [self.needsRequestsHashEntities removeObject:relatedHashEntity];
     [self.governanceObjects addObject:governanceObject];
     if (![self.requestHashEntities count]) {
-        [self requestgovernanceObjectsFromPeer:peer];
+        [self requestGovernanceObjectsFromPeer:peer];
         [DSGovernanceObjectEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:self userInfo:nil];

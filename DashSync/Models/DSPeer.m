@@ -35,8 +35,10 @@
 #import "NSData+Dash.h"
 #import "Reachability.h"
 #import "DSMasternodeBroadcast.h"
+#import "DSGovernanceObject.h"
 #import <arpa/inet.h>
 #import "DSMasternodePing.h"
+#import "DSBloomFilter.h"
 
 #define PEER_LOGGING 1
 
@@ -646,6 +648,7 @@ services:(uint64_t)services
     UInt256 h = UINT256_ZERO;
     
     [msg appendBytes:&h length:sizeof(h)];
+    [msg appendData:[DSBloomFilter emptyBloomFilterData]];
     
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
 }
@@ -924,15 +927,16 @@ services:(uint64_t)services
     }
     
     if (governanceObjectHashes.count > 0) {
-        dispatch_async(self.delegateQueue, ^{
-            [self.knownGovernanceObjectHashes unionOrderedSet:blockHashes];
-            
-            while (self.knownGovernanceObjectHashes.count > MAX_GETDATA_HASHES) {
-                [self.knownGovernanceObjectHashes removeObjectsInRange:NSMakeRange(0, self.knownGovernanceObjectHashes.count/3)];
-            }
-        });
-        [self sendGetdataMessageWithTxHashes:txHashes.array
-                              andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+        [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+//        dispatch_async(self.delegateQueue, ^{
+//            [self.knownGovernanceObjectHashes unionOrderedSet:blockHashes];
+//
+//            while (self.knownGovernanceObjectHashes.count > MAX_GETDATA_HASHES) {
+//                [self.knownGovernanceObjectHashes removeObjectsInRange:NSMakeRange(0, self.knownGovernanceObjectHashes.count/3)];
+//            }
+//        });
+//        [self sendGetdataMessageWithTxHashes:txHashes.array
+//                              andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
     if (masternodeBroadcastHashes.count > 0) {
         NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);
@@ -1288,31 +1292,10 @@ services:(uint64_t)services
 
 - (void)acceptGovObjectMessage:(NSData *)message
 {
-    //    DWGovObject *govObject = [DWGovObject govObjWithMessage:message];
-    //
-    //    if (! govObject.valid) {
-    //        [self error:@"invalid govObject: %@", uint256_obj(govObject.hash)];
-    //        return;
-    //    }
-    //    else if (! self.sentGovObjAndGovObjVoteGetdata) {
-    //        [self error:@"got govObject message before sending getdata"];
-    //        return;
-    //    }
-    //    //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
-    //
-    //    NSMutableOrderedSet *govObjHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
-    //
-    //    [govObjHashes minusOrderedSet:self.knownGovernanceObjectHashes];
-    //
-    //    if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
-    //        self.currentBlock = block;
-    //        self.currentBlockTxHashes = txHashes;
-    //    }
-    //    else {
-    //        dispatch_async(self.delegateQueue, ^{
-    //            [self.delegate peer:self relayedBlock:block];
-    //        });
-    //    }
+    DSGovernanceObject * governanceObject = [DSGovernanceObject governanceObjectFromMessage:message onChain:self.chain];
+    if (governanceObject) {
+        [self.delegate peer:self relayedGovernanceObject:governanceObject];
+    }
 }
 
 - (void)acceptGovObjectSyncMessage:(NSData *)message

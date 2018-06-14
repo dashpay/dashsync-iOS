@@ -56,4 +56,6 @@ flags:(uint8_t)flags;
 - (void)insertData:(NSData *)data;
 - (void)updateWithTransaction:(DSTransaction *)tx;
 
++(NSData *) emptyBloomFilterData;
+
 @end

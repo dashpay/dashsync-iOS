@@ -180,6 +180,7 @@
     NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
     [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
     NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
+    NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsHashEntities mutableCopy];
     if ([masternodeBroadcastHashes count]) {
         [self.managedObjectContext performBlockAndWait:^{
             [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
@@ -206,9 +207,6 @@
         }
     }
     
-    
-    
-    NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsHashEntities mutableCopy];
     [rNeedsRequestsHashEntities addObjectsFromArray:hashEntitiesToQuery];
     [rNeedsRequestsHashEntities sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         UInt256 a = *(UInt256 *)((NSData*)((DSMasternodeBroadcastHashEntity*)obj1).masternodeBroadcastHash).bytes;

@@ -101,11 +101,11 @@
     if (length - offset < 1) return nil;
     uint8_t sigscriptSize = [message UInt8AtOffset:offset];
     offset += 1;
-    if (length - offset < 1) return nil;
+    if (length - offset < sigscriptSize) return nil;
     //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
     offset += sigscriptSize;
+    if (length - offset < 4) return nil;
     //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
-    if (length - offset < 20) return nil;
     offset += 4;
     
     if (length - offset < 1) return nil;

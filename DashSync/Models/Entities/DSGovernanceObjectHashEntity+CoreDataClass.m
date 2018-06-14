@@ -12,6 +12,7 @@
 @implementation DSGovernanceObjectHashEntity
 
 +(NSArray*)governanceObjectHashEntitiesWithHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity {
+    NSAssert(chainEntity, @"chain entity is not set");
     NSMutableArray * rArray = [NSMutableArray arrayWithCapacity:governanceObjectHashes.count];
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     for (NSData * governanceObjectHash in governanceObjectHashes) {
