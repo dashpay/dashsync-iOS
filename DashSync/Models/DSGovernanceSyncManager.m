@@ -54,7 +54,7 @@
     return count;
 }
 
--(NSUInteger)last3HoursStandaloneBroadcastHashesCount {
+-(NSUInteger)last3HoursStandaloneGovernanceObjectHashesCount {
     __block NSUInteger count = 0;
     [self.managedObjectContext performBlockAndWait:^{
         [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];

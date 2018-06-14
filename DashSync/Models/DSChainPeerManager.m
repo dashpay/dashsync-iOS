@@ -571,7 +571,7 @@
         break;
     }
     if (!startedGovernanceSync) { //we have requested masternode list from connected peers too recently, let's connect to different peers
-        NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.masternodeManager last3HoursStandaloneBroadcastHashesCount];
+        NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.governanceSyncManager last3HoursStandaloneGovernanceObjectHashesCount];
         if (last3HoursStandaloneBroadcastHashesCount) {
             for (DSPeer * peer in sortedPeers) {
                 if (peer.status != DSPeerStatus_Connected) continue;
@@ -1370,6 +1370,13 @@
         {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+            });
+            break;
+        }
+        case DSSyncCountInfo_GovernanceObject:
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
             });
             break;
         }

@@ -47,14 +47,14 @@
 //    return ss.GetHash();
 //}
 
-+(UInt256)hashWithParentHash:(NSData*)parentHashData revision:(uint32_t)revision timeStampData:(NSData*)timestampData hexDataAsString:(NSString*)hexData masternodeUTXO:(DSUTXO)masternodeUTXO signature:(NSData*)signature {
++(UInt256)hashWithParentHash:(NSData*)parentHashData revision:(uint32_t)revision timeStampData:(NSData*)timestampData hexData:(NSData*)hexData masternodeUTXO:(DSUTXO)masternodeUTXO signature:(NSData*)signature {
     //hash calculation
     NSMutableData * hashImportantData = [NSMutableData data];
     [hashImportantData appendData:parentHashData];
     [hashImportantData appendBytes:&revision length:4];
     [hashImportantData appendData:timestampData];
     
-    [hashImportantData appendData:[hexData dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO]];
+    [hashImportantData appendData:hexData];
 
     uint32_t index = (uint32_t)masternodeUTXO.n;
     [hashImportantData appendData:[NSData dataWithUInt256:masternodeUTXO.hash]];
@@ -63,7 +63,8 @@
     uint32_t fullBits = UINT32_MAX;
     [hashImportantData appendBytes:&emptyByte length:1];
     [hashImportantData appendBytes:&fullBits length:4];
-    
+    uint8_t signatureSize = [signature length];
+    [hashImportantData appendBytes:&signatureSize length:1];
     [hashImportantData appendData:signature];
     return hashImportantData.SHA256_2;
 }
@@ -87,6 +88,7 @@
     offset += 32;
     NSNumber * varIntLength = nil;
     NSString * governanceMessage = [message stringAtOffset:offset length:&varIntLength];
+    NSData * hexData = [message subdataWithRange:NSMakeRange(offset, varIntLength.integerValue)];
     offset += [varIntLength integerValue];
     DSGovernanceObjectType governanceObjectType = [message UInt32AtOffset:offset];
     offset += 4;
@@ -115,7 +117,7 @@
     NSData * messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
     offset+= messageSignatureSize;
     
-    UInt256 governanceObjectHash = [self hashWithParentHash:parentHashData revision:revision timeStampData:timestampData hexDataAsString:governanceMessage masternodeUTXO:masternodeUTXO signature:messageSignature];
+    UInt256 governanceObjectHash = [self hashWithParentHash:parentHashData revision:revision timeStampData:timestampData hexData:hexData masternodeUTXO:masternodeUTXO signature:messageSignature];
     
     DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:governanceObjectType governanceMessage:governanceMessage parentHash:parentHash revision:revision timestamp:timestamp signature:messageSignature collateralHash:collateralHash governanceObjectHash:governanceObjectHash onChain:chain];
     return governanceObject;

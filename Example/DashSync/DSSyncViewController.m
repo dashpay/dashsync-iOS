@@ -35,7 +35,10 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeBroadcastsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver;
+@property (strong, nonatomic) IBOutlet UILabel *governanceObjectCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -57,7 +60,8 @@
     [self updateWalletCount];
     [self updateStandaloneDerivationPathsCount];
     [self updateSingleAddressesCount];
-
+    [self updateGovernanceObjectCount];
+    [self updateReceivedGovernanceProposalCount];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
@@ -95,7 +99,16 @@
                                                                                      NSLog(@"update masternode count");
                                                                                      [self updateMasternodeCount];
                                                                                  }];
-
+    self.governanceObjectCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectCountUpdateNotification object:nil
+                                                                                      queue:nil usingBlock:^(NSNotification *note) {
+                                                                                          NSLog(@"update governance object count");
+                                                                                          [self updateGovernanceObjectCount];
+                                                                                      }];
+    self.governanceObjectReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectListDidChangeNotification object:nil
+                                                                                                    queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                        NSLog(@"update governance object count");
+                                                                                                        [self updateReceivedGovernanceProposalCount];
+                                                                                                    }];
     self.chainWalletObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
@@ -301,6 +314,14 @@
 
 -(void)updateSingleAddressesCount {
     self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+}
+
+-(void)updateGovernanceObjectCount {
+    self.governanceObjectCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObject]];
+}
+
+-(void)updateReceivedGovernanceProposalCount {
+    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

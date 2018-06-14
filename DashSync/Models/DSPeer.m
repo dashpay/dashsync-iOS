@@ -644,6 +644,7 @@ services:(uint64_t)services
 // MARK: - send Dash Governance
 
 - (void)sendGovSync {
+    NSLog(@"%@:%u Requesting Governance Objects",self.host, self.port);
     NSMutableData *msg = [NSMutableData data];
     UInt256 h = UINT256_ZERO;
     

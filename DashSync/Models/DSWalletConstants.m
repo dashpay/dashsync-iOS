@@ -19,5 +19,9 @@ NSString* const DSWalletBalanceChangedNotification =        @"DSWalletBalanceCha
 NSString* const DSSporkManagerSporkUpdateNotification =     @"DSSporkManagerSporkUpdateNotification";
 NSString* const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
 NSString* const DSGovernanceObjectListDidChangeNotification = @"DSGovernanceObjectListDidChangeNotification";
+
+
 NSString* const DSMasternodeListCountUpdateNotification = @"DSMasternodeListCountUpdateNotification";
+NSString* const DSGovernanceObjectCountUpdateNotification = @"DSGovernanceObjectCountUpdateNotification";
+
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
