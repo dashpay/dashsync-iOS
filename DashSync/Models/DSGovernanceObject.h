@@ -27,8 +27,14 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 @property (nonatomic, readonly) UInt256 governanceObjectHash;
 @property (nonatomic, readonly) NSString * governanceMessage;
 @property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) NSString * identifier;
+@property (nonatomic, readonly) uint64_t amount;
+@property (nonatomic, readonly) uint64_t startEpoch;
+@property (nonatomic, readonly) uint64_t endEpoch;
+@property (nonatomic, readonly) NSString *paymentAddress;
+@property (nonatomic, readonly) NSString * url;
 
 +(DSGovernanceObject* _Nullable)governanceObjectFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
--(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType governanceMessage:(NSString* _Nonnull)governanceMessage parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData* _Nullable)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash onChain:(DSChain* _Nonnull)chain;
+-(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType governanceMessage:(NSString* _Nonnull)governanceMessage parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData* _Nullable)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString* _Nullable)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString* _Nullable)paymentAddress url:(NSString * _Nullable)url onChain:(DSChain* _Nonnull)chain;
 
 @end

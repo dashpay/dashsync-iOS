@@ -14,6 +14,7 @@
 #import "DSBlockchainExplorerViewController.h"
 #import "DSMasternodeViewController.h"
 #import "DSStandaloneDerivationPathController.h"
+#import "DSGovernanceObjectListViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -341,6 +342,9 @@
     } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;
         masternodeViewController.chain = self.chainPeerManager.chain;
+    } else if ([segue.identifier isEqualToString:@"GovernanceObjectsSegue"]) {
+        DSGovernanceObjectListViewController * governanceObjectViewController = (DSGovernanceObjectListViewController*)segue.destinationViewController;
+        governanceObjectViewController.chain = self.chainPeerManager.chain;
     }
 }
 

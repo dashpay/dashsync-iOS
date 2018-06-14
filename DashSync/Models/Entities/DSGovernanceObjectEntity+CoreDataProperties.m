@@ -22,5 +22,11 @@
 @dynamic type;
 @dynamic governanceObjectHash;
 @dynamic governanceMessage;
+@dynamic identifier;
+@dynamic amount;
+@dynamic endEpoch;
+@dynamic startEpoch;
+@dynamic url;
+@dynamic paymentAddress;
 
 @end

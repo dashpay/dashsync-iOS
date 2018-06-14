@@ -24,6 +24,12 @@
         self.governanceMessage = governanceObject.governanceMessage;
         self.type = governanceObject.type;
         self.governanceObjectHash = hashEntity;
+        self.identifier = governanceObject.identifier;
+        self.amount = governanceObject.amount;
+        self.startEpoch = governanceObject.startEpoch;
+        self.endEpoch = governanceObject.endEpoch;
+        self.url = governanceObject.url;
+        self.paymentAddress = governanceObject.paymentAddress;
     }];
 }
 
