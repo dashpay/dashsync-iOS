@@ -39,7 +39,7 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 
 #define MAINNET_STANDARD_PORT 9999
 #define TESTNET_STANDARD_PORT 19999
-#define DEVNET_STANDARD_PORT 19999
+#define DEVNET_STANDARD_PORT 12999
 
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
@@ -60,7 +60,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletsDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSMasternodeBroadcast;
 
 @protocol DSChainDelegate;
 
@@ -138,6 +138,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 -(void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 
+-(void)registerVotingKey:(NSData*)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
 
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;

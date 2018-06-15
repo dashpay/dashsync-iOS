@@ -43,6 +43,7 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
+#import "DSMasternodeBroadcast.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -111,6 +112,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
 #define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
+#define CHAIN_VOTING_KEYS_KEY  @"CHAIN_VOTING_KEYS_KEY"
 
 @interface DSChain ()
 
@@ -300,6 +302,10 @@ static dispatch_once_t devnetToken = 0;
     return [NSString stringWithFormat:@"%@_%@",CHAIN_STANDALONE_DERIVATIONS_KEY,[self uniqueID]];
 }
 
+-(NSString*)votingKeysKey {
+    return [NSString stringWithFormat:@"%@_%@",CHAIN_VOTING_KEYS_KEY,[self uniqueID]];
+}
+
 
 // MARK: - Standalone Derivation Paths
 
@@ -342,6 +348,14 @@ static dispatch_once_t devnetToken = 0;
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
     });
+}
+
+-(void)registerVotingKey:(NSData*)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary setObject:votingKey forKey:masternodeBroadcast.uniqueID];
+    setKeychainDict(keyChainDictionary, self.votingKeysKey, YES);
 }
 
 -(NSArray*)standaloneDerivationPaths {

@@ -124,4 +124,8 @@
     return broadcast;
 }
 
+-(NSString *)uniqueID {
+    return [NSData dataWithUInt256:self.masternodeBroadcastHash].shortHexString;
+}
+
 @end

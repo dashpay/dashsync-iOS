@@ -891,10 +891,70 @@
                             <outlet property="delegate" destination="hLf-Kd-rUf" id="0N1-lo-r3b"/>
                         </connections>
                     </tableView>
+                    <navigationItem key="navigationItem" title="Masternodes" id="5Qj-lI-isU">
+                        <barButtonItem key="rightBarButtonItem" title="Claim" id="H48-jL-JXw">
+                            <connections>
+                                <action selector="claimSelectedMasternode:" destination="hLf-Kd-rUf" id="TJF-Fh-yXi"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="claimButton" destination="H48-jL-JXw" id="L1X-Kr-9Vp"/>
+                        <segue destination="7jd-aG-QY0" kind="show" identifier="ClaimMasternodeSegue" id="NJn-M6-Mqd"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fiL-b6-PcV" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2385" y="-482"/>
+        </scene>
+        <!--Claim-->
+        <scene sceneID="rRl-2H-IUK">
+            <objects>
+                <viewController id="7jd-aG-QY0" customClass="DSClaimMasternodeViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="ATH-Hi-WDm"/>
+                        <viewControllerLayoutGuide type="bottom" id="cPz-FO-XzU"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="5aS-dQ-QM1">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="k6W-zV-Bh6">
+                                <rect key="frame" x="16" y="107" width="343" height="208"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                <connections>
+                                    <outlet property="delegate" destination="7jd-aG-QY0" id="uIi-sx-npL"/>
+                                </connections>
+                            </textView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8wU-K7-dVD">
+                                <rect key="frame" x="16" y="323" width="343" height="56"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Import with QR Code"/>
+                                <connections>
+                                    <action selector="openQRCodeReader:" destination="7jd-aG-QY0" eventType="touchUpInside" id="HeW-I9-O3z"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Claim" id="XGQ-Ub-0dA">
+                        <barButtonItem key="rightBarButtonItem" title="Done" id="AkG-3M-E8M">
+                            <connections>
+                                <action selector="save:" destination="7jd-aG-QY0" id="orK-tT-63I"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="inputTextView" destination="k6W-zV-Bh6" id="xXc-YA-HhM"/>
+                        <outlet property="saveButton" destination="AkG-3M-E8M" id="VIE-sc-q2H"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ASx-Ld-7L0" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3277.5999999999999" y="-880.04926108374389"/>
         </scene>
         <!--Standalone Derivation Paths-->
         <scene sceneID="eFM-Cg-G5N">
