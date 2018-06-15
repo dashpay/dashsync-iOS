@@ -39,6 +39,7 @@
 #import <arpa/inet.h>
 #import "DSMasternodePing.h"
 #import "DSBloomFilter.h"
+#import "DSGovernanceVote.h"
 
 #define PEER_LOGGING 1
 
@@ -652,6 +653,12 @@ services:(uint64_t)services
     [msg appendData:[DSBloomFilter emptyBloomFilterData]];
     
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
+}
+
+-(void)sendGovObjectVote:(DSGovernanceVote*)governanceVote {
+    NSMutableData *msg = [NSMutableData data];
+    
+    [self sendMessage:msg type:MSG_GOVOBJVOTE];
 }
 
 // MARK: - accept
