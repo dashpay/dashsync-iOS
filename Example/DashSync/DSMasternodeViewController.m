@@ -39,7 +39,17 @@
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@ && (address == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
+            NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
+            NSMutableArray *partPredicates = [NSMutableArray array];
+            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@",self.chain.chainEntity];
+            [partPredicates addObject:chainPredicate];
+            for (int i = 0; i< MIN(ipArray.count,4); i++) {
+                if ([ipArray[i] isEqualToString:@""]) break;
+                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(i*8),@([ipArray[i] integerValue])];
+                [partPredicates addObject:currentPartPredicate];
+            }
+            
+            return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
         } else {
             return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@",self.chain.chainEntity];
         }

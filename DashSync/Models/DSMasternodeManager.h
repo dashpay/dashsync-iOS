@@ -30,4 +30,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(void)requestMasternodeBroadcastsFromPeer:(DSPeer*)peer;
 
+-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
+
 @end
