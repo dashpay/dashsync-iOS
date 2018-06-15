@@ -27,6 +27,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import "IntTypes.h"
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -213,6 +214,7 @@ services:(uint64_t)services;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
+- (void)sendGovSync:(UInt256)h;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
 - (void)sendDSegMessage:(DSUTXO)utxo;

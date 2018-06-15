@@ -48,6 +48,7 @@
 #import "DSOptionsManager.h"
 #import "DSMasternodeManager.h"
 #import "DSGovernanceSyncManager.h"
+#import "DSGovernanceObject.h"
 
 #define PEER_LOGGING 1
 
@@ -1409,7 +1410,7 @@
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
-    [self.governanceSyncManager peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
+    [self.governanceSyncManager.currentGovernanceSyncObject peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
@@ -1491,7 +1492,7 @@
             self.governanceSyncManager.totalGovernanceObjectCount = count;
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
-            self.governanceSyncManager.totalGovernanceVoteCount = count;
+            self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
             break;
         default:
             break;

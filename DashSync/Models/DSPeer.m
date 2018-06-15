@@ -666,15 +666,20 @@ services:(uint64_t)services
 
 // MARK: - send Dash Governance
 
-- (void)sendGovSync {
-    NSLog(@"%@:%u Requesting Governance Objects",self.host, self.port);
+- (void)sendGovSync:(UInt256)h {
+    
     NSMutableData *msg = [NSMutableData data];
-    UInt256 h = UINT256_ZERO;
     
     [msg appendBytes:&h length:sizeof(h)];
     [msg appendData:[DSBloomFilter emptyBloomFilterData]];
     
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
+}
+
+- (void)sendGovSync {
+    NSLog(@"%@:%u Requesting Governance Objects",self.host, self.port);
+    UInt256 h = UINT256_ZERO;
+    [self sendGovSync:h];
 }
 
 -(void)sendGovObjectVote:(DSGovernanceVote*)governanceVote {
@@ -1297,7 +1302,8 @@ services:(uint64_t)services
 {
     DSSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
-    [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+    //ignore when count = 0; (for votes)
+    if (count) [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
 }
 
 -(void)acceptMNBMessage:(NSData *)message

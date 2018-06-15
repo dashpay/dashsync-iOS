@@ -20,8 +20,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger recentGovernanceObjectHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
 @property (nonatomic,readonly) NSUInteger governanceObjectsCount;
+
+@property (nonatomic, readonly) NSUInteger governanceVotesCount;
+
+@property (nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
+
 @property (nonatomic,assign) NSUInteger totalGovernanceObjectCount;
-@property (nonatomic,assign) NSUInteger totalGovernanceVoteCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
 
@@ -30,8 +34,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote*  _Nonnull)governanceVote;
 
 -(void)peer:(DSPeer * _Nullable)peer hasGovernanceObjectHashes:(NSSet* _Nonnull)governanceObjectHashes;
-
--(void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet* _Nonnull)governanceVoteHashes;
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;
 
