@@ -9,6 +9,8 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVotesDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotification;
 
 @class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
 

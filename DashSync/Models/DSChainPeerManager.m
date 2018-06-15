@@ -1380,6 +1380,13 @@
             });
             break;
         }
+        case DSSyncCountInfo_GovernanceObjectVote:
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+            });
+            break;
+        }
         default:
             break;
     }
