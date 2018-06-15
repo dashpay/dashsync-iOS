@@ -20,5 +20,6 @@
 @property (nonatomic,readonly) UInt256 governanceVoteHash;
 
 +(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
+-(instancetype)initWithParentHash:(UInt256)parentHash voteOutcome:(uint32_t)voteOutcome voteSignal:(uint32_t)voteSignal governanceVoteHash:(UInt256)governanceVoteHash onChain:(DSChain* _Nonnull)chain;
 
 @end

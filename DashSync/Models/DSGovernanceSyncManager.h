@@ -27,7 +27,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotifica
 
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote*  _Nonnull)governanceVote;
 
--(void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
+-(void)peer:(DSPeer * _Nullable)peer hasGovernanceObjectHashes:(NSSet* _Nonnull)governanceObjectHashes;
+
+-(void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet* _Nonnull)governanceVoteHashes;
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;
 

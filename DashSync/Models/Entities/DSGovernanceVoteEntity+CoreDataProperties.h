@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t outcome;
 @property (nonatomic, assign) uint32_t signal;
 @property (nonatomic, assign) uint64_t timestampCreated;
+@property (nullable, nonatomic, retain) NSData *parentHash;
 @property (nullable, nonatomic, retain) NSData *signature;
 @property (nullable, nonatomic, retain) NSData *masternodeUTXO;
 @property (nullable, nonatomic, retain) DSGovernanceVoteHashEntity *governanceVoteHash;

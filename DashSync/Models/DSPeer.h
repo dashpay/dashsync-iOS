@@ -111,7 +111,7 @@ typedef union _UInt128 UInt128;
 
 typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing,DSGovernanceObject;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing,DSGovernanceObject,DSGovernanceVote;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -142,6 +142,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
+- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
 
 @end
 
@@ -209,6 +210,7 @@ services:(uint64_t)services;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 - (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray<NSData*> *)masternodeBroadcastHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
+- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;

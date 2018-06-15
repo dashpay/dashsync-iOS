@@ -9,11 +9,15 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSGovernanceObjectEntity, DSGovernanceVoteHashEntity, DSMasternodeBroadcastEntity;
+@class DSGovernanceObjectEntity, DSGovernanceVoteHashEntity, DSMasternodeBroadcastEntity,DSChainEntity,DSGovernanceVote;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceVoteEntity : NSManagedObject
+
+- (void)setAttributesFromGovernanceVote:(DSGovernanceVote *)governanceVote forHashEntity:(DSGovernanceVoteHashEntity*)hashEntity;
++ (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
+- (DSGovernanceVote*)governanceVote;
 
 @end
 

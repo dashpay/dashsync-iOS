@@ -1401,6 +1401,10 @@
     [self.governanceSyncManager peer:peer hasGovernanceObjectHashes:governanceObjectHashes];
 }
 
+- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
+    [self.governanceSyncManager peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
+}
+
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
     [self.masternodeManager peer:peer relayedMasternodeBroadcast:masternodeBroadcast];
 }

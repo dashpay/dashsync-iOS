@@ -85,7 +85,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGetdataGovernanceVotes;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -217,7 +217,7 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.gotVerack = self.sentVerack = NO;
-    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGovObjAndGovObjVoteGetdata = NO ;
+    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
@@ -566,7 +566,7 @@ services:(uint64_t)services
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes
 {
     if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
+        NSLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,
               (int)governanceObjectHashes.count, MAX_GETDATA_HASHES);
         return;
     }
@@ -583,6 +583,28 @@ services:(uint64_t)services
     }
     
     self.sentGetdataGovernance = YES;
+    [self sendMessage:msg type:MSG_GETDATA];
+}
+
+- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes {
+    if (governanceVoteHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+        NSLog(@"%@:%u couldn't send governance votes getdata, %u is too many items, max is %u", self.host, self.port,
+              (int)governanceVoteHashes.count, MAX_GETDATA_HASHES);
+        return;
+    }
+    else if (governanceVoteHashes.count == 0) return;
+    
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendVarInt:governanceVoteHashes.count];
+    
+    for (NSData *dataHash in governanceVoteHashes) {
+        [msg appendUInt32:DSInvType_GovernanceObjectVote];
+        
+        [msg appendBytes:dataHash.bytes length:sizeof(UInt256)];
+    }
+    
+    self.sentGetdataGovernanceVotes = YES;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -936,15 +958,9 @@ services:(uint64_t)services
     
     if (governanceObjectHashes.count > 0) {
         [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
-//        dispatch_async(self.delegateQueue, ^{
-//            [self.knownGovernanceObjectHashes unionOrderedSet:blockHashes];
-//
-//            while (self.knownGovernanceObjectHashes.count > MAX_GETDATA_HASHES) {
-//                [self.knownGovernanceObjectHashes removeObjectsInRange:NSMakeRange(0, self.knownGovernanceObjectHashes.count/3)];
-//            }
-//        });
-//        [self sendGetdataMessageWithTxHashes:txHashes.array
-//                              andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+    }
+    if (governanceObjectHashes.count > 0) {
+        [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
     }
     if (masternodeBroadcastHashes.count > 0) {
         NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);

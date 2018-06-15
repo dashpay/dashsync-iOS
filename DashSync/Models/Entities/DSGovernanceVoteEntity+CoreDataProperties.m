@@ -22,5 +22,6 @@
 @dynamic governanceVoteHash;
 @dynamic governanceObject;
 @dynamic masternode;
+@dynamic parentHash;
 
 @end
