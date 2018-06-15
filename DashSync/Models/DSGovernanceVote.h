@@ -7,14 +7,18 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSGovernanceObject,DSMasternodeBroadcast;
+@class DSGovernanceObject,DSMasternodeBroadcast,DSChain;
 
 @interface DSGovernanceVote : NSObject
 
-@property (nonatomic,strong) DSGovernanceObject * governanceObject;
-@property (nonatomic,strong) DSMasternodeBroadcast * masternodeBroadcast;
-@property (nonatomic,assign) uint32_t outcome;
-@property (nonatomic,assign) uint32_t signal;
+@property (nonatomic,readonly) DSGovernanceObject * governanceObject;
+@property (nonatomic,readonly) DSMasternodeBroadcast * masternodeBroadcast;
+@property (nonatomic,readonly) uint32_t outcome;
+@property (nonatomic,readonly) uint32_t signal;
 @property (nonatomic,readonly) NSData * signature;
+@property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic,readonly) UInt256 governanceVoteHash;
+
++(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
 
 @end

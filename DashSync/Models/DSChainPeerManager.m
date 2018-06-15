@@ -1393,6 +1393,10 @@
     [self.governanceSyncManager peer:peer relayedGovernanceObject:governanceObject];
 }
 
+- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote {
+    [self.governanceSyncManager peer:peer relayedGovernanceVote:governanceVote];
+}
+
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
     [self.governanceSyncManager peer:peer hasGovernanceObjectHashes:governanceObjectHashes];
 }
@@ -1474,6 +1478,9 @@
             break;
         case DSSyncCountInfo_GovernanceObject:
             self.governanceSyncManager.totalGovernanceObjectCount = count;
+            break;
+        case DSSyncCountInfo_GovernanceObjectVote:
+            self.governanceSyncManager.totalGovernanceVoteCount = count;
             break;
         default:
             break;

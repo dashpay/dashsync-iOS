@@ -1306,6 +1306,14 @@ services:(uint64_t)services
     }
 }
 
+- (void)acceptGovObjectVoteMessage:(NSData *)message
+{
+    DSGovernanceVote * governanceVote = [DSGovernanceVote governanceVoteFromMessage:message onChain:self.chain];
+    if (governanceVote) {
+        [self.delegate peer:self relayedGovernanceVote:governanceVote];
+    }
+}
+
 - (void)acceptGovObjectSyncMessage:(NSData *)message
 {
     

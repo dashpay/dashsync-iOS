@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSGovernanceVoteHashEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *governanceVoteHash;
-@property (nullable, nonatomic, copy) NSNumber *timestamp;
+@property (nonatomic, assign) uint64_t timestamp;
 @property (nullable, nonatomic, retain) DSGovernanceVoteEntity *governanceVote;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 
