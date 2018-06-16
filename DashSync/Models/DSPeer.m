@@ -40,6 +40,7 @@
 #import "DSMasternodePing.h"
 #import "DSBloomFilter.h"
 #import "DSGovernanceVote.h"
+#import "DSChainPeerManager.h"
 
 #define PEER_LOGGING 1
 
@@ -666,20 +667,34 @@ services:(uint64_t)services
 
 // MARK: - send Dash Governance
 
-- (void)sendGovSync:(UInt256)h {
-    
+- (void)sendGovSync:(UInt256)h { //for votes
+    if (self.governanceRequestSSCState != DSGovernanceRequestSSCState_None) {  //Make sure we aren't in a governance sync process
+    NSLog(@"%@:%u Requesting Governance Votes out of resting state",self.host, self.port);
+    return;
+}
     NSMutableData *msg = [NSMutableData data];
     
     [msg appendBytes:&h length:sizeof(h)];
     [msg appendData:[DSBloomFilter emptyBloomFilterData]];
-    
+    self.governanceRequestSSCState = DSGovernanceRequestSSCState_GovernanceObjectVotes;
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
+    
 }
 
-- (void)sendGovSync {
+- (void)sendGovSync { //for governance objects
+    if (self.governanceRequestSSCState != DSGovernanceRequestSSCState_None) {//Make sure we aren't in a governance sync process
+        NSLog(@"%@:%u Requesting Governance Objects out of resting state",self.host, self.port);
+        return;
+    }
     NSLog(@"%@:%u Requesting Governance Objects",self.host, self.port);
     UInt256 h = UINT256_ZERO;
-    [self sendGovSync:h];
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendBytes:&h length:sizeof(h)];
+    [msg appendData:[DSBloomFilter emptyBloomFilterData]];
+    self.governanceRequestSSCState = DSInvType_GovernanceObjectVote;
+    self.governanceRequestSSCState = DSGovernanceRequestSSCState_GovernanceObjects;
+    [self sendMessage:msg type:MSG_GOVOBJSYNC];
 }
 
 -(void)sendGovObjectVote:(DSGovernanceVote*)governanceVote {
@@ -1302,8 +1317,23 @@ services:(uint64_t)services
 {
     DSSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
+    switch (syncCountInfo) {
+        case DSSyncCountInfo_GovernanceObject:
+            if (self.governanceRequestSSCState == DSGovernanceRequestSSCState_GovernanceObjects) {
+                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            }
+            break;
+        case DSSyncCountInfo_GovernanceObjectVote:
+            if (self.governanceRequestSSCState == DSGovernanceRequestSSCState_GovernanceObjectVotes) {
+                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            }
+            break;
+        default:
+            [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            break;
+    }
     //ignore when count = 0; (for votes)
-    if (count) [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+
 }
 
 -(void)acceptMNBMessage:(NSData *)message

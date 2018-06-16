@@ -29,6 +29,12 @@
 #import "DSChain.h"
 #import "IntTypes.h"
 
+typedef NS_ENUM(uint16_t, DSGovernanceRequestSSCState) {
+    DSGovernanceRequestSSCState_None,
+    DSGovernanceRequestSSCState_GovernanceObjects,
+    DSGovernanceRequestSSCState_GovernanceObjectVotes,
+};
+
 #define BITCOIN_TIMEOUT_CODE  1001
 
 #define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
@@ -185,6 +191,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, assign) NSTimeInterval lowPreferenceTill;
 @property (nonatomic, assign) NSTimeInterval lastRequestedMasternodeList;
 @property (nonatomic, assign) NSTimeInterval lastRequestedGovernanceSync;
+@property (nonatomic, assign) DSGovernanceRequestSSCState governanceRequestSSCState;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate; // set this when wallet addresses need to be added to bloom filter
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)

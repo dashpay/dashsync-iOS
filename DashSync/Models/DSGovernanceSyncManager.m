@@ -53,6 +53,7 @@
 
 -(void)finishedGovernanceObjectSyncWithPeer:(DSPeer*)peer {
     for (DSGovernanceObject * governanceObject in self.governanceObjects) {
+        peer.governanceRequestSSCState = DSGovernanceRequestSSCState_None;
         [peer sendGovSync:governanceObject.governanceObjectHash];
         break;
     }
