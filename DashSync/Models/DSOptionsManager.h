@@ -18,7 +18,8 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
     DSSyncType_Governance = 1 << 4,
     DSSyncType_Sporks = 1 << 5,
     DSSyncType_Default = DSSyncType_SPV | DSSyncType_Mempools | DSSyncType_VerifiedMasternodeList | DSSyncType_Governance | DSSyncType_Sporks,
-    DSSyncType_NeedsWalletSyncType = DSSyncType_SPV | DSSyncType_FullBlocks
+    DSSyncType_NeedsWalletSyncType = DSSyncType_SPV | DSSyncType_FullBlocks,
+    DSSyncType_GetsNewBlocks = DSSyncType_SPV | DSSyncType_FullBlocks,
 };
 
 @interface DSOptionsManager : NSObject

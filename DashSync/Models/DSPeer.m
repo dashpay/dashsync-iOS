@@ -41,6 +41,7 @@
 #import "DSBloomFilter.h"
 #import "DSGovernanceVote.h"
 #import "DSChainPeerManager.h"
+#import "DSOptionsManager.h"
 
 #define PEER_LOGGING 1
 
@@ -513,6 +514,7 @@ services:(uint64_t)services
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
 {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
     if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         NSLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
               (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
@@ -888,7 +890,9 @@ services:(uint64_t)services
         return;
     }
     
-    //NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
+    if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
+        NSLog(@"%@:%u got inv with %u items (first item %u)", self.host, self.port, (int)count,[message UInt32AtOffset:l.unsignedIntegerValue]);
+    }
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
         DSInvType type = [message UInt32AtOffset:off];

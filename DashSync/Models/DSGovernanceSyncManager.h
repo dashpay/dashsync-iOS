@@ -37,5 +37,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;
 
+-(void)finishedGovernanceVoteSyncWithPeer:(DSPeer*)peer;
+
 
 @end

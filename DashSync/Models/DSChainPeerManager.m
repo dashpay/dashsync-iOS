@@ -1387,9 +1387,19 @@
         }
         case DSSyncCountInfo_GovernanceObjectVote:
         {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
-            });
+            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
+                if (count == 0) {
+                    //there were no votes
+                    NSLog(@"no votes on object, going to next object");
+                    peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
+                    [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+                    });
+                }
+            }
+            
             break;
         }
         default:
