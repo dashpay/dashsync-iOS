@@ -29,11 +29,7 @@
 #import "DSChain.h"
 #import "IntTypes.h"
 
-typedef NS_ENUM(uint16_t, DSGovernanceRequestSSCState) {
-    DSGovernanceRequestSSCState_None,
-    DSGovernanceRequestSSCState_GovernanceObjects,
-    DSGovernanceRequestSSCState_GovernanceObjectVotes,
-};
+
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -116,6 +112,15 @@ typedef NS_ENUM(uint16_t, DSGovernanceRequestSSCState) {
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
+typedef NS_ENUM(uint32_t, DSGovernanceRequestState) {
+    DSGovernanceRequestState_None,
+    DSGovernanceRequestState_GovernanceObjectHashes,
+    DSGovernanceRequestState_GovernanceObjects,
+    DSGovernanceRequestState_GovernanceObjectVoteHashes,
+    DSGovernanceRequestState_GovernanceObjectVotes,
+};
+
+
 typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 @class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing,DSGovernanceObject,DSGovernanceVote;
@@ -150,6 +155,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
+
+- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
 @end
 
@@ -191,7 +198,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, assign) NSTimeInterval lowPreferenceTill;
 @property (nonatomic, assign) NSTimeInterval lastRequestedMasternodeList;
 @property (nonatomic, assign) NSTimeInterval lastRequestedGovernanceSync;
-@property (nonatomic, assign) DSGovernanceRequestSSCState governanceRequestSSCState;
+@property (nonatomic, assign) DSGovernanceRequestState governanceRequestState;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate; // set this when wallet addresses need to be added to bloom filter
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)

@@ -559,6 +559,7 @@
 }
 
 -(void)startGovernanceSync {
+    NSLog(@"--> Trying to start governance sync");
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
     BOOL startedGovernanceSync = FALSE;
@@ -572,6 +573,7 @@
         break;
     }
     if (!startedGovernanceSync) { //we have requested masternode list from connected peers too recently, let's connect to different peers
+        NSLog(@"--> Could not start governance sync");
         NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.governanceSyncManager last3HoursStandaloneGovernanceObjectHashesCount];
         if (last3HoursStandaloneBroadcastHashesCount) {
             for (DSPeer * peer in sortedPeers) {
@@ -962,6 +964,8 @@
         if ([self.chain syncsBlockchain] && [self.chain hasAWallet]) {
             [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
             [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
+        } else {
+            [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
         }
         [peer sendPingMessageWithPongHandler:^(BOOL success) {
             if (! success) return;
@@ -1419,6 +1423,10 @@
 
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {
     [self.masternodeManager peer:peer relayedMasternodePing:masternodePing];
+}
+
+- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
+    [self peerMisbehavin:peer];
 }
 
 // MARK: - DSChainDelegate

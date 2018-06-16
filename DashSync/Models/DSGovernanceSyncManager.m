@@ -53,7 +53,7 @@
 
 -(void)finishedGovernanceObjectSyncWithPeer:(DSPeer*)peer {
     for (DSGovernanceObject * governanceObject in self.governanceObjects) {
-        peer.governanceRequestSSCState = DSGovernanceRequestSSCState_None;
+        peer.governanceRequestState = DSGovernanceRequestState_None;
         [peer sendGovSync:governanceObject.governanceObjectHash];
         break;
     }
@@ -184,7 +184,7 @@
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
-    NSLog(@"peer relayed governance objects");
+    NSLog(@"peer %@ relayed governance objects",peer.host);
     NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:governanceObjectHashes] mutableCopy];
     NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:governanceObjectHashes] mutableCopy];
     NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:governanceObjectHashes] mutableCopy];
