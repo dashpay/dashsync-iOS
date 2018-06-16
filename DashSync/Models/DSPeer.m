@@ -1327,8 +1327,10 @@ services:(uint64_t)services
 
 - (void)acceptSSCMessage:(NSData *)message
 {
+    
     DSSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
+    NSLog(@"received ssc message %d %d",syncCountInfo,count);
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {

@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSGovernanceObject.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotification;
@@ -14,7 +15,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 @class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
 
-@interface DSGovernanceSyncManager : NSObject
+@interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger recentGovernanceObjectHashesCount;

@@ -18,6 +18,7 @@
 #import "DSPeer.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Dash.h"
+#import "DSOptionsManager.h"
 
 #define REQUEST_GOVERNANCE_OBJECT_COUNT 500
 
@@ -25,9 +26,10 @@
 
 @property (nonatomic,strong) DSChain * chain;
 
-@property (nonatomic,strong) NSOrderedSet * knownGovernanceObjectHashes;
+@property (nonatomic,strong) NSOrderedSet * knownGovernanceObjectHashes; //this doesn't care if the hash has an associated governance object already known
+@property (nonatomic,strong) NSMutableOrderedSet<NSData *> * knownGovernanceObjectHashesForExistingGovernanceObjects;
 @property (nonatomic,readonly) NSOrderedSet * fulfilledRequestsGovernanceObjectHashEntities;
-@property (nonatomic,strong) NSMutableArray *needsRequestsGovernanceObjectHashEntities;
+@property (nonatomic,strong) NSMutableArray * needsRequestsGovernanceObjectHashEntities;
 @property (nonatomic,strong) NSMutableArray * requestGovernanceObjectHashEntities;
 @property (nonatomic,strong) NSMutableArray<DSGovernanceObject *> * governanceObjects;
 @property (nonatomic,strong) NSMutableArray<DSGovernanceObject *> * needVoteSyncGovernanceObjects;
@@ -55,18 +57,24 @@
 
 -(void)finishedGovernanceObjectSyncWithPeer:(DSPeer*)peer {
     if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjects) return;
+    peer.governanceRequestState = DSGovernanceRequestState_None;
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
     self.needVoteSyncGovernanceObjects = [self.governanceObjects mutableCopy];
     self.currentGovernanceSyncObject = [self.needVoteSyncGovernanceObjects firstObject];
-    peer.governanceRequestState = DSGovernanceRequestState_None;
+    self.currentGovernanceSyncObject.delegate = self;
+    NSLog(@"Getting votes for %@",self.currentGovernanceSyncObject.identifier);
     [peer sendGovSync:self.currentGovernanceSyncObject.governanceObjectHash];
 }
 
 -(void)finishedGovernanceVoteSyncWithPeer:(DSPeer*)peer {
     if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjectVotes) return;
-    [self.needVoteSyncGovernanceObjects removeObject:self.currentGovernanceSyncObject];
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
     peer.governanceRequestState = DSGovernanceRequestState_None;
+    [self.needVoteSyncGovernanceObjects removeObject:self.currentGovernanceSyncObject];
     if ([self.needVoteSyncGovernanceObjects count]) {
         self.currentGovernanceSyncObject = [self.needVoteSyncGovernanceObjects firstObject];
+        self.currentGovernanceSyncObject.delegate = self;
+        NSLog(@"Getting votes for %@",self.currentGovernanceSyncObject.identifier);
         [peer sendGovSync:self.currentGovernanceSyncObject.governanceObjectHash];
     }
 }
@@ -106,9 +114,13 @@
     if (count) {
         [fetchRequest setFetchLimit:count];
     }
+    if (!_knownGovernanceObjectHashesForExistingGovernanceObjects) _knownGovernanceObjectHashesForExistingGovernanceObjects = [NSMutableOrderedSet orderedSet];
     NSArray * governanceObjectEntities = [DSGovernanceObjectEntity fetchObjects:fetchRequest];
     for (DSGovernanceObjectEntity * governanceObjectEntity in governanceObjectEntities) {
-        [_governanceObjects addObject:[governanceObjectEntity governanceObject]];
+        DSGovernanceObject * governanceObject = [governanceObjectEntity governanceObject];
+        NSLog(@"%@ -> %@",[NSData dataWithUInt256:governanceObject.governanceObjectHash],governanceObject.identifier);
+        [_knownGovernanceObjectHashesForExistingGovernanceObjects addObject:[NSData dataWithUInt256:governanceObject.governanceObjectHash]];
+        [_governanceObjects addObject:governanceObject];
     }
 }
 
@@ -195,9 +207,9 @@
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
-    if (governanceObjectHashes.count == 1) {
-        UInt256 governanceObjectHash = *(UInt256*)((NSData*)[governanceObjectHashes anyObject]).bytes;
-        if (uint256_eq(governanceObjectHash, self.currentGovernanceSyncObject.governanceObjectHash)) {
+    if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjectHashes) {
+        
+        if ((governanceObjectHashes.count == 1) && ([_knownGovernanceObjectHashesForExistingGovernanceObjects containsObject:[governanceObjectHashes anyObject]])) {
             return;
         }
     }
@@ -301,6 +313,12 @@
         totalVotes += governanceObject.governanceVotesCount;
     }
     return totalVotes;
+}
+
+// MARK:- Governance ObjectDelegate
+
+-(void)governanceObject:(DSGovernanceObject*)governanceObject didReceiveUnknownHashes:(NSSet*)hash fromPeer:(DSPeer*)peer {
+    
 }
 
 @end

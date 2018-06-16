@@ -16,6 +16,7 @@
 #import "DSPeer.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSChainEntity+CoreDataProperties.h"
+#import "DSOptionsManager.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
 
@@ -38,6 +39,7 @@
 @property (nullable, nonatomic, strong) NSString * url;
 
 @property (nonatomic,strong) NSOrderedSet * knownGovernanceVoteHashes;
+@property (nonatomic,strong) NSMutableOrderedSet<NSData *> * knownGovernanceVoteHashesForExistingGovernanceVotes;
 @property (nonatomic,readonly) NSOrderedSet * fulfilledRequestsGovernanceVoteHashEntities;
 @property (nonatomic,strong) NSMutableArray *needsRequestsGovernanceVoteHashEntities;
 @property (nonatomic,strong) NSMutableArray * requestGovernanceVoteHashEntities;
@@ -194,6 +196,11 @@
     _endEpoch = endEpoch;
     _paymentAddress = paymentAddress;
     _url = url;
+    
+    _governanceVotes = [NSMutableArray array];
+    [self loadGovernanceVotes:0];
+    self.managedObjectContext = [NSManagedObject context];
+    
     return self;
 }
 // MARK:- Governance Vote
@@ -226,21 +233,20 @@
 }
 
 
-//-(void)loadGovernanceVotes:(NSUInteger)count {
-//    NSFetchRequest * fetchRequest = [[DSGovernanceVoteEntity fetchRequest] copy];
-//    [fetchRequest setFetchLimit:count];
-//    NSArray * governanceVoteEntities = [DSGovernanceVoteEntity fetchObjects:fetchRequest];
-//    for (DSGovernanceVoteEntity * governanceVoteEntity in governanceVoteEntities) {
-//        DSUTXO utxo;
-//        utxo.hash = *(UInt256 *)governanceVoteEntity.utxoHash.bytes;
-//        utxo.n = governanceVoteEntity.utxoIndex;
-//        UInt128 ipv6address = UINT128_ZERO;
-//        ipv6address.u32[3] = governanceVoteEntity.address;
-//        UInt256 governanceVoteHash = *(UInt256 *)governanceVoteEntity.governanceVoteHash.governanceVoteHash.bytes;
-//        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithUTXO:utxo ipAddress:ipv6address port:governanceVoteEntity.port protocolVersion:governanceVoteEntity.protocolVersion publicKey:governanceVoteEntity.publicKey signature:governanceVoteEntity.signature signatureTimestamp:governanceVoteEntity.signatureTimestamp governanceVoteHash:governanceVoteHash onChain:self.chain];
-//        [_governanceVotes addObject:governanceVote];
-//    }
-//}
+-(void)loadGovernanceVotes:(NSUInteger)count {
+    NSFetchRequest * fetchRequest = [[DSGovernanceVoteEntity fetchRequest] copy];
+    if (count) {
+        [fetchRequest setFetchLimit:count];
+    }
+    NSArray * governanceVoteEntities = [DSGovernanceVoteEntity fetchObjects:fetchRequest];
+    if (!_knownGovernanceVoteHashesForExistingGovernanceVotes) _knownGovernanceVoteHashesForExistingGovernanceVotes = [NSMutableOrderedSet orderedSet];
+    for (DSGovernanceVoteEntity * governanceVoteEntity in governanceVoteEntities) {
+        DSGovernanceVote * governanceVote = [governanceVoteEntity governanceVote];
+        NSLog(@"%@ -> %d",[NSData dataWithUInt256:governanceVote.governanceVoteHash],governanceVote.signal);
+        [_knownGovernanceVoteHashesForExistingGovernanceVotes addObject:[NSData dataWithUInt256:governanceVote.governanceVoteHash]];
+        [_governanceVotes addObject:governanceVote];
+    }
+}
 
 -(NSOrderedSet*)knownGovernanceVoteHashes {
     if (_knownGovernanceVoteHashes) return _knownGovernanceVoteHashes;
@@ -321,7 +327,11 @@
 }
 
 -(void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
     NSLog(@"peer relayed governance votes");
+    if (!self.totalGovernanceVoteCount) {
+        [self.delegate governanceObject:self didReceiveUnknownHashes:governanceVoteHashes fromPeer:peer];
+    }
     NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
     NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
     NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
@@ -383,6 +393,8 @@
         NSLog(@"%@",@"All governance object hashes received");
         //we have all hashes, let's request objects.
         [self requestGovernanceVotesFromPeer:peer];
+    } else {
+        NSAssert(FALSE, @"Error here");
     }
 }
 

@@ -16,6 +16,8 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
     DSGovernanceObjectType_Watchdog = 3, //deprecated
 };
 
+@protocol DSGovernanceObjectDelegate;
+
 @interface DSGovernanceObject : NSObject
 
 @property (nonatomic, readonly) UInt256 collateralHash;
@@ -42,9 +44,18 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
+@property (nonatomic, weak) id<DSGovernanceObjectDelegate> delegate;
+
 +(DSGovernanceObject* _Nullable)governanceObjectFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
 -(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType governanceMessage:(NSString* _Nonnull)governanceMessage parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData* _Nullable)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString* _Nullable)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString* _Nullable)paymentAddress url:(NSString * _Nullable)url onChain:(DSChain* _Nonnull)chain;
 
 -(void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet* _Nonnull)governanceVoteHashes;
+
+@end
+
+@protocol DSGovernanceObjectDelegate<NSObject>
+
+//we are syncing and a random vote comes in
+-(void)governanceObject:(DSGovernanceObject*)governanceObject didReceiveUnknownHashes:(NSSet*)hash fromPeer:(DSPeer*)peer;
 
 @end
