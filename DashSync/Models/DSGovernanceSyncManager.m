@@ -334,7 +334,9 @@
     for (DSMasternodeBroadcast * masternodeBroadcast in registeredMasternodes) {
         NSData * votingKey = [self.chain votingKeyForMasternodeBroadcast:masternodeBroadcast];
         DSKey * key = [DSKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
-        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:governanceObject.governanceObjectHash forMasternodeUTXO:masternodeBroadcast.utxo voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:[[NSDate date] timeIntervalSince1970] signature:nil onChain:self.chain];
+        UInt256 proposalHash = governanceObject.governanceObjectHash;
+        DSUTXO masternodeUTXO = masternodeBroadcast.utxo;
+        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:proposalHash forMasternodeUTXO:masternodeUTXO voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:[[NSDate date] timeIntervalSince1970] signature:nil onChain:self.chain];
         [governanceVote signWithKey:key];
         [votesToRelay addObject:governanceVote];
     }

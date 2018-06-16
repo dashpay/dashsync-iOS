@@ -170,8 +170,8 @@
 }
 
 -(void)vote:(DSGovernanceVoteOutcome)outcome {
-    DSGovernanceObject * proposal = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
-    [self.chainPeerManager.governanceSyncManager vote:outcome onGovernanceProposal:proposal];
+    DSGovernanceObjectEntity * proposalEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
+    [self.chainPeerManager.governanceSyncManager vote:outcome onGovernanceProposal:[proposalEntity governanceObject]];
 }
 
 - (IBAction)showVoteDialog:(id)sender {

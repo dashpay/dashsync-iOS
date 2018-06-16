@@ -129,6 +129,7 @@
     self.chain = chain;
     self.createdAt = createdAt;
     self.parentHash = parentHash;
+    self.masternodeUTXO = masternodeUTXO;
     self.governanceVoteHash = [DSGovernanceVote hashWithParentHash:parentHash voteCreationTimestamp:createdAt voteSignal:voteSignal voteOutcome:voteOutcome masternodeUTXO:masternodeUTXO];
     self.signature = signature;
     return self;
