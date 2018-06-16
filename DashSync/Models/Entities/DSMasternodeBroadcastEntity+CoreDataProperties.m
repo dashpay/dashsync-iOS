@@ -23,5 +23,6 @@
 @dynamic utxoIndex;
 @dynamic publicKey;
 @dynamic signature;
+@dynamic uniqueID;
 
 @end

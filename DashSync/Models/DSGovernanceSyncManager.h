@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSGovernanceObject.h"
+#import "DSGovernanceVote.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotification;
@@ -40,5 +41,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 -(void)finishedGovernanceVoteSyncWithPeer:(DSPeer*)peer;
 
+-(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject* _Nonnull)governanceObject;
 
 @end

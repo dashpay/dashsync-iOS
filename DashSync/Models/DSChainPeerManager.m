@@ -49,6 +49,7 @@
 #import "DSMasternodeManager.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
+#import "DSGovernanceVote.h"
 
 #define PEER_LOGGING 1
 
@@ -444,6 +445,12 @@
             }];
         }
     });
+}
+
+-(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
+    for (DSGovernanceVote * vote in votes) {
+        [self.downloadPeer sendGovObjectVote:vote];
+    }
 }
 
 // number of connected peers that have relayed the transaction
@@ -1485,7 +1492,7 @@
 
 - (uint32_t)countForSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
     if (![self.syncCountInfo objectForKey:@(syncCountInfo)]) {
-        NSString * storageKey = [NSString stringWithFormat:@"%@_%d",SYNC_COUNT_INFO,syncCountInfo];
+        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:storageKey]) {
             NSInteger value = [[NSUserDefaults standardUserDefaults] integerForKey:storageKey];
             [self.syncCountInfo setObject:@(value) forKey:@(syncCountInfo)];
@@ -1499,7 +1506,7 @@
 }
 
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-    NSString * storageKey = [NSString stringWithFormat:@"%@_%d",SYNC_COUNT_INFO,syncCountInfo];
+    NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
     [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
     [self.syncCountInfo setObject:@(count) forKey:@(syncCountInfo)];
     switch (syncCountInfo) {

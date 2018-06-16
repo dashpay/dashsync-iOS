@@ -18,10 +18,11 @@
 @dynamic signal;
 @dynamic timestampCreated;
 @dynamic signature;
-@dynamic masternodeUTXO;
+@dynamic masternodeHash;
 @dynamic governanceVoteHash;
 @dynamic governanceObject;
 @dynamic masternode;
 @dynamic parentHash;
+@dynamic masternodeIndex;
 
 @end

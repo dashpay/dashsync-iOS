@@ -9,16 +9,22 @@
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
 #import "DSChain.h"
+#import "DSKey.h"
+#import "NSData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 
 @interface DSGovernanceVote()
 
 @property (nonatomic,strong) DSGovernanceObject * governanceObject;
 @property (nonatomic,strong) DSMasternodeBroadcast * masternodeBroadcast;
-@property (nonatomic,assign) uint32_t outcome;
-@property (nonatomic,assign) uint32_t signal;
-@property (nonatomic, strong) DSChain * chain;
+@property (nonatomic,assign) DSGovernanceVoteOutcome outcome;
+@property (nonatomic,assign) DSGovernanceVoteSignal signal;
+@property (nonatomic,assign) NSTimeInterval createdAt;
+@property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,assign) UInt256 parentHash;
 @property (nonatomic,assign) UInt256 governanceVoteHash;
+@property (nonatomic,strong) NSData * signature;
+@property (nonatomic,assign) DSUTXO masternodeUTXO;
 
 @end
 
@@ -36,7 +42,7 @@
 //    return ss.GetHash();
 //}
 
-+(UInt256)hashWithParentHash:(NSData*)parentHashData voteCreationTimestamp:(uint64_t)voteCreationTimestamp voteSignal:(uint32_t)voteSignal voteOutcome:(uint32_t)voteOutcome masternodeUTXO:(DSUTXO)masternodeUTXO {
++(UInt256)hashWithParentHash:(UInt256)parentHash voteCreationTimestamp:(uint64_t)voteCreationTimestamp voteSignal:(uint32_t)voteSignal voteOutcome:(uint32_t)voteOutcome masternodeUTXO:(DSUTXO)masternodeUTXO {
     //hash calculation
     NSMutableData * hashImportantData = [NSMutableData data];
     
@@ -47,12 +53,27 @@
     uint32_t fullBits = UINT32_MAX;
     [hashImportantData appendBytes:&emptyByte length:1];
     [hashImportantData appendBytes:&fullBits length:4];
-    [hashImportantData appendData:parentHashData];
+    [hashImportantData appendBytes:&parentHash length:32];
     [hashImportantData appendBytes:&voteSignal length:4];
     [hashImportantData appendBytes:&voteOutcome length:4];
     [hashImportantData appendBytes:&voteCreationTimestamp length:8];
 
     return hashImportantData.SHA256_2;
+}
+
+-(NSData*)dataMessage {
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt256:self.masternodeUTXO.hash];
+    [data appendUInt32:(uint32_t)self.masternodeUTXO.n];
+    [data appendUInt8:0];
+    [data appendUInt32:UINT32_MAX];
+    [data appendUInt256:self.parentHash];
+    [data appendUInt32:self.outcome];
+    [data appendUInt32:self.signal];
+    [data appendUInt64:self.createdAt];
+    [data appendVarInt:self.signature.length];
+    [data appendData:self.signature];
+    return [data copy];
 }
 
 +(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain {
@@ -77,7 +98,6 @@
     offset += 4;
     
     if (length - offset < 32) return nil;
-    NSData * parentHashData = [message subdataWithRange:NSMakeRange(offset, 32)];
     UInt256 parentHash = [message UInt256AtOffset:offset];
     offset += 32;
     if (length - offset < 4) return nil;
@@ -97,23 +117,25 @@
     NSData * messageSignature = [message subdataWithRange:NSMakeRange(offset, messageSignatureSize)];
     offset+= messageSignatureSize;
     
-    
-    UInt256 governanceVoteHash = [self hashWithParentHash:parentHashData voteCreationTimestamp:voteCreationTimestamp voteSignal:voteSignal voteOutcome:voteOutcome masternodeUTXO:masternodeUTXO];
-    
-    DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:parentHash voteOutcome:voteOutcome voteSignal:voteSignal governanceVoteHash:governanceVoteHash onChain:chain];
+    DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:parentHash forMasternodeUTXO:masternodeUTXO voteOutcome:voteOutcome voteSignal:voteSignal createdAt:voteCreationTimestamp signature:messageSignature onChain:chain];
     return governanceVote;
     
 }
 
--(instancetype)initWithParentHash:(UInt256)parentHash voteOutcome:(uint32_t)voteOutcome voteSignal:(uint32_t)voteSignal governanceVoteHash:(UInt256)governanceVoteHash onChain:(DSChain* _Nonnull)chain {
+-(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData*)signature onChain:(DSChain* _Nonnull)chain {
     if (!(self = [super init])) return nil;
     self.outcome = voteOutcome;
     self.signal = voteSignal;
     self.chain = chain;
+    self.createdAt = createdAt;
     self.parentHash = parentHash;
-    self.governanceVoteHash = governanceVoteHash;
-
+    self.governanceVoteHash = [DSGovernanceVote hashWithParentHash:parentHash voteCreationTimestamp:createdAt voteSignal:voteSignal voteOutcome:voteOutcome masternodeUTXO:masternodeUTXO];
+    self.signature = signature;
     return self;
+}
+
+-(void)signWithKey:(DSKey*)key {
+    self.signature = [key sign:self.governanceVoteHash];
 }
 
 @end

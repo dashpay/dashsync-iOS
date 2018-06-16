@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, assign) uint64_t signatureTimestamp;
 @property (nonatomic, assign) uint32_t utxoIndex;
+@property (nonnull, nonatomic, retain) NSString *uniqueID;
 @property (nullable, nonatomic, retain) NSData *utxoHash;
 @property (nullable, nonatomic, retain) NSData *publicKey;
 @property (nullable, nonatomic, retain) NSData *signature;

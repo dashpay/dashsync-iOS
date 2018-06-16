@@ -19,6 +19,10 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Dash.h"
 #import "DSOptionsManager.h"
+#import "DSMasternodeBroadcast.h"
+#import "DSKey.h"
+#import "DSChainPeerManager.h"
+#import "DSChainManager.h"
 
 #define REQUEST_GOVERNANCE_OBJECT_COUNT 500
 
@@ -319,6 +323,22 @@
 
 -(void)governanceObject:(DSGovernanceObject*)governanceObject didReceiveUnknownHashes:(NSSet*)hash fromPeer:(DSPeer*)peer {
     
+}
+
+// MARK:- Voting
+
+-(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject*)governanceObject {
+    NSArray * registeredMasternodes = [self.chain registeredMasternodes];
+    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+    NSMutableArray * votesToRelay = [NSMutableArray array];
+    for (DSMasternodeBroadcast * masternodeBroadcast in registeredMasternodes) {
+        NSData * votingKey = [self.chain votingKeyForMasternodeBroadcast:masternodeBroadcast];
+        DSKey * key = [DSKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
+        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:governanceObject.governanceObjectHash forMasternodeUTXO:masternodeBroadcast.utxo voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:[[NSDate date] timeIntervalSince1970] signature:nil onChain:self.chain];
+        [governanceVote signWithKey:key];
+        [votesToRelay addObject:governanceVote];
+    }
+    [peerManager publishVotes:votesToRelay];
 }
 
 @end

@@ -21,6 +21,8 @@
         self.outcome = governanceVote.outcome;
         self.signal = governanceVote.signal;
         self.signature = governanceVote.signature;
+        self.masternodeHash = [NSData dataWithUInt256:governanceVote.masternodeUTXO.hash];
+        self.masternodeIndex = (uint32_t)governanceVote.masternodeUTXO.n;
     }];
 }
 
@@ -39,9 +41,11 @@
     
     [self.managedObjectContext performBlockAndWait:^{
         DSChainEntity * chain = [self.governanceVoteHash chain];
-        UInt256 governanceVoteHash = *(UInt256*)self.governanceVoteHash.governanceVoteHash.bytes;
         UInt256 parentHash = *(UInt256*)self.parentHash.bytes;
-        governanceVote = [[DSGovernanceVote alloc] initWithParentHash:parentHash voteOutcome:self.outcome voteSignal:self.signal governanceVoteHash:governanceVoteHash onChain:[chain chain]];
+        DSUTXO masternodeUTXO;
+        masternodeUTXO.hash = *(UInt256*)self.masternodeHash.bytes;
+        masternodeUTXO.n = self.masternodeIndex;
+        governanceVote = [[DSGovernanceVote alloc] initWithParentHash:parentHash forMasternodeUTXO:masternodeUTXO voteOutcome:self.outcome voteSignal:self.signal createdAt:self.timestampCreated signature:self.signature onChain:[chain chain]];
     }];
     
     return governanceVote;

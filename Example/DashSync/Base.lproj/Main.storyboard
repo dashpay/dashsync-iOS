@@ -1338,7 +1338,16 @@
                             <outlet property="delegate" destination="J5m-1d-38h" id="k66-pr-dCF"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Governance Objects" id="3Dw-dt-WQY"/>
+                    <navigationItem key="navigationItem" title="Governance Objects" id="3Dw-dt-WQY">
+                        <barButtonItem key="rightBarButtonItem" title="Vote" id="3rS-1O-sK7">
+                            <connections>
+                                <action selector="showVoteDialog:" destination="J5m-1d-38h" id="l5M-I1-Eit"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="voteButton" destination="3rS-1O-sK7" id="CQ7-RL-94x"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NmE-a1-HNm" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

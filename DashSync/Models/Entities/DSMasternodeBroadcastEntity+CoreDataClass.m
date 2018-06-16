@@ -25,6 +25,7 @@
         self.signature = masternodeBroadcast.signature;
         self.signatureTimestamp = masternodeBroadcast.signatureTimestamp;
         self.publicKey = masternodeBroadcast.publicKey;
+        self.uniqueID = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash].shortHexString;
     }];
 }
 

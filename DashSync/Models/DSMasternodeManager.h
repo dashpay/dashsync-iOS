@@ -32,4 +32,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
+-(DSMasternodeBroadcast* _Nullable)masternodeBroadcastForUniqueID:(NSString* _Nonnull)uniqueId;
+
 @end

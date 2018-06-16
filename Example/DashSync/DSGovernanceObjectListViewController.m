@@ -15,6 +15,8 @@
 @interface DSGovernanceObjectListViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSString * searchString;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *voteButton;
+- (IBAction)showVoteDialog:(id)sender;
 
 @end
 
@@ -22,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    self.voteButton.enabled = FALSE;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -40,16 +42,16 @@
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            return [NSPredicate predicateWithFormat:@"governanceObjectHash.chain == %@ && (identifier == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
+            return [NSPredicate predicateWithFormat:@"governanceObjectHash.chain == %@ && (identifier == %@)",self.chainPeerManager.chain.chainEntity,@([self.searchString longLongValue])];
         } else {
-            return [NSPredicate predicateWithFormat:@"governanceObjectHash.chain == %@",self.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"governanceObjectHash.chain == %@",self.chainPeerManager.chain.chainEntity];
         }
         //        else {
         //            return [NSPredicate predicateWithFormat:@"(blockHash == %@)",self.searchString];
         //        }
         
     } else {
-        return [NSPredicate predicateWithFormat:@"governanceObjectHash.chain == %@",self.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"governanceObjectHash.chain == %@",self.chainPeerManager.chain.chainEntity];
     }
     
 }
@@ -66,7 +68,7 @@
     [fetchRequest setFetchBatchSize:20];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
+    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:NO];
     NSArray *sortDescriptors = @[heightSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
@@ -132,6 +134,9 @@
     return cell;
 }
 
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    self.voteButton.enabled = TRUE;
+}
 
 -(void)configureCell:(DSProposalTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSGovernanceObjectEntity *governanceObjectEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
@@ -163,4 +168,29 @@
     _fetchedResultsController = nil;
     [self.tableView reloadData];
 }
+
+-(void)vote:(DSGovernanceVoteOutcome)outcome {
+    DSGovernanceObject * proposal = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
+    [self.chainPeerManager.governanceSyncManager vote:outcome onGovernanceProposal:proposal];
+}
+
+- (IBAction)showVoteDialog:(id)sender {
+    DSGovernanceObject * proposal = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
+    NSString * message = [NSString stringWithFormat:@"How would you like to vote on %@",proposal.identifier];
+    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Vote" message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"YES" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self vote:DSGovernanceVoteOutcome_Yes];
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"NO" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self vote:DSGovernanceVoteOutcome_No];
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Abstain" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self vote:DSGovernanceVoteOutcome_Abstain];
+    }]];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }]];
+    [self presentViewController:alertController animated:TRUE completion:nil];
+}
+
 @end

@@ -15,6 +15,8 @@
 #import "DSWalletManager.h"
 #import "DSMasternodeManager.h"
 #import "DSGovernanceSyncManager.h"
+#import "DSGovernanceObject.h"
+#import "DSGovernanceVote.h"
 #import "DSSporkManager.h"
 #import "DSAuthenticationManager.h"
 #import "DSEventManager.h"

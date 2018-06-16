@@ -229,6 +229,7 @@ services:(uint64_t)services;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
 - (void)sendGovSync:(UInt256)h;
+- (void)sendGovObjectVote:(DSGovernanceVote*)governanceVote;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
 - (void)sendDSegMessage:(DSUTXO)utxo;

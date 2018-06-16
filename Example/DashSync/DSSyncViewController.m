@@ -354,7 +354,7 @@
         masternodeViewController.chain = self.chainPeerManager.chain;
     } else if ([segue.identifier isEqualToString:@"GovernanceObjectsSegue"]) {
         DSGovernanceObjectListViewController * governanceObjectViewController = (DSGovernanceObjectListViewController*)segue.destinationViewController;
-        governanceObjectViewController.chain = self.chainPeerManager.chain;
+        governanceObjectViewController.chainPeerManager = self.chainPeerManager;
     }
 }
 

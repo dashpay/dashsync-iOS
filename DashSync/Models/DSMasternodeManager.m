@@ -265,6 +265,19 @@
     
 }
 
+-(DSMasternodeBroadcast*)masternodeBroadcastForUniqueID:(NSString*)uniqueId {
+    __block DSMasternodeBroadcast * masternodeBroadcast = nil;
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSMasternodeBroadcastEntity setContext:self.managedObjectContext];
+        NSArray * array = [DSMasternodeBroadcastEntity objectsMatching:@"uniqueID = %@",uniqueId];
+        if (array.count) {
+            DSMasternodeBroadcastEntity * masternodeBroadcastEntity = [array objectAtIndex:0];
+            masternodeBroadcast = [masternodeBroadcastEntity masternodeBroadcast];
+        }
+    }];
+    return masternodeBroadcast;
+}
+
 //-(void)saveBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast forHashEntity:(DSMasternodeBroadcastHashEntity*)masternodeBroadcastHashEntity {
 //    NSLog(@"[DSMasternodeManager] save broadcasts");
 //    if ([self.masternodeBroadcasts count]) {

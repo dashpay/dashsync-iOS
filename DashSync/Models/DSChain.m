@@ -44,6 +44,8 @@
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
 #import "DSMasternodeBroadcast.h"
+#import "DSChainManager.h"
+#import "DSMasternodeManager.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -350,17 +352,39 @@ static dispatch_once_t devnetToken = 0;
     });
 }
 
+-(NSArray*)standaloneDerivationPaths {
+    return [_mStandaloneDerivationPaths copy];
+}
+
+// MARK: - Voting Keys
+
+-(NSData*)votingKeyForMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
+    NSError * error = nil;
+    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
+    NSData * votingKey = [keyChainDictionary objectForKey:masternodeBroadcast.uniqueID];
+    return votingKey;
+}
+
+-(NSArray*)registeredMasternodes {
+    NSError * error = nil;
+    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
+    DSChainPeerManager * chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self];
+    NSMutableArray * registeredMasternodes = [NSMutableArray array];
+    for (NSString * key in keyChainDictionary) {
+        DSMasternodeBroadcast * masternodeBroadcast = [chainPeerManager.masternodeManager masternodeBroadcastForUniqueID:key];
+        [registeredMasternodes addObject:masternodeBroadcast];
+    }
+    return [registeredMasternodes copy];
+}
+
 -(void)registerVotingKey:(NSData*)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     [keyChainDictionary setObject:votingKey forKey:masternodeBroadcast.uniqueID];
-    setKeychainDict(keyChainDictionary, self.votingKeysKey, YES);
+    setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
 }
 
--(NSArray*)standaloneDerivationPaths {
-    return [_mStandaloneDerivationPaths copy];
-}
 
 // MARK: - Wallet
 

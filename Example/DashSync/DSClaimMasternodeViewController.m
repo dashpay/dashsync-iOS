@@ -44,9 +44,11 @@
 
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
-        
-        [self.chain registerVotingKey:[NSData data] forMasternodeBroadcast:self.masternode];
+        NSData * data = self.inputTextView.text.base58checkToData;
+        if (data) {
+        [self.chain registerVotingKey:data forMasternodeBroadcast:self.masternode];
         [self.navigationController popViewControllerAnimated:TRUE];
+        }
     }
 }
 
