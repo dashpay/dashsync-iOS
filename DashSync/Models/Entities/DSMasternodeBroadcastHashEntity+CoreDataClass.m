@@ -33,6 +33,7 @@
 }
 
 +(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity {
+    NSLog(@"Removing oldest masternodes %lu",(unsigned long)count);
     NSFetchRequest * fetchRequest = [self fetchReq];
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@",chainEntity]];
     [fetchRequest setFetchLimit:count];
