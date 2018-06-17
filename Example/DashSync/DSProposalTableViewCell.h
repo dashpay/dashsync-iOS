@@ -16,6 +16,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *endDateLabel;
 @property (strong, nonatomic) IBOutlet UILabel *paymentAddresLabel;
 @property (strong, nonatomic) IBOutlet UILabel *urlLabel;
+@property (strong, nonatomic) IBOutlet UILabel *isFundedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *paymentsCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *voteTallyLabel;
 
 @end

@@ -170,6 +170,7 @@
 
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
     NSLog(@"peer relayed masternode broadcasts");
+    @synchronized(self) {
     NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
     NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
     NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
@@ -231,9 +232,11 @@
         //we have all hashes, let's request objects.
         [self requestMasternodeBroadcastsFromPeer:peer];
     }
+    }
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
+    @synchronized(self) {
     NSData *masternodeBroadcastHash = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
     DSMasternodeBroadcastHashEntity * relatedHashEntity = nil;
     for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in [self.requestHashEntities copy]) {
@@ -255,10 +258,24 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:nil];
         });
     }
+    }
 }
 
 - (void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing {
     
+}
+
+-(DSMasternodeBroadcast*)masternodeBroadcastForUniqueID:(NSString*)uniqueId {
+    __block DSMasternodeBroadcast * masternodeBroadcast = nil;
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSMasternodeBroadcastEntity setContext:self.managedObjectContext];
+        NSArray * array = [DSMasternodeBroadcastEntity objectsMatching:@"uniqueID = %@",uniqueId];
+        if (array.count) {
+            DSMasternodeBroadcastEntity * masternodeBroadcastEntity = [array objectAtIndex:0];
+            masternodeBroadcast = [masternodeBroadcastEntity masternodeBroadcast];
+        }
+    }];
+    return masternodeBroadcast;
 }
 
 //-(void)saveBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast forHashEntity:(DSMasternodeBroadcastHashEntity*)masternodeBroadcastHashEntity {
@@ -273,5 +290,22 @@
 //
 //    }
 //}
+
+-(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO {
+    __block DSMasternodeBroadcast * masternodeBroadcast = nil;
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSMasternodeBroadcastEntity setContext:self.managedObjectContext];
+        NSFetchRequest *request = DSMasternodeBroadcastEntity.fetchReq;
+        
+        request.predicate = [NSPredicate predicateWithFormat:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)masternodeUTXO.hash],@(masternodeUTXO.n)];
+        [request setFetchLimit:1];
+        NSArray * array = [DSMasternodeBroadcastEntity fetchObjectsInContext:request];
+        if (array.count) {
+            DSMasternodeBroadcastEntity * masternodeBroadcastEntity = [array objectAtIndex:0];
+            masternodeBroadcast = [masternodeBroadcastEntity masternodeBroadcast];
+        }
+    }];
+    return masternodeBroadcast;
+}
 
 @end

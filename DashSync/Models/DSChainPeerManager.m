@@ -48,6 +48,8 @@
 #import "DSOptionsManager.h"
 #import "DSMasternodeManager.h"
 #import "DSGovernanceSyncManager.h"
+#import "DSGovernanceObject.h"
+#import "DSGovernanceVote.h"
 
 #define PEER_LOGGING 1
 
@@ -445,6 +447,13 @@
     });
 }
 
+-(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
+    for (DSGovernanceVote * vote in votes) {
+        if (![vote isValid]) continue;
+        [self.downloadPeer sendGovObjectVote:vote];
+    }
+}
+
 // number of connected peers that have relayed the transaction
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash
 {
@@ -558,6 +567,7 @@
 }
 
 -(void)startGovernanceSync {
+    NSLog(@"--> Trying to start governance sync");
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
     BOOL startedGovernanceSync = FALSE;
@@ -571,6 +581,7 @@
         break;
     }
     if (!startedGovernanceSync) { //we have requested masternode list from connected peers too recently, let's connect to different peers
+        NSLog(@"--> Could not start governance sync");
         NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.governanceSyncManager last3HoursStandaloneGovernanceObjectHashesCount];
         if (last3HoursStandaloneBroadcastHashesCount) {
             for (DSPeer * peer in sortedPeers) {
@@ -961,6 +972,8 @@
         if ([self.chain syncsBlockchain] && [self.chain hasAWallet]) {
             [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
             [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
+        } else {
+            [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
         }
         [peer sendPingMessageWithPongHandler:^(BOOL success) {
             if (! success) return;
@@ -1380,6 +1393,23 @@
             });
             break;
         }
+        case DSSyncCountInfo_GovernanceObjectVote:
+        {
+            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
+                if (count == 0) {
+                    //there were no votes
+                    NSLog(@"no votes on object, going to next object");
+                    peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
+                    [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+                    });
+                }
+            }
+            
+            break;
+        }
         default:
             break;
     }
@@ -1393,8 +1423,16 @@
     [self.governanceSyncManager peer:peer relayedGovernanceObject:governanceObject];
 }
 
+- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote {
+    [self.governanceSyncManager peer:peer relayedGovernanceVote:governanceVote];
+}
+
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
     [self.governanceSyncManager peer:peer hasGovernanceObjectHashes:governanceObjectHashes];
+}
+
+- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
+    [self.governanceSyncManager.currentGovernanceSyncObject peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
 }
 
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
@@ -1403,6 +1441,10 @@
 
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {
     [self.masternodeManager peer:peer relayedMasternodePing:masternodePing];
+}
+
+- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
+    [self peerMisbehavin:peer];
 }
 
 // MARK: - DSChainDelegate
@@ -1451,7 +1493,7 @@
 
 - (uint32_t)countForSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
     if (![self.syncCountInfo objectForKey:@(syncCountInfo)]) {
-        NSString * storageKey = [NSString stringWithFormat:@"%@_%d",SYNC_COUNT_INFO,syncCountInfo];
+        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:storageKey]) {
             NSInteger value = [[NSUserDefaults standardUserDefaults] integerForKey:storageKey];
             [self.syncCountInfo setObject:@(value) forKey:@(syncCountInfo)];
@@ -1465,7 +1507,7 @@
 }
 
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-    NSString * storageKey = [NSString stringWithFormat:@"%@_%d",SYNC_COUNT_INFO,syncCountInfo];
+    NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
     [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
     [self.syncCountInfo setObject:@(count) forKey:@(syncCountInfo)];
     switch (syncCountInfo) {
@@ -1474,6 +1516,9 @@
             break;
         case DSSyncCountInfo_GovernanceObject:
             self.governanceSyncManager.totalGovernanceObjectCount = count;
+            break;
+        case DSSyncCountInfo_GovernanceObjectVote:
+            self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
             break;
         default:
             break;

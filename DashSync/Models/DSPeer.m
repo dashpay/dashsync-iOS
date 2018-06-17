@@ -39,6 +39,9 @@
 #import <arpa/inet.h>
 #import "DSMasternodePing.h"
 #import "DSBloomFilter.h"
+#import "DSGovernanceVote.h"
+#import "DSChainPeerManager.h"
+#import "DSOptionsManager.h"
 
 #define PEER_LOGGING 1
 
@@ -52,7 +55,7 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70208
+#define PROTOCOL_VERSION   70210
 #define MIN_PROTO_VERSION  70208 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
@@ -84,7 +87,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGovObjAndGovObjVoteGetdata;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGetdataGovernanceVotes;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -216,7 +219,7 @@ services:(uint64_t)services
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
     self.gotVerack = self.sentVerack = NO;
-    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGovObjAndGovObjVoteGetdata = NO ;
+    self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
@@ -511,6 +514,7 @@ services:(uint64_t)services
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
 {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
     if (txHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         NSLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
               (int)txHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
@@ -565,7 +569,7 @@ services:(uint64_t)services
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes
 {
     if (governanceObjectHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
+        NSLog(@"%@:%u couldn't send governance getdata, %u is too many items, max is %u", self.host, self.port,
               (int)governanceObjectHashes.count, MAX_GETDATA_HASHES);
         return;
     }
@@ -582,6 +586,28 @@ services:(uint64_t)services
     }
     
     self.sentGetdataGovernance = YES;
+    [self sendMessage:msg type:MSG_GETDATA];
+}
+
+- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes {
+    if (governanceVoteHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+        NSLog(@"%@:%u couldn't send governance votes getdata, %u is too many items, max is %u", self.host, self.port,
+              (int)governanceVoteHashes.count, MAX_GETDATA_HASHES);
+        return;
+    }
+    else if (governanceVoteHashes.count == 0) return;
+    
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendVarInt:governanceVoteHashes.count];
+    
+    for (NSData *dataHash in governanceVoteHashes) {
+        [msg appendUInt32:DSInvType_GovernanceObjectVote];
+        
+        [msg appendBytes:dataHash.bytes length:sizeof(UInt256)];
+    }
+    
+    self.sentGetdataGovernanceVotes = YES;
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -643,15 +669,46 @@ services:(uint64_t)services
 
 // MARK: - send Dash Governance
 
-- (void)sendGovSync {
-    NSLog(@"%@:%u Requesting Governance Objects",self.host, self.port);
+- (void)sendGovSync:(UInt256)h { //for votes
+    if (self.governanceRequestState != DSGovernanceRequestState_None) {  //Make sure we aren't in a governance sync process
+    NSLog(@"%@:%u Requesting Governance Vote Hashes out of resting state",self.host, self.port);
+    return;
+}
+    NSLog(@"%@:%u Requesting Governance Object Vote Hashes",self.host, self.port);
     NSMutableData *msg = [NSMutableData data];
-    UInt256 h = UINT256_ZERO;
     
     [msg appendBytes:&h length:sizeof(h)];
     [msg appendData:[DSBloomFilter emptyBloomFilterData]];
-    
+    self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVoteHashes;
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
+    
+}
+
+- (void)sendGovSync { //for governance objects
+    if (self.governanceRequestState != DSGovernanceRequestState_None) {//Make sure we aren't in a governance sync process
+        NSLog(@"%@:%u Requesting Governance Object Hashes out of resting state",self.host, self.port);
+        return;
+    }
+    NSLog(@"%@:%u Requesting Governance Object Hashes",self.host, self.port);
+    UInt256 h = UINT256_ZERO;
+    NSMutableData *msg = [NSMutableData data];
+    
+    [msg appendBytes:&h length:sizeof(h)];
+    [msg appendData:[DSBloomFilter emptyBloomFilterData]];
+    self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashes;
+    [self sendMessage:msg type:MSG_GOVOBJSYNC];
+    
+    //we aren't afraid of coming back here within 5 seconds because a peer can only sendGovSync once every 3 hours
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
+            NSLog(@"%@:%u Peer ignored request for governance object hashes",self.host, self.port);
+            [self.delegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
+        }
+    });
+}
+
+-(void)sendGovObjectVote:(DSGovernanceVote*)governanceVote {
+    [self sendMessage:[governanceVote dataMessage] type:MSG_GOVOBJVOTE];
 }
 
 // MARK: - accept
@@ -831,7 +888,9 @@ services:(uint64_t)services
         return;
     }
     
-    //NSLog(@"%@:%u got inv with %u items", self.host, self.port, (int)count);
+    if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
+        NSLog(@"%@:%u got inv with %u items (first item %u)", self.host, self.port, (int)count,[message UInt32AtOffset:l.unsignedIntegerValue]);
+    }
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
         DSInvType type = [message UInt32AtOffset:off];
@@ -929,15 +988,9 @@ services:(uint64_t)services
     
     if (governanceObjectHashes.count > 0) {
         [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
-//        dispatch_async(self.delegateQueue, ^{
-//            [self.knownGovernanceObjectHashes unionOrderedSet:blockHashes];
-//
-//            while (self.knownGovernanceObjectHashes.count > MAX_GETDATA_HASHES) {
-//                [self.knownGovernanceObjectHashes removeObjectsInRange:NSMakeRange(0, self.knownGovernanceObjectHashes.count/3)];
-//            }
-//        });
-//        [self sendGetdataMessageWithTxHashes:txHashes.array
-//                              andBlockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+    }
+    if (governanceObjectVoteHashes.count > 0) {
+        [self.delegate peer:self hasGovernanceVoteHashes:governanceObjectVoteHashes];
     }
     if (masternodeBroadcastHashes.count > 0) {
         NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);
@@ -1272,9 +1325,27 @@ services:(uint64_t)services
 
 - (void)acceptSSCMessage:(NSData *)message
 {
+    
     DSSyncCountInfo syncCountInfo = [message UInt32AtOffset:0];
     uint32_t count = [message UInt32AtOffset:4];
-    [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+    NSLog(@"received ssc message %d %d",syncCountInfo,count);
+    switch (syncCountInfo) {
+        case DSSyncCountInfo_GovernanceObject:
+            if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
+                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            }
+            break;
+        case DSSyncCountInfo_GovernanceObjectVote:
+            if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
+                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            }
+            break;
+        default:
+            [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            break;
+    }
+    //ignore when count = 0; (for votes)
+
 }
 
 -(void)acceptMNBMessage:(NSData *)message
@@ -1296,6 +1367,14 @@ services:(uint64_t)services
     DSGovernanceObject * governanceObject = [DSGovernanceObject governanceObjectFromMessage:message onChain:self.chain];
     if (governanceObject) {
         [self.delegate peer:self relayedGovernanceObject:governanceObject];
+    }
+}
+
+- (void)acceptGovObjectVoteMessage:(NSData *)message
+{
+    DSGovernanceVote * governanceVote = [DSGovernanceVote governanceVoteFromMessage:message onChain:self.chain];
+    if (governanceVote) {
+        [self.delegate peer:self relayedGovernanceVote:governanceVote];
     }
 }
 

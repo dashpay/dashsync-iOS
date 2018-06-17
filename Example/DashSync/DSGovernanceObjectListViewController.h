@@ -11,6 +11,6 @@
 
 @interface DSGovernanceObjectListViewController : UITableViewController<NSFetchedResultsControllerDelegate,UISearchBarDelegate>
 
-@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
 
 @end

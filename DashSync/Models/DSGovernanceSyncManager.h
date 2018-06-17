@@ -6,18 +6,27 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSGovernanceObject.h"
+#import "DSGovernanceVote.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVotesDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotification;
 
 @class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
 
-@interface DSGovernanceSyncManager : NSObject
+@interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger recentGovernanceObjectHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
 @property (nonatomic,readonly) NSUInteger governanceObjectsCount;
+
+@property (nonatomic, readonly) NSUInteger governanceVotesCount;
+
+@property (nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
+
 @property (nonatomic,assign) NSUInteger totalGovernanceObjectCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
@@ -26,9 +35,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotifica
 
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote*  _Nonnull)governanceVote;
 
--(void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
+-(void)peer:(DSPeer * _Nullable)peer hasGovernanceObjectHashes:(NSSet* _Nonnull)governanceObjectHashes;
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer;
+
+-(void)finishedGovernanceVoteSyncWithPeer:(DSPeer*)peer;
+
+-(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject* _Nonnull)governanceObject;
 
 
 @end

@@ -25,6 +25,7 @@
         self.signature = masternodeBroadcast.signature;
         self.signatureTimestamp = masternodeBroadcast.signatureTimestamp;
         self.publicKey = masternodeBroadcast.publicKey;
+        self.uniqueID = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash].shortHexString;
     }];
 }
 
@@ -36,6 +37,22 @@
         count = [DSMasternodeBroadcastEntity countObjects:fetchRequest];
     }];
     return count;
+}
+
+- (DSMasternodeBroadcast*)masternodeBroadcast {
+    __block DSMasternodeBroadcast *masternodeBroadcast = nil;
+    
+    [self.managedObjectContext performBlockAndWait:^{
+        UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
+        DSChainEntity * chain = [self.masternodeBroadcastHash chain];
+        DSUTXO utxo;
+        utxo.hash = *(UInt256*)self.utxoHash.bytes;
+        utxo.n = self.utxoIndex;
+        UInt256 masternodeBroadcastHash = *(UInt256*)self.masternodeBroadcastHash.masternodeBroadcastHash.bytes;
+        masternodeBroadcast = [[DSMasternodeBroadcast alloc] initWithUTXO:utxo ipAddress:address port:self.port protocolVersion:self.protocolVersion publicKey:self.publicKey signature:self.signature signatureTimestamp:self.signatureTimestamp masternodeBroadcastHash:masternodeBroadcastHash onChain:[chain chain]];
+    }];
+    
+    return masternodeBroadcast;
 }
 
 

@@ -43,6 +43,7 @@
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending;
 + (NSArray *)objectsSortedBy:(NSString *)key ascending:(BOOL)ascending offset:(NSUInteger)offset limit:(NSUInteger)lim;
 + (NSArray *)fetchObjects:(NSFetchRequest *)request;
++ (NSArray *)fetchObjectsInContext:(NSFetchRequest *)request;
 
 // count existing objects
 + (NSUInteger)countAllObjects;

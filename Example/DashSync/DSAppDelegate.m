@@ -18,7 +18,7 @@
     [DashSync sharedSyncController];
     [[DSOptionsManager sharedInstance] setKeepHeaders:NO];
     [[DSOptionsManager sharedInstance] setSyncFromGenesis:NO];
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Governance];
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Governance | DSSyncType_MasternodeList];
     return YES;
 }
 

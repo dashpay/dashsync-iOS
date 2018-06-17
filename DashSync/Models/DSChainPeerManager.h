@@ -46,7 +46,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 
-@class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer;
+@class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote;
 
 @interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
 
@@ -68,6 +68,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (void)rescan;
 - (void)publishTransaction:(DSTransaction * _Nonnull)transaction
                 completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
+-(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes;
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
 // Masternodes

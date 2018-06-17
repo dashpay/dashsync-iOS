@@ -36,10 +36,9 @@
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeBroadcastsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
-@property (strong, nonatomic) IBOutlet UILabel *governanceObjectCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -61,8 +60,8 @@
     [self updateWalletCount];
     [self updateStandaloneDerivationPathsCount];
     [self updateSingleAddressesCount];
-    [self updateGovernanceObjectCount];
     [self updateReceivedGovernanceProposalCount];
+    [self updateReceivedGovernanceVoteCount];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
@@ -103,12 +102,23 @@
     self.governanceObjectCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectCountUpdateNotification object:nil
                                                                                       queue:nil usingBlock:^(NSNotification *note) {
                                                                                           NSLog(@"update governance object count");
-                                                                                          [self updateGovernanceObjectCount];
+                                                                                          [self updateReceivedGovernanceProposalCount];
                                                                                       }];
     self.governanceObjectReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectListDidChangeNotification object:nil
                                                                                                     queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                        NSLog(@"update governance object count");
+                                                                                                        NSLog(@"update governance received object count");
                                                                                                         [self updateReceivedGovernanceProposalCount];
+                                                                                                    }];
+    
+    self.governanceVoteCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVoteCountUpdateNotification object:nil
+                                                                                            queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                NSLog(@"update governance vote count");
+                                                                                                [self updateReceivedGovernanceVoteCount];
+                                                                                            }];
+    self.governanceVoteReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVotesDidChangeNotification object:nil
+                                                                                                    queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                        NSLog(@"update governance received vote count");
+                                                                                                        [self updateReceivedGovernanceVoteCount];
                                                                                                     }];
     self.chainWalletObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
@@ -317,12 +327,12 @@
     self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
 }
 
--(void)updateGovernanceObjectCount {
-    self.governanceObjectCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObject]];
+-(void)updateReceivedGovernanceVoteCount {
+    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote]];
 }
 
 -(void)updateReceivedGovernanceProposalCount {
-    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount]];
+    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObject]];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -344,7 +354,7 @@
         masternodeViewController.chain = self.chainPeerManager.chain;
     } else if ([segue.identifier isEqualToString:@"GovernanceObjectsSegue"]) {
         DSGovernanceObjectListViewController * governanceObjectViewController = (DSGovernanceObjectListViewController*)segue.destinationViewController;
-        governanceObjectViewController.chain = self.chainPeerManager.chain;
+        governanceObjectViewController.chainPeerManager = self.chainPeerManager;
     }
 }
 

@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity*)hashEntity;
 + (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
+- (DSGovernanceObject*)governanceObject;
 
 @end
 

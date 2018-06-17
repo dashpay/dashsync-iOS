@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setAttributesFromMasternodeBroadcast:(DSMasternodeBroadcast *)masternodeBroadcast forHashEntity:(DSMasternodeBroadcastHashEntity*)hashEntity;
 + (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
+- (DSMasternodeBroadcast*)masternodeBroadcast;
 
 @end
 

@@ -10,10 +10,13 @@
 #import "DSMasternodeTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
+#import "DSClaimMasternodeViewController.h"
 
 @interface DSMasternodeViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSString * searchString;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *claimButton;
+- (IBAction)claimSelectedMasternode:(id)sender;
 
 @end
 
@@ -21,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    self.claimButton.enabled = FALSE;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -39,7 +42,17 @@
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@ && (address == %@)",self.chain.chainEntity,@([self.searchString longLongValue])];
+            NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
+            NSMutableArray *partPredicates = [NSMutableArray array];
+            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@",self.chain.chainEntity];
+            [partPredicates addObject:chainPredicate];
+            for (int i = 0; i< MIN(ipArray.count,4); i++) {
+                if ([ipArray[i] isEqualToString:@""]) break;
+                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(i*8),@([ipArray[i] integerValue])];
+                [partPredicates addObject:currentPartPredicate];
+            }
+            
+            return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
         } else {
             return [NSPredicate predicateWithFormat:@"masternodeBroadcastHash.chain == %@",self.chain.chainEntity];
         }
@@ -123,6 +136,14 @@
     return [[self.fetchedResultsController fetchedObjects] count];
 }
 
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [self.claimButton setEnabled:TRUE];
+}
+
+-(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [self.claimButton setEnabled:FALSE];
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSMasternodeTableViewCell *cell = (DSMasternodeTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"MasternodeTableViewCellIdentifier" forIndexPath:indexPath];
     
@@ -151,5 +172,21 @@
     self.searchString = searchBar.text;
     _fetchedResultsController = nil;
     [self.tableView reloadData];
+}
+
+- (IBAction)claimSelectedMasternode:(id)sender {
+    if (self.tableView.indexPathForSelectedRow) {
+        [self performSegueWithIdentifier:@"ClaimMasternodeSegue" sender:sender];
+    }
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
+        NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
+        DSMasternodeBroadcastEntity *masternodeBroadcastEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        DSClaimMasternodeViewController * claimMasternodeViewController = (DSClaimMasternodeViewController*)segue.destinationViewController;
+        claimMasternodeViewController.masternode = masternodeBroadcastEntity.masternodeBroadcast;
+        claimMasternodeViewController.chain = self.chain;
+    }
 }
 @end

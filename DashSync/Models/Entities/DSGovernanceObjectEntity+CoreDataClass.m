@@ -43,5 +43,19 @@
     return count;
 }
 
+-(DSGovernanceObject*)governanceObject {
+    __block DSGovernanceObject *governanceObject = nil;
+    
+    [self.managedObjectContext performBlockAndWait:^{
+        DSChainEntity * chain = [self.governanceObjectHash chain];
+        UInt256 governanceObjectHash = *(UInt256*)self.governanceObjectHash.governanceObjectHash.bytes;
+        UInt256 parentHash = *(UInt256*)self.parentHash.bytes;
+        UInt256 collateralHash = *(UInt256*)self.collateralHash.bytes;
+        governanceObject = [[DSGovernanceObject alloc] initWithType:self.type governanceMessage:self.governanceMessage parentHash:parentHash revision:self.revision timestamp:self.timestamp signature:self.signature collateralHash:collateralHash governanceObjectHash:governanceObjectHash identifier:self.identifier amount:self.amount startEpoch:self.startEpoch endEpoch:self.endEpoch paymentAddress:self.paymentAddress url:self.url onChain:[chain chain]];
+    }];
+    
+    return governanceObject;
+}
+
 
 @end

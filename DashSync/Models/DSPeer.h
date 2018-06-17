@@ -27,6 +27,9 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import "IntTypes.h"
+
+
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -109,9 +112,18 @@
 typedef union _UInt256 UInt256;
 typedef union _UInt128 UInt128;
 
+typedef NS_ENUM(uint32_t, DSGovernanceRequestState) {
+    DSGovernanceRequestState_None,
+    DSGovernanceRequestState_GovernanceObjectHashes,
+    DSGovernanceRequestState_GovernanceObjects,
+    DSGovernanceRequestState_GovernanceObjectVoteHashes,
+    DSGovernanceRequestState_GovernanceObjectVotes,
+};
+
+
 typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing,DSGovernanceObject;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing,DSGovernanceObject,DSGovernanceVote;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -137,10 +149,14 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing;
 
 - (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
+- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
 
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
+- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
+
+- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
 @end
 
@@ -182,6 +198,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, assign) NSTimeInterval lowPreferenceTill;
 @property (nonatomic, assign) NSTimeInterval lastRequestedMasternodeList;
 @property (nonatomic, assign) NSTimeInterval lastRequestedGovernanceSync;
+@property (nonatomic, assign) DSGovernanceRequestState governanceRequestState;
 
 @property (nonatomic, assign) BOOL needsFilterUpdate; // set this when wallet addresses need to be added to bloom filter
 @property (nonatomic, assign) uint32_t currentBlockHeight; // set this to local block height (helps detect tarpit nodes)
@@ -208,8 +225,11 @@ services:(uint64_t)services;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 - (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray<NSData*> *)masternodeBroadcastHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
+- (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
+- (void)sendGovSync:(UInt256)h;
+- (void)sendGovObjectVote:(DSGovernanceVote*)governanceVote;
 - (void)sendPingMessageWithPongHandler:(void (^)(BOOL success))pongHandler;
 - (void)sendGetSporks;
 - (void)sendDSegMessage:(DSUTXO)utxo;
