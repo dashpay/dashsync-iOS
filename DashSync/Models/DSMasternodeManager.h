@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSChain.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
@@ -33,5 +34,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
 -(DSMasternodeBroadcast* _Nullable)masternodeBroadcastForUniqueID:(NSString* _Nonnull)uniqueId;
+
+-(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO;
 
 @end

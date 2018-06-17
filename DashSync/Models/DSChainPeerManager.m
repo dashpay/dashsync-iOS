@@ -449,6 +449,7 @@
 
 -(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
     for (DSGovernanceVote * vote in votes) {
+        if (![vote isValid]) continue;
         [self.downloadPeer sendGovObjectVote:vote];
     }
 }

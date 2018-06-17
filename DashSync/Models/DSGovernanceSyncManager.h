@@ -43,4 +43,5 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject* _Nonnull)governanceObject;
 
+
 @end

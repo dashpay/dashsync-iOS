@@ -93,6 +93,12 @@
         <attribute name="utxoIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="masternodeBroadcastHash" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSMasternodeBroadcastHashEntity" inverseName="masternodeBroadcast" inverseEntity="DSMasternodeBroadcastHashEntity" syncable="YES"/>
         <relationship name="votes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="masternode" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="utxoHash"/>
+                <index value="utxoIndex"/>
+            </compoundIndex>
+        </compoundIndexes>
     </entity>
     <entity name="DSMasternodeBroadcastHashEntity" representedClassName="DSMasternodeBroadcastHashEntity" syncable="YES">
         <attribute name="masternodeBroadcastHash" attributeType="Binary" syncable="YES"/>

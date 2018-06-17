@@ -12,6 +12,10 @@
 #import "DSKey.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSMasternodeManager.h"
+#import "DSChainManager.h"
+#import "DSChainPeerManager.h"
+#import "DSMasternodeBroadcast.h"
 
 @interface DSGovernanceVote()
 
@@ -137,6 +141,16 @@
 
 -(void)signWithKey:(DSKey*)key {
     self.signature = [key sign:self.governanceVoteHash];
+}
+
+-(BOOL)isValid {
+    if (uint256_is_zero(self.masternodeUTXO.hash)) return FALSE;
+    if (!self.createdAt) return FALSE;
+    if (uint256_is_zero(self.parentHash)) return FALSE;
+    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+    DSMasternodeBroadcast * masternodeBroacast = [peerManager.masternodeManager masternodeBroadcastForUTXO:self.masternodeUTXO];
+    DSKey * key = [DSKey keyWithPublicKey:masternodeBroacast.publicKey];
+    return [key verify:self.governanceVoteHash signature:self.signature];
 }
 
 @end

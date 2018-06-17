@@ -42,5 +42,6 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 -(void)signWithKey:(DSKey*)key;
 
 -(NSData*)dataMessage;
+-(BOOL)isValid;
 
 @end

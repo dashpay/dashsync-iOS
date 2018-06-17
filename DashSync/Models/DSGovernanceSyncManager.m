@@ -325,6 +325,8 @@
     
 }
 
+
+
 // MARK:- Voting
 
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject*)governanceObject {
@@ -336,7 +338,8 @@
         DSKey * key = [DSKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
         UInt256 proposalHash = governanceObject.governanceObjectHash;
         DSUTXO masternodeUTXO = masternodeBroadcast.utxo;
-        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:proposalHash forMasternodeUTXO:masternodeUTXO voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:[[NSDate date] timeIntervalSince1970] signature:nil onChain:self.chain];
+        NSTimeInterval now = floor([[NSDate date] timeIntervalSince1970]);
+        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:proposalHash forMasternodeUTXO:masternodeUTXO voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:now signature:nil onChain:self.chain];
         [governanceVote signWithKey:key];
         [votesToRelay addObject:governanceVote];
     }

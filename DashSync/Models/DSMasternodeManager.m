@@ -291,4 +291,21 @@
 //    }
 //}
 
+-(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO {
+    __block DSMasternodeBroadcast * masternodeBroadcast = nil;
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSMasternodeBroadcastEntity setContext:self.managedObjectContext];
+        NSFetchRequest *request = DSMasternodeBroadcastEntity.fetchReq;
+        
+        request.predicate = [NSPredicate predicateWithFormat:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)masternodeUTXO.hash],@(masternodeUTXO.n)];
+        [request setFetchLimit:1];
+        NSArray * array = [DSMasternodeBroadcastEntity fetchObjectsInContext:request];
+        if (array.count) {
+            DSMasternodeBroadcastEntity * masternodeBroadcastEntity = [array objectAtIndex:0];
+            masternodeBroadcast = [masternodeBroadcastEntity masternodeBroadcast];
+        }
+    }];
+    return masternodeBroadcast;
+}
+
 @end
