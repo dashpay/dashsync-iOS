@@ -114,6 +114,7 @@
     for (DSDerivationPath * derivationPath in derivationPaths) {
         derivationPath.account = self;
     }
+    self.transactions = [NSMutableOrderedSet orderedSet];
     self.moc = [NSManagedObject context];
     [self.moc performBlockAndWait:^{
         [DSTransactionEntity setContext:self.moc];

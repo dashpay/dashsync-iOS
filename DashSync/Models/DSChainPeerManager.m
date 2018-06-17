@@ -889,6 +889,13 @@
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
     }
     
+    for (DSDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
+        NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
+        [allAddresses addObjectsFromArray:addresses];
+    }
+    
     
     [self.chain clearOrphans];
     self.filterUpdateHeight = self.chain.lastBlockHeight;

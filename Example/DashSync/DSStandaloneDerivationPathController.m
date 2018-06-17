@@ -86,7 +86,7 @@
     if ([segue.identifier isEqualToString:@"AddStandaloneDerivationPathSegue"]) {
         DSStandaloneDerivationPathKeyInputViewController * standaloneDerivationPathKeyInputViewController = (DSStandaloneDerivationPathKeyInputViewController*)segue.destinationViewController;
         standaloneDerivationPathKeyInputViewController.chain = self.chain;
-    } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathSegue"]) {
+    } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathsAddressesSegue"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
         DSDerivationPathsAddressesViewController * addresses = (DSDerivationPathsAddressesViewController*)segue.destinationViewController;
         addresses.derivationPath = [self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];

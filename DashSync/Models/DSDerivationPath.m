@@ -134,6 +134,8 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSNumber * depth;
 @property (nonatomic, assign) NSNumber * child;
+@property (nonatomic, strong) NSString * standaloneExtendedPublicKeyUniqueID;
+@property (nonatomic, strong) NSString * stringRepresentation;
 
 @end
 
@@ -180,6 +182,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     derivationPath.depth = @(depth);
     derivationPath.child = @(child);
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
+    [derivationPath loadAddresses];
     return derivationPath;
 }
 
@@ -194,24 +197,8 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     if (error) return nil;
     _depth = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_DEPTH];
     _child = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_CHILD];
-    [self.moc performBlockAndWait:^{
-        [DSAddressEntity setContext:self.moc];
-        [DSTransactionEntity setContext:self.moc];
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-        for (DSAddressEntity *e in derivationPathEntity.addresses) {
-            @autoreleasepool {
-                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
-                
-                while (e.index >= a.count) [a addObject:[NSNull null]];
-                a[e.index] = e.address;
-                [self->_allAddresses addObject:e.address];
-                if ([e.usedInInputs count] || [e.usedInOutputs count]) {
-                    [self->_usedAddresses addObject:e.address];
-                }
-            }
-        }
-        
-    }];
+
+    [self loadAddresses];
     return self;
 }
 
@@ -243,6 +230,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
         DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+        self->_syncBlockHeight = derivationPathEntity.syncBlockHeight;
         for (DSAddressEntity *e in derivationPathEntity.addresses) {
             @autoreleasepool {
                 NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
@@ -287,11 +275,29 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 -(NSString*)stringRepresentation {
+    if (_stringRepresentation) return _stringRepresentation;
     NSMutableString * mutableString = [NSMutableString stringWithFormat:@"m"];
+    if (self.length) {
     for (NSInteger i = 0;i<self.length;i++) {
         [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i]];
     }
-    return [mutableString copy];
+    } else if ([self.depth integerValue]) {
+        for (NSInteger i = 0;i<[self.depth integerValue] - 1;i++) {
+            [mutableString appendFormat:@"/?'"];
+        }
+        if (self.child) {
+            if ([self.child unsignedIntValue] & BIP32_HARD) {
+                [mutableString appendFormat:@"/%lu'",[self.child unsignedIntegerValue] - BIP32_HARD];
+            } else {
+                [mutableString appendFormat:@"/%lu",[self.child unsignedIntegerValue]];
+            }
+        } else {
+            [mutableString appendFormat:@"/?'"];
+        }
+        
+    }
+    _stringRepresentation = [mutableString copy];
+    return _stringRepresentation;
 }
 
 -(NSData*)extendedPublicKey {
@@ -361,6 +367,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
             }
             
             [self.moc performBlock:^{ // store new address in core data
+                [DSDerivationPathEntity setContext:self.moc];
                 DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
                 DSAddressEntity *e = [DSAddressEntity managedObject];
                 e.derivationPath = derivationPathEntity;
@@ -386,7 +393,8 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 
 -(NSString *)standaloneExtendedPublicKeyUniqueID {
-    return [self extendedPublicKey].shortHexString;
+    if (!_standaloneExtendedPublicKeyUniqueID) _standaloneExtendedPublicKeyUniqueID = [NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString;
+    return _standaloneExtendedPublicKeyUniqueID;
 }
 
 +(NSString*)standaloneExtendedPublicKeyLocationStringForUniqueID:(NSString*)uniqueID {
@@ -719,7 +727,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)self.extendedPublicKey.bytes);
     UInt256 chain = *(UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
     DSECPoint pubKey = *(DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-    uint32_t child = self.account.accountNumber | BIP32_HARD;
+    uint32_t child = self.child?[self.child unsignedIntValue]:self.account.accountNumber | BIP32_HARD;
     return serialize([self.depth unsignedCharValue], fingerprint, child, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)],[self.chain isMainnet]);
 }
 

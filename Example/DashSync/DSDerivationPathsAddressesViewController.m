@@ -9,11 +9,14 @@
 #import "DSDerivationPathsAddressesViewController.h"
 #import "DSAddressTableViewCell.h"
 #import <DashSync/DashSync.h>
+#import "BRBubbleView.h"
 
 @interface DSDerivationPathsAddressesViewController ()
 
 @property (nonatomic,strong) NSArray * addresses;
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
+@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic,assign) BOOL externalScope;
 
 @end
 
@@ -21,7 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    _externalScope = YES;
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
@@ -37,13 +40,13 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    return _managedObjectContext;
 }
 
 -(NSPredicate*)searchPredicate {
-    // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath];
-    return [NSPredicate predicateWithFormat:@"(derivationPath == %@)",entity];
+    return [NSPredicate predicateWithFormat:@"(derivationPath == %@) && (internal == %@)",entity,@(!self.externalScope)];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -131,6 +134,23 @@
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%d/%u",self.derivationPath.stringRepresentation,addressEntity.internal?1:0,addressEntity.index];
 
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = addressEntity.address;
+    [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+                                                center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+                           popOutAfterDelay:2.0]];
+}
+
+// MARK:- Search Bar Delegate
+
+-(void)searchBar:(UISearchBar *)searchBar selectedScopeButtonIndexDidChange:(NSInteger)selectedScope {
+    self.externalScope = !selectedScope;
+    self.fetchedResultsController = nil;
+    [self.tableView reloadData];
 }
 
 

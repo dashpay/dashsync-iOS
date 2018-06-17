@@ -46,6 +46,7 @@
 #import "DSMasternodeBroadcast.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
+#import "DSDerivationPathEntity+CoreDataProperties.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -104,7 +105,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 740000, "00000000000008d0d8a9054072b0272024a01d1920ab4d5a5eb98584930cbd4c", 1505852282, 0x1a0ab756u },
     { 760000, "000000000000011131c4a8c6446e6ce4597a192296ecad0fb47a23ae4b506682", 1508998683, 0x1a014ed1u },
     { 780000, "0000000000000019c30fd5b13548fe169068cbcedb1efb14a630398c26a0ae3b", 1512146289, 0x19408279u },
-    { 800000, "0000000000000019c30fd5b13548fe169068cbcedb1efb14a630398c26a0ae3b", 1515298907, 0x193a412au },
+    { 800000, "000000000000002a702916db91213077926866437a6b63e90548af03647d5df3", 1515298907, 0x193a412au },
     { 820000, "0000000000000006619ae1f0fc453690183f571817ef677a822b76d133ea920b", 1518449736, 0x192ab829u },
     { 840000, "000000000000000dfb1273aad00884845ddbde6371f44f3fe1a157d057e7757e", 1521602534, 0x194d5e8eu },
     { 860000, "000000000000001ed76fb953e7e96daf7000f657594a909540b0da6aa2252393", 1524751102, 0x1933df60u },
@@ -317,7 +318,10 @@ static dispatch_once_t devnetToken = 0;
     if (!error) {
         for (NSString * derivationPathIdentifier in standaloneIdentifiers) {
             DSDerivationPath * derivationPath = [[DSDerivationPath alloc] initWithExtendedPublicKeyIdentifier:derivationPathIdentifier onChain:self];
-            if (derivationPath) [self addStandaloneDerivationPath:derivationPath];
+            
+            if (derivationPath) {
+                [self addStandaloneDerivationPath:derivationPath];
+            }
         }
     }
 }
@@ -408,9 +412,17 @@ static dispatch_once_t devnetToken = 0;
     return !([[DSOptionsManager sharedInstance] syncType] & ~DSSyncType_NeedsWalletSyncType);
 }
 
--(void)removeWallet:(DSWallet*)wallet {
+-(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
     [self.mWallets removeObject:wallet];
+    NSError * error = nil;
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
+    if (!keyChainArray) keyChainArray = [NSMutableArray array];
+    [keyChainArray removeObject:wallet.uniqueID];
+    setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+    });
 }
 -(void)addWallet:(DSWallet*)wallet {
     [self.mWallets addObject:wallet];

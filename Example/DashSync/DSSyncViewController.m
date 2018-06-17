@@ -324,7 +324,7 @@
 }
 
 -(void)updateSingleAddressesCount {
-    self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+    self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%d",0];
 }
 
 -(void)updateReceivedGovernanceVoteCount {
