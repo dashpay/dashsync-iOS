@@ -962,6 +962,7 @@
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="xPublicKeyLabel" destination="xfB-w2-era" id="AOM-m7-Qsn"/>
+                                    <segue destination="pQt-5m-3CE" kind="show" identifier="ViewStandaloneDerivationPathsAddressesSegue" id="Unp-kP-fWV"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -980,7 +981,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eoY-bJ-zF5" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3403" y="-295"/>
+            <point key="canvasLocation" x="5561" y="-451"/>
         </scene>
         <!--Add-->
         <scene sceneID="uPk-rR-6tp">
@@ -1021,7 +1022,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3nU-xZ-CeA" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4480" y="-402"/>
+            <point key="canvasLocation" x="6777" y="-1060"/>
         </scene>
         <!--Wallets-->
         <scene sceneID="bh9-NZ-BZQ">
@@ -1179,7 +1180,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kU2-XS-Hi1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2030" y="1454"/>
+            <point key="canvasLocation" x="1868" y="1194"/>
         </scene>
         <!--Governance Objects-->
         <scene sceneID="cIV-CG-XcW">
@@ -1379,7 +1380,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="snF-e7-gEg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3198" y="1217"/>
+            <point key="canvasLocation" x="3207" y="1194"/>
         </scene>
         <!--Sporks View Controller-->
         <scene sceneID="qPI-fL-yi8">
@@ -1708,7 +1709,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6912.8000000000002" y="634.72906403940885"/>
+            <point key="canvasLocation" x="6777" y="3"/>
         </scene>
         <!--Passphrase-->
         <scene sceneID="1v0-Xr-yW0">
@@ -1840,4 +1841,7 @@
             <point key="canvasLocation" x="-772" y="375.36945812807886"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="Unp-kP-fWV"/>
+    </inferredMetricsTieBreakers>
 </document>

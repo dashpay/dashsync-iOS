@@ -46,6 +46,7 @@
 #import "DSMasternodeBroadcast.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
+#import "DSDerivationPathEntity+CoreDataProperties.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -317,7 +318,10 @@ static dispatch_once_t devnetToken = 0;
     if (!error) {
         for (NSString * derivationPathIdentifier in standaloneIdentifiers) {
             DSDerivationPath * derivationPath = [[DSDerivationPath alloc] initWithExtendedPublicKeyIdentifier:derivationPathIdentifier onChain:self];
-            if (derivationPath) [self addStandaloneDerivationPath:derivationPath];
+            
+            if (derivationPath) {
+                [self addStandaloneDerivationPath:derivationPath];
+            }
         }
     }
 }

@@ -14,6 +14,7 @@
 
 @property (nonatomic,strong) NSArray * addresses;
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
+@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 
 @end
 
@@ -37,11 +38,11 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    if (!_managedObjectContext) self.managedObjectContext = [NSManagedObject context];
+    return _managedObjectContext;
 }
 
 -(NSPredicate*)searchPredicate {
-    // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     DSDerivationPathEntity * entity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.derivationPath];
     return [NSPredicate predicateWithFormat:@"(derivationPath == %@)",entity];
 }

@@ -194,24 +194,8 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     if (error) return nil;
     _depth = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_DEPTH];
     _child = infoDictionary[DERIVATION_PATH_STANDALONE_INFO_CHILD];
-    [self.moc performBlockAndWait:^{
-        [DSAddressEntity setContext:self.moc];
-        [DSTransactionEntity setContext:self.moc];
-        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-        for (DSAddressEntity *e in derivationPathEntity.addresses) {
-            @autoreleasepool {
-                NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
-                
-                while (e.index >= a.count) [a addObject:[NSNull null]];
-                a[e.index] = e.address;
-                [self->_allAddresses addObject:e.address];
-                if ([e.usedInInputs count] || [e.usedInOutputs count]) {
-                    [self->_usedAddresses addObject:e.address];
-                }
-            }
-        }
-        
-    }];
+
+    [self loadAddresses];
     return self;
 }
 
@@ -243,6 +227,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         [DSAddressEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
         DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+        self->_syncBlockHeight = derivationPathEntity.syncBlockHeight;
         for (DSAddressEntity *e in derivationPathEntity.addresses) {
             @autoreleasepool {
                 NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
@@ -361,6 +346,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
             }
             
             [self.moc performBlock:^{ // store new address in core data
+                [DSDerivationPathEntity setContext:self.moc];
                 DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
                 DSAddressEntity *e = [DSAddressEntity managedObject];
                 e.derivationPath = derivationPathEntity;
