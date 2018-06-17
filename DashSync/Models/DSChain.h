@@ -130,7 +130,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 -(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
--(void)removeWallet:(DSWallet* _Nonnull)wallet;
+-(void)unregisterWallet:(DSWallet* _Nonnull)wallet;
 -(void)addWallet:(DSWallet* _Nonnull)objects;
 -(void)registerWallet:(DSWallet* _Nonnull)wallet;
 

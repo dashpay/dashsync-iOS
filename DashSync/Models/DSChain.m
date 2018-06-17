@@ -412,9 +412,17 @@ static dispatch_once_t devnetToken = 0;
     return !([[DSOptionsManager sharedInstance] syncType] & ~DSSyncType_NeedsWalletSyncType);
 }
 
--(void)removeWallet:(DSWallet*)wallet {
+-(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
     [self.mWallets removeObject:wallet];
+    NSError * error = nil;
+    NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
+    if (!keyChainArray) keyChainArray = [NSMutableArray array];
+    [keyChainArray removeObject:wallet.uniqueID];
+    setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+    });
 }
 -(void)addWallet:(DSWallet*)wallet {
     [self.mWallets addObject:wallet];

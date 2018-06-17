@@ -1618,6 +1618,7 @@
                         <searchBar key="tableHeaderView" contentMode="redraw" showsScopeBar="YES" id="aK5-NF-x9z">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="100"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <color key="barTintColor" red="0.9891078604942245" green="0.98645855689460182" blue="0.98945312500000004" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                             <textInputTraits key="textInputTraits"/>
                             <scopeButtonTitles>
                                 <string>External</string>

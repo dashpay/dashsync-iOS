@@ -10,7 +10,7 @@
 #import <DashSync/DashSync.h>
 #import <CoreData/CoreData.h>
 
-@interface DSDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate>
+@interface DSDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate,UISearchBarDelegate>
 
 @property(nonatomic,strong) DSDerivationPath * derivationPath;
 

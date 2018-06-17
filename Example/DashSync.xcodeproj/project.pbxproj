@@ -31,6 +31,7 @@
 		FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895720D2EC2600921B89 /* DSGovernanceObjectListViewController.m */; };
 		FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895A20D3035D00921B89 /* DSProposalTableViewCell.m */; };
 		FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */; };
+		FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -106,6 +107,8 @@
 		FB23895A20D3035D00921B89 /* DSProposalTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalTableViewCell.m; sourceTree = "<group>"; };
 		FB23895C20D36EF600921B89 /* DSClaimMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSClaimMasternodeViewController.h; sourceTree = "<group>"; };
 		FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSClaimMasternodeViewController.m; sourceTree = "<group>"; };
+		FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
+		FB2B21AA20D6FC0B000DF537 /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -207,6 +210,7 @@
 		6003F593195388D20070C39A /* Example for DashSync */ = {
 			isa = PBXGroup;
 			children = (
+				FB2B21A820D6FBF4000DF537 /* Views */,
 				FBB25BED20C5CD290037F5BE /* View Controllers */,
 				FB763C5320897AE500CDBA57 /* Cells */,
 				6003F59C195388D20070C39A /* DSAppDelegate.h */,
@@ -289,6 +293,15 @@
 				FB23895720D2EC2600921B89 /* DSGovernanceObjectListViewController.m */,
 			);
 			name = Governance;
+			sourceTree = "<group>";
+		};
+		FB2B21A820D6FBF4000DF537 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FB2B21AA20D6FC0B000DF537 /* BRBubbleView.h */,
+				FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */,
+			);
+			name = Views;
 			sourceTree = "<group>";
 		};
 		FB6DC62620AB63B600E35EED /* Main */ = {
@@ -558,6 +571,7 @@
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
+				FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */,
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
