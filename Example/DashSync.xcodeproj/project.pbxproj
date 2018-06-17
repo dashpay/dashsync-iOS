@@ -436,6 +436,9 @@
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = "Andrew Podkovyrin";
 				TargetAttributes = {
+					6003F589195388D20070C39A = {
+						DevelopmentTeam = NMHX8CEMG9;
+					};
 					6003F5AD195388D20070C39A = {
 						TestTargetID = 6003F589195388D20070C39A;
 					};
@@ -699,6 +702,7 @@
 			baseConfigurationReference = 98472781BAD8800EFF391FA4 /* Pods-DashSync_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = NMHX8CEMG9;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
@@ -715,6 +719,7 @@
 			baseConfigurationReference = 2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = NMHX8CEMG9;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DashSync/DashSync-Prefix.pch";
 				INFOPLIST_FILE = "DashSync/DashSync-Info.plist";
