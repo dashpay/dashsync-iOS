@@ -1706,11 +1706,45 @@
                             <outlet property="delegate" destination="pQt-5m-3CE" id="UEH-CE-qdy"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Addresses" id="X62-Vc-cpN"/>
+                    <navigationItem key="navigationItem" title="Addresses" id="X62-Vc-cpN">
+                        <barButtonItem key="rightBarButtonItem" title="Export" id="Zyq-z2-nUH">
+                            <connections>
+                                <segue destination="jJT-TE-sdK" kind="show" identifier="ExportAddressesSegue" id="r1d-Db-CAw"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="6777" y="3"/>
+        </scene>
+        <!--Addresses Exporter View Controller-->
+        <scene sceneID="mnp-lz-ER9">
+            <objects>
+                <viewController id="jJT-TE-sdK" customClass="DSAddressesExporterViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="IJE-EK-aeu"/>
+                        <viewControllerLayoutGuide type="bottom" id="81m-qe-p68"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="pwb-yN-93H">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JKQ-ap-bjv">
+                                <rect key="frame" x="148" y="438" width="46" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Export"/>
+                                <connections>
+                                    <action selector="export:" destination="jJT-TE-sdK" eventType="touchUpInside" id="4aJ-GX-S3e"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mTL-Sr-dib" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7783" y="0.0"/>
         </scene>
         <!--Passphrase-->
         <scene sceneID="1v0-Xr-yW0">

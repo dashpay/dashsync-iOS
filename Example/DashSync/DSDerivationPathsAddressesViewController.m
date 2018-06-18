@@ -10,6 +10,7 @@
 #import "DSAddressTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import "BRBubbleView.h"
+#import "DSAddressesExporterViewController.h"
 
 @interface DSDerivationPathsAddressesViewController ()
 
@@ -152,6 +153,14 @@
     self.fetchedResultsController = nil;
     [self.tableView reloadData];
 }
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
+    DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
+    addressesExporterViewController.derivationPath = self.derivationPath;
+}
+}
+
 
 
 @end
