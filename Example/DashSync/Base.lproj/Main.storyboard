@@ -894,8 +894,16 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Add Devnet" id="0jB-b0-kZB">
-                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="iAL-Vr-aT1"/>
-                        <barButtonItem key="rightBarButtonItem" style="done" systemItem="save" id="wtc-Qe-ESe"/>
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="iAL-Vr-aT1">
+                            <connections>
+                                <action selector="cancel" destination="c9W-cr-0Oy" id="TgD-3G-JRB"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" style="done" systemItem="save" id="wtc-Qe-ESe">
+                            <connections>
+                                <action selector="save" destination="c9W-cr-0Oy" id="Vim-1z-b1Y"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="L1F-Sa-WQb" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1945,14 +1953,18 @@
                                     <rect key="frame" x="0.0" y="0.0" width="341" height="91.666666666666671"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Chain" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UuY-NT-c6S">
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Chain" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UuY-NT-c6S">
                                             <rect key="frame" x="30" y="35" width="44" height="21"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
+                                    <constraints>
+                                        <constraint firstItem="UuY-NT-c6S" firstAttribute="top" secondItem="hG2-5b-0kz" secondAttribute="top" constant="35" id="8c3-8g-jgJ"/>
+                                        <constraint firstItem="UuY-NT-c6S" firstAttribute="leading" secondItem="hG2-5b-0kz" secondAttribute="leading" constant="30" id="DFg-jh-Jv3"/>
+                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="UuY-NT-c6S" secondAttribute="trailing" constant="10" id="n75-t5-bse"/>
+                                    </constraints>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="chainNameLabel" destination="UuY-NT-c6S" id="Qnc-FW-5ky"/>

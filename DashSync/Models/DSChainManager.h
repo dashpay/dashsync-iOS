@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import "DSChainPeerManager.h"
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
+
 @interface DSChainManager : NSObject
 
 @property (nonatomic,strong) DSChainPeerManager * mainnetManager;

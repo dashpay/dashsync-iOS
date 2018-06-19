@@ -10,9 +10,12 @@
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
 #import "DSWalletManager.h"
+#import "NSMutableData+Dash.h"
+#import "NSData+Bitcoin.h"
 #include <arpa/inet.h>
 
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
+#define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
 
 @interface DSChainManager()
 
@@ -39,7 +42,14 @@
 -(id)init {
     if ([super init] == self) {
         self.knownChains = [NSMutableArray array];
+        NSError * error = nil;
+        NSMutableDictionary * registeredDevnetIdentifiers = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
         self.knownDevnetChains = [NSMutableArray array];
+        for (NSString * string in registeredDevnetIdentifiers) {
+            NSArray<DSCheckpoint*>* checkpointArray = registeredDevnetIdentifiers[string];
+            [self.knownDevnetChains addObject:[DSChain setUpDevnetWithIdentifier:string withCheckpoints:checkpointArray withDefaultPort:DEVNET_STANDARD_PORT]];
+        }
+        
         self.reachability = [Reachability reachabilityForInternetConnection];
     }
     return self;
@@ -53,7 +63,7 @@
         DSChain * mainnet = [DSChain mainnet];
         _mainnetManager = [[DSChainPeerManager alloc] initWithChain:mainnet];
         mainnet.peerManagerDelegate = _mainnetManager;
-
+        
         [self.knownChains addObject:[DSChain mainnet]];
     });
     return _mainnetManager;
@@ -114,13 +124,15 @@
     return [self.knownChains copy];
 }
 
--(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSArray<NSString*>*)serviceLocations withStandardPort:(uint32_t)port {
-    DSChain * chain = [DSChain createDevnetForIdentifier:identifier withCheckpoints:nil onPort:port];
+-(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSArray<NSString*>*)serviceLocations withStandardPort:(uint32_t)standardPort {
+    NSError * error = nil;
+    
+    DSChain * chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withDefaultPort:standardPort];
     DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];
-        NSString * port = serviceArray[1];
+        NSString * port = ([serviceArray count] > 1)? serviceArray[1]:nil;
         UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
         struct in_addr addrV4;
         struct in6_addr addrV6;
@@ -134,9 +146,18 @@
         } else {
             NSLog(@"invalid address");
         }
-
-        [peerManager registerPeerAtLocation:ipAddress port:[port intValue]];
+        
+        [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort];
     }
+    
+    NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+    
+    if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
+    if (![[registeredDevnetsDictionary allKeys] containsObject:identifier]) {
+        [registeredDevnetsDictionary setObject:chain.checkpoints forKey:identifier];
+        setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
+    }
+    
     return chain;
 }
 

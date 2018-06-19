@@ -13,6 +13,8 @@
 
 @interface DSChainsViewController ()
 
+@property (strong, nonatomic) id addChainsObserver;
+
 @end
 
 @implementation DSChainsViewController
@@ -20,11 +22,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
     
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    self.addChainsObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainsDidChangeNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           NSLog(@"Added a new chain");
+                                                           [self.tableView reloadData];
+                                                       }];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -54,7 +58,7 @@
     DSChainTableViewCell *cell = (DSChainTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"chainTableViewCell" forIndexPath:indexPath];
     DSChain * chain = [self chainForIndex:indexPath.row];
     if (cell) {
-        cell.chainNameLabel.text = chain.networkName;
+        cell.chainNameLabel.text = chain.name;
     }
     
     return cell;
@@ -108,7 +112,7 @@
         DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
         DSChain * chain = [self chainForIndex:index];
         syncViewController.chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
-        syncViewController.title = chain.networkName;
+        syncViewController.title = chain.name;
     }
 }
 

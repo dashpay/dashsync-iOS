@@ -26,3 +26,5 @@ NSString* const DSGovernanceObjectCountUpdateNotification = @"DSGovernanceObject
 NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCountUpdateNotification";
 
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
+
+NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";

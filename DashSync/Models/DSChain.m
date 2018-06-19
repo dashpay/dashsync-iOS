@@ -166,15 +166,19 @@ static checkpoint mainnet_checkpoint_array[] = {
     return self;
 }
 
--(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier port:(uint32_t)port
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port
 {
     if (! (self = [self init])) return nil;
     _chainType = DSChainType_DevNet;
-    
+    if (!checkpoints || ![checkpoints count]) {
     NSMutableArray * mutableCheckpointArray = [DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:1]; //For all devnets
     DSCheckpoint * genesisCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:mutableCheckpointArray[0] withIdentifier:identifier];
     self.checkpoints = @[genesisCheckpoint];
     self.genesisHash = genesisCheckpoint.checkpointHash;
+    } else {
+        self.checkpoints = checkpoints;
+        self.genesisHash = checkpoints[0].checkpointHash;
+    }
     self.standardPort = port;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
@@ -294,28 +298,20 @@ static dispatch_once_t devnetToken = 0;
     return devnetChain;
 }
 
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withDefaultPort:(uint32_t)port {
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
     DSChain * devnetChain = nil;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier port:port];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];
         }
     }
     return devnetChain;
-}
-
-+(DSChain*)createDevnetForIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray onPort:(uint32_t)port {
-    DSChain * chain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier port:port];
-    if (checkpointArray && uint256_eq(checkpointArray[0].checkpointHash,chain.genesisHash)) {
-        chain.checkpoints = checkpointArray;
-    }
-    return chain;
 }
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName {
@@ -557,6 +553,24 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
             if (_networkName) return _networkName;
             return @"dev";
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
+-(NSString*)name {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return @"Mainnet";
+            break;
+        case DSChainType_TestNet:
+            return @"Testnet";
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
             break;
         default:
             break;

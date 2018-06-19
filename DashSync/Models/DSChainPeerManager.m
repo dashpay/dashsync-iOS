@@ -165,7 +165,7 @@
     NSError * error = nil;
     NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
     if (!registeredPeersArray) registeredPeersArray = [NSMutableArray array];
-    [registeredPeersArray addObject:@{@"address":uint128_obj(IPAddress),@"port":@(port)}];
+    [registeredPeersArray addObject:@{@"address":[NSData dataWithUInt128:IPAddress],@"port":@(port)}];
     setKeychainArray(registeredPeersArray, self.chain.registeredPeersKey, NO);
 }
 

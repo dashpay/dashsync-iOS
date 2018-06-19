@@ -84,6 +84,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly) NSString * networkName;
+@property (nonatomic, readonly) NSString * name;
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
 @property (nonatomic, weak) DSChainPeerManager * peerManagerDelegate;
@@ -100,6 +101,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, assign) uint64_t feePerKb;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
 @property (nonatomic, readonly) NSString * registeredPeersKey;
+@property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;
@@ -114,7 +116,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 +(DSChain*)testnet;
 
 +(DSChain*)devnetWithIdentifier:(NSString*)identifier;
-+(DSChain*)createDevnetForIdentifier:(NSString*)identifier withCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port;
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
 

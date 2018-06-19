@@ -94,6 +94,11 @@
     }
 }
 
+-(void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason {
+    [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
+    self.activeAddDevnetIPAddressTableViewCell = nil;
+}
+
 // MARK:- Navigation
 
 -(void)showError:(NSString*)errorMessage {
@@ -101,8 +106,8 @@
 }
 
 -(IBAction)save {
+    [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
     NSString * identifier = self.addDevnetNameTableViewCell.identifierTextField.text;
-    
     DSChain * chain = [[DSChainManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses withStandardPort:12999];
     //[DSChain chain]
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];

@@ -57,7 +57,7 @@
             return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain createDevnetForIdentifier:devnetIdentifier withCheckpoints:checkpointArray onPort:port];
+            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port];
         }
     }
     return nil;
