@@ -176,8 +176,7 @@
     if (error) return @[];
     NSMutableArray * registeredPeers = [NSMutableArray array];
     for (NSDictionary * peerDictionary in registeredPeersArray) {
-        UInt128 ipAddress;
-        [peerDictionary[@"address"] getValue:&ipAddress];
+        UInt128 ipAddress = *(UInt128*)((NSData*)peerDictionary[@"address"]).bytes;
         uint16_t port = [peerDictionary[@"port"] unsignedShortValue];
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
         [registeredPeers addObject:[[DSPeer alloc] initWithAddress:ipAddress port:port onChain:self.chain timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
@@ -207,7 +206,7 @@
         
         if ([self.chain isDevnetAny]) {
             
-            [self.peers addObjectsFromArray:[self registeredDevnetPeers]];
+            [_peers addObjectsFromArray:[self registeredDevnetPeers]];
             
             [self sortPeers];
             return _peers;

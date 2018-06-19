@@ -168,17 +168,20 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 -(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port
 {
+    //for devnet the genesis checkpoint is really the second block
     if (! (self = [self init])) return nil;
     _chainType = DSChainType_DevNet;
     if (!checkpoints || ![checkpoints count]) {
-    NSMutableArray * mutableCheckpointArray = [DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:1]; //For all devnets
-    DSCheckpoint * genesisCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:mutableCheckpointArray[0] withIdentifier:identifier];
-    self.checkpoints = @[genesisCheckpoint];
-    self.genesisHash = genesisCheckpoint.checkpointHash;
+        DSCheckpoint * genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
+        DSCheckpoint * secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:identifier];
+        self.checkpoints = @[genesisCheckpoint,secondCheckpoint];
+        self.genesisHash = secondCheckpoint.checkpointHash;
     } else {
         self.checkpoints = checkpoints;
-        self.genesisHash = checkpoints[0].checkpointHash;
+        self.genesisHash = checkpoints[1].checkpointHash;
     }
+    NSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
+    NSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.standardPort = port;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
@@ -356,10 +359,12 @@ static dispatch_once_t devnetToken = 0;
     switch (_chainType) {
         case DSChainType_MainNet:
             return DASH_MAGIC_NUMBER_MAINNET;
-            break;
-        
-        default:
+        case DSChainType_TestNet:
             return DASH_MAGIC_NUMBER_TESTNET;
+        case DSChainType_DevNet:
+            return DASH_MAGIC_NUMBER_DEVNET;
+        default:
+            return DASH_MAGIC_NUMBER_MAINNET;
             break;
     }
 }
@@ -1049,6 +1054,15 @@ static dispatch_once_t devnetToken = 0;
 #define kCheckpointHashKey      @"CheckpointHash"
 #define kTimestampKey      @"Timestamp"
 #define kTargetKey      @"Target"
+
++(DSCheckpoint*)genesisDevnetCheckpoint {
+    DSCheckpoint * checkpoint = [DSCheckpoint new];
+    checkpoint.checkpointHash = *(UInt256 *)[NSString stringWithCString:"000008ca1832a4baf228eb1553c03d3a2c8e02399550dd6ea8d65cec3ef23d2e" encoding:NSUTF8StringEncoding].hexToData.reverse.bytes;
+    checkpoint.height = 0;
+    checkpoint.timestamp = 1417713337;
+    checkpoint.target = 0x207fffffu;
+    return checkpoint;
+}
 
 -(instancetype)initWithHash:(UInt256)checkpointHash height:(uint32_t)height timestamp:(uint32_t)timestamp target:(uint32_t)target {
     if (! (self = [super init])) return nil;

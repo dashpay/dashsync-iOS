@@ -14,7 +14,7 @@
 
 @interface DSAddDevnetViewController ()
 
-@property (nonatomic,strong) NSMutableArray<NSString*> * insertedIPAddresses;
+@property (nonatomic,strong) NSMutableOrderedSet<NSString*> * insertedIPAddresses;
 @property (nonatomic,strong) DSAddDevnetNameTableViewCell * addDevnetNameTableViewCell;
 @property (nonatomic,strong) DSAddDevnetAddIPAddressTableViewCell * addDevnetAddIPAddressTableViewCell;
 @property (nonatomic,strong) DSAddDevnetIPAddressTableViewCell * activeAddDevnetIPAddressTableViewCell;
@@ -25,7 +25,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.insertedIPAddresses = [NSMutableArray array];
+    self.insertedIPAddresses = [NSMutableOrderedSet orderedSet];
     self.addDevnetNameTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetNameCellIdentifier"];
     self.addDevnetAddIPAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetAddIPCellIdentifier"];
     // Do any additional setup after loading the view.
@@ -72,10 +72,13 @@
         if (self.activeAddDevnetIPAddressTableViewCell) {
             NSIndexPath * activeIndexPath = [self.tableView indexPathForCell:self.activeAddDevnetIPAddressTableViewCell];
             if (activeIndexPath.row == indexPath.row - 1) {
+                if (![self.insertedIPAddresses containsObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text]) {
                 [self.tableView beginUpdates];
-                [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
+                [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
+//                [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
                 [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:_insertedIPAddresses.count inSection:1]] withRowAnimation:UITableViewRowAnimationTop];
                 [self.tableView endUpdates];
+                }
             }
         }
     }
@@ -95,7 +98,11 @@
 }
 
 -(void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason {
-    [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
+    if (![self.insertedIPAddresses containsObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text]) {
+        [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
+    } else {
+        self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text = @"";
+    }
     self.activeAddDevnetIPAddressTableViewCell = nil;
 }
 

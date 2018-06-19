@@ -157,7 +157,9 @@
         [registeredDevnetsDictionary setObject:chain.checkpoints forKey:identifier];
         setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
     }
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
+    });
     return chain;
 }
 

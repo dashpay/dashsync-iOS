@@ -44,6 +44,7 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
+#define DASH_MAGIC_NUMBER_DEVNET 0xceffcae2
 
 
 #define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
@@ -66,6 +67,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 
 @interface DSCheckpoint : NSObject <NSCoding>
 
++(DSCheckpoint*)genesisDevnetCheckpoint;
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 checkpointHash;
 @property (nonatomic, assign) uint32_t timestamp;

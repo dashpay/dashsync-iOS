@@ -60,14 +60,14 @@
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain {
     DSTransaction * transaction = [[self alloc] initOnChain:chain];
     NSMutableData * coinbaseData = [NSMutableData data];
-    [coinbaseData appendVarInt:1];
-    [coinbaseData appendString:identifier];
+    [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier];
     //transaction.inputIndexes
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil];
     [transaction setCoinbaseData:coinbaseData];
     NSMutableData * outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
     [transaction addOutputScript:outputScript amount:chain.baseReward];
+    NSLog(@"we are hashing %@",transaction.toData);
     transaction.txHash = transaction.toData.SHA256_2;
     return transaction;
 }
@@ -401,7 +401,7 @@ sequence:(uint32_t)sequence
         [d appendBytes:&hash length:sizeof(hash)];
         [d appendUInt32:UINT32_MAX];
         [d appendData:self.coinbaseData];
-        [d appendUInt32:0];
+        [d appendUInt32:UINT32_MAX];
     } else {
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
