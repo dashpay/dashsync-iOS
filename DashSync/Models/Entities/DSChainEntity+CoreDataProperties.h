@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSChainEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *checkpoints;
-@property (nullable, nonatomic, copy) NSString *genesisBlockHash;
+@property (nullable, nonatomic, copy) NSString *devnetIdentifier;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) uint16_t type;
 @property (nonnull, nonatomic, retain) NSSet<DSPeerEntity *> *peers;

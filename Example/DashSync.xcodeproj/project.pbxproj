@@ -49,6 +49,10 @@
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
 		FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */; };
 		FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106520D7A72D006883E2 /* DSAddressesExporterViewController.m */; };
+		FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106820D833F4006883E2 /* DSAddDevnetViewController.m */; };
+		FB9A106C20D8362F006883E2 /* DSAddDevnetNameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSAddDevnetNameTableViewCell.m */; };
+		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
+		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
 		FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */; };
 		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
 /* End PBXBuildFile section */
@@ -144,6 +148,14 @@
 		FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
 		FB9A106420D7A72D006883E2 /* DSAddressesExporterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressesExporterViewController.h; sourceTree = "<group>"; };
 		FB9A106520D7A72D006883E2 /* DSAddressesExporterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressesExporterViewController.m; sourceTree = "<group>"; };
+		FB9A106720D833F4006883E2 /* DSAddDevnetViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetViewController.h; sourceTree = "<group>"; };
+		FB9A106820D833F4006883E2 /* DSAddDevnetViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetViewController.m; sourceTree = "<group>"; };
+		FB9A106A20D8362F006883E2 /* DSAddDevnetNameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetNameTableViewCell.h; sourceTree = "<group>"; };
+		FB9A106B20D8362F006883E2 /* DSAddDevnetNameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetNameTableViewCell.m; sourceTree = "<group>"; };
+		FB9A106D20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetIPAddressTableViewCell.h; sourceTree = "<group>"; };
+		FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetIPAddressTableViewCell.m; sourceTree = "<group>"; };
+		FB9A107020D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetAddIPAddressTableViewCell.h; sourceTree = "<group>"; };
+		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FBB25BEE20C5CDC60037F5BE /* DSBlockchainExplorerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainExplorerViewController.h; sourceTree = "<group>"; };
 		FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainExplorerViewController.m; sourceTree = "<group>"; };
 		FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlockTableViewCell.h; sourceTree = "<group>"; };
@@ -316,6 +328,8 @@
 				FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */,
 				FB6DC62720AB64F400E35EED /* DSChainsViewController.h */,
 				FB6DC62820AB64F400E35EED /* DSChainsViewController.m */,
+				FB9A106720D833F4006883E2 /* DSAddDevnetViewController.h */,
+				FB9A106820D833F4006883E2 /* DSAddDevnetViewController.m */,
 			);
 			name = Main;
 			sourceTree = "<group>";
@@ -343,6 +357,12 @@
 				FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */,
 				FB23895920D3035D00921B89 /* DSProposalTableViewCell.h */,
 				FB23895A20D3035D00921B89 /* DSProposalTableViewCell.m */,
+				FB9A106A20D8362F006883E2 /* DSAddDevnetNameTableViewCell.h */,
+				FB9A106B20D8362F006883E2 /* DSAddDevnetNameTableViewCell.m */,
+				FB9A106D20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.h */,
+				FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */,
+				FB9A107020D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.h */,
+				FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -565,9 +585,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */,
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
+				FB9A106C20D8362F006883E2 /* DSAddDevnetNameTableViewCell.m in Sources */,
 				FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */,
 				FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */,
 				FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */,
@@ -576,6 +598,8 @@
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
+				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
+				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
 				FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */,
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */,

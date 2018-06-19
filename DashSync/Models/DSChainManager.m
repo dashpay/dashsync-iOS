@@ -10,6 +10,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
 #import "DSWalletManager.h"
+#include <arpa/inet.h>
 
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 
@@ -111,6 +112,32 @@
 
 -(NSArray*)chains {
     return [self.knownChains copy];
+}
+
+-(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSArray<NSString*>*)serviceLocations withStandardPort:(uint32_t)port {
+    DSChain * chain = [DSChain createDevnetForIdentifier:identifier withCheckpoints:nil onPort:port];
+    DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
+    for (NSString * serviceLocation in serviceLocations) {
+        NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
+        NSString * address = serviceArray[0];
+        NSString * port = serviceArray[1];
+        UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+        struct in_addr addrV4;
+        struct in6_addr addrV6;
+        if (inet_aton([address UTF8String], &addrV4) != 0) {
+            uint32_t ip = ntohl(addrV4.s_addr);
+            ipAddress.u32[3] = ip;
+            NSLog(@"%08x", ip);
+        } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
+            //todo support IPV6
+            NSLog(@"we do not yet support IPV6");
+        } else {
+            NSLog(@"invalid address");
+        }
+
+        [peerManager registerPeerAtLocation:ipAddress port:[port intValue]];
+    }
+    return chain;
 }
 
 // MARK: - floating fees

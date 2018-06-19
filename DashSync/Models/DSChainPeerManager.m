@@ -151,12 +151,38 @@
             return TESTNET_DNS_SEEDS;
             break;
         case DSChainType_DevNet:
-            return nil; //todo
+            return nil; //no dns seeds for devnets
             break;
         default:
             break;
     }
-    return 0;
+    return nil;
+}
+
+// MARK: - Peer Registration
+
+-(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port {
+    NSError * error = nil;
+    NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
+    if (!registeredPeersArray) registeredPeersArray = [NSMutableArray array];
+    [registeredPeersArray addObject:@{@"address":uint128_obj(IPAddress),@"port":@(port)}];
+    setKeychainArray(registeredPeersArray, self.chain.registeredPeersKey, NO);
+}
+
+
+-(NSArray*)registeredDevnetPeers {
+    NSError * error = nil;
+    NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
+    if (error) return @[];
+    NSMutableArray * registeredPeers = [NSMutableArray array];
+    for (NSDictionary * peerDictionary in registeredPeersArray) {
+        UInt128 ipAddress;
+        [peerDictionary[@"address"] getValue:&ipAddress];
+        uint16_t port = [peerDictionary[@"port"] unsignedShortValue];
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        [registeredPeers addObject:[[DSPeer alloc] initWithAddress:ipAddress port:port onChain:self.chain timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+    }
+    return [registeredPeers copy];
 }
 
 - (NSMutableOrderedSet *)peers
@@ -178,6 +204,14 @@
         }];
         
         [self sortPeers];
+        
+        if ([self.chain isDevnetAny]) {
+            
+            [self.peers addObjectsFromArray:[self registeredDevnetPeers]];
+            
+            [self sortPeers];
+            return _peers;
+        }
         
         // DNS peer discovery
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];

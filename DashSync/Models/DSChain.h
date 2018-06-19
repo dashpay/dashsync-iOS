@@ -93,10 +93,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
 @property (nonatomic, readonly) NSString * chainWalletsKey;
+@property (nonatomic, readonly) uint64_t baseReward;
 @property (nonatomic, readonly) BOOL hasAWallet;
 @property (nonatomic, readonly) BOOL syncsBlockchain;
+@property (nonatomic, readonly) NSString * devnetIdentifier;
 @property (nonatomic, assign) uint64_t feePerKb;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
+@property (nonatomic, readonly) NSString * registeredPeersKey;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;
@@ -110,8 +113,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
 
-+(DSChain*)devnetWithGenesisHash:(UInt256)genesisHash;
-+(DSChain*)createDevnetWithCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
++(DSChain*)devnetWithIdentifier:(NSString*)identifier;
++(DSChain*)createDevnetForIdentifier:(NSString*)identifier withCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
 

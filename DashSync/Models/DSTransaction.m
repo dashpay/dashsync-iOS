@@ -34,6 +34,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSChain.h"
 
 #define TX_VERSION    0x00000001u
 #define TX_LOCKTIME   0x00000000u
@@ -45,6 +46,7 @@
 @property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSData * coinbaseData;
 
 @end
 
@@ -53,6 +55,21 @@
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     return [[self alloc] initWithMessage:message onChain:chain];
+}
+
++ (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain {
+    DSTransaction * transaction = [[self alloc] initOnChain:chain];
+    NSMutableData * coinbaseData = [NSMutableData data];
+    [coinbaseData appendVarInt:1];
+    [coinbaseData appendString:identifier];
+    //transaction.inputIndexes
+    [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil];
+    [transaction setCoinbaseData:coinbaseData];
+    NSMutableData * outputScript = [NSMutableData data];
+    [outputScript appendUInt8:OP_RETURN];
+    [transaction addOutputScript:outputScript amount:chain.baseReward];
+    transaction.txHash = transaction.toData.SHA256_2;
+    return transaction;
 }
 
 - (instancetype)init {
@@ -373,12 +390,19 @@ sequence:(uint32_t)sequence
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
-    UInt256 hash;
+    UInt256 hash = UINT256_ZERO;
     NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE*self.hashes.count +
                         TX_OUTPUT_SIZE*self.addresses.count];
 
     [d appendUInt32:self.version];
     [d appendVarInt:self.hashes.count];
+    
+    if ([self isCoinbase]) {
+        [d appendBytes:&hash length:sizeof(hash)];
+        [d appendUInt32:UINT32_MAX];
+        [d appendData:self.coinbaseData];
+        [d appendUInt32:0];
+    } else {
 
     for (NSUInteger i = 0; i < self.hashes.count; i++) {
         [self.hashes[i] getValue:&hash];
@@ -397,6 +421,7 @@ sequence:(uint32_t)sequence
         else [d appendVarInt:0];
         
         [d appendUInt32:[self.sequences[i] unsignedIntValue]];
+    }
     }
     
     [d appendVarInt:self.amounts.count];
@@ -490,6 +515,15 @@ sequence:(uint32_t)sequence
     // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
     // and the worst case is paying a transaction fee when it's not needed
     return (uint32_t)((TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1ULL)/amountTotal);
+}
+
+-(BOOL)isCoinbase {
+    if (([self.hashes count] == 1)) {
+        UInt256 firstInputHash;
+        [self.hashes[0] getValue:&firstInputHash];
+        if (uint256_is_zero(firstInputHash) && [[self.inputIndexes objectAtIndex:0] integerValue] == UINT32_MAX) return TRUE;
+    }
+    return FALSE;
 }
 
 - (NSUInteger)hash

@@ -18,6 +18,8 @@
 
 -(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
 
+-(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString* _Nonnull)identifier forServiceLocations:(NSArray<NSString*>* _Nonnull)serviceLocations withStandardPort:(uint32_t)port;
+
 + (instancetype _Nullable)sharedInstance;
 
 -(void)resetSpendingLimits;

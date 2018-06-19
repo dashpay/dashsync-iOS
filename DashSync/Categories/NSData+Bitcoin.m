@@ -797,6 +797,145 @@ BOOL deserialize(NSString * string, uint8_t * depth, uint32_t * fingerprint, uin
     return TRUE;
 }
 
+
+UInt256 setCompact(int32_t nCompact)
+{
+    int nSize = nCompact >> 24;
+    UInt256 nWord = UINT256_ZERO;
+    nWord.u32[0] = nCompact & 0x007fffff;
+    if (nSize <= 3) {
+        nWord = uInt256ShiftRight(nWord, 8 * (3 - nSize));
+    } else {
+        nWord = uInt256ShiftLeft(nWord, 8 * (nSize - 3));
+    }
+    return nWord;
+}
+
+uint8_t compactBits(UInt256 number)
+{
+    for (int pos = 8 - 1; pos >= 0; pos--) {
+        if (number.u32[pos]) {
+            for (int bits = 31; bits > 0; bits--) {
+                if (number.u32[pos] & 1 << bits)
+                    return 32 * pos + bits + 1;
+            }
+            return 32 * pos + 1;
+        }
+    }
+    return 0;
+}
+
+int32_t getCompact(UInt256 number)
+{
+    int nSize = (compactBits(number) + 7) / 8;
+    uint32_t nCompact = 0;
+    if (nSize <= 3) {
+        nCompact = number.u32[0] << 8 * (3 - nSize);
+    } else {
+        UInt256 bn = uInt256ShiftRight(number, 8 * (nSize - 3));
+        nCompact = bn.u32[0];
+    }
+    // The 0x00800000 bit denotes the sign.
+    // Thus, if it is already set, divide the mantissa by 256 and increase the exponent.
+    if (nCompact & 0x00800000) {
+        nCompact >>= 8;
+        nSize++;
+    }
+    assert((nCompact & ~0x007fffff) == 0);
+    assert(nSize < 256);
+    nCompact |= nSize << 24;
+    return nCompact;
+}
+
+UInt256 uInt256Add(UInt256 a, UInt256 b) {
+    uint64_t carry = 0;
+    UInt256 r = UINT256_ZERO;
+    for (int i = 0; i < 8; i++) {
+        uint64_t sum = (uint64_t)a.u32[i] + (uint64_t)b.u32[i] + carry;
+        r.u32[i] = (uint32_t)sum;
+        carry = sum >> 32;
+    }
+    return r;
+}
+
+UInt256 uInt256AddOne(UInt256 a) {
+    UInt256 r = ((UInt256) { .u64 = { 1, 0, 0, 0 } });
+    return uInt256Add(a, r);
+}
+
+UInt256 uInt256Neg(UInt256 a) {
+    UInt256 r = UINT256_ZERO;
+    for (int i = 0; i < 4; i++) {
+        r.u64[i] = ~a.u64[i];
+    }
+    return r;
+}
+
+UInt256 uInt256Subtract(UInt256 a, UInt256 b) {
+    return uInt256Add(a,uInt256AddOne(uInt256Neg(b)));
+}
+
+UInt256 uInt256ShiftLeft(UInt256 a, uint8_t bits) {
+    UInt256 r = UINT256_ZERO;
+    int k = bits / 64;
+    bits = bits % 64;
+    for (int i = 0; i < 4; i++) {
+        if (i + k + 1 < 4 && bits != 0)
+            r.u64[i + k + 1] |= (a.u64[i] >> (64 - bits));
+        if (i + k < 4)
+            r.u64[i + k] |= (a.u64[i] << bits);
+    }
+    return r;
+}
+
+UInt256 uInt256ShiftRight(UInt256 a, uint8_t bits) {
+    UInt256 r = UINT256_ZERO;
+    int k = bits / 64;
+    bits = bits % 64;
+    for (int i = 0; i < 4; i++) {
+        if (i - k - 1 >= 0 && bits != 0)
+            r.u64[i - k - 1] |= (a.u64[i] << (64 - bits));
+        if (i - k >= 0)
+            r.u64[i - k] |= (a.u64[i] >> bits);
+    }
+    return r;
+}
+
+UInt256 uInt256Divide (UInt256 a,UInt256 b)
+{
+    UInt256 div = b;     // make a copy, so we can shift.
+    UInt256 num = a;     // make a copy, so we can subtract.
+    UInt256 r = UINT256_ZERO;                  // the quotient.
+    int num_bits = compactBits(num);
+    int div_bits = compactBits(div);
+    assert (div_bits != 0);
+    if (div_bits > num_bits) // the result is certainly 0.
+        return r;
+    int shift = num_bits - div_bits;
+    div = uInt256ShiftLeft(div, shift); // shift so that div and nun align.
+    while (shift >= 0) {
+        if (uint256_supeq(num,div)) {
+            num = uInt256Subtract(num,div);
+            r.u32[shift / 32] |= (1 << (shift & 31)); // set a bit of the result.
+        }
+        div = uInt256ShiftRight(div, 1); // shift back.
+        shift--;
+    }
+    // num now contains the remainder of the division.
+    return r;
+}
+
+UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
+{
+    uint64_t carry = 0;
+    for (int i = 0; i < 8; i++) {
+        uint64_t n = carry + (uint64_t)b * (uint64_t)a.u32[i];
+        a.u32[i] = n & 0xffffffff;
+        carry = n >> 32;
+    }
+    return a;
+}
+
 @implementation NSData (Bitcoin)
 
 + (instancetype)dataWithUInt256:(UInt256)n
