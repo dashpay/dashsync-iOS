@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBD820D8B327000177D8 /* DSHashTests.m */; };
+		2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */; };
+		2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */; };
+		2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */; };
+		2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */; };
+		2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */; };
+		2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAF20DA080F0097049F /* DSWalletTests.m */; };
+		2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */; };
+		2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */; };
 		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -64,6 +73,15 @@
 
 /* Begin PBXFileReference section */
 		27552411E6D7D4041AC16526 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		2A1ECBD820D8B327000177D8 /* DSHashTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSHashTests.m; sourceTree = "<group>"; };
+		2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSKeyTests.m; sourceTree = "<group>"; };
+		2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentRequestTests.m; sourceTree = "<group>"; };
+		2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionTests.m; sourceTree = "<group>"; };
+		2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBIP39Tests.m; sourceTree = "<group>"; };
+		2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBIP32Tests.m; sourceTree = "<group>"; };
+		2A7DCCAF20DA080F0097049F /* DSWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletTests.m; sourceTree = "<group>"; };
+		2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBloomFilterTests.m; sourceTree = "<group>"; };
+		2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentProtocolTests.m; sourceTree = "<group>"; };
 		2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -239,6 +257,15 @@
 			isa = PBXGroup;
 			children = (
 				6003F5BB195388D20070C39A /* Tests.m */,
+				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
+				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
+				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
+				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
+				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
+				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
+				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
+				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
+				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 			);
 			path = Tests;
@@ -447,7 +474,7 @@
 			attributes = {
 				CLASSPREFIX = DS;
 				LastUpgradeCheck = 0720;
-				ORGANIZATIONNAME = "Andrew Podkovyrin";
+				ORGANIZATIONNAME = "Dash Core Group";
 				TargetAttributes = {
 					6003F589195388D20070C39A = {
 						DevelopmentTeam = NMHX8CEMG9;
@@ -596,7 +623,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */,
+				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
+				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
+				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
+				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
+				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
+				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
+				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
+				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3,7 +3,7 @@
 //  DashSyncTests
 //
 //  Created by Andrew Podkovyrin on 03/19/2018.
-//  Copyright (c) 2018 Andrew Podkovyrin. All rights reserved.
+//  Copyright (c) 2018 Dash Core Group. All rights reserved.
 //
 
 @import XCTest;
@@ -24,11 +24,6 @@
 {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
-}
-
-- (void)testExample
-{
-    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
 }
 
 @end
