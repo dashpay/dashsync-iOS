@@ -474,7 +474,7 @@
 			attributes = {
 				CLASSPREFIX = DS;
 				LastUpgradeCheck = 0720;
-				ORGANIZATIONNAME = "Andrew Podkovyrin";
+				ORGANIZATIONNAME = "Dash Core Group";
 				TargetAttributes = {
 					6003F589195388D20070C39A = {
 						DevelopmentTeam = NMHX8CEMG9;

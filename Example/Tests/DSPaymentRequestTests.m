@@ -3,7 +3,7 @@
 //  DashSync_Tests
 //
 //  Created by Andrew Podkovyrin on 19/06/2018.
-//  Copyright © 2018 Andrew Podkovyrin. All rights reserved.
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
 #import <XCTest/XCTest.h>
