@@ -477,7 +477,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
 
 + (instancetype)paymentWithData:(NSData *)data onChain:(DSChain*)chain
 {
-    return [[self alloc] initWithData:data];
+    return [[self alloc] initWithData:data onChain:chain];
 }
 
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain
