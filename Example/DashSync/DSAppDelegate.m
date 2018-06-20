@@ -18,7 +18,7 @@
     [DashSync sharedSyncController];
     [[DSOptionsManager sharedInstance] setKeepHeaders:NO];
     [[DSOptionsManager sharedInstance] setSyncFromGenesis:NO];
-    [[DSOptionsManager sharedInstance] setSyncFromHeight:730000];
+    [[DSOptionsManager sharedInstance] setSyncFromHeight:700000];
     [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV];
     return YES;
 }

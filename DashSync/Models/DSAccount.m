@@ -116,6 +116,10 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.moc = [NSManagedObject context];
+    return self;
+}
+
+-(void)loadTransactions {
     [self.moc performBlockAndWait:^{
         [DSTransactionEntity setContext:self.moc];
         
@@ -127,7 +131,7 @@
             for (DSTransactionEntity *e in [DSTransactionEntity transactionsForChain:self.wallet.chain.chainEntity]) {
                 @autoreleasepool {
                     
-                    DSTransaction *transaction = e.transaction;
+                    DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
                     NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
                     
                     if (! transaction || self.allTx[hash] != nil) continue;
@@ -141,7 +145,6 @@
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
-    return self;
 }
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {
@@ -167,6 +170,7 @@
     if (!_wallet) {
         _wallet = wallet;
         [self loadDerivationPaths];
+        [self loadTransactions];
     }
 }
 
@@ -330,9 +334,12 @@
             //TODO: don't add coin generation outputs < 100 blocks deep
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
             for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
-                if ([self containsAddress:address]) {
-                    [utxos addObject:dsutxo_obj(((DSUTXO) { tx.txHash, n }))];
-                    balance += [tx.outputAmounts[n] unsignedLongLongValue];
+                for (DSDerivationPath * derivationPath in self.derivationPaths) {
+                    if ([derivationPath containsAddress:address]) {
+                        derivationPath.balance += [tx.outputAmounts[n] unsignedLongLongValue];
+                        [utxos addObject:dsutxo_obj(((DSUTXO) { tx.txHash, n }))];
+                        balance += [tx.outputAmounts[n] unsignedLongLongValue];
+                    }
                 }
                 
                 n++;

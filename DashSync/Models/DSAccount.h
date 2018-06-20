@@ -148,4 +148,7 @@
 // This loads the derivation paths addresses once the account is set to a wallet
 - (void)loadDerivationPaths;
 
+// This loads transactions once the account is set to a wallet
+- (void)loadTransactions;
+
 @end

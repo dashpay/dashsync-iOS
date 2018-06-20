@@ -24,25 +24,31 @@
 
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
+#import "DSAddressEntity+CoreDataClass.h"
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSTxOutputEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
 {
-    [self.managedObjectContext performBlockAndWait:^{
-        UInt256 txHash = tx.txHash;
-        
-        self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
-        self.n = (int32_t)index;
-        self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
-        self.script = tx.outputScripts[index];
-        self.value = [tx.outputAmounts[index] longLongValue];
-        self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
-    }];
+    UInt256 txHash = tx.txHash;
     
+    self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
+    self.n = (int32_t)index;
+    self.address = (tx.outputAddresses[index] == [NSNull null]) ? nil : tx.outputAddresses[index];
+    self.script = tx.outputScripts[index];
+    self.value = [tx.outputAmounts[index] longLongValue];
+    self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
+    self.transaction = transactionEntity;
+    if (self.address) {
+        NSArray * addressEntities = [DSAddressEntity objectsMatching:@"address == %@",self.address];
+        if ([addressEntities count]) {
+            NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
+            self.localAddress = [addressEntities objectAtIndex:0];
+        }
+    }
     return self;
 }
 

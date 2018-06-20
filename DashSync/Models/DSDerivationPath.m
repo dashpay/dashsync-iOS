@@ -455,7 +455,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 
-// MARK: - Wallet Info
+// MARK: - Derivation Path Info
 
 // returns the first unused external address
 - (NSString *)receiveAddress

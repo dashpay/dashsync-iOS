@@ -31,9 +31,8 @@
 
 @implementation DSTxInputEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
 {
-    [self.managedObjectContext performBlockAndWait:^{
         UInt256 hash = UINT256_ZERO;
         
         [tx.inputHashes[index] getValue:&hash];
@@ -41,10 +40,10 @@
         self.n = [tx.inputIndexes[index] intValue];
         self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
         self.sequence = [tx.inputSequences[index] intValue];
+        self.transaction = transactionEntity;
         
         // mark previously unspent outputs as spent
         [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
-    }];
     
     return self;
 }

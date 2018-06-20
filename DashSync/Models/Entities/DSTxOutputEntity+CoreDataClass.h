@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTxOutputEntity : NSManagedObject
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity;
 
 @end
 

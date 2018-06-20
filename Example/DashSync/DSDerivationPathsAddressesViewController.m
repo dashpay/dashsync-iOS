@@ -134,6 +134,9 @@
     DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%d/%u",self.derivationPath.stringRepresentation,addressEntity.internal?1:0,addressEntity.index];
+    cell.balanceLabel.text = [NSString stringWithFormat:@"%llu",addressEntity.balance];
+    cell.inLabel.text = [NSString stringWithFormat:@"%llu",addressEntity.inAmount];
+    cell.outLabel.text = [NSString stringWithFormat:@"%llu",addressEntity.outAmount];
 
 }
 

@@ -31,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSAddressEntity : NSManagedObject
 
+-(uint64_t)balance;
+-(uint64_t)inAmount;
+-(uint64_t)outAmount;
+
 @end
 
 NS_ASSUME_NONNULL_END
