@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import "DSChainPeerManager.h"
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
+
 @interface DSChainManager : NSObject
 
 @property (nonatomic,strong) DSChainPeerManager * mainnetManager;
@@ -17,6 +19,8 @@
 @property (nonatomic,readonly) NSArray * devnetChains;
 
 -(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
+
+-(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString* _Nonnull)identifier forServiceLocations:(NSArray<NSString*>* _Nonnull)serviceLocations withStandardPort:(uint32_t)port;
 
 + (instancetype _Nullable)sharedInstance;
 

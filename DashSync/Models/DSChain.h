@@ -44,6 +44,7 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
+#define DASH_MAGIC_NUMBER_DEVNET 0xceffcae2
 
 
 #define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
@@ -66,6 +67,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 
 @interface DSCheckpoint : NSObject <NSCoding>
 
++(DSCheckpoint*)genesisDevnetCheckpoint;
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, assign) UInt256 checkpointHash;
 @property (nonatomic, assign) uint32_t timestamp;
@@ -84,6 +86,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly) NSString * networkName;
+@property (nonatomic, readonly) NSString * name;
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
 @property (nonatomic, weak) DSChainPeerManager * peerManagerDelegate;
@@ -93,10 +96,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
 @property (nonatomic, readonly) NSString * chainWalletsKey;
+@property (nonatomic, readonly) uint64_t baseReward;
 @property (nonatomic, readonly) BOOL hasAWallet;
 @property (nonatomic, readonly) BOOL syncsBlockchain;
+@property (nonatomic, readonly) NSString * devnetIdentifier;
 @property (nonatomic, assign) uint64_t feePerKb;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
+@property (nonatomic, readonly) NSString * registeredPeersKey;
+@property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;
@@ -110,8 +117,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
 
-+(DSChain*)devnetWithGenesisHash:(UInt256)genesisHash;
-+(DSChain*)createDevnetWithCheckpoints:(NSArray*)checkpointArray onPort:(uint32_t)port;
++(DSChain*)devnetWithIdentifier:(NSString*)identifier;
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port;
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
 

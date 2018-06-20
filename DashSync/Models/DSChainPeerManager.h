@@ -75,4 +75,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 -(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
+-(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port;
+
 @end

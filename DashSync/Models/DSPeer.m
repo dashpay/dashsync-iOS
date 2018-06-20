@@ -55,8 +55,8 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70210
-#define MIN_PROTO_VERSION  70208 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
+#define PROTOCOL_VERSION   70209
+#define MIN_PROTO_VERSION  70209 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
@@ -143,7 +143,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 
     if (inet_pton(AF_INET, host.UTF8String, &addr) != 1) return nil;
     _address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr } };
-    if (_port == 0) _port = MAINNET_STANDARD_PORT;
+    if (_port == 0) _port = chain.standardPort;
     self.chain = chain;
     return self;
 }
@@ -367,7 +367,14 @@ services:(uint64_t)services
     [msg appendNetAddress:LOCAL_HOST port:self.chain.standardPort services:ENABLED_SERVICES]; // net address of local peer
     self.localNonce = ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(); // random nonce
     [msg appendUInt64:self.localNonce];
-    [msg appendString:USER_AGENT]; // user agent
+    if (self.chain.isMainnet) {
+        [msg appendString:USER_AGENT]; // user agent
+    } else if (self.chain.isTestnet) {
+        [msg appendString:[USER_AGENT stringByAppendingString:@"(testnet)"]];
+    } else {
+        [msg appendString:@"Dash Core:0.12.3(devnet=devnet-DRA)"];
+        //[msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=devnet-DRA)",self.chain.devnetIdentifier]]];
+    }
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     self.pingStartTime = [NSDate timeIntervalSinceReferenceDate];

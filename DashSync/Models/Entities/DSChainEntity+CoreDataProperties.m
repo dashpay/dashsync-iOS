@@ -31,7 +31,7 @@
 }
 
 @dynamic checkpoints;
-@dynamic genesisBlockHash;
+@dynamic devnetIdentifier;
 @dynamic standardPort;
 @dynamic type;
 @dynamic peers;

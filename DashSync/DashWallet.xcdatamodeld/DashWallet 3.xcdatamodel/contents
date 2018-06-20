@@ -11,7 +11,7 @@
     </entity>
     <entity name="DSChainEntity" representedClassName="DSChainEntity" syncable="YES">
         <attribute name="checkpoints" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="genesisBlockHash" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="devnetIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="standardPort" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="blocks" toMany="YES" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
