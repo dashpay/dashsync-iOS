@@ -7,7 +7,7 @@ DEPENDENCIES:
   - DashSync (from `../`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - secp256k1_dash
 
 EXTERNAL SOURCES:
@@ -20,4 +20,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: b0fb2efab5305d218b10067381cbee331e4a0a95
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.5.0
