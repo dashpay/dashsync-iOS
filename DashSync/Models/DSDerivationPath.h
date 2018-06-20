@@ -100,6 +100,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // all previously used addresses
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
+// currently the derivationPath is synced to this block height
+@property (nonatomic, assign) uint32_t syncBlockHeight;
 
 
 // the reference of type of derivation path
@@ -163,6 +165,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 + (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString;
+
+- (NSArray * _Nonnull)addressesForExportWithInternalCount:(NSUInteger)exportInternalCount externalCount:(NSUInteger)exportExternalCount;
 
 //this loads the derivation path once it is set to an account that has a wallet;
 -(void)loadAddresses;

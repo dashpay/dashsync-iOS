@@ -29,16 +29,17 @@
 #import "DSAccount.h"
 #import "DSDerivationPath.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSBIP39Mnemonic.h"
 
 @implementation DSDerivationPathEntity
 
 + (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath {
     NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
-    DSChain * chain = derivationPath.chain;
+    //DSChain * chain = derivationPath.chain;
     NSArray * derivationPathEntities;
     NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
     DSChainEntity * chainEntity = derivationPath.chain.chainEntity;
-        NSUInteger count = [chainEntity.derivationPaths count];
+        //NSUInteger count = [chainEntity.derivationPaths count];
         derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
             return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
         }] allObjects];
@@ -51,6 +52,7 @@
         derivationPathEntity.derivationPath = archivedDerivationPath;
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
+        derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         return derivationPathEntity;
     }
 }

@@ -34,5 +34,6 @@
 @dynamic addresses;
 @dynamic chain;
 @dynamic publicKeyIdentifier;
+@dynamic syncBlockHeight;
 
 @end

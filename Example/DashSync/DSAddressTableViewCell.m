@@ -8,6 +8,10 @@
 
 #import "DSAddressTableViewCell.h"
 
+@interface DSAddressTableViewCell()
+
+@end
+
 @implementation DSAddressTableViewCell
 
 - (void)awakeFromNib {

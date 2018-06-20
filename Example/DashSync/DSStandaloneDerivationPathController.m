@@ -3,7 +3,7 @@
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 6/10/18.
-//  Copyright © 2018 Andrew Podkovyrin. All rights reserved.
+//  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
 #import "DSStandaloneDerivationPathController.h"
@@ -86,7 +86,7 @@
     if ([segue.identifier isEqualToString:@"AddStandaloneDerivationPathSegue"]) {
         DSStandaloneDerivationPathKeyInputViewController * standaloneDerivationPathKeyInputViewController = (DSStandaloneDerivationPathKeyInputViewController*)segue.destinationViewController;
         standaloneDerivationPathKeyInputViewController.chain = self.chain;
-    } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathSegue"]) {
+    } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathsAddressesSegue"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
         DSDerivationPathsAddressesViewController * addresses = (DSDerivationPathsAddressesViewController*)segue.destinationViewController;
         addresses.derivationPath = [self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];

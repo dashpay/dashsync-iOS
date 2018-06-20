@@ -3,7 +3,7 @@
 //  DashSync
 //
 //  Created by Andrew Podkovyrin on 03/19/2018.
-//  Copyright (c) 2018 Andrew Podkovyrin. All rights reserved.
+//  Copyright (c) 2018 Dash Core Group. All rights reserved.
 //
 
 #import "DSAppDelegate.h"
@@ -18,7 +18,7 @@
     [DashSync sharedSyncController];
     [[DSOptionsManager sharedInstance] setKeepHeaders:NO];
     [[DSOptionsManager sharedInstance] setSyncFromGenesis:NO];
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Governance | DSSyncType_MasternodeList];
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_SPV];
     return YES;
 }
 

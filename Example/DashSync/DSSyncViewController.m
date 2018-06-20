@@ -3,7 +3,7 @@
 //  DashSync
 //
 //  Created by Andrew Podkovyrin on 03/19/2018.
-//  Copyright (c) 2018 Andrew Podkovyrin. All rights reserved.
+//  Copyright (c) 2018 Dash Core Group. All rights reserved.
 //
 
 #import <DashSync/DashSync.h>
@@ -324,7 +324,7 @@
 }
 
 -(void)updateSingleAddressesCount {
-    self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+    self.standaloneAddressesCountLabel.text = [NSString stringWithFormat:@"%d",0];
 }
 
 -(void)updateReceivedGovernanceVoteCount {

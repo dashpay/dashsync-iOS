@@ -962,6 +962,7 @@
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="xPublicKeyLabel" destination="xfB-w2-era" id="AOM-m7-Qsn"/>
+                                    <segue destination="pQt-5m-3CE" kind="show" identifier="ViewStandaloneDerivationPathsAddressesSegue" id="Unp-kP-fWV"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -980,7 +981,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eoY-bJ-zF5" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3403" y="-295"/>
+            <point key="canvasLocation" x="5561" y="-451"/>
         </scene>
         <!--Add-->
         <scene sceneID="uPk-rR-6tp">
@@ -1021,7 +1022,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3nU-xZ-CeA" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4480" y="-402"/>
+            <point key="canvasLocation" x="6777" y="-1060"/>
         </scene>
         <!--Wallets-->
         <scene sceneID="bh9-NZ-BZQ">
@@ -1179,7 +1180,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="kU2-XS-Hi1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2030" y="1454"/>
+            <point key="canvasLocation" x="1868" y="1194"/>
         </scene>
         <!--Governance Objects-->
         <scene sceneID="cIV-CG-XcW">
@@ -1379,7 +1380,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="snF-e7-gEg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3198" y="1217"/>
+            <point key="canvasLocation" x="3207" y="1194"/>
         </scene>
         <!--Sporks View Controller-->
         <scene sceneID="qPI-fL-yi8">
@@ -1617,6 +1618,7 @@
                         <searchBar key="tableHeaderView" contentMode="redraw" showsScopeBar="YES" id="aK5-NF-x9z">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="100"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            <color key="barTintColor" red="0.9891078604942245" green="0.98645855689460182" blue="0.98945312500000004" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                             <textInputTraits key="textInputTraits"/>
                             <scopeButtonTitles>
                                 <string>External</string>
@@ -1704,11 +1706,45 @@
                             <outlet property="delegate" destination="pQt-5m-3CE" id="UEH-CE-qdy"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Addresses" id="X62-Vc-cpN"/>
+                    <navigationItem key="navigationItem" title="Addresses" id="X62-Vc-cpN">
+                        <barButtonItem key="rightBarButtonItem" title="Export" id="Zyq-z2-nUH">
+                            <connections>
+                                <segue destination="jJT-TE-sdK" kind="show" identifier="ExportAddressesSegue" id="r1d-Db-CAw"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ma8-rU-eSP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6912.8000000000002" y="634.72906403940885"/>
+            <point key="canvasLocation" x="6777" y="3"/>
+        </scene>
+        <!--Addresses Exporter View Controller-->
+        <scene sceneID="mnp-lz-ER9">
+            <objects>
+                <viewController id="jJT-TE-sdK" customClass="DSAddressesExporterViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="IJE-EK-aeu"/>
+                        <viewControllerLayoutGuide type="bottom" id="81m-qe-p68"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="pwb-yN-93H">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JKQ-ap-bjv">
+                                <rect key="frame" x="148" y="438" width="46" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Export"/>
+                                <connections>
+                                    <action selector="export:" destination="jJT-TE-sdK" eventType="touchUpInside" id="4aJ-GX-S3e"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mTL-Sr-dib" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7783" y="0.0"/>
         </scene>
         <!--Passphrase-->
         <scene sceneID="1v0-Xr-yW0">
@@ -1840,4 +1876,7 @@
             <point key="canvasLocation" x="-772" y="375.36945812807886"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="Unp-kP-fWV"/>
+    </inferredMetricsTieBreakers>
 </document>
