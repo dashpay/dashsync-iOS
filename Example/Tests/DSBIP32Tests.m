@@ -37,20 +37,19 @@
 {
     NSString *seedString = @"000102030405060708090a0b0c0d0e0f";
     
-    DSDerivationPath *derivationPath = [DSDerivationPath bip32DerivationPathOnChain:self.chain forAccountNumber:0];
     DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString forChain:self.chain storeSeedPhrase:YES];
-    
-    [derivationPath setAccount:wallet.accounts.firstObject];
+    DSAccount *account = [wallet accountWithNumber:0];
+    DSDerivationPath *derivationPath = account.bip32DerivationPath;
     
     NSData *seed = seedString.hexToData;
-    NSString *pk = [derivationPath privateKey:2 | 0x80000000 internal:YES fromSeed:seed];
+    NSString *pk = [derivationPath privateKey:0 internal:YES fromSeed:seed];
     NSData *d = pk.base58checkToData;
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
     
     
     XCTAssertEqualObjects(d.hexString, @"cccbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca01",
-                          @"[DSBIP32Sequence privateKey:internal:fromSeed:]");
+                          @"[DSDerivationPath privateKey:internal:fromSeed:]");
     
     // Test for correct zero padding of private keys, a nasty potential bug
     pk = [derivationPath privateKey:97 internal:NO fromSeed:seed];
