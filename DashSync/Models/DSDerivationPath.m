@@ -387,6 +387,24 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
 }
 
+- (NSArray *)addressesForExportWithInternalCount:(NSUInteger)exportInternalCount externalCount:(NSUInteger)exportExternalCount
+{
+    NSMutableArray * addresses = [NSMutableArray array];
+    for (int i = 0;i<exportInternalCount;i++) {
+            NSData *pubKey = [self generatePublicKeyAtIndex:i internal:YES];
+            NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        [addresses addObject:addr];
+    }
+    
+    for (int i = 0;i<exportExternalCount;i++) {
+        NSData *pubKey = [self generatePublicKeyAtIndex:i internal:NO];
+        NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        [addresses addObject:addr];
+    }
+    
+    return [addresses copy];
+}
+
 // MARK: - Identifiers
 
 //Derivation paths can be stored based on the wallet and derivation or based solely on the public key
