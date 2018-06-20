@@ -55,8 +55,6 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70209
-#define MIN_PROTO_VERSION  70209 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
@@ -358,7 +356,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     uint16_t port = CFSwapInt16HostToBig(self.port);
     
-    [msg appendUInt32:PROTOCOL_VERSION]; // version
+    [msg appendUInt32:self.chain.protocolVersion]; // version
     [msg appendUInt64:ENABLED_SERVICES]; // services
     [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
     [msg appendUInt64:self.services]; // services of remote peer
@@ -468,7 +466,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
-    [msg appendUInt32:PROTOCOL_VERSION];
+    [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
     
     for (NSValue *hash in locators) {
@@ -486,7 +484,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
-    [msg appendUInt32:PROTOCOL_VERSION];
+    [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
 
     for (NSValue *hash in locators) {
@@ -794,7 +792,7 @@ services:(uint64_t)services
 #if MESSAGE_LOGGING
     NSLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
 #endif
-    if (self.version < MIN_PROTO_VERSION) {
+    if (self.version < self.chain.minProtocolVersion) {
         [self error:@"protocol version %u not supported", self.version];
         return;
     }

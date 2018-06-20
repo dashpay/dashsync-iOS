@@ -41,6 +41,12 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 12999
 
+#define PROTOCOL_VERSION_MAINNET   70208
+#define MIN_PROTOCOL_VERSION_MAINNET  70208
+
+#define PROTOCOL_VERSION_TESTNET   70208
+#define MIN_PROTOCOL_VERSION_TESTNET  70208
+
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
@@ -97,13 +103,17 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) uint32_t magicNumber;
 @property (nonatomic, readonly) NSString * chainWalletsKey;
 @property (nonatomic, readonly) uint64_t baseReward;
+@property (nonatomic, readonly) BOOL canConstructAFilter;
 @property (nonatomic, readonly) BOOL hasAWallet;
+@property (nonatomic, readonly) BOOL hasAStandaloneDerivationPath;
 @property (nonatomic, readonly) BOOL syncsBlockchain;
 @property (nonatomic, readonly) NSString * devnetIdentifier;
 @property (nonatomic, assign) uint64_t feePerKb;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
 @property (nonatomic, readonly) NSString * registeredPeersKey;
 @property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
+@property (nonatomic, readonly) uint32_t protocolVersion;
+@property (nonatomic, readonly) uint32_t minProtocolVersion;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;

@@ -315,7 +315,7 @@
     
     dispatch_async(self.q, ^{
         
-        if ([self.chain syncsBlockchain] && ![self.chain hasAWallet]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
+        if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
         
         if (self.syncProgress < 1.0) {
@@ -545,7 +545,7 @@
     for (DSPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
         if (p.status != DSPeerStatus_Connected) continue;
         
-        if ([self.chain hasAWallet] && (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
+        if ([self.chain canConstructAFilter] && (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
             [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
         }
         
@@ -1009,7 +1009,7 @@
     
     if (self.connected && (self.chain.estimatedBlockHeight >= peer.lastblock || self.chain.lastBlockHeight >= peer.lastblock)) {
         if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) return; // don't load bloom filter yet if we're syncing
-        if ([self.chain syncsBlockchain] && [self.chain hasAWallet]) {
+        if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
             [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
             [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
         } else {
@@ -1047,7 +1047,7 @@
     self.downloadPeer = peer;
     _connected = YES;
     [self.chain setEstimatedBlockHeight:peer.lastblock fromPeer:peer];
-    if ([self.chain syncsBlockchain] && [self.chain hasAWallet]) {
+    if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
         [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
     }
     peer.currentBlockHeight = self.chain.lastBlockHeight;

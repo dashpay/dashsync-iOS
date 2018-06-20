@@ -132,6 +132,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) DSChainEntity * mainThreadChainEntity;
 @property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 @property (nonatomic, strong) NSString * devnetIdentifier;
+@property (nonatomic, assign) uint32_t protocolVersion;
+@property (nonatomic, assign) uint32_t minProtocolVersion;
 
 @end
 
@@ -480,6 +482,14 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(BOOL)canConstructAFilter {
+    return [self hasAStandaloneDerivationPath] || [self hasAWallet];
+}
+
+-(BOOL)hasAStandaloneDerivationPath {
+    return !![self.mStandaloneDerivationPaths count];
+}
+
 -(BOOL)hasAWallet {
     return !![self.mWallets count];
 }
@@ -546,6 +556,35 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+
+
+-(uint32_t)protocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return PROTOCOL_VERSION_MAINNET;
+        case DSChainType_TestNet:
+            return PROTOCOL_VERSION_TESTNET;
+        case DSChainType_DevNet:
+            if (_protocolVersion) return _protocolVersion;
+            else return PROTOCOL_VERSION_TESTNET;
+        default:
+            break;
+    }
+}
+
+-(uint32_t)minProtocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return MIN_PROTOCOL_VERSION_MAINNET;
+        case DSChainType_TestNet:
+            return MIN_PROTOCOL_VERSION_TESTNET;
+        case DSChainType_DevNet:
+            if (_minProtocolVersion) return _minProtocolVersion;
+            else return MIN_PROTOCOL_VERSION_TESTNET;
+        default:
+            break;
+    }
+}
 
 -(NSString*)networkName {
     switch ([self chainType]) {
