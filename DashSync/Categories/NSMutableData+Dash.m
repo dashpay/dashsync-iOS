@@ -179,6 +179,45 @@ CFAllocatorRef SecureAllocator()
     }
 }
 
+- (void)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height
+{
+    NSUInteger l = [message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    uint8_t bytesInHeight;
+    if (height < VAR_INT16_HEADER) {
+        uint8_t header = l;
+        uint8_t payload = (uint8_t)height;
+        [self appendBytes:&header length:sizeof(header)];
+        [self appendBytes:&payload length:sizeof(payload)];
+    }
+    else if (height <= UINT16_MAX) {
+        uint8_t header = VAR_INT16_HEADER + l;
+        uint16_t payload = CFSwapInt16HostToLittle((uint16_t)height);
+        
+        [self appendBytes:&header length:sizeof(header)];
+        [self appendBytes:&payload length:sizeof(payload)];
+    }
+    else if (height <= UINT32_MAX) {
+        uint8_t header = VAR_INT32_HEADER + l;
+        uint32_t payload = CFSwapInt32HostToLittle((uint32_t)height);
+        
+        [self appendBytes:&header length:sizeof(header)];
+        [self appendBytes:&payload length:sizeof(payload)];
+    }
+    [self appendBytes:message.UTF8String length:l];
+}
+
+- (void)appendDevnetGenesisCoinbaseMessage:(NSString *)message
+{
+    //A little weirder
+    uint8_t l = (uint8_t)[message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    uint8_t a = 0x51;
+    uint8_t fullLength = l + 2;
+    [self appendBytes:&fullLength length:sizeof(fullLength)];
+    [self appendBytes:&a length:sizeof(a)];
+    [self appendBytes:&l length:sizeof(l)];
+    [self appendBytes:message.UTF8String length:l];
+}
+
 - (void)appendString:(NSString *)s
 {
     NSUInteger l = [s lengthOfBytesUsingEncoding:NSUTF8StringEncoding];

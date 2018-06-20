@@ -20,7 +20,7 @@
         self.signature = spork.signature;
         self.timeSigned = spork.timeSigned;
         self.value = spork.value;
-        self.chain = [DSChainEntity chainEntityForType:spork.chain.chainType genesisBlock:spork.chain.genesisHash checkpoints:nil];
+        self.chain = [DSChainEntity chainEntityForType:spork.chain.chainType devnetIdentifier:spork.chain.devnetIdentifier checkpoints:nil];
     }];
 }
 

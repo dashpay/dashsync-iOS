@@ -40,12 +40,12 @@
 - (DSChain *)chain {
     __block DSChainType type;
     __block uint32_t port;
-    __block UInt256 genesisHash;
+    __block NSString * devnetIdentifier;
     __block NSData * data;
     [self.managedObjectContext performBlockAndWait:^{
         port = self.standardPort;
         type = self.type;
-        genesisHash = *(UInt256 *)self.genesisBlockHash.hexToData.reverse.bytes;
+        devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
     }];
     if (type == DSChainType_MainNet) {
@@ -53,19 +53,18 @@
     } else if (type == DSChainType_TestNet) {
         return [DSChain testnet];
     } else if (type == DSChainType_DevNet) {
-        if ([DSChain devnetWithGenesisHash:genesisHash]) {
-            return [DSChain devnetWithGenesisHash:genesisHash];
+        if ([DSChain devnetWithIdentifier:devnetIdentifier]) {
+            return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain createDevnetWithCheckpoints:checkpointArray onPort:port];
+            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port];
         }
     }
     return nil;
 }
 
-+ (DSChainEntity*)chainEntityForType:(DSChainType)type genesisBlock:(UInt256)genesisBlock checkpoints:(NSArray*)checkpoints {
-    NSString * genesisBlockString = [NSData dataWithUInt256:genesisBlock].hexString;
-    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || genesisBlockHash = %@)",type,DSChainType_DevNet,genesisBlockString];
++ (DSChainEntity*)chainEntityForType:(DSChainType)type devnetIdentifier:(NSString*)devnetIdentifier checkpoints:(NSArray*)checkpoints {
+    NSArray * objects = [DSChainEntity objectsMatching:@"type = %d && ((type != %d) || devnetIdentifier = %@)",type,DSChainType_DevNet,devnetIdentifier];
     if (objects.count) {
         DSChainEntity * chainEntity = [objects objectAtIndex:0];
         NSArray * knownCheckpoints = [NSKeyedUnarchiver unarchiveObjectWithData:[chainEntity checkpoints]];
@@ -78,7 +77,7 @@
     
     DSChainEntity * chainEntity = [self managedObject];
     chainEntity.type = type;
-    chainEntity.genesisBlockHash = genesisBlockString;
+    chainEntity.devnetIdentifier = devnetIdentifier;
     if (checkpoints) {
         NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
         chainEntity.checkpoints = archivedCheckpoints;
