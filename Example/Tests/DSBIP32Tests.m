@@ -18,7 +18,6 @@
 @interface DSBIP32Tests : XCTestCase
 
 @property (strong, nonatomic) DSChain *chain;
-@property (strong, nonatomic) DSWallet *wallet;
 
 @end
 
@@ -30,17 +29,20 @@
     
     // the chain to test on
     self.chain = [DSChain mainnet];
-    self.wallet = [DSWallet standardWalletWithRandomSeedPhraseForChain:self.chain];
 }
 
 // MARK: - testBIP32Sequence
 
 - (void)testBIP32SequencePrivateKey
 {
-    DSDerivationPath *derivationPath = [DSDerivationPath bip32DerivationPathOnChain:self.chain forAccountNumber:0];
-    [derivationPath setAccount:self.wallet.accounts.firstObject];
+    NSString *seedString = @"000102030405060708090a0b0c0d0e0f";
     
-    NSData *seed = @"000102030405060708090a0b0c0d0e0f".hexToData;
+    DSDerivationPath *derivationPath = [DSDerivationPath bip32DerivationPathOnChain:self.chain forAccountNumber:0];
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString forChain:self.chain storeSeedPhrase:YES];
+    
+    [derivationPath setAccount:wallet.accounts.firstObject];
+    
+    NSData *seed = seedString.hexToData;
     NSString *pk = [derivationPath privateKey:2 | 0x80000000 internal:YES fromSeed:seed];
     NSData *d = pk.base58checkToData;
     
@@ -92,8 +94,10 @@
 - (void)testBIP32SequenceSerializedPrivateMasterFromSeed
 {
 //    DSBIP32Sequence *seq = [DSBIP32Sequence new];
-    NSData *seed = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f".hexToData;
-    NSString *xprv = [self.wallet serializedPrivateMasterFromSeed:seed];
+    NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
+    NSData *seed = seedString.hexToData;
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString forChain:self.chain storeSeedPhrase:YES];
+    NSString *xprv = [wallet serializedPrivateMasterFromSeed:seed];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
 
