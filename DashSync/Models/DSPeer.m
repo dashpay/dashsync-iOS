@@ -143,7 +143,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 
     if (inet_pton(AF_INET, host.UTF8String, &addr) != 1) return nil;
     _address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr } };
-    if (_port == 0) _port = MAINNET_STANDARD_PORT;
+    if (_port == 0) _port = chain.standardPort;
     self.chain = chain;
     return self;
 }
@@ -372,7 +372,8 @@ services:(uint64_t)services
     } else if (self.chain.isTestnet) {
         [msg appendString:[USER_AGENT stringByAppendingString:@"(testnet)"]];
     } else {
-        [msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)",self.chain.devnetIdentifier]]];
+        [msg appendString:@"Dash Core:0.12.3(devnet=devnet-DRA)"];
+        //[msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=devnet-DRA)",self.chain.devnetIdentifier]]];
     }
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
