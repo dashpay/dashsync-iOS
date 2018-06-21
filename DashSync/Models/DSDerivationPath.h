@@ -79,8 +79,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in nsuserdefaults
 @property (nonatomic, readonly) NSString * _Nullable walletBasedExtendedPublicKeyLocationString;
 
-// current wallet balance excluding transactions known to be invalid
-@property (nonatomic, readonly) uint64_t balance;
+// current derivation path balance excluding transactions known to be invalid
+@property (nonatomic, assign) uint64_t balance;
 
 // returns the first unused external address
 @property (nonatomic, readonly) NSString * _Nullable receiveAddress;

@@ -33,8 +33,9 @@
 
 // MARK: - testBIP32Sequence
 
-- (void)testBIP32SequencePrivateKey
+- (void)testBIP32SequencePrivateKeyFromString
 {
+    //from plastic upon blast park salon ticket timber disease tree camera economy what alpha birth category
     NSString *seedString = @"000102030405060708090a0b0c0d0e0f";
     
     DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString forChain:self.chain storeSeedPhrase:YES];
@@ -42,7 +43,7 @@
     DSDerivationPath *derivationPath = account.bip32DerivationPath;
     
     NSData *seed = seedString.hexToData;
-    NSString *pk = [derivationPath privateKey:0 internal:YES fromSeed:seed];
+    NSString *pk = [derivationPath privateKey:2 | BIP32_HARD internal:YES fromSeed:seed];
     NSData *d = pk.base58checkToData;
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);

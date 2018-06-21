@@ -65,7 +65,7 @@
         }
         
         for (DSTxInputEntity *e in inputs) {
-            [e setAttributesFromTx:tx inputIndex:idx++];
+            [e setAttributesFromTx:tx inputIndex:idx++ forTransactionEntity:self];
         }
         
         while (outputs.count < tx.outputAddresses.count) {
@@ -79,7 +79,7 @@
         idx = 0;
         
         for (DSTxOutputEntity *e in outputs) {
-            [e setAttributesFromTx:tx outputIndex:idx++];
+            [e setAttributesFromTx:tx outputIndex:idx++ forTransactionEntity:self];
         }
         
         self.lockTime = tx.lockTime;
@@ -94,9 +94,9 @@
     return [chain.transactions allObjects];
 }
 
-- (DSTransaction *)transaction
+- (DSTransaction *)transactionForChain:(DSChain*)chain
 {
-    DSChain * chain = [self.chain chain];
+    if (!chain) chain = [self.chain chain];
     DSTransaction *tx = [[DSTransaction alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
@@ -126,7 +126,7 @@
 - (void)deleteObject
 {
     for (DSTxInputEntity *e in self.inputs) { // mark inputs as unspent
-        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
+        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpentInInput:nil];
     }
     
     [super deleteObject];

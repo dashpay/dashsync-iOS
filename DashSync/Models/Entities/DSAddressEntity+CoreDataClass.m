@@ -23,7 +23,32 @@
 //  THE SOFTWARE.
 
 #import "DSAddressEntity+CoreDataClass.h"
+#import "DSTxOutputEntity+CoreDataClass.h"
 
 @implementation DSAddressEntity
+
+-(uint64_t)balance {
+    uint64_t b = 0;
+    for (DSTxOutputEntity* output in self.usedInOutputs) {
+        if (!output.spentInInput) b += output.value;
+    }
+    return b;
+}
+
+-(uint64_t)inAmount{
+    uint64_t b = 0;
+    for (DSTxOutputEntity* output in self.usedInOutputs) {
+        b += output.value;
+    }
+    return b;
+}
+
+-(uint64_t)outAmount {
+    uint64_t b = 0;
+    for (DSTxOutputEntity* output in self.usedInOutputs) {
+        if (output.spentInInput) b += output.value;
+    }
+    return b;
+}
 
 @end

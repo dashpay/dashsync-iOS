@@ -27,6 +27,8 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 
 @property (nonatomic,assign) BOOL keepHeaders;
 @property (nonatomic,assign) BOOL syncFromGenesis;
+@property (nonatomic,readonly) BOOL shouldSyncFromHeight;
+@property (nonatomic,assign) uint32_t syncFromHeight;
 @property (nonatomic,assign) DSSyncType syncType;
 
 + (instancetype _Nullable)sharedInstance;

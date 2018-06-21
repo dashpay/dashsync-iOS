@@ -270,6 +270,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     else return @(self.length);
 }
 
+-(DSChain*)chain {
+    if (_chain) return _chain;
+    return self.chain;
+}
+
 -(NSUInteger)accountNumber {
     return [self indexAtPosition:[self length] - 1];
 }
@@ -450,7 +455,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 
-// MARK: - Wallet Info
+// MARK: - Derivation Path Info
 
 // returns the first unused external address
 - (NSString *)receiveAddress
@@ -595,13 +600,13 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     uint8_t version;
-    if ([self.account.wallet.chain isMainnet]) {
+    if ([self.chain isMainnet]) {
         version = DASH_PRIVKEY;
     } else {
         version = DASH_PRIVKEY_TEST;
     }
     
-    for (NSInteger i = 0;i<[self length] - 1;i++) {
+    for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
         CKDpriv(&secret, &chain, derivation | BIP32_HARD);
     }
@@ -703,7 +708,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     uint8_t version;
-    if ([self.account.wallet.chain isMainnet]) {
+    if ([self.chain isMainnet]) {
         version = DASH_PRIVKEY;
     } else {
         version = DASH_PRIVKEY_TEST;
@@ -716,7 +721,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     uint32_t fingerprint = [DSKey keyWithSecret:secret compressed:YES].hash160.u32[0];
     CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
     
-    return serialize([self length], fingerprint, self.account.accountNumber | BIP32_HARD, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.account.wallet.chain isMainnet]);
+    return serialize([self length], fingerprint, self.account.accountNumber | BIP32_HARD, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.chain isMainnet]);
     }
 }
 
@@ -765,7 +770,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 - (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString
 {
-    return [DSDerivationPath deserializedExtendedPublicKey:extendedPublicKeyString onChain:self.account.wallet.chain];
+    return [DSDerivationPath deserializedExtendedPublicKey:extendedPublicKeyString onChain:self.chain];
 }
 
 @end

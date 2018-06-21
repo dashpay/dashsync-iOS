@@ -281,6 +281,14 @@
 
 // MARK: - Combining Accounts
 
+-(uint64_t)balance {
+    uint64_t rBalance = 0;
+    for (DSAccount * account in self.accounts) {
+        rBalance += account.balance;
+    }
+    return rBalance;
+}
+
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSAccount * account in self.accounts) {
@@ -377,8 +385,6 @@
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
     NSMutableArray *updated = [NSMutableArray array];
-    
-    if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) self.bestBlockHeight = height;
     
     for (DSAccount * account in self.accounts) {
         NSArray * fromAccount = [account setBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes];

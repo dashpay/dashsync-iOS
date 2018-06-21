@@ -289,13 +289,8 @@
     
 }
 
--(void)updateMasternodes {
-    self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
-    self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
-}
-
 -(void)updateBalance {
-    self.dashAmountLabel.text = [NSString stringWithFormat:@"%lld",self.chainPeerManager.chain.balance];
+    self.dashAmountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:self.chainPeerManager.chain.balance];
     self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
 }
 

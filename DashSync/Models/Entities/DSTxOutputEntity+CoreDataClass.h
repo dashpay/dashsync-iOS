@@ -25,13 +25,13 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSTransactionEntity,DSTransaction,DSDerivationPathEntity,DSAddressEntity;
+@class DSTransactionEntity,DSTransaction,DSDerivationPathEntity,DSAddressEntity,DSTxInputEntity,DSAccountEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTxOutputEntity : NSManagedObject
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index;
+- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity;
 
 @end
 

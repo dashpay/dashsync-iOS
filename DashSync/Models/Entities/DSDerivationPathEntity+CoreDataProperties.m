@@ -35,5 +35,6 @@
 @dynamic chain;
 @dynamic publicKeyIdentifier;
 @dynamic syncBlockHeight;
+@dynamic account;
 
 @end

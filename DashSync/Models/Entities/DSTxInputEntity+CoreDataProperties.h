@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int32_t sequence;
 @property (nonatomic, retain) DSTransactionEntity *transaction;
 @property (nonatomic, retain) DSAddressEntity *localAddress;
+@property (nullable, nonatomic, retain) DSTxOutputEntity * prevOutput;
 
 @end
 
