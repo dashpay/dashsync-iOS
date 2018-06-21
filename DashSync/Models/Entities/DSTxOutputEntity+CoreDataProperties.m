@@ -34,10 +34,11 @@
 @dynamic n;
 @dynamic script;
 @dynamic shapeshiftOutboundAddress;
-@dynamic spent;
+@dynamic spentInInput;
 @dynamic txHash;
 @dynamic value;
 @dynamic transaction;
 @dynamic localAddress;
+@dynamic account;
 
 @end

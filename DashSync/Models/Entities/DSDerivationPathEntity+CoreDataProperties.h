@@ -36,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) NSString *publicKeyIdentifier;
 @property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
+@property (nullable, nonatomic, retain) DSAccountEntity *account;
 
 @end
 

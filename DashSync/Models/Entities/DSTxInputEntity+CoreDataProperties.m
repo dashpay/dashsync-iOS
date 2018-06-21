@@ -36,5 +36,6 @@
 @dynamic txHash;
 @dynamic transaction;
 @dynamic localAddress;
+@dynamic prevOutput;
 
 @end

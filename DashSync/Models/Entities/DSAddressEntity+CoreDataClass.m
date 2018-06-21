@@ -30,7 +30,7 @@
 -(uint64_t)balance {
     uint64_t b = 0;
     for (DSTxOutputEntity* output in self.usedInOutputs) {
-        if (!output.spent) b += output.value;
+        if (!output.spentInInput) b += output.value;
     }
     return b;
 }
@@ -46,7 +46,7 @@
 -(uint64_t)outAmount {
     uint64_t b = 0;
     for (DSTxOutputEntity* output in self.usedInOutputs) {
-        if (output.spent) b += output.value;
+        if (output.spentInInput) b += output.value;
     }
     return b;
 }

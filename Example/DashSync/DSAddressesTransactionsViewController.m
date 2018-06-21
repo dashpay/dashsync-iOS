@@ -9,6 +9,7 @@
 #import "DSAddressesTransactionsViewController.h"
 #import <DashSync/DashSync.h>
 #import "DSTransactionTableViewCell.h"
+#import "BRBubbleView.h"
 
 @interface DSAddressesTransactionsViewController ()
 
@@ -118,6 +119,23 @@
     return cell;
 }
 
+-(IBAction)copyTransactionHash:(id)sender {
+    for (UITableViewCell * cell in self.tableView.visibleCells) {
+        if ([sender isDescendantOfView:cell]) {
+            NSIndexPath * indexPath = [self.tableView indexPathForCell:cell];
+            DSTransactionEntity *transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+            UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+            pasteboard.string = transactionEntity.txHash.reverse.hexString;
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+                                                        center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+                                   popOutAfterDelay:2.0]];
+            break;
+        }
+    }
+    
+}
+
+
 
 -(void)configureCell:(DSTransactionTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSTransactionEntity *transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
@@ -130,9 +148,28 @@
         }
     }
     if (outwards) {
-        cell.directionLabel.text = @"Receiving";
+        cell.directionLabel.text = @"Received";
+        cell.directionLabel.textColor = [UIColor greenColor];
+    } else {
+        cell.directionLabel.text = @"Sent";
+        cell.directionLabel.textColor = [UIColor redColor];
+        for (DSTxInputEntity * input in transactionEntity.inputs) {
+            if ([input.localAddress.address isEqualToString:self.address]) {
+                cell.amountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:input.prevOutput.value];
+                break;
+            }
+        }
     }
-    cell.transactionLabel.text = transactionEntity.txHash.hexString;
+    static NSDateFormatter * dateFormatter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.dateStyle = NSDateFormatterMediumStyle;
+        dateFormatter.timeStyle = NSDateFormatterMediumStyle;
+    });
+    NSDate * date = [NSDate dateWithTimeIntervalSinceReferenceDate:transactionEntity.timestamp];
+    cell.dateLabel.text = [dateFormatter stringFromDate:date];
+    cell.transactionLabel.text = transactionEntity.txHash.reverse.hexString;
 }
 
 @end

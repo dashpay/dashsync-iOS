@@ -28,6 +28,7 @@
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
 
 @implementation DSTxOutputEntity
 
@@ -47,6 +48,7 @@
         if ([addressEntities count]) {
             NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
             self.localAddress = [addressEntities objectAtIndex:0];
+            self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
     }
     return self;

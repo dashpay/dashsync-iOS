@@ -33,17 +33,19 @@
 
 - (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
 {
-        UInt256 hash = UINT256_ZERO;
-        
-        [tx.inputHashes[index] getValue:&hash];
-        self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
-        self.n = [tx.inputIndexes[index] intValue];
-        self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
-        self.sequence = [tx.inputSequences[index] intValue];
-        self.transaction = transactionEntity;
-        
-        // mark previously unspent outputs as spent
-        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject setSpent:YES];
+    UInt256 hash = UINT256_ZERO;
+    
+    [tx.inputHashes[index] getValue:&hash];
+    self.txHash = [NSData dataWithBytes:&hash length:sizeof(hash)];
+    self.n = [tx.inputIndexes[index] intValue];
+    self.signature = (tx.inputSignatures[index] != [NSNull null]) ? tx.inputSignatures[index] : nil;
+    self.sequence = [tx.inputSequences[index] intValue];
+    self.transaction = transactionEntity;
+    DSTxOutputEntity * outputEntity = [DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", self.txHash, self.n].lastObject;
+    self.localAddress = outputEntity.localAddress;
+    
+    // mark previously unspent outputs as spent
+    [outputEntity setSpentInInput:self];
     
     return self;
 }

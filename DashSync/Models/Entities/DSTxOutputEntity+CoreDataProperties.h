@@ -37,9 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain) NSData *script;
 @property (nonatomic, retain) NSString *shapeshiftOutboundAddress;
 @property (nonatomic) int64_t value;
-@property (nonatomic) BOOL spent;
+@property (nullable, nonatomic, retain) DSTxInputEntity * spentInInput;
 @property (nonatomic, retain) DSTransactionEntity *transaction;
 @property (nonatomic, retain) DSAddressEntity *localAddress;
+@property (nonatomic, retain) DSAccountEntity *account;
 
 @end
 

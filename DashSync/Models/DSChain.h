@@ -124,6 +124,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 // current wallet balance excluding transactions known to be invalid
 @property (nonatomic, readonly) uint64_t balance;
 
+@property (nonatomic, assign) uint32_t bestBlockHeight;
+
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
 

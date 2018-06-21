@@ -475,8 +475,8 @@ static dispatch_once_t devnetToken = 0;
     NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey, &error);
     if (!error) {
         for (NSString * uniqueID in walletIdentifiers) {
-                DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];
-                [self addWallet:wallet];
+            DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueID forChain:self];
+            [self addWallet:wallet];
             
         }
     }
@@ -527,6 +527,17 @@ static dispatch_once_t devnetToken = 0;
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
     });
+}
+
+-(uint64_t)balance {
+    uint64_t rBalance = 0;
+    for (DSWallet * wallet in self.wallets) {
+        rBalance += wallet.balance;
+    }
+    for (DSDerivationPath * standaloneDerivationPath in self.standaloneDerivationPaths) {
+        rBalance += standaloneDerivationPath.balance;
+    }
+    return rBalance;
 }
 
 -(NSArray*)wallets {
@@ -644,9 +655,9 @@ static dispatch_once_t devnetToken = 0;
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
             _blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                                       merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
-                                                                           target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
-                                                                            flags:nil height:checkpoint.height];
+                                                                                 merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
+                                                                                     target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
+                                                                                      flags:nil height:checkpoint.height];
             self.checkpointsDictionary[@(checkpoint.height)] = uint256_obj(checkpointHash);
         }
         self.delegateQueueChainEntity = [self chainEntity];
@@ -696,40 +707,40 @@ static dispatch_once_t devnetToken = 0;
         }];
         
         if (!_lastBlock) {
-        if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
-            UInt256 checkpointHash = self.checkpoints[0].checkpointHash;
-            
-            _lastBlock = self.blocks[uint256_obj(checkpointHash)];
-        } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
-            // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-            for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-                if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].height <= [[DSOptionsManager sharedInstance] syncFromHeight])) {
-                    UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-                    
-                    _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                               merkleRoot:UINT256_ZERO timestamp:self.checkpoints[i].timestamp
-                                                                   target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                   height:self.checkpoints[i].height];
+            if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
+                UInt256 checkpointHash = self.checkpoints[0].checkpointHash;
+                
+                _lastBlock = self.blocks[uint256_obj(checkpointHash)];
+            } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
+                // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
+                for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
+                    if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].height <= [[DSOptionsManager sharedInstance] syncFromHeight])) {
+                        UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
+                        
+                        _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
+                                                                   merkleRoot:UINT256_ZERO timestamp:self.checkpoints[i].timestamp
+                                                                       target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
+                                                                       height:self.checkpoints[i].height];
+                    }
+                }
+            } else {
+                
+                // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
+                for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
+                    if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
+                        UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
+                        
+                        _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
+                                                                   merkleRoot:UINT256_ZERO timestamp:self.checkpoints[i].timestamp
+                                                                       target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
+                                                                       height:self.checkpoints[i].height];
+                    }
                 }
             }
-        } else {
             
-            // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-            for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-                if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
-                    UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-                    
-                    _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                               merkleRoot:UINT256_ZERO timestamp:self.checkpoints[i].timestamp
-                                                                   target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                   height:self.checkpoints[i].height];
-                }
-            }
         }
         
-        }
         
-
         
         if (_lastBlock.height > _estimatedBlockHeight) _estimatedBlockHeight = _lastBlock.height;
     }
@@ -767,7 +778,7 @@ static dispatch_once_t devnetToken = 0;
     else [[DSMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
     
     uint32_t h = self.lastBlockHeight, t = self.lastBlock.timestamp;
-
+    
     for (long i = self.checkpoints.count - 1; i >= 0; i--) { // estimate from checkpoints
         if (self.checkpoints[i].height <= blockHeight) {
             t = self.checkpoints[i].timestamp + (t - self.checkpoints[i].timestamp)*
@@ -784,13 +795,16 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
-    //need to reverify this works
+    if (height != TX_UNCONFIRMED && height > self.bestBlockHeight) self.bestBlockHeight = height;
     NSMutableArray *updatedTx = [NSMutableArray array];
-    for (DSWallet * wallet in self.wallets) {
-        [updatedTx addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
-                                                  forTxHashes:txHashes]];
+    if ([txHashes count]) {
+        //need to reverify this works
+        
+        for (DSWallet * wallet in self.wallets) {
+            [updatedTx addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
+                                                      forTxHashes:txHashes]];
+        }
     }
-    
     
     [self.peerManagerDelegate chain:self didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
 }
@@ -921,10 +935,10 @@ static dispatch_once_t devnetToken = 0;
         
         // mark transactions after the join point as unconfirmed
         for (DSWallet * wallet in self.wallets) {
-        for (DSTransaction *tx in wallet.allTransactions) {
-            if (tx.blockHeight <= b.height) break;
-            [txHashes addObject:uint256_obj(tx.txHash)];
-        }
+            for (DSTransaction *tx in wallet.allTransactions) {
+                if (tx.blockHeight <= b.height) break;
+                [txHashes addObject:uint256_obj(tx.txHash)];
+            }
         }
         
         [self setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:txHashes];
@@ -982,9 +996,9 @@ static dispatch_once_t devnetToken = 0;
     [[DSMerkleBlockEntity context] performBlock:^{
         if ([[DSOptionsManager sharedInstance] keepHeaders]) {
             //only remove orphan chains
-        NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) ",self.delegateQueueChainEntity,startHeight,blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> * recentOrphans = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > %u) && !(blockHash in %@) ",self.delegateQueueChainEntity,startHeight,blocks.allKeys];
             if ([recentOrphans count])  NSLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
-        [DSMerkleBlockEntity deleteObjects:recentOrphans];
+            [DSMerkleBlockEntity deleteObjects:recentOrphans];
         } else {
             NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"!(blockHash in %@)",blocks.allKeys];
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
@@ -1038,15 +1052,15 @@ static dispatch_once_t devnetToken = 0;
             }
         }
     } else {
-    
-    // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
-    for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-        if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
-            UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
-            
-            _lastBlock = self.blocks[uint256_obj(checkpointHash)];
+        
+        // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
+        for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
+            if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
+                UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
+                
+                _lastBlock = self.blocks[uint256_obj(checkpointHash)];
+            }
         }
-    }
     }
 }
 
@@ -1073,14 +1087,14 @@ static dispatch_once_t devnetToken = 0;
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
 - (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction wallet:(DSWallet **)wallet {
     for (DSWallet * lWallet in self.wallets) {
-    for (DSAccount * account in lWallet.accounts) {
-        DSTransaction * lTransaction = [account transactionForHash:txHash];
-        if (lTransaction) {
-            if (transaction) *transaction = lTransaction;
-             if (wallet) *wallet = lWallet;
-            return account;
+        for (DSAccount * account in lWallet.accounts) {
+            DSTransaction * lTransaction = [account transactionForHash:txHash];
+            if (lTransaction) {
+                if (transaction) *transaction = lTransaction;
+                if (wallet) *wallet = lWallet;
+                return account;
+            }
         }
-    }
     }
     return nil;
 }

@@ -53,6 +53,7 @@
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
+        derivationPathEntity.account = derivationPath.account.accountEntity;
         return derivationPathEntity;
     }
 }

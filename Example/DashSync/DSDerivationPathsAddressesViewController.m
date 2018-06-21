@@ -170,8 +170,10 @@ if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
     DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
     addressesExporterViewController.derivationPath = self.derivationPath;
 } else if ([segue.identifier isEqualToString:@"AddressTransactionsSegue"]) {
+    DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
     DSAddressesTransactionsViewController * addressesTransactionsViewController = (DSAddressesTransactionsViewController*)segue.destinationViewController;
-    addressesTransactionsViewController.address = self.derivationPath;
+    addressesTransactionsViewController.title = addressEntity.address;
+    addressesTransactionsViewController.address = addressEntity.address;
 }
 }
 

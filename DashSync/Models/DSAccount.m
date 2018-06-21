@@ -39,7 +39,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSWalletManager.h"
-
+#import "DSAccountEntity+CoreDataClass.h"
 
 @class DSDerivationPath,DSAccount;
 
@@ -115,23 +115,28 @@
         derivationPath.account = self;
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
+    self.allTx = [NSMutableDictionary dictionary];
     self.moc = [NSManagedObject context];
+
     return self;
 }
 
 -(void)loadTransactions {
     [self.moc performBlockAndWait:^{
         [DSTransactionEntity setContext:self.moc];
-        
+        [DSAccountEntity setContext:self.moc];
+        [DSTxInputEntity setContext:self.moc];
+        [DSTxOutputEntity setContext:self.moc];
+        [DSDerivationPathEntity setContext:self.moc];
         if ([DSTransactionEntity countAllObjects] > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
             [DSTxInputEntity allObjects];
             [DSTxOutputEntity allObjects];
-            
-            for (DSTransactionEntity *e in [DSTransactionEntity transactionsForChain:self.wallet.chain.chainEntity]) {
+            DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:self.accountNumber];
+            for (DSTxOutputEntity *e in accountEntity.transactionOutputs) {
                 @autoreleasepool {
                     
-                    DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+                    DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                     NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
                     
                     if (! transaction || self.allTx[hash] != nil) continue;
@@ -314,7 +319,7 @@
                 for (NSNumber *sequence in tx.inputSequences) {
                     if (sequence.unsignedIntValue < UINT32_MAX - 1) pending = YES; // check for replace-by-fee
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime < TX_MAX_LOCK_HEIGHT &&
-                        tx.lockTime > self.wallet.bestBlockHeight + 1) pending = YES; // future lockTime
+                        tx.lockTime > self.wallet.chain.bestBlockHeight + 1) pending = YES; // future lockTime
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime >= TX_MAX_LOCK_HEIGHT &&
                         tx.lockTime > now) pending = YES; // future locktime
                 }
@@ -725,7 +730,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     for (NSNumber *sequence in transaction.inputSequences) {
         if (sequence.unsignedIntValue < UINT32_MAX - 1) return YES;
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
-            transaction.lockTime > self.wallet.bestBlockHeight + 1) return YES;
+            transaction.lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
             transaction.lockTime > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970) return YES;
     }

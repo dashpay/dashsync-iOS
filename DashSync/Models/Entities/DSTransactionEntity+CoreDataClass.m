@@ -126,7 +126,7 @@
 - (void)deleteObject
 {
     for (DSTxInputEntity *e in self.inputs) { // mark inputs as unspent
-        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpent:NO];
+        [[DSTxOutputEntity objectsMatching:@"txHash == %@ && n == %d", e.txHash, e.n].lastObject setSpentInInput:nil];
     }
     
     [super deleteObject];

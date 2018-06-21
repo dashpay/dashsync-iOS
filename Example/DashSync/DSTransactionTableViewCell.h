@@ -12,5 +12,6 @@
 @property (strong, nonatomic) IBOutlet UILabel *transactionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *directionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *amountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *dateLabel;
 
 @end

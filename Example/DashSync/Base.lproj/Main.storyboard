@@ -1888,26 +1888,20 @@
         <scene sceneID="04C-Cc-4ZT">
             <objects>
                 <tableViewController id="bTI-rU-Fd7" customClass="DSAddressesTransactionsViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="gq7-dd-IOt">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="140" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="gq7-dd-IOt">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransactionCellIdentifier" rowHeight="104" id="8L9-6g-Fbt" userLabel="TransactionCell" customClass="DSTransactionTableViewCell">
-                                <rect key="frame" x="0.0" y="28" width="375" height="104"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransactionCellIdentifier" rowHeight="120" id="8L9-6g-Fbt" userLabel="TransactionCell" customClass="DSTransactionTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="120"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="8L9-6g-Fbt" id="dHo-Ge-hcq">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="103.66666666666667"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="119.66666666666667"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Direction" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="p1Y-vg-tSp">
                                             <rect key="frame" x="16" y="47" width="69" height="21"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fem-k8-4JW">
-                                            <rect key="frame" x="16" y="16" width="343" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1918,20 +1912,50 @@
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="Fem-k8-4JW">
+                                            <rect key="frame" x="43" y="16" width="316" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="contactAdd" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9tP-Yb-zQ4">
+                                            <rect key="frame" x="16" y="15" width="22" height="22"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="9tP-Yb-zQ4" secondAttribute="height" multiplier="1:1" id="itx-9p-ujE"/>
+                                            </constraints>
+                                            <color key="tintColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <connections>
+                                                <action selector="copyAddress:" destination="pQt-5m-3CE" eventType="touchUpInside" id="3SJ-uq-gnn"/>
+                                                <action selector="copyTransactionHash:" destination="bTI-rU-Fd7" eventType="touchUpInside" id="8GY-nT-9Ug"/>
+                                            </connections>
+                                        </button>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2eo-X0-hOH">
+                                            <rect key="frame" x="16" y="76" width="36" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="Fem-k8-4JW" firstAttribute="leading" secondItem="9tP-Yb-zQ4" secondAttribute="trailing" constant="5" id="7hN-YT-hLW"/>
                                         <constraint firstItem="Fem-k8-4JW" firstAttribute="top" secondItem="dHo-Ge-hcq" secondAttribute="top" constant="16" id="8Z7-Fi-kcN"/>
+                                        <constraint firstItem="2eo-X0-hOH" firstAttribute="leading" secondItem="dHo-Ge-hcq" secondAttribute="leading" constant="16" id="GcO-8h-nJb"/>
                                         <constraint firstItem="7Q0-mP-rgW" firstAttribute="top" secondItem="Fem-k8-4JW" secondAttribute="bottom" constant="10" id="Go2-sH-1OP"/>
+                                        <constraint firstItem="9tP-Yb-zQ4" firstAttribute="leading" secondItem="dHo-Ge-hcq" secondAttribute="leading" constant="16" id="OZ4-V7-Cna"/>
                                         <constraint firstItem="p1Y-vg-tSp" firstAttribute="top" secondItem="Fem-k8-4JW" secondAttribute="bottom" constant="10" id="Zd4-27-AMq"/>
+                                        <constraint firstItem="9tP-Yb-zQ4" firstAttribute="width" secondItem="9tP-Yb-zQ4" secondAttribute="height" multiplier="1:1" id="e64-PL-IaI"/>
+                                        <constraint firstItem="9tP-Yb-zQ4" firstAttribute="top" secondItem="dHo-Ge-hcq" secondAttribute="top" constant="15" id="h5p-LA-cWV"/>
+                                        <constraint firstItem="p1Y-vg-tSp" firstAttribute="top" secondItem="9tP-Yb-zQ4" secondAttribute="bottom" constant="10" id="nbP-f0-AJc"/>
                                         <constraint firstAttribute="trailing" secondItem="7Q0-mP-rgW" secondAttribute="trailing" constant="16" id="pVK-id-i7w"/>
                                         <constraint firstItem="p1Y-vg-tSp" firstAttribute="leading" secondItem="dHo-Ge-hcq" secondAttribute="leading" constant="16" id="q8V-BN-ifX"/>
-                                        <constraint firstItem="Fem-k8-4JW" firstAttribute="leading" secondItem="dHo-Ge-hcq" secondAttribute="leading" constant="16" id="sQy-Yu-ZFS"/>
                                         <constraint firstAttribute="trailing" secondItem="Fem-k8-4JW" secondAttribute="trailing" constant="16" id="vDs-NO-8iP"/>
+                                        <constraint firstItem="2eo-X0-hOH" firstAttribute="top" secondItem="p1Y-vg-tSp" secondAttribute="bottom" constant="8" id="wcj-2n-iXG"/>
                                         <constraint firstItem="7Q0-mP-rgW" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="p1Y-vg-tSp" secondAttribute="trailing" constant="10" id="zxm-Qc-zLr"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="amountLabel" destination="7Q0-mP-rgW" id="1JR-Bb-pXw"/>
+                                    <outlet property="dateLabel" destination="2eo-X0-hOH" id="lEk-Bv-NKy"/>
                                     <outlet property="directionLabel" destination="p1Y-vg-tSp" id="iHd-QA-Onh"/>
                                     <outlet property="transactionLabel" destination="Fem-k8-4JW" id="17B-q3-7cA"/>
                                 </connections>
