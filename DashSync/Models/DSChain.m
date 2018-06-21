@@ -168,6 +168,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     return self;
 }
 
+
 -(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port
 {
     //for devnet the genesis checkpoint is really the second block
