@@ -11,6 +11,7 @@
 #import <DashSync/DashSync.h>
 #import "BRBubbleView.h"
 #import "DSAddressesExporterViewController.h"
+#import "DSAddressesTransactionsViewController.h"
 
 @interface DSDerivationPathsAddressesViewController ()
 
@@ -140,13 +141,20 @@
 
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-    pasteboard.string = addressEntity.address;
-    [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
-                                                center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
-                           popOutAfterDelay:2.0]];
+-(IBAction)copyAddress:(id)sender {
+    for (UITableViewCell * cell in self.tableView.visibleCells) {
+        if ([sender isDescendantOfView:cell]) {
+            NSIndexPath * indexPath = [self.tableView indexPathForCell:cell];
+            DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+            UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+            pasteboard.string = addressEntity.address;
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+                                                        center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+                                   popOutAfterDelay:2.0]];
+            break;
+        }
+    }
+
 }
 
 // MARK:- Search Bar Delegate
@@ -161,6 +169,9 @@
 if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
     DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
     addressesExporterViewController.derivationPath = self.derivationPath;
+} else if ([segue.identifier isEqualToString:@"AddressTransactionsSegue"]) {
+    DSAddressesTransactionsViewController * addressesTransactionsViewController = (DSAddressesTransactionsViewController*)segue.destinationViewController;
+    addressesTransactionsViewController.address = self.derivationPath;
 }
 }
 

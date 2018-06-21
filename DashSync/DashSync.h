@@ -36,6 +36,9 @@
 #import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectHashEntity+CoreDataProperties.h"
+#import "DSTransactionEntity+CoreDataProperties.h"
+#import "DSTxOutputEntity+CoreDataProperties.h"
+#import "DSTxInputEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 
 //! Project version number for dashsync.
