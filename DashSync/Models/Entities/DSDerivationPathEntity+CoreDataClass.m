@@ -30,6 +30,7 @@
 #import "DSDerivationPath.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBIP39Mnemonic.h"
+#import "DSAccountEntity+CoreDataClass.h"
 
 @implementation DSDerivationPathEntity
 
@@ -53,7 +54,9 @@
         derivationPathEntity.chain = chainEntity;
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
-        derivationPathEntity.account = derivationPath.account.accountEntity;
+        if (derivationPath.account) {
+        derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber];
+        }
         return derivationPathEntity;
     }
 }
