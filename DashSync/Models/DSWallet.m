@@ -231,7 +231,7 @@
                 // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
                 // still counts towards the next touch id spending limit
                 if (! touchid) setKeychainInt(self.totalSent + amount + [DSWalletManager sharedInstance].spendingLimit, SPEND_LIMIT_KEY, NO);
-                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.uniqueID, nil) withPassphrase:nil]);
+                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil]);
             }
         }];
         

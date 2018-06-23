@@ -138,7 +138,7 @@
         struct in6_addr addrV6;
         if (inet_aton([address UTF8String], &addrV4) != 0) {
             uint32_t ip = ntohl(addrV4.s_addr);
-            ipAddress.u32[3] = ip;
+            ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
             NSLog(@"%08x", ip);
         } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
             //todo support IPV6

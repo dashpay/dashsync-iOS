@@ -43,6 +43,7 @@
 		FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */; };
 		FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */; };
 		FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */; };
+		FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -138,6 +139,8 @@
 		FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressesTransactionsViewController.m; sourceTree = "<group>"; };
 		FB3E970520DC245C00D9B0CB /* DSTransactionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionTableViewCell.h; sourceTree = "<group>"; };
 		FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionTableViewCell.m; sourceTree = "<group>"; };
+		FB3E971020DD7C2E00D9B0CB /* DSSendAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSendAmountViewController.h; sourceTree = "<group>"; };
+		FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSendAmountViewController.m; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -425,6 +428,8 @@
 				FB9A106520D7A72D006883E2 /* DSAddressesExporterViewController.m */,
 				FB3E970220DC21EB00D9B0CB /* DSAddressesTransactionsViewController.h */,
 				FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */,
+				FB3E971020DD7C2E00D9B0CB /* DSSendAmountViewController.h */,
+				FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */,
 			);
 			name = Wallet;
 			sourceTree = "<group>";
@@ -658,6 +663,7 @@
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,
 				FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */,
 				FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */,
+				FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -52,6 +52,8 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 -(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(NSString * password))completion cancel:(void (^_Nonnull)(void))cancel;
 
+- (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure errorMessage:(NSString*)errorMessage localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount;
+
 -(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel;
 
 @end

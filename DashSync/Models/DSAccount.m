@@ -183,6 +183,13 @@
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         [derivationPath loadAddresses];
     }
+    if (self.bip44DerivationPath) {
+        self.defaultDerivationPath = self.bip44DerivationPath;
+    } else if (self.bip32DerivationPath) {
+        self.defaultDerivationPath = self.bip32DerivationPath;
+    } else {
+        self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
+    }
 }
 
 // MARK: - Combining Derivation Paths
@@ -362,6 +369,12 @@
                 transaction = self.allTx[uint256_obj(o.hash)];
                 [utxos removeObject:output];
                 balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
+                for (DSDerivationPath * derivationPath in self.derivationPaths) {
+                    if ([derivationPath containsAddress:transaction.outputAddresses[o.n]]) {
+                        derivationPath.balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
+                        break;
+                    }
+                }
             }
             
             if (prevBalance < balance) totalReceived += balance - prevBalance;
@@ -471,7 +484,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 {
     
     uint64_t amount = 0, balance = 0, feeAmount = 0;
-    DSTransaction *transaction = [DSTransaction new], *tx;
+    DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain], *tx;
     NSUInteger i = 0, cpfpSize = 0;
     DSUTXO o;
     

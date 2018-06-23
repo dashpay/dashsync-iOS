@@ -62,7 +62,8 @@
 -(void)configureCell:(DSAccountTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSAccount * account = [[self accounts] objectAtIndex:indexPath.row];
     cell.accountNumberLabel.text = [NSString stringWithFormat:@"%u",account.accountNumber];
-    cell.balanceLabel.text = [NSString stringWithFormat:@"%llu",account.balance];
+    cell.balanceLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:account.balance];
+    [[DSWalletManager sharedInstance] stringForDashAmount:account.balance];
 }
 
 
