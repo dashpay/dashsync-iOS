@@ -369,6 +369,12 @@
                 transaction = self.allTx[uint256_obj(o.hash)];
                 [utxos removeObject:output];
                 balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
+                for (DSDerivationPath * derivationPath in self.derivationPaths) {
+                    if ([derivationPath containsAddress:transaction.outputAddresses[o.n]]) {
+                        derivationPath.balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
+                        break;
+                    }
+                }
             }
             
             if (prevBalance < balance) totalReceived += balance - prevBalance;
