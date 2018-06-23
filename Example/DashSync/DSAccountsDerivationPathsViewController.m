@@ -9,6 +9,7 @@
 #import "DSAccountsDerivationPathsViewController.h"
 #import "DSDerivationPathTableViewCell.h"
 #import "DSDerivationPathsAddressesViewController.h"
+#import "DSSendAmountViewController.h"
 
 @interface DSAccountsDerivationPathsViewController ()
 
@@ -56,7 +57,7 @@
     DSDerivationPath * derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
     cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
-    cell.balanceLabel.text = [NSString stringWithFormat:@"%llu",derivationPath.balance];
+    cell.balanceLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:derivationPath.balance];
 }
 
 
@@ -99,6 +100,9 @@
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
         DSDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSDerivationPathsAddressesViewController*)segue.destinationViewController;
         derivationPathsAddressesViewController.derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
+    } else if ([segue.identifier isEqualToString:@"SendAmountSegue"]) {
+        DSSendAmountViewController * sendAmountViewController = (DSSendAmountViewController*)(((UINavigationController*)segue.destinationViewController).topViewController);
+        sendAmountViewController.account = self.account;
     }
 }
 

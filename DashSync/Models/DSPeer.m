@@ -1063,10 +1063,15 @@ services:(uint64_t)services
         _relaySpeed = _relaySpeed*0.9 + speed*0.1;
         _relayStartTime = 0;
     }
+    for (int i = 0; i < count; i++) {
+        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
+        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
+    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
+    // Devnets can run slower than usual
     NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
-    if (count >= 2000 || t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) {
+    if (count >= 2000 || t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
         UInt256 firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSValue *firstHash = uint256_obj(firstX11);
@@ -1080,7 +1085,7 @@ services:(uint64_t)services
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
 
-            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
+            //lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
         }

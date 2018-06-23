@@ -93,12 +93,12 @@
     NSURL *url = [NSURL URLWithString:s];
     
     if (! url || ! url.scheme) {
-        if ([s isValidBitcoinAddressOnChain:self.chain] || [s isValidBitcoinPrivateKeyOnChain:self.chain]) {
-            url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
-            self.scheme = @"bitcoin";
-        } else if ([s isValidDashAddressOnChain:self.chain] || [s isValidDashPrivateKeyOnChain:self.chain] || [s isValidDashBIP38Key]) {
+        if ([s isValidDashAddressOnChain:self.chain] || [s isValidDashPrivateKeyOnChain:self.chain] || [s isValidDashBIP38Key]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
+        } else if ([s isValidBitcoinAddressOnChain:self.chain] || [s isValidBitcoinPrivateKeyOnChain:self.chain]) {
+            url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
+            self.scheme = @"bitcoin";
         }
     }
     else if (! url.host && url.resourceSpecifier) {

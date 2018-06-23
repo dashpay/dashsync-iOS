@@ -243,8 +243,8 @@ static checkpoint mainnet_checkpoint_array[] = {
         blockhash = [self blockHashForDevNetGenesisBlockWithVersion:nVersion prevHash:prevHash merkleRoot:merkleRoot timestamp:nTime target:nBits nonce:nonce];
     } while (nonce < UINT32_MAX && uint256_sup(blockhash, fullTarget));
     DSCheckpoint * block2Checkpoint = [[DSCheckpoint alloc] init];
-    block2Checkpoint.height = 2;
-    block2Checkpoint.checkpointHash = blockhash;
+    block2Checkpoint.height = 1;
+    block2Checkpoint.checkpointHash = blockhash;//*(UInt256*)[NSData dataWithUInt256:blockhash].reverse.bytes;
     block2Checkpoint.target = nBits;
     block2Checkpoint.timestamp = nTime;
     return block2Checkpoint;
@@ -278,6 +278,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     
     dispatch_once(&mainnetToken, ^{
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT];
+        NSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
     return _mainnet;
 }

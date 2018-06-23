@@ -40,6 +40,8 @@
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSPaymentRequest.h"
+#import "DSPaymentProtocol.h"
 
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;

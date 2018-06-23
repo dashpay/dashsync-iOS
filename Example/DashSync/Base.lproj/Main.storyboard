@@ -1726,10 +1726,95 @@
                             <outlet property="delegate" destination="Jv3-Wc-EO7" id="6hN-jk-I45"/>
                         </connections>
                     </tableView>
+                    <navigationItem key="navigationItem" title="Derivation Paths" id="Mvf-Vy-idx">
+                        <barButtonItem key="rightBarButtonItem" title="Send" id="vNW-sg-LJm">
+                            <connections>
+                                <segue destination="0es-rB-Vsb" kind="presentation" identifier="SendAmountSegue" id="U70-xp-JH4"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="shC-cp-14Q" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="5845.6000000000004" y="587.4384236453202"/>
+        </scene>
+        <!--Send-->
+        <scene sceneID="N1Z-Sf-szq">
+            <objects>
+                <viewController id="oJh-5l-EE4" customClass="DSSendAmountViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="uFI-bL-5gf"/>
+                        <viewControllerLayoutGuide type="bottom" id="tGh-nY-RI6"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="MQM-P9-eoH">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Address" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="MLN-WE-DRH">
+                                <rect key="frame" x="16" y="120" width="343" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                                <connections>
+                                    <outlet property="delegate" destination="oJh-5l-EE4" id="vJZ-hl-tlC"/>
+                                </connections>
+                            </textField>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Amount" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="hZy-ri-aCD">
+                                <rect key="frame" x="16" y="170" width="343" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="decimalPad" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                <connections>
+                                    <outlet property="delegate" destination="oJh-5l-EE4" id="1wh-Kg-ejm"/>
+                                </connections>
+                            </textField>
+                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lvK-L6-HIA">
+                                <rect key="frame" x="308" y="226" width="51" height="31"/>
+                            </switch>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Instant Send" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kx4-27-E1i">
+                                <rect key="frame" x="22" y="230" width="96" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="lvK-L6-HIA" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Kx4-27-E1i" secondAttribute="trailing" constant="10" id="60O-GW-2C8"/>
+                            <constraint firstAttribute="trailing" secondItem="hZy-ri-aCD" secondAttribute="trailing" constant="16" id="89q-lF-lDX"/>
+                            <constraint firstAttribute="trailing" secondItem="lvK-L6-HIA" secondAttribute="trailing" constant="18" id="FXM-5w-pTy"/>
+                            <constraint firstItem="lvK-L6-HIA" firstAttribute="top" secondItem="hZy-ri-aCD" secondAttribute="bottom" constant="26" id="ITz-eP-lha"/>
+                            <constraint firstItem="Kx4-27-E1i" firstAttribute="leading" secondItem="MQM-P9-eoH" secondAttribute="leading" constant="22" id="JTU-7s-PeE"/>
+                            <constraint firstItem="MLN-WE-DRH" firstAttribute="leading" secondItem="MQM-P9-eoH" secondAttribute="leading" constant="16" id="Q9V-sZ-IK7"/>
+                            <constraint firstAttribute="trailing" secondItem="MLN-WE-DRH" secondAttribute="trailing" constant="16" id="W5h-Ai-0J9"/>
+                            <constraint firstItem="MLN-WE-DRH" firstAttribute="top" secondItem="uFI-bL-5gf" secondAttribute="bottom" constant="32" id="eYu-Te-PEA"/>
+                            <constraint firstItem="Kx4-27-E1i" firstAttribute="baseline" secondItem="lvK-L6-HIA" secondAttribute="baseline" constant="-10" id="f3u-fw-5y6"/>
+                            <constraint firstItem="hZy-ri-aCD" firstAttribute="leading" secondItem="MQM-P9-eoH" secondAttribute="leading" constant="16" id="g2K-rd-yBM"/>
+                            <constraint firstItem="hZy-ri-aCD" firstAttribute="top" secondItem="MLN-WE-DRH" secondAttribute="bottom" constant="20" id="oEY-Cd-Sbp"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Send" id="m0Q-UU-eY0">
+                        <barButtonItem key="leftBarButtonItem" title="Cancel" id="WqM-YZ-sxQ">
+                            <connections>
+                                <action selector="cancel:" destination="oJh-5l-EE4" id="w9x-X1-mcf"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Send" id="z0f-z8-7g5">
+                            <connections>
+                                <action selector="send:" destination="oJh-5l-EE4" id="tas-3J-pW1"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="addressField" destination="MLN-WE-DRH" id="tNe-G0-trK"/>
+                        <outlet property="amountField" destination="hZy-ri-aCD" id="T3u-zX-qi8"/>
+                        <outlet property="instantSendSwitch" destination="lvK-L6-HIA" id="SxL-5W-cYL"/>
+                        <outlet property="sendButton" destination="z0f-z8-7g5" id="TMS-IT-Fuo"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CLw-rL-EDe" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="8036" y="719.70443349753702"/>
         </scene>
         <!--Addresses-->
         <scene sceneID="gxw-BS-vWW">
@@ -1969,7 +2054,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Vs7-R2-ZDd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="8464.7999999999993" y="581.5270935960591"/>
+            <point key="canvasLocation" x="9407.2000000000007" y="581.5270935960591"/>
         </scene>
         <!--Passphrase-->
         <scene sceneID="1v0-Xr-yW0">
@@ -2128,8 +2213,26 @@
             </objects>
             <point key="canvasLocation" x="1300" y="-297.04433497536945"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="h3j-DE-maE">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="0es-rB-Vsb" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="hdG-ZH-589">
+                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="oJh-5l-EE4" kind="relationship" relationship="rootViewController" id="jKt-Xd-yjL"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="tVo-od-qMS" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7093.6000000000004" y="719.70443349753702"/>
+        </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Unp-kP-fWV"/>
+        <segue reference="iUD-e4-yrR"/>
     </inferredMetricsTieBreakers>
 </document>

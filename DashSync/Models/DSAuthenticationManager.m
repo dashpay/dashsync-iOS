@@ -36,11 +36,21 @@
 #import "NSData+Bitcoin.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
+static NSString *sanitizeString(NSString *s)
+{
+    NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
+    
+    CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
+    return sane;
+}
+
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define CIRCLE  @"\xE2\x97\x8C" // dotted circle (utf-8)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
+#define LOCK    @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
+#define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
 typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthenticationManager * context);
 
@@ -123,6 +133,50 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     if (! [LAContext class]) return YES; // we can only check for passcode on iOS 8 and above
     if ([[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) return YES;
     return (error && error.code == LAErrorPasscodeNotSet) ? NO : YES;
+}
+
+// MARK: - Prompts
+
+// generate a description of a transaction so the user can review and decide whether to confirm or cancel
+- (NSString *)promptForAmount:(uint64_t)amount
+                          fee:(uint64_t)fee
+                      address:(NSString *)address
+                         name:(NSString *)name
+                         memo:(NSString *)memo
+                     isSecure:(BOOL)isSecure
+                 errorMessage:(NSString*)errorMessage
+                localCurrency:(NSString *)localCurrency
+          localCurrencyAmount:(NSString *)localCurrencyAmount
+{
+    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
+    
+    //BUG: XXX limit the length of name and memo to avoid having the amount clipped
+    if (! isSecure && errorMessage.length > 0) prompt = [prompt stringByAppendingString:REDX @" "];
+    if (name.length > 0) prompt = [prompt stringByAppendingString:sanitizeString(name)];
+    if (! isSecure && prompt.length > 0) prompt = [prompt stringByAppendingString:@"\n"];
+    if (! isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address];
+    if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
+    prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n\n     amount %@ (%@)", nil),
+              [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];
+    
+    if (localCurrency && localCurrencyAmount && ![localCurrency isEqualToString:manager.localCurrencyCode]) {
+        NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+        numberFormatter.currencyCode = localCurrency;
+        numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
+        NSNumber *localAmount = [NSDecimalNumber decimalNumberWithString:localCurrencyAmount];
+        NSString *requestedAmount = [numberFormatter stringFromNumber:localAmount];
+        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n(local requested amount: %@)", nil), requestedAmount];
+    }
+    
+    if (fee > 0) {
+        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\nnetwork fee +%@ (%@)", nil),
+                  [manager stringForDashAmount:fee], [manager localCurrencyStringForDashAmount:fee]];
+        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n         total %@ (%@)", nil),
+                  [manager stringForDashAmount:amount], [manager localCurrencyStringForDashAmount:amount]];
+    }
+    
+    return prompt;
 }
 
 // MARK: - Pin
