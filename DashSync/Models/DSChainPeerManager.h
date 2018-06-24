@@ -54,7 +54,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 @property (nonatomic, readonly) double syncProgress;
 @property (nonatomic, readonly) NSUInteger peerCount; // number of connected peers
 @property (nonatomic, readonly) NSString * _Nullable downloadPeerName;
-@property (nonatomic, readonly) NSString * _Nullable chainTip;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;

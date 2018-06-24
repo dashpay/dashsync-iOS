@@ -151,7 +151,7 @@
         <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="totalTransactions" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="version" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="blocks" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="blocks" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
         <compoundIndexes>
             <compoundIndex>
                 <index value="chain"/>
@@ -169,7 +169,7 @@
         <attribute name="priority" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="services" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
-        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="peers" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="peers" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
@@ -203,8 +203,8 @@
         <attribute name="lockTime" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" defaultDateTimeInterval="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
-        <relationship name="associatedShapeshift" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSShapeshiftEntity" inverseName="transaction" inverseEntity="DSShapeshiftEntity" syncable="YES"/>
-        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="transactions" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="associatedShapeshift" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSShapeshiftEntity" inverseName="transaction" inverseEntity="DSShapeshiftEntity" syncable="YES"/>
+        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="transactions" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
         <relationship name="inputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="DSTxInputEntity" inverseName="transaction" inverseEntity="DSTxInputEntity" syncable="YES"/>
         <relationship name="outputs" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="DSTxOutputEntity" inverseName="transaction" inverseEntity="DSTxOutputEntity" syncable="YES"/>
     </entity>
@@ -230,6 +230,7 @@
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
+        <element name="DSAccountEntity" positionX="18" positionY="153" width="128" height="105"/>
         <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="225"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="135"/>
@@ -247,6 +248,5 @@
         <element name="DSTransactionEntity" positionX="0" positionY="0" width="128" height="165"/>
         <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="0" positionY="0" width="128" height="195"/>
-        <element name="DSAccountEntity" positionX="18" positionY="153" width="128" height="105"/>
     </elements>
 </model>

@@ -54,9 +54,13 @@ typedef const struct checkpoint { uint32_t height; const char *checkpointHash; u
 
 static checkpoint testnet_checkpoint_array[] = {
     {           0, "00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c", 1390666206, 0x1e0ffff0u },
+    {        1500, "000002d7a07979a4d6b24efdda0bbf6e3c03a59c22765a0128a5c53b3888aa28", 1423460945, 0x1e03ffffu },
+    {        2000, "000006b9af71c8ac510ff912b632ff91a2e05ab92ba4de9f1ec4be424c4ba636", 1462833216, 0x1e0fffffu },
     {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu },
     {       50000, "0000000002367c252a878312997591d342ff9a8c21691c542ac1c0e48d2144d7", 1514581337, 0x1c0a37beu },
     {      100000, "0000000003aa53e24b6e60ef97642e4193611f2bcb75ea1fa8105f0b5ffd5242", 1522497809, 0x1c07b767u },
+    {      120000, "00000000050f0f4fbe66a70f045cc97c528a7e77515260b89d7c848315a3a47f", 1525631093, 0x1c087a31u },
+    {      145000, "0000000004cfe67b0118ef127873f5fa2a9d4beb4ef0dd5aeccc24998a709f1d", 1529577857, 0x1c0a3cfdu }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -128,12 +132,12 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
-@property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mStandaloneDerivationPaths;
 @property (nonatomic, strong) DSChainEntity * mainThreadChainEntity;
 @property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 @property (nonatomic, strong) NSString * devnetIdentifier;
 @property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, assign) uint32_t minProtocolVersion;
+@property (nonatomic, strong) DSAccount * viewingAccount;
 
 @end
 
@@ -147,7 +151,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.orphans = [NSMutableDictionary dictionary];
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
-    self.mStandaloneDerivationPaths = [NSMutableArray array];
+    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithDerivationPaths:@[]];
     
     self.feePerKb = DEFAULT_FEE_PER_KB;
     uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
@@ -412,18 +416,18 @@ static dispatch_once_t devnetToken = 0;
     if (!keyChainArray) return;
     [keyChainArray removeObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
-    [self.mStandaloneDerivationPaths removeObject:derivationPath];
+    [self.viewingAccount removeDerivationPath:derivationPath];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
     });
 }
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
-    [self.mStandaloneDerivationPaths addObject:derivationPath];
+    [self.viewingAccount addDerivationPath:derivationPath];
 }
 
 - (void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath
 {
-    if (![self.mStandaloneDerivationPaths containsObject:derivationPath]) {
+    if (![self.viewingAccount.derivationPaths containsObject:derivationPath]) {
         [self addStandaloneDerivationPath:derivationPath];
     }
     NSError * error = nil;
@@ -437,7 +441,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(NSArray*)standaloneDerivationPaths {
-    return [_mStandaloneDerivationPaths copy];
+    return [self.viewingAccount derivationPaths];
 }
 
 // MARK: - Voting Keys
@@ -472,6 +476,24 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Wallet
 
+- (void)wipeBlockchainInfo {
+    for (DSWallet * wallet in self.wallets) {
+        [wallet wipeBlockchainInfo];
+    }
+    [self.viewingAccount wipeBlockchainInfo];
+    self.bestBlockHeight = 0;
+    [self setLastBlockHeightForRescan];
+}
+
+-(void)wipeChain {
+    self.mWallets = [NSMutableArray array];
+    [DSMerkleBlockEntity deleteAllObjects];
+    [DSMerkleBlockEntity saveContext];
+    _blocks = nil;
+    _lastBlock = nil;
+    [self.peerManagerDelegate chainWasWiped:self];
+}
+
 -(void)retrieveWallets {
     NSError * error = nil;
     NSArray * walletIdentifiers = getKeychainArray(self.chainWalletsKey, &error);
@@ -489,7 +511,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(BOOL)hasAStandaloneDerivationPath {
-    return !![self.mStandaloneDerivationPaths count];
+    return !![self.viewingAccount.derivationPaths count];
 }
 
 -(BOOL)hasAWallet {
@@ -1021,15 +1043,6 @@ static dispatch_once_t devnetToken = 0;
         
         [DSMerkleBlockEntity saveContext];
     }];
-}
-
--(void)wipeChain {
-    self.mWallets = [NSMutableArray array];
-    [DSMerkleBlockEntity deleteAllObjects];
-    [DSMerkleBlockEntity saveContext];
-    _blocks = nil;
-    _lastBlock = nil;
-    [self.peerManagerDelegate chainWasWiped:self];
 }
 
 -(void)clearOrphans {

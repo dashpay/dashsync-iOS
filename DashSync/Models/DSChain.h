@@ -44,8 +44,8 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define PROTOCOL_VERSION_MAINNET   70208
 #define MIN_PROTOCOL_VERSION_MAINNET  70208
 
-#define PROTOCOL_VERSION_TESTNET   70208
-#define MIN_PROTOCOL_VERSION_TESTNET  70208
+#define PROTOCOL_VERSION_TESTNET   70209
+#define MIN_PROTOCOL_VERSION_TESTNET  70209
 
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
@@ -177,6 +177,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 -(NSData*)votingKeyForMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
 
 -(NSArray*)registeredMasternodes;
+
+//This removes all blockchain information from the chain's wallets and derivation paths
+- (void)wipeBlockchainInfo;
 
 
 @end

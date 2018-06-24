@@ -74,10 +74,13 @@
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
 }
 
--(void)wipeBlockchainData {
-    [self stopSyncAllChains];
-    [DSMerkleBlockEntity deleteAllObjects];
-    [DSTransactionEntity deleteAllObjects];
+-(void)wipeBlockchainDataForChain:(DSChain*)chain {
+    [self stopSyncForChain:chain];
+    DSChainEntity * chainEntity = chain.chainEntity;
+    [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
+    [DSTransactionEntity deleteTransactionsOnChain:chainEntity];
+//    [DSShapeshiftEntity deleteAllObjects];
+    [chain wipeBlockchainInfo];
 }
 
 -(uint64_t)dbSize {

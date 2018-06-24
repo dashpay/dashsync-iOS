@@ -1085,7 +1085,7 @@ services:(uint64_t)services
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
 
-            //lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
+            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
         }

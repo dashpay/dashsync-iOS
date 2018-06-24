@@ -275,8 +275,27 @@
 }
 
 - (IBAction)wipeData:(id)sender {
-    [[DashSync sharedSyncController] stopSyncAllChains];
-    [[DashSync sharedSyncController] wipeBlockchainData];
+    UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Masternode Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+    }]];
+    [self presentViewController:wipeDataAlertController animated:TRUE completion:nil];
 }
 
 // MARK: - Blockchain events

@@ -427,4 +427,10 @@
     return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.chain isMainnet]);
 }
 
+- (void)wipeBlockchainInfo {
+    for (DSAccount * account in self.accounts) {
+        [account wipeBlockchainInfo];
+    }
+}
+
 @end
