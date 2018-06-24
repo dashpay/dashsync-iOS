@@ -37,4 +37,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO;
 
+-(void)wipeMasternodeInfo;
+
 @end

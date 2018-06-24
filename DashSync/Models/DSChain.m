@@ -151,7 +151,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.orphans = [NSMutableDictionary dictionary];
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
-    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithDerivationPaths:@[]];
     
     self.feePerKb = DEFAULT_FEE_PER_KB;
     uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
@@ -396,6 +395,12 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Standalone Derivation Paths
 
+-(DSAccount*)viewingAccount {
+    if (_viewingAccount) return _viewingAccount;
+    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithDerivationPaths:@[]];
+    return _viewingAccount;
+}
+
 -(void)retrieveStandaloneDerivationPaths {
     NSError * error = nil;
     NSArray * standaloneIdentifiers = getKeychainArray(self.chainStandaloneDerivationPathsKey, &error);
@@ -407,6 +412,12 @@ static dispatch_once_t devnetToken = 0;
                 [self addStandaloneDerivationPath:derivationPath];
             }
         }
+    }
+}
+
+-(void)unregisterAllStandaloneDerivationPaths {
+    for (DSDerivationPath * standaloneDerivationPath in [self.viewingAccount.derivationPaths copy]) {
+        [self unregisterStandaloneDerivationPath:standaloneDerivationPath];
     }
 }
 
@@ -473,7 +484,6 @@ static dispatch_once_t devnetToken = 0;
     setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
 }
 
-
 // MARK: - Wallet
 
 - (void)wipeBlockchainInfo {
@@ -482,16 +492,17 @@ static dispatch_once_t devnetToken = 0;
     }
     [self.viewingAccount wipeBlockchainInfo];
     self.bestBlockHeight = 0;
-    [self setLastBlockHeightForRescan];
-}
-
--(void)wipeChain {
-    self.mWallets = [NSMutableArray array];
-    [DSMerkleBlockEntity deleteAllObjects];
-    [DSMerkleBlockEntity saveContext];
     _blocks = nil;
     _lastBlock = nil;
+    [self setLastBlockHeightForRescan];
     [self.peerManagerDelegate chainWasWiped:self];
+}
+
+-(void)wipeWalletsAndDerivatives {
+    [self unregisterAllWallets];
+    [self unregisterAllStandaloneDerivationPaths];
+    self.mWallets = [NSMutableArray array];
+    self.viewingAccount = nil;
 }
 
 -(void)retrieveWallets {
@@ -520,6 +531,12 @@ static dispatch_once_t devnetToken = 0;
 
 -(BOOL)syncsBlockchain { //required for SPV wallets
     return !([[DSOptionsManager sharedInstance] syncType] & ~DSSyncType_NeedsWalletSyncType);
+}
+
+-(void)unregisterAllWallets {
+    for (DSWallet * wallet in [self.mWallets copy]) {
+        [self unregisterWallet:wallet];
+    }
 }
 
 -(void)unregisterWallet:(DSWallet*)wallet {

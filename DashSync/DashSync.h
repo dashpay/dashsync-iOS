@@ -36,6 +36,8 @@
 #import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectHashEntity+CoreDataProperties.h"
+#import "DSGovernanceVoteEntity+CoreDataProperties.h"
+#import "DSGovernanceVoteHashEntity+CoreDataProperties.h"
 #import "DSTransactionEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
@@ -62,6 +64,9 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 -(void)stopSyncAllChains;
 
 -(void)wipeBlockchainDataForChain:(DSChain*)chain;
+-(void)wipeGovernanceDataForChain:(DSChain*)chain;
+-(void)wipeMasternodeDataForChain:(DSChain*)chain;
+-(void)wipeWalletDataForChain:(DSChain*)chain;
 
 -(uint64_t)dbSize;
 

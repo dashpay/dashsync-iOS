@@ -143,7 +143,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 -(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 -(void)saveBlocks;
--(void)wipeChain;
+-(void)wipeWalletsAndDerivatives;
 -(void)clearOrphans;
 -(void)setLastBlockHeightForRescan;
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;

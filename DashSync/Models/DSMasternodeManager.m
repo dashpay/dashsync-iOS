@@ -308,4 +308,11 @@
     return masternodeBroadcast;
 }
 
+-(void)wipeMasternodeInfo {
+    [self.masternodeBroadcasts removeAllObjects];
+    self.needsRequestsHashEntities = nil;
+    self.knownHashes = nil;
+    self.masternodeBroadcastsCount = 0;
+}
+
 @end

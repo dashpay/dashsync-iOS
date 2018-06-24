@@ -135,8 +135,8 @@
 + (void)deleteTransactionsOnChain:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
         NSArray * transactionsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
-        for (DSTransactionEntity * transactions in transactionsToDelete) {
-            [chainEntity.managedObjectContext deleteObject:transactions];
+        for (DSTransactionEntity * transaction in transactionsToDelete) {
+            [chainEntity.managedObjectContext deleteObject:transaction];
         }
     }];
 }

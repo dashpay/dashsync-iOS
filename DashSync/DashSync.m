@@ -12,6 +12,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 @interface DashSync ()
 
@@ -81,6 +82,58 @@
     [DSTransactionEntity deleteTransactionsOnChain:chainEntity];
 //    [DSShapeshiftEntity deleteAllObjects];
     [chain wipeBlockchainInfo];
+    [DSTransactionEntity saveContext];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
+    });
+}
+
+-(void)wipeMasternodeDataForChain:(DSChain*)chain {
+    [self stopSyncForChain:chain];
+    DSChainEntity * chainEntity = chain.chainEntity;
+    [DSMasternodeBroadcastHashEntity deleteHashesOnChain:chainEntity];
+    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+    [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
+    [peerManager.masternodeManager wipeMasternodeInfo];
+    [DSMasternodeBroadcastHashEntity saveContext];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil];
+    });
+}
+
+-(void)wipeGovernanceDataForChain:(DSChain*)chain {
+    [self stopSyncForChain:chain];
+    DSChainEntity * chainEntity = chain.chainEntity;
+    [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
+    [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
+    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+    [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObject];
+    [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
+    [peerManager.governanceSyncManager wipeGovernanceInfo];
+    [DSGovernanceObjectHashEntity saveContext];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil];
+    });
+}
+
+-(void)wipeWalletDataForChain:(DSChain*)chain {
+    [self wipeBlockchainDataForChain:chain];
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+        if (authenticatedOrSuccess) {
+            [chain wipeWalletsAndDerivatives];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneAddressesDidChangeNotification object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
+            });
+        }
+    }];
+
 }
 
 -(uint64_t)dbSize {

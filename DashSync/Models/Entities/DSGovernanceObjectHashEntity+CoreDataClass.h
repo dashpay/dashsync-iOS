@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 +(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity;
 +(NSUInteger)countAroundNowOnChain:(DSChainEntity*)chainEntity;
 +(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity;
++(void)deleteHashesOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

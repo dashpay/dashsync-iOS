@@ -7,6 +7,7 @@
 //
 
 #import "DSGovernanceVoteHashEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSGovernanceVoteHashEntity
@@ -52,6 +53,15 @@
 +(NSUInteger)standaloneCountInLast3hoursOnChain:(DSChainEntity*)chainEntity {
     NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
     return [self countObjectsMatching:@"chain == %@ && timestamp > %@ && governanceVote == nil",chainEntity,@(threeHoursAgo)];
+}
+
++ (void)deleteHashesOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSGovernanceVoteHashEntity * governanceVoteHashEntity in hashesToDelete) {
+            [chainEntity.managedObjectContext deleteObject:governanceVoteHashEntity];
+        }
+    }];
 }
 
 @end

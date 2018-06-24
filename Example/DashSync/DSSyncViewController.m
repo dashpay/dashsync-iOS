@@ -281,19 +281,21 @@
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Masternode Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain]; //this takes care of blockchain info as well;
     }]];
     [self presentViewController:wipeDataAlertController animated:TRUE completion:nil];
 }

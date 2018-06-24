@@ -7,6 +7,7 @@
 //
 
 #import "DSMasternodeBroadcastHashEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
 @implementation DSMasternodeBroadcastHashEntity
@@ -26,7 +27,7 @@
 
 +(void)updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:(NSOrderedSet*)masternodeBroadcastHashes onChain:(DSChainEntity*)chainEntity {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    NSArray * entitiesToUpdate = [self objectsMatching:@"masternodeBroadcastHash in %@",masternodeBroadcastHashes];
+    NSArray * entitiesToUpdate = [self objectsMatching:@"(chain == %@) && (masternodeBroadcastHash in %@)",chainEntity,masternodeBroadcastHashes];
     for (DSMasternodeBroadcastHashEntity * entityToUpdate in entitiesToUpdate) {
         entityToUpdate.timestamp = now;
     }
@@ -53,5 +54,15 @@
     NSTimeInterval threeHoursAgo = [[NSDate date] timeIntervalSince1970] - 10800;
     return [self countObjectsMatching:@"chain == %@ && timestamp > %@ && masternodeBroadcast == nil",chainEntity,@(threeHoursAgo)];
 }
+
++ (void)deleteHashesOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in hashesToDelete) {
+            [chainEntity.managedObjectContext deleteObject:masternodeBroadcastHashEntity];
+        }
+    }];
+}
+
 
 @end

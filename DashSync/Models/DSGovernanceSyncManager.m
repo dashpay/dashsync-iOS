@@ -346,4 +346,14 @@
     [peerManager publishVotes:votesToRelay];
 }
 
+-(void)wipeGovernanceInfo {
+    [_governanceObjects removeAllObjects];
+    [_needVoteSyncGovernanceObjects removeAllObjects];
+    _currentGovernanceSyncObject = nil;
+    _knownGovernanceObjectHashes = nil;
+    _needsRequestsGovernanceObjectHashEntities = nil;
+    self.governanceObjectsCount = 0;
+    self.totalGovernanceObjectCount = 0;
+}
+
 @end
