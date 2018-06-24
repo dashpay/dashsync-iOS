@@ -59,7 +59,7 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io", @"test.dnsseed.masternode.io"]
+#define TESTNET_DNS_SEEDS @[@"test.dnsseed.masternode.io"]
 
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dashpay.io",@"dnsseed.masternode.io",@"dnsseed.dashdot.io"]
 
