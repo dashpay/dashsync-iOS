@@ -30,6 +30,19 @@
 @end
 
 @implementation DSSpork
+
+
+-(UInt256)sporkHash {
+    //hash calculation
+    NSMutableData * hashImportantData = [NSMutableData data];
+    uint32_t index = (uint32_t)self.identifier;
+    [hashImportantData appendBytes:&index length:4];
+    uint64_t value = (uint64_t)self.value;
+    [hashImportantData appendBytes:&value length:8];
+    uint64_t timeSigned = (uint64_t)self.timeSigned;
+    [hashImportantData appendBytes:&timeSigned length:8];
+    return hashImportantData.SHA256_2;
+}
     
     
 + (instancetype)sporkWithMessage:(NSData *)message onChain:(DSChain*)chain
@@ -66,19 +79,26 @@
 -(BOOL)isEqualToSpork:(DSSpork*)spork {
     return (([self.chain isEqual:spork.chain]) && (self.identifier == spork.identifier) && (self.value == spork.value) && (self.timeSigned == spork.timeSigned) && (self.valid == spork.valid));
 }
-    
--(BOOL)checkSignature:(NSData*)signature {
+
+-(BOOL)checkSignature70208Method:(NSData*)signature {
     NSString * stringMessage = [NSString stringWithFormat:@"%d%llu%llu",self.identifier,self.value,self.timeSigned];
     NSMutableData * stringMessageData = [NSMutableData data];
     [stringMessageData appendString:DASH_MESSAGE_MAGIC];
     [stringMessageData appendString:stringMessage];
     UInt256 messageDigest = stringMessageData.SHA256_2;
     DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
+    DSKey * sporkPublicKey = [DSKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
+    return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
+}
+    
+-(BOOL)checkSignature:(NSData*)signature {
+
     if (self.chain.protocolVersion < 70209) {
-        DSKey * sporkPublicKey = [DSKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
-        return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
+        return [self checkSignature70208Method:signature];
     } else {
-        return [[self sporkAddress] isEqualToString:[messagePublicKey addressForChain:self.chain]];
+        DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:self.sporkHash];
+        NSString * sporkAddress = [messagePublicKey addressForChain:self.chain];
+        return [[self sporkAddress] isEqualToString:sporkAddress] | [self checkSignature70208Method:signature];
     }
 }
 
@@ -121,6 +141,8 @@
             return @"Old superblock flag";
         case DSSporkIdentifier_Spork14RequireSentinelFlag:
             return @"Require sentinel flag";
+        case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
+            return @"Deterministic masternodese enabled at block";
         default:
             return @"Unknown spork";
             break;
