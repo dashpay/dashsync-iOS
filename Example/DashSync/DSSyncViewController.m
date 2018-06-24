@@ -84,7 +84,7 @@
                                                            [self updateBalance];
                                                        }];
     self.sporkObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkManagerSporkUpdateNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkListDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"update spork count");
                                                            [self updateSporks];
@@ -275,8 +275,33 @@
 }
 
 - (IBAction)wipeData:(id)sender {
-    [[DashSync sharedSyncController] stopSyncAllChains];
-    [[DashSync sharedSyncController] wipeBlockchainData];
+    UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Masternode Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Spork Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain]; //this takes care of blockchain info as well;
+    }]];
+    [self presentViewController:wipeDataAlertController animated:TRUE completion:nil];
 }
 
 // MARK: - Blockchain events

@@ -91,4 +91,13 @@
     return [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > max(height) - 51)",chainEntity];
 }
 
++ (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * merkleBlocksToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSMerkleBlockEntity * merkleBlock in merkleBlocksToDelete) {
+            [chainEntity.managedObjectContext deleteObject:merkleBlock];
+        }
+    }];
+}
+
 @end

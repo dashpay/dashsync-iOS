@@ -171,93 +171,93 @@
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
     NSLog(@"peer relayed masternode broadcasts");
     @synchronized(self) {
-    NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
-    NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
-    NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
-    NSMutableOrderedSet <NSData*> * rHashes = [_knownHashes mutableCopy];
-    [hashesToInsert minusOrderedSet:self.knownHashes];
-    [hashesToUpdate minusOrderedSet:hashesToInsert];
-    [hashesToQuery minusOrderedSet:self.fulfilledRequestsHashes];
-    NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
-    [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
-    NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
-    NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsHashEntities mutableCopy];
-    if ([masternodeBroadcastHashes count]) {
-        [self.managedObjectContext performBlockAndWait:^{
-            [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-            if ([hashesToInsert count]) {
-                NSArray * novelMasternodeBroadcastHashEntities = [DSMasternodeBroadcastHashEntity masternodeBroadcastHashEntitiesWithHashes:hashesToInsert onChain:self.chain.chainEntity];
-                for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in novelMasternodeBroadcastHashEntities) {
-                    if ([hashesToQueryFromInsert containsObject:masternodeBroadcastHashEntity.masternodeBroadcastHash]) {
-                        [hashEntitiesToQuery addObject:masternodeBroadcastHashEntity];
+        NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
+        NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
+        NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:masternodeBroadcastHashes] mutableCopy];
+        NSMutableOrderedSet <NSData*> * rHashes = [_knownHashes mutableCopy];
+        [hashesToInsert minusOrderedSet:self.knownHashes];
+        [hashesToUpdate minusOrderedSet:hashesToInsert];
+        [hashesToQuery minusOrderedSet:self.fulfilledRequestsHashes];
+        NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
+        [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
+        NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
+        NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsHashEntities mutableCopy];
+        if ([masternodeBroadcastHashes count]) {
+            [self.managedObjectContext performBlockAndWait:^{
+                [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
+                if ([hashesToInsert count]) {
+                    NSArray * novelMasternodeBroadcastHashEntities = [DSMasternodeBroadcastHashEntity masternodeBroadcastHashEntitiesWithHashes:hashesToInsert onChain:self.chain.chainEntity];
+                    for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in novelMasternodeBroadcastHashEntities) {
+                        if ([hashesToQueryFromInsert containsObject:masternodeBroadcastHashEntity.masternodeBroadcastHash]) {
+                            [hashEntitiesToQuery addObject:masternodeBroadcastHashEntity];
+                        }
                     }
                 }
-            }
-            if ([hashesToUpdate count]) {
-                [DSMasternodeBroadcastHashEntity updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:hashesToUpdate onChain:self.chain.chainEntity];
-            }
-            [DSMasternodeBroadcastHashEntity saveContext];
-        }];
-        if ([hashesToInsert count]) {
-            [rHashes addObjectsFromArray:[hashesToInsert array]];
-            [rHashes sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                UInt256 a = *(UInt256 *)((NSData*)obj1).bytes;
-                UInt256 b = *(UInt256 *)((NSData*)obj2).bytes;
-                return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
+                if ([hashesToUpdate count]) {
+                    [DSMasternodeBroadcastHashEntity updateTimestampForMasternodeBroadcastHashEntitiesWithMasternodeBroadcastHashes:hashesToUpdate onChain:self.chain.chainEntity];
+                }
+                [DSMasternodeBroadcastHashEntity saveContext];
             }];
-        }
-    }
-    
-    [rNeedsRequestsHashEntities addObjectsFromArray:hashEntitiesToQuery];
-    [rNeedsRequestsHashEntities sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        UInt256 a = *(UInt256 *)((NSData*)((DSMasternodeBroadcastHashEntity*)obj1).masternodeBroadcastHash).bytes;
-        UInt256 b = *(UInt256 *)((NSData*)((DSMasternodeBroadcastHashEntity*)obj2).masternodeBroadcastHash).bytes;
-        return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
-    }];
-    self.knownHashes = rHashes;
-    self.needsRequestsHashEntities = rNeedsRequestsHashEntities;
-    NSLog(@"-> %lu - %lu",(unsigned long)[self.knownHashes count],(unsigned long)self.totalMasternodeCount);
-    NSUInteger countAroundNow = [self recentMasternodeBroadcastHashesCount];
-    if ([self.knownHashes count] > self.totalMasternodeCount) {
-        [self.managedObjectContext performBlockAndWait:^{
-            [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-            NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalMasternodeCount);
-            if (countAroundNow == self.totalMasternodeCount) {
-                [DSMasternodeBroadcastHashEntity removeOldest:self.totalMasternodeCount - [self.knownHashes count] onChain:self.chain.chainEntity];
-                [self requestMasternodeBroadcastsFromPeer:peer];
+            if ([hashesToInsert count]) {
+                [rHashes addObjectsFromArray:[hashesToInsert array]];
+                [rHashes sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    UInt256 a = *(UInt256 *)((NSData*)obj1).bytes;
+                    UInt256 b = *(UInt256 *)((NSData*)obj2).bytes;
+                    return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
+                }];
             }
+        }
+        
+        [rNeedsRequestsHashEntities addObjectsFromArray:hashEntitiesToQuery];
+        [rNeedsRequestsHashEntities sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 a = *(UInt256 *)((NSData*)((DSMasternodeBroadcastHashEntity*)obj1).masternodeBroadcastHash).bytes;
+            UInt256 b = *(UInt256 *)((NSData*)((DSMasternodeBroadcastHashEntity*)obj2).masternodeBroadcastHash).bytes;
+            return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
         }];
-    } else if (countAroundNow == self.totalMasternodeCount) {
-        NSLog(@"%@",@"All masternode broadcast hashes received");
-        //we have all hashes, let's request objects.
-        [self requestMasternodeBroadcastsFromPeer:peer];
-    }
+        self.knownHashes = rHashes;
+        self.needsRequestsHashEntities = rNeedsRequestsHashEntities;
+        NSLog(@"-> %lu - %lu",(unsigned long)[self.knownHashes count],(unsigned long)self.totalMasternodeCount);
+        NSUInteger countAroundNow = [self recentMasternodeBroadcastHashesCount];
+        if ([self.knownHashes count] > self.totalMasternodeCount) {
+            [self.managedObjectContext performBlockAndWait:^{
+                [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
+                NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalMasternodeCount);
+                if (countAroundNow == self.totalMasternodeCount) {
+                    [DSMasternodeBroadcastHashEntity removeOldest:[self.knownHashes count] - self.totalMasternodeCount onChain:self.chain.chainEntity];
+                    [self requestMasternodeBroadcastsFromPeer:peer];
+                }
+            }];
+        } else if (countAroundNow == self.totalMasternodeCount) {
+            NSLog(@"%@",@"All masternode broadcast hashes received");
+            //we have all hashes, let's request objects.
+            [self requestMasternodeBroadcastsFromPeer:peer];
+        }
     }
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
     @synchronized(self) {
-    NSData *masternodeBroadcastHash = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
-    DSMasternodeBroadcastHashEntity * relatedHashEntity = nil;
-    for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in [self.requestHashEntities copy]) {
-        if ([masternodeBroadcastHashEntity.masternodeBroadcastHash isEqual:masternodeBroadcastHash]) {
-            relatedHashEntity = masternodeBroadcastHashEntity;
-            [self.requestHashEntities removeObject:masternodeBroadcastHashEntity];
-            break;
+        NSData *masternodeBroadcastHash = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
+        DSMasternodeBroadcastHashEntity * relatedHashEntity = nil;
+        for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in [self.requestHashEntities copy]) {
+            if ([masternodeBroadcastHashEntity.masternodeBroadcastHash isEqual:masternodeBroadcastHash]) {
+                relatedHashEntity = masternodeBroadcastHashEntity;
+                [self.requestHashEntities removeObject:masternodeBroadcastHashEntity];
+                break;
+            }
         }
-    }
-    //NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
-    if (!relatedHashEntity) return;
-    [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
-    [self.needsRequestsHashEntities removeObject:relatedHashEntity];
-    [self.masternodeBroadcasts addObject:masternodeBroadcast];
-    if (![self.requestHashEntities count]) {
-        [self requestMasternodeBroadcastsFromPeer:peer];
-        [DSMasternodeBroadcastEntity saveContext];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:nil];
-        });
-    }
+        NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
+        if (!relatedHashEntity) return;
+        [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
+        [self.needsRequestsHashEntities removeObject:relatedHashEntity];
+        [self.masternodeBroadcasts addObject:masternodeBroadcast];
+        if (![self.requestHashEntities count]) {
+            [self requestMasternodeBroadcastsFromPeer:peer];
+            [DSMasternodeBroadcastEntity saveContext];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:nil];
+            });
+        }
     }
 }
 
@@ -306,6 +306,13 @@
         }
     }];
     return masternodeBroadcast;
+}
+
+-(void)wipeMasternodeInfo {
+    [self.masternodeBroadcasts removeAllObjects];
+    self.needsRequestsHashEntities = nil;
+    self.knownHashes = nil;
+    self.masternodeBroadcastsCount = 0;
 }
 
 @end

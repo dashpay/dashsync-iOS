@@ -13,18 +13,20 @@ NSString* const DSChainPeerManagerSyncFinishedNotification =     @"DSChainPeerMa
 NSString* const DSChainPeerManagerSyncFailedNotification =       @"DSChainPeerManagerSyncFailedNotification";
 NSString* const DSChainPeerManagerTxStatusNotification =         @"DSChainPeerManagerTxStatusNotification";
 NSString* const DSChainPeerManagerNotificationChainKey =         @"DSChainPeerManagerNotificationChainKey";
+
 NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
 NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
+NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
 NSString* const DSWalletBalanceChangedNotification =        @"DSWalletBalanceChangedNotification";
-NSString* const DSSporkManagerSporkUpdateNotification =     @"DSSporkManagerSporkUpdateNotification";
+
+NSString* const DSSporkListDidUpdateNotification =     @"DSSporkListDidUpdateNotification";
+
 NSString* const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
+NSString* const DSMasternodeListCountUpdateNotification = @"DSMasternodeListCountUpdateNotification";
+
 NSString* const DSGovernanceObjectListDidChangeNotification = @"DSGovernanceObjectListDidChangeNotification";
 NSString* const DSGovernanceVotesDidChangeNotification = @"DSGovernanceVotesDidChangeNotification";
-
-NSString* const DSMasternodeListCountUpdateNotification = @"DSMasternodeListCountUpdateNotification";
 NSString* const DSGovernanceObjectCountUpdateNotification = @"DSGovernanceObjectCountUpdateNotification";
 NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCountUpdateNotification";
-
-NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
 
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";

@@ -66,15 +66,18 @@
     if (length - offset < 4) return nil;
     masternodeUTXO.n = [message UInt32AtOffset:offset];
     offset += 4;
-    if (length - offset < 1) return nil;
-    uint8_t sigscriptSize = [message UInt8AtOffset:offset];
-    offset += 1;
-    if (length - offset < 1) return nil;
-    //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
-    offset += sigscriptSize;
-    //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
-    if (length - offset < 20) return nil;
-    offset += 4;
+    if (chain.protocolVersion < 70209) { //switch to outpoint in 70209
+        if (length - offset < 1) return nil;
+        uint8_t sigscriptSize = [message UInt8AtOffset:offset];
+        offset += 1;
+        if (length - offset < 1) return nil;
+        //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
+        offset += sigscriptSize;
+        //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
+        if (length - offset < 4) return nil;
+        offset += 4;
+    }
+    if (length - offset < 16) return nil;
     UInt128 masternodeAddress = [message UInt128AtOffset:offset];
     offset += 16;
     if (length - offset < 2) return nil;

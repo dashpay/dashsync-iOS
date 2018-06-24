@@ -370,8 +370,7 @@ services:(uint64_t)services
     } else if (self.chain.isTestnet) {
         [msg appendString:[USER_AGENT stringByAppendingString:@"(testnet)"]];
     } else {
-        [msg appendString:@"Dash Core:0.12.3(devnet=devnet-DRA)"];
-        //[msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=devnet-DRA)",self.chain.devnetIdentifier]]];
+        [msg appendString:[USER_AGENT stringByAppendingString:[NSString stringWithFormat:@"(devnet=%@)",self.chain.devnetIdentifier]]];
     }
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
@@ -720,6 +719,9 @@ services:(uint64_t)services
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
+#if MESSAGE_LOGGING
+    NSLog(@"%@:%u accept message %@", self.host, self.port, type);
+#endif
     if (self.currentBlock && (! ([MSG_TX isEqual:type] || [MSG_IX isEqual:type] ))) { // if we receive a non-tx message, merkleblock is done
         UInt256 hash = self.currentBlock.blockHash;
         
@@ -1085,7 +1087,7 @@ services:(uint64_t)services
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
 
-            //lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
+            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
         }

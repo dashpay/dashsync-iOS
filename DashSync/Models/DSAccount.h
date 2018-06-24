@@ -76,6 +76,10 @@
 
 -(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
 
+-(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
+
+-(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
+
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
@@ -150,5 +154,8 @@
 
 // This loads transactions once the account is set to a wallet
 - (void)loadTransactions;
+
+//This removes all transactions from the account
+- (void)wipeBlockchainInfo;
 
 @end

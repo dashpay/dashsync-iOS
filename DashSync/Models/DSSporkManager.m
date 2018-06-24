@@ -26,7 +26,7 @@
     if (! (self = [super init])) return nil;
     _chain = chain;
     _sporkDictionary = [NSMutableDictionary dictionary];
-    NSArray * sporkEntities = [DSSporkEntity allObjects];
+    NSArray * sporkEntities = [DSSporkEntity sporksOnChain:self.chain.chainEntity];
     for (DSSporkEntity * sporkEntity in sporkEntities) {
         DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
         _sporkDictionary[@(spork.identifier)] = spork;
@@ -69,9 +69,13 @@
             [DSSporkEntity saveContext];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkManagerSporkUpdateNotification object:nil userInfo:dictionary];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:dictionary];
         });
     }
+}
+
+-(void)wipeSporkInfo {
+    _sporkDictionary = [NSMutableDictionary dictionary];
 }
     
 @end

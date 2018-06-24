@@ -59,7 +59,7 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io", @"test.dnsseed.masternode.io"]
+#define TESTNET_DNS_SEEDS @[@"test.dnsseed.masternode.io"]
 
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dashpay.io",@"dnsseed.masternode.io",@"dnsseed.dashdot.io"]
 
@@ -600,8 +600,8 @@
 }
 
 -(void)startGovernanceSync {
-    NSLog(@"--> Trying to start governance sync");
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
+    NSLog(@"--> Trying to start governance sync");
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
     BOOL startedGovernanceSync = FALSE;
     for (DSPeer * peer in sortedPeers) {

@@ -18,7 +18,8 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
     DSSporkIdentifier_Spork10MasternodePayUpdatedNodes = 10009,
     DSSporkIdentifier_Spork12ReconsiderBlocks = 10011,
     DSSporkIdentifier_Spork13OldSuperblockFlag = 10012,
-    DSSporkIdentifier_Spork14RequireSentinelFlag = 10013
+    DSSporkIdentifier_Spork14RequireSentinelFlag = 10013,
+    DSSporkIdentifier_Spork15DeterministicMasternodesEnabled = 10014
 };
 
 @class DSChain;

@@ -80,7 +80,7 @@
     [hashImportantData appendData:timestampData];
     
     [hashImportantData appendData:hexData];
-
+    
     uint32_t index = (uint32_t)masternodeUTXO.n;
     [hashImportantData appendData:[NSData dataWithUInt256:masternodeUTXO.hash]];
     [hashImportantData appendBytes:&index length:4];
@@ -125,15 +125,17 @@
     if (length - offset < 4) return nil;
     masternodeUTXO.n = [message UInt32AtOffset:offset];
     offset += 4;
-    if (length - offset < 1) return nil;
-    uint8_t sigscriptSize = [message UInt8AtOffset:offset];
-    offset += 1;
-    if (length - offset < sigscriptSize) return nil;
-    //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
-    offset += sigscriptSize;
-    if (length - offset < 4) return nil;
-    //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
-    offset += 4;
+    if (chain.protocolVersion < 70209) { //switch to outpoint in 70209
+        if (length - offset < 1) return nil;
+        uint8_t sigscriptSize = [message UInt8AtOffset:offset];
+        offset += 1;
+        if (length - offset < sigscriptSize) return nil;
+        //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
+        offset += sigscriptSize;
+        if (length - offset < 4) return nil;
+        //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
+        offset += 4;
+    }
     
     if (length - offset < 1) return nil;
     uint8_t messageSignatureSize = [message UInt8AtOffset:offset];
@@ -150,24 +152,24 @@
     NSString * url = nil;
     
     if (governanceObjectType == DSGovernanceObjectType_Proposal) {
-    
-    NSError * jsonError = nil;
-    
-    
-    NSArray * governanceArray = [NSJSONSerialization JSONObjectWithData:[NSData dataFromHexString:governanceMessage] options:0 error:&jsonError];
-
-    if ([governanceArray count]) {
-        governanceArray = [governanceArray objectAtIndex:0];
+        
+        NSError * jsonError = nil;
+        
+        
+        NSArray * governanceArray = [NSJSONSerialization JSONObjectWithData:[NSData dataFromHexString:governanceMessage] options:0 error:&jsonError];
+        
         if ([governanceArray count]) {
-            NSDictionary * data = [governanceArray objectAtIndex:1];
-            identifier = [data objectForKey:@"name"];
-            startEpoch = [[data objectForKey:@"start_epoch"] longLongValue];
-            endEpoch = [[data objectForKey:@"end_epoch"] longLongValue];
-            paymentAddress = [data objectForKey:@"payment_address"];
-            amount = [[[NSDecimalNumber decimalNumberWithDecimal:[[data objectForKey:@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
-            url = [data objectForKey:@"url"];
+            governanceArray = [governanceArray objectAtIndex:0];
+            if ([governanceArray count]) {
+                NSDictionary * data = [governanceArray objectAtIndex:1];
+                identifier = [data objectForKey:@"name"];
+                startEpoch = [[data objectForKey:@"start_epoch"] longLongValue];
+                endEpoch = [[data objectForKey:@"end_epoch"] longLongValue];
+                paymentAddress = [data objectForKey:@"payment_address"];
+                amount = [[[NSDecimalNumber decimalNumberWithDecimal:[[data objectForKey:@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
+                url = [data objectForKey:@"url"];
+            }
         }
-    }
         
     }
     
@@ -180,7 +182,7 @@
 
 -(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType governanceMessage:(NSString*)governanceMessage parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData*)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString*)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString*)paymentAddress url:(NSString *)url onChain:(DSChain* _Nonnull)chain {
     if (!(self = [super init])) return nil;
-
+    
     _signature = signature;
     _revision = revision;
     _timestamp = timestamp;

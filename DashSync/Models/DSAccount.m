@@ -68,6 +68,8 @@
 
 @property (nonatomic, strong) DSDerivationPath * bip32DerivationPath;
 
+@property (nonatomic, assign) BOOL isViewOnlyAccount;
+
 
 @end
 
@@ -117,7 +119,21 @@
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
     self.moc = [NSManagedObject context];
+    self.isViewOnlyAccount = FALSE;
+    return self;
+}
 
+-(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+    if (! (self = [super init])) return nil;
+    self.mDerivationPaths = [derivationPaths mutableCopy];
+    for (DSDerivationPath * derivationPath in derivationPaths) {
+        derivationPath.account = self;
+    }
+    self.transactions = [NSMutableOrderedSet orderedSet];
+    self.allTx = [NSMutableDictionary dictionary];
+    self.moc = [NSManagedObject context];
+    self.isViewOnlyAccount = TRUE;
+    
     return self;
 }
 
@@ -152,13 +168,23 @@
     [self updateBalance];
 }
 
+-(void)removeDerivationPath:(DSDerivationPath*)derivationPath {
+    if ([self.mDerivationPaths containsObject:derivationPath]) {
+        [self.mDerivationPaths removeObject:derivationPath];
+    }
+}
+
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {
-    [self verifyAndAssignAddedDerivationPaths:@[derivationPath]];
+    if (!_isViewOnlyAccount) {
+        [self verifyAndAssignAddedDerivationPaths:@[derivationPath]];
+    }
     [self.mDerivationPaths addObject:derivationPath];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
-    [self verifyAndAssignAddedDerivationPaths:derivationPaths];
+    if (!_isViewOnlyAccount) {
+        [self verifyAndAssignAddedDerivationPaths:derivationPaths];
+    }
     [self.mDerivationPaths addObjectsFromArray:derivationPaths];
 }
 
@@ -183,12 +209,14 @@
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         [derivationPath loadAddresses];
     }
+    if (!self.isViewOnlyAccount) {
     if (self.bip44DerivationPath) {
         self.defaultDerivationPath = self.bip44DerivationPath;
     } else if (self.bip32DerivationPath) {
         self.defaultDerivationPath = self.bip32DerivationPath;
     } else {
         self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
+    }
     }
 }
 
@@ -569,6 +597,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {
+    if (_isViewOnlyAccount) return;
     int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
     *internalIndexes = [NSMutableOrderedSet orderedSet];
@@ -954,6 +983,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     return updated;
+}
+
+- (void)wipeBlockchainInfo {
+    [self.transactions removeAllObjects];
+    [self.allTx removeAllObjects];
+    [self updateBalance];
 }
 
 @end
