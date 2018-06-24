@@ -61,7 +61,7 @@
     [hashImportantData appendBytes:&voteSignal length:4];
     [hashImportantData appendBytes:&voteOutcome length:4];
     [hashImportantData appendBytes:&voteCreationTimestamp length:8];
-
+    
     return hashImportantData.SHA256_2;
 }
 
@@ -91,15 +91,17 @@
     if (length - offset < 4) return nil;
     masternodeUTXO.n = [message UInt32AtOffset:offset];
     offset += 4;
-    if (length - offset < 1) return nil;
-    uint8_t sigscriptSize = [message UInt8AtOffset:offset];
-    offset += 1;
-    if (length - offset < sigscriptSize) return nil;
-    //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
-    offset += sigscriptSize;
-    if (length - offset < 4) return nil;
-    //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
-    offset += 4;
+    if (chain.protocolVersion < 70209) { //switch to outpoint in 70209
+        if (length - offset < 1) return nil;
+        uint8_t sigscriptSize = [message UInt8AtOffset:offset];
+        offset += 1;
+        if (length - offset < sigscriptSize) return nil;
+        //NSData * sigscript = [message subdataWithRange:NSMakeRange(offset, sigscriptSize)];
+        offset += sigscriptSize;
+        if (length - offset < 4) return nil;
+        //uint32_t sequenceNumber = [message UInt32AtOffset:offset];
+        offset += 4;
+    }
     
     if (length - offset < 32) return nil;
     UInt256 parentHash = [message UInt256AtOffset:offset];
