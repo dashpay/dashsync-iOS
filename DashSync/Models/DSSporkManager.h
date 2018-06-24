@@ -9,13 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "DSSpork.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSSporkManagerSporkUpdateNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 
 @class DSPeer,DSChain;
 
 @interface DSSporkManager : NSObject
     
-@property (nonatomic,assign) BOOL instantSendActive;
+@property (nonatomic,readonly) BOOL instantSendActive;
 
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
 @property (nonatomic,readonly) DSChain * chain;
@@ -23,5 +23,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkManagerSporkUpdateNotification
 -(instancetype)initWithChain:(DSChain*)chain;
 
 - (void)peer:(DSPeer * _Nullable)peer relayedSpork:(DSSpork * _Nonnull)spork;
+
+-(void)wipeSporkInfo;
 
 @end

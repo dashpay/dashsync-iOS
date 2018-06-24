@@ -19,7 +19,7 @@ NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSC
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
 NSString* const DSWalletBalanceChangedNotification =        @"DSWalletBalanceChangedNotification";
 
-NSString* const DSSporkManagerSporkUpdateNotification =     @"DSSporkManagerSporkUpdateNotification";
+NSString* const DSSporkListDidUpdateNotification =     @"DSSporkListDidUpdateNotification";
 
 NSString* const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
 NSString* const DSMasternodeListCountUpdateNotification = @"DSMasternodeListCountUpdateNotification";

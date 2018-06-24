@@ -600,8 +600,8 @@
 }
 
 -(void)startGovernanceSync {
-    NSLog(@"--> Trying to start governance sync");
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
+    NSLog(@"--> Trying to start governance sync");
     NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
     BOOL startedGovernanceSync = FALSE;
     for (DSPeer * peer in sortedPeers) {

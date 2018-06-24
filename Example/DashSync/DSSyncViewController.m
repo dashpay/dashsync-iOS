@@ -84,7 +84,7 @@
                                                            [self updateBalance];
                                                        }];
     self.sporkObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkManagerSporkUpdateNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkListDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"update spork count");
                                                            [self updateSporks];
@@ -286,6 +286,10 @@
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
+    }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Spork Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {

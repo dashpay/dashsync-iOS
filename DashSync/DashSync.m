@@ -103,6 +103,18 @@
     });
 }
 
+-(void)wipeSporkDataForChain:(DSChain*)chain {
+    [self stopSyncForChain:chain];
+    DSChainEntity * chainEntity = chain.chainEntity;
+    [DSSporkEntity deleteSporksOnChain:chainEntity];
+    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+    [peerManager.sporkManager wipeSporkInfo];
+    [DSSporkEntity saveContext];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil];
+    });
+}
+
 -(void)wipeGovernanceDataForChain:(DSChain*)chain {
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
