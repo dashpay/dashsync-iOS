@@ -115,8 +115,12 @@ typedef union _UInt128 UInt128;
 typedef NS_ENUM(uint32_t, DSGovernanceRequestState) {
     DSGovernanceRequestState_None,
     DSGovernanceRequestState_GovernanceObjectHashes,
+    DSGovernanceRequestState_GovernanceObjectHashesCountReceived,
+    DSGovernanceRequestState_GovernanceObjectHashesReceived,
     DSGovernanceRequestState_GovernanceObjects,
     DSGovernanceRequestState_GovernanceObjectVoteHashes,
+    DSGovernanceRequestState_GovernanceObjectVoteHashesCountReceived,
+    DSGovernanceRequestState_GovernanceObjectVoteHashesReceived,
     DSGovernanceRequestState_GovernanceObjectVotes,
 };
 

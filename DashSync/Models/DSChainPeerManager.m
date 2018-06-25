@@ -619,6 +619,7 @@
         if (last3HoursStandaloneBroadcastHashesCount) {
             for (DSPeer * peer in sortedPeers) {
                 if (peer.status != DSPeerStatus_Connected) continue;
+                peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects; //force this by bypassing normal route
                 [self.governanceSyncManager requestGovernanceObjectsFromPeer:peer];
                 break;
             }
@@ -1436,7 +1437,7 @@
         }
         case DSSyncCountInfo_GovernanceObjectVote:
         {
-            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
+            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 if (count == 0) {
                     //there were no votes
                     NSLog(@"no votes on object, going to next object");

@@ -21,7 +21,6 @@
 @dynamic timestamp;
 @dynamic type;
 @dynamic governanceObjectHash;
-@dynamic governanceMessage;
 @dynamic identifier;
 @dynamic amount;
 @dynamic endEpoch;

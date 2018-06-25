@@ -19,7 +19,7 @@
     [[DSOptionsManager sharedInstance] setKeepHeaders:YES];
     [[DSOptionsManager sharedInstance] setSyncFromGenesis:NO];
     [[DSOptionsManager sharedInstance] setSyncFromHeight:145000];
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Sporks];
+    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Governance];
     return YES;
 }
 

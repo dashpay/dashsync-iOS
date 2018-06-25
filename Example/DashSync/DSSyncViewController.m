@@ -301,6 +301,10 @@
         [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain]; //this takes care of blockchain info as well;
     }]];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }]];
     [self presentViewController:wipeDataAlertController animated:TRUE completion:nil];
 }
 
