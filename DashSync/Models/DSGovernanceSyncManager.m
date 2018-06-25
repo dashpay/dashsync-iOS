@@ -24,7 +24,7 @@
 #import "DSChainPeerManager.h"
 #import "DSChainManager.h"
 
-#define REQUEST_GOVERNANCE_OBJECT_COUNT 500
+#define REQUEST_GOVERNANCE_OBJECT_COUNT 1
 
 @interface DSGovernanceSyncManager()
 
@@ -194,9 +194,6 @@
 }
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer {
-    if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
-        peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
-    }
     if (![self.needsRequestsGovernanceObjectHashEntities count]) {
         [self finishedGovernanceObjectSyncWithPeer:(DSPeer*)peer];
         //we are done syncing
@@ -211,7 +208,7 @@
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
-    if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjectHashes) {
+    if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjectHashesReceived) {
         
         if ((governanceObjectHashes.count == 1) && ([_knownGovernanceObjectHashesForExistingGovernanceObjects containsObject:[governanceObjectHashes anyObject]])) {
             return;
@@ -270,15 +267,26 @@
         [self.managedObjectContext performBlockAndWait:^{
             [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
             NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalGovernanceObjectCount);
-            if (countAroundNow == self.totalGovernanceObjectCount) {
+            if (countAroundNow >= self.totalGovernanceObjectCount) {
                 [DSGovernanceObjectHashEntity removeOldest:self.totalGovernanceObjectCount - [self.knownGovernanceObjectHashes count] onChain:self.chain.chainEntity];
-                [self requestGovernanceObjectsFromPeer:peer];
             }
+            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesCountReceived) {
+                peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
+                [self requestGovernanceObjectsFromPeer:peer];
+            } else {
+                peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashesReceived;
+            }
+            
         }];
     } else if (countAroundNow == self.totalGovernanceObjectCount) {
         NSLog(@"%@",@"All governance object hashes received");
         //we have all hashes, let's request objects.
-        [self requestGovernanceObjectsFromPeer:peer];
+        if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesCountReceived) {
+            peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
+            [self requestGovernanceObjectsFromPeer:peer];
+        } else {
+            peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashesReceived;
+        }
     }
 }
 

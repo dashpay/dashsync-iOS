@@ -17,6 +17,7 @@
 #import "DSGovernanceSyncManager.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSOptionsManager.h"
+#import "NSMutableData+Dash.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
 
@@ -29,7 +30,6 @@
 @property (nonatomic, assign) NSTimeInterval timestamp;
 @property (nonatomic, assign) DSGovernanceObjectType type;
 @property (nonatomic, assign) UInt256 governanceObjectHash;
-@property (nonatomic, strong) NSString * governanceMessage;
 @property (nonatomic, strong) DSChain * chain;
 @property (nullable, nonatomic, strong) NSString * identifier;
 @property (nonatomic, assign) uint64_t amount;
@@ -72,7 +72,7 @@
 //    return ss.GetHash();
 //}
 
-+(UInt256)hashWithParentHash:(NSData*)parentHashData revision:(uint32_t)revision timeStampData:(NSData*)timestampData hexData:(NSData*)hexData masternodeUTXO:(DSUTXO)masternodeUTXO signature:(NSData*)signature {
++(UInt256)hashWithParentHash:(NSData*)parentHashData revision:(uint32_t)revision timeStampData:(NSData*)timestampData governanceMessageHexData:(NSData*)hexData masternodeUTXO:(DSUTXO)masternodeUTXO signature:(NSData*)signature onChain:(DSChain*)chain {
     //hash calculation
     NSMutableData * hashImportantData = [NSMutableData data];
     [hashImportantData appendData:parentHashData];
@@ -112,8 +112,18 @@
     UInt256 collateralHash = [message UInt256AtOffset:offset];
     offset += 32;
     NSNumber * varIntLength = nil;
-    NSString * governanceMessage = [message stringAtOffset:offset length:&varIntLength];
-    NSData * hexData = [message subdataWithRange:NSMakeRange(offset, varIntLength.integerValue)];
+    NSData * governanceMessageData;
+    NSData * hexData;
+    if (chain.protocolVersion < 70209) { //switch to outpoint in 70209
+        governanceMessageData = [NSData dataFromHexString:[message stringAtOffset:offset length:&varIntLength]];
+        hexData = [message subdataWithRange:NSMakeRange(offset, varIntLength.integerValue)];
+    } else {
+        NSMutableData * mHexData = [NSMutableData data];
+        governanceMessageData = [[message stringAtOffset:offset length:&varIntLength] dataUsingEncoding:NSUTF8StringEncoding];
+        [mHexData appendString:[governanceMessageData hexString]];
+        hexData = [mHexData copy];
+    }
+    
     offset += [varIntLength integerValue];
     DSGovernanceObjectType governanceObjectType = [message UInt32AtOffset:offset];
     offset += 4;
@@ -156,38 +166,49 @@
         NSError * jsonError = nil;
         
         
-        NSArray * governanceArray = [NSJSONSerialization JSONObjectWithData:[NSData dataFromHexString:governanceMessage] options:0 error:&jsonError];
-        
-        if ([governanceArray count]) {
-            governanceArray = [governanceArray objectAtIndex:0];
+        id governanceArray = [NSJSONSerialization JSONObjectWithData:governanceMessageData options:0 error:&jsonError];
+        NSDictionary * proposalDictionary = [governanceArray isKindOfClass:[NSDictionary class]]?governanceArray:nil;
+        while (!proposalDictionary) {
             if ([governanceArray count]) {
-                NSDictionary * data = [governanceArray objectAtIndex:1];
-                identifier = [data objectForKey:@"name"];
-                startEpoch = [[data objectForKey:@"start_epoch"] longLongValue];
-                endEpoch = [[data objectForKey:@"end_epoch"] longLongValue];
-                paymentAddress = [data objectForKey:@"payment_address"];
-                amount = [[[NSDecimalNumber decimalNumberWithDecimal:[[data objectForKey:@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
-                url = [data objectForKey:@"url"];
+                if ([governanceArray count] > 1 && [[governanceArray objectAtIndex:0] isEqualToString:@"proposal"]) {
+                    proposalDictionary = [governanceArray objectAtIndex:1];
+                } else if ([[governanceArray objectAtIndex:0] isKindOfClass:[NSArray class]]) {
+                    governanceArray = [governanceArray objectAtIndex:0];
+                } else if ([[governanceArray objectAtIndex:0] isKindOfClass:[NSDictionary class]]) {
+                    proposalDictionary = [governanceArray objectAtIndex:0];
+                } else {
+                    break;
+                }
+            } else {
+                break;
             }
+        }
+        
+        if (proposalDictionary) {
+            identifier = [proposalDictionary objectForKey:@"name"];
+            startEpoch = [[proposalDictionary objectForKey:@"start_epoch"] longLongValue];
+            endEpoch = [[proposalDictionary objectForKey:@"end_epoch"] longLongValue];
+            paymentAddress = [proposalDictionary objectForKey:@"payment_address"];
+            amount = [[[NSDecimalNumber decimalNumberWithDecimal:[[proposalDictionary objectForKey:@"payment_amount"] decimalValue]] decimalNumberByMultiplyingByPowerOf10:8] unsignedLongLongValue];
+            url = [proposalDictionary objectForKey:@"url"];
         }
         
     }
     
-    UInt256 governanceObjectHash = [self hashWithParentHash:parentHashData revision:revision timeStampData:timestampData hexData:hexData masternodeUTXO:masternodeUTXO signature:messageSignature];
+    UInt256 governanceObjectHash = [self hashWithParentHash:parentHashData revision:revision timeStampData:timestampData governanceMessageHexData:hexData masternodeUTXO:masternodeUTXO signature:messageSignature onChain:chain];
     
-    DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:governanceObjectType governanceMessage:governanceMessage parentHash:parentHash revision:revision timestamp:timestamp signature:messageSignature collateralHash:collateralHash governanceObjectHash:governanceObjectHash identifier:identifier amount:amount startEpoch:startEpoch endEpoch:endEpoch paymentAddress:paymentAddress url:url onChain:chain];
+    DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:governanceObjectType parentHash:parentHash revision:revision timestamp:timestamp signature:messageSignature collateralHash:collateralHash governanceObjectHash:governanceObjectHash identifier:identifier amount:amount startEpoch:startEpoch endEpoch:endEpoch paymentAddress:paymentAddress url:url onChain:chain];
     return governanceObject;
     
 }
 
--(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType governanceMessage:(NSString*)governanceMessage parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData*)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString*)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString*)paymentAddress url:(NSString *)url onChain:(DSChain* _Nonnull)chain {
+-(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData*)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString*)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString*)paymentAddress url:(NSString *)url onChain:(DSChain* _Nonnull)chain {
     if (!(self = [super init])) return nil;
     
     _signature = signature;
     _revision = revision;
     _timestamp = timestamp;
     _collateralHash = collateralHash;
-    _governanceMessage = governanceMessage;
     _parentHash = parentHash;
     _type = governanceObjectType;
     _chain = chain;

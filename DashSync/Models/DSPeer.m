@@ -85,7 +85,8 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 @property (nonatomic, strong) NSOutputStream *outputStream;
 @property (nonatomic, strong) NSMutableData *msgHeader, *msgPayload, *outputBuffer;
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
-@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGetdataGovernanceVotes;
+@property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGetdataGovernanceVotes, sentGovSync;
+@property (nonatomic, assign) BOOL receivedGovSync;
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
@@ -678,6 +679,7 @@ services:(uint64_t)services
     NSLog(@"%@:%u Requesting Governance Vote Hashes out of resting state",self.host, self.port);
     return;
 }
+    self.sentGovSync = TRUE;
     NSLog(@"%@:%u Requesting Governance Object Vote Hashes",self.host, self.port);
     NSMutableData *msg = [NSMutableData data];
     
@@ -703,7 +705,7 @@ services:(uint64_t)services
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
     
     //we aren't afraid of coming back here within 5 seconds because a peer can only sendGovSync once every 3 hours
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
             NSLog(@"%@:%u Peer ignored request for governance object hashes",self.host, self.port);
             [self.delegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
@@ -720,7 +722,9 @@ services:(uint64_t)services
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
 #if MESSAGE_LOGGING
-    NSLog(@"%@:%u accept message %@", self.host, self.port, type);
+    if (![type isEqualToString:MSG_INV]) {
+        NSLog(@"%@:%u accept message %@", self.host, self.port, type);
+    }
 #endif
     if (self.currentBlock && (! ([MSG_TX isEqual:type] || [MSG_IX isEqual:type] ))) { // if we receive a non-tx message, merkleblock is done
         UInt256 hash = self.currentBlock.blockHash;
@@ -1344,11 +1348,19 @@ services:(uint64_t)services
     switch (syncCountInfo) {
         case DSSyncCountInfo_GovernanceObject:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
+                self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashesCountReceived;
+                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            } else if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesReceived) {
+                self.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
                 [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
             }
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
+                self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVoteHashesCountReceived;
+                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            } else if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
+                self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
                 [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
             }
             break;
