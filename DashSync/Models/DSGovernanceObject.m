@@ -18,6 +18,7 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSOptionsManager.h"
 #import "NSMutableData+Dash.h"
+#import "DSChainPeerManager.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
 
@@ -440,7 +441,7 @@
         [self requestGovernanceVotesFromPeer:peer];
         [DSGovernanceVoteEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:self userInfo:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:peer.chain}];
         });
     }
 }

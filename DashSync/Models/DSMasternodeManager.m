@@ -14,6 +14,7 @@
 #import "DSChain.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
+#import "DSChainPeerManager.h"
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
 
@@ -255,7 +256,7 @@
             [self requestMasternodeBroadcastsFromPeer:peer];
             [DSMasternodeBroadcastEntity saveContext];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             });
         }
     }

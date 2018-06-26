@@ -429,7 +429,7 @@ static dispatch_once_t devnetToken = 0;
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     [self.viewingAccount removeDerivationPath:derivationPath];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
@@ -447,7 +447,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 
@@ -548,7 +548,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray removeObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 -(void)addWallet:(DSWallet*)wallet {
@@ -566,7 +566,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 
@@ -1008,7 +1008,7 @@ static dispatch_once_t devnetToken = 0;
         
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerNewBlockNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
         });
     }
     

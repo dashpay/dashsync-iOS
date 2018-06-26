@@ -1024,7 +1024,7 @@
                 if ([self.chain syncsBlockchain]) {
                     [self removeUnrelayedTransactions];
                 }
-                [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+                [peer sendGetaddrMessage]; // request a list of other dash peers
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification
@@ -1161,11 +1161,8 @@
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
     
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
-    DSAccount * account = nil;
-    if (syncing) {
-        account = [self.chain accountContainingTransaction:transaction];
-        if (!account) return;
-    }
+    DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    if (syncing && !account) return;
     if (![account registerTransaction:transaction]) return;
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
     
@@ -1190,6 +1187,7 @@
             
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
             
         });
@@ -1273,6 +1271,7 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
 #if DEBUG
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:@"transaction rejected"
@@ -1424,14 +1423,14 @@
         case DSSyncCountInfo_List:
         {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count),DSChainPeerManagerNotificationChainKey:self.chain}];
             });
             break;
         }
         case DSSyncCountInfo_GovernanceObject:
         {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count),DSChainPeerManagerNotificationChainKey:self.chain}];
             });
             break;
         }
@@ -1445,7 +1444,7 @@
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
                 } else {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count)}];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:self userInfo:@{@(syncCountInfo):@(count),DSChainPeerManagerNotificationChainKey:self.chain}];
                     });
                 }
             }

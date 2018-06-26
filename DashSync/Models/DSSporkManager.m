@@ -11,6 +11,7 @@
 #import "DSSporkEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
+#import "DSChainPeerManager.h"
 
 @interface DSSporkManager()
     
@@ -62,7 +63,7 @@
         _sporkDictionary[@(spork.identifier)] = spork;
     }
     [dictionary setObject:spork forKey:@"new"];
-    
+    [dictionary setObject:self.chain forKey:DSChainPeerManagerNotificationChainKey];
     if (!currentSpork || updatedSpork) {
         @autoreleasepool {
             [[DSSporkEntity managedObject] setAttributesFromSpork:spork]; // add new peers

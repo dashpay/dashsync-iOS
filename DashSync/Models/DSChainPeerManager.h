@@ -41,6 +41,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotifica
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNewBlockNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
 
 #define PEER_MAX_CONNECTIONS 3

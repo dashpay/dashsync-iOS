@@ -309,7 +309,7 @@
         [self requestGovernanceObjectsFromPeer:peer];
         [DSGovernanceObjectEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:self userInfo:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
         });
     }
     if (![self.needsRequestsGovernanceObjectHashEntities count]) {
