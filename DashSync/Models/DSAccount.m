@@ -349,18 +349,28 @@
             
             // check if any inputs are pending
             if (tx.blockHeight == TX_UNCONFIRMED) {
-                if (tx.size > TX_MAX_SIZE) pending = YES; // check transaction size is under TX_MAX_SIZE
+                if (tx.size > TX_MAX_SIZE) {
+                    pending = YES; // check transaction size is under TX_MAX_SIZE
+                }
                 
                 for (NSNumber *sequence in tx.inputSequences) {
-                    if (sequence.unsignedIntValue < UINT32_MAX - 1) pending = YES; // check for replace-by-fee
+                    if (sequence.unsignedIntValue < UINT32_MAX - 1) {
+                        pending = YES; // check for replace-by-fee
+                    }
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime < TX_MAX_LOCK_HEIGHT &&
-                        tx.lockTime > self.wallet.chain.bestBlockHeight + 1) pending = YES; // future lockTime
+                        tx.lockTime > self.wallet.chain.bestBlockHeight + 1) {
+                        pending = YES; // future lockTime
+                    }
                     if (sequence.unsignedIntValue < UINT32_MAX && tx.lockTime >= TX_MAX_LOCK_HEIGHT &&
-                        tx.lockTime > now) pending = YES; // future locktime
+                        tx.lockTime > now) {
+                        pending = YES; // future locktime
+                    }
                 }
                 
                 for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
-                    if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) pending = YES;
+                    if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) {
+                        pending = YES;
+                    }
                 }
                 
                 if (pending || [inputs intersectsSet:pendingTx]) {

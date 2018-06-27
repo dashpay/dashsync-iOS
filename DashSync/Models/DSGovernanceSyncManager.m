@@ -254,10 +254,12 @@
     }
     
     [rNeedsRequestsHashEntities addObjectsFromArray:hashEntitiesToQuery];
+    [self.managedObjectContext performBlockAndWait:^{
     [rNeedsRequestsHashEntities sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         UInt256 a = *(UInt256 *)((NSData*)((DSGovernanceObjectHashEntity*)obj1).governanceObjectHash).bytes;
         UInt256 b = *(UInt256 *)((NSData*)((DSGovernanceObjectHashEntity*)obj2).governanceObjectHash).bytes;
         return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
+    }];
     }];
     self.knownGovernanceObjectHashes = rHashes;
     self.needsRequestsGovernanceObjectHashEntities = rNeedsRequestsHashEntities;

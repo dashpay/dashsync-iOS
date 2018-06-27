@@ -98,8 +98,8 @@
     [peerManager.masternodeManager wipeMasternodeInfo];
     [DSMasternodeBroadcastHashEntity saveContext];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
     });
 }
 
@@ -111,7 +111,7 @@
     [peerManager.sporkManager wipeSporkInfo];
     [DSSporkEntity saveContext];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
     });
 }
 
@@ -126,10 +126,10 @@
     [peerManager.governanceSyncManager wipeGovernanceInfo];
     [DSGovernanceObjectHashEntity saveContext];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
     });
 }
 
@@ -139,9 +139,9 @@
         if (authenticatedOrSuccess) {
             [chain wipeWalletsAndDerivatives];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneAddressesDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:@{DSChainPeerManagerNotificationChainKey:chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneAddressesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
             });
         }
     }];
