@@ -24,7 +24,7 @@
 #import "DSChainPeerManager.h"
 #import "DSChainManager.h"
 
-#define REQUEST_GOVERNANCE_OBJECT_COUNT 1
+#define REQUEST_GOVERNANCE_OBJECT_COUNT 500
 
 @interface DSGovernanceSyncManager()
 

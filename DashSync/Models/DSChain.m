@@ -49,6 +49,7 @@
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
+#import "DSMasternodeBroadcastEntity+CoreDataClass.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -482,6 +483,13 @@ static dispatch_once_t devnetToken = 0;
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     [keyChainDictionary setObject:votingKey forKey:masternodeBroadcast.uniqueID];
     setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
+    NSManagedObjectContext * context = [DSMasternodeBroadcastEntity context];
+    [context performBlockAndWait:^{
+        [DSMasternodeBroadcastEntity setContext:context];
+        DSMasternodeBroadcastEntity * masternodeBroadcastEntity = masternodeBroadcast.masternodeBroadcastEntity;
+        masternodeBroadcastEntity.claimed = TRUE;
+        [DSMasternodeBroadcastEntity saveContext];
+    }];
 }
 
 // MARK: - Wallet

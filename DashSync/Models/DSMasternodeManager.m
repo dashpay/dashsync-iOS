@@ -249,7 +249,12 @@
         }
         NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
         if (!relatedHashEntity) return;
-        [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
+        NSArray * broadcastEntities = [DSMasternodeBroadcastEntity objectsMatching:@"masternodeBroadcastHash = %@",relatedHashEntity];
+        if ([broadcastEntities count]) {
+            [[broadcastEntities objectAtIndex:0] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
+        } else {
+            [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
+        }
         [self.needsRequestsHashEntities removeObject:relatedHashEntity];
         [self.masternodeBroadcasts addObject:masternodeBroadcast];
         if (![self.requestHashEntities count]) {

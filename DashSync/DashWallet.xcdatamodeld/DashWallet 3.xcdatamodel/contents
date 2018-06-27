@@ -96,6 +96,7 @@
     </entity>
     <entity name="DSMasternodeBroadcastEntity" representedClassName="DSMasternodeBroadcastEntity" syncable="YES">
         <attribute name="address" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="claimed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="port" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="protocolVersion" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="publicKey" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -110,6 +111,10 @@
             <compoundIndex>
                 <index value="utxoHash"/>
                 <index value="utxoIndex"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="claimed"/>
+                <index value="address"/>
             </compoundIndex>
         </compoundIndexes>
     </entity>
@@ -237,7 +242,7 @@
         <element name="DSGovernanceObjectHashEntity" positionX="27" positionY="153" width="128" height="105"/>
         <element name="DSGovernanceVoteEntity" positionX="27" positionY="162" width="128" height="195"/>
         <element name="DSGovernanceVoteHashEntity" positionX="18" positionY="153" width="128" height="105"/>
-        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="210"/>
+        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="225"/>
         <element name="DSMasternodeBroadcastHashEntity" positionX="9" positionY="144" width="128" height="105"/>
         <element name="DSMasternodePingEntity" positionX="27" positionY="135" width="128" height="60"/>
         <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>

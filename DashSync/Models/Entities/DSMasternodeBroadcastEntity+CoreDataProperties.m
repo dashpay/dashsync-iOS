@@ -24,5 +24,6 @@
 @dynamic publicKey;
 @dynamic signature;
 @dynamic uniqueID;
+@dynamic claimed;
 
 @end

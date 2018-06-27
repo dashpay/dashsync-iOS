@@ -44,10 +44,18 @@
 
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
-        NSData * data = self.inputTextView.text.base58checkToData;
-        if (data) {
-        [self.chain registerVotingKey:data forMasternodeBroadcast:self.masternode];
-        [self.navigationController popViewControllerAnimated:TRUE];
+        DSKey * key = [DSKey keyWithPrivateKey:self.inputTextView.text onChain:self.chain];
+        if ([key.publicKey isEqualToData:self.masternode.publicKey]) {
+            [self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeBroadcast:self.masternode];
+            [self.navigationController popViewControllerAnimated:TRUE];
+        } else {
+            UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                
+            }]];
+            [self presentViewController:alertController animated:TRUE completion:^{
+                
+            }];
         }
     }
 }

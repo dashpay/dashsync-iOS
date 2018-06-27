@@ -117,7 +117,9 @@
     uint8_t b;
 
     if ((a.count % 3) != 0 || a.count > 24) {
+        #if DEBUG
         NSLog(@"phrase has wrong number of words");
+        #endif
         return nil;
     }
 
