@@ -836,8 +836,23 @@
         if (downloadPeer) {
             downloadPeer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects; //force this by bypassing normal route
             
+            [self.governanceSyncManager requestGovernanceObjectsFromPeer:downloadPeer];
+        }
+    } else {
+        if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return; // make sure we care about Governance objects
+        DSPeer * downloadPeer = nil;
+        //find download peer (ie the peer that we will ask for governance objects from
+        for (DSPeer * peer in self.connectedPeers) {
+            if (peer.status != DSPeerStatus_Connected) continue;
+            downloadPeer = peer;
+            break;
+        }
+        
+        if (downloadPeer) {
+            downloadPeer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects; //force this by bypassing normal route
+            
             //we will request governance objects
-            //however if governance objects are all accounted for
+            //however since governance objects are all accounted for
             //and we want votes, then votes will be requested instead for each governance object
             [self.governanceSyncManager requestGovernanceObjectsFromPeer:downloadPeer];
         }
@@ -851,8 +866,8 @@
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
     
     //Do we need to sync?
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:LAST_SYNCED_GOVERANCE_OBJECTS]) { //no need to do a governance sync if we already completed one recently
-        NSTimeInterval lastSyncedGovernance = [[NSUserDefaults standardUserDefaults] integerForKey:LAST_SYNCED_GOVERANCE_OBJECTS];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]]) { //no need to do a governance sync if we already completed one recently
+        NSTimeInterval lastSyncedGovernance = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
         NSTimeInterval interval = [[DSOptionsManager sharedInstance] syncGovernanceObjectsInterval];
         NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
         if (lastSyncedGovernance + interval > now) {
@@ -914,8 +929,8 @@
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) return; // make sure we care about masternode list
     
     //Do we need to sync the hashes? (or do we already have them?)
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:LAST_SYNCED_MASTERNODE_LIST]) { //no need to do a governance sync if we already completed one recently
-        NSTimeInterval lastSyncedMasternodeList = [[NSUserDefaults standardUserDefaults] integerForKey:LAST_SYNCED_MASTERNODE_LIST];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]]) { //no need to do a governance sync if we already completed one recently
+        NSTimeInterval lastSyncedMasternodeList = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
         NSTimeInterval interval = [[DSOptionsManager sharedInstance] syncMasternodeListInterval];
         NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
         if (lastSyncedMasternodeList + interval > now) {

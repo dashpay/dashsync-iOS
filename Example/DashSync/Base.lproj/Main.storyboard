@@ -1455,6 +1455,7 @@
                                     <outlet property="paymentsCountLabel" destination="QMw-8M-D5f" id="DkO-aJ-nax"/>
                                     <outlet property="startDateLabel" destination="Urq-10-j9Y" id="Qyh-2Y-Aax"/>
                                     <outlet property="urlLabel" destination="Wdf-5T-ZtX" id="vXN-0y-aya"/>
+                                    <outlet property="voteTallyLabel" destination="aM5-EO-Pca" id="h1u-ZM-3tf"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>

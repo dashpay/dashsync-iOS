@@ -68,7 +68,7 @@
 -(void)finishedGovernanceObjectSyncWithPeer:(DSPeer*)peer {
     if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjects) return;
     peer.governanceRequestState = DSGovernanceRequestState_None;
-    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:LAST_SYNCED_GOVERANCE_OBJECTS];
+    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
     
     //Do we want to request votes now?
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
@@ -206,7 +206,7 @@
 }
 
 -(void)requestGovernanceObjectsFromPeer:(DSPeer*)peer {
-    __block finishedSync = FALSE;
+    __block BOOL finishedSync = FALSE;
     [self.managedObjectContext performBlockAndWait:^{
         if (![self needsRequestsGovernanceObjectHashEntitiesCount]) {
             [self finishedGovernanceObjectSyncWithPeer:(DSPeer*)peer];

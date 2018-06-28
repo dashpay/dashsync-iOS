@@ -245,7 +245,7 @@
 }
 
 -(void)finishedMasternodeListSyncWithPeer:(DSPeer*)peer {
-    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:LAST_SYNCED_MASTERNODE_LIST];
+    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {

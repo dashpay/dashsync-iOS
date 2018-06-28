@@ -11,6 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSGovernanceVoteEntity;
+
 @interface DSGovernanceObjectEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSGovernanceObjectEntity *> *)fetchRequest;
@@ -28,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSGovernanceObjectHashEntity *governanceObjectHash;
 @property (nullable, nonatomic, retain) NSString * identifier;
 @property (nonatomic, assign) uint64_t amount;
+@property (nonatomic, retain) NSOrderedSet<DSGovernanceVoteEntity *> *votes;
 
 @end
 

@@ -27,5 +27,6 @@
 @dynamic startEpoch;
 @dynamic url;
 @dynamic paymentAddress;
+@dynamic votes;
 
 @end

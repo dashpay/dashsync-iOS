@@ -106,7 +106,7 @@
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
     [peerManager.masternodeManager wipeMasternodeInfo];
     [DSMasternodeBroadcastHashEntity saveContext];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LAST_SYNCED_MASTERNODE_LIST];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@-%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
@@ -135,7 +135,7 @@
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
     [peerManager.governanceSyncManager wipeGovernanceInfo];
     [DSGovernanceObjectHashEntity saveContext];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LAST_SYNCED_GOVERANCE_OBJECTS];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@-%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];

@@ -31,7 +31,8 @@
         if ([matchingMasternodeEntities count]) {
             self.masternode = [matchingMasternodeEntities firstObject];
         }
-        self.governanceObject = governanceVote.governanceObject.governanceObjectEntity;
+        DSGovernanceObjectEntity * governanceObjectEntity = governanceVote.governanceObject.governanceObjectEntity;
+        self.governanceObject = governanceObjectEntity;
     }];
 }
 
