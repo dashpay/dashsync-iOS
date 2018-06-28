@@ -19,7 +19,6 @@
 
 @interface DSGovernanceVote()
 
-@property (nonatomic,strong) DSGovernanceObject * governanceObject;
 @property (nonatomic,strong) DSMasternodeBroadcast * masternodeBroadcast;
 @property (nonatomic,assign) DSGovernanceVoteOutcome outcome;
 @property (nonatomic,assign) DSGovernanceVoteSignal signal;

@@ -311,6 +311,11 @@
 
 - (IBAction)wipeData:(id)sender {
     UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Peer Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainPeerManager.chain];
+    }]];
+    
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
     }]];
@@ -332,6 +337,9 @@
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain]; //this takes care of blockchain info as well;

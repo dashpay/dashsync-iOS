@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)setAttributesFromPeer:(DSPeer *)peer;
 - (DSPeer *)peer;
++ (void)deletePeersForChain:(DSChainEntity*)chainEntity;
+
 
 @end
 

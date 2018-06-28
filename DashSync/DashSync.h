@@ -64,6 +64,7 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 -(void)stopSyncForChain:(DSChain*)chain;
 -(void)stopSyncAllChains;
 
+-(void)wipePeerDataForChain:(DSChain*)chain;
 -(void)wipeBlockchainDataForChain:(DSChain*)chain;
 -(void)wipeGovernanceDataForChain:(DSChain*)chain;
 -(void)wipeMasternodeDataForChain:(DSChain*)chain;

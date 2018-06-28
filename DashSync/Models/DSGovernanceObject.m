@@ -19,6 +19,8 @@
 #import "DSOptionsManager.h"
 #import "NSMutableData+Dash.h"
 #import "DSChainPeerManager.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSGovernanceObjectEntity+CoreDataProperties.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
 
@@ -227,6 +229,15 @@
     
     return self;
 }
+
+-(DSGovernanceObjectEntity*)governanceObjectEntity {
+    NSArray * governanceObjects = [DSGovernanceObjectEntity objectsMatching:@"governanceObjectHash.governanceObjectHash = %@",[NSData dataWithUInt256:self.governanceObjectHash]];
+    if ([governanceObjects count]) {
+        return [governanceObjects objectAtIndex:0];
+    }
+    return nil;
+}
+
 // MARK:- Governance Vote
 
 -(NSUInteger)recentGovernanceVoteHashesCount {
@@ -351,7 +362,8 @@
 }
 
 -(void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return;
+    @synchronized(self) {
+    if (!(([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes) == DSSyncType_GovernanceVotes)) return;
     NSLog(@"peer relayed governance votes");
     if (!self.totalGovernanceVoteCount) {
         [self.delegate governanceObject:self didReceiveUnknownHashes:governanceVoteHashes fromPeer:peer];
@@ -359,14 +371,13 @@
     NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
     NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
     NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
-    NSMutableOrderedSet <NSData*> * rHashes = [_knownGovernanceVoteHashes mutableCopy];
+    NSMutableOrderedSet <NSData*> * rHashes = [self.knownGovernanceVoteHashes mutableCopy];
     [hashesToInsert minusOrderedSet:self.knownGovernanceVoteHashes];
     [hashesToUpdate minusOrderedSet:hashesToInsert];
     [hashesToQuery minusOrderedSet:self.fulfilledGovernanceVoteRequestsHashes];
     NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
     [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
     NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
-    NSMutableArray <NSData*> * rNeedsRequestsHashEntities = [self.needsRequestsGovernanceVoteHashEntities mutableCopy];
     if ([governanceVoteHashes count]) {
         [self.managedObjectContext performBlockAndWait:^{
             [DSChainEntity setContext:self.managedObjectContext];
@@ -393,32 +404,22 @@
             }];
         }
     }
-    
-    [rNeedsRequestsHashEntities addObjectsFromArray:hashEntitiesToQuery];
-    [rNeedsRequestsHashEntities sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        UInt256 a = *(UInt256 *)((NSData*)((DSGovernanceVoteHashEntity*)obj1).governanceVoteHash).bytes;
-        UInt256 b = *(UInt256 *)((NSData*)((DSGovernanceVoteHashEntity*)obj2).governanceVoteHash).bytes;
-        return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
-    }];
     self.knownGovernanceVoteHashes = rHashes;
-    self.needsRequestsGovernanceVoteHashEntities = rNeedsRequestsHashEntities;
+    self.needsRequestsGovernanceVoteHashEntities = nil; //just so it can lazy load again
     NSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceVoteHashes count],(unsigned long)self.totalGovernanceVoteCount);
-    NSUInteger countAroundNow = [self recentGovernanceVoteHashesCount];
-    if ([self.knownGovernanceVoteHashes count] > self.totalGovernanceVoteCount) {
-        [self.managedObjectContext performBlockAndWait:^{
-            [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
-            NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalGovernanceVoteCount);
-            if (countAroundNow == self.totalGovernanceVoteCount) {
-                [DSGovernanceVoteHashEntity removeOldest:self.totalGovernanceVoteCount - [self.knownGovernanceVoteHashes count] onChain:self.chain.chainEntity];
-                [self requestGovernanceVotesFromPeer:peer];
-            }
-        }];
-    } else if (countAroundNow == self.totalGovernanceVoteCount) {
-        NSLog(@"%@",@"All governance object hashes received");
-        //we have all hashes, let's request objects.
+    if ([self.knownGovernanceVoteHashes count] >= self.totalGovernanceVoteCount) {
+        //we have more than we should have
+        //for a vote it doesn't matter and will happen often
+        NSLog(@"All governance vote hashes received for object %@",self.identifier);
+//        [self.managedObjectContext performBlockAndWait:^{
+//            [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
+//            [DSGovernanceVoteHashEntity removeOldest:countAroundNow - self.totalGovernanceVoteCount hashesNotIn:governanceVoteHashes onChain:self.chain.chainEntity];
+//            [DSGovernanceVoteHashEntity saveContext];
+//        }];
         [self requestGovernanceVotesFromPeer:peer];
     } else {
-        NSAssert(FALSE, @"Error here");
+        //things are missing, most likely they will come in later
+    }
     }
 }
 

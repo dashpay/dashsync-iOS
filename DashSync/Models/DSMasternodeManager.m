@@ -10,6 +10,7 @@
 #import "DSMasternodePing.h"
 #import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
 #import "DSMasternodeBroadcastHashEntity+CoreDataProperties.h"
+#import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "DSPeer.h"
@@ -92,6 +93,7 @@
 }
 
 -(NSOrderedSet*)knownHashes {
+    @synchronized(self) {
     if (_knownHashes) return _knownHashes;
     
     [self.managedObjectContext performBlockAndWait:^{
@@ -108,9 +110,11 @@
         self.knownHashes = [rHashes copy];
     }];
     return _knownHashes;
+    }
 }
 
 -(NSMutableArray*)needsRequestsHashEntities {
+    @synchronized(self) {
     if (_needsRequestsHashEntities) return _needsRequestsHashEntities;
     
     [self.managedObjectContext performBlockAndWait:^{
@@ -122,6 +126,7 @@
         
     }];
     return _needsRequestsHashEntities;
+    }
 }
 
 -(NSArray*)needsRequestsHashes {
@@ -136,9 +141,11 @@
 }
 
 -(NSOrderedSet*)fulfilledRequestsHashEntities {
+    @synchronized(self) {
     __block NSOrderedSet * orderedSet;
     [self.managedObjectContext performBlockAndWait:^{
         [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
+        [DSChainEntity setContext:self.managedObjectContext];
         NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
         [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && masternodeBroadcast != nil",self.chain.chainEntity]];
         [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
@@ -146,6 +153,7 @@
         
     }];
     return orderedSet;
+    }
 }
 
 -(NSOrderedSet*)fulfilledRequestsHashes {
@@ -236,6 +244,10 @@
     }
 }
 
+-(void)finishedMasternodeListSyncWithPeer:(DSPeer*)peer {
+    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:LAST_SYNCED_MASTERNODE_LIST];
+}
+
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
     @synchronized(self) {
         NSData *masternodeBroadcastHash = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
@@ -260,6 +272,7 @@
         if (![self.requestHashEntities count]) {
             [self requestMasternodeBroadcastsFromPeer:peer];
             [DSMasternodeBroadcastEntity saveContext];
+            [self finishedMasternodeListSyncWithPeer:peer];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             });

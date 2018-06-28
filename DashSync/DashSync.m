@@ -13,6 +13,7 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSPeerEntity+CoreDataClass.h"
 
 @interface DashSync ()
 
@@ -75,6 +76,14 @@
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
 }
 
+-(void)wipePeerDataForChain:(DSChain*)chain {
+    [self stopSyncForChain:chain];
+    [[[DSChainManager sharedInstance] peerManagerForChain:chain] clearPeers];
+    DSChainEntity * chainEntity = chain.chainEntity;
+    [DSPeerEntity deletePeersForChain:chainEntity];
+    [DSPeerEntity saveContext];
+}
+
 -(void)wipeBlockchainDataForChain:(DSChain*)chain {
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
@@ -97,6 +106,7 @@
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
     [peerManager.masternodeManager wipeMasternodeInfo];
     [DSMasternodeBroadcastHashEntity saveContext];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LAST_SYNCED_MASTERNODE_LIST];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
@@ -125,6 +135,7 @@
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
     [peerManager.governanceSyncManager wipeGovernanceInfo];
     [DSGovernanceObjectHashEntity saveContext];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LAST_SYNCED_GOVERANCE_OBJECTS];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];

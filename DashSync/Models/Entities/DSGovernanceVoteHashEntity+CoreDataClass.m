@@ -34,14 +34,16 @@
     }
 }
 
-+(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity {
++(void)removeOldest:(NSUInteger)count hashesNotIn:(NSSet*)governanceVoteHashes onChain:(DSChainEntity*)chainEntity {
     NSFetchRequest * fetchRequest = [self fetchReq];
-    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@",chainEntity]];
-    [fetchRequest setFetchLimit:count];
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@ && (governanceVoteHash in %@)",chainEntity,governanceVoteHashes]];
     [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:TRUE]]];
     NSArray * oldObjects = [self fetchObjects:fetchRequest];
+    NSUInteger remainingToDeleteCount = count;
     for (NSManagedObject *obj in oldObjects) {
         [self.context deleteObject:obj];
+        remainingToDeleteCount--;
+        if (!remainingToDeleteCount) break;
     }
 }
 

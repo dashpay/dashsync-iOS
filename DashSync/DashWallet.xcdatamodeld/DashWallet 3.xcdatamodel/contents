@@ -92,7 +92,7 @@
         <attribute name="governanceVoteHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="votes" inverseEntity="DSChainEntity" syncable="YES"/>
-        <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
+        <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
     </entity>
     <entity name="DSMasternodeBroadcastEntity" representedClassName="DSMasternodeBroadcastEntity" syncable="YES">
         <attribute name="address" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>

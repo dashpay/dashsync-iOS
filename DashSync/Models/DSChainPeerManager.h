@@ -47,6 +47,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
 
+
+#define LAST_SYNCED_GOVERANCE_OBJECTS @"LAST_SYNCED_GOVERANCE_OBJECTS"
+#define LAST_SYNCED_MASTERNODE_LIST @"LAST_SYNCED_MASTERNODE_LIST"
+
 @class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote;
 
 @interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
@@ -64,6 +68,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (instancetype)initWithChain:(DSChain*)chain;
 
 - (void)connect;
+- (void)clearPeers;
 - (void)disconnect;
 - (void)rescan;
 - (void)publishTransaction:(DSTransaction * _Nonnull)transaction
