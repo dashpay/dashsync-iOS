@@ -395,7 +395,7 @@
 }
 
 -(void)updateReceivedGovernanceVoteCount {
-    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],self.chainPeerManager.governanceSyncManager.governanceVotesCount];
+    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],self.chainPeerManager.governanceSyncManager.totalGovernanceVotesCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {

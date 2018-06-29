@@ -41,7 +41,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 @property (nonatomic, readonly) NSUInteger last3HoursStandaloneGovernanceVoteHashesCount;
 @property (nonatomic, readonly) NSUInteger governanceVotesCount;
 
-@property (nonatomic, assign) NSUInteger totalGovernanceVoteCount;
+@property (nonatomic, assign) uint64_t totalGovernanceVoteCount;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
@@ -52,6 +52,8 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 
 -(void)peer:(DSPeer * _Nullable)peer hasGovernanceVoteHashes:(NSSet* _Nonnull)governanceVoteHashes;
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote*  _Nonnull)governanceVote;
+
+-(void)save;
 
 @end
 

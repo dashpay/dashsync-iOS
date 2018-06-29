@@ -339,9 +339,18 @@
 // MARK:- Governance Votes
 
 -(NSUInteger)governanceVotesCount {
+    __block NSUInteger count = 0;
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSGovernanceVoteEntity setContext:self.managedObjectContext];
+        count = [DSGovernanceVoteEntity countForChain:self.chain.chainEntity];
+    }];
+    return count;
+}
+
+-(NSUInteger)totalGovernanceVotesCount {
     NSUInteger totalVotes = 0;
     for (DSGovernanceObject * governanceObject in self.governanceObjects) {
-        totalVotes += governanceObject.governanceVotesCount;
+        totalVotes += governanceObject.totalGovernanceVoteCount;
     }
     return totalVotes;
 }

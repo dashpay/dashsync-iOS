@@ -9,6 +9,7 @@
 #import "DSGovernanceVoteEntity+CoreDataClass.h"
 #import "DSGovernanceVoteHashEntity+CoreDataClass.h"
 #import "DSMasternodeBroadcastEntity+CoreDataClass.h"
+#import "DSGovernanceObjectEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
@@ -34,6 +35,16 @@
         DSGovernanceObjectEntity * governanceObjectEntity = governanceVote.governanceObject.governanceObjectEntity;
         self.governanceObject = governanceObjectEntity;
     }];
+}
+
++ (NSUInteger)countForGovernanceObject:(DSGovernanceObjectEntity*)governanceObject {
+    __block NSUInteger count = 0;
+    [governanceObject.managedObjectContext performBlockAndWait:^{
+        NSFetchRequest * fetchRequest = [DSGovernanceVoteEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceObject = %@",governanceObject]];
+        count = [DSGovernanceVoteEntity countObjects:fetchRequest];
+    }];
+    return count;
 }
 
 + (NSUInteger)countForChain:(DSChainEntity*)chain {

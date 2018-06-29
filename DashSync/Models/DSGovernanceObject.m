@@ -259,11 +259,10 @@
 }
 
 -(NSUInteger)governanceVotesCount {
-    
     __block NSUInteger count = 0;
     [self.managedObjectContext performBlockAndWait:^{
         [DSGovernanceVoteEntity setContext:self.managedObjectContext];
-        count = [DSGovernanceVoteEntity countForChain:self.chain.chainEntity];
+        count = [DSGovernanceVoteEntity countForGovernanceObject:self.governanceObjectEntity];
     }];
     return count;
 }
@@ -448,6 +447,15 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:peer.chain}];
         });
     }
+}
+
+-(void)save {
+    [[DSGovernanceObjectEntity context] performBlockAndWait:^{
+        DSGovernanceObjectEntity * governanceObjectEntity = self.governanceObjectEntity;
+        governanceObjectEntity.totalVotesCount = self.totalGovernanceVoteCount;
+        [DSGovernanceObjectEntity saveContext];
+    }];
+    
 }
 
 

@@ -87,7 +87,6 @@
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
-@property (nonatomic, strong) NSMutableDictionary * syncCountInfo;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
 
 @end
@@ -98,7 +97,6 @@
 {
     if (! (self = [super init])) return nil;
     
-    self.syncCountInfo = [NSMutableDictionary dictionary];
     self.chain = chain;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
@@ -1079,21 +1077,6 @@
 
 // MARK: - Count Info
 
-//- (uint32_t)countForSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-//    if (![self.syncCountInfo objectForKey:@(syncCountInfo)]) {
-//        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
-//        if ([[NSUserDefaults standardUserDefaults] objectForKey:storageKey]) {
-//            NSInteger value = [[NSUserDefaults standardUserDefaults] integerForKey:storageKey];
-//            [self.syncCountInfo setObject:@(value) forKey:@(syncCountInfo)];
-//            return (uint32_t)value;
-//        } else {
-//            [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:storageKey];
-//            return 0;
-//        }
-//    }
-//    return (uint32_t)[[self.syncCountInfo objectForKey:@(syncCountInfo)] unsignedLongValue];
-//}
-
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
 //    if (syncCountInfo ==  DSSyncCountInfo_List || syncCountInfo == DSSyncCountInfo_GovernanceObject) {
 //        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
@@ -1111,6 +1094,7 @@
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
             self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
+            [self.governanceSyncManager.currentGovernanceSyncObject save];
             break;
         default:
             break;
