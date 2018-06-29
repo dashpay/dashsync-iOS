@@ -280,21 +280,40 @@ static checkpoint mainnet_checkpoint_array[] = {
 +(DSChain*)mainnet {
     static DSChain* _mainnet = nil;
     static dispatch_once_t mainnetToken = 0;
-    
+    __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT];
+        
+        inSetUp = TRUE;
         //NSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
+    if (inSetUp) {
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [_mainnet chainEntity];
+            _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+        }];
+    }
+    
     return _mainnet;
 }
 
 +(DSChain*)testnet {
     static DSChain* _testnet = nil;
     static dispatch_once_t testnetToken = 0;
-    
+    __block BOOL inSetUp = FALSE;
     dispatch_once(&testnetToken, ^{
         _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT];
+        inSetUp = TRUE;
     });
+    if (inSetUp) {
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [_testnet chainEntity];
+            _testnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+        }];
+    }
+    
     return _testnet;
 }
 
@@ -333,6 +352,14 @@ static dispatch_once_t devnetToken = 0;
 
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
     return @[[DSDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
+}
+
+-(void)save {
+    [[DSChainEntity context] performBlockAndWait:^{
+        self.chainEntity.totalMasternodeCount = self.totalMasternodeCount;
+        self.chainEntity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        [DSChainEntity saveContext];
+    }];
 }
 
 // MARK: - Check Type

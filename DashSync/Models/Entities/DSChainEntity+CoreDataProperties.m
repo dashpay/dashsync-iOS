@@ -38,5 +38,8 @@
 @dynamic transactions;
 @dynamic blocks;
 @dynamic derivationPaths;
+@dynamic totalMasternodeCount;
+@dynamic totalGovernanceObjectsCount;
+@dynamic masternodeBroadcastHashes;
 
 @end

@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *parentHash;
 @property (nullable, nonatomic, retain) NSString *paymentAddress;
 @property (nonatomic, assign) uint32_t revision;
+@property (nonatomic, assign) uint32_t totalVotesCount;
 @property (nullable, nonatomic, retain) NSData *signature;
 @property (nullable, nonatomic, retain) NSString * url;
 @property (nonatomic, assign) uint64_t startEpoch;

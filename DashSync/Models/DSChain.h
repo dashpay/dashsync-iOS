@@ -114,6 +114,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, readonly) uint32_t protocolVersion;
 @property (nonatomic, readonly) uint32_t minProtocolVersion;
+@property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
+@property (nonatomic, assign) uint32_t totalMasternodeCount;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;
@@ -139,6 +141,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 -(BOOL)isTestnet;
 -(BOOL)isDevnetAny;
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
+
+-(void)save;
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
 -(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;

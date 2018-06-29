@@ -225,18 +225,18 @@
         }];
         self.knownHashes = rHashes;
         self.needsRequestsHashEntities = rNeedsRequestsHashEntities;
-        NSLog(@"-> %lu - %lu",(unsigned long)[self.knownHashes count],(unsigned long)self.totalMasternodeCount);
+        NSLog(@"-> %lu - %lu",(unsigned long)[self.knownHashes count],(unsigned long)self.chain.totalMasternodeCount);
         NSUInteger countAroundNow = [self recentMasternodeBroadcastHashesCount];
-        if ([self.knownHashes count] > self.totalMasternodeCount) {
+        if ([self.knownHashes count] > self.chain.totalMasternodeCount) {
             [self.managedObjectContext performBlockAndWait:^{
                 [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-                NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalMasternodeCount);
-                if (countAroundNow == self.totalMasternodeCount) {
-                    [DSMasternodeBroadcastHashEntity removeOldest:[self.knownHashes count] - self.totalMasternodeCount onChain:self.chain.chainEntity];
+                NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.chain.totalMasternodeCount);
+                if (countAroundNow == self.chain.totalMasternodeCount) {
+                    [DSMasternodeBroadcastHashEntity removeOldest:[self.knownHashes count] - self.chain.totalMasternodeCount onChain:self.chain.chainEntity];
                     [self requestMasternodeBroadcastsFromPeer:peer];
                 }
             }];
-        } else if (countAroundNow == self.totalMasternodeCount) {
+        } else if (countAroundNow == self.chain.totalMasternodeCount) {
             NSLog(@"%@",@"All masternode broadcast hashes received");
             //we have all hashes, let's request objects.
             [self requestMasternodeBroadcastsFromPeer:peer];

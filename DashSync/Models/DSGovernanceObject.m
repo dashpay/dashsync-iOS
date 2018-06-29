@@ -20,6 +20,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSChainPeerManager.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSMasternodeBroadcast.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
@@ -273,11 +274,13 @@
     if (count) {
         [fetchRequest setFetchLimit:count];
     }
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceObject == %@",self.governanceObjectEntity]];
+    [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternode" ascending:TRUE]]];
     NSArray * governanceVoteEntities = [DSGovernanceVoteEntity fetchObjects:fetchRequest];
     if (!_knownGovernanceVoteHashesForExistingGovernanceVotes) _knownGovernanceVoteHashesForExistingGovernanceVotes = [NSMutableOrderedSet orderedSet];
     for (DSGovernanceVoteEntity * governanceVoteEntity in governanceVoteEntities) {
         DSGovernanceVote * governanceVote = [governanceVoteEntity governanceVote];
-        NSLog(@"%@ -> %d",[NSData dataWithUInt256:governanceVote.governanceVoteHash],governanceVote.signal);
+        NSLog(@"%@ : %@ -> %d/%d",self.identifier,[NSData dataWithUInt256:governanceVote.masternodeBroadcast.masternodeBroadcastHash].shortHexString,governanceVote.outcome, governanceVote.signal);
         [_knownGovernanceVoteHashesForExistingGovernanceVotes addObject:[NSData dataWithUInt256:governanceVote.governanceVoteHash]];
         [_governanceVotes addObject:governanceVote];
     }

@@ -77,7 +77,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
 // Masternodes
--(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+//-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port;

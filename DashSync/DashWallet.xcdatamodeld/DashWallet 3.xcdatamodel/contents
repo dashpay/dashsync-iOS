@@ -19,6 +19,8 @@
         <attribute name="checkpoints" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="devnetIdentifier" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="standardPort" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="totalGovernanceObjectsCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="totalMasternodeCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="blocks" toMany="YES" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="derivationPaths" toMany="YES" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="chain" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
@@ -54,6 +56,7 @@
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="startEpoch" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
+        <attribute name="totalVotesCount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="governanceObjectHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
@@ -236,9 +239,9 @@
     <elements>
         <element name="DSAccountEntity" positionX="18" positionY="153" width="128" height="105"/>
         <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
-        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="225"/>
+        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="255"/>
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="135"/>
-        <element name="DSGovernanceObjectEntity" positionX="36" positionY="162" width="128" height="255"/>
+        <element name="DSGovernanceObjectEntity" positionX="36" positionY="162" width="128" height="270"/>
         <element name="DSGovernanceObjectHashEntity" positionX="27" positionY="153" width="128" height="105"/>
         <element name="DSGovernanceVoteEntity" positionX="27" positionY="162" width="128" height="195"/>
         <element name="DSGovernanceVoteHashEntity" positionX="18" positionY="153" width="128" height="105"/>

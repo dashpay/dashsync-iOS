@@ -375,7 +375,7 @@
 }
 
 -(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_List]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",self.chainPeerManager.chain.totalMasternodeCount];
 }
 
 -(void)updateMasternodeBroadcastsCount {
@@ -395,11 +395,11 @@
 }
 
 -(void)updateReceivedGovernanceVoteCount {
-    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote]];
+    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],self.chainPeerManager.governanceSyncManager.governanceVotesCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {
-    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObject]];
+    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],self.chainPeerManager.chain.totalGovernanceObjectsCount];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

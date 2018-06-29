@@ -27,7 +27,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 @property (nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
 
-@property (nonatomic,assign) NSUInteger totalGovernanceObjectCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
 

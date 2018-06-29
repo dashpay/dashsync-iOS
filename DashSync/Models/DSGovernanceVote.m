@@ -16,6 +16,8 @@
 #import "DSChainManager.h"
 #import "DSChainPeerManager.h"
 #import "DSMasternodeBroadcast.h"
+#import "DSMasternodeBroadcastEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @interface DSGovernanceVote()
 
@@ -138,6 +140,16 @@
     self.governanceVoteHash = [DSGovernanceVote hashWithParentHash:parentHash voteCreationTimestamp:createdAt voteSignal:voteSignal voteOutcome:voteOutcome masternodeUTXO:masternodeUTXO];
     self.signature = signature;
     return self;
+}
+
+-(DSMasternodeBroadcast *)masternodeBroadcast {
+    if (_masternodeBroadcast) return _masternodeBroadcast;
+    NSArray * masternodeBroadcasts = [DSMasternodeBroadcastEntity objectsMatching:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash],@(self.masternodeUTXO.n)];
+    if ([masternodeBroadcasts count]) {
+        DSMasternodeBroadcastEntity * masternodeBroadcastEntity = [masternodeBroadcasts firstObject];
+        return [masternodeBroadcastEntity masternodeBroadcast];
+    }
+    return nil;
 }
 
 -(void)signWithKey:(DSKey*)key {

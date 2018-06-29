@@ -28,5 +28,6 @@
 @dynamic url;
 @dynamic paymentAddress;
 @dynamic votes;
+@dynamic totalVotesCount;
 
 @end

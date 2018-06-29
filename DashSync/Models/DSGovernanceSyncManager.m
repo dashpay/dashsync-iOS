@@ -272,14 +272,14 @@
         }
         
         self.knownGovernanceObjectHashes = rHashes;
-        NSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceObjectHashes count],(unsigned long)self.totalGovernanceObjectCount);
+        NSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceObjectHashes count],(unsigned long)self.chain.totalGovernanceObjectsCount);
         NSUInteger countAroundNow = [self recentGovernanceObjectHashesCount];
-        if ([self.knownGovernanceObjectHashes count] > self.totalGovernanceObjectCount) {
+        if ([self.knownGovernanceObjectHashes count] > self.chain.totalGovernanceObjectsCount) {
             [self.managedObjectContext performBlockAndWait:^{
                 [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
-                NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.totalGovernanceObjectCount);
-                if (countAroundNow > self.totalGovernanceObjectCount) {
-                    [DSGovernanceObjectHashEntity removeOldest:countAroundNow - self.totalGovernanceObjectCount onChain:self.chain.chainEntity];
+                NSLog(@"countAroundNow -> %lu - %lu",(unsigned long)countAroundNow,(unsigned long)self.chain.totalGovernanceObjectsCount);
+                if (countAroundNow > self.chain.totalGovernanceObjectsCount) {
+                    [DSGovernanceObjectHashEntity removeOldest:countAroundNow - self.chain.totalGovernanceObjectsCount onChain:self.chain.chainEntity];
                     [DSGovernanceObjectHashEntity saveContext];
                 }
                 if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesCountReceived) {
@@ -290,7 +290,7 @@
                 }
                 
             }];
-        } else if (countAroundNow == self.totalGovernanceObjectCount) {
+        } else if (countAroundNow == self.chain.totalGovernanceObjectsCount) {
             NSLog(@"%@",@"All governance object hashes received");
             //we have all hashes, let's request objects.
             if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesCountReceived) {
@@ -395,7 +395,6 @@
     _currentGovernanceSyncObject = nil;
     _knownGovernanceObjectHashes = nil;
     self.governanceObjectsCount = 0;
-    self.totalGovernanceObjectCount = 0;
 }
 
 @end
