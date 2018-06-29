@@ -38,7 +38,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -51,7 +51,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	
+    
     [self updateBalance];
     [self updateSporks];
     [self updateBlockHeight];
@@ -73,67 +73,102 @@
     self.syncFailedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           NSLog(@"background fetch sync failed");
-                                                           [self syncFailed];
+                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                               NSLog(@"background fetch sync failed");
+                                                               [self syncFailed];
+                                                           }
+                                                       }];
+    
+    
+    self.blocksObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerNewBlockNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           
+                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                               NSLog(@"update blockheight");
+                                                               [self updateBlockHeight];
+                                                           }
                                                        }];
     
     self.balanceObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           NSLog(@"update balance");
-                                                           [self updateBalance];
+                                                           if (!note.userInfo[DSChainPeerManagerNotificationChainKey] ||[note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                               NSLog(@"update balance");
+                                                               [self updateBalance];
+                                                           }
                                                        }];
     self.sporkObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkListDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                                      if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
                                                            NSLog(@"update spork count");
                                                            [self updateSporks];
+                                                                                                                      }
                                                        }];
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
-                                                                                     queue:nil usingBlock:^(NSNotification *note) {
-                                                                                         NSLog(@"update masternode broadcast count");
-                                                                                         [self updateMasternodeBroadcastsCount];
-                                                                                     }];
-    self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
-                                                                                     NSLog(@"update masternode count");
-                                                                                     [self updateMasternodeCount];
+                                                                                     if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                     NSLog(@"update masternode broadcast count");
+                                                                                     [self updateMasternodeBroadcastsCount];
+                                                                                     }
                                                                                  }];
-    self.governanceObjectCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectCountUpdateNotification object:nil
+    self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
                                                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                                                          NSLog(@"update governance object count");
-                                                                                          [self updateReceivedGovernanceProposalCount];
+                                                                                          if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                          NSLog(@"update masternode count");
+                                                                                          [self updateMasternodeCount];
+                                                                                          }
                                                                                       }];
+    self.governanceObjectCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectCountUpdateNotification object:nil
+                                                                                            queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                NSLog(@"update governance object count");
+                                                                                                [self updateReceivedGovernanceProposalCount];
+                                                                                                }
+                                                                                            }];
     self.governanceObjectReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectListDidChangeNotification object:nil
                                                                                                     queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                        if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                         NSLog(@"update governance received object count");
                                                                                                         [self updateReceivedGovernanceProposalCount];
+                                                                                                        }
                                                                                                     }];
     
     self.governanceVoteCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVoteCountUpdateNotification object:nil
-                                                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                NSLog(@"update governance vote count");
-                                                                                                [self updateReceivedGovernanceVoteCount];
-                                                                                            }];
+                                                                                          queue:nil usingBlock:^(NSNotification *note) {
+                                                                                              if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                              NSLog(@"update governance vote count");
+                                                                                              [self updateReceivedGovernanceVoteCount];
+                                                                                              }
+                                                                                          }];
     self.governanceVoteReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVotesDidChangeNotification object:nil
-                                                                                                    queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                        NSLog(@"update governance received vote count");
-                                                                                                        [self updateReceivedGovernanceVoteCount];
-                                                                                                    }];
+                                                                                                  queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                      if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                      NSLog(@"update governance received vote count");
+                                                                                                      [self updateReceivedGovernanceVoteCount];
+                                                                                                      }
+                                                                                                  }];
     self.chainWalletObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
-                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                               [self updateWalletCount];
-                                                           }];
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           [self updateWalletCount];
+                                                           }
+                                                       }];
     self.chainStandaloneDerivationPathObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
+                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
                                                            [self updateStandaloneDerivationPathsCount];
+                                                           }
                                                        }];
-    self.chainSingleAddressObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
-                                                                                         queue:nil usingBlock:^(NSNotification *note) {
-                                                                                             [self updateStandaloneDerivationPathsCount];
-                                                                                         }];
+//    self.chainSingleAddressObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
+//                                                                                         queue:nil usingBlock:^(NSNotification *note) {
+//                                                                                             if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+//                                                                                             [self updateStandaloneDerivationPathsCount];
+//                                                                                             }
+//                                                                                         }];
     
 }
 
@@ -276,6 +311,11 @@
 
 - (IBAction)wipeData:(id)sender {
     UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Peer Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainPeerManager.chain];
+    }]];
+    
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
     }]];
@@ -297,6 +337,9 @@
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain]; //this takes care of blockchain info as well;
@@ -332,7 +375,7 @@
 }
 
 -(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_List]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",self.chainPeerManager.chain.totalMasternodeCount];
 }
 
 -(void)updateMasternodeBroadcastsCount {
@@ -352,11 +395,11 @@
 }
 
 -(void)updateReceivedGovernanceVoteCount {
-    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote]];
+    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],self.chainPeerManager.governanceSyncManager.totalGovernanceVotesCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {
-    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],[self.chainPeerManager countForSyncCountInfo:DSSyncCountInfo_GovernanceObject]];
+    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],self.chainPeerManager.chain.totalGovernanceObjectsCount];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

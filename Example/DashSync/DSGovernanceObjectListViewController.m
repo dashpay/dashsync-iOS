@@ -63,6 +63,7 @@
     // Edit the entity name as appropriate.
     NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSGovernanceObjectEntity" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
+    [fetchRequest setRelationshipKeyPathsForPrefetching:@[@"votes"]];
     
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:20];
@@ -155,6 +156,44 @@
     NSUInteger previousCycles = previousDuration / SUPERBLOCK_AVEREAGE_TIME;
     
     cell.paymentsCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)previousCycles,(unsigned long)cycles];
+    __block NSUInteger yesCount = 0;
+    __block NSUInteger noCount = 0;
+    __block NSUInteger abstainCount = 0;
+    [self.managedObjectContext performBlockAndWait:^{
+        NSUInteger yesCountInner = 0;
+        NSUInteger noCountInner = 0;
+        NSUInteger abstainCountInner = 0;
+        NSMutableSet * seenMasternodes = [NSMutableSet set];
+        for (DSGovernanceVoteHashEntity * voteHash in [governanceObjectEntity.voteHashes sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:NO]]]) {
+            DSGovernanceVoteEntity * vote = voteHash.governanceVote;
+            if (!vote) continue;
+            NSMutableData * masternodeHash = [vote.masternodeHash mutableCopy];
+            [masternodeHash appendUInt32:vote.masternodeIndex];
+            if ([seenMasternodes containsObject:masternodeHash]) {
+                continue;
+            } else {
+                [seenMasternodes addObject:masternodeHash];
+            }
+            
+            switch (vote.outcome) {
+                case DSGovernanceVoteOutcome_Yes:
+                    yesCountInner++;
+                    break;
+                case DSGovernanceVoteOutcome_No:
+                    noCountInner++;
+                    break;
+                case DSGovernanceVoteOutcome_Abstain:
+                    abstainCountInner++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        yesCount = yesCountInner;
+        noCount = noCountInner;
+        abstainCount = abstainCountInner;
+    }];
+    cell.voteTallyLabel.text = [NSString stringWithFormat:@"%lu / %lu / %lu",yesCount,noCount,abstainCount];
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {

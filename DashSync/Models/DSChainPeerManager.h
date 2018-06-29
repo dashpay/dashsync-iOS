@@ -41,10 +41,15 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotifica
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNewBlockNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
 
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
+
+
+#define LAST_SYNCED_GOVERANCE_OBJECTS @"LAST_SYNCED_GOVERANCE_OBJECTS"
+#define LAST_SYNCED_MASTERNODE_LIST @"LAST_SYNCED_MASTERNODE_LIST"
 
 @class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote;
 
@@ -63,6 +68,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (instancetype)initWithChain:(DSChain*)chain;
 
 - (void)connect;
+- (void)clearPeers;
 - (void)disconnect;
 - (void)rescan;
 - (void)publishTransaction:(DSTransaction * _Nonnull)transaction
@@ -71,7 +77,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
 // Masternodes
--(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+//-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port;

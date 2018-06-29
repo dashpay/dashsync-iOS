@@ -78,8 +78,9 @@
     [fetchRequest setFetchBatchSize:20];
     
     // Edit the sort key as appropriate.
+    NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"claimed" ascending:NO];
     NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
-    NSArray *sortDescriptors = @[heightSortDescriptor];
+    NSArray *sortDescriptors = @[claimSortDescriptor,heightSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
@@ -88,7 +89,7 @@
     
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
+    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:@"claimed" cacheName:nil];
     _fetchedResultsController = aFetchedResultsController;
     aFetchedResultsController.delegate = self;
     NSError *error = nil;
@@ -126,17 +127,32 @@
 
 #pragma mark - Table view data source
 
+-(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
+    if ([[sectionInfo name] integerValue]) {
+        return @"My Masternodes";
+    } else {
+        return @"Masternodes";
+    }
+}
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
-    return 1;
+    return [[self.fetchedResultsController sections] count];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
-    return [[self.fetchedResultsController fetchedObjects] count];
+    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
+    return [sectionInfo numberOfObjects];
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:indexPath.section];
+    if ([[sectionInfo name] integerValue]) {
+        self.claimButton.title = @"Edit";
+    } else {
+        self.claimButton.title = @"Claim";
+    }
     [self.claimButton setEnabled:TRUE];
 }
 

@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t timestamp;
 @property (nullable, nonatomic, retain) DSGovernanceVoteEntity *governanceVote;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
+@property (nullable, nonatomic, retain) DSGovernanceObjectEntity *governanceObject;
 
 @end
 

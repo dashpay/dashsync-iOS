@@ -49,6 +49,7 @@
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
+#import "DSMasternodeBroadcastEntity+CoreDataClass.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -186,8 +187,8 @@ static checkpoint mainnet_checkpoint_array[] = {
         self.checkpoints = checkpoints;
         self.genesisHash = checkpoints[1].checkpointHash;
     }
-    NSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
-    NSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
+//    NSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
+//    NSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.standardPort = port;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
@@ -279,21 +280,40 @@ static checkpoint mainnet_checkpoint_array[] = {
 +(DSChain*)mainnet {
     static DSChain* _mainnet = nil;
     static dispatch_once_t mainnetToken = 0;
-    
+    __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT];
-        NSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
+        
+        inSetUp = TRUE;
+        //NSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
+    if (inSetUp) {
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [_mainnet chainEntity];
+            _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+        }];
+    }
+    
     return _mainnet;
 }
 
 +(DSChain*)testnet {
     static DSChain* _testnet = nil;
     static dispatch_once_t testnetToken = 0;
-    
+    __block BOOL inSetUp = FALSE;
     dispatch_once(&testnetToken, ^{
         _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT];
+        inSetUp = TRUE;
     });
+    if (inSetUp) {
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [_testnet chainEntity];
+            _testnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+        }];
+    }
+    
     return _testnet;
 }
 
@@ -332,6 +352,14 @@ static dispatch_once_t devnetToken = 0;
 
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
     return @[[DSDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
+}
+
+-(void)save {
+    [[DSChainEntity context] performBlockAndWait:^{
+        self.chainEntity.totalMasternodeCount = self.totalMasternodeCount;
+        self.chainEntity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        [DSChainEntity saveContext];
+    }];
 }
 
 // MARK: - Check Type
@@ -429,7 +457,7 @@ static dispatch_once_t devnetToken = 0;
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     [self.viewingAccount removeDerivationPath:derivationPath];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
@@ -447,7 +475,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 
@@ -482,6 +510,13 @@ static dispatch_once_t devnetToken = 0;
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     [keyChainDictionary setObject:votingKey forKey:masternodeBroadcast.uniqueID];
     setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
+    NSManagedObjectContext * context = [DSMasternodeBroadcastEntity context];
+    [context performBlockAndWait:^{
+        [DSMasternodeBroadcastEntity setContext:context];
+        DSMasternodeBroadcastEntity * masternodeBroadcastEntity = masternodeBroadcast.masternodeBroadcastEntity;
+        masternodeBroadcastEntity.claimed = TRUE;
+        [DSMasternodeBroadcastEntity saveContext];
+    }];
 }
 
 // MARK: - Wallet
@@ -548,7 +583,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray removeObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 -(void)addWallet:(DSWallet*)wallet {
@@ -566,7 +601,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
     });
 }
 
@@ -1008,7 +1043,7 @@ static dispatch_once_t devnetToken = 0;
         
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerNewBlockNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
         });
     }
     

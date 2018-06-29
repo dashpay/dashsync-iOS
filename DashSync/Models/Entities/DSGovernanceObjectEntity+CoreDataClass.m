@@ -51,6 +51,7 @@
         UInt256 parentHash = *(UInt256*)self.parentHash.bytes;
         UInt256 collateralHash = *(UInt256*)self.collateralHash.bytes;
         governanceObject = [[DSGovernanceObject alloc] initWithType:self.type parentHash:parentHash revision:self.revision timestamp:self.timestamp signature:self.signature collateralHash:collateralHash governanceObjectHash:governanceObjectHash identifier:self.identifier amount:self.amount startEpoch:self.startEpoch endEpoch:self.endEpoch paymentAddress:self.paymentAddress url:self.url onChain:[chain chain]];
+        governanceObject.totalGovernanceVoteCount = self.totalVotesCount;
     }];
     
     return governanceObject;

@@ -34,6 +34,8 @@
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
     self.standardPort = chain.standardPort;
     self.type = chain.chainType;
+    self.totalMasternodeCount = chain.totalMasternodeCount;
+    self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
     return self;
 }
 
@@ -42,11 +44,15 @@
     __block uint32_t port;
     __block NSString * devnetIdentifier;
     __block NSData * data;
+    __block uint32_t totalMasternodeCount;
+    __block uint32_t totalGovernanceObjectsCount;
     [self.managedObjectContext performBlockAndWait:^{
         port = self.standardPort;
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
+        totalMasternodeCount = self.totalMasternodeCount;
+        totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
     }];
     if (type == DSChainType_MainNet) {
         return [DSChain mainnet];

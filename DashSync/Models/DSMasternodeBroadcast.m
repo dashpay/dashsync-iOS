@@ -8,6 +8,9 @@
 #import "DSMasternodeBroadcast.h"
 #import "NSData+Bitcoin.h"
 #import "DSMasternodePing.h"
+#import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
+#import "DSMasternodeBroadcastHashEntity+CoreDataProperties.h"
+#import "NSManagedObject+Sugar.h"
 
 @interface DSMasternodeBroadcast()
 
@@ -129,6 +132,14 @@
 
 -(NSString *)uniqueID {
     return [NSData dataWithUInt256:self.masternodeBroadcastHash].shortHexString;
+}
+
+-(DSMasternodeBroadcastEntity*)masternodeBroadcastEntity {
+    NSArray * broadcastEntities = [DSMasternodeBroadcastEntity objectsMatching:@"masternodeBroadcastHash.masternodeBroadcastHash = %@",[NSData dataWithUInt256:self.masternodeBroadcastHash]];
+    if ([broadcastEntities count]) {
+        return [broadcastEntities objectAtIndex:0];
+    }
+    return nil;
 }
 
 @end

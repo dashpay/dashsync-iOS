@@ -674,20 +674,19 @@ services:(uint64_t)services
 
 // MARK: - send Dash Governance
 
-- (void)sendGovSync:(UInt256)h { //for votes
+- (void)sendGovSync:(UInt256)parentHash { //for votes
     if (self.governanceRequestState != DSGovernanceRequestState_None) {  //Make sure we aren't in a governance sync process
-    NSLog(@"%@:%u Requesting Governance Vote Hashes out of resting state",self.host, self.port);
-    return;
-}
+        NSLog(@"%@:%u Requesting Governance Vote Hashes out of resting state",self.host, self.port);
+        return;
+    }
     self.sentGovSync = TRUE;
     NSLog(@"%@:%u Requesting Governance Object Vote Hashes",self.host, self.port);
     NSMutableData *msg = [NSMutableData data];
-    
-    [msg appendBytes:&h length:sizeof(h)];
-    [msg appendData:[DSBloomFilter emptyBloomFilterData]];
+    //UInt256 reversed = *(UInt256*)[NSData dataWithUInt256:parentHash].reverse.bytes;
+    [msg appendBytes:&parentHash length:sizeof(parentHash)];
+    [msg appendData:[[[DSBloomFilter alloc] initWithFalsePositiveRate:0.01 forElementCount:20000 tweak:arc4random_uniform(10000) flags:1] toData]];
     self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVoteHashes;
     [self sendMessage:msg type:MSG_GOVOBJSYNC];
-    
 }
 
 - (void)sendGovSync { //for governance objects
@@ -722,7 +721,7 @@ services:(uint64_t)services
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
 #if MESSAGE_LOGGING
-    if (![type isEqualToString:MSG_INV]) {
+    if (![type isEqualToString:MSG_INV] && ![type isEqualToString:MSG_GOVOBJVOTE]) {
         NSLog(@"%@:%u accept message %@", self.host, self.port, type);
     }
 #endif
@@ -755,7 +754,7 @@ services:(uint64_t)services
     else if ([MSG_SSC isEqual:type]) [self acceptSSCMessage:message];
     else if ([MSG_MNB isEqual:type]) [self acceptMNBMessage:message];
     //governance
-    //else if ([MSG_GOVOBJVOTE isEqual:type]) [self acceptGov:message];
+    else if ([MSG_GOVOBJVOTE isEqual:type]) [self acceptGovObjectVoteMessage:message];
     else if ([MSG_GOVOBJ isEqual:type]) [self acceptGovObjectMessage:message];
     //else if ([MSG_GOVOBJSYNC isEqual:type]) [self acceptGovObjectSyncMessage:message];
     

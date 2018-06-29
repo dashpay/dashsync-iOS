@@ -19,7 +19,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger recentMasternodeBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger masternodeBroadcastsCount;
-@property (nonatomic,assign) NSUInteger totalMasternodeCount;
 
 -(instancetype)initWithChain:(DSChain*)chain;
 

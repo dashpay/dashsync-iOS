@@ -27,13 +27,14 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 
 @interface DSGovernanceVote : NSObject
 
-@property (nonatomic,readonly) DSGovernanceObject * governanceObject;
+@property (nonatomic,strong) DSGovernanceObject * governanceObject;
 @property (nonatomic,readonly) DSMasternodeBroadcast * masternodeBroadcast;
 @property (nonatomic,readonly) DSGovernanceVoteOutcome outcome;
 @property (nonatomic,readonly) DSGovernanceVoteSignal signal;
 @property (nonatomic,readonly) NSTimeInterval createdAt;
 @property (nonatomic,readonly) NSData * signature;
 @property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic,readonly) UInt256 parentHash;
 @property (nonatomic,readonly) DSUTXO masternodeUTXO;
 @property (nonatomic,readonly) UInt256 governanceVoteHash;
 
