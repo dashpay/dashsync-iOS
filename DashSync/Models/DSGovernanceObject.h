@@ -31,6 +31,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) NSString * identifier;
 @property (nonatomic, readonly) uint64_t amount;
+@property (nonatomic, readonly) BOOL finishedSync;
 @property (nonatomic, readonly) uint64_t startEpoch;
 @property (nonatomic, readonly) uint64_t endEpoch;
 @property (nonatomic, readonly) NSString *paymentAddress;

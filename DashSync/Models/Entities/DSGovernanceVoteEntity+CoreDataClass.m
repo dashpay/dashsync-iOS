@@ -32,8 +32,6 @@
         if ([matchingMasternodeEntities count]) {
             self.masternode = [matchingMasternodeEntities firstObject];
         }
-        DSGovernanceObjectEntity * governanceObjectEntity = governanceVote.governanceObject.governanceObjectEntity;
-        self.governanceObject = governanceObjectEntity;
     }];
 }
 
@@ -41,7 +39,7 @@
     __block NSUInteger count = 0;
     [governanceObject.managedObjectContext performBlockAndWait:^{
         NSFetchRequest * fetchRequest = [DSGovernanceVoteEntity fetchReq];
-        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceObject = %@",governanceObject]];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"governanceVoteHash.governanceObject = %@",governanceObject]];
         count = [DSGovernanceVoteEntity countObjects:fetchRequest];
     }];
     return count;

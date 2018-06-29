@@ -60,7 +60,7 @@
         <attribute name="type" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="governanceObjectHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
-        <relationship name="votes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceObject" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
+        <relationship name="voteHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceVoteHashEntity" inverseName="governanceObject" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
     </entity>
     <entity name="DSGovernanceObjectHashEntity" representedClassName="DSGovernanceObjectHashEntity" syncable="YES">
         <attribute name="governanceObjectHash" attributeType="Binary" syncable="YES"/>
@@ -87,7 +87,6 @@
         <attribute name="signal" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="timestampCreated" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="governanceObject" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectEntity" inverseName="votes" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
         <relationship name="governanceVoteHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceVoteHashEntity" inverseName="governanceVote" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
         <relationship name="masternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSMasternodeBroadcastEntity" inverseName="votes" inverseEntity="DSMasternodeBroadcastEntity" syncable="YES"/>
     </entity>
@@ -95,6 +94,7 @@
         <attribute name="governanceVoteHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="votes" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="governanceObject" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectEntity" inverseName="voteHashes" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
         <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
     </entity>
     <entity name="DSMasternodeBroadcastEntity" representedClassName="DSMasternodeBroadcastEntity" syncable="YES">
@@ -243,8 +243,8 @@
         <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="135"/>
         <element name="DSGovernanceObjectEntity" positionX="36" positionY="162" width="128" height="270"/>
         <element name="DSGovernanceObjectHashEntity" positionX="27" positionY="153" width="128" height="105"/>
-        <element name="DSGovernanceVoteEntity" positionX="27" positionY="162" width="128" height="195"/>
-        <element name="DSGovernanceVoteHashEntity" positionX="18" positionY="153" width="128" height="105"/>
+        <element name="DSGovernanceVoteEntity" positionX="27" positionY="162" width="128" height="180"/>
+        <element name="DSGovernanceVoteHashEntity" positionX="18" positionY="153" width="128" height="120"/>
         <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="225"/>
         <element name="DSMasternodeBroadcastHashEntity" positionX="9" positionY="144" width="128" height="105"/>
         <element name="DSMasternodePingEntity" positionX="27" positionY="135" width="128" height="60"/>

@@ -163,7 +163,18 @@
         NSUInteger yesCountInner = 0;
         NSUInteger noCountInner = 0;
         NSUInteger abstainCountInner = 0;
-        for (DSGovernanceVoteEntity * vote in governanceObjectEntity.votes) {
+        NSMutableSet * seenMasternodes = [NSMutableSet set];
+        for (DSGovernanceVoteHashEntity * voteHash in [governanceObjectEntity.voteHashes sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:NO]]]) {
+            DSGovernanceVoteEntity * vote = voteHash.governanceVote;
+            if (!vote) continue;
+            NSMutableData * masternodeHash = [vote.masternodeHash mutableCopy];
+            [masternodeHash appendUInt32:vote.masternodeIndex];
+            if ([seenMasternodes containsObject:masternodeHash]) {
+                continue;
+            } else {
+                [seenMasternodes addObject:masternodeHash];
+            }
+            
             switch (vote.outcome) {
                 case DSGovernanceVoteOutcome_Yes:
                     yesCountInner++;

@@ -1609,6 +1609,7 @@
 
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
     [self peerMisbehavin:peer];
+    [self connect];
 }
 
 // MARK: - DSChainDelegate

@@ -20,7 +20,6 @@
 @dynamic signature;
 @dynamic masternodeHash;
 @dynamic governanceVoteHash;
-@dynamic governanceObject;
 @dynamic masternode;
 @dynamic parentHash;
 @dynamic masternodeIndex;

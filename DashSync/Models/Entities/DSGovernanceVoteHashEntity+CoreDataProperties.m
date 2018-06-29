@@ -18,5 +18,6 @@
 @dynamic timestamp;
 @dynamic governanceVote;
 @dynamic chain;
+@dynamic governanceObject;
 
 @end

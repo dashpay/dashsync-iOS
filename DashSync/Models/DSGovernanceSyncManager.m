@@ -366,6 +366,9 @@
     }
     if (parentGovernanceObject) {
         [governanceVote.governanceObject peer:peer relayedGovernanceVote:governanceVote];
+        if (governanceVote.governanceObject.finishedSync) {
+            [self finishedGovernanceVoteSyncWithPeer:peer];
+        }
     } else {
         NSLog(@"no parent hash");
     }
