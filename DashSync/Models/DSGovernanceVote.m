@@ -70,8 +70,10 @@
     NSMutableData * data = [NSMutableData data];
     [data appendUInt256:self.masternodeUTXO.hash];
     [data appendUInt32:(uint32_t)self.masternodeUTXO.n];
-    [data appendUInt8:0];
-    [data appendUInt32:UINT32_MAX];
+    if (self.chain.protocolVersion < 70209) { //switch to outpoint in 70209
+        [data appendUInt8:0];
+        [data appendUInt32:UINT32_MAX];
+    }
     [data appendUInt256:self.parentHash];
     [data appendUInt32:self.outcome];
     [data appendUInt32:self.signal];
@@ -163,7 +165,8 @@
     DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
     DSMasternodeBroadcast * masternodeBroacast = [peerManager.masternodeManager masternodeBroadcastForUTXO:self.masternodeUTXO];
     DSKey * key = [DSKey keyWithPublicKey:masternodeBroacast.publicKey];
-    return [key verify:self.governanceVoteHash signature:self.signature];
+    BOOL isValid = [key verify:self.governanceVoteHash signature:self.signature];
+    return isValid;
 }
 
 @end

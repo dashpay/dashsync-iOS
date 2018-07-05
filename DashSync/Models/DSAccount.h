@@ -158,4 +158,7 @@
 //This removes all transactions from the account
 - (void)wipeBlockchainInfo;
 
+//This creates a proposal transaction
+- (DSTransaction *)proposalCollateralTransactionWithData:(NSData*)data;
+
 @end

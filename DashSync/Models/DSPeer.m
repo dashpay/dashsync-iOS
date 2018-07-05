@@ -716,6 +716,11 @@ services:(uint64_t)services
     [self sendMessage:[governanceVote dataMessage] type:MSG_GOVOBJVOTE];
 }
 
+-(void)sendGovObject:(DSGovernanceObject*)governanceObject {
+    [self sendMessage:[governanceObject dataMessage] type:MSG_GOVOBJ];
+}
+
+
 // MARK: - accept
 
 - (void)acceptMessage:(NSData *)message type:(NSString *)type

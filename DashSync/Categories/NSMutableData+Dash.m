@@ -339,6 +339,15 @@ CFAllocatorRef SecureAllocator()
 }
 // MARK: - dash protocol
 
+- (void)appendProposalInfo:(NSData*)proposalInfo {
+    static uint8_t pubkeyAddress = BITCOIN_PUBKEY_ADDRESS, scriptAddress = BITCOIN_SCRIPT_ADDRESS;
+    NSMutableData * hashMutableData = [[NSMutableData alloc] init];
+
+    [hashMutableData appendUInt256:proposalInfo.SHA256_2];
+    [self appendUInt8:OP_RETURN];
+    [self appendScriptPushData:hashMutableData];
+}
+
 - (void)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain
 {
     [self appendUInt32:chain.magicNumber];

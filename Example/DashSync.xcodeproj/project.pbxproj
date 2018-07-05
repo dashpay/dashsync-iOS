@@ -46,6 +46,8 @@
 		FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */; };
 		FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */; };
 		FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */; };
+		FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */; };
+		FB5252F620EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F520EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -145,6 +147,10 @@
 		FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionTableViewCell.m; sourceTree = "<group>"; };
 		FB3E971020DD7C2E00D9B0CB /* DSSendAmountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSendAmountViewController.h; sourceTree = "<group>"; };
 		FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSendAmountViewController.m; sourceTree = "<group>"; };
+		FB5252F120EE0A34009A2BF1 /* DSProposalCreatorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalCreatorViewController.h; sourceTree = "<group>"; };
+		FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalCreatorViewController.m; sourceTree = "<group>"; };
+		FB5252F420EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalChooseFundingAccountViewController.h; sourceTree = "<group>"; };
+		FB5252F520EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalChooseFundingAccountViewController.m; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -348,6 +354,10 @@
 			children = (
 				FB23895620D2EC2600921B89 /* DSGovernanceObjectListViewController.h */,
 				FB23895720D2EC2600921B89 /* DSGovernanceObjectListViewController.m */,
+				FB5252F120EE0A34009A2BF1 /* DSProposalCreatorViewController.h */,
+				FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */,
+				FB5252F420EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.h */,
+				FB5252F520EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m */,
 			);
 			name = Governance;
 			sourceTree = "<group>";
@@ -636,6 +646,7 @@
 				FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */,
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
+				FB5252F620EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB9A106C20D8362F006883E2 /* DSAddDevnetNameTableViewCell.m in Sources */,
 				FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */,
@@ -653,6 +664,7 @@
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
+				FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,

@@ -392,17 +392,17 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
 }
 
-- (NSArray *)addressesForExportWithInternalCount:(NSUInteger)exportInternalCount externalCount:(NSUInteger)exportExternalCount
+- (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange
 {
     NSMutableArray * addresses = [NSMutableArray array];
-    for (int i = 0;i<exportInternalCount;i++) {
-            NSData *pubKey = [self generatePublicKeyAtIndex:i internal:YES];
+    for (NSUInteger i = exportInternalRange.location;i<exportInternalRange.length + exportInternalRange.location;i++) {
+            NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:YES];
             NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
     
-    for (int i = 0;i<exportExternalCount;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndex:i internal:NO];
+    for (NSUInteger i = exportExternalRange.location;i<exportExternalRange.location + exportExternalRange.length;i++) {
+        NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:NO];
         NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }

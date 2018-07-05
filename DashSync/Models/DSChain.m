@@ -565,7 +565,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(BOOL)syncsBlockchain { //required for SPV wallets
-    return !([[DSOptionsManager sharedInstance] syncType] & ~DSSyncType_NeedsWalletSyncType);
+    return !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_NeedsWalletSyncType);
 }
 
 -(void)unregisterAllWallets {

@@ -39,6 +39,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSWalletManager.h"
+#import "DSGovernanceSyncManager.h"
 #import "DSAccountEntity+CoreDataClass.h"
 
 @class DSDerivationPath,DSAccount;
@@ -506,6 +507,16 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
 }
+
+- (DSTransaction *)proposalCollateralTransactionWithData:(NSData*)data
+{
+    NSMutableData *script = [NSMutableData data];
+    
+    [script appendProposalInfo:data];
+    
+    return [self transactionForAmounts:@[@(PROPOSAL_COST)] toOutputScripts:@[script] withFee:TRUE];
+}
+
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
