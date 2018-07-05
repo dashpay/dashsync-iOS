@@ -14,6 +14,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotifica
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVotesDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotification;
 
+#define SUPERBLOCK_AVERAGE_TIME 2575480
+#define PROPOSAL_COST 500000000
+
 @class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
 
 @interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate>
@@ -44,6 +47,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject* _Nonnull)governanceObject;
 
 -(void)wipeGovernanceInfo;
+
+-(DSGovernanceObject*)createProposalWithIdentifier:(NSString*)identifier toPaymentAddress:(NSString*)paymentAddress forAmount:(uint64_t)amount fromAccount:(DSAccount*)account startDate:(NSDate*)date cycles:(NSUInteger)cycles url:(NSString*)url;
 
 
 @end

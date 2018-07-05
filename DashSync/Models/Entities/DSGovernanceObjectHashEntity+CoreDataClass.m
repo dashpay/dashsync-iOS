@@ -12,6 +12,10 @@
 
 @implementation DSGovernanceObjectHashEntity
 
++(DSGovernanceObjectHashEntity*)governanceObjectHashEntitiesWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity {
+    return [[self governanceObjectHashEntitiesWithHashes:[NSOrderedSet orderedSetWithObject:governanceObjectHash] onChain:chainEntity] firstObject];
+}
+
 +(NSArray*)governanceObjectHashEntitiesWithHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity {
     NSAssert(chainEntity, @"chain entity is not set");
     NSMutableArray * rArray = [NSMutableArray arrayWithCapacity:governanceObjectHashes.count];

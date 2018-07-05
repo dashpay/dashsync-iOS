@@ -166,7 +166,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString;
 
-- (NSArray * _Nonnull)addressesForExportWithInternalCount:(NSUInteger)exportInternalCount externalCount:(NSUInteger)exportExternalCount;
+- (NSArray * _Nonnull)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange;
 
 //this loads the derivation path once it is set to an account that has a wallet;
 -(void)loadAddresses;

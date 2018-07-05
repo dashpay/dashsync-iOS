@@ -21,6 +21,7 @@
 #import "DSChainPeerManager.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSMasternodeBroadcast.h"
+#import "DSAccount.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
@@ -207,6 +208,20 @@
     
 }
 
+-(NSData*)dataMessage {
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt256:self.parentHash];
+    [data appendUInt32:self.revision];
+    [data appendUInt64:self.timestamp];
+    [data appendUInt256:self.collateralHash];
+    [data appendString:[[NSString alloc] initWithData:[self proposalInfo] encoding:NSUTF8StringEncoding]];
+    [data appendUInt32:self.type];
+    [data appendUInt256:UINT256_ZERO];
+    [data appendUInt32:0];
+    [data appendUInt8:0];
+    return [data copy];
+}
+
 -(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData*)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString*)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString*)paymentAddress url:(NSString *)url onChain:(DSChain* _Nonnull)chain {
     if (!(self = [super init])) return nil;
     
@@ -236,6 +251,10 @@
     NSArray * governanceObjects = [DSGovernanceObjectEntity objectsMatching:@"governanceObjectHash.governanceObjectHash = %@",[NSData dataWithUInt256:self.governanceObjectHash]];
     if ([governanceObjects count]) {
         return [governanceObjects objectAtIndex:0];
+    } else {
+        DSGovernanceObjectEntity * governanceObjectEntity = [DSGovernanceObjectEntity managedObject];
+        [governanceObjectEntity setAttributesFromGovernanceObject:self forHashEntity:nil];
+        return governanceObjectEntity;
     }
     return nil;
 }
@@ -464,5 +483,23 @@
     
 }
 
+-(NSData*)proposalInfo {
+    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+    [dictionary setObject:self.identifier forKey:@"name"];
+    [dictionary setObject:@(self.startEpoch) forKey:@"start_epoch"];
+    [dictionary setObject:@(self.endEpoch) forKey:@"end_epoch"];
+    [dictionary setObject:self.paymentAddress forKey:@"payment_address"];
+    [dictionary setObject:[[NSDecimalNumber decimalNumberWithMantissa:self.amount exponent:-8 isNegative:FALSE] stringValue] forKey:@"payment_amount"];
+    [dictionary setObject:self.url forKey:@"url"];
+    NSError * error = nil;
+    NSData* data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+    return data;
+}
+
+
+-(DSTransaction*)collateralTransactionForAccount:(DSAccount*)account {
+    DSTransaction * collateralTransaction = [account proposalCollateralTransactionWithData:[self proposalInfo]];
+    return collateralTransaction;
+}
 
 @end

@@ -19,5 +19,6 @@
 @property (strong, nonatomic) IBOutlet UILabel *isFundedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *paymentsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *voteTallyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *collateralTransactionLabel;
 
 @end

@@ -74,6 +74,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (void)publishTransaction:(DSTransaction * _Nonnull)transaction
                 completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
 -(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes;
+-(void)publishProposal:(DSGovernanceObject*)goveranceProposal;
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
 // Masternodes

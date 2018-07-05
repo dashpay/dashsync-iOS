@@ -16,13 +16,19 @@
 
 - (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity*)hashEntity {
     [self.managedObjectContext performBlockAndWait:^{
+        [DSChainEntity setContext:self.managedObjectContext];
+        [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
         self.collateralHash = [NSData dataWithUInt256:governanceObject.collateralHash];
         self.parentHash = [NSData dataWithUInt256:governanceObject.parentHash];
         self.revision = governanceObject.revision;
         self.signature = governanceObject.signature;
         self.timestamp = governanceObject.timestamp;
         self.type = governanceObject.type;
-        self.governanceObjectHash = hashEntity;
+        if (hashEntity) {
+            self.governanceObjectHash = hashEntity;
+        } else {
+            self.governanceObjectHash = [DSGovernanceObjectHashEntity governanceObjectHashEntitiesWithHash:[NSData dataWithUInt256:governanceObject.governanceObjectHash] onChain:governanceObject.chain.chainEntity];
+        }
         self.identifier = governanceObject.identifier;
         self.amount = governanceObject.amount;
         self.startEpoch = governanceObject.startEpoch;

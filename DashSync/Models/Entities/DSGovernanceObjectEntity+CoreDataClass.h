@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceObjectEntity : NSManagedObject
 
-- (void)setAttributesFromGovernanceObject:(DSGovernanceObject *)governanceObject forHashEntity:(DSGovernanceObjectHashEntity*)hashEntity;
+- (void)setAttributesFromGovernanceObject:(DSGovernanceObject * _Nonnull)governanceObject forHashEntity:(DSGovernanceObjectHashEntity* _Nullable)hashEntity;
 + (NSUInteger)countForChain:(DSChainEntity* _Nonnull)chain;
 - (DSGovernanceObject*)governanceObject;
 

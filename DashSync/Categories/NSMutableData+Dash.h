@@ -60,6 +60,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (void)appendScriptPushData:(NSData *)d;
 
 - (void)appendShapeshiftMemoForAddress:(NSString *)address;
+- (void)appendProposalInfo:(NSData*)proposalInfo;
 
 - (void)appendMessage:(NSData *)message type:(NSString *)type forChain:(DSChain*)chain;
 - (void)appendNullPaddedString:(NSString *)s length:(NSUInteger)length;

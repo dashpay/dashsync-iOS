@@ -23,6 +23,7 @@
 #import "DSKey.h"
 #import "DSChainPeerManager.h"
 #import "DSChainManager.h"
+#import "DSAccount.h"
 
 #define REQUEST_GOVERNANCE_OBJECT_COUNT 500
 
@@ -187,6 +188,7 @@
         __block NSOrderedSet * orderedSet;
         [self.managedObjectContext performBlockAndWait:^{
             [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
+            [DSChainEntity setContext:self.managedObjectContext];
             NSFetchRequest *request = DSGovernanceObjectHashEntity.fetchReq;
             [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && governanceObject != nil",self.chain.chainEntity]];
             [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"governanceObjectHash" ascending:TRUE]]];
@@ -380,6 +382,13 @@
     
 }
 
+// MARK:- Proposal Creation
+
+-(DSGovernanceObject*)createProposalWithIdentifier:(NSString*)identifier toPaymentAddress:(NSString*)paymentAddress forAmount:(uint64_t)amount fromAccount:(DSAccount*)account startDate:(NSDate*)startDate cycles:(NSUInteger)cycles url:(NSString*)url {
+    uint64_t endEpoch = [startDate timeIntervalSince1970] + (SUPERBLOCK_AVERAGE_TIME * cycles);
+    DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:DSGovernanceObjectType_Proposal parentHash:UINT256_ZERO revision:1 timestamp:[[NSDate date] timeIntervalSince1970] signature:nil collateralHash:UINT256_ZERO governanceObjectHash:UINT256_ZERO identifier:identifier amount:amount startEpoch:[startDate timeIntervalSince1970] endEpoch:endEpoch paymentAddress:paymentAddress url:url onChain:self.chain];
+    return governanceObject;
+}
 
 
 // MARK:- Voting

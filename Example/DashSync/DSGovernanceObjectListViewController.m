@@ -8,9 +8,9 @@
 
 #import "DSGovernanceObjectListViewController.h"
 #import "DSProposalTableViewCell.h"
+#import "DSProposalCreatorViewController.h"
 #import <DashSync/DashSync.h>
-
-#define SUPERBLOCK_AVEREAGE_TIME 2575480
+#import "BRBubbleView.h"
 
 @interface DSGovernanceObjectListViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -152,8 +152,8 @@
     cell.endDateLabel.text = [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:governanceObjectEntity.endEpoch]];
     NSTimeInterval duration = governanceObjectEntity.endEpoch - governanceObjectEntity.startEpoch;
     NSTimeInterval previousDuration = [[NSDate date] timeIntervalSince1970] - governanceObjectEntity.startEpoch;
-    NSUInteger cycles = duration / SUPERBLOCK_AVEREAGE_TIME;
-    NSUInteger previousCycles = previousDuration / SUPERBLOCK_AVEREAGE_TIME;
+    NSUInteger cycles = duration / SUPERBLOCK_AVERAGE_TIME;
+    NSUInteger previousCycles = previousDuration / SUPERBLOCK_AVERAGE_TIME;
     
     cell.paymentsCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)previousCycles,(unsigned long)cycles];
     __block NSUInteger yesCount = 0;
@@ -194,6 +194,23 @@
         abstainCount = abstainCountInner;
     }];
     cell.voteTallyLabel.text = [NSString stringWithFormat:@"%lu / %lu / %lu",yesCount,noCount,abstainCount];
+    cell.collateralTransactionLabel.text = governanceObjectEntity.collateralHash.reverse.hexString;
+}
+
+-(IBAction)copyCollateralTransaction:(id)sender {
+    for (UITableViewCell * cell in self.tableView.visibleCells) {
+        if ([sender isDescendantOfView:cell]) {
+            NSIndexPath * indexPath = [self.tableView indexPathForCell:cell];
+            DSGovernanceObjectEntity *governanceObjectEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+            UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+            pasteboard.string = governanceObjectEntity.collateralHash.reverse.hexString;
+            [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
+                                                        center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
+                                   popOutAfterDelay:2.0]];
+            break;
+        }
+    }
+    
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
@@ -231,5 +248,13 @@
     }]];
     [self presentViewController:alertController animated:TRUE completion:nil];
 }
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+if ([segue.identifier isEqualToString:@"ProposalCreationSegue"]) {
+    DSProposalCreatorViewController * proposalCreatorViewController = (DSProposalCreatorViewController*)(((UINavigationController*)segue.destinationViewController).topViewController);
+    proposalCreatorViewController.chainPeerManager = self.chainPeerManager;
+}
+}
+
 
 @end

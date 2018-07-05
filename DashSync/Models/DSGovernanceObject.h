@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSChain,DSPeer,DSGovernanceVote,DSGovernanceObjectEntity;
+@class DSChain,DSPeer,DSGovernanceVote,DSGovernanceObjectEntity,DSTransaction,DSAccount;
 
 typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
     DSGovernanceObjectType_Uknown = 0,
@@ -55,6 +55,10 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote*  _Nonnull)governanceVote;
 
 -(void)save;
+
+-(DSTransaction* _Nullable)collateralTransactionForAccount:(DSAccount* _Nonnull)account;
+
+-(NSData*)dataMessage;
 
 @end
 

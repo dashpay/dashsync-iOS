@@ -338,9 +338,9 @@
         if (p1.timestamp < p2.timestamp) return NSOrderedDescending;
         return NSOrderedSame;
     }];
-    for (DSPeer * peer in _peers) {
-        NSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
-    }
+//    for (DSPeer * peer in _peers) {
+//        NSLog(@"%@:%d lastRequestedMasternodeList(%f) lastRequestedGovernanceSync(%f)",peer.host,peer.port,peer.lastRequestedMasternodeList, peer.lastRequestedGovernanceSync);
+//    }
     NSLog(@"peers sorted");
 }
 
@@ -893,6 +893,11 @@
     if (!startedGovernanceSync) { //we have requested masternode list from connected peers too recently, let's connect to different peers
         [self continueGovernanceSync];
     }
+}
+
+-(void)publishProposal:(DSGovernanceObject*)goveranceProposal {
+        //if (![goveranceProposal isValid]) continue;
+        [self.downloadPeer sendGovObject:goveranceProposal];
 }
 
 -(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
