@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "IntTypes.h"
+
 @class DSChain,DSPeer,DSGovernanceVote,DSGovernanceObjectEntity,DSTransaction,DSAccount;
 
 typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
