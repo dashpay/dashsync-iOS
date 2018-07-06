@@ -27,6 +27,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "IntTypes.h"
+
 CF_IMPLICIT_BRIDGING_ENABLED
 
 CFAllocatorRef SecureAllocator(void);

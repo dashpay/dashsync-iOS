@@ -24,6 +24,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "IntTypes.h"
+
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
 
