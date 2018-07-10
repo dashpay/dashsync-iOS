@@ -36,6 +36,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 @property (nonatomic, readonly) uint64_t endEpoch;
 @property (nonatomic, readonly) NSString *paymentAddress;
 @property (nonatomic, readonly) NSString * url;
+@property (nonatomic, readonly) BOOL isValid;
 @property (nonatomic, readonly) DSGovernanceObjectEntity * governanceObjectEntity;
 
 @property (nonatomic, readonly) NSUInteger recentGovernanceVoteHashesCount;
@@ -57,6 +58,8 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 -(void)save;
 
 -(DSTransaction* _Nullable)collateralTransactionForAccount:(DSAccount* _Nonnull)account;
+
+-(void)registerCollateralTransaction:(DSTransaction* _Nonnull)transaction;
 
 -(NSData*)dataMessage;
 

@@ -74,6 +74,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSData * coinbaseData;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSAccount * account;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain;

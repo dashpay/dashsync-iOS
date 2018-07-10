@@ -25,6 +25,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger recentGovernanceObjectHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneGovernanceObjectHashesCount;
 @property (nonatomic,readonly) NSUInteger governanceObjectsCount;
+@property (nonatomic,readonly) NSUInteger proposalObjectsCount;
 
 @property (nonatomic,readonly) NSUInteger governanceVotesCount;
 @property (nonatomic,readonly) NSUInteger totalGovernanceVotesCount;

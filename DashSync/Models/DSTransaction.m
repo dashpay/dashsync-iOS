@@ -223,6 +223,10 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(D
     return self;
 }
 
+-(DSAccount*)account {
+    return [self.chain accountContainingTransaction:self];
+}
+
 - (NSArray *)inputHashes
 {
     return self.hashes;

@@ -46,6 +46,9 @@
 		FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */; };
 		FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */; };
 		FB5252F620EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F520EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m */; };
+		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
+		FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */; };
+		FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -147,6 +150,12 @@
 		FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalCreatorViewController.m; sourceTree = "<group>"; };
 		FB5252F420EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalChooseFundingAccountViewController.h; sourceTree = "<group>"; };
 		FB5252F520EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalChooseFundingAccountViewController.m; sourceTree = "<group>"; };
+		FB5252F720F2308E009A2BF1 /* DSTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionsViewController.h; sourceTree = "<group>"; };
+		FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionsViewController.m; sourceTree = "<group>"; };
+		FB5252FA20F232C9009A2BF1 /* DSTransactionDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionDetailViewController.h; sourceTree = "<group>"; };
+		FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionDetailViewController.m; sourceTree = "<group>"; };
+		FB5252FD20F2377D009A2BF1 /* BRCopyLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRCopyLabel.h; sourceTree = "<group>"; };
+		FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRCopyLabel.m; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -359,6 +368,8 @@
 		FB2B21A820D6FBF4000DF537 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FB5252FD20F2377D009A2BF1 /* BRCopyLabel.h */,
+				FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */,
 				FB2B21AA20D6FC0B000DF537 /* BRBubbleView.h */,
 				FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */,
 			);
@@ -440,6 +451,10 @@
 				FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */,
 				FB3E971020DD7C2E00D9B0CB /* DSSendAmountViewController.h */,
 				FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */,
+				FB5252F720F2308E009A2BF1 /* DSTransactionsViewController.h */,
+				FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */,
+				FB5252FA20F232C9009A2BF1 /* DSTransactionDetailViewController.h */,
+				FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */,
 			);
 			name = Wallet;
 			sourceTree = "<group>";
@@ -660,15 +675,18 @@
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
+				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
+				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
 				FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
 				FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
+				FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */,
 				FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,

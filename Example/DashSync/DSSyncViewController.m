@@ -399,7 +399,7 @@
 }
 
 -(void)updateReceivedGovernanceProposalCount {
-    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],self.chainPeerManager.chain.totalGovernanceObjectsCount];
+    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager proposalObjectsCount],(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],self.chainPeerManager.chain.totalGovernanceObjectsCount];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

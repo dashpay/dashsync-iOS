@@ -779,7 +779,8 @@ static dispatch_once_t devnetToken = 0;
 {
     if (! _lastBlock) {
         [DSMerkleBlockEntity.context performBlockAndWait:^{
-            self->_lastBlock = [[[DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity] firstObject] merkleBlock];
+            NSArray * lastBlocks = [DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity];
+            self->_lastBlock = [[lastBlocks firstObject] merkleBlock];
         }];
         
         if (!_lastBlock) {

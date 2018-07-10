@@ -896,7 +896,7 @@
 }
 
 -(void)publishProposal:(DSGovernanceObject*)goveranceProposal {
-        //if (![goveranceProposal isValid]) continue;
+        if (![goveranceProposal isValid]) return;
         [self.downloadPeer sendGovObject:goveranceProposal];
 }
 
