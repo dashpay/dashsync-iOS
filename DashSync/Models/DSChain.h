@@ -45,12 +45,15 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define MIN_PROTOCOL_VERSION_MAINNET  70210
 
 #define PROTOCOL_VERSION_TESTNET   70210
-#define MIN_PROTOCOL_VERSION_TESTNET  70210
-
+#define MIN_PROTOCOL_VERSION_TESTNET  70209
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
 #define DASH_MAGIC_NUMBER_DEVNET 0xceffcae2
+
+#define MAX_PROOF_OF_WORK_MAINNET 0x1e0fffffu   // highest value for difficulty target (higher values are less difficult)
+#define MAX_PROOF_OF_WORK_TESTNET 0x1e0fffffu
+#define MAX_PROOF_OF_WORK_DEVNET 0x207fffffu
 
 
 #define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
@@ -114,6 +117,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, readonly) uint32_t protocolVersion;
 @property (nonatomic, readonly) uint32_t minProtocolVersion;
+@property (nonatomic, readonly) uint32_t maxProofOfWork;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 

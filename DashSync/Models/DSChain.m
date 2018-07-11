@@ -671,6 +671,21 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(uint32_t)maxProofOfWork {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return MAX_PROOF_OF_WORK_MAINNET;
+        case DSChainType_TestNet:
+            return MAX_PROOF_OF_WORK_TESTNET;
+        case DSChainType_DevNet:
+            return MAX_PROOF_OF_WORK_DEVNET;
+        default:
+            return MAX_PROOF_OF_WORK_MAINNET;
+            break;
+    }
+}
+
+
 -(NSString*)networkName {
     switch ([self chainType]) {
         case DSChainType_MainNet:
@@ -932,8 +947,9 @@ static dispatch_once_t devnetToken = 0;
     }
     
     // verify block difficulty if block is past last checkpoint
-    if ((block.height > ([self lastCheckpoint].height + DGW_PAST_BLOCKS_MAX)) &&
-        ![block verifyDifficultyWithPreviousBlocks:self.blocks] && ![self isTestnet]) {
+    DSCheckpoint * lastCheckpoint = [self lastCheckpoint];
+    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) && [self isMainnet] &&
+        ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
         uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
         NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
               block.height,block.target,foundDifficulty, blockHash);
