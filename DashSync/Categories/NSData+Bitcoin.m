@@ -183,6 +183,24 @@ NSArray *getKeychainArray(NSString *key, NSError **error)
     }
 }
 
+NSOrderedSet *getKeychainOrderedSet(NSString *key, NSError **error)
+{
+    @autoreleasepool {
+        NSData *d = getKeychainData(key, error);
+        
+        return (d) ? [NSKeyedUnarchiver unarchiveObjectWithData:d] : nil;
+    }
+}
+
+BOOL setKeychainOrderedSet(NSOrderedSet *orderedSet, NSString *key, BOOL authenticated)
+{
+    @autoreleasepool {
+        NSData *d = (orderedSet) ? [NSKeyedArchiver archivedDataWithRootObject:orderedSet] : nil;
+        
+        return setKeychainData(d, key, authenticated);
+    }
+}
+
 // bitwise left rotation
 #define rol32(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 

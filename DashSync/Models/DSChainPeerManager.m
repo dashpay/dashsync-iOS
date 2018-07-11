@@ -410,11 +410,26 @@
 
 // MARK: - Peer Registration
 
+-(void)clearRegisteredPeers {
+    [self clearPeers];
+    setKeychainArray(@[], self.chain.registeredPeersKey, NO);
+}
+
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port {
     NSError * error = nil;
     NSMutableArray * registeredPeersArray = [getKeychainArray(self.chain.registeredPeersKey, &error) mutableCopy];
     if (!registeredPeersArray) registeredPeersArray = [NSMutableArray array];
-    [registeredPeersArray addObject:@{@"address":[NSData dataWithUInt128:IPAddress],@"port":@(port)}];
+    NSDictionary * insertDictionary = @{@"address":[NSData dataWithUInt128:IPAddress],@"port":@(port)};
+    BOOL found = FALSE;
+    for (NSDictionary * dictionary in registeredPeersArray) {
+        if ([dictionary isEqualToDictionary:insertDictionary]) {
+            found = TRUE;
+            break;
+        }
+    }
+    if (!found) {
+        [registeredPeersArray addObject:insertDictionary];
+    }
     setKeychainArray(registeredPeersArray, self.chain.registeredPeersKey, NO);
 }
 
@@ -431,6 +446,17 @@
         [registeredPeers addObject:[[DSPeer alloc] initWithAddress:ipAddress port:port onChain:self.chain timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
     }
     return [registeredPeers copy];
+}
+
+-(NSArray*)registeredDevnetPeerServices {
+    NSArray * registeredDevnetPeers = [self registeredDevnetPeers];
+    NSMutableArray * registeredDevnetPeerServicesArray = [NSMutableArray array];
+    for (DSPeer * peer in registeredDevnetPeers) {
+        if (!uint128_is_zero(peer.address)) {
+            [registeredDevnetPeerServicesArray addObject:[NSString stringWithFormat:@"%@:%hu",peer.host,peer.port]];
+        }
+    }
+    return [registeredDevnetPeerServicesArray copy];
 }
 
 // MARK: - Connectivity

@@ -25,9 +25,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.insertedIPAddresses = [NSMutableOrderedSet orderedSet];
     self.addDevnetNameTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetNameCellIdentifier"];
     self.addDevnetAddIPAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetAddIPCellIdentifier"];
+    if (!self.chain) {
+        self.insertedIPAddresses = [NSMutableOrderedSet orderedSet];
+    } else {
+        DSChainPeerManager * chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+        self.insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:chainPeerManager.registeredDevnetPeerServices];
+        self.addDevnetNameTableViewCell.identifierTextField.text = self.chain.devnetIdentifier;
+    }
+    
     // Do any additional setup after loading the view.
 }
 
@@ -114,9 +121,12 @@
 
 -(IBAction)save {
     [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
-    NSString * identifier = self.addDevnetNameTableViewCell.identifierTextField.text;
-    DSChain * chain = [[DSChainManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses withStandardPort:12999];
-    //[DSChain chain]
+    if (self.chain) {
+        [[DSChainManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses withStandardPort:12999];
+    } else {
+        NSString * identifier = self.addDevnetNameTableViewCell.identifierTextField.text;
+        [[DSChainManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses withStandardPort:12999];
+    }
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }
 

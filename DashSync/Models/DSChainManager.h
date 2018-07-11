@@ -20,7 +20,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 
 -(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
 
--(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString* _Nonnull)identifier forServiceLocations:(NSArray<NSString*>* _Nonnull)serviceLocations withStandardPort:(uint32_t)port;
+-(void)updateDevnetChain:(DSChain* _Nonnull)chain forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations withStandardPort:(uint32_t)standardPort;
+
+-(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString* _Nonnull)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations withStandardPort:(uint32_t)port;
+
+-(void)removeDevnetChain:(DSChain* _Nonnull)chain;
 
 + (instancetype _Nullable)sharedInstance;
 

@@ -124,7 +124,32 @@
     return [self.knownChains copy];
 }
 
--(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSArray<NSString*>*)serviceLocations withStandardPort:(uint32_t)standardPort {
+-(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations withStandardPort:(uint32_t)standardPort {
+    DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
+    [peerManager clearRegisteredPeers];
+    for (NSString * serviceLocation in serviceLocations) {
+        NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
+        NSString * address = serviceArray[0];
+        NSString * port = ([serviceArray count] > 1)? serviceArray[1]:nil;
+        UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+        struct in_addr addrV4;
+        struct in6_addr addrV6;
+        if (inet_aton([address UTF8String], &addrV4) != 0) {
+            uint32_t ip = ntohl(addrV4.s_addr);
+            ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+            NSLog(@"%08x", ip);
+        } else if (inet_pton(AF_INET6, [address UTF8String], &addrV6)) {
+            //todo support IPV6
+            NSLog(@"we do not yet support IPV6");
+        } else {
+            NSLog(@"invalid address");
+        }
+        
+        [peerManager registerPeerAtLocation:ipAddress port:port?[port intValue]:standardPort];
+    }
+}
+
+-(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations withStandardPort:(uint32_t)standardPort {
     NSError * error = nil;
     
     DSChain * chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withDefaultPort:standardPort];
@@ -161,6 +186,23 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
     });
     return chain;
+}
+
+-(void)removeDevnetChain:(DSChain* _Nonnull)chain {
+    NSError * error = nil;
+    DSChainPeerManager * chainPeerManager = [self peerManagerForChain:chain];
+    [chainPeerManager clearRegisteredPeers];
+    NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+    
+    if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
+    if ([[registeredDevnetsDictionary allKeys] containsObject:chain.devnetIdentifier]) {
+        [registeredDevnetsDictionary removeObjectForKey:chain.devnetIdentifier];
+        setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
+    }
+    [self.knownDevnetChains removeObject:chain];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
+    });
 }
 
 // MARK: - floating fees

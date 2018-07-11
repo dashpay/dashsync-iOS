@@ -64,6 +64,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
+@property (nonatomic, readonly) NSArray* registeredDevnetPeers;
+@property (nonatomic, readonly) NSArray* registeredDevnetPeerServices;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
@@ -81,6 +83,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 //-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
+-(void)clearRegisteredPeers;
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
 @end
