@@ -651,7 +651,7 @@ static dispatch_once_t devnetToken = 0;
             return PROTOCOL_VERSION_TESTNET;
         case DSChainType_DevNet:
             if (_protocolVersion) return _protocolVersion;
-            else return PROTOCOL_VERSION_TESTNET;
+            else return PROTOCOL_VERSION_DEVNET;
         default:
             break;
     }
@@ -665,7 +665,7 @@ static dispatch_once_t devnetToken = 0;
             return MIN_PROTOCOL_VERSION_TESTNET;
         case DSChainType_DevNet:
             if (_minProtocolVersion) return _minProtocolVersion;
-            else return MIN_PROTOCOL_VERSION_TESTNET;
+            else return PROTOCOL_VERSION_DEVNET;
         default:
             break;
     }

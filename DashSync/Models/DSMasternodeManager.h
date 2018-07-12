@@ -20,6 +20,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger masternodeBroadcastsCount;
 
+@property (nonatomic,readonly) UInt256 baseBlockHash;
+
 -(instancetype)initWithChain:(DSChain*)chain;
 
 -(void)peer:(DSPeer * _Nullable)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * _Nonnull)masternodeBroadcast;
@@ -27,6 +29,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing;
 
 -(void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
+
+-(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 -(void)requestMasternodeBroadcastsFromPeer:(DSPeer*)peer;
 

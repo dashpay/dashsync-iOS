@@ -73,7 +73,7 @@ inline static int ceil_log2(int x)
 
 @property (nonatomic, assign) UInt256 blockHash;
 @property (nonatomic, strong) DSChain * chain;
-    
+
 @end
 
 @implementation DSMerkleBlock
@@ -91,7 +91,7 @@ inline static int ceil_log2(int x)
     NSNumber * l = nil;
     NSUInteger off = 0, len = 0;
     NSMutableData *d = [NSMutableData data];
-
+    
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _prevBlock = [message hashAtOffset:off];
@@ -121,13 +121,13 @@ inline static int ceil_log2(int x)
     [d appendUInt32:_nonce];
     _blockHash = d.x11;
     self.chain = chain;
-
+    
     return self;
 }
 
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
-merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
+                       merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
 {
     if (! (self = [self init])) return nil;
     
@@ -159,20 +159,19 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot, t = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
-    NSValue *root =
-        [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-            return hash;
-        } :^id (id left, id right) {
-            UInt256 l, r;
-
-            if (! right) right = left; // if right branch is missing, duplicate left branch
-            [left getValue:&l];
-            [right getValue:&r];
-            d.length = 0;
-            [d appendBytes:&l length:sizeof(l)];
-            [d appendBytes:&r length:sizeof(r)];
-            return uint256_obj(d.SHA256_2);
-        }];
+    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+        return hash;
+    } :^id (id left, id right) {
+        UInt256 l, r;
+        
+        if (! right) right = left; // if right branch is missing, duplicate left branch
+        [left getValue:&l];
+        [right getValue:&r];
+        d.length = 0;
+        [d appendBytes:&l length:sizeof(l)];
+        [d appendBytes:&r length:sizeof(r)];
+        return uint256_obj(d.SHA256_2);
+    }];
     
     [root getValue:&merkleRoot];
     if (_totalTransactions > 0 && ! uint256_eq(merkleRoot, _merkleRoot)) return NO; // merkle root check failed
@@ -183,7 +182,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     // check if proof-of-work target is out of range
     if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
-
+    
     if (size > 3) *(uint32_t *)&t.u8[size - 3] = CFSwapInt32HostToLittle(target);
     else t.u32[0] = CFSwapInt32HostToLittle(target >> (3 - size)*8);
     
@@ -234,11 +233,11 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 {
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
-        [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-            return (flag && hash) ? @[hash] : @[];
-        } :^id (id left, id right) {
-            return [left arrayByAddingObjectsFromArray:right];
-        }];
+    [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+        return (flag && hash) ? @[hash] : @[];
+    } :^id (id left, id right) {
+        return [left arrayByAddingObjectsFromArray:right];
+    }];
     
     return txHashes;
 }

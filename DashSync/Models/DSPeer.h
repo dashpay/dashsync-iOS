@@ -77,14 +77,16 @@
 
 //Masternode
 
-#define MSG_DSEG        @"dseg"
-#define MSG_MNB         @"mnb"
-#define MSG_MNGET       @"mnget"
-#define MSG_MNP         @"mnp"
-#define MSG_MNV         @"mnv"
-#define MSG_MNW         @"mnw"
-#define MSG_MNWB        @"mnwb"
-#define MSG_SSC         @"ssc"
+#define MSG_DSEG          @"dseg"
+#define MSG_MNB           @"mnb"
+#define MSG_MNGET         @"mnget"
+#define MSG_MNP           @"mnp"
+#define MSG_MNV           @"mnv"
+#define MSG_MNW           @"mnw"
+#define MSG_MNWB          @"mnwb"
+#define MSG_SSC           @"ssc"
+#define MSG_GETMNLISTDIFF @"GETMNLISTDIFF"
+#define MSG_MNLISTDIFF @"MNLISTDIFF"
 
 //Governance
 
@@ -156,6 +158,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
 
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
+- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
@@ -230,6 +233,7 @@ services:(uint64_t)services;
 - (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray<NSData*> *)masternodeBroadcastHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
+- (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;
 - (void)sendGetaddrMessage;
 - (void)sendGovSync;
 - (void)sendGovSync:(UInt256)h;

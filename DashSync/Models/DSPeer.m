@@ -42,6 +42,7 @@
 #import "DSGovernanceVote.h"
 #import "DSChainPeerManager.h"
 #import "DSOptionsManager.h"
+#import "DSTransactionFactory.h"
 
 #define PEER_LOGGING 1
 
@@ -569,6 +570,13 @@ services:(uint64_t)services
     
     self.sentGetdataMasternode = YES;
     [self sendMessage:msg type:MSG_GETDATA];
+}
+
+-(void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    NSMutableData *msg = [NSMutableData data];
+    [msg appendUInt256:previousBlockHash];
+    [msg appendUInt256:blockHash];
+    [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes
@@ -1384,6 +1392,10 @@ services:(uint64_t)services
     }
 }
 
+-(void)acceptMNLISTDIFFMessage:(NSData*)message
+{
+    [self.delegate peer:self relayedMasternodeDiffMessage:message];
+}
 
 
 // MARK: - accept Governance
