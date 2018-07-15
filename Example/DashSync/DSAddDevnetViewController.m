@@ -104,6 +104,15 @@
     }
 }
 
+-(BOOL)textFieldShouldReturn:(UITextField *)textField {
+    if ([self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text isEqualToString:@""]) {
+        [self.insertedIPAddresses removeObjectAtIndex:[self.tableView indexPathForCell:self.activeAddDevnetIPAddressTableViewCell].row];
+    }
+    [self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField resignFirstResponder];
+    [self.tableView reloadData];
+    return NO;
+}
+
 -(void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason {
     if (![self.insertedIPAddresses containsObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text]) {
         [self.insertedIPAddresses addObject:self.activeAddDevnetIPAddressTableViewCell.IPAddressTextField.text];
