@@ -15,13 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUITableViewCell.h>
 
 #import "SelectorFormCellModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SelectorFormTableViewCell : UITableViewCell
+@interface SelectorFormTableViewCell : KVOUITableViewCell
 
 @property (nullable, strong, nonatomic) SelectorFormCellModel *cellModel;
 

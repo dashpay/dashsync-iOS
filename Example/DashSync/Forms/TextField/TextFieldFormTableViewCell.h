@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <KVO-MVVM/KVOUITableViewCell.h>
 
 #import "TextFieldFormCellModel.h"
 
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface TextFieldFormTableViewCell : UITableViewCell
+@interface TextFieldFormTableViewCell : KVOUITableViewCell
 
 @property (nullable, strong, nonatomic) TextFieldFormCellModel *cellModel;
 @property (nullable, weak, nonatomic) id<TextFieldFormTableViewCellDelegate> delegate;

@@ -28,11 +28,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation SelectorFormTableViewCell
 
-- (void)setCellModel:(nullable SelectorFormCellModel *)cellModel {
-    _cellModel = cellModel;
+- (void)awakeFromNib {
+    [super awakeFromNib];
     
-    self.titleLabel.text = cellModel.title;
-    self.detailLabel.text = cellModel.selectedValue.name;
+    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
+        self.titleLabel.text = value;
+    }];
+    
+    [self mvvm_observe:@"cellModel.selectedValue" with:^(typeof(self) self, id<NamedObject> value) {
+        self.detailLabel.text = value.name;
+    }];
 }
 
 @end

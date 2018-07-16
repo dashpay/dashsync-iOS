@@ -11,8 +11,8 @@
 #import "DSOptionsManager.h"
 
 #import "FormTableViewController.h"
-#import "SwitcherFormCellModel.h"
 #import "NumberTextFieldFormCellModel.h"
+#import "SwitcherFormCellModel.h"
 
 @interface DSSettingsViewController ()
 
@@ -22,9 +22,9 @@
 
 - (NSArray<BaseFormCellModel *> *)generalItems {
     NSMutableArray<BaseFormCellModel *> *items = [NSMutableArray array];
-    
+
     DSOptionsManager *options = [DSOptionsManager sharedInstance];
-    
+
     {
         SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Keep Headers"];
         cellModel.on = options.keepHeaders;
@@ -34,24 +34,30 @@
         [items addObject:cellModel];
     }
 
-    {
-        SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Sync from Genesis"];
-        cellModel.on = options.syncFromGenesis;
-        cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
-            options.syncFromGenesis = cellModel.on;
-        };
-        [items addObject:cellModel];
-    }
+    SwitcherFormCellModel *genesisOptionCellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Sync from Genesis"];
     
-    {
-        NumberTextFieldFormCellModel *cellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Sync from Height"
-                                                                                          placeholder:@"Sync Height"];
-        cellModel.text = [NSString stringWithFormat:@"%u", options.syncFromHeight];
-        cellModel.didChangeValueBlock = ^(TextFieldFormCellModel * _Nonnull cellModel) {
-            options.syncFromHeight = (uint32_t)cellModel.text.longLongValue;
-        };
-        [items addObject:cellModel];
-    }
+    NumberTextFieldFormCellModel *syncHeightCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Sync from Height"
+                                                                                                placeholder:@"Sync Height"];
+    __weak SwitcherFormCellModel *weakGenesisOptionCellModel = genesisOptionCellModel;
+    __weak NumberTextFieldFormCellModel *weakSyncHeightCellModel = syncHeightCellModel;
+    
+    genesisOptionCellModel.on = options.syncFromGenesis;
+    genesisOptionCellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
+        options.syncFromGenesis = cellModel.on;
+        
+        __strong NumberTextFieldFormCellModel *strongSyncHeightCellModel = weakSyncHeightCellModel;
+        strongSyncHeightCellModel.text = [NSString stringWithFormat:@"%u", options.syncFromHeight];
+    };
+    [items addObject:genesisOptionCellModel];
+
+    syncHeightCellModel.text = [NSString stringWithFormat:@"%u", options.syncFromHeight];
+    syncHeightCellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
+        options.syncFromHeight = (uint32_t)cellModel.text.longLongValue;
+        
+        __strong SwitcherFormCellModel *strongGenesisOptionCellModel = weakGenesisOptionCellModel;
+        strongGenesisOptionCellModel.on = options.syncFromGenesis;
+    };
+    [items addObject:syncHeightCellModel];
 
     return items;
 }
@@ -70,8 +76,8 @@
         @(DSSyncType_GovernanceVotes) : @"Governance Votes",
         @(DSSyncType_Sporks) : @"Sporks",
     };
-    
-    NSArray <NSNumber *>* sortedKeys = [syncTypes.allKeys sortedArrayUsingSelector:@selector(compare:)];
+
+    NSArray<NSNumber *> *sortedKeys = [syncTypes.allKeys sortedArrayUsingSelector:@selector(compare:)];
     for (NSNumber *key in sortedKeys) {
         DSSyncType syncType = key.unsignedIntegerValue;
         NSString *title = syncTypes[key];
@@ -87,7 +93,7 @@
         };
         [items addObject:cellModel];
     }
-    
+
     return items;
 }
 

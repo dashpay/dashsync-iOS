@@ -28,11 +28,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation SwitcherFormTableViewCell
 
-- (void)setCellModel:(nullable SwitcherFormCellModel *)cellModel {
-    _cellModel = cellModel;
+- (void)awakeFromNib {
+    [super awakeFromNib];
     
-    self.titleLabel.text = cellModel.title;
-    [self.switcher setOn:cellModel.on animated:NO];
+    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
+        self.titleLabel.text = value;
+    }];
+    
+    [self mvvm_observe:@"cellModel.on" with:^(typeof(self) self, NSNumber * value) {
+        [self.switcher setOn:value.boolValue animated:NO];
+    }];
 }
 
 - (IBAction)switcherAction:(UISwitch *)sender {

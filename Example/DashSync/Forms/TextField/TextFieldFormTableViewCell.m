@@ -28,14 +28,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation TextFieldFormTableViewCell
 
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    
+    [self mvvm_observe:@"cellModel.title" with:^(typeof(self) self, NSString * value) {
+        self.titleLabel.text = value;
+    }];
+    
+    [self mvvm_observe:@"cellModel.placeholder" with:^(typeof(self) self, NSString * value) {
+        NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor colorWithWhite:1.0 alpha:0.5]};
+        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:value ?: @"" attributes:attributes];
+    }];
+    
+    [self mvvm_observe:@"cellModel.text" with:^(typeof(self) self, NSString * value) {
+        self.textField.text = value;
+    }];
+}
+
 - (void)setCellModel:(nullable TextFieldFormCellModel *)cellModel {
     _cellModel = cellModel;
 
-    self.titleLabel.text = cellModel.title;
-    NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor colorWithWhite:0.0 alpha:0.5]};
-    self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:cellModel.placeholder ?: @""
-                                                                           attributes:attributes];
-    self.textField.text = cellModel.text;
     self.textField.autocapitalizationType = cellModel.autocapitalizationType;
     self.textField.autocorrectionType = cellModel.autocorrectionType;
     self.textField.keyboardType = cellModel.keyboardType;
@@ -61,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.cellModel.didChangeValueBlock(self.cellModel);
     }
 
-    return YES;
+    return NO;
 }
 
 - (BOOL)textFieldShouldClear:(UITextField *)textField {
@@ -70,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.cellModel.didChangeValueBlock(self.cellModel);
     }
 
-    return YES;
+    return NO;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {

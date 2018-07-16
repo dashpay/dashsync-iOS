@@ -14,16 +14,19 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
+//  Based on https://github.com/gangverk/GVUserDefaults
+//
 
-#import <KVO-MVVM/KVOUITableViewCell.h>
-
-#import "SwitcherFormCellModel.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SwitcherFormTableViewCell : KVOUITableViewCell
+@interface DSDynamicOptions : NSObject
 
-@property (nullable, strong, nonatomic) SwitcherFormCellModel *cellModel;
+- (instancetype)initWithDefaults:(NSDictionary<NSString *, id> *_Nullable)defaults NS_DESIGNATED_INITIALIZER;
+
+- (NSUserDefaults *)userDefaults;
+- (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName;
 
 @end
 
