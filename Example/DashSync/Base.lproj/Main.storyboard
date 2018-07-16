@@ -246,7 +246,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="Ccs-ne-y6s" kind="show" id="ILw-sg-WGU"/>
+                                            <segue destination="Ccs-ne-y6s" kind="show" identifier="TransactionsViewSegue" id="ILw-sg-WGU"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="3D6-5D-Cxh">
@@ -3024,6 +3024,13 @@
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
+                                    <outlet property="confirmationsLabel" destination="40g-d0-9o2" id="Sfe-UO-xil"/>
+                                    <outlet property="dateLabel" destination="aWr-tO-Its" id="wI7-F8-2ZJ"/>
+                                    <outlet property="directionLabel" destination="qcv-kE-U4c" id="VYb-TL-n5R"/>
+                                    <outlet property="fiatAmountLabel" destination="vlG-CP-RMf" id="R12-UV-HO5"/>
+                                    <outlet property="remainingAmountLabel" destination="VSE-Hj-gcf" id="HT8-qZ-5dW"/>
+                                    <outlet property="remainingFiatAmountLabel" destination="fnu-xg-utv" id="ar4-s9-NwB"/>
+                                    <outlet property="shapeshiftImageView" destination="q0F-Do-CCw" id="Bnq-zk-kGW"/>
                                     <segue destination="oNh-Wf-IN2" kind="show" identifier="TransactionDetailSegue" id="O8t-tW-hJx"/>
                                 </connections>
                             </tableViewCell>

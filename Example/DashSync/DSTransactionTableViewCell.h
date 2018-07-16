@@ -13,5 +13,10 @@
 @property (strong, nonatomic) IBOutlet UILabel *directionLabel;
 @property (strong, nonatomic) IBOutlet UILabel *amountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *dateLabel;
+@property (strong, nonatomic) IBOutlet UILabel *confirmationsLabel;
+@property (strong, nonatomic) IBOutlet UILabel *fiatAmountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *remainingAmountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *remainingFiatAmountLabel;
+@property (strong, nonatomic) IBOutlet UIImageView *shapeshiftImageView;
 
 @end

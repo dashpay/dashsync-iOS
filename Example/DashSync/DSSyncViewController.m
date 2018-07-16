@@ -15,6 +15,7 @@
 #import "DSMasternodeViewController.h"
 #import "DSStandaloneDerivationPathController.h"
 #import "DSGovernanceObjectListViewController.h"
+#import "DSTransactionsViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -422,6 +423,9 @@
     } else if ([segue.identifier isEqualToString:@"GovernanceObjectsSegue"]) {
         DSGovernanceObjectListViewController * governanceObjectViewController = (DSGovernanceObjectListViewController*)segue.destinationViewController;
         governanceObjectViewController.chainPeerManager = self.chainPeerManager;
+    } else if ([segue.identifier isEqualToString:@"TransactionsViewSegue"]) {
+        DSTransactionsViewController * transactionsViewController = (DSTransactionsViewController*)segue.destinationViewController;
+        transactionsViewController.chainPeerManager = self.chainPeerManager;
     }
 }
 

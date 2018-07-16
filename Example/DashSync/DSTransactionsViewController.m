@@ -8,6 +8,7 @@
 
 #import "DSTransactionsViewController.h"
 #import "DSTransactionDetailViewController.h"
+#import "DSTransactionTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import <WebKit/WebKit.h>
 
@@ -57,29 +58,6 @@ static NSString *dateFormat(NSString *template)
     [super viewWillAppear:animated];
     
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    
-#if SNAPSHOT
-    
-    DSWalletManager *priceManager = [DSWalletManager sharedInstance];
-    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:@[uint256_obj(UINT256_ZERO)] inputIndexes:@[@(0)]
-                                                      inputScripts:@[[NSData data]] outputAddresses:@[@""] outputAmounts:@[@(0)]];
-    
-    priceManager.localCurrencyCode = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
-    self.tableView.showsVerticalScrollIndicator = NO;
-    self.moreTx = YES;
-    authenticationManager.didAuthenticate = YES;
-    [self unlock:nil];
-    tx.txHash = UINT256_ZERO;
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        self.transactions = @[tx, tx, tx, tx, tx, tx];
-        [self.tableView reloadData];
-        self.navigationItem.title = [NSString stringWithFormat:@"%@ (%@)", [manager stringForDashAmount:42980000],
-                                     [manager localCurrencyStringForDashAmount:42980000]];
-    });
-    
-    return;
-#endif
     
     if (! authenticationManager.didAuthenticate) {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -414,19 +392,15 @@ static NSString *dateFormat(NSString *template)
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 2;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    bool buyEnabled = FALSE;
     switch (section) {
         case 0:
             if (self.transactions.count == 0) return 1;
             return (self.moreTx) ? self.transactions.count + 1 : self.transactions.count;
-            
-        case 1:
-            return (buyEnabled ? 3 : 2);
     }
     
     return 0;
@@ -434,33 +408,21 @@ static NSString *dateFormat(NSString *template)
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *noTxIdent = @"NoTxCell", *transactionIdent = @"TransactionCell", *actionIdent = @"ActionCell",
-    *disclosureIdent = @"DisclosureCell";
-    UITableViewCell *cell = nil;
-    UILabel *textLabel, *unconfirmedLabel, *sentLabel, *localCurrencyLabel, *balanceLabel, *localBalanceLabel,
-    *detailTextLabel;
+    static NSString *noTxIdent = @"NoTxCellIdentifier", *transactionIdent = @"TransactionCellIdentifier", *actionIdent = @"ActionCellIdentifier";
     UIImageView * shapeshiftImageView;
     DSWalletManager *priceManager = [DSWalletManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    
+    UITableViewCell * rCell = nil;
     switch (indexPath.section) {
         case 0:
             if (self.moreTx && indexPath.row >= self.transactions.count) {
-                cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-                cell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
+                rCell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
+                rCell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
                 NSLocalizedString(@"transaction history", nil);
-                cell.imageView.image = nil;
+                rCell.imageView.image = nil;
             }
             else if (self.transactions.count > 0) {
-                cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
-                textLabel = (id)[cell viewWithTag:1];
-                detailTextLabel = (id)[cell viewWithTag:2];
-                unconfirmedLabel = (id)[cell viewWithTag:3];
-                localCurrencyLabel = (id)[cell viewWithTag:5];
-                sentLabel = (id)[cell viewWithTag:6];
-                balanceLabel = (id)[cell viewWithTag:7];
-                localBalanceLabel = (id)[cell viewWithTag:8];
-                shapeshiftImageView = (id)[cell viewWithTag:9];
+                DSTransactionTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
                 
                 DSTransaction *tx = self.transactions[indexPath.row];
                 DSAccount * account = [self.chainPeerManager.chain accountContainingTransaction:tx];
@@ -470,116 +432,83 @@ static NSString *dateFormat(NSString *template)
                 uint32_t blockHeight = self.blockHeight;
                 uint32_t confirms = (tx.blockHeight > blockHeight) ? 0 : (blockHeight - tx.blockHeight) + 1;
                 
-#if SNAPSHOT
-                received = [@[@(0), @(0), @(54000000), @(0), @(0), @(93000000)][indexPath.row] longLongValue];
-                sent = [@[@(1010000), @(10010000), @(0), @(82990000), @(10010000), @(0)][indexPath.row] longLongValue];
-                balance = [@[@(42980000), @(43990000), @(54000000), @(0), @(82990000), @(93000000)][indexPath.row]
-                           longLongValue];
-                [self.txDates removeAllObjects];
-                tx.timestamp = [NSDate timeIntervalSinceReferenceDate] - indexPath.row*100000;
-                confirms = 6;
-#endif
-                
-                textLabel.textColor = [UIColor darkTextColor];
-                sentLabel.hidden = YES;
-                unconfirmedLabel.hidden = NO;
-                unconfirmedLabel.backgroundColor = [UIColor lightGrayColor];
-                detailTextLabel.text = [self dateForTx:tx];
-                balanceLabel.attributedText = (authenticationManager.didAuthenticate) ? [priceManager attributedStringForDashAmount:balance withTintColor:balanceLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
-                localBalanceLabel.text = (authenticationManager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [priceManager localCurrencyStringForDashAmount:balance]] : nil;
+                cell.amountLabel.textColor = [UIColor darkTextColor];
+                cell.directionLabel.hidden = YES;
+                cell.confirmationsLabel.hidden = NO;
+                cell.confirmationsLabel.backgroundColor = [UIColor lightGrayColor];
+                cell.dateLabel.text = [self dateForTx:tx];
+                cell.remainingAmountLabel.attributedText = (authenticationManager.didAuthenticate) ? [priceManager attributedStringForDashAmount:balance withTintColor:cell.remainingAmountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)] : nil;
+                cell.remainingFiatAmountLabel.text = (authenticationManager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [priceManager localCurrencyStringForDashAmount:balance]] : nil;
                 shapeshiftImageView.hidden = !tx.associatedShapeshift;
                 
                 if (confirms == 0 && ! [account transactionIsValid:tx]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"INVALID", nil);
-                    unconfirmedLabel.backgroundColor = [UIColor redColor];
-                    balanceLabel.text = localBalanceLabel.text = nil;
+                    cell.confirmationsLabel.text = NSLocalizedString(@"INVALID", nil);
+                    cell.confirmationsLabel.backgroundColor = [UIColor redColor];
+                    cell.remainingAmountLabel.text = cell.remainingFiatAmountLabel.text = nil;
                 }
                 else if (confirms == 0 && [account transactionIsPending:tx]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"pending", nil);
-                    unconfirmedLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
-                    textLabel.textColor = [UIColor grayColor];
-                    balanceLabel.text = localBalanceLabel.text = nil;
+                    cell.confirmationsLabel.text = NSLocalizedString(@"pending", nil);
+                    cell.confirmationsLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
+                    cell.amountLabel.textColor = [UIColor grayColor];
+                    cell.remainingAmountLabel.text = cell.remainingFiatAmountLabel.text = nil;
                 }
                 else if (confirms == 0 && ! [account transactionIsVerified:tx]) {
-                    unconfirmedLabel.text = NSLocalizedString(@"unverified", nil);
+                    cell.confirmationsLabel.text = NSLocalizedString(@"unverified", nil);
                 }
                 else if (confirms < 6) {
-                    if (confirms == 0) unconfirmedLabel.text = NSLocalizedString(@"0 confirmations", nil);
-                    else if (confirms == 1) unconfirmedLabel.text = NSLocalizedString(@"1 confirmation", nil);
-                    else unconfirmedLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
+                    if (confirms == 0) cell.confirmationsLabel.text = NSLocalizedString(@"0 confirmations", nil);
+                    else if (confirms == 1) cell.confirmationsLabel.text = NSLocalizedString(@"1 confirmation", nil);
+                    else cell.confirmationsLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
                                                   (int)confirms];
                 }
                 else {
-                    unconfirmedLabel.text = nil;
-                    unconfirmedLabel.hidden = YES;
-                    sentLabel.hidden = NO;
+                    cell.confirmationsLabel.text = nil;
+                    cell.confirmationsLabel.hidden = YES;
+                    cell.directionLabel.hidden = NO;
                 }
                 
                 if (sent > 0 && received == sent) {
-                    textLabel.attributedText = [priceManager attributedStringForDashAmount:sent];
-                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                    cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:sent];
+                    cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [priceManager localCurrencyStringForDashAmount:sent]];
-                    sentLabel.text = NSLocalizedString(@"moved", nil);
-                    sentLabel.textColor = [UIColor blackColor];
+                    cell.directionLabel.text = NSLocalizedString(@"moved", nil);
+                    cell.directionLabel.textColor = [UIColor blackColor];
                 }
                 else if (sent > 0) {
-                    textLabel.attributedText = [priceManager attributedStringForDashAmount:received - sent];
-                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                    cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received - sent];
+                    cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [priceManager localCurrencyStringForDashAmount:received - sent]];
-                    sentLabel.text = NSLocalizedString(@"sent", nil);
-                    sentLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
+                    cell.directionLabel.text = NSLocalizedString(@"sent", nil);
+                    cell.directionLabel.textColor = [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0];
                 }
                 else {
-                    textLabel.attributedText = [priceManager attributedStringForDashAmount:received];
-                    localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                    cell.amountLabel.attributedText = [priceManager attributedStringForDashAmount:received];
+                    cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                [priceManager localCurrencyStringForDashAmount:received]];
-                    sentLabel.text = NSLocalizedString(@"received", nil);
-                    sentLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+                    cell.directionLabel.text = NSLocalizedString(@"received", nil);
+                    cell.directionLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 }
                 
-                if (! unconfirmedLabel.hidden) {
-                    unconfirmedLabel.layer.cornerRadius = 3.0;
-                    unconfirmedLabel.text = [unconfirmedLabel.text stringByAppendingString:@"  "];
+                if (! cell.confirmationsLabel.hidden) {
+                    cell.confirmationsLabel.layer.cornerRadius = 3.0;
+                    cell.confirmationsLabel.text = [cell.confirmationsLabel.text stringByAppendingString:@"  "];
                 }
                 else {
-                    sentLabel.layer.cornerRadius = 3.0;
-                    sentLabel.layer.borderWidth = 0.5;
-                    sentLabel.text = [sentLabel.text stringByAppendingString:@"  "];
-                    sentLabel.layer.borderColor = sentLabel.textColor.CGColor;
-                    sentLabel.highlightedTextColor = sentLabel.textColor;
+                    cell.directionLabel.layer.cornerRadius = 3.0;
+                    cell.directionLabel.layer.borderWidth = 0.5;
+                    cell.directionLabel.text = [cell.directionLabel.text stringByAppendingString:@"  "];
+                    cell.directionLabel.layer.borderColor = cell.directionLabel.textColor.CGColor;
+                    cell.directionLabel.highlightedTextColor = cell.directionLabel.textColor;
                 }
+                rCell = cell;
             }
-            else cell = [tableView dequeueReusableCellWithIdentifier:noTxIdent];
-            
-            break;
-            
-        case 1:
-            cell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-            bool buyEnabled = FALSE;
-            long adjustedRow = !buyEnabled ? indexPath.row + 1 : indexPath.row;
-            switch (adjustedRow) {
-                case 0:
-                    cell.textLabel.text = NSLocalizedString(@"Buy Dash", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"dash-buy-blue-small"];
-                    break;
-                    
-                case 1:
-                    cell.textLabel.text = NSLocalizedString(@"import private key", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"cameraguide-blue-small"];
-                    break;
-                    
-                case 2:
-                    cell = [tableView dequeueReusableCellWithIdentifier:disclosureIdent];
-                    cell.textLabel.text = NSLocalizedString(@"settings", nil);
-                    cell.imageView.image = [UIImage imageNamed:@"settings"];
-                    break;
-            }
+            else rCell = [tableView dequeueReusableCellWithIdentifier:noTxIdent];
             
             break;
     }
     
-    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
-    return cell;
+    [self setBackgroundForCell:rCell tableView:tableView indexPath:indexPath];
+    return rCell;
 }
 
 // MARK: - UITableViewDelegate
@@ -588,7 +517,6 @@ static NSString *dateFormat(NSString *template)
 {
     switch (indexPath.section) {
         case 0: return (self.moreTx && indexPath.row >= self.transactions.count) ? 44.0 : TRANSACTION_CELL_HEIGHT;
-        case 1: return 44.0;
     }
     
     return 44.0;
