@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DSSettingsViewController : UITableViewController
+@interface DSSettingsViewController : UIViewController
 
 @end
