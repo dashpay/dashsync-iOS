@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DSAddDevnetNameTableViewCell : UITableViewCell
-@property (strong, nonatomic) IBOutlet UITextField *identifierTextField;
+@interface DSKeyValueTableViewCell : UITableViewCell
+@property (strong, nonatomic) IBOutlet UITextField *valueTextField;
 
 @end

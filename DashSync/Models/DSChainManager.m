@@ -12,6 +12,7 @@
 #import "DSWalletManager.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
+#import "NSString+Dash.h"
 #include <arpa/inet.h>
 
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
@@ -124,9 +125,21 @@
     return [self.knownChains copy];
 }
 
--(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations withStandardPort:(uint32_t)standardPort {
+-(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
     DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
     [peerManager clearRegisteredPeers];
+    if (protocolVersion) {
+        chain.protocolVersion = protocolVersion;
+    }
+    if (minProtocolVersion) {
+        chain.minProtocolVersion = minProtocolVersion;
+    }
+    if (sporkAddress && [sporkAddress isValidDashDevnetAddress]) {
+        chain.sporkAddress = sporkAddress;
+    }
+    if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
+        chain.sporkPrivateKey = sporkPrivateKey;
+    }
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];
@@ -149,10 +162,22 @@
     }
 }
 
--(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations withStandardPort:(uint32_t)standardPort {
+-(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
     NSError * error = nil;
     
     DSChain * chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withDefaultPort:standardPort];
+    if (protocolVersion) {
+        chain.protocolVersion = protocolVersion;
+    }
+    if (minProtocolVersion) {
+        chain.minProtocolVersion = minProtocolVersion;
+    }
+    if (sporkAddress && [sporkAddress isValidDashDevnetAddress]) {
+        chain.sporkAddress = sporkAddress;
+    }
+    if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
+        chain.sporkPrivateKey = sporkPrivateKey;
+    }
     DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];

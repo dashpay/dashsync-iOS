@@ -58,6 +58,14 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define MAX_PROOF_OF_WORK_TESTNET 0x1e0fffffu
 #define MAX_PROOF_OF_WORK_DEVNET 0x207fffffu
 
+#define SPORK_PUBLIC_KEY_MAINNET @"04549ac134f694c0243f503e8c8a9a986f5de6610049c40b07816809b0d1d06a21b07be27b9bb555931773f62ba6cf35a25fd52f694d4e1106ccd237a7bb899fdd"
+
+#define SPORK_PUBLIC_KEY_TESTNET @"046f78dcf911fbd61910136f7f0f8d90578f68d0b3ac973b5040fb7afb501b5939f39b108b0569dca71488f5bbf498d92e4d1194f6f941307ffd95f75e76869f0e"
+
+
+#define SPORK_ADDRESS_MAINNET @"Xgtyuk76vhuFW2iT7UAiHgNdWXCf3J34wh"
+#define SPORK_ADDRESS_TESTNET @"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
+
 
 #define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
 #define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
@@ -118,9 +126,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNo
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
 @property (nonatomic, readonly) NSString * registeredPeersKey;
 @property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
-@property (nonatomic, readonly) uint32_t protocolVersion;
-@property (nonatomic, readonly) uint32_t minProtocolVersion;
+@property (nonatomic, assign) uint32_t minProtocolVersion;
+@property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, readonly) uint32_t maxProofOfWork;
+@property (nonatomic, strong) NSString * sporkPublicKey;
+@property (nonatomic, strong) NSString * sporkPrivateKey;
+@property (nonatomic, strong) NSString * sporkAddress;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 

@@ -137,6 +137,18 @@
     }
 }
 
+- (BOOL)isValidDashDevnetAddress {
+    if (self.length > 35) return NO;
+    
+    NSData *d = self.base58checkToData;
+    
+    if (d.length != 21) return NO;
+    
+    uint8_t version = *(const uint8_t *)d.bytes;
+
+    return (version == DASH_PUBKEY_ADDRESS_TEST || version == DASH_SCRIPT_ADDRESS_TEST) ? YES : NO;
+}
+
 - (BOOL)isValidDashPrivateKeyOnChain:(DSChain *)chain
 {
     if (![self isValidBase58]) return FALSE;
@@ -148,6 +160,16 @@
         } else {
             return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST) ? YES : NO;
         }
+    }
+    else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
+}
+
+- (BOOL)isValidDashDevnetPrivateKey {
+    if (![self isValidBase58]) return FALSE;
+    NSData *d = self.base58checkToData;
+    
+    if (d.length == 33 || d.length == 34) { // wallet import format: https://en.bitcoin.it/wiki/Wallet_import_format
+        return (*(const uint8_t *)d.bytes == DASH_PRIVKEY_TEST) ? YES : NO;
     }
     else return (self.hexToData.length == 32) ? YES : NO; // hex encoded key
 }
