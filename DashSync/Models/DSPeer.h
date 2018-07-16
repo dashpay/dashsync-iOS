@@ -85,8 +85,8 @@
 #define MSG_MNW           @"mnw"
 #define MSG_MNWB          @"mnwb"
 #define MSG_SSC           @"ssc"
-#define MSG_GETMNLISTDIFF @"GETMNLISTDIFF"
-#define MSG_MNLISTDIFF @"MNLISTDIFF"
+#define MSG_GETMNLISTDIFF @"getmnlistd"
+#define MSG_MNLISTDIFF    @"mnlistdiff"
 
 //Governance
 

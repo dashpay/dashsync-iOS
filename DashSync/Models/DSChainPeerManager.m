@@ -957,7 +957,7 @@
     //Do we want to sync masternode list?
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) return; // make sure we care about masternode list
     
-    if (self.chain.protocolVersion > 70200) { //change to 70210 later
+    if (self.chain.protocolVersion > 70210) { //change to 70210 later
         [self.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.masternodeManager.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
     } else {
         //Do we need to sync the hashes? (or do we already have them?)

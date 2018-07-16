@@ -576,6 +576,7 @@ services:(uint64_t)services
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:previousBlockHash];
     [msg appendUInt256:blockHash];
+    NSLog(@"%@",msg);
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
@@ -766,6 +767,7 @@ services:(uint64_t)services
     //masternode
     else if ([MSG_SSC isEqual:type]) [self acceptSSCMessage:message];
     else if ([MSG_MNB isEqual:type]) [self acceptMNBMessage:message];
+    else if ([MSG_MNLISTDIFF isEqual:type]) [self acceptMNLISTDIFFMessage:message];
     //governance
     else if ([MSG_GOVOBJVOTE isEqual:type]) [self acceptGovObjectVoteMessage:message];
     else if ([MSG_GOVOBJ isEqual:type]) [self acceptGovObjectMessage:message];
