@@ -7,6 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DSDynamicOptions.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSUInteger, DSSyncType) {
     DSSyncType_None = 0,
     DSSyncType_BaseSPV = 1,
@@ -24,7 +28,7 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
     DSSyncType_GetsNewBlocks = DSSyncType_SPV | DSSyncType_FullBlocks,
 };
 
-@interface DSOptionsManager : NSObject
+@interface DSOptionsManager : DSDynamicOptions
 
 @property (nonatomic,assign) BOOL keepHeaders;
 @property (nonatomic,assign) BOOL syncFromGenesis;
@@ -34,9 +38,11 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 @property (nonatomic,assign) NSTimeInterval syncMasternodeListInterval;
 @property (nonatomic,assign) DSSyncType syncType;
 
-+ (instancetype _Nullable)sharedInstance;
++ (instancetype)sharedInstance;
 
--(void)addSyncType:(DSSyncType)syncType;
--(void)clearSyncType:(DSSyncType)syncType;
+- (void)addSyncType:(DSSyncType)syncType;
+- (void)clearSyncType:(DSSyncType)syncType;
 
 @end
+
+NS_ASSUME_NONNULL_END
