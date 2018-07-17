@@ -50,6 +50,8 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (void)appendUInt16:(uint16_t)i;
 - (void)appendUInt32:(uint32_t)i;
 - (void)appendUInt64:(uint64_t)i;
+- (void)appendUInt128:(UInt128)i;
+- (void)appendUInt160:(UInt160)i;
 - (void)appendUInt256:(UInt256)i;
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;

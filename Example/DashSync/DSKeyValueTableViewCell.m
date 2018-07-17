@@ -6,9 +6,9 @@
 //  Copyright © 2018 Andrew Podkovyrin. All rights reserved.
 //
 
-#import "DSAddDevnetNameTableViewCell.h"
+#import "DSKeyValueTableViewCell.h"
 
-@implementation DSAddDevnetNameTableViewCell
+@implementation DSKeyValueTableViewCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];

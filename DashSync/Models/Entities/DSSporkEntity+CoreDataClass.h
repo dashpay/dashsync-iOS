@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSSpork,DSChainEntity;
+@class DSSpork,DSChainEntity,DSSporkHashEntity;
 
 @interface DSSporkEntity : NSManagedObject
 

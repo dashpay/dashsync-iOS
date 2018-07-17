@@ -13,14 +13,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSKey.h"
 #import "DSChain.h"
-
-#define SPORK_PUBLIC_KEY_MAINNET @"04549ac134f694c0243f503e8c8a9a986f5de6610049c40b07816809b0d1d06a21b07be27b9bb555931773f62ba6cf35a25fd52f694d4e1106ccd237a7bb899fdd"
-
-#define SPORK_PUBLIC_KEY_TESTNET @"046f78dcf911fbd61910136f7f0f8d90578f68d0b3ac973b5040fb7afb501b5939f39b108b0569dca71488f5bbf498d92e4d1194f6f941307ffd95f75e76869f0e"
-
-
-#define SPORK_ADDRESS_MAINNET @"Xgtyuk76vhuFW2iT7UAiHgNdWXCf3J34wh"
-#define SPORK_ADDRESS_TESTNET @"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
+#import "DSSporkManager.h"
+#import "DSChainPeerManager.h"
 
 @interface DSSpork()
 
@@ -59,7 +53,6 @@
     _timeSigned = [message UInt64AtOffset:12];
     NSNumber * lNumber = nil;
     NSData * signature = [message dataAtOffset:20 length:&lNumber];
-//    NSUInteger l = lNumber.unsignedIntegerValue;
     _valid = [self checkSignature:signature];
     self.signature = signature;
     return self;
@@ -88,6 +81,7 @@
     UInt256 messageDigest = stringMessageData.SHA256_2;
     DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
     DSKey * sporkPublicKey = [DSKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
+    
     return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
 }
     
@@ -98,25 +92,23 @@
     } else {
         DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:self.sporkHash];
         NSString * sporkAddress = [messagePublicKey addressForChain:self.chain];
-        return [[self sporkAddress] isEqualToString:sporkAddress] | [self checkSignature70208Method:signature];
+        DSSporkManager * sporkManager = self.chain.peerManagerDelegate.sporkManager;
+        return [[self sporkAddress] isEqualToString:sporkAddress] || (![sporkManager sporksUpdatedSignatures] && [self checkSignature70208Method:signature]);
     }
 }
 
 -(NSString*)sporkKey {
-    if ([self.chain isMainnet]) {
-        return SPORK_PUBLIC_KEY_MAINNET;
-    } else {
-        return SPORK_PUBLIC_KEY_TESTNET;
+    if (self.chain.sporkPublicKey) return self.chain.sporkPublicKey;
+    if (self.chain.sporkPrivateKey) {
+        DSKey * sporkPrivateKey = [DSKey keyWithPrivateKey:self.chain.sporkPrivateKey onChain:self.chain];
+        return sporkPrivateKey.publicKey.hexString;
     }
+    return nil;
 }
 
 //starting in 12.3 sporks use addresses instead of public keys
 -(NSString*)sporkAddress {
-    if ([self.chain isMainnet]) {
-        return SPORK_ADDRESS_MAINNET;
-    } else {
-        return SPORK_ADDRESS_TESTNET;
-    }
+    return self.chain.sporkAddress;
 }
 
 -(NSString*) identifierString {

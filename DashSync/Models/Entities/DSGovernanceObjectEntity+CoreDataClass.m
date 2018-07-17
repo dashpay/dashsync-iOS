@@ -27,7 +27,7 @@
         if (hashEntity) {
             self.governanceObjectHash = hashEntity;
         } else {
-            self.governanceObjectHash = [DSGovernanceObjectHashEntity governanceObjectHashEntitiesWithHash:[NSData dataWithUInt256:governanceObject.governanceObjectHash] onChain:governanceObject.chain.chainEntity];
+            self.governanceObjectHash = [DSGovernanceObjectHashEntity governanceObjectHashEntityWithHash:[NSData dataWithUInt256:governanceObject.governanceObjectHash] onChain:governanceObject.chain.chainEntity];
         }
         self.identifier = governanceObject.identifier;
         self.amount = governanceObject.amount;

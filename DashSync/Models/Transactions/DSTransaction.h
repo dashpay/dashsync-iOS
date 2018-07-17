@@ -60,8 +60,10 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) BOOL isInstant;
 
 @property (nonatomic, assign) UInt256 txHash;
-@property (nonatomic, assign) uint32_t version;
+@property (nonatomic, assign) uint16_t version;
+@property (nonatomic, assign) uint16_t type;
 @property (nonatomic, assign) uint32_t lockTime;
+@property (nonatomic, readonly) uint32_t payloadOffset;
 @property (nonatomic, assign) uint32_t blockHeight;
 @property (nonatomic, assign) NSTimeInterval timestamp; // time interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) size_t size; // size in bytes if signed, or estimated size assuming compact pubkey sigs
@@ -74,6 +76,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSData * coinbaseData;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSAccount * account;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain;

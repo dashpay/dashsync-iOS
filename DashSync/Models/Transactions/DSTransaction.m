@@ -103,14 +103,15 @@
  
     NSString *address = nil;
     NSNumber * l = 0;
-    NSUInteger off = 0, count = 0;
+    uint32_t off = 0;
+    uint64_t count = 0;
     NSData *d = nil;
     
     @autoreleasepool {
         self.chain = chain;
         _version = [message UInt32AtOffset:off]; // tx version
         off += sizeof(uint32_t);
-        count = (NSUInteger)[message varIntAtOffset:off length:&l]; // input count
+        count = [message varIntAtOffset:off length:&l]; // input count
         if (count == 0) return nil; // at least one input is required
         off += l.unsignedIntegerValue;
 
@@ -139,6 +140,7 @@
             address = [NSString addressWithScriptPubKey:d onChain:self.chain]; // address from output script if applicable
             [self.addresses addObject:(address) ? address : [NSNull null]];
         }
+        _payloadOffset = off;
 
         _lockTime = [message UInt32AtOffset:off]; // tx locktime
         _txHash = self.data.SHA256_2;
@@ -174,6 +176,7 @@
             }
         }
     }
+    
 
     return self;
 }
@@ -221,6 +224,10 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(D
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     return self;
+}
+
+-(DSAccount*)account {
+    return [self.chain accountContainingTransaction:self];
 }
 
 - (NSArray *)inputHashes

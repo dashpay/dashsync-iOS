@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSGovernanceObjectHashEntity : NSManagedObject
 
-+(DSGovernanceObjectHashEntity*)governanceObjectHashEntitiesWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity;
++(DSGovernanceObjectHashEntity*)governanceObjectHashEntityWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity;
 +(NSArray*)governanceObjectHashEntitiesWithHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity;
 +(void)updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:(NSOrderedSet*)governanceObjectHashes onChain:(DSChainEntity*)chainEntity;
 +(void)removeOldest:(NSUInteger)count onChain:(DSChainEntity*)chainEntity;

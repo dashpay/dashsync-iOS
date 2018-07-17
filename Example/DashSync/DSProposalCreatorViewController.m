@@ -117,6 +117,8 @@
             if (error) {
                 NSLog(@"%@",error);
             } else {
+                [self.account registerTransaction:transaction];
+                [proposal registerCollateralTransaction:transaction];
                 [proposal save];
                 [self.chainPeerManager publishProposal:proposal];
                 [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];

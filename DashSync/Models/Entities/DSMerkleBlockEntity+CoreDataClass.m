@@ -88,7 +88,15 @@
 }
 
 + (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity {
-    return [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && (height > max(height) - 51)",chainEntity];
+    __block NSArray * blocks = nil;
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSFetchRequest * fetchRequest = [DSMerkleBlockEntity fetchReq];
+        [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"(chain == %@)",chainEntity]];
+        [fetchRequest setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:FALSE]]];
+        [fetchRequest setFetchLimit:blockcount];
+        blocks = [DSMerkleBlockEntity fetchObjects:fetchRequest];
+    }];
+    return blocks;
 }
 
 + (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity {

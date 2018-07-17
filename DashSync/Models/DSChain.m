@@ -123,6 +123,14 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
 #define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
 #define REGISTERED_PEERS_KEY  @"REGISTERED_PEERS_KEY"
+
+#define PROTOCOL_VERSION_LOCATION  @"PROTOCOL_VERSION_LOCATION"
+#define MIN_PROTOCOL_VERSION_LOCATION  @"MIN_PROTOCOL_VERSION_LOCATION"
+
+#define SPORK_PUBLIC_KEY_LOCATION  @"SPORK_PUBLIC_KEY_LOCATION"
+#define SPORK_ADDRESS_LOCATION  @"SPORK_ADDRESS_LOCATION"
+#define SPORK_PRIVATE_KEY_LOCATION  @"SPORK_PRIVATE_KEY_LOCATION"
+
 #define CHAIN_VOTING_KEYS_KEY  @"CHAIN_VOTING_KEYS_KEY"
 
 @interface DSChain ()
@@ -136,8 +144,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) DSChainEntity * mainThreadChainEntity;
 @property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 @property (nonatomic, strong) NSString * devnetIdentifier;
-@property (nonatomic, assign) uint32_t protocolVersion;
-@property (nonatomic, assign) uint32_t minProtocolVersion;
 @property (nonatomic, strong) DSAccount * viewingAccount;
 
 @end
@@ -421,6 +427,258 @@ static dispatch_once_t devnetToken = 0;
 }
 
 
+// MARK: - Chain Parameters
+
+
+
+-(uint32_t)protocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return PROTOCOL_VERSION_MAINNET;
+        case DSChainType_TestNet:
+            return PROTOCOL_VERSION_TESTNET;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            uint32_t protocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,PROTOCOL_VERSION_LOCATION], &error);
+            if (!error && protocolVersion) return protocolVersion;
+            else return PROTOCOL_VERSION_DEVNET;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setProtocolVersion:(uint32_t)protocolVersion
+{
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainInt(protocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,PROTOCOL_VERSION_LOCATION], NO);
+        }
+        default:
+            break;
+    }
+}
+
+
+-(uint32_t)minProtocolVersion {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return MIN_PROTOCOL_VERSION_MAINNET;
+        case DSChainType_TestNet:
+            return MIN_PROTOCOL_VERSION_TESTNET;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MIN_PROTOCOL_VERSION_LOCATION], &error);
+            if (!error && minProtocolVersion) return minProtocolVersion;
+            else return MIN_PROTOCOL_VERSION_DEVNET;
+        }
+        default:
+            break;
+    }
+}
+
+
+-(void)setMinProtocolVersion:(uint32_t)minProtocolVersion
+{
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MIN_PROTOCOL_VERSION_LOCATION], NO);
+        }
+        default:
+            break;
+    }
+}
+
+
+-(uint32_t)maxProofOfWork {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return MAX_PROOF_OF_WORK_MAINNET;
+        case DSChainType_TestNet:
+            return MAX_PROOF_OF_WORK_TESTNET;
+        case DSChainType_DevNet:
+            return MAX_PROOF_OF_WORK_DEVNET;
+        default:
+            return MAX_PROOF_OF_WORK_MAINNET;
+            break;
+    }
+}
+
+
+-(NSString*)networkName {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return @"main";
+            break;
+        case DSChainType_TestNet:
+            return @"test";
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return @"dev";
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
+-(NSString*)name {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return @"Mainnet";
+            break;
+        case DSChainType_TestNet:
+            return @"Testnet";
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
+-(uint64_t)baseReward {
+    if ([self chainType] == DSChainType_MainNet) return 5 * DUFFS;
+    return 50 * DUFFS;
+}
+
+-(DSCheckpoint*)lastCheckpoint {
+    return [[self checkpoints] lastObject];
+}
+
+-(NSString*)sporkPublicKey {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return SPORK_PUBLIC_KEY_MAINNET;
+            break;
+        case DSChainType_TestNet:
+            return SPORK_PUBLIC_KEY_TESTNET;
+            break;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            NSString * publicKey = getKeychainString([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,SPORK_PUBLIC_KEY_LOCATION], &error);
+            if (!error && publicKey) {
+                return publicKey;
+            } else {
+                return nil;
+            }
+        }
+        default:
+            break;
+    }
+    return nil;
+}
+
+-(void)setSporkPublicKey:(NSString *)sporkPublicKey {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainString(sporkPublicKey,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,SPORK_PUBLIC_KEY_LOCATION], NO);
+        }
+        default:
+            break;
+    }
+}
+
+-(NSString*)sporkPrivateKey {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return nil;
+            break;
+        case DSChainType_TestNet:
+            return nil;
+            break;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            NSString * publicKey = getKeychainString([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,SPORK_PRIVATE_KEY_LOCATION], &error);
+            if (!error && publicKey) {
+                return publicKey;
+            } else {
+                return nil;
+            }
+        }
+        default:
+            break;
+    }
+    return nil;
+}
+
+-(void)setSporkPrivateKey:(NSString *)sporkPrivateKey {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainString(sporkPrivateKey,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,SPORK_PRIVATE_KEY_LOCATION], YES);
+        }
+        default:
+            break;
+    }
+}
+
+-(NSString*)sporkAddress {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return SPORK_ADDRESS_MAINNET;
+            break;
+        case DSChainType_TestNet:
+            return SPORK_ADDRESS_TESTNET;
+            break;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            NSString * publicKey = getKeychainString([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,SPORK_ADDRESS_LOCATION], &error);
+            if (!error && publicKey) {
+                return publicKey;
+            } else {
+                return nil;
+            }
+        }
+        default:
+            break;
+    }
+    return nil;
+}
+
+-(void)setSporkAddress:(NSString *)sporkAddress {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainString(sporkAddress,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,SPORK_ADDRESS_LOCATION], NO);
+        }
+        default:
+            break;
+    }
+}
+
 // MARK: - Standalone Derivation Paths
 
 -(DSAccount*)viewingAccount {
@@ -642,80 +900,6 @@ static dispatch_once_t devnetToken = 0;
 }
 
 
-
--(uint32_t)protocolVersion {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return PROTOCOL_VERSION_MAINNET;
-        case DSChainType_TestNet:
-            return PROTOCOL_VERSION_TESTNET;
-        case DSChainType_DevNet:
-            if (_protocolVersion) return _protocolVersion;
-            else return PROTOCOL_VERSION_TESTNET;
-        default:
-            break;
-    }
-}
-
--(uint32_t)minProtocolVersion {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return MIN_PROTOCOL_VERSION_MAINNET;
-        case DSChainType_TestNet:
-            return MIN_PROTOCOL_VERSION_TESTNET;
-        case DSChainType_DevNet:
-            if (_minProtocolVersion) return _minProtocolVersion;
-            else return MIN_PROTOCOL_VERSION_TESTNET;
-        default:
-            break;
-    }
-}
-
--(NSString*)networkName {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return @"main";
-            break;
-        case DSChainType_TestNet:
-            return @"test";
-            break;
-        case DSChainType_DevNet:
-            if (_networkName) return _networkName;
-            return @"dev";
-            break;
-        default:
-            break;
-    }
-    if (_networkName) return _networkName;
-}
-
--(NSString*)name {
-    switch ([self chainType]) {
-        case DSChainType_MainNet:
-            return @"Mainnet";
-            break;
-        case DSChainType_TestNet:
-            return @"Testnet";
-            break;
-        case DSChainType_DevNet:
-            if (_networkName) return _networkName;
-            return [@"Devnet - " stringByAppendingString:self.devnetIdentifier];
-            break;
-        default:
-            break;
-    }
-    if (_networkName) return _networkName;
-}
-
--(uint64_t)baseReward {
-    if ([self chainType] == DSChainType_MainNet) return 5 * DUFFS;
-    return 50 * DUFFS;
-}
-
--(DSCheckpoint*)lastCheckpoint {
-    return [[self checkpoints] lastObject];
-}
-
 #define GENESIS_BLOCK_HASH
 
 
@@ -779,7 +963,8 @@ static dispatch_once_t devnetToken = 0;
 {
     if (! _lastBlock) {
         [DSMerkleBlockEntity.context performBlockAndWait:^{
-            self->_lastBlock = [[[DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity] firstObject] merkleBlock];
+            NSArray * lastBlocks = [DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity];
+            self->_lastBlock = [[lastBlocks firstObject] merkleBlock];
         }];
         
         if (!_lastBlock) {
@@ -931,8 +1116,9 @@ static dispatch_once_t devnetToken = 0;
     }
     
     // verify block difficulty if block is past last checkpoint
-    if ((block.height > ([self lastCheckpoint].height + DGW_PAST_BLOCKS_MAX)) &&
-        ![block verifyDifficultyWithPreviousBlocks:self.blocks] && ![self isTestnet]) {
+    DSCheckpoint * lastCheckpoint = [self lastCheckpoint];
+    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) && [self isMainnet] &&
+        ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
         uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
         NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
               block.height,block.target,foundDifficulty, blockHash);

@@ -388,65 +388,65 @@
 
 -(void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
     @synchronized(self) {
-    if (!(([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes) == DSSyncType_GovernanceVotes)) return;
-    NSLog(@"peer relayed governance vote hashes");
-    if (!self.totalGovernanceVoteCount) {
-        [self.delegate governanceObject:self didReceiveUnknownHashes:governanceVoteHashes fromPeer:peer];
-    }
-    NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
-    NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
-    NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
-    NSMutableOrderedSet <NSData*> * rHashes = [self.knownGovernanceVoteHashes mutableCopy];
-    [hashesToInsert minusOrderedSet:self.knownGovernanceVoteHashes];
-    [hashesToUpdate minusOrderedSet:hashesToInsert];
-    [hashesToQuery minusOrderedSet:self.fulfilledGovernanceVoteRequestsHashes];
-    NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
-    [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
-    NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
-    if ([governanceVoteHashes count]) {
-        [self.managedObjectContext performBlockAndWait:^{
-            [DSChainEntity setContext:self.managedObjectContext];
-            [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
-            [DSGovernanceObjectEntity setContext:self.managedObjectContext];
-            DSGovernanceObjectEntity * governanceObjectEntity = self.governanceObjectEntity;
-            if ([hashesToInsert count]) {
-                NSArray * novelGovernanceVoteHashEntities = [DSGovernanceVoteHashEntity governanceVoteHashEntitiesWithHashes:hashesToInsert forGovernanceObject:governanceObjectEntity];
-                for (DSGovernanceVoteHashEntity * governanceVoteHashEntity in novelGovernanceVoteHashEntities) {
-                    if ([hashesToQueryFromInsert containsObject:governanceVoteHashEntity.governanceVoteHash]) {
-                        [hashEntitiesToQuery addObject:governanceVoteHashEntity];
+        if (!(([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes) == DSSyncType_GovernanceVotes)) return;
+        NSLog(@"peer relayed governance vote hashes");
+        if (!self.totalGovernanceVoteCount) {
+            [self.delegate governanceObject:self didReceiveUnknownHashes:governanceVoteHashes fromPeer:peer];
+        }
+        NSMutableOrderedSet * hashesToInsert = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
+        NSMutableOrderedSet * hashesToUpdate = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
+        NSMutableOrderedSet * hashesToQuery = [[NSOrderedSet orderedSetWithSet:governanceVoteHashes] mutableCopy];
+        NSMutableOrderedSet <NSData*> * rHashes = [self.knownGovernanceVoteHashes mutableCopy];
+        [hashesToInsert minusOrderedSet:self.knownGovernanceVoteHashes];
+        [hashesToUpdate minusOrderedSet:hashesToInsert];
+        [hashesToQuery minusOrderedSet:self.fulfilledGovernanceVoteRequestsHashes];
+        NSMutableOrderedSet * hashesToQueryFromInsert = [hashesToQuery mutableCopy];
+        [hashesToQueryFromInsert intersectOrderedSet:hashesToInsert];
+        NSMutableArray * hashEntitiesToQuery = [NSMutableArray array];
+        if ([governanceVoteHashes count]) {
+            [self.managedObjectContext performBlockAndWait:^{
+                [DSChainEntity setContext:self.managedObjectContext];
+                [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
+                [DSGovernanceObjectEntity setContext:self.managedObjectContext];
+                DSGovernanceObjectEntity * governanceObjectEntity = self.governanceObjectEntity;
+                if ([hashesToInsert count]) {
+                    NSArray * novelGovernanceVoteHashEntities = [DSGovernanceVoteHashEntity governanceVoteHashEntitiesWithHashes:hashesToInsert forGovernanceObject:governanceObjectEntity];
+                    for (DSGovernanceVoteHashEntity * governanceVoteHashEntity in novelGovernanceVoteHashEntities) {
+                        if ([hashesToQueryFromInsert containsObject:governanceVoteHashEntity.governanceVoteHash]) {
+                            [hashEntitiesToQuery addObject:governanceVoteHashEntity];
+                        }
                     }
                 }
-            }
-            if ([hashesToUpdate count]) {
-                [DSGovernanceVoteHashEntity updateTimestampForGovernanceVoteHashEntitiesWithGovernanceVoteHashes:hashesToUpdate forGovernanceObject:governanceObjectEntity];
-            }
-            [DSGovernanceVoteHashEntity saveContext];
-        }];
-        if ([hashesToInsert count]) {
-            [rHashes addObjectsFromArray:[hashesToInsert array]];
-            [rHashes sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                UInt256 a = *(UInt256 *)((NSData*)obj1).bytes;
-                UInt256 b = *(UInt256 *)((NSData*)obj2).bytes;
-                return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
+                if ([hashesToUpdate count]) {
+                    [DSGovernanceVoteHashEntity updateTimestampForGovernanceVoteHashEntitiesWithGovernanceVoteHashes:hashesToUpdate forGovernanceObject:governanceObjectEntity];
+                }
+                [DSGovernanceVoteHashEntity saveContext];
             }];
+            if ([hashesToInsert count]) {
+                [rHashes addObjectsFromArray:[hashesToInsert array]];
+                [rHashes sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    UInt256 a = *(UInt256 *)((NSData*)obj1).bytes;
+                    UInt256 b = *(UInt256 *)((NSData*)obj2).bytes;
+                    return uint256_sup(a,b)?NSOrderedAscending:NSOrderedDescending;
+                }];
+            }
         }
-    }
-    self.knownGovernanceVoteHashes = rHashes;
-    self.needsRequestsGovernanceVoteHashEntities = nil; //just so it can lazy load again
-    NSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceVoteHashes count],(unsigned long)self.totalGovernanceVoteCount);
-    if ([self.knownGovernanceVoteHashes count] >= self.totalGovernanceVoteCount) {
-        //we have more than we should have
-        //for a vote it doesn't matter and will happen often
-        NSLog(@"All governance vote hashes received for object %@",self.identifier);
-//        [self.managedObjectContext performBlockAndWait:^{
-//            [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
-//            [DSGovernanceVoteHashEntity removeOldest:countAroundNow - self.totalGovernanceVoteCount hashesNotIn:governanceVoteHashes onChain:self.chain.chainEntity];
-//            [DSGovernanceVoteHashEntity saveContext];
-//        }];
-        [self requestGovernanceVotesFromPeer:peer];
-    } else {
-        //things are missing, most likely they will come in later
-    }
+        self.knownGovernanceVoteHashes = rHashes;
+        self.needsRequestsGovernanceVoteHashEntities = nil; //just so it can lazy load again
+        NSLog(@"-> %lu - %lu",(unsigned long)[self.knownGovernanceVoteHashes count],(unsigned long)self.totalGovernanceVoteCount);
+        if ([self.knownGovernanceVoteHashes count] >= self.totalGovernanceVoteCount) {
+            //we have more than we should have
+            //for a vote it doesn't matter and will happen often
+            NSLog(@"All governance vote hashes received for object %@",self.identifier);
+            //        [self.managedObjectContext performBlockAndWait:^{
+            //            [DSGovernanceVoteHashEntity setContext:self.managedObjectContext];
+            //            [DSGovernanceVoteHashEntity removeOldest:countAroundNow - self.totalGovernanceVoteCount hashesNotIn:governanceVoteHashes onChain:self.chain.chainEntity];
+            //            [DSGovernanceVoteHashEntity saveContext];
+            //        }];
+            [self requestGovernanceVotesFromPeer:peer];
+        } else {
+            //things are missing, most likely they will come in later
+        }
     }
 }
 
@@ -500,6 +500,28 @@
 -(DSTransaction*)collateralTransactionForAccount:(DSAccount*)account {
     DSTransaction * collateralTransaction = [account proposalCollateralTransactionWithData:[self proposalInfo]];
     return collateralTransaction;
+}
+
+-(void)registerCollateralTransaction:(DSTransaction* _Nonnull)transaction {
+    self.collateralHash = transaction.txHash;
+}
+
+-(BOOL)isValid {
+    if (self.type == DSGovernanceObjectType_Proposal) {
+        if (!self.startEpoch) return FALSE;
+        if (!self.endEpoch) return FALSE;
+        if (!self.identifier) return FALSE;
+        if (!self.paymentAddress) return FALSE;
+        if (!self.amount) return FALSE;
+        if (!self.url) return FALSE;
+        if (!uint256_is_zero(self.parentHash)) return FALSE;
+        if (uint256_is_zero(self.collateralHash)) return FALSE;
+        
+    } else if (self.type == DSGovernanceObjectType_Trigger) {
+        //todo validation here
+        return TRUE;
+    }
+    return FALSE;
 }
 
 @end

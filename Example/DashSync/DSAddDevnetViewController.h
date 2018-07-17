@@ -8,7 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
+@class DSChain;
+
 @interface DSAddDevnetViewController : UITableViewController <UITextFieldDelegate>
+
+@property (nonatomic,strong) DSChain * chain;
 
 -(IBAction)save;
 -(IBAction)cancel;

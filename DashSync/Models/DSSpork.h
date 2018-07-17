@@ -32,6 +32,7 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
 @property (nonatomic,assign,readonly) uint64_t timeSigned;
 @property (nonatomic,assign,readonly) uint64_t value;
 @property (nonatomic,strong,readonly) NSData * signature;
+@property (nonatomic,assign,readonly) UInt256 sporkHash;
 @property (nonatomic,readonly) DSChain * chain;
 
 + (instancetype)sporkWithMessage:(NSData *)message onChain:(DSChain*)chain;

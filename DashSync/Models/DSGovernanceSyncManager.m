@@ -107,6 +107,17 @@
     return count;
 }
 
+-(NSUInteger)proposalObjectsCount {
+    
+    __block NSUInteger count = 0;
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSGovernanceObjectEntity setContext:self.managedObjectContext];
+        [DSChainEntity setContext:self.managedObjectContext];
+        count = [DSGovernanceObjectEntity countObjectsMatching:@"governanceObjectHash.chain == %@ && type == %@",self.chain.chainEntity,@(DSGovernanceObjectType_Proposal)];
+    }];
+    return count;
+}
+
 -(NSUInteger)governanceObjectsCount {
     
     __block NSUInteger count = 0;

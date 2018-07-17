@@ -42,6 +42,7 @@
 #import "DSGovernanceVote.h"
 #import "DSChainPeerManager.h"
 #import "DSOptionsManager.h"
+#import "DSTransactionFactory.h"
 
 #define PEER_LOGGING 1
 
@@ -119,7 +120,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 - (instancetype)initWithAddress:(UInt128)address andPort:(uint16_t)port onChain:(DSChain*)chain
 {
     if (! (self = [super init])) return nil;
-
+    
     _address = address;
     _port = (port == 0) ? [chain standardPort] : port;
     self.chain = chain;
@@ -139,7 +140,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
         host = [[pair subarrayWithRange:NSMakeRange(0, pair.count - 1)] componentsJoinedByString:@":"];
         _port = [pair.lastObject intValue];
     }
-
+    
     if (inet_pton(AF_INET, host.UTF8String, &addr) != 1) return nil;
     _address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr } };
     if (_port == 0) _port = chain.standardPort;
@@ -148,10 +149,10 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 }
 
 - (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain*)chain timestamp:(NSTimeInterval)timestamp
-services:(uint64_t)services
+                       services:(uint64_t)services
 {
     if (! (self = [self initWithAddress:address andPort:port onChain:chain])) return nil;
-
+    
     _timestamp = timestamp;
     _services = services;
     return self;
@@ -193,14 +194,14 @@ services:(uint64_t)services
         dispatch_async(dispatch_get_main_queue(), ^{
             if (! self.reachabilityObserver) {
                 self.reachabilityObserver =
-                    [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
-                    queue:nil usingBlock:^(NSNotification *note) {
-                        if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
-                            _status = DSPeerStatus_Disconnected;
-                            [self connect];
-                        }
-                    }];
-        
+                [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
+                                                                   queue:nil usingBlock:^(NSNotification *note) {
+                                                                       if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
+                                                                           _status = DSPeerStatus_Disconnected;
+                                                                           [self connect];
+                                                                       }
+                                                                   }];
+                
                 [self.reachability startNotifier];
             }
         });
@@ -213,7 +214,7 @@ services:(uint64_t)services
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
     }
-
+    
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
@@ -226,14 +227,14 @@ services:(uint64_t)services
     self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
     self.currentBlockTxHashes = nil;
-
+    
     NSString *label = [NSString stringWithFormat:@"peer.%@:%u", self.host, self.port];
-
+    
     // use a private serial queue for processing socket io
     dispatch_async(dispatch_queue_create(label.UTF8String, NULL), ^{
         CFReadStreamRef readStream = NULL;
         CFWriteStreamRef writeStream = NULL;
-
+        
         NSLog(@"%@:%u connecting", self.host, self.port);
         CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)self.host, self.port, &readStream, &writeStream);
         self.inputStream = CFBridgingRelease(readStream);
@@ -245,9 +246,9 @@ services:(uint64_t)services
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:)
-         withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
-                     userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
-         afterDelay:CONNECT_TIMEOUT];
+                   withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
+                                              userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
+                   afterDelay:CONNECT_TIMEOUT];
         
         [self.inputStream open];
         [self.outputStream open];
@@ -268,21 +269,21 @@ services:(uint64_t)services
     
     if (_status == DSPeerStatus_Disconnected) return;
     _status = DSPeerStatus_Disconnected;
-
+    
     if (self.reachabilityObserver) {
         [self.reachability stopNotifier];
         self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
     }
-
+    
     if (! self.runLoop) return;
     [self.inputStream close];
     [self.outputStream close];
     [self.inputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
     [self.outputStream removeFromRunLoop:self.runLoop forMode:NSRunLoopCommonModes];
     CFRunLoopStop([self.runLoop getCFRunLoop]);
-        
+    
     _status = DSPeerStatus_Disconnected;
     dispatch_async(self.delegateQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -301,21 +302,21 @@ services:(uint64_t)services
 - (void)error:(NSString *)message, ... NS_FORMAT_FUNCTION(1,2)
 {
     va_list args;
-
+    
     va_start(args, message);
     [self disconnectWithError:[NSError errorWithDomain:@"DashWallet" code:500
-     userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithFormat:message arguments:args]}]];
+                                              userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithFormat:message arguments:args]}]];
     va_end(args);
 }
 
 - (void)didConnect
 {
     if (self.status != DSPeerStatus_Connecting || ! self.sentVerack || ! self.gotVerack) return;
-
+    
     NSLog(@"%@:%u handshake completed", self.host, self.port);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = DSPeerStatus_Connected;
-
+    
     dispatch_async(self.delegateQueue, ^{
         if (_status == DSPeerStatus_Connected) [self.delegate peerConnected:self];
     });
@@ -332,19 +333,19 @@ services:(uint64_t)services
 #endif
         return;
     }
-
+    
     if (! self.runLoop) return;
-
+    
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
         NSLog(@"%@:%u sending %@", self.host, self.port, type);
 #endif
-
+        
         [self.outputBuffer appendMessage:message type:type forChain:self.chain];
         
         while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
             NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
-
+            
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
             //if (self.outputBuffer.length == 0) NSLog(@"%@:%u output buffer cleared", self.host, self.port);
         }
@@ -420,7 +421,7 @@ services:(uint64_t)services
             });
         }
     }
-        
+    
     [self sendMessage:[NSData data] type:MSG_MEMPOOL];
 }
 
@@ -486,7 +487,7 @@ services:(uint64_t)services
     
     [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
-
+    
     for (NSValue *hash in locators) {
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
@@ -506,13 +507,13 @@ services:(uint64_t)services
     [hashes minusOrderedSet:self.knownTxHashes];
     if (hashes.count == 0) return;
     [msg appendVarInt:hashes.count];
-
+    
     for (NSValue *hash in hashes) {
         [msg appendUInt32:DSInvType_Tx];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
-
+    
     [self sendMessage:msg type:MSG_INV];
     [self.knownTxHashes unionOrderedSet:hashes];
 }
@@ -543,7 +544,7 @@ services:(uint64_t)services
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
-
+    
     self.sentGetdataTxBlocks = YES;
     [self sendMessage:msg type:MSG_GETDATA];
 }
@@ -552,7 +553,7 @@ services:(uint64_t)services
 {
     if (masternodeBroadcastHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
-            (int)masternodeBroadcastHashes.count, MAX_GETDATA_HASHES);
+              (int)masternodeBroadcastHashes.count, MAX_GETDATA_HASHES);
         return;
     }
     else if (masternodeBroadcastHashes.count == 0) return;
@@ -569,6 +570,14 @@ services:(uint64_t)services
     
     self.sentGetdataMasternode = YES;
     [self sendMessage:msg type:MSG_GETDATA];
+}
+
+-(void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
+    NSMutableData *msg = [NSMutableData data];
+    [msg appendUInt256:previousBlockHash];
+    [msg appendUInt256:blockHash];
+    NSLog(@"%@",msg);
+    [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes
@@ -640,7 +649,7 @@ services:(uint64_t)services
 - (void)rerequestBlocksFrom:(UInt256)blockHash
 {
     NSUInteger i = [self.knownBlockHashes indexOfObject:uint256_obj(blockHash)];
-
+    
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
         NSLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
@@ -758,6 +767,7 @@ services:(uint64_t)services
     //masternode
     else if ([MSG_SSC isEqual:type]) [self acceptSSCMessage:message];
     else if ([MSG_MNB isEqual:type]) [self acceptMNBMessage:message];
+    else if ([MSG_MNLISTDIFF isEqual:type]) [self acceptMNLISTDIFFMessage:message];
     //governance
     else if ([MSG_GOVOBJVOTE isEqual:type]) [self acceptGovObjectVoteMessage:message];
     else if ([MSG_GOVOBJ isEqual:type]) [self acceptGovObjectMessage:message];
@@ -792,7 +802,7 @@ services:(uint64_t)services
     _services = [message UInt64AtOffset:4];
     _timestamp = [message UInt64AtOffset:12] - NSTimeIntervalSince1970;
     _useragent = [message stringAtOffset:80 length:&l];
-
+    
     if (message.length < 80 + l.unsignedIntegerValue + sizeof(uint32_t)) {
         [self error:@"malformed version message, length is %u, should be %u", (int)message.length, (int)(80 + l.unsignedIntegerValue + 4)];
         return;
@@ -838,7 +848,7 @@ services:(uint64_t)services
         return;
     }
     else if (! self.sentGetaddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
-
+    
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
@@ -868,12 +878,12 @@ services:(uint64_t)services
         
         // if address time is more than 10 min in the future or older than reference date, set to 5 days old
         if (timestamp > now + 10*60 || timestamp < 0) timestamp = now - 5*24*60*60;
-
+        
         // subtract two hours and add it to the list
         [peers addObject:[[DSPeer alloc] initWithAddress:address port:port onChain:self.chain timestamp:timestamp - 2*60*60
-         services:services]];
+                                                services:services]];
     }
-
+    
     dispatch_async(self.delegateQueue, ^{
         if (_status == DSPeerStatus_Connected) [self.delegate peer:self relayedPeers:peers];
     });
@@ -921,7 +931,7 @@ services:(uint64_t)services
             case DSInvType_TxLockVote: break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
-            case DSInvType_Spork: [sporkHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_Spork: [sporkHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_GovernanceObject: [governanceObjectHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_MasternodePing: break;//[masternodePingHashes addObject:uint256_obj(hash)]; break;
@@ -1011,6 +1021,9 @@ services:(uint64_t)services
         NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);
         [self.delegate peer:self hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
     }
+    if (sporkHashes.count > 0) {
+        [self.delegate peer:self hasSporkHashes:sporkHashes];
+    }
 }
 
 - (void)acceptTxMessage:(NSData *)message
@@ -1027,20 +1040,20 @@ services:(uint64_t)services
     }
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
-
+    
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self relayedTransaction:tx];
     });
-
+    
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
-
+        
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             DSMerkleBlock *block = self.currentBlock;
-
+            
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
-
+            
             dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
                 [self.delegate peer:self relayedBlock:block];
             });
@@ -1065,7 +1078,7 @@ services:(uint64_t)services
         return;
     }
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
-
+    
     if (_relayStartTime != 0) { // keep track of relay peformance
         NSTimeInterval speed = count/([NSDate timeIntervalSinceReferenceDate] - self.relayStartTime);
         
@@ -1086,15 +1099,15 @@ services:(uint64_t)services
         UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSValue *firstHash = uint256_obj(firstX11);
         NSValue *lastHash = uint256_obj(lastX11);
-
+        
         if (t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
             t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
-
+            
             for (off = l; t > 0 && t < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
                 off += 81;
                 t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
             }
-
+            
             lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
             NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
             [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
@@ -1115,7 +1128,7 @@ services:(uint64_t)services
             [self error:@"invalid block header %@", uint256_obj(block.blockHash)];
             return;
         }
-
+        
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self relayedBlock:block];
         });
@@ -1146,27 +1159,27 @@ services:(uint64_t)services
     }
     
     NSLog(@"%@:%u got getdata with %u items", self.host, self.port, (int)count);
-
+    
     dispatch_async(self.delegateQueue, ^{
         NSMutableData *notfound = [NSMutableData data];
-    
+        
         for (NSUInteger off = l; off < l + count*36; off += 36) {
             DSInvType type = [message UInt32AtOffset:off];
             UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
             DSTransaction *transaction = nil;
-        
+            
             if (uint256_is_zero(hash)) continue;
-        
+            
             switch (type) {
                 case DSInvType_Tx:
                 case DSInvType_TxLockRequest:
                     transaction = [self.delegate peer:self requestedTransaction:hash];
-                
+                    
                     if (transaction) {
                         [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
                         break;
                     }
-                
+                    
                     // fall through
                 default:
                     [notfound appendUInt32:type];
@@ -1174,10 +1187,10 @@ services:(uint64_t)services
                     break;
             }
         }
-
+        
         if (notfound.length > 0) {
             NSMutableData *msg = [NSMutableData data];
-        
+            
             [msg appendVarInt:notfound.length/36];
             [msg appendData:notfound];
             [self sendMessage:msg type:MSG_NOTFOUND];
@@ -1191,15 +1204,15 @@ services:(uint64_t)services
     NSMutableArray *txHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&lNumber];
     l = lNumber.unsignedIntegerValue;
-
+    
     if (l == 0 || message.length < l + count*36) {
         [self error:@"malformed notfound message, length is %u, should be %u for %u items", (int)message.length,
          (int)(((l == 0) ? 1 : l) + count*36), (int)count];
         return;
     }
-
+    
     NSLog(@"%@:%u got notfound with %u items", self.host, self.port, (int)count);
-
+    
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
         if ([message UInt32AtOffset:off] == DSInvType_Tx) {
             [txHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
@@ -1208,7 +1221,7 @@ services:(uint64_t)services
             [blockHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
     }
-
+    
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
     });
@@ -1241,10 +1254,10 @@ services:(uint64_t)services
         NSLog(@"%@:%u got unexpected pong", self.host, self.port);
         return;
     }
-
+    
     if (self.pingStartTime > 1) {
         NSTimeInterval pingTime = [NSDate timeIntervalSinceReferenceDate] - self.pingStartTime;
-    
+        
         // 50% low pass filter on current ping time
         _pingTime = self.pingTime*0.5 + pingTime*0.5;
         self.pingStartTime = 0;
@@ -1253,7 +1266,7 @@ services:(uint64_t)services
 #if MESSAGE_LOGGING
     NSLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 #endif
-
+    
     dispatch_async(self.delegateQueue, ^{
         if (_status == DSPeerStatus_Connected && self.pongHandlers.count) {
             ((void (^)(BOOL))self.pongHandlers[0])(YES);
@@ -1278,11 +1291,11 @@ services:(uint64_t)services
         return;
     }
     //else NSLog(@"%@:%u got merkleblock %@", self.host, self.port, block.blockHash);
-
+    
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSetWithArray:block.txHashes];
-
+    
     [txHashes minusOrderedSet:self.knownTxHashes];
-
+    
     if (txHashes.count > 0) { // wait til we get all the tx messages before processing the block
         self.currentBlock = block;
         self.currentBlockTxHashes = txHashes;
@@ -1305,11 +1318,11 @@ services:(uint64_t)services
     NSString *reason = [message stringAtOffset:off length:&lNumber];
     l = lNumber.unsignedIntegerValue;
     UInt256 txHash = ([MSG_TX isEqual:type] || [MSG_IX isEqual:type]) ? [message hashAtOffset:off + l] : UINT256_ZERO;
-
+    
     NSLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
           (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : uint256_obj(txHash)));
     reason = nil; // fixes an unused variable warning for non-debug builds
-
+    
     if (! uint256_is_zero(txHash)) {
         dispatch_async(self.delegateQueue, ^{
             [self.delegate peer:self rejectedTransaction:txHash withCode:code];
@@ -1327,7 +1340,7 @@ services:(uint64_t)services
     
     _feePerKb = [message UInt64AtOffset:0];
     NSLog(@"%@:%u got feefilter with rate %llu", self.host, self.port, self.feePerKb);
-
+    
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self setFeePerKb:self.feePerKb];
     });
@@ -1373,17 +1386,26 @@ services:(uint64_t)services
             break;
     }
     //ignore when count = 0; (for votes)
-
+    
 }
 
 -(void)acceptMNBMessage:(NSData *)message
 {
-    DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message onChain:self.chain];
-    if (broadcast) {
-        [self.delegate peer:self relayedMasternodeBroadcast:broadcast];
+    if (self.chain.protocolVersion < 70211) {
+        BOOL syncsMasternodeList = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
+        if (syncsMasternodeList) {
+            DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message onChain:self.chain];
+            if (broadcast) {
+                [self.delegate peer:self relayedMasternodeBroadcast:broadcast];
+            }
+        }
     }
 }
 
+-(void)acceptMNLISTDIFFMessage:(NSData*)message
+{
+    [self.delegate peer:self relayedMasternodeDiffMessage:message];
+}
 
 
 // MARK: - accept Governance
@@ -1450,37 +1472,37 @@ services:(uint64_t)services
 
 - (void)acceptDarksendTransactionMessage:(NSData *)message
 {
-//    BRTransaction *tx = [BRTransaction transactionWithMessage:message];
-//
-//    if (! tx) {
-//        [self error:@"malformed tx message: %@", message];
-//        return;
-//    }
-//    else if (! self.sentFilter && ! self.sentTxAndBlockGetdata) {
-//        [self error:@"got tx message before loading a filter"];
-//        return;
-//    }
-//
-//    NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
-//
-//    dispatch_async(self.delegateQueue, ^{
-//        [self.delegate peer:self relayedTransaction:tx];
-//    });
-//
-//    if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-//        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
-//
-//        if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
-//            BRMerkleBlock *block = self.currentBlock;
-//
-//            self.currentBlock = nil;
-//            self.currentBlockTxHashes = nil;
-//
-//            dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
-//                [self.delegate peer:self relayedBlock:block];
-//            });
-//        }
-//    }
+    //    BRTransaction *tx = [BRTransaction transactionWithMessage:message];
+    //
+    //    if (! tx) {
+    //        [self error:@"malformed tx message: %@", message];
+    //        return;
+    //    }
+    //    else if (! self.sentFilter && ! self.sentTxAndBlockGetdata) {
+    //        [self error:@"got tx message before loading a filter"];
+    //        return;
+    //    }
+    //
+    //    NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+    //
+    //    dispatch_async(self.delegateQueue, ^{
+    //        [self.delegate peer:self relayedTransaction:tx];
+    //    });
+    //
+    //    if (self.currentBlock) { // we're collecting tx messages for a merkleblock
+    //        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+    //
+    //        if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
+    //            BRMerkleBlock *block = self.currentBlock;
+    //
+    //            self.currentBlock = nil;
+    //            self.currentBlockTxHashes = nil;
+    //
+    //            dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
+    //                [self.delegate peer:self relayedBlock:block];
+    //            });
+    //        }
+    //    }
 }
 
 // MARK: - hash
@@ -1524,31 +1546,31 @@ services:(uint64_t)services
             NSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
                   (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),
                   [NSDate timeIntervalSinceReferenceDate] - self.pingStartTime);
-
+            
             if (aStream == self.outputStream) {
                 self.pingStartTime = [NSDate timeIntervalSinceReferenceDate]; // don't count connect time in ping time
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
-                 withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
-                             userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
-                             afterDelay:CONNECT_TIMEOUT];
+                           withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
+                                                      userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"connect timeout", nil)}]
+                           afterDelay:CONNECT_TIMEOUT];
             }
-
+            
             // fall through to send any queued output
         case NSStreamEventHasSpaceAvailable:
             if (aStream != self.outputStream) return;
-        
+            
             while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
             }
-
+            
             break;
             
         case NSStreamEventHasBytesAvailable:
             if (aStream != self.inputStream) return;
-
+            
             while (self.inputStream.hasBytesAvailable) {
                 @autoreleasepool {
                     NSData *message = nil;
@@ -1559,7 +1581,7 @@ services:(uint64_t)services
                     if (headerLen < HEADER_LENGTH) { // read message header
                         self.msgHeader.length = HEADER_LENGTH;
                         l = [self.inputStream read:(uint8_t *)self.msgHeader.mutableBytes + headerLen
-                             maxLength:self.msgHeader.length - headerLen];
+                                         maxLength:self.msgHeader.length - headerLen];
                         
                         if (l < 0) {
                             NSLog(@"%@:%u error reading message", self.host, self.port);
@@ -1597,7 +1619,7 @@ services:(uint64_t)services
                     if (payloadLen < length) { // read message payload
                         self.msgPayload.length = length;
                         l = [self.inputStream read:(uint8_t *)self.msgPayload.mutableBytes + payloadLen
-                             maxLength:self.msgPayload.length - payloadLen];
+                                         maxLength:self.msgPayload.length - payloadLen];
                         
                         if (l < 0) {
                             NSLog(@"%@:%u error reading %@", self.host, self.port, type);
@@ -1619,11 +1641,11 @@ services:(uint64_t)services
                     self.msgPayload = [NSMutableData data];
                     [self acceptMessage:message type:type]; // process message
                     
-reset:              // reset for next message
+                reset:              // reset for next message
                     self.msgHeader.length = self.msgPayload.length = 0;
                 }
             }
-
+            
             break;
             
         case NSStreamEventErrorOccurred:

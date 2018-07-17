@@ -72,7 +72,6 @@ typedef void (^ResetCancelHandlerBlock)(void);
 + (instancetype _Nullable)sharedInstance;
 
 - (BOOL)hasSeedPhrase;
-- (DSWallet *)createWalletForChain:(DSChain*)chain;
 - (void)clearKeychainWalletData;
 
 - (void)startExchangeRateFetching;

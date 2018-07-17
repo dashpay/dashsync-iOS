@@ -29,9 +29,10 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
+#import "DSChain.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
-#define MAX_PROOF_OF_WORK 0x1e0fffffu   // highest value for difficulty target (higher values are less difficult)
+
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -72,7 +73,7 @@ inline static int ceil_log2(int x)
 
 @property (nonatomic, assign) UInt256 blockHash;
 @property (nonatomic, strong) DSChain * chain;
-    
+
 @end
 
 @implementation DSMerkleBlock
@@ -90,7 +91,7 @@ inline static int ceil_log2(int x)
     NSNumber * l = nil;
     NSUInteger off = 0, len = 0;
     NSMutableData *d = [NSMutableData data];
-
+    
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
     _prevBlock = [message hashAtOffset:off];
@@ -120,13 +121,13 @@ inline static int ceil_log2(int x)
     [d appendUInt32:_nonce];
     _blockHash = d.x11;
     self.chain = chain;
-
+    
     return self;
 }
 
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
-merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
+                       merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
+                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
 {
     if (! (self = [self init])) return nil;
     
@@ -153,25 +154,24 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 {
     // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
     // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
-    static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffffu;
+    const uint32_t maxsize = self.chain.maxProofOfWork >> 24, maxtarget = self.chain.maxProofOfWork & 0x00ffffffu;
     const uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
     NSMutableData *d = [NSMutableData data];
     UInt256 merkleRoot, t = UINT256_ZERO;
     int hashIdx = 0, flagIdx = 0;
-    NSValue *root =
-        [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-            return hash;
-        } :^id (id left, id right) {
-            UInt256 l, r;
-
-            if (! right) right = left; // if right branch is missing, duplicate left branch
-            [left getValue:&l];
-            [right getValue:&r];
-            d.length = 0;
-            [d appendBytes:&l length:sizeof(l)];
-            [d appendBytes:&r length:sizeof(r)];
-            return uint256_obj(d.SHA256_2);
-        }];
+    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+        return hash;
+    } :^id (id left, id right) {
+        UInt256 l, r;
+        
+        if (! right) right = left; // if right branch is missing, duplicate left branch
+        [left getValue:&l];
+        [right getValue:&r];
+        d.length = 0;
+        [d appendBytes:&l length:sizeof(l)];
+        [d appendBytes:&r length:sizeof(r)];
+        return uint256_obj(d.SHA256_2);
+    }];
     
     [root getValue:&merkleRoot];
     if (_totalTransactions > 0 && ! uint256_eq(merkleRoot, _merkleRoot)) return NO; // merkle root check failed
@@ -182,7 +182,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     
     // check if proof-of-work target is out of range
     if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
-
+    
     if (size > 3) *(uint32_t *)&t.u8[size - 3] = CFSwapInt32HostToLittle(target);
     else t.u32[0] = CFSwapInt32HostToLittle(target >> (3 - size)*8);
     
@@ -233,11 +233,11 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 {
     int hashIdx = 0, flagIdx = 0;
     NSArray *txHashes =
-        [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-            return (flag && hash) ? @[hash] : @[];
-        } :^id (id left, id right) {
-            return [left arrayByAddingObjectsFromArray:right];
-        }];
+    [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+        return (flag && hash) ? @[hash] : @[];
+    } :^id (id left, id right) {
+        return [left arrayByAddingObjectsFromArray:right];
+    }];
     
     return txHashes;
 }
@@ -265,7 +265,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     if (uint256_is_zero(_prevBlock) || previousBlock.height == 0 || previousBlock.height < DGW_PAST_BLOCKS_MIN) {
         // This is the first block or the height is < PastBlocksMin
         // Return minimal required work. (1e0ffff0)
-        return MAX_PROOF_OF_WORK;
+        return self.chain.maxProofOfWork;
     }
     
     DSMerkleBlock *currentBlock = previousBlock;
@@ -318,8 +318,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
     int32_t compact = getCompact(darkTarget);
     
     // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
-    if (compact > MAX_PROOF_OF_WORK){
-        compact = MAX_PROOF_OF_WORK;
+    if (compact > self.chain.maxProofOfWork){
+        compact = self.chain.maxProofOfWork;
     }
     
     // Return the new diff.
