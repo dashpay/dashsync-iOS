@@ -1638,6 +1638,10 @@
     [self.governanceSyncManager.currentGovernanceSyncObject peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
 }
 
+- (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes {
+    [self.sporkManager peer:peer hasSporkHashes:sporkHashes];
+}
+
 - (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
     [self.masternodeManager peer:peer relayedMasternodeBroadcast:masternodeBroadcast];
 }

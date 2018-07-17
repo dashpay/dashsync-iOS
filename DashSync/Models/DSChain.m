@@ -643,10 +643,10 @@ static dispatch_once_t devnetToken = 0;
 -(NSString*)sporkAddress {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return nil;
+            return SPORK_ADDRESS_MAINNET;
             break;
         case DSChainType_TestNet:
-            return nil;
+            return SPORK_ADDRESS_TESTNET;
             break;
         case DSChainType_DevNet:
         {

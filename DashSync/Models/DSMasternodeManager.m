@@ -473,54 +473,59 @@ inline static int ceil_log2(int x)
     uint32_t totalTransactions = [message UInt32AtOffset:offset];
     offset += 4;
     
-    if (length - offset < 4) return;
-    uint32_t merkleHashCount = [message UInt32AtOffset:offset];
-    offset += 4;
+    if (length - offset < 1) return;
+    NSNumber * merkleHashCountLength;
+    uint64_t merkleHashCount = [message varIntAtOffset:offset length:&merkleHashCountLength];
+    offset += [merkleHashCountLength unsignedLongValue];
     
     NSMutableArray * merkleHashes = [NSMutableArray array];
     
-    while (merkleHashCount > 1) {
+    while (merkleHashCount >= 1) {
         if (length - offset < 32) return;
         [merkleHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]]];
         offset += 32;
         merkleHashCount--;
     }
     
-    if (length - offset < 4) return;
-    uint32_t merkleFlagCount = [message UInt32AtOffset:offset];
-    offset += 4;
+    if (length - offset < 1) return;
+    NSNumber * merkleFlagCountLength;
+    uint64_t merkleFlagCount = [message varIntAtOffset:offset length:&merkleFlagCountLength];
+    offset += [merkleFlagCountLength unsignedLongValue];
     
     NSMutableArray * merkleFlags = [NSMutableArray array];
     
-    while (merkleFlagCount > 1) {
+    while (merkleFlagCount >= 1) {
         if (length - offset < 1) return;
         offset += 1;
         merkleFlagCount--;
     }
     
-    DSCoinbaseTransaction *tx = (DSCoinbaseTransaction*)[DSTransactionFactory transactionWithMessage:message onChain:self.chain];
+    DSCoinbaseTransaction *tx = (DSCoinbaseTransaction*)[DSTransactionFactory transactionWithMessage:[message subdataWithRange:NSMakeRange(offset, message.length - offset)] onChain:self.chain];
     if (![tx isMemberOfClass:[DSCoinbaseTransaction class]]) return;
+    offset += tx.payloadOffset;
     
-    if (length - offset < 4) return;
-    uint32_t deletedMasternodeCount = [message UInt32AtOffset:offset];
-    offset += 4;
+    if (length - offset < 1) return;
+    NSNumber * deletedMasternodeCountLength;
+    uint64_t deletedMasternodeCount = [message varIntAtOffset:offset length:&deletedMasternodeCountLength];
+    offset += [deletedMasternodeCountLength unsignedLongValue];
     
     NSMutableArray * deletedMasternodeHashes = [NSMutableArray array];
     
-    while (deletedMasternodeCount > 1) {
+    while (deletedMasternodeCount >= 1) {
         if (length - offset < 32) return;
         [deletedMasternodeHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]]];
         offset += 32;
         deletedMasternodeCount--;
     }
     
-    if (length - offset < 4) return;
-    uint32_t addedMasternodeCount = [message UInt32AtOffset:offset];
-    offset += 4;
+    if (length - offset < 1) return;
+    NSNumber * addedMasternodeCountLength;
+    uint64_t addedMasternodeCount = [message varIntAtOffset:offset length:&addedMasternodeCountLength];
+    offset += [addedMasternodeCountLength unsignedLongValue];
     
     NSMutableArray * addedMasternodes = [NSMutableArray array];
     
-    while (addedMasternodeCount > 1) {
+    while (addedMasternodeCount >= 1) {
         if (length - offset < 91) return;
         NSData * data = [message subdataWithRange:NSMakeRange(offset, 91)];
         [addedMasternodes addObject:[DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data]];

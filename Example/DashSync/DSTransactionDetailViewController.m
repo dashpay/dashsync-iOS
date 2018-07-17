@@ -203,7 +203,7 @@
             switch (indexPathRow) {
                     
                 case 0:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"IdCell" forIndexPath:indexPath];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdenttifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
@@ -217,7 +217,7 @@
                     break;
                     
                 case 1:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
@@ -228,7 +228,7 @@
                     subtitleLabel.text = nil;
                     break;
                 case 2:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
@@ -239,7 +239,7 @@
                     subtitleLabel.text = nil;
                     break;
                 case 3:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCell" forIndexPath:indexPath];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleNone;
                     textLabel = (id)[cell viewWithTag:1];
                     detailLabel = (id)[cell viewWithTag:2];
@@ -268,7 +268,7 @@
                     break;
                     
                 case 4:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCell"];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier"];
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     textLabel = (id)[cell viewWithTag:1];
                     localCurrencyLabel = (id)[cell viewWithTag:5];
@@ -296,10 +296,10 @@
         case 2:
             if ((self.sent > 0 && indexPath.section == 1) || (self.sent == 0 && indexPath.section == 2)) {
                 if ([self.outputText[indexPath.row] length] > 0) {
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                    cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
-                else cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCell" forIndexPath:indexPath];
+                else cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCellIdentifier" forIndexPath:indexPath];
                 
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
@@ -342,7 +342,7 @@
                 
             }
             else if (self.inputAddresses[indexPath.row] != (id)[NSNull null]) {
-                cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 detailLabel = (id)[cell viewWithTag:2];
                 subtitleLabel = (id)[cell viewWithTag:3];
@@ -360,7 +360,7 @@
                     } else if (purpose == 0) {
                         subtitleLabel.text = @"wallet address (BIP32)";
                     } else {
-                        subtitleLabel.text = @"wallet address (Unknown Purpose)";
+                        subtitleLabel.text = @"wallet address (Unknown Derivation Path)";
                     }
                 }
                 else subtitleLabel.text = NSLocalizedString(@"spent address", nil);

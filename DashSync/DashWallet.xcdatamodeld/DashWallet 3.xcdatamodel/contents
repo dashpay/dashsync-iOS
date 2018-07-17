@@ -27,7 +27,7 @@
         <relationship name="governanceObjectHashes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceObjectHashEntity" inverseName="chain" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
         <relationship name="masternodeBroadcastHashes" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeBroadcastHashEntity" inverseName="chain" inverseEntity="DSMasternodeBroadcastHashEntity" syncable="YES"/>
         <relationship name="peers" toMany="YES" deletionRule="Cascade" destinationEntity="DSPeerEntity" inverseName="chain" inverseEntity="DSPeerEntity" syncable="YES"/>
-        <relationship name="sporks" toMany="YES" deletionRule="Nullify" destinationEntity="DSSporkEntity" inverseName="chain" inverseEntity="DSSporkEntity" syncable="YES"/>
+        <relationship name="sporks" toMany="YES" deletionRule="Nullify" destinationEntity="DSSporkHashEntity" inverseName="chain" inverseEntity="DSSporkHashEntity" syncable="YES"/>
         <relationship name="transactions" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="chain" inverseEntity="DSTransactionEntity" syncable="YES"/>
         <relationship name="votes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteHashEntity" inverseName="chain" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
     </entity>
@@ -197,13 +197,18 @@
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="timeSigned" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="value" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="sporks" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="sporkHash" maxCount="1" deletionRule="Cascade" destinationEntity="DSSporkHashEntity" inverseName="spork" inverseEntity="DSSporkHashEntity" syncable="YES"/>
         <compoundIndexes>
             <compoundIndex>
-                <index value="chain"/>
+                <index value="sporkHash"/>
                 <index value="identifier"/>
             </compoundIndex>
         </compoundIndexes>
+    </entity>
+    <entity name="DSSporkHashEntity" representedClassName="DSSporkHashEntity" syncable="YES">
+        <attribute name="sporkHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="sporks" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="spork" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSSporkEntity" inverseName="sporkHash" inverseEntity="DSSporkEntity" syncable="YES"/>
     </entity>
     <entity name="DSTransactionEntity" representedClassName="DSTransactionEntity" syncable="YES">
         <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="2147483647" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -255,5 +260,6 @@
         <element name="DSTransactionEntity" positionX="0" positionY="0" width="128" height="165"/>
         <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="0" positionY="0" width="128" height="195"/>
+        <element name="DSSporkHashEntity" positionX="18" positionY="153" width="128" height="90"/>
     </elements>
 </model>

@@ -86,4 +86,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 -(void)clearRegisteredPeers;
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
+-(void)getSporks;
+
 @end

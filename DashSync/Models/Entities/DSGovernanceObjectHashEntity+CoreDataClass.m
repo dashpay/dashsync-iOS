@@ -12,7 +12,7 @@
 
 @implementation DSGovernanceObjectHashEntity
 
-+(DSGovernanceObjectHashEntity*)governanceObjectHashEntitiesWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity {
++(DSGovernanceObjectHashEntity*)governanceObjectHashEntityWithHash:(NSData*)governanceObjectHash onChain:(DSChainEntity*)chainEntity {
     return [[self governanceObjectHashEntitiesWithHashes:[NSOrderedSet orderedSetWithObject:governanceObjectHash] onChain:chainEntity] firstObject];
 }
 

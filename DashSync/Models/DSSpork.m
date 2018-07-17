@@ -13,8 +13,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSKey.h"
 #import "DSChain.h"
-
-
+#import "DSSporkManager.h"
+#import "DSChainPeerManager.h"
 
 @interface DSSpork()
 
@@ -53,7 +53,6 @@
     _timeSigned = [message UInt64AtOffset:12];
     NSNumber * lNumber = nil;
     NSData * signature = [message dataAtOffset:20 length:&lNumber];
-//    NSUInteger l = lNumber.unsignedIntegerValue;
     _valid = [self checkSignature:signature];
     self.signature = signature;
     return self;
@@ -82,6 +81,7 @@
     UInt256 messageDigest = stringMessageData.SHA256_2;
     DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
     DSKey * sporkPublicKey = [DSKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
+    
     return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
 }
     
@@ -92,12 +92,18 @@
     } else {
         DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:self.sporkHash];
         NSString * sporkAddress = [messagePublicKey addressForChain:self.chain];
-        return [[self sporkAddress] isEqualToString:sporkAddress] | [self checkSignature70208Method:signature];
+        DSSporkManager * sporkManager = self.chain.peerManagerDelegate.sporkManager;
+        return [[self sporkAddress] isEqualToString:sporkAddress] || (![sporkManager sporksUpdatedSignatures] && [self checkSignature70208Method:signature]);
     }
 }
 
 -(NSString*)sporkKey {
-    return self.chain.sporkPublicKey;
+    if (self.chain.sporkPublicKey) return self.chain.sporkPublicKey;
+    if (self.chain.sporkPrivateKey) {
+        DSKey * sporkPrivateKey = [DSKey keyWithPrivateKey:self.chain.sporkPrivateKey onChain:self.chain];
+        return sporkPrivateKey.publicKey.hexString;
+    }
+    return nil;
 }
 
 //starting in 12.3 sporks use addresses instead of public keys

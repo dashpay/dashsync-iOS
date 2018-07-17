@@ -163,6 +163,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
 
+- (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes;
+
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
 @end

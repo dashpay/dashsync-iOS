@@ -81,7 +81,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletsDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSMasternodeBroadcast;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSMasternodeBroadcast,DSChainPeerManager;
 
 @protocol DSChainDelegate;
 

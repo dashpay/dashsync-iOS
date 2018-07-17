@@ -8,15 +8,19 @@
 
 #import "DSSporkManager.h"
 #import "DSSpork.h"
+#import "DSSporkHashEntity+CoreDataProperties.h"
 #import "DSSporkEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
+#import "DSChainEntity+CoreDataProperties.h"
 #import "DSChainPeerManager.h"
 
 @interface DSSporkManager()
     
 @property (nonatomic,strong) NSMutableDictionary * sporkDictionary;
+@property (nonatomic,strong) NSMutableArray * sporkHashesMarkedForRetrieval;
 @property (nonatomic,strong) DSChain * chain;
+@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
     
 @end
 
@@ -26,12 +30,24 @@
 {
     if (! (self = [super init])) return nil;
     _chain = chain;
-    _sporkDictionary = [NSMutableDictionary dictionary];
-    NSArray * sporkEntities = [DSSporkEntity sporksOnChain:self.chain.chainEntity];
-    for (DSSporkEntity * sporkEntity in sporkEntities) {
-        DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
-        _sporkDictionary[@(spork.identifier)] = spork;
-    }
+    __block NSMutableArray * sporkHashesMarkedForRetrieval = [NSMutableArray array];
+    __block NSMutableDictionary * sporkDictionary = [NSMutableDictionary dictionary];
+    self.managedObjectContext = [NSManagedObject context];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSChainEntity setContext:self.managedObjectContext];
+        DSChainEntity * chainEntity = self.chain.chainEntity;
+        NSArray * sporkEntities = [DSSporkEntity sporksOnChain:chainEntity];
+        for (DSSporkEntity * sporkEntity in sporkEntities) {
+            DSSpork * spork = [[DSSpork alloc] initWithIdentifier:sporkEntity.identifier value:sporkEntity.value timeSigned:sporkEntity.timeSigned signature:sporkEntity.signature onChain:chain];
+            sporkDictionary[@(spork.identifier)] = spork;
+        }
+        NSArray * sporkHashEntities = [DSSporkHashEntity standaloneSporkHashEntitiesOnChain:chainEntity];
+        for (DSSporkHashEntity * sporkHashEntity in sporkHashEntities) {
+            [sporkHashesMarkedForRetrieval addObject:sporkHashEntity.sporkHash];
+        }
+    }];
+    _sporkDictionary = sporkDictionary;
+    _sporkHashesMarkedForRetrieval = sporkHashesMarkedForRetrieval;
     return self;
 }
     
@@ -41,8 +57,27 @@
     return !!instantSendSpork.value;
 }
 
+-(BOOL)sporksUpdatedSignatures {
+    DSSpork * updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
+    if (!updateSignatureSpork) return FALSE;//assume true
+    return !!updateSignatureSpork.value;
+}
+
+
+
 -(NSDictionary*)sporkDictionary {
     return [_sporkDictionary copy];
+}
+
+- (void)peer:(DSPeer * _Nonnull)peer hasSporkHashes:(NSSet* _Nonnull)sporkHashes {
+    BOOL hasNew = FALSE;
+    for (NSData * sporkHash in sporkHashes) {
+        if (![_sporkHashesMarkedForRetrieval containsObject:sporkHash]) {
+            [_sporkHashesMarkedForRetrieval addObject:sporkHash];
+            hasNew = TRUE;
+        }
+    }
+    if (hasNew) [self.chain.peerManagerDelegate getSporks];
 }
     
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
@@ -74,6 +109,8 @@
         });
     }
 }
+
+
 
 -(void)wipeSporkInfo {
     _sporkDictionary = [NSMutableDictionary dictionary];
