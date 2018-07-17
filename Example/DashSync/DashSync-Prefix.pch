@@ -15,4 +15,8 @@
 #ifdef __OBJC__
     @import UIKit;
     @import Foundation;
+
+#define weakify     __weak typeof(self) self_weak_ = self;
+#define strongify   __strong typeof(self_weak_) self = self_weak_; if (!self) { return; }
+
 #endif

@@ -16,10 +16,6 @@
     // Override point for customization after application launch.
     [DSAuthenticationManager sharedInstance].usesAuthentication = FALSE;
     [DashSync sharedSyncController];
-    [[DSOptionsManager sharedInstance] setKeepHeaders:YES];
-    [[DSOptionsManager sharedInstance] setSyncFromGenesis:NO];
-    [[DSOptionsManager sharedInstance] setSyncFromHeight:700000];
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_VerifiedMasternodeList | DSSyncType_Sporks];
     return YES;
 }
 
