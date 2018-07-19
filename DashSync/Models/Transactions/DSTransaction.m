@@ -26,6 +26,7 @@
 //  THE SOFTWARE.
 
 #import "DSTransaction.h"
+#import "DSTransactionFactory.h"
 #import "DSKey.h"
 #import "NSString+Dash.h"
 #import "NSData+Dash.h"
@@ -36,17 +37,10 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 
-#define TX_VERSION    0x00000001u
-#define TX_LOCKTIME   0x00000000u
-#define TXIN_SEQUENCE UINT32_MAX
-#define SIGHASH_ALL   0x00000001u
-
 @interface DSTransaction ()
 
-@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
-@property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) NSData * coinbaseData;
+@property (nonatomic, strong) NSData * coinbaseClassicalTransactionData;
 
 @end
 
@@ -63,7 +57,7 @@
     [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier];
     //transaction.inputIndexes
     [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil];
-    [transaction setCoinbaseData:coinbaseData];
+    [transaction setCoinbaseClassicalTransactionData:coinbaseData];
     NSMutableData * outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
     [transaction addOutputScript:outputScript amount:chain.baseReward];
@@ -100,7 +94,7 @@
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     if (! (self = [self initOnChain:chain])) return nil;
- 
+    
     NSString *address = nil;
     NSNumber * l = 0;
     uint32_t off = 0;
@@ -109,12 +103,14 @@
     
     @autoreleasepool {
         self.chain = chain;
-        _version = [message UInt32AtOffset:off]; // tx version
-        off += sizeof(uint32_t);
+        _version = [message UInt16AtOffset:off]; // tx version
+        off += sizeof(uint16_t);
+        _type = [message UInt16AtOffset:off]; // tx type
+        off += sizeof(uint16_t);
         count = [message varIntAtOffset:off length:&l]; // input count
         if (count == 0) return nil; // at least one input is required
         off += l.unsignedIntegerValue;
-
+        
         for (NSUInteger i = 0; i < count; i++) { // inputs
             [self.hashes addObject:uint256_obj([message hashAtOffset:off])];
             off += sizeof(UInt256);
@@ -127,10 +123,10 @@
             [self.sequences addObject:@([message UInt32AtOffset:off])]; // input sequence number (for replacement tx)
             off += sizeof(uint32_t);
         }
-
+        
         count = (NSUInteger)[message varIntAtOffset:off length:&l]; // output count
         off += l.unsignedIntegerValue;
-
+        
         for (NSUInteger i = 0; i < count; i++) { // outputs
             [self.amounts addObject:@([message UInt64AtOffset:off])]; // output amount
             off += sizeof(uint64_t);
@@ -140,87 +136,91 @@
             address = [NSString addressWithScriptPubKey:d onChain:self.chain]; // address from output script if applicable
             [self.addresses addObject:(address) ? address : [NSNull null]];
         }
-        _payloadOffset = off;
-
+        
         _lockTime = [message UInt32AtOffset:off]; // tx locktime
-        _txHash = self.data.SHA256_2;
-    }
-    
-    NSString * outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
-    if (outboundShapeshiftAddress) {
-        self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress];
-        if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
-            self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
+        off += 4;
+        _payloadOffset = off;
+        if ([self type] == DSTransactionType_Classic) {
+            _txHash = self.data.SHA256_2;
         }
-        if (!self.associatedShapeshift) {
-            NSString * possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
-            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress];
+    }
+    if ([self type] == DSTransactionType_Classic) {
+        
+        NSString * outboundShapeshiftAddress = [self shapeshiftOutboundAddress];
+        if (outboundShapeshiftAddress) {
+            self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:outboundShapeshiftAddress];
             if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
                 self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
             }
-        }
-        if (!self.associatedShapeshift && [self.outputAddresses count]) {
-            NSString * mainOutputAddress = nil;
-            NSMutableArray * allAddresses = [NSMutableArray array];
-            for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
-                [allAddresses addObject:e.address];
+            if (!self.associatedShapeshift) {
+                NSString * possibleOutboundShapeshiftAddress = [self shapeshiftOutboundAddressForceScript];
+                self.associatedShapeshift = [DSShapeshiftEntity shapeshiftHavingWithdrawalAddress:possibleOutboundShapeshiftAddress];
+                if (self.associatedShapeshift && [self.associatedShapeshift.shapeshiftStatus integerValue] == eShapeshiftAddressStatus_Unused) {
+                    self.associatedShapeshift.shapeshiftStatus = @(eShapeshiftAddressStatus_NoDeposits);
+                }
             }
-            for (NSString * outputAddress in self.outputAddresses) {
-                if (outputAddress && [allAddresses containsObject:address]) continue;
-                if ([outputAddress isEqual:[NSNull null]]) continue;
-                mainOutputAddress = outputAddress;
-            }
-            //NSAssert(mainOutputAddress, @"there should always be an output address");
-            if (mainOutputAddress){
-                self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+            if (!self.associatedShapeshift && [self.outputAddresses count]) {
+                NSString * mainOutputAddress = nil;
+                NSMutableArray * allAddresses = [NSMutableArray array];
+                for (DSAddressEntity *e in [DSAddressEntity allObjects]) {
+                    [allAddresses addObject:e.address];
+                }
+                for (NSString * outputAddress in self.outputAddresses) {
+                    if (outputAddress && [allAddresses containsObject:address]) continue;
+                    if ([outputAddress isEqual:[NSNull null]]) continue;
+                    mainOutputAddress = outputAddress;
+                }
+                //NSAssert(mainOutputAddress, @"there should always be an output address");
+                if (mainOutputAddress){
+                    self.associatedShapeshift = [DSShapeshiftEntity registerShapeshiftWithInputAddress:mainOutputAddress andWithdrawalAddress:outboundShapeshiftAddress withStatus:eShapeshiftAddressStatus_NoDeposits];
+                }
             }
         }
     }
     
-
     return self;
 }
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
-outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain
+                    outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain
 {
     if (hashes.count == 0 || hashes.count != indexes.count) return nil;
     if (scripts.count > 0 && hashes.count != scripts.count) return nil;
     if (addresses.count != amounts.count) return nil;
-
+    
     if (! (self = [super init])) return nil;
-
+    
     self.chain = chain;
     _version = TX_VERSION;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
     self.indexes = [NSMutableArray arrayWithArray:indexes];
-
+    
     if (scripts.count > 0) {
         self.inScripts = [NSMutableArray arrayWithArray:scripts];
     }
     else self.inScripts = [NSMutableArray arrayWithCapacity:hashes.count];
-
+    
     while (self.inScripts.count < hashes.count) {
         [self.inScripts addObject:[NSNull null]];
     }
-
+    
     self.amounts = [NSMutableArray arrayWithArray:amounts];
     self.addresses = [NSMutableArray arrayWithArray:addresses];
     self.outScripts = [NSMutableArray arrayWithCapacity:addresses.count];
-
+    
     for (int i = 0; i < addresses.count; i++) {
         [self.outScripts addObject:[NSMutableData data]];
         [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i] forChain:chain];
     }
-
+    
     self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
     self.sequences = [NSMutableArray arrayWithCapacity:hashes.count];
-
+    
     for (int i = 0; i < hashes.count; i++) {
         [self.signatures addObject:[NSNull null]];
         [self.sequences addObject:@(TXIN_SEQUENCE)];
     }
-
+    
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     return self;
@@ -281,7 +281,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(D
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
     return [NSString stringWithFormat:
             @"%@(id=%@, inputHashes=%@, inputIndexes=%@, inputScripts=%@, inputSignatures=%@, inputSequences=%@, "
-                           "outputAmounts=%@, outputAddresses=%@, outputScripts=%@)",
+            "outputAmounts=%@, outputAddresses=%@, outputScripts=%@)",
             [[self class] description], txid,
             self.inputHashes, self.inputIndexes, self.inputScripts, self.inputSignatures, self.inputSequences,
             self.outputAmounts, self.outputAddresses, self.outputScripts];
@@ -292,7 +292,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(D
 {
     if (! uint256_is_zero(_txHash)) return self.data.length;
     return 8 + [NSMutableData sizeOfVarInt:self.hashes.count] + [NSMutableData sizeOfVarInt:self.addresses.count] +
-           TX_INPUT_SIZE*self.hashes.count + TX_OUTPUT_SIZE*self.addresses.count;
+    TX_INPUT_SIZE*self.hashes.count + TX_OUTPUT_SIZE*self.addresses.count;
 }
 
 - (uint64_t)standardFee
@@ -323,7 +323,7 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(D
 }
 
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
-sequence:(uint32_t)sequence
+            sequence:(uint32_t)sequence
 {
     [self.hashes addObject:uint256_obj(hash)];
     [self.indexes addObject:@(index)];
@@ -351,7 +351,7 @@ sequence:(uint32_t)sequence
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 {
     NSString *address = [NSString addressWithScriptPubKey:script onChain:self.chain];
-
+    
     [self.amounts addObject:@(amount)];
     [self.outScripts addObject:script];
     [self.addresses addObject:(address) ? address : [NSNull null]];
@@ -360,7 +360,7 @@ sequence:(uint32_t)sequence
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 {
     NSMutableData *d = [NSMutableData data];
-
+    
     [d appendScriptPubKeyForAddress:address forChain:self.chain];
     self.inScripts[index] = d;
 }
@@ -369,15 +369,15 @@ sequence:(uint32_t)sequence
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
     NSInteger i = 0;
-
+    
     for (NSData *script in self.inScripts) {
         NSString *addr = [NSString addressWithScriptPubKey:script onChain:self.chain];
-
+        
         if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i] onChain:self.chain];
         [addresses addObject:(addr) ? addr : [NSNull null]];
         i++;
     }
-
+    
     return addresses;
 }
 
@@ -400,35 +400,35 @@ sequence:(uint32_t)sequence
     UInt256 hash = UINT256_ZERO;
     NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE*self.hashes.count +
                         TX_OUTPUT_SIZE*self.addresses.count];
-
+    
     [d appendUInt32:self.version];
     [d appendVarInt:self.hashes.count];
     
-    if ([self isCoinbase]) {
+    if ([self isCoinbaseClassicTransaction]) {
         [d appendBytes:&hash length:sizeof(hash)];
         [d appendUInt32:UINT32_MAX];
-        [d appendData:self.coinbaseData];
+        [d appendData:self.coinbaseClassicalTransactionData];
         [d appendUInt32:UINT32_MAX];
     } else {
-
-    for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        [self.hashes[i] getValue:&hash];
-        [d appendBytes:&hash length:sizeof(hash)];
-        [d appendUInt32:[self.indexes[i] unsignedIntValue]];
-
-        if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
-            [d appendVarInt:[self.signatures[i] length]];
-            [d appendData:self.signatures[i]];
-        }
-        else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
-            //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-            [d appendVarInt:[self.inScripts[i] length]];
-            [d appendData:self.inScripts[i]];
-        }
-        else [d appendVarInt:0];
         
-        [d appendUInt32:[self.sequences[i] unsignedIntValue]];
-    }
+        for (NSUInteger i = 0; i < self.hashes.count; i++) {
+            [self.hashes[i] getValue:&hash];
+            [d appendBytes:&hash length:sizeof(hash)];
+            [d appendUInt32:[self.indexes[i] unsignedIntValue]];
+            
+            if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
+                [d appendVarInt:[self.signatures[i] length]];
+                [d appendData:self.signatures[i]];
+            }
+            else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
+                //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
+                [d appendVarInt:[self.inScripts[i] length]];
+                [d appendData:self.inScripts[i]];
+            }
+            else [d appendVarInt:0];
+            
+            [d appendUInt32:[self.sequences[i] unsignedIntValue]];
+        }
     }
     
     [d appendVarInt:self.amounts.count];
@@ -447,7 +447,7 @@ sequence:(uint32_t)sequence
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
-                   *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
+    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     for (NSString *pk in privateKeys) {
         DSKey *key = [DSKey keyWithPrivateKey:pk onChain:self.chain];
@@ -490,7 +490,7 @@ sequence:(uint32_t)sequence
     
     if (amounts.count != self.hashes.count || ages.count != self.hashes.count || [ages containsObject:@(0)]) return 0;
     
-    for (NSUInteger i = 0; i < amounts.count; i++) {    
+    for (NSUInteger i = 0; i < amounts.count; i++) {
         p += [amounts[i] unsignedLongLongValue]*[ages[i] unsignedLongLongValue];
     }
     
@@ -504,11 +504,11 @@ sequence:(uint32_t)sequence
         self.size > TX_FREE_MAX_SIZE || [heights containsObject:@(TX_UNCONFIRMED)]) {
         return TX_UNCONFIRMED;
     }
-
+    
     for (NSNumber *amount in self.amounts) {
         if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) return TX_UNCONFIRMED;
     }
-
+    
     uint64_t amountTotal = 0, amountsByHeights = 0;
     
     for (NSUInteger i = 0; i < amounts.count; i++) {
@@ -524,7 +524,7 @@ sequence:(uint32_t)sequence
     return (uint32_t)((TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1ULL)/amountTotal);
 }
 
--(BOOL)isCoinbase {
+-(BOOL)isCoinbaseClassicTransaction {
     if (([self.hashes count] == 1)) {
         UInt256 firstInputHash;
         [self.hashes[0] getValue:&firstInputHash];

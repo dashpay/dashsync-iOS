@@ -101,7 +101,9 @@
 -(void)wipeMasternodeDataForChain:(DSChain*)chain {
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
-    [DSMasternodeBroadcastHashEntity deleteHashesOnChain:chainEntity];
+    if (chain.protocolVersion < 70211) {
+        [DSMasternodeBroadcastHashEntity deleteHashesOnChain:chainEntity];
+    }
     DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
     [peerManager.masternodeManager wipeMasternodeInfo];

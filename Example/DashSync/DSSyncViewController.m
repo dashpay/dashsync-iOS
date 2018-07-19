@@ -57,7 +57,7 @@
     [self updateSporks];
     [self updateBlockHeight];
     [self updateMasternodeCount];
-    [self updateMasternodeBroadcastsCount];
+    [self updateMasternodeList];
     [self updateWalletCount];
     [self updateStandaloneDerivationPathsCount];
     [self updateSingleAddressesCount];
@@ -111,7 +111,7 @@
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                      NSLog(@"update masternode broadcast count");
-                                                                                     [self updateMasternodeBroadcastsCount];
+                                                                                     [self updateMasternodeList];
                                                                                      }
                                                                                  }];
     self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
@@ -379,8 +379,14 @@
     self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",self.chainPeerManager.chain.totalMasternodeCount];
 }
 
--(void)updateMasternodeBroadcastsCount {
+-(void)updateMasternodeList {
+    if (self.chainPeerManager.chain.protocolVersion < 70211) {
     self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager masternodeBroadcastsCount]];
+    } else {
+        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager simplifiedMasternodeEntryCount]];
+        self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager simplifiedMasternodeEntryCount]];
+        self.verifiedMasternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager simplifiedMasternodeEntryCount]];
+    }
 }
 
 -(void)updateWalletCount {

@@ -18,6 +18,7 @@
 @property(nonatomic,assign) UInt160 keyIDOperator;
 @property(nonatomic,assign) UInt160 keyIDVoting;
 @property(nonatomic,assign) BOOL isValid;
+@property(nonatomic,strong) DSChain * chain;
 
 @end
 
@@ -36,11 +37,28 @@
     return hashImportantData.SHA256_2;
 }
 
-+(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data {
-    return [[self alloc] initWithMessage:data];
++(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain {
+    return [[self alloc] initWithMessage:data onChain:chain];
 }
 
--(instancetype)initWithMessage:(NSData*)message {
++(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash address:(UInt128)address port:(uint16_t)port keyIDOperator:(UInt160)keyIDOperator keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid onChain:(DSChain*)chain {
+    return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash address:address port:port keyIDOperator:keyIDOperator keyIDVoting:keyIDVoting isValid:isValid simplifiedMasternodeEntryHash:UINT256_ZERO onChain:chain];
+}
+
++(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash address:(UInt128)address port:(uint16_t)port keyIDOperator:(UInt160)keyIDOperator keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash onChain:(DSChain*)chain {
+    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
+    simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
+    simplifiedMasternodeEntry.address = address;
+    simplifiedMasternodeEntry.port = port;
+    simplifiedMasternodeEntry.keyIDVoting = keyIDVoting;
+    simplifiedMasternodeEntry.keyIDOperator = keyIDOperator;
+    simplifiedMasternodeEntry.isValid = isValid;
+    simplifiedMasternodeEntry.simplifiedMasternodeEntryHash = !uint256_is_zero(simplifiedMasternodeEntryHash)?simplifiedMasternodeEntryHash:[simplifiedMasternodeEntry calculateSimplifiedMasternodeEntryHash];
+    simplifiedMasternodeEntry.chain = chain;
+    return simplifiedMasternodeEntry;
+}
+
+-(instancetype)initWithMessage:(NSData*)message onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     NSUInteger length = message.length;
     NSUInteger offset = 0;
@@ -69,6 +87,7 @@
     offset += 1;
     
     self.simplifiedMasternodeEntryHash = [self calculateSimplifiedMasternodeEntryHash];
+    self.chain = chain;;
     
     return self;
 }

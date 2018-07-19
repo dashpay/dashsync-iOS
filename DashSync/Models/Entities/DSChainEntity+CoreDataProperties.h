@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSChainEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *checkpoints;
+@property (nullable, nonatomic, retain) NSData *baseBlockHash;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
@@ -42,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
 @property (nonnull, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 @property (nonnull, nonatomic, retain) NSSet<DSMasternodeBroadcastHashEntity *> *masternodeBroadcastHashes;
+@property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeEntries;
 
 @end
 

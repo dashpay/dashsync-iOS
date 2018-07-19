@@ -87,6 +87,7 @@
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
 		FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */; };
 		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
+		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -243,6 +244,7 @@
 		FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainExplorerViewController.m; sourceTree = "<group>"; };
 		FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlockTableViewCell.h; sourceTree = "<group>"; };
 		FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMerkleBlockTableViewCell.m; sourceTree = "<group>"; };
+		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -404,6 +406,7 @@
 				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
 				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				2AA2C5EC20E397AE007768B1 /* DSMasternodeBroadcastTests.m */,
+				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 			);
 			path = Tests;
@@ -816,6 +819,7 @@
 				2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */,
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
+				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
@@ -990,6 +994,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DashSync_Example.app/DashSync_Example";
@@ -1010,6 +1015,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Tests/Tests-Prefix.pch";
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DashSync_Example.app/DashSync_Example";
