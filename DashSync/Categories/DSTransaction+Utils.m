@@ -26,11 +26,12 @@
 //  THE SOFTWARE.
 
 #import "DSTransaction+Utils.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSChainPeerManager.h"
 #import "DSChainManager.h"
 #import "DSChain.h"
 #import "DSAccount.h"
+#import "DSWallet.h"
 
 @implementation DSTransaction (Utils)
 
@@ -76,7 +77,7 @@
 
 - (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     uint64_t received = [account amountReceivedFromTransaction:self],
 
     sent = [account amountSentByTransaction:self];
@@ -92,7 +93,7 @@
 
 - (NSString*)amountTextReceivedInAccount:(DSAccount*)account
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     uint64_t received = [account amountReceivedFromTransaction:self],
 
     sent = [account amountSentByTransaction:self];

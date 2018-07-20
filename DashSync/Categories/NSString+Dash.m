@@ -29,7 +29,7 @@
 #import "NSData+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "UIImage+DSUtils.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
 

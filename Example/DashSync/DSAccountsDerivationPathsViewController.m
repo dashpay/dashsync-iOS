@@ -57,7 +57,7 @@
     DSDerivationPath * derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
     cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
-    cell.balanceLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:derivationPath.balance];
+    cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
 }
 
 

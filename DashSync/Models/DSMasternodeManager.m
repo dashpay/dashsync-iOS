@@ -294,33 +294,36 @@ inline static int ceil_log2(int x)
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
     @synchronized(self) {
-        NSData *masternodeBroadcastHash = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
-        DSMasternodeBroadcastHashEntity * relatedHashEntity = nil;
-        for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in [self.requestHashEntities copy]) {
-            if ([masternodeBroadcastHashEntity.masternodeBroadcastHash isEqual:masternodeBroadcastHash]) {
-                relatedHashEntity = masternodeBroadcastHashEntity;
-                [self.requestHashEntities removeObject:masternodeBroadcastHashEntity];
-                break;
+        [self.managedObjectContext performBlockAndWait:^{
+            NSData *masternodeBroadcastHash = [NSData dataWithUInt256:masternodeBroadcast.masternodeBroadcastHash];
+            DSMasternodeBroadcastHashEntity * relatedHashEntity = nil;
+            for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in [self.requestHashEntities copy]) {
+                if ([masternodeBroadcastHashEntity.masternodeBroadcastHash isEqual:masternodeBroadcastHash]) {
+                    relatedHashEntity = masternodeBroadcastHashEntity;
+                    [self.requestHashEntities removeObject:masternodeBroadcastHashEntity];
+                    break;
+                }
             }
-        }
-        NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
-        if (!relatedHashEntity) return;
-        NSArray * broadcastEntities = [DSMasternodeBroadcastEntity objectsMatching:@"masternodeBroadcastHash = %@",relatedHashEntity];
-        if ([broadcastEntities count]) {
-            [[broadcastEntities objectAtIndex:0] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
-        } else {
-            [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
-        }
-        [self.needsRequestsHashEntities removeObject:relatedHashEntity];
-        [self.masternodeBroadcasts addObject:masternodeBroadcast];
-        if (![self.requestHashEntities count]) {
-            [self requestMasternodeBroadcastsFromPeer:peer];
-            [DSMasternodeBroadcastEntity saveContext];
-            [self finishedMasternodeListSyncWithPeer:peer];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-            });
-        }
+            NSAssert(relatedHashEntity, @"There needs to be a relatedHashEntity");
+            if (!relatedHashEntity) return;
+            NSArray * broadcastEntities = [DSMasternodeBroadcastEntity objectsMatching:@"masternodeBroadcastHash = %@",relatedHashEntity];
+            if ([broadcastEntities count]) {
+                [[broadcastEntities objectAtIndex:0] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
+            } else {
+                [[DSMasternodeBroadcastEntity managedObject] setAttributesFromMasternodeBroadcast:masternodeBroadcast forHashEntity:relatedHashEntity];
+            }
+            [self.needsRequestsHashEntities removeObject:relatedHashEntity];
+            [self.masternodeBroadcasts addObject:masternodeBroadcast];
+            if (![self.requestHashEntities count]) {
+                [self requestMasternodeBroadcastsFromPeer:peer];
+                [DSMasternodeBroadcastEntity saveContext];
+                [self finishedMasternodeListSyncWithPeer:peer];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                });
+            }
+        }];
+        
     }
 }
 

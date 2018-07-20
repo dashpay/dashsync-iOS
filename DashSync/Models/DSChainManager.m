@@ -9,7 +9,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"

@@ -40,7 +40,7 @@
         // use background fetch to stay synced with the blockchain
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         
-        [DSWalletManager sharedInstance];
+        [DSPriceManager sharedInstance];
         // start the event manager
         [[DSEventManager sharedEventManager] up];
         

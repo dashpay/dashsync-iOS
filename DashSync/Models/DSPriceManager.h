@@ -1,5 +1,5 @@
 //
-//  DSWalletManager.h
+//  DSPriceManager.h
 //  DashSync
 //
 //  Created by Aaron Voisine on 3/2/14.
@@ -27,8 +27,6 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import "DSWallet.h"
-#import "DSMnemonic.h"
 
 #define DASH         @"DASH"     // capital D with stroke (utf-8)
 #define BTC          @"\xC9\x83"     // capital B with stroke (utf-8)
@@ -40,21 +38,12 @@
 #define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
-#define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
 #define SPEND_LIMIT_KEY     @"spendlimit"
 
-@class DSDerivationPath;
-
-@protocol DSMnemonic;
-
-typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL authenticated,BOOL cancelled); //success is true is neededUpgrade is true and we upgraded, or we didn't need upgrade
 typedef void (^ResetCancelHandlerBlock)(void);
 
-@interface DSWalletManager : NSObject
+@interface DSPriceManager : NSObject
 
-@property (nonatomic, readonly) NSArray<DSWallet*>* allWallets;
-@property (nonatomic, readonly) BOOL watchOnly; // true if this is a "watch only" wallet with no signing ability
-@property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashSignificantFormat; // dash currency formatter that shows significant digits
@@ -67,24 +56,10 @@ typedef void (^ResetCancelHandlerBlock)(void);
 @property (nonatomic, readonly) NSNumber * _Nullable localCurrencyDashPrice;
 @property (nonatomic, readonly) NSArray * _Nullable currencyCodes; // list of supported local currency codes
 @property (nonatomic, readonly) NSArray * _Nullable currencyNames; // names for local currency codes
-@property (nonatomic, readonly) BOOL isTestnet;
 
 + (instancetype _Nullable)sharedInstance;
 
-- (BOOL)hasSeedPhrase;
-- (void)clearKeychainWalletData;
-
 - (void)startExchangeRateFetching;
-
-// queries api.dashwallet.com and calls the completion block with unspent outputs for the given address
-- (void)utxosForAddresses:(NSArray * _Nonnull)address
-completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amounts, NSArray * _Nonnull scripts,
-                              NSError * _Null_unspecified error))completion;
-
-// given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
-// transaction that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString * _Nonnull)privKey onChain:(DSChain*)chain withFee:(BOOL)fee
-completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 - (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;
 - (int64_t)amountForDashString:(NSString * _Nullable)string;
@@ -102,13 +77,8 @@ completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError
 - (NSString * _Nonnull)localCurrencyStringForDashAmount:(int64_t)amount;
 - (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount;
 - (NSNumber * _Nullable)localCurrencyNumberForDashAmount:(int64_t)amount;
+- (NSNumber* _Nonnull)localCurrencyDashPrice;
 
--(NSNumber* _Nonnull)localCurrencyDashPrice;
-
--(void)upgradeExtendedKeysWithCompletion:(_Nullable UpgradeCompletionBlock)completion forChain:(DSChain*)chain;;
-
--(void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
--(UIViewController*)presentingViewController;
-- (uint64_t)spendingLimit;
+- (void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 
 @end

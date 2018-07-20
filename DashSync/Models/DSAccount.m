@@ -38,9 +38,17 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSAccountEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "NSString+Dash.h"
+#import "DSAuthenticationManager.h"
+#import "DSInsightManager.h"
+#import "DSKey+BIP38.h"
+
+#define AUTH_SWEEP_KEY @"AUTH_SWEEP_KEY"
+#define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
 
 @class DSDerivationPath,DSAccount;
 
@@ -685,7 +693,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (self.allTx[hash] != nil) return YES;
     
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
-    NSLog(@"[DSWallet] received unseen transaction %@", transaction);
+    NSLog(@"[DSAccount] received unseen transaction %@", transaction);
     
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
@@ -710,8 +718,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
     [self.moc performBlock:^{ // add the transaction to core data
-        if ([DSTransactionEntity countObjectsMatching:@"txHash == %@",
-             [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
+        [DSChainEntity setContext:self.moc];
+        if ([DSTransactionEntity countObjectsMatching:@"txHash == %@", [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
             [[DSTransactionEntity managedObject] setAttributesFromTx:transaction];
             [DSTransactionEntity saveContext];
         }
@@ -999,6 +1007,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                         [self.moc refreshObject:e mergeChanges:NO];
                     }
                 }
+                NSError * error = nil;
+                [self.moc save:&error];
+                if (error) {
+                    NSLog(@"Issue Saving DB when setting Block Height");
+                }
             }
         }];
     }
@@ -1010,6 +1023,100 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self.transactions removeAllObjects];
     [self.allTx removeAllObjects];
     [self updateBalance];
+}
+
+// given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
+// that will sweep the balance into the account (doesn't publish the tx)
+// this can only be done on main chain for now
+- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
+             completion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))completion
+{
+    if (! completion) return;
+    
+    if ([privKey isValidDashBIP38Key]) {
+        [[DSAuthenticationManager sharedInstance] requestKeyPasswordForSweepCompletion:completion userInfo:@{AUTH_SWEEP_KEY:privKey,AUTH_SWEEP_FEE:@(fee)} completion:^(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error), NSDictionary *userInfo, NSString *password) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                DSKey *key = [DSKey keyWithBIP38Key:userInfo[AUTH_SWEEP_KEY] andPassphrase:password onChain:self.wallet.chain];
+                
+                if (! key) {
+                    [[DSAuthenticationManager sharedInstance] badKeyPasswordForSweepCompletion:^{
+                        [self sweepPrivateKey:privKey withFee:fee completion:completion];
+                    } cancel:^{
+                        if (sweepCompletion) sweepCompletion(nil, 0, nil);
+                    }];
+                }
+                else {
+                    [self sweepPrivateKey:[key privateKeyStringForChain:self.wallet.chain] withFee:[userInfo[AUTH_SWEEP_FEE] boolValue] completion:sweepCompletion];
+                }
+            });
+        } cancel:^{
+            
+        }];
+        
+         
+        
+        return;
+    }
+    
+    DSKey *key = [DSKey keyWithPrivateKey:privKey onChain:self.wallet.chain];
+    NSString * address = [key addressForChain:self.wallet.chain];
+    if (! address) {
+        completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                          NSLocalizedString(@"not a valid private key", nil)}]);
+        return;
+    }
+    if ([self.wallet containsAddress:address]) {
+        completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                          NSLocalizedString(@"this private key is already in your wallet", nil)}]);
+        return;
+    }
+    
+    [[DSInsightManager sharedInstance] utxosForAddresses:@[address]
+                 completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
+                     DSTransaction *tx = [DSTransaction new];
+                     uint64_t balance = 0, feeAmount = 0;
+                     NSUInteger i = 0;
+                     
+                     if (error) {
+                         completion(nil, 0, error);
+                         return;
+                     }
+                     
+                     //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
+                     for (NSValue *output in utxos) {
+                         DSUTXO o;
+                         
+                         [output getValue:&o];
+                         [tx addInputHash:o.hash index:o.n script:scripts[i]];
+                         balance += [amounts[i++] unsignedLongLongValue];
+                     }
+                     
+                     if (balance == 0) {
+                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                           NSLocalizedString(@"this private key is empty", nil)}]);
+                         return;
+                     }
+                     
+                     // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
+                     if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+                     
+                     if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
+                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                           NSLocalizedString(@"transaction fees would cost more than the funds available on this "
+                                                                                                                             "private key (due to tiny \"dust\" deposits)",nil)}]);
+                         return;
+                     }
+                     
+                     [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
+                     
+                     if (! [tx signWithPrivateKeys:@[privKey]]) {
+                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                           NSLocalizedString(@"error signing transaction", nil)}]);
+                         return;
+                     }
+                     
+                     completion(tx, feeAmount, nil);
+                 }];
 }
 
 @end

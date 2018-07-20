@@ -12,7 +12,7 @@
 #import "DSKey.h"
 #import "DSDerivationPath.h"
 #import "DSChainManager.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"

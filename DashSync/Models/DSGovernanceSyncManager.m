@@ -261,8 +261,9 @@
             [self.managedObjectContext performBlockAndWait:^{
                 [DSChainEntity setContext:self.managedObjectContext];
                 [DSGovernanceObjectHashEntity setContext:self.managedObjectContext];
+                DSChainEntity * chainEntity = self.chain.chainEntity;
                 if ([hashesToInsert count]) {
-                    NSArray * novelGovernanceObjectHashEntities = [DSGovernanceObjectHashEntity governanceObjectHashEntitiesWithHashes:hashesToInsert onChain:self.chain.chainEntity];
+                    NSArray * novelGovernanceObjectHashEntities = [DSGovernanceObjectHashEntity governanceObjectHashEntitiesWithHashes:hashesToInsert onChain:chainEntity];
                     for (DSGovernanceObjectHashEntity * governanceObjectHashEntity in novelGovernanceObjectHashEntities) {
                         if ([hashesToQueryFromInsert containsObject:governanceObjectHashEntity.governanceObjectHash]) {
                             [hashEntitiesToQuery addObject:governanceObjectHashEntity];
@@ -270,9 +271,13 @@
                     }
                 }
                 if ([hashesToUpdate count]) {
-                    [DSGovernanceObjectHashEntity updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:hashesToUpdate onChain:self.chain.chainEntity];
+                    [DSGovernanceObjectHashEntity updateTimestampForGovernanceObjectHashEntitiesWithGovernanceObjectHashes:hashesToUpdate onChain:chainEntity];
                 }
-                [DSGovernanceObjectHashEntity saveContext];
+                NSError * error = nil;
+                [self.managedObjectContext save:&error];
+                if (error) {
+                    NSLog(@"%@",error);
+                }
             }];
             if ([hashesToInsert count]) {
                 [rHashes addObjectsFromArray:[hashesToInsert array]];

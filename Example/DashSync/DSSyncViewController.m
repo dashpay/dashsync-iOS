@@ -204,7 +204,7 @@
     if (timeout <= DBL_EPSILON) {
         if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-            if ([DSWalletManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
+            if ([DSPriceManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
             }
         }
@@ -363,7 +363,7 @@
 }
 
 -(void)updateBalance {
-    self.dashAmountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:self.chainPeerManager.chain.balance];
+    self.dashAmountLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:self.chainPeerManager.chain.balance];
     self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
 }
 

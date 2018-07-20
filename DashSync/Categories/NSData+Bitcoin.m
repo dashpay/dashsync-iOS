@@ -1080,16 +1080,34 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt128 *)(self.bytes + offset);
 }
 
+- (UInt128)UInt128
+{
+    if (self.length < sizeof(UInt128)) return UINT128_ZERO;
+    return *(UInt128 *)(self.bytes);
+}
+
 - (UInt160)UInt160AtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(UInt160)) return UINT160_ZERO;
     return *(UInt160 *)(self.bytes + offset);
 }
 
+- (UInt160)UInt160
+{
+    if (self.length < sizeof(UInt160)) return UINT160_ZERO;
+    return *(UInt160 *)(self.bytes);
+}
+
 - (UInt256)UInt256AtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(UInt256)) return UINT256_ZERO;
     return *(UInt256 *)(self.bytes + offset);
+}
+
+- (UInt256)UInt256
+{
+    if (self.length < sizeof(UInt256)) return UINT256_ZERO;
+    return *(UInt256 *)(self.bytes);
 }
 
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber **)length

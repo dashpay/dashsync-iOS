@@ -62,7 +62,7 @@
 
 - (void)setTransaction:(DSTransaction *)transaction
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSMutableArray *mutableInputAddresses = [NSMutableArray array], *text = [NSMutableArray array], *detail = [NSMutableArray array], *amount = [NSMutableArray array], *currencyIsBitcoinInstead = [NSMutableArray array];
     DSAccount * account = transaction.account;
     uint64_t fee = [account feeForTransaction:transaction];
@@ -183,7 +183,7 @@
     UITableViewCell *cell;
     BRCopyLabel *detailLabel;
     UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
-    DSWalletManager * walletManager = [DSWalletManager sharedInstance];
+    DSPriceManager * walletManager = [DSPriceManager sharedInstance];
     DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.transaction.chain];
     NSUInteger peerCount = peerManager.peerCount;
     NSUInteger relayCount = [peerManager relayCountForTransaction:self.transaction.txHash];

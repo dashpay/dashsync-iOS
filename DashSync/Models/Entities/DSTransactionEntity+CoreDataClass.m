@@ -83,7 +83,9 @@
         }
         
         self.lockTime = tx.lockTime;
-        self.chain = tx.chain.chainEntity;
+        if (!self.chain) {
+            self.chain = tx.chain.chainEntity;
+        }
         
     }];
     

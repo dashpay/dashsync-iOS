@@ -143,7 +143,7 @@
     for (DSTxOutputEntity * output in transactionEntity.outputs) {
         if ([output.address isEqualToString:self.address]) {
             outwards = TRUE;
-            cell.amountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:output.value];
+            cell.amountLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:output.value];
             break;
         }
     }
@@ -155,7 +155,7 @@
         cell.directionLabel.textColor = [UIColor redColor];
         for (DSTxInputEntity * input in transactionEntity.inputs) {
             if ([input.localAddress.address isEqualToString:self.address]) {
-                cell.amountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:input.prevOutput.value];
+                cell.amountLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:input.prevOutput.value];
                 break;
             }
         }

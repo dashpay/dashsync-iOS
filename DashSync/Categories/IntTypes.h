@@ -81,6 +81,8 @@ typedef union _UInt128 {
 #define uint160_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt160)])
 #define uint128_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt128)])
 
+#define uint256_data(u) [NSData dataWithUInt256:u]
+
 #define UINT512_ZERO ((UInt512) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT256_ZERO ((UInt256) { .u64 = { 0, 0, 0, 0 } })
 #define UINT256_MAX ((UInt256) { .u64 = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF } })

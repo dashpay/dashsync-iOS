@@ -59,8 +59,8 @@
     DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.section];
     DSAccount * account = [[wallet accounts] objectAtIndex:indexPath.row];
     cell.accountNumberLabel.text = [NSString stringWithFormat:@"%u",account.accountNumber];
-    cell.balanceLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:account.balance];
-    [[DSWalletManager sharedInstance] stringForDashAmount:account.balance];
+    cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:account.balance];
+    [[DSPriceManager sharedInstance] stringForDashAmount:account.balance];
 }
 
 -(NSIndexPath*)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {

@@ -29,10 +29,11 @@
 #import "DSWallet.h"
 #import "DSChain.h"
 #import "DSChainManager.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSDerivationPath.h"
 #import "DSBIP39Mnemonic.h"
 #import "NSMutableData+Dash.h"
+#import "DSVersionManager.h"
 #import "NSData+Bitcoin.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
@@ -148,7 +149,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
                 localCurrency:(NSString *)localCurrency
           localCurrencyAmount:(NSString *)localCurrencyAmount
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
     
     //BUG: XXX limit the length of name and memo to avoid having the amount clipped
@@ -425,7 +426,7 @@ replacementString:(NSString *)string
             if (! [phrase isEqual:textField.text]) textField.text = phrase;
             NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
             NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
-                                                                normalizePhrase:phrase] withPassphrase:nil];
+                                                                                   normalizePhrase:phrase] withPassphrase:nil];
             DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase forChain:[DSChain mainnet] storeSeedPhrase:NO];
             DSAccount * account = [wallet accountWithNumber:0];
             DSDerivationPath * derivationPath = [account bip44DerivationPath];
@@ -441,7 +442,7 @@ replacementString:(NSString *)string
             }
             else {
                 if (oldData) {
-                    [[DSWalletManager sharedInstance] clearKeychainWalletData];
+                    [[DSVersionManager sharedInstance] clearKeychainWalletData];
                 }
                 setKeychainData(nil, SPEND_LIMIT_KEY, NO);
                 setKeychainData(nil, PIN_KEY, NO);
@@ -737,7 +738,7 @@ replacementString:(NSString *)string
             [context.failedPins addObject:currentPin];
             
             if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
-                [[DSWalletManager sharedInstance] clearKeychainWalletData];
+                [[DSVersionManager sharedInstance] clearKeychainWalletData];
                 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
                     exit(0);
@@ -771,67 +772,65 @@ replacementString:(NSString *)string
     }];
 }
 
--(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
-
-UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
-[alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-    textField.secureTextEntry = true;
-    textField.returnKeyType = UIReturnKeyDone;
-    textField.placeholder = NSLocalizedString(@"password", nil);
-}];
-UIAlertAction* cancelButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"cancel", nil)
-                               style:UIAlertActionStyleCancel
+-(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
+    
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        textField.secureTextEntry = true;
+        textField.returnKeyType = UIReturnKeyDone;
+        textField.placeholder = NSLocalizedString(@"password", nil);
+    }];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       cancel();
+                                   }];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {
-                                   cancel();
+                                   NSString *password = alert.textFields[0].text;
+                                   completion(sweepCompletion,userInfo,password);
                                }];
-UIAlertAction* okButton = [UIAlertAction
-                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                           style:UIAlertActionStyleDefault
-                           handler:^(UIAlertAction * action) {
-                               NSString *password = alert.textFields[0].text;
-                               completion(password);
-                               
-                    
-                           }];
-[alert addAction:cancelButton];
-[alert addAction:okButton];
-[[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+    [alert addAction:cancelButton];
+    [alert addAction:okButton];
+    [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
     
 }
 
 
 -(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel {
-
-UIAlertController * alert = [UIAlertController
-                             alertControllerWithTitle:NSLocalizedString(@"password protected key", nil)
-                             message:NSLocalizedString(@"bad password, try again", nil)
-                             preferredStyle:UIAlertControllerStyleAlert];
-UIAlertAction* cancelButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"cancel", nil)
-                               style:UIAlertActionStyleCancel
+    
+    UIAlertController * alert = [UIAlertController
+                                 alertControllerWithTitle:NSLocalizedString(@"password protected key", nil)
+                                 message:NSLocalizedString(@"bad password, try again", nil)
+                                 preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       if (cancel) completion();
+                                       
+                                   }];
+    UIAlertAction* okButton = [UIAlertAction
+                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {
-                                   if (cancel) completion();
-
+                                   if (completion) completion();
                                }];
-UIAlertAction* okButton = [UIAlertAction
-                           actionWithTitle:NSLocalizedString(@"ok", nil)
-                           style:UIAlertActionStyleDefault
-                           handler:^(UIAlertAction * action) {
-                               if (completion) completion();
-                           }];
-[alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-    textField.secureTextEntry = true;
-    textField.placeholder = @"password";
-    textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    textField.borderStyle = UITextBorderStyleRoundedRect;
-    textField.returnKeyType = UIReturnKeyDone;
-}];
-[alert addAction:okButton];
-[alert addAction:cancelButton];
-[[self presentingViewController] presentViewController:alert animated:YES completion:^{
-    if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
-}];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+        textField.secureTextEntry = true;
+        textField.placeholder = @"password";
+        textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        textField.borderStyle = UITextBorderStyleRoundedRect;
+        textField.returnKeyType = UIReturnKeyDone;
+    }];
+    [alert addAction:okButton];
+    [alert addAction:cancelButton];
+    [[self presentingViewController] presentViewController:alert animated:YES completion:^{
+        if (self->_pinField && ! self->_pinField.isFirstResponder) [self->_pinField becomeFirstResponder];
+    }];
 }
 
 @end

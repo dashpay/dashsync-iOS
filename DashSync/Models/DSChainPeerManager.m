@@ -33,7 +33,6 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSWalletManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
@@ -50,6 +49,7 @@
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
+#import "DSWallet.h"
 
 #define PEER_LOGGING 1
 
@@ -653,7 +653,7 @@
         
         for (DSPeer *p in peers) {
             if (p.status != DSPeerStatus_Connected) continue;
-            [p sendInvMessageWithTxHashes:txHashes];
+            [p sendInvMessageForHashes:txHashes ofType:DSInvType_Tx];
             [p sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) return;
                 
@@ -790,7 +790,7 @@
             [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
         }
         
-        [p sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
+        [p sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
         [p sendPingMessageWithPongHandler:^(BOOL success) {
             if (success) {
                 [p sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
@@ -927,10 +927,12 @@
 }
 
 -(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
+    NSMutableArray * voteHashes = [NSMutableArray array];
     for (DSGovernanceVote * vote in votes) {
         if (![vote isValid]) continue;
-        [self.downloadPeer sendGovObjectVote:vote];
+        [voteHashes addObject:uint256_obj(vote.governanceVoteHash)];
     }
+    [self.downloadPeer sendInvMessageForHashes:voteHashes ofType:DSInvType_GovernanceObjectVote];
 }
 
 // MARK: - Masternode List Sync
@@ -1154,7 +1156,7 @@
     }
     
     // drop peers that don't support SPV filtering
-    if (peer.version >= 70206 && ! (peer.services & SERVICES_NODE_BLOOM)) {
+    if (peer.version >= 70206 && !(peer.services & SERVICES_NODE_BLOOM)) {
         [peer disconnect];
         return;
     }
@@ -1169,7 +1171,7 @@
             }
             if ([self.chain canConstructAFilter]) {
                 [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
-                [peer sendInvMessageWithTxHashes:self.publishedCallback.allKeys]; // publish pending tx
+                [peer sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
             } else {
                 [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
             }

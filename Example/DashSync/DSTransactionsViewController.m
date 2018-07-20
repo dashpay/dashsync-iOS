@@ -147,7 +147,7 @@ static NSString *dateFormat(NSString *template)
 
 
 -(UILabel*)titleLabel {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     UILabel * titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 1, 100)];
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
@@ -162,7 +162,7 @@ static NSString *dateFormat(NSString *template)
 
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
-        DSWalletManager *manager = [DSWalletManager sharedInstance];
+        DSPriceManager *manager = [DSPriceManager sharedInstance];
         NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:self.chainPeerManager.chain.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
                                   [manager localCurrencyStringForDashAmount:self.chainPeerManager.chain.balance]];
@@ -410,15 +410,14 @@ static NSString *dateFormat(NSString *template)
 {
     static NSString *noTxIdent = @"NoTxCellIdentifier", *transactionIdent = @"TransactionCellIdentifier", *actionIdent = @"ActionCellIdentifier";
     UIImageView * shapeshiftImageView;
-    DSWalletManager *priceManager = [DSWalletManager sharedInstance];
+    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     UITableViewCell * rCell = nil;
     switch (indexPath.section) {
         case 0:
             if (self.moreTx && indexPath.row >= self.transactions.count) {
                 rCell = [tableView dequeueReusableCellWithIdentifier:actionIdent];
-                rCell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) :
-                NSLocalizedString(@"transaction history", nil);
+                rCell.textLabel.text = (indexPath.row > 0) ? NSLocalizedString(@"more...", nil) : NSLocalizedString(@"transaction history", nil);
                 rCell.imageView.image = nil;
             }
             else if (self.transactions.count > 0) {
@@ -508,6 +507,7 @@ static NSString *dateFormat(NSString *template)
     }
     
     [self setBackgroundForCell:rCell tableView:tableView indexPath:indexPath];
+    NSAssert(rCell, @"A cell must be returned");
     return rCell;
 }
 

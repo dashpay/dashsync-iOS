@@ -34,6 +34,16 @@
         [items addObject:cellModel];
     }
 
+    {
+        SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Retrieve Price Info"];
+        cellModel.on = options.retrievePriceInfo;
+        cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
+            options.retrievePriceInfo = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
+
+    
     SwitcherFormCellModel *genesisOptionCellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Sync from Genesis"];
     
     NumberTextFieldFormCellModel *syncHeightCellModel = [[NumberTextFieldFormCellModel alloc] initWithTitle:@"Sync from Height"

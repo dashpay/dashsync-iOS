@@ -60,23 +60,6 @@
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
 
-typedef NS_ENUM(uint32_t,DSInvType) {
-    DSInvType_Error = 0,
-    DSInvType_Tx = 1,
-    DSInvType_Block = 2,
-    DSInvType_Merkleblock = 3,
-    DSInvType_TxLockRequest = 4,
-    DSInvType_TxLockVote = 5,
-    DSInvType_Spork = 6,
-    DSInvType_MasternodePaymentVote = 7,
-    DSInvType_MasternodePaymentBlock = 8,
-    DSInvType_MasternodeBroadcast = 14,
-    DSInvType_MasternodePing = 15,
-    DSInvType_DSTx = 16,
-    DSInvType_GovernanceObject = 17,
-    DSInvType_GovernanceObjectVote = 18,
-    DSInvType_MasternodeVerify = 19,
-};
 
 @interface DSPeer ()
 
@@ -498,9 +481,9 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
-- (void)sendInvMessageWithTxHashes:(NSArray *)txHashes
+- (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType
 {
-    NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:txHashes];
+    NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
@@ -515,7 +498,23 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     }
     
     [self sendMessage:msg type:MSG_INV];
-    [self.knownTxHashes unionOrderedSet:hashes];
+    switch (invType) {
+        case DSInvType_Tx:
+            [self.knownTxHashes unionOrderedSet:hashes];
+            break;
+        case DSInvType_GovernanceObjectVote:
+            [self.knownGovernanceObjectVoteHashes unionOrderedSet:hashes];
+            break;
+        case DSInvType_GovernanceObject:
+            [self.knownGovernanceObjectHashes unionOrderedSet:hashes];
+            break;
+        case DSInvType_Block:
+            [self.knownBlockHashes unionOrderedSet:hashes];
+            break;
+        default:
+            break;
+    }
+    
 }
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes

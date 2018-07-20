@@ -33,7 +33,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSWallet.h"
 #import "DSChainPeerManager.h"
@@ -61,7 +61,8 @@ static checkpoint testnet_checkpoint_array[] = {
     {       50000, "0000000002367c252a878312997591d342ff9a8c21691c542ac1c0e48d2144d7", 1514581337, 0x1c0a37beu },
     {      100000, "0000000003aa53e24b6e60ef97642e4193611f2bcb75ea1fa8105f0b5ffd5242", 1522497809, 0x1c07b767u },
     {      120000, "00000000050f0f4fbe66a70f045cc97c528a7e77515260b89d7c848315a3a47f", 1525631093, 0x1c087a31u },
-    {      145000, "0000000004cfe67b0118ef127873f5fa2a9d4beb4ef0dd5aeccc24998a709f1d", 1529577857, 0x1c0a3cfdu }
+    {      145000, "0000000004cfe67b0118ef127873f5fa2a9d4beb4ef0dd5aeccc24998a709f1d", 1529577857, 0x1c0a3cfdu },
+    {      160000, "00000000962d8fe41541ba82e8e66b9b36adee2126ea353f04bb7962eba67805", 1530755273, 0x1d122157u }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -120,6 +121,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 };
 
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
+#define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
+
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
 #define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
 #define REGISTERED_PEERS_KEY  @"REGISTERED_PEERS_KEY"
@@ -132,6 +135,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define SPORK_PRIVATE_KEY_LOCATION  @"SPORK_PRIVATE_KEY_LOCATION"
 
 #define CHAIN_VOTING_KEYS_KEY  @"CHAIN_VOTING_KEYS_KEY"
+
 
 @interface DSChain ()
 
@@ -1390,6 +1394,41 @@ static dispatch_once_t devnetToken = 0;
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
 }
 
+// MARK: - Spending Limit
+
+//makes sense to be here, since we have the limits per chain
+-(void)resetSpendingLimit {
+    
+    uint64_t limit = self.spendingLimit;
+    uint64_t totalSent = 0;
+    for (DSWallet * wallet in self.wallets) {
+        totalSent += wallet.totalSent;
+    }
+    if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
+    
+}
+
+// amount that can be spent using touch id without pin entry
+- (uint64_t)spendingLimit
+{
+    // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
+    if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return DUFFS;
+    
+    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
+}
+
+- (void)setSpendingLimit:(uint64_t)spendingLimit
+{
+    uint64_t totalSent = 0;
+    for (DSWallet * wallet in self.wallets) {
+        totalSent += wallet.totalSent;
+    }
+    if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
+        // use setDouble since setInteger won't hold a uint64_t
+        [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
+    }
+}
+
 @end
 
 @implementation DSCheckpoint
@@ -1435,7 +1474,5 @@ static dispatch_once_t devnetToken = 0;
     [aCoder encodeInt32:self.timestamp forKey:kTimestampKey];
     [aCoder encodeInt32:self.target forKey:kTargetKey];
 }
-
-
 
 @end

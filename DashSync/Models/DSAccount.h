@@ -161,4 +161,9 @@
 //This creates a proposal transaction
 - (DSTransaction *)proposalCollateralTransactionWithData:(NSData*)data;
 
+// given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
+// transaction that will sweep the balance into wallet (doesn't publish the tx)
+- (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
+             completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
+
 @end
