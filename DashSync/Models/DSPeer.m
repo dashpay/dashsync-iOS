@@ -888,6 +888,57 @@
     });
 }
 
+DSInvType_Tx = 1,
+DSInvType_Block = 2,
+DSInvType_Merkleblock = 3,
+DSInvType_TxLockRequest = 4,
+DSInvType_TxLockVote = 5,
+DSInvType_Spork = 6,
+DSInvType_MasternodePaymentVote = 7,
+DSInvType_MasternodePaymentBlock = 8,
+DSInvType_MasternodeBroadcast = 14,
+DSInvType_MasternodePing = 15,
+DSInvType_DSTx = 16,
+DSInvType_GovernanceObject = 17,
+DSInvType_GovernanceObjectVote = 18,
+DSInvType_MasternodeVerify = 19,
+
+-(NSString*)nameOfInvMessage:(DSInvType)type {
+    switch (type) {
+        case DSInvType_Tx:
+            return @"Tx";
+        case DSInvType_Block:
+            return @"Block";
+        case DSInvType_Merkleblock:
+            return @"Merkleblock";
+        case DSInvType_TxLockRequest:
+            return @"TxLockRequest";
+        case DSInvType_TxLockVote:
+            return @"TxLockVote";
+        case DSInvType_Spork:
+            return @"Spork";
+        case DSInvType_MasternodePaymentVote:
+            return @"MasternodePaymentVote";
+        case DSInvType_MasternodePaymentBlock:
+            return @"MasternodePaymentBlock";
+        case DSInvType_MasternodeBroadcast:
+            return @"MasternodeBroadcast";
+        case DSInvType_MasternodePing:
+            return @"MasternodePing";
+        case DSInvType_DSTx:
+            return @"DSTx";
+        case DSInvType_GovernanceObject:
+            return @"GovernanceObject";
+        case DSInvType_GovernanceObjectVote:
+            return @"GovernanceObjectVote";
+        case DSInvType_MasternodeVerify:
+            return @"MasternodeVerify";
+            
+        default:
+            return @"";
+    }
+}
+
 - (void)acceptInvMessage:(NSData *)message
 {
     NSNumber * l = nil;
@@ -913,7 +964,7 @@
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
-        NSLog(@"%@:%u got inv with %u items (first item %u)", self.host, self.port, (int)count,[message UInt32AtOffset:l.unsignedIntegerValue]);
+        NSLog(@"%@:%u got inv with %u items (first item %@)", self.host, self.port, (int)count,[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]]);
     }
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
