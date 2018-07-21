@@ -1567,6 +1567,14 @@
     return transaction;
 }
 
+- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash {
+    return [self.governanceSyncManager peer:peer requestedVote:voteHash];
+}
+- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash {
+    return [self.governanceSyncManager peer:peer requestedGovernanceObject:governanceObjectHash];
+}
+
+
 // MARK: Dash Specific
 
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {

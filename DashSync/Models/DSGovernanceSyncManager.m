@@ -39,6 +39,9 @@
 @property (nonatomic,strong) NSMutableArray<DSGovernanceObject *> * needVoteSyncGovernanceObjects;
 @property (nonatomic,assign) NSUInteger governanceObjectsCount;
 
+@property (nonatomic,strong) NSMutableDictionary<NSData *,DSGovernanceObject *> * publishGovernanceObjects;
+@property (nonatomic,strong) NSMutableDictionary<NSData *,DSGovernanceVote *> * publishVotes;
+
 @property (nonatomic,strong) DSGovernanceObject * currentGovernanceSyncObject;
 
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
@@ -54,6 +57,8 @@
     _governanceObjects = [NSMutableArray array];
     [self loadGovernanceObjects:0];
     self.managedObjectContext = [NSManagedObject context];
+    self.publishVotes = [[NSMutableDictionary alloc] init];
+    self.publishGovernanceObjects = [[NSMutableDictionary alloc] init];
     return self;
 }
 
@@ -392,6 +397,22 @@
     }
 }
 
+-(DSGovernanceVote *)peer:(DSPeer * _Nullable)peer requestedVote:(UInt256)voteHash {
+    DSGovernanceVote * vote = [self.publishVotes objectForKey:[NSData dataWithUInt256:voteHash]];
+    if (!vote) {
+        NSLog(@"Peer requested unknown vote");
+    }
+    return vote;
+}
+
+-(DSGovernanceObject *)peer:(DSPeer * _Nullable)peer requestedGovernanceObject:(UInt256)governanceObjectHash {
+    DSGovernanceObject * proposal = [self.publishGovernanceObjects objectForKey:[NSData dataWithUInt256:governanceObjectHash]];
+    if (!proposal) {
+        NSLog(@"Peer requested unknown proposal");
+    }
+    return proposal;
+}
+
 // MARK:- Governance ObjectDelegate
 
 -(void)governanceObject:(DSGovernanceObject*)governanceObject didReceiveUnknownHashes:(NSSet*)hash fromPeer:(DSPeer*)peer {
@@ -422,6 +443,7 @@
         DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:proposalHash forMasternodeUTXO:masternodeUTXO voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:now signature:nil onChain:self.chain];
         [governanceVote signWithKey:key];
         [votesToRelay addObject:governanceVote];
+        [self.publishVotes setObject:governanceVote forKey:uint256_data(governanceVote.governanceVoteHash)];
     }
     [peerManager publishVotes:votesToRelay];
 }

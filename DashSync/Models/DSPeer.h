@@ -163,6 +163,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
+- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
+- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
 
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 

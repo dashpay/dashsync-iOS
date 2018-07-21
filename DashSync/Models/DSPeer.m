@@ -492,7 +492,7 @@
     [msg appendVarInt:hashes.count];
     
     for (NSValue *hash in hashes) {
-        [msg appendUInt32:DSInvType_Tx];
+        [msg appendUInt32:invType];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -1177,8 +1177,37 @@
                     if (transaction) {
                         [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
                         break;
+                    } else {
+                        [notfound appendUInt32:type];
+                        [notfound appendBytes:&hash length:sizeof(hash)];
+                        break;
                     }
-                    
+                case DSInvType_GovernanceObjectVote:
+                {
+                    DSGovernanceVote * vote = [self.delegate peer:self requestedVote:hash];
+                    if (vote) {
+                        [self sendMessage:vote.dataMessage type:MSG_GOVOBJVOTE];
+                        break;
+                    } else {
+                        [notfound appendUInt32:type];
+                        [notfound appendBytes:&hash length:sizeof(hash)];
+                        break;
+                    }
+                    break;
+                }
+                case DSInvType_GovernanceObject:
+                {
+                    DSGovernanceObject * governanceObject = [self.delegate peer:self requestedGovernanceObject:hash];
+                    if (governanceObject) {
+                        [self sendMessage:governanceObject.dataMessage type:MSG_GOVOBJ];
+                        break;
+                    } else {
+                        [notfound appendUInt32:type];
+                        [notfound appendBytes:&hash length:sizeof(hash)];
+                        break;
+                    }
+                    break;
+                }
                     // fall through
                 default:
                     [notfound appendUInt32:type];
@@ -1429,7 +1458,7 @@
 
 - (void)acceptGovObjectSyncMessage:(NSData *)message
 {
-    
+    NSLog(@"Gov Object Sync");
 }
 
 // MARK: - Accept Dark send

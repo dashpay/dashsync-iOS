@@ -204,7 +204,7 @@
     if (timeout <= DBL_EPSILON) {
         if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
-            if ([DSPriceManager sharedInstance].seedCreationTime + DAY_TIME_INTERVAL < start) {
+            if (self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
             }
         }

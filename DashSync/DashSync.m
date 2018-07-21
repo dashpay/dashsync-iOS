@@ -40,7 +40,9 @@
         // use background fetch to stay synced with the blockchain
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         
-        [DSPriceManager sharedInstance];
+        if ([[DSOptionsManager sharedInstance] retrievePriceInfo]) {
+            [[DSPriceManager sharedInstance] startExchangeRateFetching];
+        }
         // start the event manager
         [[DSEventManager sharedEventManager] up];
         
