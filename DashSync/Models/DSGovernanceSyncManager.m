@@ -398,9 +398,18 @@
 }
 
 -(DSGovernanceVote *)peer:(DSPeer * _Nullable)peer requestedVote:(UInt256)voteHash {
-    DSGovernanceVote * vote = [self.publishVotes objectForKey:[NSData dataWithUInt256:voteHash]];
+    __block DSGovernanceVote * vote = [self.publishVotes objectForKey:[NSData dataWithUInt256:voteHash]];
     if (!vote) {
-        NSLog(@"Peer requested unknown vote");
+        [self.managedObjectContext performBlockAndWait:^{
+            [DSGovernanceVoteEntity setContext:self.managedObjectContext];
+            NSArray * votes = [DSGovernanceVoteEntity objectsMatching:@"governanceVoteHash.governanceVoteHash = %@", uint256_data(voteHash)];
+            if (votes.count) {
+                DSGovernanceVoteEntity * voteEntity = [votes firstObject];
+                vote = [voteEntity governanceVote];
+            } else {
+                NSLog(@"Peer requested unknown vote");
+            }
+        }];
     }
     return vote;
 }
