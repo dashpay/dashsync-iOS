@@ -95,7 +95,7 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            if (!note.userInfo[DSChainPeerManagerNotificationChainKey] ||[note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                               NSLog(@"update balance");
+                                                               //NSLog(@"update balance");
                                                                [self updateBalance];
                                                            }
                                                        }];
