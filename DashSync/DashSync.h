@@ -42,6 +42,8 @@
 #import "DSTransactionEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
+#import "DSSimplifiedMasternodeEntry.h"
+#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSPaymentRequest.h"
 #import "DSPaymentProtocol.h"

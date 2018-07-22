@@ -3114,13 +3114,443 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="oaM-sE-PEY">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="TitleCellIdentifier" id="aZ0-oI-v5i" customClass="DSTransactionStatusTableViewCell">
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oaM-sE-PEY" id="Oeu-j0-QGB">
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="aZ0-oI-v5i" id="rgg-NE-GvS">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ipY-WI-LqG">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.66666666666666663"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="pB6-Fe-Hcf"/>
+                                            </constraints>
+                                        </view>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="status:" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="30.5" translatesAutoresizingMaskIntoConstraints="NO" id="T0c-vN-Tjg" customClass="BRCopyLabel">
+                                            <rect key="frame" x="15" y="11.666666666666666" width="51" height="20.333333333333336"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="17"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalCompressionResistancePriority="749" text="Detail" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="36" translatesAutoresizingMaskIntoConstraints="NO" id="9ds-cd-x3Q" customClass="BRCopyLabel">
+                                            <rect key="frame" x="321.66666666666669" y="5" width="38.333333333333314" height="18"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalCompressionResistancePriority="749" text="subtitle" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="40" translatesAutoresizingMaskIntoConstraints="NO" id="EeV-qv-Dau">
+                                            <rect key="frame" x="315.66666666666669" y="23" width="44.333333333333314" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <color key="textColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SLd-uE-fGF">
+                                            <rect key="frame" x="0.0" y="44" width="375" height="0.6666666666666643"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="52I-Uf-PwT"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="bottom" secondItem="SLd-uE-fGF" secondAttribute="bottom" constant="-1" id="1eb-mZ-5JK"/>
+                                        <constraint firstAttribute="trailing" secondItem="9ds-cd-x3Q" secondAttribute="trailing" constant="15" id="3HL-wd-LLI"/>
+                                        <constraint firstItem="EeV-qv-Dau" firstAttribute="top" secondItem="9ds-cd-x3Q" secondAttribute="bottom" id="8Bs-GO-dTf"/>
+                                        <constraint firstAttribute="trailing" secondItem="ipY-WI-LqG" secondAttribute="trailing" id="BBG-Kp-mhv"/>
+                                        <constraint firstItem="T0c-vN-Tjg" firstAttribute="leading" secondItem="rgg-NE-GvS" secondAttribute="leading" constant="15" id="GaI-0G-fKl"/>
+                                        <constraint firstAttribute="trailing" secondItem="EeV-qv-Dau" secondAttribute="trailing" constant="15" id="SJY-2p-z87"/>
+                                        <constraint firstItem="SLd-uE-fGF" firstAttribute="leading" secondItem="rgg-NE-GvS" secondAttribute="leading" id="eiP-LR-qLY"/>
+                                        <constraint firstItem="ipY-WI-LqG" firstAttribute="top" secondItem="rgg-NE-GvS" secondAttribute="top" id="hif-ZY-yhk"/>
+                                        <constraint firstItem="EeV-qv-Dau" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="T0c-vN-Tjg" secondAttribute="trailing" constant="5" id="l1e-EY-X9F"/>
+                                        <constraint firstItem="9ds-cd-x3Q" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="T0c-vN-Tjg" secondAttribute="trailing" constant="5" id="m6h-HZ-ZcU"/>
+                                        <constraint firstAttribute="centerY" secondItem="T0c-vN-Tjg" secondAttribute="centerY" id="o7O-k1-fOr"/>
+                                        <constraint firstItem="ipY-WI-LqG" firstAttribute="leading" secondItem="rgg-NE-GvS" secondAttribute="leading" id="syt-wz-gvm"/>
+                                        <constraint firstItem="EeV-qv-Dau" firstAttribute="centerY" secondItem="rgg-NE-GvS" secondAttribute="centerY" constant="9" id="yEk-Jv-QRk"/>
+                                        <constraint firstAttribute="trailing" secondItem="SLd-uE-fGF" secondAttribute="trailing" id="yzh-4s-ix4"/>
+                                    </constraints>
                                 </tableViewCellContentView>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <outlet property="moreInfoLabel" destination="EeV-qv-Dau" id="YQZ-hf-FyV"/>
+                                    <outlet property="statusLabel" destination="9ds-cd-x3Q" id="5Ch-R6-WVM"/>
+                                    <outlet property="titleLabel" destination="T0c-vN-Tjg" id="kHl-de-K9V"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="SubtitleCellIdentifier" rowHeight="40" id="RMH-uV-gRa" customClass="DSTransactionDetailTableViewCell">
+                                <rect key="frame" x="0.0" y="72" width="375" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="RMH-uV-gRa" id="3Un-73-njh">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="39.666666666666664"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oAF-wh-IO6">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.66666666666666663"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="vvK-oG-Czw"/>
+                                            </constraints>
+                                        </view>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="subtitle" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="40" translatesAutoresizingMaskIntoConstraints="NO" id="GIM-tT-id5">
+                                            <rect key="frame" x="14.999999999999996" y="12" width="44.666666666666657" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ƀ 1,000,000" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="67" translatesAutoresizingMaskIntoConstraints="NO" id="0QN-Ow-sPU">
+                                            <rect key="frame" x="290.66666666666669" y="12" width="69.333333333333314" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="($1,000.00)" textAlignment="right" lineBreakMode="headTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="64.5" translatesAutoresizingMaskIntoConstraints="NO" id="VVj-SR-fzk">
+                                            <rect key="frame" x="216.66666666666666" y="12" width="68.999999999999972" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XTT-1N-UTL">
+                                            <rect key="frame" x="0.0" y="39.666666666666664" width="375" height="0.3333333333333357"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="Tc3-gP-vns"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="centerY" secondItem="GIM-tT-id5" secondAttribute="centerY" id="3H9-st-cQN"/>
+                                        <constraint firstItem="XTT-1N-UTL" firstAttribute="leading" secondItem="3Un-73-njh" secondAttribute="leading" id="5fO-u8-8bY"/>
+                                        <constraint firstItem="0QN-Ow-sPU" firstAttribute="baseline" secondItem="GIM-tT-id5" secondAttribute="baseline" id="FZ2-Ff-4tX"/>
+                                        <constraint firstItem="oAF-wh-IO6" firstAttribute="leading" secondItem="3Un-73-njh" secondAttribute="leading" id="NP5-Ho-WWe"/>
+                                        <constraint firstItem="VVj-SR-fzk" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="GIM-tT-id5" secondAttribute="trailing" id="Rvv-4F-7E0"/>
+                                        <constraint firstItem="GIM-tT-id5" firstAttribute="leading" secondItem="3Un-73-njh" secondAttribute="leading" constant="15" id="SBY-xm-UXy"/>
+                                        <constraint firstAttribute="trailing" secondItem="XTT-1N-UTL" secondAttribute="trailing" id="WX0-ki-pey"/>
+                                        <constraint firstItem="0QN-Ow-sPU" firstAttribute="leading" secondItem="VVj-SR-fzk" secondAttribute="trailing" constant="5" id="YZh-yw-LDf"/>
+                                        <constraint firstAttribute="bottom" secondItem="XTT-1N-UTL" secondAttribute="bottom" constant="-0.5" id="cnD-VC-bVf"/>
+                                        <constraint firstItem="oAF-wh-IO6" firstAttribute="top" secondItem="3Un-73-njh" secondAttribute="top" id="hds-IL-ewY"/>
+                                        <constraint firstAttribute="trailing" secondItem="0QN-Ow-sPU" secondAttribute="trailing" constant="15" id="k3e-8K-Kim"/>
+                                        <constraint firstAttribute="trailing" secondItem="oAF-wh-IO6" secondAttribute="trailing" id="mI4-MF-BcK"/>
+                                        <constraint firstItem="0QN-Ow-sPU" firstAttribute="baseline" secondItem="VVj-SR-fzk" secondAttribute="baseline" id="skL-zd-03x"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <outlet property="amountLabel" destination="0QN-Ow-sPU" id="8Hu-Mc-yPi"/>
+                                    <outlet property="fiatAmountLabel" destination="VVj-SR-fzk" id="KMc-fo-Tve"/>
+                                    <outlet property="typeInfoLabel" destination="GIM-tT-id5" id="hBD-9V-kod"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="IdCellIdentifier" id="rsB-eW-R1O" customClass="DSTransactionIdentifierTableViewCell">
+                                <rect key="frame" x="0.0" y="112" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="rsB-eW-R1O" id="26z-q7-nw7">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Q9b-ux-SwC">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.66666666666666663"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="jHD-pH-2Rq"/>
+                                            </constraints>
+                                        </view>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="id:" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="30.5" translatesAutoresizingMaskIntoConstraints="NO" id="Mqo-dP-rih" customClass="BRCopyLabel">
+                                            <rect key="frame" x="15" y="11.666666666666666" width="19" height="20.333333333333336"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="17"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalCompressionResistancePriority="749" text="Detail" textAlignment="right" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="322" translatesAutoresizingMaskIntoConstraints="NO" id="DVy-e5-ypQ" customClass="BRCopyLabel">
+                                            <rect key="frame" x="39" y="14.333333333333336" width="321" height="15.666666666666664"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XqM-Ks-ayo">
+                                            <rect key="frame" x="0.0" y="44" width="375" height="0.6666666666666643"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="0h6-j7-C1y"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="Q9b-ux-SwC" secondAttribute="trailing" id="45t-4T-WYk"/>
+                                        <constraint firstItem="Mqo-dP-rih" firstAttribute="leading" secondItem="26z-q7-nw7" secondAttribute="leading" constant="15" id="DV4-j9-Wbg"/>
+                                        <constraint firstItem="Q9b-ux-SwC" firstAttribute="leading" secondItem="26z-q7-nw7" secondAttribute="leading" id="Jgv-H1-geo"/>
+                                        <constraint firstAttribute="trailing" secondItem="DVy-e5-ypQ" secondAttribute="trailing" constant="15" id="Rya-36-1yP"/>
+                                        <constraint firstItem="XqM-Ks-ayo" firstAttribute="leading" secondItem="26z-q7-nw7" secondAttribute="leading" id="YFb-J7-yqa"/>
+                                        <constraint firstAttribute="centerY" secondItem="Mqo-dP-rih" secondAttribute="centerY" id="eCz-9e-lNU"/>
+                                        <constraint firstItem="DVy-e5-ypQ" firstAttribute="centerY" secondItem="26z-q7-nw7" secondAttribute="centerY" id="hPF-zs-Zp4"/>
+                                        <constraint firstItem="DVy-e5-ypQ" firstAttribute="leading" secondItem="Mqo-dP-rih" secondAttribute="trailing" constant="5" id="lfg-IQ-wp3"/>
+                                        <constraint firstAttribute="trailing" secondItem="XqM-Ks-ayo" secondAttribute="trailing" id="mKP-vn-VfM"/>
+                                        <constraint firstAttribute="bottom" secondItem="XqM-Ks-ayo" secondAttribute="bottom" constant="-1" id="taO-c1-LY4"/>
+                                        <constraint firstItem="Q9b-ux-SwC" firstAttribute="top" secondItem="26z-q7-nw7" secondAttribute="top" id="wZq-d5-tKn"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <outlet property="identifierLabel" destination="DVy-e5-ypQ" id="coC-cL-7dy"/>
+                                    <outlet property="titleLabel" destination="Mqo-dP-rih" id="sDZ-aI-9YY"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="TransactionCellIdentifier" id="2GW-Hq-IzJ" customClass="DSTransactionAmountTableViewCell">
+                                <rect key="frame" x="0.0" y="156" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="2GW-Hq-IzJ" id="pyJ-2s-Nsk">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2ih-Yb-YbU">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.66666666666666663"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="F6j-me-www"/>
+                                            </constraints>
+                                        </view>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="6" contentMode="left" horizontalHuggingPriority="249" text="amount:" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="60.5" translatesAutoresizingMaskIntoConstraints="NO" id="2Pq-Wr-PhV">
+                                            <rect key="frame" x="15" y="12" width="63" height="20"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="iHK-zD-G1C"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="17"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="left" text="ƀ 1,000,000" lineBreakMode="clip" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" preferredMaxLayoutWidth="87.5" translatesAutoresizingMaskIntoConstraints="NO" id="u8i-LD-y1H">
+                                            <rect key="frame" x="272" y="12" width="88" height="20"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="TxQ-eh-QZ4"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="17"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="5" contentMode="left" horizontalHuggingPriority="249" text="($1,000.00)" textAlignment="right" lineBreakMode="headTruncation" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" preferredMaxLayoutWidth="74" translatesAutoresizingMaskIntoConstraints="NO" id="JAQ-Qa-onc">
+                                            <rect key="frame" x="188.66666666666666" y="12" width="78.333333333333343" height="20"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" id="yK3-db-JY2"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tb4-JK-7hi">
+                                            <rect key="frame" x="0.0" y="44" width="375" height="0.6666666666666643"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="YPy-Pj-RRu"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="2ih-Yb-YbU" secondAttribute="trailing" id="3ZR-R3-m1o"/>
+                                        <constraint firstItem="2Pq-Wr-PhV" firstAttribute="leading" secondItem="pyJ-2s-Nsk" secondAttribute="leading" constant="15" id="99U-rU-2Ay"/>
+                                        <constraint firstAttribute="trailing" secondItem="u8i-LD-y1H" secondAttribute="trailing" constant="15" id="MZd-TC-Gk5"/>
+                                        <constraint firstItem="u8i-LD-y1H" firstAttribute="top" secondItem="JAQ-Qa-onc" secondAttribute="top" id="Q1X-qo-bNq"/>
+                                        <constraint firstItem="2ih-Yb-YbU" firstAttribute="leading" secondItem="pyJ-2s-Nsk" secondAttribute="leading" id="RfP-kW-Ff3"/>
+                                        <constraint firstItem="Tb4-JK-7hi" firstAttribute="leading" secondItem="pyJ-2s-Nsk" secondAttribute="leading" id="dJ0-UP-WBu"/>
+                                        <constraint firstItem="2ih-Yb-YbU" firstAttribute="top" secondItem="pyJ-2s-Nsk" secondAttribute="top" id="fSA-kK-qHH"/>
+                                        <constraint firstItem="u8i-LD-y1H" firstAttribute="leading" secondItem="JAQ-Qa-onc" secondAttribute="trailing" constant="5" id="m1M-nL-L5I"/>
+                                        <constraint firstItem="JAQ-Qa-onc" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="2Pq-Wr-PhV" secondAttribute="trailing" constant="10" id="m9o-VL-lon"/>
+                                        <constraint firstItem="u8i-LD-y1H" firstAttribute="top" secondItem="2Pq-Wr-PhV" secondAttribute="top" id="mPM-yy-19y"/>
+                                        <constraint firstAttribute="trailing" secondItem="Tb4-JK-7hi" secondAttribute="trailing" id="qVs-5i-y32"/>
+                                        <constraint firstAttribute="centerY" secondItem="u8i-LD-y1H" secondAttribute="centerY" id="uHu-ua-00u"/>
+                                        <constraint firstAttribute="bottom" secondItem="Tb4-JK-7hi" secondAttribute="bottom" constant="-1" id="uSW-59-Qx9"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <outlet property="amountLabel" destination="u8i-LD-y1H" id="MBl-pZ-PIU"/>
+                                    <outlet property="fiatAmountLabel" destination="JAQ-Qa-onc" id="T1s-bO-qJb"/>
+                                    <outlet property="titleLabel" destination="2Pq-Wr-PhV" id="dwU-RC-a0D"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="DetailCellIdentifier" rowHeight="60" id="Ohq-FU-6QS" customClass="DSTransactionDetailTableViewCell">
+                                <rect key="frame" x="0.0" y="200" width="375" height="60"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Ohq-FU-6QS" id="YKV-XC-7G7">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="59.666666666666664"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <view tag="100" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cIq-1n-CrV">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="0.66666666666666663"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="QBI-kU-rcX"/>
+                                            </constraints>
+                                        </view>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" verticalHuggingPriority="251" text="Detail" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="13" adjustsLetterSpacingToFitWidth="YES" preferredMaxLayoutWidth="36" translatesAutoresizingMaskIntoConstraints="NO" id="cdw-Ku-j85" customClass="BRCopyLabel">
+                                            <rect key="frame" x="14.999999999999996" y="11" width="38.666666666666657" height="18"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="15"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="subtitle" lineBreakMode="clip" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="40" translatesAutoresizingMaskIntoConstraints="NO" id="qQd-YD-Nag">
+                                            <rect key="frame" x="14.999999999999996" y="34" width="44.666666666666657" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="highlightedColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" verticalHuggingPriority="251" text="ƀ 1,000,000" textAlignment="right" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="67" translatesAutoresizingMaskIntoConstraints="NO" id="PeF-Uo-Gxw">
+                                            <rect key="frame" x="290.66666666666669" y="34" width="69.333333333333314" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="5" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="($1,000.00)" textAlignment="right" lineBreakMode="headTruncation" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="64.5" translatesAutoresizingMaskIntoConstraints="NO" id="TSy-6v-cPo">
+                                            <rect key="frame" x="216.66666666666666" y="34" width="68.999999999999972" height="16"/>
+                                            <fontDescription key="fontDescription" type="system" weight="light" pointSize="13"/>
+                                            <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                            <size key="shadowOffset" width="0.0" height="0.0"/>
+                                            <attributedString key="userComments">
+                                                <fragment content="#bc-ignore!">
+                                                    <attributes>
+                                                        <font key="NSFont" metaFont="smallSystem"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                    </attributes>
+                                                </fragment>
+                                            </attributedString>
+                                        </label>
+                                        <view tag="101" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I62-0t-L2W">
+                                            <rect key="frame" x="0.0" y="59.666666666666664" width="375" height="0.3333333333333357"/>
+                                            <color key="backgroundColor" red="0.80000001190000003" green="0.80000001190000003" blue="0.80000001190000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="0.5" id="HbQ-L2-0JZ"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="TSy-6v-cPo" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="qQd-YD-Nag" secondAttribute="trailing" id="0fK-cj-nD0"/>
+                                        <constraint firstAttribute="trailing" secondItem="PeF-Uo-Gxw" secondAttribute="trailing" constant="15" id="GDE-pF-aam"/>
+                                        <constraint firstItem="I62-0t-L2W" firstAttribute="leading" secondItem="YKV-XC-7G7" secondAttribute="leading" id="O4Y-lg-tEr"/>
+                                        <constraint firstItem="PeF-Uo-Gxw" firstAttribute="baseline" secondItem="qQd-YD-Nag" secondAttribute="baseline" id="OZk-CE-Y4J"/>
+                                        <constraint firstItem="cIq-1n-CrV" firstAttribute="leading" secondItem="YKV-XC-7G7" secondAttribute="leading" id="Ow0-be-rAP"/>
+                                        <constraint firstItem="cIq-1n-CrV" firstAttribute="top" secondItem="YKV-XC-7G7" secondAttribute="top" id="PSm-2q-Zfk"/>
+                                        <constraint firstItem="PeF-Uo-Gxw" firstAttribute="baseline" secondItem="TSy-6v-cPo" secondAttribute="baseline" id="TSs-w2-Sxn"/>
+                                        <constraint firstAttribute="centerY" secondItem="cdw-Ku-j85" secondAttribute="centerY" constant="10" id="WMJ-CF-64Z"/>
+                                        <constraint firstItem="PeF-Uo-Gxw" firstAttribute="leading" secondItem="TSy-6v-cPo" secondAttribute="trailing" constant="5" id="b9J-g0-WGy"/>
+                                        <constraint firstAttribute="trailing" secondItem="cIq-1n-CrV" secondAttribute="trailing" id="eXR-3y-hOB"/>
+                                        <constraint firstAttribute="trailing" secondItem="I62-0t-L2W" secondAttribute="trailing" id="nNz-ea-tun"/>
+                                        <constraint firstItem="qQd-YD-Nag" firstAttribute="top" secondItem="cdw-Ku-j85" secondAttribute="bottom" constant="5" id="qbg-Nd-nC7"/>
+                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cdw-Ku-j85" secondAttribute="trailing" constant="15" id="sZX-7h-3Oe"/>
+                                        <constraint firstItem="qQd-YD-Nag" firstAttribute="leading" secondItem="YKV-XC-7G7" secondAttribute="leading" constant="15" id="uYI-HL-Hb5"/>
+                                        <constraint firstAttribute="bottom" secondItem="I62-0t-L2W" secondAttribute="bottom" constant="-0.5" id="vux-F6-cqf"/>
+                                        <constraint firstItem="cdw-Ku-j85" firstAttribute="leading" secondItem="YKV-XC-7G7" secondAttribute="leading" constant="15" id="wtt-Io-SiD"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.67000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <outlet property="addressLabel" destination="cdw-Ku-j85" id="MXf-zk-HXr"/>
+                                    <outlet property="amountLabel" destination="PeF-Uo-Gxw" id="eOk-ni-OUk"/>
+                                    <outlet property="fiatAmountLabel" destination="TSy-6v-cPo" id="y0Q-4q-3kx"/>
+                                    <outlet property="typeInfoLabel" destination="qQd-YD-Nag" id="K5g-5Z-y54"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>

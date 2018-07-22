@@ -38,7 +38,7 @@
     return [NSManagedObject context];
 }
 
--(NSPredicate*)searchPredicate {
+-(NSPredicate*)searchPredicate70210 {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
@@ -66,12 +66,45 @@
     
 }
 
+-(NSPredicate*)searchPredicate {
+    // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
+    if (self.searchString && ![self.searchString isEqualToString:@""]) {
+        if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
+            NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
+            NSMutableArray *partPredicates = [NSMutableArray array];
+            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+            [partPredicates addObject:chainPredicate];
+            for (int i = 0; i< MIN(ipArray.count,4); i++) {
+                if ([ipArray[i] isEqualToString:@""]) break;
+                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(i*8),@([ipArray[i] integerValue])];
+                [partPredicates addObject:currentPartPredicate];
+            }
+            
+            return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
+        } else {
+            return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+        }
+        //        else {
+        //            return [NSPredicate predicateWithFormat:@"(blockHash == %@)",self.searchString];
+        //        }
+        
+    } else {
+        return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
+    }
+    
+}
+
 - (NSFetchedResultsController *)fetchedResultsController
 {
     if (_fetchedResultsController) return _fetchedResultsController;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSMasternodeBroadcastEntity" inManagedObjectContext:self.managedObjectContext];
+    NSEntityDescription *entity;
+    if (self.chain.protocolVersion < 70211) {
+        entity = [NSEntityDescription entityForName:@"DSMasternodeBroadcastEntity" inManagedObjectContext:self.managedObjectContext];
+    } else {
+        entity = [NSEntityDescription entityForName:@"DSSimplifiedMasternodeEntryEntity" inManagedObjectContext:self.managedObjectContext];
+    }
     [fetchRequest setEntity:entity];
     
     // Set the batch size to a suitable number.
@@ -170,12 +203,21 @@
 
 
 -(void)configureCell:(DSMasternodeTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+    if (self.chain.protocolVersion < 70211) {
     DSMasternodeBroadcastEntity *masternodeBroadcastEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     char s[INET6_ADDRSTRLEN];
     uint32_t ipAddress = masternodeBroadcastEntity.address;
     cell.ipAddressLabel.text = [NSString stringWithFormat:@"%s",inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
     cell.protocolLabel.text = [NSString stringWithFormat:@"%u",masternodeBroadcastEntity.protocolVersion];
     cell.outputLabel.text = [NSString stringWithFormat:@"%@:%u",masternodeBroadcastEntity.utxoHash.hexString,masternodeBroadcastEntity.utxoIndex];
+    } else {
+        DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        char s[INET6_ADDRSTRLEN];
+        uint32_t ipAddress = simplifiedMasternodeEntryEntity.address;
+        cell.ipAddressLabel.text = [NSString stringWithFormat:@"%s",inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
+        //cell.protocolLabel.text = [NSString stringWithFormat:@"%u",masternodeBroadcastEntity.protocolVersion];
+        cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerTransactionHash];
+    }
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {

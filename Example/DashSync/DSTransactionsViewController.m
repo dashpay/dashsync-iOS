@@ -579,11 +579,21 @@ static NSString *dateFormat(NSString *template)
             if (self.moreTx && indexPath.row >= self.transactions.count) { // more...
                 [self performSelector:@selector(moreHistory:) withObject:tableView afterDelay:0.0];
             }
-            else if (self.transactions.count > 0) [self performSegueWithIdentifier:@"TransactionDetailSegue" sender:self.transactions[indexPath.row]];
+            //else if (self.transactions.count > 0) [self performSegueWithIdentifier:@"TransactionDetailSegue" sender:self.transactions[indexPath.row]];
             
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             break;
             
+    }
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    UITableViewCell * cell = (UITableViewCell*)sender;
+    NSInteger index = [self.tableView indexPathForCell:cell].row;
+    if ([segue.identifier isEqualToString:@"TransactionDetailSegue"]) {
+        DSTransactionDetailViewController * transactionDetailViewController = (DSTransactionDetailViewController *)segue.destinationViewController;
+        DSTransaction * transaction = self.transactions[index];
+        transactionDetailViewController.transaction = transaction;
     }
 }
 

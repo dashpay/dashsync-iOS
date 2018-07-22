@@ -9,6 +9,10 @@
 #import "DSTransactionDetailViewController.h"
 #import <DashSync/DashSync.h>
 #import "BRCopyLabel.h"
+#import "DSTransactionAmountTableViewCell.h"
+#import "DSTransactionDetailTableViewCell.h"
+#import "DSTransactionIdentifierTableViewCell.h"
+#import "DSTransactionStatusTableViewCell.h"
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -114,18 +118,7 @@
         else if ([account containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
-#if DASH_TESTNET
-                NSUInteger purpose = [manager.wallet addressPurpose:address];
-                if (purpose == 44) {
-                    [detail addObject:@"wallet address (BIP44)"];
-                } else if (purpose == 0) {
-                    [detail addObject:@"wallet address (BIP32)"];
-                } else {
-                    [detail addObject:@"wallet address (Unknown Purpose)"];
-                }
-#else
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
-#endif
                 [amount addObject:@(amt)];
                 [currencyIsBitcoinInstead addObject:@FALSE];
             }
@@ -180,9 +173,6 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell;
-    BRCopyLabel *detailLabel;
-    UILabel *textLabel, *subtitleLabel, *amountLabel, *localCurrencyLabel;
     DSPriceManager * walletManager = [DSPriceManager sharedInstance];
     DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.transaction.chain];
     NSUInteger peerCount = peerManager.peerCount;
@@ -203,89 +193,84 @@
             switch (indexPathRow) {
                     
                 case 0:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdenttifier" forIndexPath:indexPath];
+                {
+                    DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                    textLabel = (id)[cell viewWithTag:1];
-                    detailLabel = (id)[cell viewWithTag:2];
                     [self setBackgroundForCell:cell indexPath:indexPath];
-                    textLabel.text = NSLocalizedString(@"id:", nil);
+                    cell.titleLabel.text = NSLocalizedString(@"id:", nil);
                     s = [NSString hexWithData:[NSData dataWithBytes:self.transaction.txHash.u8
                                                              length:sizeof(UInt256)].reverse];
-                    detailLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                    cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                         [s substringFromIndex:s.length/2]];
-                    detailLabel.copyableText = s;
-                    break;
-                    
+                    cell.identifierLabel.copyableText = s;
+                    return cell;
+                }
                 case 1:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                {
+                    DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                    textLabel = (id)[cell viewWithTag:1];
-                    detailLabel = (id)[cell viewWithTag:2];
-                    subtitleLabel = (id)[cell viewWithTag:3];
                     [self setBackgroundForCell:cell indexPath:indexPath];
-                    textLabel.text = NSLocalizedString(@"shapeshift bitcoin id:", nil);
-                    detailLabel.text = [self.transaction.associatedShapeshift outputTransactionId];
-                    subtitleLabel.text = nil;
-                    break;
+                    cell.titleLabel.text = NSLocalizedString(@"shapeshift bitcoin id:", nil);
+                    cell.statusLabel.text = [self.transaction.associatedShapeshift outputTransactionId];
+                    cell.moreInfoLabel.text = nil;
+                    return cell;
+                }
                 case 2:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                {
+                    DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                    textLabel = (id)[cell viewWithTag:1];
-                    detailLabel = (id)[cell viewWithTag:2];
-                    subtitleLabel = (id)[cell viewWithTag:3];
+
                     [self setBackgroundForCell:cell indexPath:indexPath];
-                    textLabel.text = NSLocalizedString(@"shapeshift status:", nil);
-                    detailLabel.text = [self.transaction.associatedShapeshift shapeshiftStatusString];
-                    subtitleLabel.text = nil;
-                    break;
+                    cell.titleLabel.text = NSLocalizedString(@"shapeshift status:", nil);
+                    cell.statusLabel.text = [self.transaction.associatedShapeshift shapeshiftStatusString];
+                    cell.moreInfoLabel.text = nil;
+                    return cell;
+                }
                 case 3:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                {
+                    DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                    textLabel = (id)[cell viewWithTag:1];
-                    detailLabel = (id)[cell viewWithTag:2];
-                    subtitleLabel = (id)[cell viewWithTag:3];
+
                     [self setBackgroundForCell:cell indexPath:indexPath];
-                    textLabel.text = NSLocalizedString(@"status:", nil);
-                    subtitleLabel.text = nil;
+                    cell.titleLabel.text = NSLocalizedString(@"status:", nil);
+                    cell.moreInfoLabel.text = nil;
                     
                     if (self.transaction.blockHeight != TX_UNCONFIRMED) {
-                        detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
+                        cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
                                             self.transaction.blockHeight, self.txDateString];
-                        subtitleLabel.text = self.txDateString;
+                        cell.moreInfoLabel.text = self.txDateString;
                     }
                     else if (! [account transactionIsValid:self.transaction]) {
-                        detailLabel.text = NSLocalizedString(@"double spend", nil);
+                        cell.statusLabel.text = NSLocalizedString(@"double spend", nil);
                     }
                     else if ([account transactionIsPending:self.transaction]) {
-                        detailLabel.text = NSLocalizedString(@"pending", nil);
+                        cell.statusLabel.text = NSLocalizedString(@"pending", nil);
                     }
                     else if (! [account transactionIsVerified:self.transaction]) {
-                        detailLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
+                        cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"seen by %d of %d peers", nil),
                                             relayCount, peerCount];
                     }
-                    else detailLabel.text = NSLocalizedString(@"verified, waiting for confirmation", nil);
+                    else cell.statusLabel.text = NSLocalizedString(@"verified, waiting for confirmation", nil);
                     
-                    break;
-                    
+                    return cell;
+                }
                 case 4:
-                    cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier"];
+                {
+                    DSTransactionAmountTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier"];
                     [self setBackgroundForCell:cell indexPath:indexPath];
-                    textLabel = (id)[cell viewWithTag:1];
-                    localCurrencyLabel = (id)[cell viewWithTag:5];
-                    
                     if (self.sent > 0 && self.sent == self.received) {
-                        textLabel.attributedText = [walletManager attributedStringForDashAmount:self.sent];
-                        localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                        cell.amountLabel.attributedText = [walletManager attributedStringForDashAmount:self.sent];
+                        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [walletManager localCurrencyStringForDashAmount:self.sent]];
                     }
                     else {
-                        textLabel.attributedText = [walletManager attributedStringForDashAmount:self.received - self.sent];
-                        localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                        cell.amountLabel.attributedText = [walletManager attributedStringForDashAmount:self.received - self.sent];
+                        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [walletManager localCurrencyStringForDashAmount:self.received - self.sent]];
                     }
                     
-                    break;
-                    
+                    return cell;
+                }
                 default:
                     break;
             }
@@ -295,19 +280,16 @@
         case 1: // drop through
         case 2:
             if ((self.sent > 0 && indexPath.section == 1) || (self.sent == 0 && indexPath.section == 2)) {
+                DSTransactionDetailTableViewCell * cell;
                 if ([self.outputText[indexPath.row] length] > 0) {
                     cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 }
                 else cell = [tableView dequeueReusableCellWithIdentifier:@"SubtitleCellIdentifier" forIndexPath:indexPath];
-                
-                detailLabel = (id)[cell viewWithTag:2];
-                subtitleLabel = (id)[cell viewWithTag:3];
-                amountLabel = (id)[cell viewWithTag:1];
-                localCurrencyLabel = (id)[cell viewWithTag:5];
-                detailLabel.text = self.outputText[indexPath.row];
-                subtitleLabel.text = self.outputDetail[indexPath.row];
-                amountLabel.textColor = (self.sent > 0) ? [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0] :
+                [self setBackgroundForCell:cell indexPath:indexPath];
+                cell.addressLabel.text = self.outputText[indexPath.row];
+                cell.typeInfoLabel.text = self.outputDetail[indexPath.row];
+                cell.amountLabel.textColor = (self.sent > 0) ? [UIColor colorWithRed:1.0 green:0.33 blue:0.33 alpha:1.0] :
                 [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
                 
                 
@@ -317,78 +299,58 @@
                     UIFontDescriptor * fontD = [font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
                     NSAttributedString * attributedString = [[NSAttributedString alloc] initWithString:@"fetching amount" attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:fontD size:0]}];
                     
-                    amountLabel.attributedText = attributedString;
-                    localCurrencyLabel.textColor = amountLabel.textColor;
-                    localCurrencyLabel.text = @"";
+                    cell.amountLabel.attributedText = attributedString;
+                    cell.fiatAmountLabel.textColor = cell.amountLabel.textColor;
+                    cell.fiatAmountLabel.text = @"";
                 } else {
                     
                     
                     BOOL isBitcoinInstead = [self.outputIsBitcoin[indexPath.row] boolValue];
                     if (isBitcoinInstead) {
-                        amountLabel.text = [walletManager stringForBitcoinAmount:[self.outputAmount[indexPath.row] longLongValue]];
-                        amountLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
-                        localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                        cell.amountLabel.text = [walletManager stringForBitcoinAmount:[self.outputAmount[indexPath.row] longLongValue]];
+                        cell.amountLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+                        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [walletManager localCurrencyStringForBitcoinAmount:[self.outputAmount[indexPath.row]
                                                                                                  longLongValue]]];
                     } else {
-                        amountLabel.attributedText = [walletManager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
-                        localCurrencyLabel.text = [NSString stringWithFormat:@"(%@)",
+                        cell.amountLabel.attributedText = [walletManager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:cell.amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
+                        cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                    [walletManager localCurrencyStringForDashAmount:[self.outputAmount[indexPath.row]
                                                                                               longLongValue]]];
                     }
-                    localCurrencyLabel.textColor = amountLabel.textColor;
-                    
+                    cell.fiatAmountLabel.textColor = cell.amountLabel.textColor;
                 }
-                
+                return cell;
             }
             else if (self.inputAddresses[indexPath.row] != (id)[NSNull null]) {
-                cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
+                DSTransactionDetailTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
+                [self setBackgroundForCell:cell indexPath:indexPath];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                detailLabel = (id)[cell viewWithTag:2];
-                subtitleLabel = (id)[cell viewWithTag:3];
-                amountLabel = (id)[cell viewWithTag:1];
-                localCurrencyLabel = (id)[cell viewWithTag:5];
-                detailLabel.text = self.inputAddresses[indexPath.row];
-                amountLabel.text = nil;
-                localCurrencyLabel.text = nil;
-                
-#if DASH_TESTNET
-                if ([manager.wallet containsAddress:self.inputAddresses[indexPath.row]]) {
-                    NSUInteger purpose = [manager.wallet addressPurpose:self.inputAddresses[indexPath.row]];
-                    if (purpose == 44) {
-                        subtitleLabel.text = @"wallet address (BIP44)";
-                    } else if (purpose == 0) {
-                        subtitleLabel.text = @"wallet address (BIP32)";
-                    } else {
-                        subtitleLabel.text = @"wallet address (Unknown Derivation Path)";
-                    }
-                }
-                else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
-#else
+                cell.addressLabel.text = self.inputAddresses[indexPath.row];
+                cell.amountLabel.text = nil;
+                cell.fiatAmountLabel.text = nil;
                 if ([account containsAddress:self.inputAddresses[indexPath.row]]) {
-                    subtitleLabel.text = NSLocalizedString(@"wallet address", nil);
+                    cell.typeInfoLabel.text = NSLocalizedString(@"wallet address", nil);
                 }
-                else subtitleLabel.text = NSLocalizedString(@"spent address", nil);
-#endif
+                else cell.typeInfoLabel.text = NSLocalizedString(@"spent address", nil);
+                return cell;
             }
             else {
-                cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCell" forIndexPath:indexPath];
+                DSTransactionDetailTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
+                [self setBackgroundForCell:cell indexPath:indexPath];
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                detailLabel = (id)[cell viewWithTag:2];
-                subtitleLabel = (id)[cell viewWithTag:3];
-                amountLabel = (id)[cell viewWithTag:1];
-                localCurrencyLabel = (id)[cell viewWithTag:5];
-                detailLabel.text = NSLocalizedString(@"unknown address", nil);
-                subtitleLabel.text = NSLocalizedString(@"spent input", nil);
-                amountLabel.text = nil;
-                localCurrencyLabel.text = nil;
+
+                cell.addressLabel.text = NSLocalizedString(@"unknown address", nil);
+                cell.typeInfoLabel.text = NSLocalizedString(@"spent input", nil);
+                cell.amountLabel.text = nil;
+                cell.fiatAmountLabel.text = nil;
+                return cell;
             }
             
-            [self setBackgroundForCell:cell indexPath:indexPath];
+            
             break;
     }
-    
-    return cell;
+    return nil;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section

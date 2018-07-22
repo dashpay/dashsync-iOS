@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *providerTransactionHash;
 @property (nonatomic, assign) uint32_t address;
 @property (nonatomic, assign) uint16_t port;
+@property (nonatomic, assign) BOOL claimed;
 @property (nullable, nonatomic, retain) NSData *keyIDOperator;
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nonatomic, assign) Boolean isValid;

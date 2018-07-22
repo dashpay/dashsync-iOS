@@ -48,6 +48,10 @@
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
 		83CFCA70892A5DF9F64BA1AA /* libPods-DashSync_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 955D615511918752AF099181 /* libPods-DashSync_Tests.a */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
+		FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */; };
+		FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A421049432000272E6 /* DSTransactionStatusTableViewCell.m */; };
+		FB0F15A821049505000272E6 /* DSTransactionAmountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */; };
+		FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */; };
 		FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */; };
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
 		FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */; };
@@ -166,6 +170,14 @@
 		C90A9AD2C32828341F0E6915 /* Pods-DashSync_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		DFA886AB709D97089A70E82A /* Pods-DashSync_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Tests/Pods-DashSync_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		E47ABFD6469F1FD556CDA6C7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		FB0F15A0210490C3000272E6 /* DSTransactionDetailTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionDetailTableViewCell.h; sourceTree = "<group>"; };
+		FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionDetailTableViewCell.m; sourceTree = "<group>"; };
+		FB0F15A321049432000272E6 /* DSTransactionStatusTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionStatusTableViewCell.h; sourceTree = "<group>"; };
+		FB0F15A421049432000272E6 /* DSTransactionStatusTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionStatusTableViewCell.m; sourceTree = "<group>"; };
+		FB0F15A621049505000272E6 /* DSTransactionAmountTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionAmountTableViewCell.h; sourceTree = "<group>"; };
+		FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionAmountTableViewCell.m; sourceTree = "<group>"; };
+		FB0F15A921049598000272E6 /* DSTransactionIdentifierTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionIdentifierTableViewCell.h; sourceTree = "<group>"; };
+		FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionIdentifierTableViewCell.m; sourceTree = "<group>"; };
 		FB12FEE120CD3BD100C1E0F0 /* DSMasternodeTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeTableViewCell.h; sourceTree = "<group>"; };
 		FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeTableViewCell.m; sourceTree = "<group>"; };
 		FB12FEE520CD3EC100C1E0F0 /* DSMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeViewController.h; sourceTree = "<group>"; };
@@ -524,6 +536,14 @@
 				FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */,
 				FB3E970520DC245C00D9B0CB /* DSTransactionTableViewCell.h */,
 				FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */,
+				FB0F15A0210490C3000272E6 /* DSTransactionDetailTableViewCell.h */,
+				FB0F15A1210490C3000272E6 /* DSTransactionDetailTableViewCell.m */,
+				FB0F15A321049432000272E6 /* DSTransactionStatusTableViewCell.h */,
+				FB0F15A421049432000272E6 /* DSTransactionStatusTableViewCell.m */,
+				FB0F15A621049505000272E6 /* DSTransactionAmountTableViewCell.h */,
+				FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */,
+				FB0F15A921049598000272E6 /* DSTransactionIdentifierTableViewCell.h */,
+				FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -760,6 +780,7 @@
 				FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */,
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				2A3B3EB820F893F4002962FB /* SwitcherFormTableViewCell.m in Sources */,
+				FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */,
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
 				FB5252F620EE159B009A2BF1 /* DSProposalChooseFundingAccountViewController.m in Sources */,
 				2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */,
@@ -775,6 +796,7 @@
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */,
 				2A3B3EB720F893F4002962FB /* SwitcherFormCellModel.m in Sources */,
+				FB0F15A821049505000272E6 /* DSTransactionAmountTableViewCell.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
 				2A3B3EB420F893F4002962FB /* SelectorFormCellModel.m in Sources */,
@@ -784,12 +806,14 @@
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
+				FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */,
 				FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,
 				2A3B3EB320F893F4002962FB /* FormTableViewController.m in Sources */,
+				FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
