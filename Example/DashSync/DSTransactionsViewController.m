@@ -84,7 +84,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.balanceObserver) {
         self.balanceObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceChangedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                DSTransaction *tx = self.transactions.firstObject;
                                                                

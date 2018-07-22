@@ -46,6 +46,13 @@
     }
 }
 
++ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
+        NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in hashesToDelete) {
+            [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
+        }
+}
+
 + (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity*)chainEntity {
     NSArray * objects = [self objectsMatching:@"(chain == %@) && (simplifiedMasternodeEntryHash == %@)",chainEntity,simplifiedMasternodeEntryHash];
     return [objects firstObject];

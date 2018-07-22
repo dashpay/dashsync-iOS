@@ -451,7 +451,7 @@
 
 - (void)balanceNotification
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
 }
 
 // MARK: - Transactions

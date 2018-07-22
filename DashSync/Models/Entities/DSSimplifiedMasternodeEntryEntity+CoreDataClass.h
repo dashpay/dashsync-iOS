@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (DSSimplifiedMasternodeEntryEntity* _Nullable)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;
 
 - (DSSimplifiedMasternodeEntry* _Nullable)simplifiedMasternodeEntry;
++ (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
 
 @end
 
