@@ -32,6 +32,7 @@
 #import "DSPriceManager.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
+#import "DSKey.h"
 
 @implementation NSString (Dash)
 
@@ -80,7 +81,6 @@
     return [self base58checkWithData:d];
 }
 
-
 + (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain
 {
     if (script == (id)[NSNull null]) return nil;
@@ -113,10 +113,16 @@
         [d appendBytes:[elem[l - 1] hash160].u8 length:sizeof(UInt160)];
     }
     else if (l >= 1 && [elem[l - 1] intValue] <= OP_PUSHDATA4 && [elem[l - 1] intValue] > 0) {// pay-to-pubkey scriptSig
+        [d appendBytes:&v length:1];
+//        DSKey * key = [DSKey keyRecoveredFromCompactSig:elem[l - 1] andMessageDigest:transactionHash];
+//        [d appendBytes:[key.publicKey hash160].u8 length:sizeof(UInt160)];
         //TODO: implement Peter Wullie's pubKey recovery from signature
         return nil;
     }
-    else return nil; // unknown script type
+    else {
+        NSLog(@"Unknown script type");
+        return nil; // unknown script type
+    }
     
     return [self base58checkWithData:d];
 }

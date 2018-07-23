@@ -47,7 +47,6 @@
 
 @interface NSString (Dash)
 
-
 + (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain*)chain;
 + (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain;
 

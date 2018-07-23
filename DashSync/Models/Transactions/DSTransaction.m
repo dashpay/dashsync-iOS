@@ -370,9 +370,13 @@
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
     NSInteger i = 0;
     
+//    for (NSData * data in self.signatures) {
+//        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
+//                           NSLog(@"%@",addr);
+//    }
+    
     for (NSData *script in self.inScripts) {
         NSString *addr = [NSString addressWithScriptPubKey:script onChain:self.chain];
-        
         if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i] onChain:self.chain];
         [addresses addObject:(addr) ? addr : [NSNull null]];
         i++;

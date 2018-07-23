@@ -540,7 +540,10 @@ inline static int ceil_log2(int x)
     [addedMasternodes removeObjectsForKeys:self.simplifiedMasternodeList.allKeys];
     NSMutableSet * modifiedMasternodeKeys = [NSMutableSet setWithArray:[addedOrModifiedMasternodes allKeys]];
     [modifiedMasternodeKeys intersectSet:[NSSet setWithArray:self.simplifiedMasternodeList.allKeys]];
-    NSDictionary * modifiedMasternodes = [self.simplifiedMasternodeList dictionaryWithValuesForKeys:[modifiedMasternodeKeys allObjects]];
+    NSMutableDictionary * modifiedMasternodes = [NSMutableDictionary dictionary];
+    for (NSData * data in modifiedMasternodeKeys) {
+        [modifiedMasternodes setObject:self.simplifiedMasternodeList[data] forKey:data];
+    }
     
     NSMutableDictionary * tentativeMasternodeList = [self.simplifiedMasternodeList mutableCopy];
     

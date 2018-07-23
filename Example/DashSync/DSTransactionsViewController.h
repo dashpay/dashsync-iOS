@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
 
-@interface DSTransactionsViewController : UITableViewController
+@interface DSTransactionsViewController : UITableViewController <NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) DSChainPeerManager * chainPeerManager;
 
