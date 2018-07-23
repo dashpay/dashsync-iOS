@@ -178,7 +178,7 @@ static NSString *dateFormat(NSString *template)
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"chain = %@",self.chainPeerManager.chain.chainEntity];
+    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@",self.chainPeerManager.chain.chainEntity];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -299,7 +299,7 @@ static NSString *dateFormat(NSString *template)
     
     DSTransactionTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
     DSTransactionEntity * transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    NSLog(@"%u",transactionEntity.blockHeight);
+    NSLog(@"%u",transactionEntity.transactionHash.blockHeight);
     DSTransaction *tx = [transactionEntity transactionForChain:self.chainPeerManager.chain];
     [self.transactions setObject:tx forKey:uint256_data(tx.txHash)];
     DSAccount * account = [self.chainPeerManager.chain accountContainingTransaction:tx];

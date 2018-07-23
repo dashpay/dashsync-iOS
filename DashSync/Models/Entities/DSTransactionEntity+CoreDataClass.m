@@ -51,6 +51,12 @@
         NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
         UInt256 txHash = tx.txHash;
         NSUInteger idx = 0;
+        if (!self.transactionHash) {
+            self.transactionHash = [DSTransactionHashEntity managedObject];
+            self.transactionHash.chain = tx.chain.chainEntity;
+        } else if (!self.transactionHash.chain) {
+            self.transactionHash.chain = tx.chain.chainEntity;
+        }
         self.transactionHash.txHash = uint256_data(txHash);
         self.transactionHash.blockHeight = tx.blockHeight;
         self.transactionHash.timestamp = tx.timestamp;
@@ -83,9 +89,7 @@
         }
         
         self.lockTime = tx.lockTime;
-        if (!self.chain) {
-            self.chain = tx.chain.chainEntity;
-        }
+        
         
     }];
     
@@ -140,7 +144,7 @@
 
 + (void)deleteTransactionsOnChain:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * transactionsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        NSArray * transactionsToDelete = [self objectsMatching:@"(transactionHash.chain == %@)",chainEntity];
         for (DSTransactionEntity * transaction in transactionsToDelete) {
             [chainEntity.managedObjectContext deleteObject:transaction];
         }

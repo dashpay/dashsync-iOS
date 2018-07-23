@@ -721,8 +721,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self.moc performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:self.moc];
         [DSTransactionEntity setContext:self.moc];
-        if ([DSTransactionEntity countObjectsMatching:@"txHash == %@", uint256_data(txHash)] == 0) {
-            [[DSTransactionEntity managedObject] setAttributesFromTx:transaction];
+        [DSTransactionHashEntity setContext:self.moc];
+        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
+            DSTransactionEntity * transactionEntity = [DSTransactionEntity managedObject];
+            [transactionEntity setAttributesFromTx:transaction];
             [DSTransactionEntity saveContext];
         }
     }];

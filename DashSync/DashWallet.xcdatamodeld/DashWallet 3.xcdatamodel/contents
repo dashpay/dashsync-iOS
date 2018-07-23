@@ -245,8 +245,8 @@
         <relationship name="transactionHash" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionHashEntity" inverseName="transaction" inverseEntity="DSTransactionHashEntity" syncable="YES"/>
     </entity>
     <entity name="DSTransactionHashEntity" representedClassName="DSTransactionHashEntity" syncable="YES">
-        <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="timestamp" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="blockHeight" attributeType="Integer 32" defaultValueString="-1" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="timestamp" attributeType="Double" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="txHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="transactionHashes" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="transaction" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSTransactionEntity" inverseName="transactionHash" inverseEntity="DSTransactionEntity" syncable="YES"/>
