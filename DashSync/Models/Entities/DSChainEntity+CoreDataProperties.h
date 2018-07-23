@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint16_t type;
 @property (nonnull, nonatomic, retain) NSSet<DSPeerEntity *> *peers;
-@property (nonnull, nonatomic, retain) NSSet<DSTransactionEntity *> *transactions;
+@property (nonnull, nonatomic, retain) NSSet<DSTransactionHashEntity *> *transactionHashes;
 @property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
 @property (nonnull, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 @property (nonnull, nonatomic, retain) NSSet<DSMasternodeBroadcastHashEntity *> *masternodeBroadcastHashes;
@@ -54,10 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addPeers:(NSSet<DSPeerEntity *> *)values;
 - (void)removePeers:(NSSet<DSPeerEntity *> *)values;
 
-- (void)addTransactionsObject:(DSTransactionEntity *)value;
-- (void)removeTransactionsObject:(DSTransactionEntity *)value;
-- (void)addTransactions:(NSSet<DSTransactionEntity *> *)values;
-- (void)removeTransactions:(NSSet<DSTransactionEntity *> *)values;
+- (void)addTransactionHashesObject:(DSTransactionHashEntity *)value;
+- (void)removeTransactionHashesObject:(DSTransactionHashEntity *)value;
+- (void)addTransactionHashes:(NSSet<DSTransactionHashEntity *> *)values;
+- (void)removeTransactionHashes:(NSSet<DSTransactionHashEntity *> *)values;
 
 - (void)addBlocksObject:(DSMerkleBlockEntity *)value;
 - (void)removeBlocksObject:(DSMerkleBlockEntity *)value;

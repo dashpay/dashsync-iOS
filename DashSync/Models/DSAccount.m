@@ -31,6 +31,7 @@
 #import "DSChain.h"
 #import "DSTransaction.h"
 #import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
@@ -717,9 +718,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
-    [self.moc performBlock:^{ // add the transaction to core data
+    [self.moc performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:self.moc];
-        if ([DSTransactionEntity countObjectsMatching:@"txHash == %@", [NSData dataWithBytes:&txHash length:sizeof(txHash)]] == 0) {
+        [DSTransactionEntity setContext:self.moc];
+        if ([DSTransactionEntity countObjectsMatching:@"txHash == %@", uint256_data(txHash)] == 0) {
             [[DSTransactionEntity managedObject] setAttributesFromTx:transaction];
             [DSTransactionEntity saveContext];
         }
@@ -992,7 +994,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             @autoreleasepool {
                 NSMutableSet *entities = [NSMutableSet set];
                 
-                for (DSTransactionEntity *e in [DSTransactionEntity objectsMatching:@"txHash in %@", hashes]) {
+                for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", hashes]) {
                     e.blockHeight = height;
                     e.timestamp = timestamp;
                     [entities addObject:e];

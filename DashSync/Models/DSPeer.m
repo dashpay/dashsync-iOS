@@ -933,7 +933,6 @@
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectVoteHashes = [NSMutableSet set];
-    //NSMutableSet *masternodePingHashes = [NSMutableSet set]; //we don't care about ping messages
     NSMutableSet *masternodeVerifications = [NSMutableSet set]; //mnv messages
     NSMutableSet *masternodeBroadcastHashes = [NSMutableSet set]; //mnb messages
     
@@ -1017,7 +1016,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
+                if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
             });
         }
         

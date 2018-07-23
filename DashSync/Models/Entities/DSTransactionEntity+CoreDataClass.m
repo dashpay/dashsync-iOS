@@ -33,6 +33,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 
 @implementation DSTransactionEntity
 
@@ -50,10 +51,9 @@
         NSMutableOrderedSet *outputs = [self mutableOrderedSetValueForKey:@"outputs"];
         UInt256 txHash = tx.txHash;
         NSUInteger idx = 0;
-        
-        self.txHash = [NSData dataWithBytes:&txHash length:sizeof(txHash)];
-        self.blockHeight = tx.blockHeight;
-        self.timestamp = tx.timestamp;
+        self.transactionHash.txHash = uint256_data(txHash);
+        self.transactionHash.blockHeight = tx.blockHeight;
+        self.transactionHash.timestamp = tx.timestamp;
         self.associatedShapeshift = tx.associatedShapeshift;
         
         while (inputs.count < tx.inputHashes.count) {
@@ -93,7 +93,11 @@
 }
 
 + (NSArray<DSTransactionEntity*> *)transactionsForChain:(DSChainEntity*)chain {
-    return [chain.transactions allObjects];
+    NSMutableArray * transactions = [NSMutableArray array];
+    for (DSTransactionHashEntity * hashEntity in chain.transactionHashes) {
+        [transactions addObject:hashEntity.transaction];
+    }
+    return transactions;
 }
 
 - (DSTransaction *)transactionForChain:(DSChain*)chain
@@ -102,12 +106,12 @@
     DSTransaction *tx = [[DSTransaction alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
-        NSData *txHash = self.txHash;
+        NSData *txHash = self.transactionHash.txHash;
         
         if (txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)txHash.bytes;
         tx.lockTime = self.lockTime;
-        tx.blockHeight = self.blockHeight;
-        tx.timestamp = self.timestamp;
+        tx.blockHeight = self.transactionHash.blockHeight;
+        tx.timestamp = self.transactionHash.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
         
         for (DSTxInputEntity *e in self.inputs) {

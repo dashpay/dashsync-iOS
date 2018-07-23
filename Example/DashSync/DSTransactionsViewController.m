@@ -140,11 +140,6 @@ static NSString *dateFormat(NSString *template)
 - (void)viewWillDisappear:(BOOL)animated
 {
     if (self.isMovingFromParentViewController || self.navigationController.isBeingDismissed) {
-        //BUG: XXX this isn't triggered from start/recover new wallet
-        if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
-        self.backgroundObserver = nil;
-        if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-        self.balanceObserver = nil;
         if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
         self.txStatusObserver = nil;
         if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
@@ -153,8 +148,6 @@ static NSString *dateFormat(NSString *template)
         self.syncFinishedObserver = nil;
         if (self.syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
         self.syncFailedObserver = nil;
-        
-        //self.buyController = nil;
     }
     
     [super viewWillDisappear:animated];
@@ -162,8 +155,6 @@ static NSString *dateFormat(NSString *template)
 
 - (void)dealloc
 {
-    if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
-    if (self.balanceObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
     if (self.txStatusObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.txStatusObserver];
     if (self.syncStartedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncStartedObserver];
     if (self.syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
@@ -308,6 +299,7 @@ static NSString *dateFormat(NSString *template)
     
     DSTransactionTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
     DSTransactionEntity * transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    NSLog(@"%u",transactionEntity.blockHeight);
     DSTransaction *tx = [transactionEntity transactionForChain:self.chainPeerManager.chain];
     [self.transactions setObject:tx forKey:uint256_data(tx.txHash)];
     DSAccount * account = [self.chainPeerManager.chain accountContainingTransaction:tx];

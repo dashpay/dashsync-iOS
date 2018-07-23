@@ -31,14 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSTransactionEntity *> *)fetchRequest;
 
-@property (nonatomic, retain) NSData *txHash;
-@property (nonatomic) int32_t blockHeight;
-@property (nonatomic) NSTimeInterval timestamp;
 @property (nonatomic, retain) NSOrderedSet<DSTxInputEntity *> *inputs;
 @property (nonatomic, retain) NSOrderedSet<DSTxOutputEntity *> *outputs;
 @property (nonatomic) int32_t lockTime;
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
 @property (nonatomic, retain) DSChainEntity *chain;
+@property (nonatomic, retain) DSTransactionHashEntity * transactionHash;
 
 @end
 
