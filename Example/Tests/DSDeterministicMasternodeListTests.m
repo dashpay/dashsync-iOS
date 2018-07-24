@@ -40,7 +40,7 @@
     
     NSMutableArray<DSSimplifiedMasternodeEntry*>* entries = [NSMutableArray array];
     for (unsigned int i = 0; i < 16; i++) {
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[[NSString stringWithFormat:@"%032x",i].hexToData UInt256AtOffset:0] address:UINT128_ZERO port:i keyIDOperator:[[NSString stringWithFormat:@"%020x",i].hexToData UInt160AtOffset:0] keyIDVoting:[[NSString stringWithFormat:@"%020x",i].hexToData UInt160AtOffset:0] isValid:TRUE];
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[[NSString stringWithFormat:@"%032x",i].hexToData UInt256AtOffset:0] address:UINT128_ZERO port:i keyIDOperator:[[NSString stringWithFormat:@"%020x",i].hexToData UInt160AtOffset:0] keyIDVoting:[[NSString stringWithFormat:@"%020x",i].hexToData UInt160AtOffset:0] isValid:TRUE onChain:[DSChain mainnet]];
         [entries addObject:simplifiedMasternodeEntry];
     }
     

@@ -43,6 +43,9 @@
 #import "DSChainPeerManager.h"
 #import "DSOptionsManager.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 #define PEER_LOGGING 1
 
@@ -83,6 +86,7 @@
 @property (nonatomic, strong) void (^mempoolCompletion)(BOOL);
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
 
@@ -205,11 +209,23 @@
     self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
+
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
     self.currentBlockTxHashes = nil;
+    
+    self.managedObjectContext = [NSManagedObject context];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSTransactionHashEntity setContext:self.managedObjectContext];
+        [DSChainEntity setContext:self.managedObjectContext];
+        NSArray<DSTransactionHashEntity*> * transactionHashEntities  = [DSTransactionHashEntity standaloneTransactionHashEntitiesOnChain:self.chain.chainEntity];
+        for (DSTransactionHashEntity * hashEntity in transactionHashEntities) {
+            [self.knownTxHashes addObject:hashEntity.txHash];
+        }
+    }];
+    
     
     NSString *label = [NSString stringWithFormat:@"peer.%@:%u", self.host, self.port];
     
