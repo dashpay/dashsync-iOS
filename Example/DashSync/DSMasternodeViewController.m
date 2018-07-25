@@ -84,9 +84,6 @@
         } else {
             return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
         }
-        //        else {
-        //            return [NSPredicate predicateWithFormat:@"(blockHash == %@)",self.searchString];
-        //        }
         
     } else {
         return [NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity];
@@ -117,7 +114,7 @@
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
-    NSPredicate *filterPredicate = [self searchPredicate];
+    NSPredicate *filterPredicate = (self.chain.protocolVersion < 70211)?[self searchPredicate70210]:[self searchPredicate];
     [fetchRequest setPredicate:filterPredicate];
     
     // Edit the section name key path and cache name if appropriate.

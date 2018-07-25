@@ -135,7 +135,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 @property (nonatomic, strong) NSString * sporkAddress;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
-@property (nonatomic, readonly) uint64_t spendingLimit;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;

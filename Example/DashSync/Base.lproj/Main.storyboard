@@ -1253,7 +1253,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="WalletCell" rowHeight="208" id="5rd-g4-dqw" customClass="DSWalletTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="WalletCellIdentifier" rowHeight="208" id="5rd-g4-dqw" userLabel="WalletCell" customClass="DSWalletTableViewCell">
                                 <rect key="frame" x="0.0" y="28" width="375" height="208"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="5rd-g4-dqw" id="M3f-ZE-Gv7">
@@ -1288,10 +1288,20 @@
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="595-1f-2BU">
+                                            <rect key="frame" x="13" y="29" width="346" height="101"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <state key="normal" title="Show"/>
+                                            <connections>
+                                                <action selector="showPassphrase:" destination="5rd-g4-dqw" eventType="touchUpInside" id="Upw-RZ-MAI"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="passphraseLabel" destination="BTe-aq-wEe" id="tI6-zN-kFj"/>
+                                    <outlet property="showPassphraseButton" destination="595-1f-2BU" id="n6T-Wf-ptK"/>
                                     <outlet property="xPublicKeyLabel" destination="CMi-i5-Utn" id="tIo-mG-06w"/>
                                     <segue destination="YPy-fW-iQe" kind="show" identifier="ViewAccountsSegue" id="BVk-6H-MCh"/>
                                 </connections>

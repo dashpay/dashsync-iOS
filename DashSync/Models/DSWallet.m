@@ -34,6 +34,7 @@
 #import "DSKey.h"
 #import "NSData+Bitcoin.h"
 #import "DSEnvironment.h"
+#import "DSChainManager.h"
 
 
 #define SEED_ENTROPY_LENGTH   (128/8)

@@ -38,8 +38,6 @@
 #define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
-#define SPEND_LIMIT_KEY     @"spendlimit"
-
 typedef void (^ResetCancelHandlerBlock)(void);
 
 @interface DSPriceManager : NSObject

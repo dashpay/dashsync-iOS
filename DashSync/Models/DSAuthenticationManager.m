@@ -62,7 +62,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 @property (nonatomic, copy) PinVerificationBlock pinVerificationBlock;
 @property (nonatomic, strong) UIAlertController *pinAlertController;
 @property (nonatomic, strong) UIAlertController *resetAlertController;
-@property (nonatomic, strong) id keyboardObserver;
+@property (nonatomic, strong) id keyboardObserver,backgroundObserver;
 
 @end
 
@@ -99,6 +99,15 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
             }
         }
     }];
+    
+    self.backgroundObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           // lockdown the app
+                                                           self.didAuthenticate = NO;
+                                                           [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
+                                                           
+                                                       }];
     
     return self;
 }

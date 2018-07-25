@@ -10,6 +10,8 @@
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 
+#define SPEND_LIMIT_KEY     @"SPEND_LIMIT_KEY"
+
 @interface DSChainManager : NSObject
 
 @property (nonatomic,strong) DSChainPeerManager * mainnetManager;
@@ -17,6 +19,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 @property (nonatomic,strong) NSArray * devnetManagers;
 @property (nonatomic,readonly) NSArray * chains;
 @property (nonatomic,readonly) NSArray * devnetChains;
+@property (nonatomic,readonly) uint64_t spendingLimit;
 
 -(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
 

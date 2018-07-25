@@ -121,7 +121,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 };
 
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
-#define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
 #define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
@@ -1392,41 +1391,6 @@ static dispatch_once_t devnetToken = 0;
 - (BOOL)isEqual:(id)obj
 {
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
-}
-
-// MARK: - Spending Limit
-
-//makes sense to be here, since we have the limits per chain
--(void)resetSpendingLimit {
-    
-    uint64_t limit = self.spendingLimit;
-    uint64_t totalSent = 0;
-    for (DSWallet * wallet in self.wallets) {
-        totalSent += wallet.totalSent;
-    }
-    if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
-    
-}
-
-// amount that can be spent using touch id without pin entry
-- (uint64_t)spendingLimit
-{
-    // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
-    if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return DUFFS;
-    
-    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
-}
-
-- (void)setSpendingLimit:(uint64_t)spendingLimit
-{
-    uint64_t totalSent = 0;
-    for (DSWallet * wallet in self.wallets) {
-        totalSent += wallet.totalSent;
-    }
-    if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
-        // use setDouble since setInteger won't hold a uint64_t
-        [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
-    }
 }
 
 @end

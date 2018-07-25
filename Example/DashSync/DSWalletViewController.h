@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
+#import "DSWalletTableViewCell.h"
 
-@interface DSWalletViewController : UITableViewController
+@interface DSWalletViewController : UITableViewController <DSWalletTableViewCellDelegate>
 
 @property (nonatomic, strong) NSFetchedResultsController *fetchedResultsController;
 @property (nonatomic, strong) DSChain * chain;
