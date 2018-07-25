@@ -78,11 +78,12 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 };
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainWalletsDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlockchainUsersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSMasternodeBroadcast,DSChainPeerManager;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSMasternodeBroadcast,DSChainPeerManager,DSBlockchainUser;
 
 @protocol DSChainDelegate;
 
@@ -173,8 +174,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 -(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 -(void)unregisterWallet:(DSWallet* _Nonnull)wallet;
--(void)addWallet:(DSWallet* _Nonnull)objects;
+-(void)addWallet:(DSWallet* _Nonnull)wallet;
 -(void)registerWallet:(DSWallet* _Nonnull)wallet;
+
+-(void)unregisterBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
+-(void)addBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
+-(void)registerBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
 
 -(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;

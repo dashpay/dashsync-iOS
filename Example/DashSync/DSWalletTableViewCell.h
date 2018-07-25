@@ -21,6 +21,6 @@
 @end
 
 @protocol DSWalletTableViewCellDelegate
--(void)walletTableViewCellDidForAuthentication:(DSWalletTableViewCell*)cell;
+-(void)walletTableViewCellDidRequestAuthentication:(DSWalletTableViewCell*)cell;
 
 @end

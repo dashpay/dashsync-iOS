@@ -7,6 +7,7 @@
 
 #import "DSTransactionFactory.h"
 #import "DSCoinbaseTransaction.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
 #import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
 
@@ -19,6 +20,8 @@
             return [DSTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_Coinbase:
             return [DSCoinbaseTransaction transactionWithMessage:message onChain:chain];
+        case DSTransactionType_SubscriptionRegistration:
+            return [DSBlockchainUserRegistrationTransaction transactionWithMessage:message onChain:chain];
         default:
             return nil;
     }

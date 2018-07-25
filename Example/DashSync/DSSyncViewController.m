@@ -28,8 +28,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *connectedPeerCount;
 @property (strong, nonatomic) IBOutlet UILabel *downloadPeerLabel;
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
-@property (strong, nonatomic) IBOutlet UILabel *dashAmountLabel;
-@property (strong, nonatomic) IBOutlet UILabel *transactionCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *transactionCountBalanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *standaloneDerivationPathsCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *standaloneAddressesCountLabel;
@@ -370,8 +369,7 @@
 }
 
 -(void)updateBalance {
-    self.dashAmountLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:self.chainPeerManager.chain.balance];
-    self.transactionCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chain.allTransactions count]];
+    self.transactionCountBalanceLabel.text = [NSString stringWithFormat:@"%lu / %@",[self.chain.allTransactions count],[[DSPriceManager sharedInstance] stringForDashAmount:self.chainPeerManager.chain.balance]];
 }
 
 -(void)updateBlockHeight {

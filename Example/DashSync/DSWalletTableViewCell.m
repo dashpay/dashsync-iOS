@@ -22,6 +22,6 @@
 }
 
 - (IBAction)showPassphrase:(id)sender {
-    [self.actionDelegate walletTableViewCellDidForAuthentication:self];
+    [self.actionDelegate walletTableViewCellDidRequestAuthentication:self];
 }
 @end

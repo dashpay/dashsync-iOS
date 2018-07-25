@@ -115,4 +115,6 @@ sequence:(uint32_t)sequence;
 // the block height after which the transaction can be confirmed without a fee, or TX_UNCONFIRMED for never
 - (uint32_t)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights;
 
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex;
+
 @end
