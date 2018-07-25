@@ -45,7 +45,7 @@
         self.isValidAddress = FALSE;
     }
     } else if (textField == self.amountField) {
-        if ([[DSWalletManager sharedInstance] amountForDashString:novelString] > 0) {
+        if ([[DSPriceManager sharedInstance] amountForDashString:novelString] > 0) {
             self.isValidAmount = TRUE;
         } else {
             self.isValidAmount = FALSE;
@@ -60,7 +60,7 @@
 }
 
 -(void)insufficientFundsForTransaction:(DSTransaction *)tx forAmount:(uint64_t)requestedSendAmount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount {
-    DSWalletManager * manager = [DSWalletManager sharedInstance];
+    DSPriceManager * manager = [DSPriceManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
@@ -216,7 +216,7 @@
 -(IBAction)send:(id)sender {
     
     DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.addressField.text onChain:self.account.wallet.chain];
-    paymentRequest.amount = [[DSWalletManager sharedInstance] amountForDashString:self.amountField.text];
+    paymentRequest.amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountField.text];
     if ([paymentRequest isValid]) {
         DSPaymentProtocolRequest * protocolRequest = paymentRequest.protocolRequest;
         DSTransaction * transaction = [self.account transactionForAmounts:protocolRequest.details.outputAmounts toOutputScripts:protocolRequest.details.outputScripts withFee:TRUE isInstant:self.instantSendSwitch.on];

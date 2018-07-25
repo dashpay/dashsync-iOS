@@ -29,7 +29,23 @@
 #import "DSChain.h"
 #import "IntTypes.h"
 
-
+typedef NS_ENUM(uint32_t,DSInvType) {
+    DSInvType_Error = 0,
+    DSInvType_Tx = 1,
+    DSInvType_Block = 2,
+    DSInvType_Merkleblock = 3,
+    DSInvType_TxLockRequest = 4,
+    DSInvType_TxLockVote = 5,
+    DSInvType_Spork = 6,
+    DSInvType_MasternodePaymentVote = 7,
+    DSInvType_MasternodePaymentBlock = 8,
+    DSInvType_MasternodeBroadcast = 14,
+    DSInvType_MasternodePing = 15,
+    DSInvType_DSTx = 16,
+    DSInvType_GovernanceObject = 17,
+    DSInvType_GovernanceObjectVote = 18,
+    DSInvType_MasternodeVerify = 19,
+};
 
 #define BITCOIN_TIMEOUT_CODE  1001
 
@@ -147,6 +163,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
+- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
+- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
 
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 
@@ -230,7 +248,7 @@ services:(uint64_t)services;
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL success))completion;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
-- (void)sendInvMessageWithTxHashes:(NSArray *)txHashes;
+- (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes;
 - (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray<NSData*> *)masternodeBroadcastHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;

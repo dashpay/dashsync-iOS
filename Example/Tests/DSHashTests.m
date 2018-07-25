@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Dash.h"
 

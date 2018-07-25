@@ -19,6 +19,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger recentMasternodeBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger last3HoursStandaloneBroadcastHashesCount;
 @property (nonatomic,readonly) NSUInteger masternodeBroadcastsCount;
+@property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
 
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 
@@ -39,6 +40,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(DSMasternodeBroadcast* _Nullable)masternodeBroadcastForUniqueID:(NSString* _Nonnull)uniqueId;
 
 -(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO;
+
+-(UInt256)merkleRootFromHashes:(NSArray*)hashes;
 
 -(void)wipeMasternodeInfo;
 

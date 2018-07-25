@@ -15,7 +15,7 @@
 #import "DSWallet.h"
 #import "DSKey.h"
 #import "DSTransaction.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 
 @interface DSWalletTests : XCTestCase
 
@@ -171,33 +171,33 @@
 
 - (void)testWalletManager
 {
-    DSWalletManager *manager = [DSWalletManager sharedInstance];
+    DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([manager amountForDashString:nil], 0, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:nil], 0, @"[DSPriceManager amountForDashString:]");
     
-    XCTAssertEqual([manager amountForDashString:@""], 0, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:@""], 0, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:0];
-    XCTAssertEqual([manager amountForDashString:s], 0, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 0, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:100000000];
-    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 100000000, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:1];
-    XCTAssertEqual([manager amountForDashString:s], 1, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 1, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2100000000000000];
-    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2100000000000000, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999999];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999999, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999995];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999995, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:2099999999999990];
-    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[DSWalletManager amountForDashString:]");
+    XCTAssertEqual([manager amountForDashString:s], 2099999999999990, @"[DSPriceManager amountForDashString:]");
 }
 
 @end

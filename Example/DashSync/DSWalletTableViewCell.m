@@ -21,4 +21,7 @@
     // Configure the view for the selected state
 }
 
+- (IBAction)showPassphrase:(id)sender {
+    [self.actionDelegate walletTableViewCellDidForAuthentication:self];
+}
 @end

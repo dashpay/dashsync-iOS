@@ -43,6 +43,12 @@
 
 #define IX_PREVIOUS_CONFIRMATIONS_NEEDED       6   // number of previous confirmations needed in ix inputs
 
+#define TX_VERSION    0x00000001u
+#define SPECIAL_TX_VERSION    0x00000002u
+#define TX_LOCKTIME   0x00000000u
+#define TXIN_SEQUENCE UINT32_MAX
+#define SIGHASH_ALL   0x00000001u
+
 typedef union _UInt256 UInt256;
 
 @interface DSTransaction : NSObject
@@ -63,7 +69,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) uint16_t version;
 @property (nonatomic, assign) uint16_t type;
 @property (nonatomic, assign) uint32_t lockTime;
-@property (nonatomic, readonly) uint32_t payloadOffset;
+@property (nonatomic, assign) uint32_t payloadOffset;
 @property (nonatomic, assign) uint32_t blockHeight;
 @property (nonatomic, assign) NSTimeInterval timestamp; // time interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) size_t size; // size in bytes if signed, or estimated size assuming compact pubkey sigs
@@ -72,11 +78,14 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 @property (nonatomic, readonly) NSString *longDescription;
-@property (nonatomic, readonly) BOOL isCoinbase;
-@property (nonatomic, readonly) NSData * coinbaseData;
+@property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
+@property (nonatomic, readonly) NSData * coinbaseClassicalTransactionData;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
+
+@property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
+@property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain;

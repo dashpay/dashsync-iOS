@@ -14,6 +14,7 @@
 @dynamic syncGovernanceObjectsInterval;
 @dynamic syncMasternodeListInterval;
 @dynamic syncType;
+@dynamic retrievePriceInfo;
 
 + (instancetype)sharedInstance {
     static DSOptionsManager *_sharedInstance = nil;
@@ -30,6 +31,7 @@
         @"syncGovernanceObjectsInterval" : @600, // 10 min
         @"syncMasternodeListInterval" : @600,    // 10 min
         @"syncFromHeight" : @0,
+        @"retrievePriceInfo" : @YES,
         @"syncType" : @(DSSyncType_Default),
     };
 

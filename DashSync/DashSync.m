@@ -40,7 +40,9 @@
         // use background fetch to stay synced with the blockchain
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         
-        [DSWalletManager sharedInstance];
+        if ([[DSOptionsManager sharedInstance] retrievePriceInfo]) {
+            [[DSPriceManager sharedInstance] startExchangeRateFetching];
+        }
         // start the event manager
         [[DSEventManager sharedEventManager] up];
         
@@ -88,29 +90,40 @@
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-    [DSTransactionEntity deleteTransactionsOnChain:chainEntity];
-//    [DSShapeshiftEntity deleteAllObjects];
+    [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
     [chain wipeBlockchainInfo];
     [DSTransactionEntity saveContext];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
     });
 }
 
 -(void)wipeMasternodeDataForChain:(DSChain*)chain {
     [self stopSyncForChain:chain];
-    DSChainEntity * chainEntity = chain.chainEntity;
-    [DSMasternodeBroadcastHashEntity deleteHashesOnChain:chainEntity];
-    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
-    [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
-    [peerManager.masternodeManager wipeMasternodeInfo];
-    [DSMasternodeBroadcastHashEntity saveContext];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@-%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
-    });
+    NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        [DSChainEntity setContext:context];
+        [DSMasternodeBroadcastHashEntity setContext:context];
+        [DSSimplifiedMasternodeEntryEntity setContext:context];
+        DSChainEntity * chainEntity = chain.chainEntity;
+        if (chain.protocolVersion < 70211) {
+            [DSMasternodeBroadcastHashEntity deleteHashesOnChain:chainEntity];
+        } else {
+            [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        }
+        DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+        [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
+        [peerManager.masternodeManager wipeMasternodeInfo];
+        [DSMasternodeBroadcastHashEntity saveContext];
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@-%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+        });
+    }];
+    
 }
 
 -(void)wipeSporkDataForChain:(DSChain*)chain {

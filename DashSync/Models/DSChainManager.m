@@ -9,14 +9,16 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"
+#import "DSWallet.h"
 #include <arpa/inet.h>
 
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
+#define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 
 @interface DSChainManager()
 
@@ -229,6 +231,45 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
     });
 }
+
+// MARK: - Spending Limits
+
+// amount that can be spent using touch id without pin entry
+- (uint64_t)spendingLimit
+{
+    // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
+    if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return DUFFS;
+    
+    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
+}
+
+- (void)setSpendingLimit:(uint64_t)spendingLimit
+{
+    uint64_t totalSent = 0;
+    for (DSChain * chain in self.chains) {
+        for (DSWallet * wallet in chain.wallets) {
+            totalSent += wallet.totalSent;
+        }
+    }
+    if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
+        // use setDouble since setInteger won't hold a uint64_t
+        [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
+    }
+}
+
+-(void)resetSpendingLimits {
+    
+    uint64_t limit = self.spendingLimit;
+    uint64_t totalSent = 0;
+    for (DSChain * chain in self.chains) {
+        for (DSWallet * wallet in chain.wallets) {
+            totalSent += wallet.totalSent;
+        }
+    }
+    if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
+    
+}
+
 
 // MARK: - floating fees
 

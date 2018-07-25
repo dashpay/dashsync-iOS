@@ -53,7 +53,7 @@
     [fetchRequest setFetchBatchSize:12];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *timeDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
+    NSSortDescriptor *timeDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transactionHash.timestamp" ascending:NO];
     NSArray *sortDescriptors = @[timeDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
@@ -125,7 +125,7 @@
             NSIndexPath * indexPath = [self.tableView indexPathForCell:cell];
             DSTransactionEntity *transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
             UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-            pasteboard.string = transactionEntity.txHash.reverse.hexString;
+            pasteboard.string = transactionEntity.transactionHash.txHash.reverse.hexString;
             [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"copied", nil)
                                                         center:CGPointMake(self.view.bounds.size.width/2.0, self.view.bounds.size.height/2.0 - 130.0)] popIn]
                                    popOutAfterDelay:2.0]];
@@ -143,7 +143,7 @@
     for (DSTxOutputEntity * output in transactionEntity.outputs) {
         if ([output.address isEqualToString:self.address]) {
             outwards = TRUE;
-            cell.amountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:output.value];
+            cell.amountLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:output.value];
             break;
         }
     }
@@ -155,7 +155,7 @@
         cell.directionLabel.textColor = [UIColor redColor];
         for (DSTxInputEntity * input in transactionEntity.inputs) {
             if ([input.localAddress.address isEqualToString:self.address]) {
-                cell.amountLabel.text = [[DSWalletManager sharedInstance] stringForDashAmount:input.prevOutput.value];
+                cell.amountLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:input.prevOutput.value];
                 break;
             }
         }
@@ -167,9 +167,9 @@
         dateFormatter.dateStyle = NSDateFormatterMediumStyle;
         dateFormatter.timeStyle = NSDateFormatterMediumStyle;
     });
-    NSDate * date = [NSDate dateWithTimeIntervalSinceReferenceDate:transactionEntity.timestamp];
+    NSDate * date = [NSDate dateWithTimeIntervalSinceReferenceDate:transactionEntity.transactionHash.timestamp];
     cell.dateLabel.text = [dateFormatter stringFromDate:date];
-    cell.transactionLabel.text = transactionEntity.txHash.reverse.hexString;
+    cell.transactionLabel.text = transactionEntity.transactionHash.txHash.reverse.hexString;
 }
 
 @end

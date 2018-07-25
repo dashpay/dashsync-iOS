@@ -25,7 +25,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity, DSShapeshiftEntity, DSTxInputEntity, DSTxOutputEntity,DSTransaction,DSChain;
+@class DSChainEntity, DSShapeshiftEntity, DSTxInputEntity, DSTxOutputEntity,DSTransaction,DSChain,DSTransactionHashEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)setAttributesFromTx:(DSTransaction *)tx;
 - (DSTransaction *)transactionForChain:(DSChain*)chain;
 + (NSArray<DSTransactionEntity*> * _Nonnull)transactionsForChain:(DSChainEntity*)chain;
-+ (void)deleteTransactionsOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

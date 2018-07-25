@@ -43,6 +43,9 @@
 #import "DSChainPeerManager.h"
 #import "DSOptionsManager.h"
 #import "DSTransactionFactory.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 #define PEER_LOGGING 1
 
@@ -60,23 +63,6 @@
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    5.0
 
-typedef NS_ENUM(uint32_t,DSInvType) {
-    DSInvType_Error = 0,
-    DSInvType_Tx = 1,
-    DSInvType_Block = 2,
-    DSInvType_Merkleblock = 3,
-    DSInvType_TxLockRequest = 4,
-    DSInvType_TxLockVote = 5,
-    DSInvType_Spork = 6,
-    DSInvType_MasternodePaymentVote = 7,
-    DSInvType_MasternodePaymentBlock = 8,
-    DSInvType_MasternodeBroadcast = 14,
-    DSInvType_MasternodePing = 15,
-    DSInvType_DSTx = 16,
-    DSInvType_GovernanceObject = 17,
-    DSInvType_GovernanceObjectVote = 18,
-    DSInvType_MasternodeVerify = 19,
-};
 
 @interface DSPeer ()
 
@@ -100,6 +86,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 @property (nonatomic, strong) void (^mempoolCompletion)(BOOL);
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
 
@@ -222,11 +209,23 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
+
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
     self.currentBlockTxHashes = nil;
+    
+    self.managedObjectContext = [NSManagedObject context];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSTransactionHashEntity setContext:self.managedObjectContext];
+        [DSChainEntity setContext:self.managedObjectContext];
+        NSArray<DSTransactionHashEntity*> * transactionHashEntities  = [DSTransactionHashEntity standaloneTransactionHashEntitiesOnChain:self.chain.chainEntity];
+        for (DSTransactionHashEntity * hashEntity in transactionHashEntities) {
+            [self.knownTxHashes addObject:hashEntity.txHash];
+        }
+    }];
+    
     
     NSString *label = [NSString stringWithFormat:@"peer.%@:%u", self.host, self.port];
     
@@ -498,9 +497,9 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
-- (void)sendInvMessageWithTxHashes:(NSArray *)txHashes
+- (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType
 {
-    NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:txHashes];
+    NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
@@ -509,13 +508,29 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     [msg appendVarInt:hashes.count];
     
     for (NSValue *hash in hashes) {
-        [msg appendUInt32:DSInvType_Tx];
+        [msg appendUInt32:invType];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
     
     [self sendMessage:msg type:MSG_INV];
-    [self.knownTxHashes unionOrderedSet:hashes];
+    switch (invType) {
+        case DSInvType_Tx:
+            [self.knownTxHashes unionOrderedSet:hashes];
+            break;
+        case DSInvType_GovernanceObjectVote:
+            [self.knownGovernanceObjectVoteHashes unionOrderedSet:hashes];
+            break;
+        case DSInvType_GovernanceObject:
+            [self.knownGovernanceObjectHashes unionOrderedSet:hashes];
+            break;
+        case DSInvType_Block:
+            [self.knownBlockHashes unionOrderedSet:hashes];
+            break;
+        default:
+            break;
+    }
+    
 }
 
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockHashes
@@ -889,6 +904,42 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     });
 }
 
+-(NSString*)nameOfInvMessage:(DSInvType)type {
+    switch (type) {
+        case DSInvType_Tx:
+            return @"Tx";
+        case DSInvType_Block:
+            return @"Block";
+        case DSInvType_Merkleblock:
+            return @"Merkleblock";
+        case DSInvType_TxLockRequest:
+            return @"TxLockRequest";
+        case DSInvType_TxLockVote:
+            return @"TxLockVote";
+        case DSInvType_Spork:
+            return @"Spork";
+        case DSInvType_MasternodePaymentVote:
+            return @"MasternodePaymentVote";
+        case DSInvType_MasternodePaymentBlock:
+            return @"MasternodePaymentBlock";
+        case DSInvType_MasternodeBroadcast:
+            return @"MasternodeBroadcast";
+        case DSInvType_MasternodePing:
+            return @"MasternodePing";
+        case DSInvType_DSTx:
+            return @"DSTx";
+        case DSInvType_GovernanceObject:
+            return @"GovernanceObject";
+        case DSInvType_GovernanceObjectVote:
+            return @"GovernanceObjectVote";
+        case DSInvType_MasternodeVerify:
+            return @"MasternodeVerify";
+            
+        default:
+            return @"";
+    }
+}
+
 - (void)acceptInvMessage:(NSData *)message
 {
     NSNumber * l = nil;
@@ -898,7 +949,6 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectVoteHashes = [NSMutableSet set];
-    //NSMutableSet *masternodePingHashes = [NSMutableSet set]; //we don't care about ping messages
     NSMutableSet *masternodeVerifications = [NSMutableSet set]; //mnv messages
     NSMutableSet *masternodeBroadcastHashes = [NSMutableSet set]; //mnb messages
     
@@ -914,7 +964,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
-        NSLog(@"%@:%u got inv with %u items (first item %u)", self.host, self.port, (int)count,[message UInt32AtOffset:l.unsignedIntegerValue]);
+        NSLog(@"%@:%u got inv with %u items (first item %@)", self.host, self.port, (int)count,[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]]);
     }
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
@@ -982,7 +1032,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
+                if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
             });
         }
         
@@ -1178,8 +1228,37 @@ typedef NS_ENUM(uint32_t,DSInvType) {
                     if (transaction) {
                         [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
                         break;
+                    } else {
+                        [notfound appendUInt32:type];
+                        [notfound appendBytes:&hash length:sizeof(hash)];
+                        break;
                     }
-                    
+                case DSInvType_GovernanceObjectVote:
+                {
+                    DSGovernanceVote * vote = [self.delegate peer:self requestedVote:hash];
+                    if (vote) {
+                        [self sendMessage:vote.dataMessage type:MSG_GOVOBJVOTE];
+                        break;
+                    } else {
+                        [notfound appendUInt32:type];
+                        [notfound appendBytes:&hash length:sizeof(hash)];
+                        break;
+                    }
+                    break;
+                }
+                case DSInvType_GovernanceObject:
+                {
+                    DSGovernanceObject * governanceObject = [self.delegate peer:self requestedGovernanceObject:hash];
+                    if (governanceObject) {
+                        [self sendMessage:governanceObject.dataMessage type:MSG_GOVOBJ];
+                        break;
+                    } else {
+                        [notfound appendUInt32:type];
+                        [notfound appendBytes:&hash length:sizeof(hash)];
+                        break;
+                    }
+                    break;
+                }
                     // fall through
                 default:
                     [notfound appendUInt32:type];
@@ -1430,7 +1509,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 
 - (void)acceptGovObjectSyncMessage:(NSData *)message
 {
-    
+    NSLog(@"Gov Object Sync");
 }
 
 // MARK: - Accept Dark send

@@ -34,7 +34,7 @@
 
 +(NSArray*)standaloneSporkHashEntitiesOnChain:(DSChainEntity*)chainEntity {
     NSFetchRequest * fetchRequest = [self fetchReq];
-    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@ && sporkHash = nil",chainEntity]];
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@ && spork = nil",chainEntity]];
     NSArray * standaloneHashes = [self fetchObjects:fetchRequest];
     return standaloneHashes;
 }

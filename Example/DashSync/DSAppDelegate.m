@@ -14,7 +14,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-    [DSAuthenticationManager sharedInstance].usesAuthentication = FALSE;
+    [DSAuthenticationManager sharedInstance].usesAuthentication = TRUE;
     [DashSync sharedSyncController];
     return YES;
 }

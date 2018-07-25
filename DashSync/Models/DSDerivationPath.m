@@ -38,7 +38,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"

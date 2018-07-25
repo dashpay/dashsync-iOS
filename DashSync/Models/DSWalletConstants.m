@@ -19,7 +19,9 @@ NSString* const DSChainPeerManagerNotificationChainKey =         @"DSChainPeerMa
 NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
 NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";
-NSString* const DSWalletBalanceChangedNotification =        @"DSWalletBalanceChangedNotification";
+NSString* const DSChainBlocksDidChangeNotification = @"DSChainBlocksDidChainNotification";
+
+NSString* const DSWalletBalanceDidChangeNotification =        @"DSWalletBalanceChangedNotification";
 
 NSString* const DSSporkListDidUpdateNotification =     @"DSSporkListDidUpdateNotification";
 

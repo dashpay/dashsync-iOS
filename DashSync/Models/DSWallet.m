@@ -25,7 +25,7 @@
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
 #import "DSBIP39Mnemonic.h"
 #import "NSManagedObject+Sugar.h"
 #import "NSMutableData+Dash.h"
@@ -33,6 +33,8 @@
 #import "DSTransactionEntity+CoreDataProperties.h"
 #import "DSKey.h"
 #import "NSData+Bitcoin.h"
+#import "DSEnvironment.h"
+#import "DSChainManager.h"
 
 
 #define SEED_ENTROPY_LENGTH   (128/8)
@@ -167,7 +169,7 @@
     NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
     
     if (d.length == sizeof(NSTimeInterval)) return *(const NSTimeInterval *)d.bytes;
-    return ([DSWalletManager sharedInstance].watchOnly) ? 0 : BIP39_CREATION_TIME;
+    return ([DSEnvironment sharedInstance].watchOnly) ? 0 : BIP39_CREATION_TIME;
 }
 
 + (NSString*)setSeedPhrase:(NSString *)seedPhrase withAccounts:(NSArray*)accounts storeOnKeychain:(BOOL)storeOnKeychain
@@ -188,22 +190,7 @@
         uniqueID = [NSData dataWithUInt256:[publicKey SHA256]].shortHexString; //one way injective function
         if (storeOnKeychain) {
             if (! setKeychainString(seedPhrase, [DSWallet mnemonicUniqueIDForUniqueID:uniqueID], YES) || ! setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], [DSWallet creationTimeUniqueIDForUniqueID:uniqueID], NO)) {
-                NSLog(@"error setting wallet seed");
-                
-                if (seedPhrase) {
-                    UIAlertController * alert = [UIAlertController
-                                                 alertControllerWithTitle:@"couldn't create wallet"
-                                                 message:@"error adding master private key to iOS keychain, make sure app has keychain entitlements"
-                                                 preferredStyle:UIAlertControllerStyleAlert];
-                    UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:@"abort"
-                                               style:UIAlertActionStyleCancel
-                                               handler:^(UIAlertAction * action) {
-                                                   exit(0);
-                                               }];
-                    [alert addAction:okButton];
-                    [[[DSWalletManager sharedInstance] presentingViewController] presentViewController:alert animated:YES completion:nil];
-                }
+                NSAssert(FALSE, @"error setting wallet seed");
                 
                 return nil;
             }
@@ -230,7 +217,7 @@
             } else {
                 // BUG: if user manually chooses to enter pin, the touch id spending limit is reset, but the tx being authorized
                 // still counts towards the next touch id spending limit
-                if (! touchid) setKeychainInt(self.totalSent + amount + [DSWalletManager sharedInstance].spendingLimit, SPEND_LIMIT_KEY, NO);
+                if (! touchid) setKeychainInt(self.totalSent + amount + [DSPriceManager sharedInstance].spendingLimit, SPEND_LIMIT_KEY, NO);
                 completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil]);
             }
         }];

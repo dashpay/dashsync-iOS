@@ -29,7 +29,7 @@
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceChangedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)

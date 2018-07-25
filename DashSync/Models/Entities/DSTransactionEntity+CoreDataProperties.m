@@ -30,13 +30,11 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSTransactionEntity"];
 }
 
-@dynamic blockHeight;
-@dynamic lockTime;
-@dynamic timestamp;
-@dynamic txHash;
 @dynamic associatedShapeshift;
 @dynamic chain;
 @dynamic inputs;
 @dynamic outputs;
+@dynamic transactionHash;
+@dynamic lockTime;
 
 @end

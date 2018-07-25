@@ -44,7 +44,7 @@
 }
 
 -(BOOL)validAmountForString:(NSString*)string {
-    uint64_t amount = [[DSWalletManager sharedInstance] amountForDashString:string];
+    uint64_t amount = [[DSPriceManager sharedInstance] amountForDashString:string];
     return (amount > 0);
 }
 
@@ -105,7 +105,7 @@
 
 -(IBAction)save:(id)sender; {
     NSString * identifier = self.identifierTextField.text;
-    uint64_t amount = [[DSWalletManager sharedInstance] amountForDashString:self.amountTextField.text];
+    uint64_t amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountTextField.text];
     DSGovernanceSyncManager * governanceManager = self.chainPeerManager.governanceSyncManager;
     NSString * address = [self currentAddress];
     

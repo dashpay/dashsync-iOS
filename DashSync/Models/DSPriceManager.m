@@ -1,5 +1,5 @@
 //
-//  DSWalletManager.m
+//  DSPriceManager.m
 //  DashSync
 //
 //  Created by Aaron Voisine on 3/2/14.
@@ -25,7 +25,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSWalletManager.h"
+#import "DSPriceManager.h"
+#import "DSWallet.h"
 #import "DSChainManager.h"
 #import "DSAccount.h"
 #import "DSKey.h"
@@ -48,8 +49,6 @@
 #import "DSAuthenticationManager.h"
 #import "NSData+Bitcoin.h"
 
-#define UNSPENT_URL          @"http://insight.dash.org/insight-api-dash/addrs/utxo"
-#define UNSPENT_FAILOVER_URL @"https://insight.dash.siampm.com/api/addrs/utxo"
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
@@ -66,18 +65,14 @@
 #define POLONIEX_DASH_BTC_UPDATE_TIME_KEY  @"POLONIEX_DASH_BTC_UPDATE_TIME"
 #define DASHCENTRAL_DASH_BTC_PRICE_KEY @"DASHCENTRAL_DASH_BTC_PRICE"
 #define DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY @"DASHCENTRAL_DASH_BTC_UPDATE_TIME"
-#define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 
 #define USER_ACCOUNT_KEY    @"https://api.dashwallet.com"
 
 
-@interface DSWalletManager()
+@interface DSPriceManager()
 
 @property (nonatomic, strong) Reachability *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
-@property (nonatomic, assign) BOOL sweepFee;
-@property (nonatomic, strong) NSString *sweepKey;
-@property (nonatomic, strong) void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error);
 @property (nonatomic, strong) id protectedObserver;
 
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
@@ -86,7 +81,7 @@
 
 @end
 
-@implementation DSWalletManager
+@implementation DSPriceManager
 
 + (instancetype)sharedInstance
 {
@@ -164,32 +159,19 @@
     self.localFormat.generatesDecimalNumbers = YES;
     self.localFormat.negativeFormat = self.dashFormat.negativeFormat;
     
-    self.protectedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           [self protectedInit];
-                                                       }];
-    if ([UIApplication sharedApplication].protectedDataAvailable) [self protectedInit];
-    return self;
-}
-
-- (void)protectedInit
-{
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
-    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
-    self.protectedObserver = nil;
     _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
     _currencyNames = [defs arrayForKey:CURRENCY_NAMES_KEY];
     _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     
+    return self;
 }
 
 - (void)dealloc
 {
-    if (self.protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.protectedObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
@@ -199,204 +181,6 @@
         [self updateDashExchangeRate];
         [self updateDashCentralExchangeRateFallback];
     });
-}
-
-
-
-//- (void)registerWallet:(DSWallet*)wallet
-//{
-//    if ([chain.wallets indexOfObject:wallet] == NSNotFound) {
-//        [chain addWallet:wallet];
-//    }
-//    NSError * error = nil;
-//    NSMutableArray * keyChainArray = [getKeychainArray(chain.chainWalletsKey, &error) mutableCopy];
-//    [keyChainArray addObject:wallet.uniqueID];
-//    setKeychainArray(keyChainArray, chain.chainWalletsKey, NO);
-
-        //TODO: reimplement this safeguard
-        //        // verify that keychain matches core data, with different access and backup policies it's possible to diverge
-        //        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        //            DSKey *k = [DSKey keyWithPublicKey:[self.sequence publicKey:0 internal:NO masterPublicKey:mpk]];
-        //
-        //            if (chain.wallet.allReceiveAddresses.count > 0 && k && ! [chain.wallet containsAddress:k.address]) {
-        //                NSLog(@"wallet doesn't contain address: %@", k.address);
-        //#if 0
-        //                abort(); // don't wipe core data for debug builds
-        //#else
-        //                [[NSManagedObject context] performBlockAndWait:^{
-        //                    [DSAddressEntity deleteAllObjects];
-        //                    [DSTransactionEntity deleteAllObjects];
-        //                    [NSManagedObject saveContext];
-        //                }];
-        //
-        //                [chain unregisterWallet];
-        //
-        //                dispatch_async(dispatch_get_main_queue(), ^{
-        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletManagerSeedChangedNotification
-        //                                                                        object:nil];
-        //                    [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification
-        //                                                                        object:nil];
-        //                });
-        //#endif
-        //            }
-        //        });
-
-//
-
-- (void)clearKeychainWalletData {
-    BOOL failed = NO;
-    for (DSWallet * wallet in [self allWallets]) {
-        for (DSAccount * account in wallet.accounts) {
-            for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                failed = failed | !setKeychainData(nil, [derivationPath walletBasedExtendedPublicKeyLocationString], NO);
-            }
-        }
-    }
-    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //new keys
-    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //new keys
-    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
-    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
-}
-
--(NSArray<DSWallet*>*)allWallets {
-    NSMutableArray * wallets = [NSMutableArray array];
-    for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
-        if ([chain hasAWallet]) {
-            [wallets addObjectsFromArray:chain.wallets];
-        }
-    }
-    return [wallets copy];
-}
-
-//there was an issue with extended public keys on version 0.7.6 and before, this fixes that
--(void)upgradeExtendedKeysForWallet:(DSWallet*)wallet withCompletion:(UpgradeCompletionBlock)completion
-{
-    DSAccount * account = [wallet accountWithNumber:0];
-    NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
-    NSError * error = nil;
-    BOOL hasV2BIP44Data = hasKeychainData(keyString, &error);
-    if (error) {
-        completion(NO,NO,NO,NO);
-        return;
-    }
-    error = nil;
-    BOOL hasV1BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error);
-    if (error) {
-        completion(NO,NO,NO,NO);
-        return;
-    }
-    BOOL hasV0BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
-    if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
-        NSLog(@"fixing public key");
-        //upgrade scenario
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:(NSLocalizedString(@"please enter pin to upgrade wallet", nil)) andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
-            if (!authenticated) {
-                completion(NO,YES,NO,cancelled);
-                return;
-            }
-            @autoreleasepool {
-                NSString * seedPhrase = authenticated?getKeychainString(wallet.mnemonicUniqueID, nil):nil;
-                if (!seedPhrase) {
-                    completion(NO,YES,YES,NO);
-                    return;
-                }
-                NSData * derivedKeyData = (seedPhrase) ?[[DSBIP39Mnemonic sharedInstance]
-                                                         deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
-                BOOL failed = NO;
-                for (DSAccount * account in wallet.accounts) {
-                    for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                        NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:wallet.uniqueID];
-                        failed = failed | !setKeychainData(data, [derivationPath walletBasedExtendedPublicKeyLocationString], NO);
-                    }
-                }
-                if (hasV0BIP44Data) {
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //old keys
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //old keys
-                }
-                if (hasV1BIP44Data) {
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
-                    failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
-                }
-                
-                completion(!failed,YES,YES,NO);
-                
-            }
-        }];
-        
-    } else {
-        completion(YES,NO,NO,NO);
-    }
-}
-
-// true if this is a "watch only" wallet with no signing ability
-- (BOOL)watchOnly
-{
-    @autoreleasepool {
-        for (DSWallet * wallet in [self allWallets]) {
-            DSAccount * account = [wallet accountWithNumber:0];
-            NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
-            NSError * error = nil;
-            NSData * v2BIP44Data = getKeychainData(keyString, &error);
-            
-            return (v2BIP44Data && v2BIP44Data.length == 0) ? YES : NO;
-        }
-    }
-    return NO;
-}
-
-- (NSDictionary *)userAccount
-{
-    return getKeychainDict(USER_ACCOUNT_KEY, nil);
-}
-
-- (void)setUserAccount:(NSDictionary *)userAccount
-{
-    setKeychainDict(userAccount, USER_ACCOUNT_KEY, NO);
-}
-
-- (BOOL)hasAOldWallet
-{
-    NSError *error = nil;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error) || error) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V1, &error) || error) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, &error) || error) return NO;
-    if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP32_V0, &error) || error) return NO;
-    return YES;
-}
-
-// MARK: - Spending Limit
-
-//makes sense to be here, since we have the limits per chain
--(void)resetSpendingLimit {
-
-    uint64_t limit = self.spendingLimit;
-    uint64_t totalSent = 0;
-    for (DSWallet * wallet in self.allWallets) {
-        totalSent += wallet.totalSent;
-    }
-    if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
-
-}
-
-// amount that can be spent using touch id without pin entry
-- (uint64_t)spendingLimit
-{
-    // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
-    if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return DUFFS;
-    
-    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
-}
-
-- (void)setSpendingLimit:(uint64_t)spendingLimit
-{
-    uint64_t totalSent = 0;
-    for (DSWallet * wallet in self.allWallets) {
-        totalSent += wallet.totalSent;
-    }
-    if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
-        // use setDouble since setInteger won't hold a uint64_t
-        [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
-    }
 }
 
 // MARK: - exchange rate
@@ -428,7 +212,7 @@
     //    if (! _wallet) return;
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
     });
 }
 
@@ -470,7 +254,7 @@
     //if ([newPrice doubleValue] == [_bitcoinDashPrice doubleValue]) return;
     _bitcoinDashPrice = newPrice;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceChangedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
     });
 }
 
@@ -650,203 +434,6 @@
     
 }
 
-
-// MARK: - query unspent outputs
-
-// queries api.breadwallet.com and calls the completion block with unspent outputs for the given addresses
-- (void)utxosForAddresses:(NSArray *)addresses
-               completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
-{
-    [self utxos:UNSPENT_URL forAddresses:addresses
-     completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-         if (error) {
-             [self utxos:UNSPENT_FAILOVER_URL forAddresses:addresses
-              completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *err) {
-                  if (err) err = error;
-                  completion(utxos, amounts, scripts, err);
-              }];
-         }
-         else completion(utxos, amounts, scripts, error);
-     }];
-}
-
-- (void)utxos:(NSString *)unspentURL forAddresses:(NSArray *)addresses
-   completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
-{
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:unspentURL]
-                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
-    NSMutableArray *args = [NSMutableArray array];
-    NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
-    
-    [charset removeCharactersInString:@"&="];
-    [args addObject:[@"addrs=" stringByAppendingString:[[addresses componentsJoinedByString:@","]
-                                                        stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
-    req.HTTPMethod = @"POST";
-    req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
-    NSLog(@"%@ POST: %@", req.URL.absoluteString,
-          [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
-    
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                                         if (error) {
-                                             completion(nil, nil, nil, error);
-                                             return;
-                                         }
-                                         
-                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                         NSMutableArray *utxos = [NSMutableArray array], *amounts = [NSMutableArray array],
-                                         *scripts = [NSMutableArray array];
-                                         DSUTXO o;
-                                         
-                                         if (error || ! [json isKindOfClass:[NSArray class]]) {
-                                             NSLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                                             completion(nil, nil, nil,
-                                                        [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                       [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
-                                                                                                                        req.URL.host]}]);
-                                             return;
-                                         }
-                                         
-                                         for (NSDictionary *utxo in json) {
-                                             
-                                             NSDecimalNumber * amount = nil;
-                                             if (utxo[@"amount"]) {
-                                                 if ([utxo[@"amount"] isKindOfClass:[NSString class]]) {
-                                                     amount = [NSDecimalNumber decimalNumberWithString:utxo[@"amount"]];
-                                                 } else if ([utxo[@"amount"] isKindOfClass:[NSDecimalNumber class]]) {
-                                                     amount = utxo[@"amount"];
-                                                 } else if ([utxo[@"amount"] isKindOfClass:[NSNumber class]]) {
-                                                     amount = [NSDecimalNumber decimalNumberWithDecimal:[utxo[@"amount"] decimalValue]];
-                                                 }
-                                             }
-                                             if (! [utxo isKindOfClass:[NSDictionary class]] ||
-                                                 ! [utxo[@"txid"] isKindOfClass:[NSString class]] ||
-                                                 [utxo[@"txid"] hexToData].length != sizeof(UInt256) ||
-                                                 ! [utxo[@"vout"] isKindOfClass:[NSNumber class]] ||
-                                                 ! [utxo[@"scriptPubKey"] isKindOfClass:[NSString class]] ||
-                                                 ! [utxo[@"scriptPubKey"] hexToData] ||
-                                                 (! [utxo[@"duffs"] isKindOfClass:[NSNumber class]] && ! [utxo[@"satoshis"] isKindOfClass:[NSNumber class]] && !amount)) {
-                                                 completion(nil, nil, nil,
-                                                            [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                           [NSString stringWithFormat:NSLocalizedString(@"unexpected response from %@", nil),
-                                                                                                                            req.URL.host]}]);
-                                                 return;
-                                             }
-                                             
-                                             o.hash = *(const UInt256 *)[utxo[@"txid"] hexToData].reverse.bytes;
-                                             o.n = [utxo[@"vout"] unsignedIntValue];
-                                             [utxos addObject:dsutxo_obj(o)];
-                                             if (amount) {
-                                                 [amounts addObject:[amount decimalNumberByMultiplyingByPowerOf10:8]];
-                                             } else if (utxo[@"duffs"]) {
-                                                 [amounts addObject:utxo[@"duffs"]];
-                                             }  else if (utxo[@"satoshis"]) {
-                                                 [amounts addObject:utxo[@"satoshis"]];
-                                             }
-                                             [scripts addObject:[utxo[@"scriptPubKey"] hexToData]];
-                                         }
-                                         
-                                         completion(utxos, amounts, scripts, nil);
-                                     }] resume];
-}
-
-// given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
-// that will sweep the balance into the account (doesn't publish the tx)
-// this can only be done on main chain for now
-- (void)sweepPrivateKey:(NSString *)privKey onChain:(DSChain*)chain toAccount:(DSAccount*)account withFee:(BOOL)fee
-             completion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))completion
-{
-    if (! completion) return;
-    
-    if ([privKey isValidDashBIP38Key]) {
-        [[DSAuthenticationManager sharedInstance] requestKeyPasswordForSweepCompletion:^(NSString *password) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                DSKey *key = [DSKey keyWithBIP38Key:self.sweepKey andPassphrase:password onChain:chain];
-                
-                if (! key) {
-                    [[DSAuthenticationManager sharedInstance] badKeyPasswordForSweepCompletion:^{
-                        [self sweepPrivateKey:privKey onChain:chain toAccount:account withFee:fee completion:completion];
-                    } cancel:^{
-                        if (self.sweepCompletion) self.sweepCompletion(nil, 0, nil);
-                        self.sweepKey = nil;
-                        self.sweepCompletion = nil;
-                    }];
-                     }
-                     else {
-                         [self sweepPrivateKey:[key privateKeyStringForChain:chain] onChain:chain withFee:self.sweepFee completion:self.sweepCompletion];
-                         self.sweepKey = nil;
-                         self.sweepCompletion = nil;
-                     }
-            });
-        } cancel:^{
-            
-        }];
-        self.sweepKey = privKey;
-        self.sweepFee = fee;
-        self.sweepCompletion = completion;
-        return;
-    }
-    
-    DSKey *key = [DSKey keyWithPrivateKey:privKey onChain:chain];
-    NSString * address = [key addressForChain:chain];
-    if (! address) {
-        completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          NSLocalizedString(@"not a valid private key", nil)}]);
-        return;
-    }
-        if ([account.wallet containsAddress:address]) {
-            completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                              NSLocalizedString(@"this private key is already in your wallet", nil)}]);
-            return;
-        }
-    
-    [self utxosForAddresses:@[address]
-                 completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-                     DSTransaction *tx = [DSTransaction new];
-                     uint64_t balance = 0, feeAmount = 0;
-                     NSUInteger i = 0;
-                     
-                     if (error) {
-                         completion(nil, 0, error);
-                         return;
-                     }
-                     
-                     //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
-                     for (NSValue *output in utxos) {
-                         DSUTXO o;
-                         
-                         [output getValue:&o];
-                         [tx addInputHash:o.hash index:o.n script:scripts[i]];
-                         balance += [amounts[i++] unsignedLongLongValue];
-                     }
-                     
-                     if (balance == 0) {
-                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           NSLocalizedString(@"this private key is empty", nil)}]);
-                         return;
-                     }
-                     
-                     // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                     if (fee) feeAmount = [chain feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
-                     
-                     if (feeAmount + chain.minOutputAmount > balance) {
-                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           NSLocalizedString(@"transaction fees would cost more than the funds available on this "
-                                                                                                                             "private key (due to tiny \"dust\" deposits)",nil)}]);
-                         return;
-                     }
-                     
-                     [tx addOutputAddress:account.receiveAddress amount:balance - feeAmount];
-                     
-                     if (! [tx signWithPrivateKeys:@[privKey]]) {
-                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           NSLocalizedString(@"error signing transaction", nil)}]);
-                         return;
-                     }
-                     
-                     completion(tx, feeAmount, nil);
-                 }];
-}
 
 // MARK: - string helpers
 
@@ -1042,19 +629,6 @@
     if ([n compare:min] == NSOrderedAscending) n = min;
     if (amount < 0) n = [n decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithInt:-1]];
     return n;
-}
-
-// MARK: - Quick Shortcuts
-
--(UIViewController*)presentingViewController {
-    UIViewController *topController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-    while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
-        topController = topController.presentedViewController;
-    }
-    if ([topController isKindOfClass:[UINavigationController class]]) {
-        topController = ((UINavigationController*)topController).topViewController;
-    }
-    return topController;
 }
 
 @end

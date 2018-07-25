@@ -143,7 +143,7 @@
     DSGovernanceObjectEntity *governanceObjectEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.paymentAddresLabel.text = governanceObjectEntity.paymentAddress;
     cell.identifierLabel.text = governanceObjectEntity.identifier;
-    cell.amountLabel.attributedText = [[DSWalletManager sharedInstance] attributedStringForDashAmount:governanceObjectEntity.amount];
+    cell.amountLabel.attributedText = [[DSPriceManager sharedInstance] attributedStringForDashAmount:governanceObjectEntity.amount];
     cell.urlLabel.text = governanceObjectEntity.url;
     NSDateFormatter * dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateStyle:NSDateFormatterLongStyle];
