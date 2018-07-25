@@ -8,6 +8,8 @@
 
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSChain.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 @implementation DSTransactionHashEntity
 
@@ -16,6 +18,15 @@
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@ && transaction = nil",chainEntity]];
     NSArray * standaloneHashes = [self fetchObjects:fetchRequest];
     return standaloneHashes;
+}
+
++ (void)deleteTransactionHashesOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * transactionsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSTransactionHashEntity * transaction in transactionsToDelete) {
+            [chainEntity.managedObjectContext deleteObject:transaction];
+        }
+    }];
 }
 
 @end

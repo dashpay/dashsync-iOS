@@ -1002,14 +1002,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     [entities addObject:e];
                 }
                 
-                if (height != TX_UNCONFIRMED) {
-                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
-                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
-                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
-                    
-                    for (NSManagedObject *e in entities) {
-                        [self.moc refreshObject:e mergeChanges:NO];
-                    }
+//                if (height != TX_UNCONFIRMED) {
+//                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
+//                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
+//                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
+//
+//                    for (NSManagedObject *e in entities) {
+//                        [self.moc refreshObject:e mergeChanges:NO];
+//                    }
+//                }
+                for (DSTransactionHashEntity *e in entities) {
+                    NSLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
                 }
                 NSError * error = nil;
                 [self.moc save:&error];

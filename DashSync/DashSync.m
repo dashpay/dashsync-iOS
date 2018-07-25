@@ -90,7 +90,7 @@
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-    [DSTransactionEntity deleteTransactionsOnChain:chainEntity];
+    [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
     [chain wipeBlockchainInfo];
     [DSTransactionEntity saveContext];
     

@@ -50,6 +50,7 @@ static NSString *dateFormat(NSString *template)
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.transactions = [NSMutableDictionary dictionary];
     
     self.txDates = [NSMutableDictionary dictionary];
     //self.moreTx = YES;
@@ -58,7 +59,7 @@ static NSString *dateFormat(NSString *template)
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    self.transactions = [NSMutableDictionary dictionary];
+    
     
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     
@@ -193,7 +194,7 @@ static NSString *dateFormat(NSString *template)
     [fetchRequest setFetchBatchSize:12];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *timeDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timestamp" ascending:YES];
+    NSSortDescriptor *timeDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transactionHash.timestamp" ascending:NO];
     NSArray *sortDescriptors = @[timeDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
@@ -218,6 +219,9 @@ static NSString *dateFormat(NSString *template)
 }
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.tableView beginUpdates];
+    });
     
 }
 
@@ -230,13 +234,31 @@ static NSString *dateFormat(NSString *template)
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject
        atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)changeType
       newIndexPath:(NSIndexPath *)newIndexPath {
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+    switch (changeType) {
+        case NSFetchedResultsChangeInsert:
+            [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+        case NSFetchedResultsChangeDelete:
+            [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+        case NSFetchedResultsChangeUpdate:
+            [self configureCell:[self.tableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
+            break;
+        case NSFetchedResultsChangeMove:
+            [self.tableView moveRowAtIndexPath:indexPath toIndexPath:newIndexPath];
+            break;
+        default:
+            break;
+    }
+    });
 }
 
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+    [self.tableView endUpdates];
+    });
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
@@ -291,13 +313,9 @@ static NSString *dateFormat(NSString *template)
     return [[self.fetchedResultsController fetchedObjects] count];
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString *transactionIdent = @"TransactionCellIdentifier";
+-(void)configureCell:(DSTransactionTableViewCell*)cell atIndexPath:(NSIndexPath*)indexPath {
     DSPriceManager *priceManager = [DSPriceManager sharedInstance];
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
-    
-    DSTransactionTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
     DSTransactionEntity * transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     NSLog(@"%u",transactionEntity.transactionHash.blockHeight);
     DSTransaction *tx = [transactionEntity transactionForChain:self.chainPeerManager.chain];
@@ -378,7 +396,15 @@ static NSString *dateFormat(NSString *template)
         cell.directionLabel.highlightedTextColor = cell.directionLabel.textColor;
     }
     
-    [self setBackgroundForCell:cell tableView:tableView indexPath:indexPath];
+    [self setBackgroundForCell:cell tableView:self.tableView indexPath:indexPath];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *transactionIdent = @"TransactionCellIdentifier";
+    
+    DSTransactionTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:transactionIdent];
+    [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
@@ -444,7 +470,7 @@ static NSString *dateFormat(NSString *template)
     if ([segue.identifier isEqualToString:@"TransactionDetailSegue"]) {
         DSTransactionDetailViewController * transactionDetailViewController = (DSTransactionDetailViewController *)segue.destinationViewController;
         DSTransactionEntity *transactionEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForCell:cell]];
-        DSTransaction * transaction = self.transactions[transactionEntity.txHash];
+        DSTransaction * transaction = self.transactions[transactionEntity.transactionHash.txHash];
         transactionDetailViewController.transaction = transaction;
         transactionDetailViewController.txDateString = [self dateForTx:transaction];
     }
