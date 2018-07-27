@@ -100,7 +100,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 @interface DSChain : NSObject
 
 @property (nonatomic, readonly) NSArray<DSWallet *> * _Nullable wallets;
-@property (nonatomic, readonly) NSArray<DSBlockchainUser *> * _Nullable blockchainUsers;
 @property (nonatomic, readonly) NSArray<DSDerivationPath *> * _Nullable standaloneDerivationPaths;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;

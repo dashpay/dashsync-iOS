@@ -8,6 +8,7 @@
 
 #import "DSBlockchainUsersViewController.h"
 #import "DSBlockchainUserTableViewCell.h"
+#import "DSCreateBlockchainUserViewController.h"
 
 @interface DSBlockchainUsersViewController ()
 
@@ -34,15 +35,16 @@
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.chainPeerManager.chain.blockchainUsers count];
+    DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:section];
+    return [wallet.blockchainUsers count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
+    return [self.chainPeerManager.chain.wallets count];
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSBlockchainUserTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"WalletCellIdentifier"];
+    DSBlockchainUserTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BlockchainUserCellIdentifier"];
     
     // Set up the cell...
     [self configureCell:cell atIndexPath:indexPath];
@@ -51,9 +53,17 @@
 
 -(void)configureCell:(DSBlockchainUserTableViewCell*)blockchainUserCell atIndexPath:(NSIndexPath *)indexPath {
     @autoreleasepool {
-        DSBlockchainUser * blockchainUser = [self.chainPeerManager.chain.blockchainUsers objectAtIndex:indexPath.row];
+        DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:indexPath.section];
+        DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
         blockchainUserCell.usernameLabel.text = blockchainUser.username;
         blockchainUserCell.publicKeyLabel.text = blockchainUser.publicKeyHash;
+    }
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"CreateBlockchainUserSegue"]) {
+        DSCreateBlockchainUserViewController * createBlockchainUserViewController = (DSCreateBlockchainUserViewController*)((UINavigationController*)segue.destinationViewController).topViewController;
+        createBlockchainUserViewController.chain = self.chainPeerManager.chain;
     }
 }
 

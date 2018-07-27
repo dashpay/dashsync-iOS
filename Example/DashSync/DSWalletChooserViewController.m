@@ -1,21 +1,21 @@
 //
-//  DSProposalChooseFundingAccountViewController.m
+//  DSWalletChooserViewController.m
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 7/5/18.
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import "DSProposalChooseFundingAccountViewController.h"
-#import "DSAccountTableViewCell.h"
+#import "DSWalletChooserViewController.h"
+#import "DSWalletTableViewCell.h"
 
-@interface DSProposalChooseFundingAccountViewController ()
+@interface DSWalletChooserViewController ()
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *chooseButton;
 - (IBAction)choose:(id)sender;
 
 @end
 
-@implementation DSProposalChooseFundingAccountViewController
+@implementation DSWalletChooserViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -35,38 +35,29 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return [self.chain.wallets count];
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [[[self.chain.wallets objectAtIndex:section] accounts] count];
-}
-
--(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    DSWallet * wallet = [self.chain.wallets objectAtIndex:section];
-    return wallet.uniqueID;
+    return [self.chain.wallets count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSAccountTableViewCell *cell = (DSAccountTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"AccountCellIdentifier" forIndexPath:indexPath];
+    DSWalletTableViewCell *cell = (DSWalletTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"WalletCellIdentifier" forIndexPath:indexPath];
     
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSAccountTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+-(void)configureCell:(DSWalletTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.section];
-    DSAccount * account = [[wallet accounts] objectAtIndex:indexPath.row];
-    cell.accountNumberLabel.text = [NSString stringWithFormat:@"%u",account.accountNumber];
-    cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:account.balance];
-    [[DSPriceManager sharedInstance] stringForDashAmount:account.balance];
+    cell.xPublicKeyLabel.text = wallet.uniqueID;
 }
 
 -(NSIndexPath*)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.section];
-    DSAccount * account = [[wallet accounts] objectAtIndex:indexPath.row];
-    if (account.balance > PROPOSAL_COST) {
+    DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.row];
+    if (wallet.balance != 0) {
         self.chooseButton.enabled = TRUE;
         return indexPath;
     }
@@ -77,9 +68,9 @@
 - (IBAction)choose:(id)sender {
     if (self.tableView.indexPathForSelectedRow) {
         DSWallet * wallet = [self.chain.wallets objectAtIndex:self.tableView.indexPathForSelectedRow.section];
-        DSAccount * account = [[wallet accounts] objectAtIndex:self.tableView.indexPathForSelectedRow.row];
+        DSWallet * account = [[wallet accounts] objectAtIndex:self.tableView.indexPathForSelectedRow.row];
         if (account.balance > PROPOSAL_COST) {
-            [self.delegate viewController:self didChooseAccount:account];
+            [self.delegate viewController:self didChooseWallet:account];
             [self.navigationController popViewControllerAnimated:TRUE];
         }
     }

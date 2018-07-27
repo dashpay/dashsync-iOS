@@ -7,7 +7,6 @@
 //
 
 #import "DSProposalCreatorViewController.h"
-#import "DSProposalChooseFundingAccountViewController.h"
 #import <DashSync/DashSync.h>
 
 @interface DSProposalCreatorViewController ()
@@ -135,7 +134,7 @@
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"ChooseAccountSegue"]) {
-        DSProposalChooseFundingAccountViewController * chooseAccountSegue = (DSProposalChooseFundingAccountViewController*)segue.destinationViewController;
+        DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
         chooseAccountSegue.chain = self.chainPeerManager.chain;
         chooseAccountSegue.delegate = self;
     }

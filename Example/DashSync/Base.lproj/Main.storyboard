@@ -319,7 +319,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="0NO-2z-vNG" kind="show" id="HJD-Rc-f8d"/>
+                                            <segue destination="0NO-2z-vNG" kind="show" identifier="BlockchainUsersSegue" id="HJD-Rc-f8d"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -1135,17 +1135,17 @@
         <!--Blockchain Users-->
         <scene sceneID="gFY-tF-QTx">
             <objects>
-                <tableViewController id="0NO-2z-vNG" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="KbW-4c-rMg">
+                <tableViewController id="0NO-2z-vNG" customClass="DSBlockchainUsersViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="120" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="KbW-4c-rMg">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="125" id="ydu-8j-wZG" customClass="DSBlockchainUserTableViewCell">
-                                <rect key="frame" x="0.0" y="28" width="375" height="125"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="BlockchainUserCellIdentifier" rowHeight="120" id="ydu-8j-wZG" customClass="DSBlockchainUserTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="120"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ydu-8j-wZG" id="nV4-v2-BGu">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="124.66666666666667"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="119.66666666666667"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vBN-Vz-Ggk">
@@ -1208,7 +1208,7 @@
                     <navigationItem key="navigationItem" title="Blockchain Users" id="E3K-8w-YL8">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="e7H-6w-Sai">
                             <connections>
-                                <segue destination="csg-gD-j67" kind="show" id="1zM-PQ-BaL"/>
+                                <segue destination="Voi-yR-fPT" kind="presentation" identifier="CreateBlockchainUserSegue" id="1zM-PQ-BaL"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -1263,36 +1263,196 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eoY-bJ-zF5" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6503.1999999999998" y="-451.47783251231527"/>
+            <point key="canvasLocation" x="7445.6000000000004" y="-451.47783251231527"/>
         </scene>
         <!--New Blockchain User-->
         <scene sceneID="Abt-2p-Sig">
             <objects>
-                <tableViewController id="csg-gD-j67" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="7e5-to-feN">
+                <tableViewController id="csg-gD-j67" customClass="DSCreateBlockchainUserViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="7e5-to-feN">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="Wmq-3c-Qro">
-                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Wmq-3c-Qro" id="1Wi-Y9-WKk">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                </tableViewCellContentView>
-                            </tableViewCell>
-                        </prototypes>
+                        <sections>
+                            <tableViewSection id="6l5-Lp-iY1">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="UserNameCellIdentifier" id="Vhw-xj-jK9" userLabel="UsernameCell" customClass="DSKeyValueTableViewCell">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Vhw-xj-jK9" id="ySV-GG-eUe">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DA0-h6-xHJ">
+                                                    <rect key="frame" x="16" y="12" width="78.666666666666671" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qHr-F5-kNm">
+                                                    <rect key="frame" x="189" y="7" width="170" height="30"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" priority="900" constant="170" id="5HV-Tv-YE4"/>
+                                                    </constraints>
+                                                    <nil key="textColor"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                                </textField>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="DA0-h6-xHJ" firstAttribute="leading" secondItem="ySV-GG-eUe" secondAttribute="leading" constant="16" id="BOr-z9-YAb"/>
+                                                <constraint firstItem="qHr-F5-kNm" firstAttribute="top" secondItem="ySV-GG-eUe" secondAttribute="top" constant="7" id="d2R-4L-apC"/>
+                                                <constraint firstItem="qHr-F5-kNm" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="DA0-h6-xHJ" secondAttribute="trailing" constant="10" id="ovr-qb-6XE"/>
+                                                <constraint firstItem="DA0-h6-xHJ" firstAttribute="top" secondItem="ySV-GG-eUe" secondAttribute="top" constant="12.000000000000028" id="sO7-W2-uVN"/>
+                                                <constraint firstAttribute="trailing" secondItem="qHr-F5-kNm" secondAttribute="trailing" constant="16" id="vsw-2V-ckU"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="valueTextField" destination="qHr-F5-kNm" id="dWn-LZ-R2S"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="HAl-jK-jId" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
+                                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="HAl-jK-jId" id="4M6-hM-ZJv">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GjK-eI-N6d">
+                                                    <rect key="frame" x="16.000000000000004" y="12" width="47.333333333333343" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ofa-Bd-8j8">
+                                                    <rect key="frame" x="318" y="12" width="41" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="GjK-eI-N6d" firstAttribute="top" secondItem="4M6-hM-ZJv" secondAttribute="top" constant="12.000000000000028" id="5ff-Il-gcJ"/>
+                                                <constraint firstItem="GjK-eI-N6d" firstAttribute="leading" secondItem="4M6-hM-ZJv" secondAttribute="leading" constant="16" id="9iM-tD-XQW"/>
+                                                <constraint firstItem="ofa-Bd-8j8" firstAttribute="baseline" secondItem="GjK-eI-N6d" secondAttribute="baseline" id="Ydq-13-JvN"/>
+                                                <constraint firstItem="ofa-Bd-8j8" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="GjK-eI-N6d" secondAttribute="trailing" constant="10" id="dl0-lu-LkP"/>
+                                                <constraint firstAttribute="trailing" secondItem="ofa-Bd-8j8" secondAttribute="trailing" constant="16" id="pUa-eD-GzQ"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="s7L-rt-bKF" kind="show" identifier="BlockchainUserChooseWalletSegue" id="gwa-wi-Qym"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
                         <connections>
                             <outlet property="dataSource" destination="csg-gD-j67" id="nGZ-sd-Ks3"/>
                             <outlet property="delegate" destination="csg-gD-j67" id="Sok-PE-5RH"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="New Blockchain User" id="wky-Op-AD9"/>
+                    <navigationItem key="navigationItem" title="New Blockchain User" id="wky-Op-AD9">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="rZA-Lw-rlP">
+                            <connections>
+                                <action selector="cancel:" destination="csg-gD-j67" id="nyt-6w-brJ"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="OOP-qu-BET">
+                            <connections>
+                                <action selector="done:" destination="csg-gD-j67" id="tDn-UG-eAG"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="usernameLabel" destination="qHr-F5-kNm" id="xyY-Rj-fcm"/>
+                        <outlet property="walletIdentifierLabel" destination="ofa-Bd-8j8" id="QLd-pj-UZy"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="noQ-3n-6SJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5924" y="-1089"/>
+            <point key="canvasLocation" x="6866.3999999999996" y="-1089.1625615763546"/>
+        </scene>
+        <!--Choose Wallet-->
+        <scene sceneID="AG3-W5-4RW">
+            <objects>
+                <tableViewController title="Choose Wallet" id="s7L-rt-bKF" customClass="DSWalletChooserViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="oQb-up-YlH">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="WalletCellIdentifier" rowHeight="208" id="MQk-FG-X9J" userLabel="WalletCell" customClass="DSWalletTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="208"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="MQk-FG-X9J" id="BUd-Uo-NTL">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="207.66666666666666"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Wallet" textAlignment="justified" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BJE-4m-Pmr">
+                                            <rect key="frame" x="16" y="24" width="343" height="118"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Seed" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="m9P-qa-7u3">
+                                            <rect key="frame" x="16" y="0.0" width="40" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="DIP 44 Account 0 XPUB" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1D1-h0-DHh">
+                                            <rect key="frame" x="16" y="138" width="184" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="XPUB" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="6" translatesAutoresizingMaskIntoConstraints="NO" id="4Z1-3A-enu">
+                                            <rect key="frame" x="16" y="167" width="343" height="41"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TzI-T6-F8O">
+                                            <rect key="frame" x="13" y="29" width="346" height="101"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <state key="normal" title="Show"/>
+                                            <connections>
+                                                <action selector="showPassphrase:" destination="MQk-FG-X9J" eventType="touchUpInside" id="dfh-lq-mmi"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="passphraseLabel" destination="BJE-4m-Pmr" id="31u-8E-JiA"/>
+                                    <outlet property="showPassphraseButton" destination="TzI-T6-F8O" id="hJh-oc-H0r"/>
+                                    <outlet property="xPublicKeyLabel" destination="4Z1-3A-enu" id="ofr-zu-CdX"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="s7L-rt-bKF" id="PF0-zi-Zw9"/>
+                            <outlet property="delegate" destination="s7L-rt-bKF" id="gW1-Nj-QHs"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Choose Wallet" id="DaF-R2-Tez">
+                        <barButtonItem key="rightBarButtonItem" title="Choose" id="eQK-uR-oqU">
+                            <connections>
+                                <action selector="choose:" destination="s7L-rt-bKF" id="Qrl-s7-m1x"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="chooseButton" destination="eQK-uR-oqU" id="FXk-b1-dDk"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="POK-m7-9dp" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7761" y="-1741"/>
         </scene>
         <!--Add-->
         <scene sceneID="uPk-rR-6tp">
@@ -1333,7 +1493,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3nU-xZ-CeA" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6777" y="-1060"/>
+            <point key="canvasLocation" x="7719.1999999999998" y="-1060.344827586207"/>
         </scene>
         <!--Wallets-->
         <scene sceneID="bh9-NZ-BZQ">
@@ -2041,7 +2201,7 @@
         <!--Choose Account-->
         <scene sceneID="7eC-EH-5QV">
             <objects>
-                <tableViewController id="9e5-RW-aHd" customClass="DSProposalChooseFundingAccountViewController" sceneMemberID="viewController">
+                <tableViewController id="9e5-RW-aHd" customClass="DSAccountChooserViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="142" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="QNp-fo-LYt">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3681,6 +3841,24 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pUc-oy-Tpw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2676" y="1948.5221674876848"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="ocd-yT-xIT">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Voi-yR-fPT" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="swB-bE-fCZ">
+                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="csg-gD-j67" kind="relationship" relationship="rootViewController" id="GNh-P1-2uD"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cbR-NC-Tl1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5924" y="-1089.1625615763546"/>
         </scene>
     </scenes>
     <resources>
