@@ -60,10 +60,29 @@
     }
 }
 
+// Override to support conditional editing of the table view.
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+
+    return YES;
+}
+
+-(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
+    UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
+        DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:indexPath.section];
+        DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
+        [wallet unregisterBlockchainUser:blockchainUser];
+    }];
+    UITableViewRowAction * editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"Edit" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
+        //[self performSegueWithIdentifier:@"CreateBlockchainUserSegue" sender:[self.tableView cellForRowAtIndexPath:indexPath]];
+    }];
+    return @[deleteAction,editAction];
+}
+
+
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"CreateBlockchainUserSegue"]) {
         DSCreateBlockchainUserViewController * createBlockchainUserViewController = (DSCreateBlockchainUserViewController*)((UINavigationController*)segue.destinationViewController).topViewController;
-        createBlockchainUserViewController.chain = self.chainPeerManager.chain;
+        createBlockchainUserViewController.chainPeerManager = self.chainPeerManager;
     }
 }
 

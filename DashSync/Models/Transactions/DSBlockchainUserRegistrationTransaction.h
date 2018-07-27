@@ -8,11 +8,17 @@
 #import "DSTransaction.h"
 #import "IntTypes.h"
 
+@class DSKey;
+
 @interface DSBlockchainUserRegistrationTransaction : DSTransaction
 
-@property (nonatomic,assign) uint16_t blockchainUserRegistrationTransactionVersion;
-@property (nonatomic,copy) NSString * username;
-@property (nonatomic,assign) UInt160 pubkeyHash;
-@property (nonatomic,strong) NSData * signature;
+@property (nonatomic,readonly) uint16_t blockchainUserRegistrationTransactionVersion;
+@property (nonatomic,readonly) NSString * username;
+@property (nonatomic,readonly) UInt160 pubkeyHash;
+@property (nonatomic,readonly) NSData * signature;
+
+-(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain * _Nonnull)chain;
+
+-(void)signPayloadWithKey:(DSKey* _Nonnull)privateKey;
 
 @end

@@ -8,9 +8,10 @@
 
 #import <UIKit/UIKit.h>
 #import "DSWalletChooserViewController.h"
+#import "DSAccountChooserViewController.h"
 
-@interface DSCreateBlockchainUserViewController : UITableViewController <DSWalletChooserDelegate>
+@interface DSCreateBlockchainUserViewController : UITableViewController <DSWalletChooserDelegate,DSAccountChooserDelegate>
 
-@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
 
 @end

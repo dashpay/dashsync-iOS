@@ -8,6 +8,16 @@
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSKey.h"
+
+@interface DSBlockchainUserRegistrationTransaction()
+
+@property (nonatomic,assign) uint16_t blockchainUserRegistrationTransactionVersion;
+@property (nonatomic,copy) NSString * username;
+@property (nonatomic,assign) UInt160 pubkeyHash;
+@property (nonatomic,strong) NSData * signature;
+
+@end
 
 @implementation DSBlockchainUserRegistrationTransaction
 
@@ -42,15 +52,46 @@
     return self;
 }
 
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
-{
-    NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+-(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString*)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain {
+    if (!(self = [super initOnChain:chain])) return nil;
+    self.version = version;
+    self.username = username;
+    self.pubkeyHash = pubkeyHash;
+    return self;
+}
+
+-(UInt256)payloadHash {
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt16:self.blockchainUserRegistrationTransactionVersion];
+    [data appendString:self.username];
+    [data appendUInt160:self.pubkeyHash];
+    return [data SHA256_2];
+}
+
+-(void)signPayloadWithKey:(DSKey*)privateKey {
+    self.signature = [privateKey sign:[self payloadHash]];
+}
+
+-(NSData*)payloadData {
+    NSMutableData * data = [NSMutableData data];
     [data appendUInt16:self.blockchainUserRegistrationTransactionVersion];
     [data appendString:self.username];
     [data appendUInt160:self.pubkeyHash];
     [data appendUInt8:self.signature.length];
     [data appendData:self.signature];
     return data;
+}
+
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
+{
+    NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+    [data appendData:[self payloadData]];
+    return data;
+}
+
+- (size_t)size
+{
+    return [super size] + [self payloadData].length;
 }
 
 @end

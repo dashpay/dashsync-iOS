@@ -659,7 +659,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return seed ? [self privateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
 }
 
-- (NSData *)privateKeyAtIndex:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
+- (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
 {
     if (! seed || ! indexPath) return nil;
     if (indexPath.length == 0) return nil;
@@ -686,11 +686,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         CKDpriv(&secret, &chain, derivation);
     }
     
-    NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-    [privKey appendBytes:&version length:1];
-    [privKey appendBytes:&secret length:sizeof(secret)];
-    [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
-    return [privKey copy];
+    return [DSKey keyWithSecret:secret compressed:YES];
 }
 
 - (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed

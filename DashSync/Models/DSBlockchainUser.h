@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSWallet;
+@class DSWallet,DSBlockchainUserRegistrationTransaction,DSAccount;
 
 @interface DSBlockchainUser : NSObject
 
@@ -18,5 +18,9 @@
 @property (nonatomic,readonly) NSString * publicKeyHash;
 
 -(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet;
+
+-(void)registerBlockchainUser:(void (^ _Nullable)(BOOL registered))completion;
+
+-(void)registrationTransactionFundedByAccount:(DSAccount* _Nonnull)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion;
 
 @end

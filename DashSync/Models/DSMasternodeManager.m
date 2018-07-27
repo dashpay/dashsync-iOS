@@ -581,7 +581,8 @@ inline static int ceil_log2(int x)
             DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
             [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry onChain:chainEntity];
         }
-        for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in modifiedMasternodes) {
+        for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
+            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
             DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash] onChain:chainEntity];
             [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
         }

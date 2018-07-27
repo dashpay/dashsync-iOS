@@ -537,16 +537,21 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:nil];
 }
 
+- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress {
+    DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain];
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:shapeshiftAddress];
+}
+
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress
 {
     
     uint64_t amount = 0, balance = 0, feeAmount = 0;
-    DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain], *tx;
+    DSTransaction *tx;
     NSUInteger i = 0, cpfpSize = 0;
     DSUTXO o;
     
-    if (amounts.count != scripts.count || amounts.count < 1) return nil; // sanity check
+    if (amounts.count != scripts.count /*|| amounts.count < 1*/) return nil; // sanity check
     
     for (NSData *script in scripts) {
         if (script.length == 0) return nil;
@@ -622,6 +627,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return transaction;
     
     
+}
+
+- (void)fundSpecialTransaction:(DSTransaction* _Nonnull)transaction isInstant:(BOOL)isInstant {
+    [self updateTransaction:transaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:isInstant toShapeshiftAddress:nil];
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet

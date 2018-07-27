@@ -41,9 +41,7 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define BIP32_HARD 0x80000000
 
-@class DSTransaction;
-@class DSAccount;
-@class DSDerivationPath;
+@class DSTransaction,DSKey,DSAccount,DSDerivationPath;
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
     DSDerivationPathFundsType_Clear,
@@ -155,7 +153,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 - (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
-- (NSData * _Nullable)privateKeyAtIndex:(NSIndexPath* _Nonnull)indexPath fromSeed:(NSData * _Nonnull)seed;
+- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath* _Nonnull)indexPath fromSeed:(NSData * _Nonnull)seed;
 - (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 - (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 
