@@ -1355,6 +1355,14 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
+-(uint32_t)blockchainUsersCount {
+    uint32_t blockchainUsersCount = 0;
+    for (DSWallet * lWallet in self.wallets) {
+        blockchainUsersCount += [lWallet blockchainUsers].count;
+    }
+    return blockchainUsersCount;
+}
+
 -(NSArray *) allTransactions {
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSWallet * wallet in self.wallets) {

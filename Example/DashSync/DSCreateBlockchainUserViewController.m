@@ -15,6 +15,7 @@
 - (IBAction)cancel:(id)sender;
 - (IBAction)done:(id)sender;
 @property (strong, nonatomic) IBOutlet UITextField *usernameLabel;
+@property (strong, nonatomic) IBOutlet UITextField *topupAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
 @property (strong, nonatomic) DSWallet * wallet;
@@ -79,11 +80,17 @@
     [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         
     }]];
+    [self presentViewController:alert animated:TRUE completion:^{
+        
+    }];
 }
 
 - (IBAction)done:(id)sender {
     
     NSString * desiredUsername = [self.usernameLabel.text lowercaseString];
+    NSScanner *scanner = [NSScanner scannerWithString:self.topupAmountLabel.text];
+    uint64_t topupAmount = 0;
+    [scanner scanUnsignedLongLong:&topupAmount];
     if (desiredUsername.length < 4) {
         [self raiseIssue:@"Username too short" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
         return;
@@ -106,7 +113,7 @@
     DSBlockchainUser * blockchainUser = [self.wallet createBlockchainUserForUsername:desiredUsername];
     [blockchainUser registerBlockchainUser:^(BOOL registered) {
         if (registered) {
-            [blockchainUser registrationTransactionFundedByAccount:self.fundingAccount completion:^(DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction) {
+            [blockchainUser registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction) {
                 if (blockchainUserRegistrationTransaction) {
                     [self.fundingAccount signTransaction:blockchainUserRegistrationTransaction withPrompt:@"Hello" completion:^(BOOL signedTransaction) {
                         if (signedTransaction) {

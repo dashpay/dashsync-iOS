@@ -348,6 +348,14 @@
     [self.outScripts.lastObject appendShapeshiftMemoForAddress:address];
 }
 
+- (void)addOutputBurnAmount:(uint64_t)amount
+{
+    [self.amounts addObject:@(amount)];
+    [self.addresses addObject:[NSNull null]];
+    [self.outScripts addObject:[NSMutableData data]];
+    [self.outScripts.lastObject appendUInt8:OP_RETURN];
+}
+
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 {
     NSString *address = [NSString addressWithScriptPubKey:script onChain:self.chain];
@@ -405,7 +413,8 @@
     NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE*self.hashes.count +
                         TX_OUTPUT_SIZE*self.addresses.count];
     
-    [d appendUInt32:self.version];
+    [d appendUInt16:self.version];
+    [d appendUInt16:self.type];
     [d appendVarInt:self.hashes.count];
     
     if ([self isCoinbaseClassicTransaction]) {

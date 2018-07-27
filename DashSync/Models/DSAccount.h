@@ -110,9 +110,6 @@
 
 - (DSTransaction *)updateTransaction:(DSTransaction* _Nonnull)transaction forAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
 
-//This is basically just to pay the fee on a special transaction
-- (void)fundSpecialTransaction:(DSTransaction* _Nonnull)transaction isInstant:(BOOL)isInstant;
-
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 

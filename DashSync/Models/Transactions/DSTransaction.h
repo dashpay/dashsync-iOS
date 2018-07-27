@@ -44,7 +44,7 @@
 #define IX_PREVIOUS_CONFIRMATIONS_NEEDED       6   // number of previous confirmations needed in ix inputs
 
 #define TX_VERSION    0x00000001u
-#define SPECIAL_TX_VERSION    0x00000002u
+#define SPECIAL_TX_VERSION    0x00000003u
 #define TX_LOCKTIME   0x00000000u
 #define TXIN_SEQUENCE UINT32_MAX
 #define SIGHASH_ALL   0x00000001u
@@ -100,6 +100,7 @@ typedef union _UInt256 UInt256;
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
 - (void)addOutputShapeshiftAddress:(NSString *)address;
+- (void)addOutputBurnAmount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;

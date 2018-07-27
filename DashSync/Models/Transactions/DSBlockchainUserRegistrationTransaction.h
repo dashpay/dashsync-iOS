@@ -14,11 +14,14 @@
 
 @property (nonatomic,readonly) uint16_t blockchainUserRegistrationTransactionVersion;
 @property (nonatomic,readonly) NSString * username;
+@property (nonatomic,readonly) NSString * amount;
 @property (nonatomic,readonly) UInt160 pubkeyHash;
 @property (nonatomic,readonly) NSData * signature;
 
 -(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain * _Nonnull)chain;
 
 -(void)signPayloadWithKey:(DSKey* _Nonnull)privateKey;
+
+-(BOOL)checkPayloadSignature;
 
 @end

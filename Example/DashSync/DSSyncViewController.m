@@ -39,6 +39,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
 @property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver;
 
 - (IBAction)startSync:(id)sender;
@@ -63,6 +64,7 @@
     [self updateSingleAddressesCount];
     [self updateReceivedGovernanceProposalCount];
     [self updateReceivedGovernanceVoteCount];
+    [self updateBlockchainUsersCount];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
@@ -409,6 +411,10 @@
 
 -(void)updateReceivedGovernanceVoteCount {
     self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],self.chainPeerManager.governanceSyncManager.totalGovernanceVotesCount];
+}
+
+-(void)updateBlockchainUsersCount {
+    self.blockchainUsersCountLabel.text = [NSString stringWithFormat:@"%u",self.chainPeerManager.chain.blockchainUsersCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {

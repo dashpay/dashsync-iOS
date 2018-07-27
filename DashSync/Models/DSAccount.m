@@ -629,10 +629,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
 }
 
-- (void)fundSpecialTransaction:(DSTransaction* _Nonnull)transaction isInstant:(BOOL)isInstant {
-    [self updateTransaction:transaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:isInstant toShapeshiftAddress:nil];
-}
-
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {
