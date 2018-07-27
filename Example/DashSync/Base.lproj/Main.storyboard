@@ -1141,13 +1141,63 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="ydu-8j-wZG">
-                                <rect key="frame" x="0.0" y="28" width="375" height="44"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="125" id="ydu-8j-wZG" customClass="DSBlockchainUserTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="125"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ydu-8j-wZG" id="nV4-v2-BGu">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666666666666664"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="124.66666666666667"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vBN-Vz-Ggk">
+                                            <rect key="frame" x="16" y="16" width="79" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KIk-kz-zFE">
+                                            <rect key="frame" x="317" y="16" width="42" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Credit balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rlt-eh-R32">
+                                            <rect key="frame" x="16" y="47" width="111" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ios-lU-KQw">
+                                            <rect key="frame" x="317" y="47" width="42" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PublicKey" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1A2-eh-nrt" customClass="BRCopyLabel">
+                                            <rect key="frame" x="16" y="78" width="343" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="1A2-eh-nrt" firstAttribute="leading" secondItem="nV4-v2-BGu" secondAttribute="leading" constant="16" id="5KP-xa-2PX"/>
+                                        <constraint firstItem="KIk-kz-zFE" firstAttribute="baseline" secondItem="vBN-Vz-Ggk" secondAttribute="baseline" id="G0n-mO-pWT"/>
+                                        <constraint firstItem="rlt-eh-R32" firstAttribute="top" secondItem="vBN-Vz-Ggk" secondAttribute="bottom" constant="10" id="Kgu-jj-P2G"/>
+                                        <constraint firstItem="vBN-Vz-Ggk" firstAttribute="leading" secondItem="nV4-v2-BGu" secondAttribute="leading" constant="16" id="LtY-x5-3L6"/>
+                                        <constraint firstItem="vBN-Vz-Ggk" firstAttribute="top" secondItem="nV4-v2-BGu" secondAttribute="top" constant="16" id="McH-kR-1iT"/>
+                                        <constraint firstAttribute="trailing" secondItem="KIk-kz-zFE" secondAttribute="trailing" constant="16" id="QfU-2O-z62"/>
+                                        <constraint firstAttribute="trailing" secondItem="1A2-eh-nrt" secondAttribute="trailing" constant="16" id="d0F-gC-sCP"/>
+                                        <constraint firstAttribute="trailing" secondItem="ios-lU-KQw" secondAttribute="trailing" constant="16" id="emE-oy-lTc"/>
+                                        <constraint firstItem="ios-lU-KQw" firstAttribute="baseline" secondItem="rlt-eh-R32" secondAttribute="baseline" id="gyg-HN-amU"/>
+                                        <constraint firstItem="rlt-eh-R32" firstAttribute="leading" secondItem="nV4-v2-BGu" secondAttribute="leading" constant="16" id="nKn-dr-1zA"/>
+                                        <constraint firstItem="1A2-eh-nrt" firstAttribute="top" secondItem="rlt-eh-R32" secondAttribute="bottom" constant="10" id="qQX-SU-mTc"/>
+                                    </constraints>
                                 </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="creditBalanceLabel" destination="ios-lU-KQw" id="2nv-BL-LN2"/>
+                                    <outlet property="publicKeyLabel" destination="1A2-eh-nrt" id="63W-ht-4Qm"/>
+                                    <outlet property="usernameLabel" destination="KIk-kz-zFE" id="vq5-Qk-Uw2"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -1165,7 +1215,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jvG-8o-3y0" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5244" y="-599"/>
+            <point key="canvasLocation" x="5244" y="-599.26108374384239"/>
         </scene>
         <!--Standalone Derivation Paths-->
         <scene sceneID="eFM-Cg-G5N">

@@ -23,6 +23,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
+#import "DSBlockchainUser.h"
 
 #import "IntTypes.h"
 
@@ -39,6 +40,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 @interface DSWallet : NSObject
 
 @property (nonatomic, readonly) NSArray * accounts;
+
+@property (nonatomic, readonly) NSArray * blockchainUsers;
 
 @property (nonatomic, readonly) NSString * uniqueID;
 
@@ -75,7 +78,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // the total amount received by the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived;
 
-@property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
+@property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
@@ -141,5 +144,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 //This removes all blockchain information from the wallet
 - (void)wipeBlockchainInfo;
+
+-(void)unregisterBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
+-(void)addBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
+-(void)registerBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
+-(DSBlockchainUser* _Nonnull)createBlockchainUserForUsername:(NSString* _Nonnull)username;
 
 @end

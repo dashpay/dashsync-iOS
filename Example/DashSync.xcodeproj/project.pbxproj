@@ -53,6 +53,7 @@
 		FB0F15A821049505000272E6 /* DSTransactionAmountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */; };
 		FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */; };
 		FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15B621090445000272E6 /* DSBlockchainUsersViewController.m */; };
+		FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */; };
 		FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */; };
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
 		FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */; };
@@ -181,6 +182,8 @@
 		FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionIdentifierTableViewCell.m; sourceTree = "<group>"; };
 		FB0F15B521090445000272E6 /* DSBlockchainUsersViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUsersViewController.h; sourceTree = "<group>"; };
 		FB0F15B621090445000272E6 /* DSBlockchainUsersViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUsersViewController.m; sourceTree = "<group>"; };
+		FB0F15BC210A0208000272E6 /* DSBlockchainUserTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserTableViewCell.h; sourceTree = "<group>"; };
+		FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserTableViewCell.m; sourceTree = "<group>"; };
 		FB12FEE120CD3BD100C1E0F0 /* DSMasternodeTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeTableViewCell.h; sourceTree = "<group>"; };
 		FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeTableViewCell.m; sourceTree = "<group>"; };
 		FB12FEE520CD3EC100C1E0F0 /* DSMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeViewController.h; sourceTree = "<group>"; };
@@ -556,6 +559,8 @@
 				FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */,
 				FB0F15A921049598000272E6 /* DSTransactionIdentifierTableViewCell.h */,
 				FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */,
+				FB0F15BC210A0208000272E6 /* DSBlockchainUserTableViewCell.h */,
+				FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -813,6 +818,7 @@
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
 				2A3B3EB420F893F4002962FB /* SelectorFormCellModel.m in Sources */,
+				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
 				FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */,

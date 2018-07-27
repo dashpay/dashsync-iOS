@@ -7,6 +7,7 @@
 //
 
 #import "DSBlockchainUsersViewController.h"
+#import "DSBlockchainUserTableViewCell.h"
 
 @interface DSBlockchainUsersViewController ()
 
@@ -33,11 +34,27 @@
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [self.chainPeerManager.chain.wallets count];
+    return [self.chainPeerManager.chain.blockchainUsers count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
+}
+
+-(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    DSBlockchainUserTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"WalletCellIdentifier"];
+    
+    // Set up the cell...
+    [self configureCell:cell atIndexPath:indexPath];
+    return cell;
+}
+
+-(void)configureCell:(DSBlockchainUserTableViewCell*)blockchainUserCell atIndexPath:(NSIndexPath *)indexPath {
+    @autoreleasepool {
+        DSBlockchainUser * blockchainUser = [self.chainPeerManager.chain.blockchainUsers objectAtIndex:indexPath.row];
+        blockchainUserCell.usernameLabel.text = blockchainUser.username;
+        blockchainUserCell.publicKeyLabel.text = blockchainUser.publicKeyHash;
+    }
 }
 
 @end

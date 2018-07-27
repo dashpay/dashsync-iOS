@@ -50,7 +50,6 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
 #import "DSMasternodeBroadcastEntity+CoreDataClass.h"
-#import "DSBlockchainUser.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -124,7 +123,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define FEE_PER_KB_KEY          @"FEE_PER_KB"
 
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
-#define CHAIN_BLOCKCHAIN_USERS_KEY  @"CHAIN_BLOCKCHAIN_USERS_KEY"
 #define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
 #define REGISTERED_PEERS_KEY  @"REGISTERED_PEERS_KEY"
 
@@ -146,7 +144,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
 @property (nonatomic, strong) NSMutableArray<DSWallet *> * mWallets;
-@property (nonatomic, strong) NSMutableArray<DSBlockchainUser *> * mBlockchainUsers;
 @property (nonatomic, strong) DSChainEntity * mainThreadChainEntity;
 @property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 @property (nonatomic, strong) NSString * devnetIdentifier;
@@ -418,10 +415,6 @@ static dispatch_once_t devnetToken = 0;
 
 -(NSString*)chainWalletsKey {
     return [NSString stringWithFormat:@"%@_%@",CHAIN_WALLETS_KEY,[self uniqueID]];
-}
-
--(NSString*)chainBlockchainUsersKey {
-    return [NSString stringWithFormat:@"%@_%@",CHAIN_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
 }
 
 -(NSString*)chainStandaloneDerivationPathsKey {
@@ -749,40 +742,6 @@ static dispatch_once_t devnetToken = 0;
 
 -(NSArray*)standaloneDerivationPaths {
     return [self.viewingAccount derivationPaths];
-}
-
-// MARK: - Blockchain Users
-
-
--(void)unregisterBlockchainUser:(DSBlockchainUser *)blockchainUser {
-    NSAssert(blockchainUser.chain == self, @"the blockchainUser you are trying to remove is not on this chain");
-    [self.mBlockchainUsers removeObject:blockchainUser];
-    NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(self.chainBlockchainUsersKey, &error) mutableCopy];
-    if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray removeObject:blockchainUser.username];
-    setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
-    });
-}
--(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser {
-    [self.mBlockchainUsers addObject:blockchainUser];
-}
-
-- (void)registerBlockchainUser:(DSBlockchainUser *)blockchainUser
-{
-    if ([self.mBlockchainUsers indexOfObject:blockchainUser] == NSNotFound) {
-        [self addBlockchainUser:blockchainUser];
-    }
-    NSError * error = nil;
-    NSMutableArray * keyChainArray = [getKeychainArray(self.chainBlockchainUsersKey, &error) mutableCopy];
-    if (!keyChainArray) keyChainArray = [NSMutableArray array];
-    [keyChainArray addObject:blockchainUser.username];
-    setKeychainArray(keyChainArray, self.chainBlockchainUsersKey, NO);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
-    });
 }
 
 // MARK: - Voting Keys

@@ -48,13 +48,15 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
     DSDerivationPathFundsType_Clear,
     DSDerivationPathFundsType_Anonymous,
-    DSDerivationPathFundsType_ViewOnly
+    DSDerivationPathFundsType_ViewOnly,
+    DSDerivationPathFundsType_Authentication,
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_Unknown = 0,
     DSDerivationPathReference_BIP32 = 1,
-    DSDerivationPathReference_BIP44 = 2
+    DSDerivationPathReference_BIP44 = 2,
+    DSDerivationPathReference_BlochainUsers = 3
 };
 
 @interface DSDerivationPath : NSIndexPath
@@ -66,6 +68,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly) DSChain * chain;
 // account for the derivation path
 @property (nonatomic, readonly, weak) DSAccount * account;
+
+@property (nonatomic, readonly, weak) DSWallet * wallet;
 
 // extended Public Key
 @property (nonatomic, readonly) NSData * extendedPublicKey;
@@ -114,6 +118,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 + (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
++ (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
+
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
@@ -149,6 +155,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 - (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
+- (NSData * _Nullable)privateKeyAtIndex:(NSIndexPath* _Nonnull)indexPath fromSeed:(NSData * _Nonnull)seed;
 - (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 - (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 

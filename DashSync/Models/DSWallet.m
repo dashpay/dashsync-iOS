@@ -35,13 +35,14 @@
 #import "NSData+Bitcoin.h"
 #import "DSEnvironment.h"
 #import "DSChainManager.h"
-
+#import "DSBlockchainUser.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
 #define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define WALLET_MNEMONIC_KEY        @"WALLET_MNEMONIC_KEY"
 #define WALLET_MASTER_PUBLIC_KEY        @"WALLET_MASTER_PUBLIC_KEY"
+#define WALLET_BLOCKCHAIN_USERS_KEY  @"WALLET_BLOCKCHAIN_USERS_KEY"
 
 @interface DSWallet()
 
@@ -49,6 +50,8 @@
 @property (nonatomic, strong) NSMutableDictionary * mAccounts;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, assign) NSTimeInterval walletCreationTime;
+@property (nonatomic, strong) NSMutableDictionary<NSString *,NSNumber *> * mBlockchainUsers;
+@property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 
 @end
 
@@ -70,6 +73,7 @@
     if (! (self = [super init])) return nil;
     self.mAccounts = [NSMutableDictionary dictionary];
     self.chain = chain;
+    self.mBlockchainUsers = [NSMutableDictionary dictionary];
     return self;
 }
 
@@ -104,6 +108,10 @@
     DSWallet * wallet = [[DSWallet alloc] initWithChain:chain];
     wallet.uniqueID = uniqueId;
     return wallet;
+}
+
+-(NSString*)walletBlockchainUsersKey {
+    return [NSString stringWithFormat:@"%@_%@",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
 }
 
 
@@ -418,6 +426,58 @@
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
     }
+}
+
+// MARK: - Blockchain Users
+
+-(void)unregisterBlockchainUser:(DSBlockchainUser *)blockchainUser {
+    NSAssert(blockchainUser.wallet == self, @"the blockchainUser you are trying to remove is not in this wallet");
+    [self.mBlockchainUsers removeObjectForKey:blockchainUser.username];
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary removeObjectForKey:blockchainUser.username];
+    setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+    });
+}
+-(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser {
+    [self.mBlockchainUsers setObject:@(blockchainUser.index) forKey:blockchainUser.username];
+}
+
+- (void)registerBlockchainUser:(DSBlockchainUser *)blockchainUser
+{
+    if (![self.mBlockchainUsers objectForKey:blockchainUser.username]) {
+        [self addBlockchainUser:blockchainUser];
+    }
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary setObject:@(blockchainUser.index) forKey:blockchainUser.username];
+    setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+    });
+}
+
+-(NSArray*)blockchainUsers {
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
+    NSMutableArray * rArray = [NSMutableArray array];
+    if (keyChainDictionary) {
+        for (NSString * username in keyChainDictionary) {
+            [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self]];
+        }
+    }
+    return [rArray copy];
+}
+
+-(DSBlockchainUser*)createBlockchainUserForUsername:(NSString*)username {
+    NSArray * indexes = [_mBlockchainUsers allKeys];
+    NSNumber * max = [indexes valueForKeyPath:@"@max.intValue"];
+    DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithUsername:username atIndex:max?([max unsignedIntValue] + 1):0 inWallet:self];
+    return blockchainUser;
 }
 
 @end

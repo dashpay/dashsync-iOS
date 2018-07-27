@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "DSChainPeerManager.h"
 #import "DSChain.h"
+#import "DSBlockchainUser.h"
 #import "DSKey.h"
 #import "DSDerivationPath.h"
 #import "DSChainManager.h"
