@@ -396,8 +396,8 @@
 }
 
 -(void)updatePeerCount {
-    uint64_t connectedPeerCount = self.chainPeerManager.connectedPeerCount;
-    self.connectedPeerCountLabel.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
+    uint64_t peerCount = self.chainPeerManager.peerCount;
+    self.peerCountLabel.text = [NSString stringWithFormat:@"%llu",peerCount];
 }
 
 -(void)updateConnectedPeerCount {
