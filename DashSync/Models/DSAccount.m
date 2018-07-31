@@ -763,7 +763,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self updateBalance];
     
     [self.moc performBlock:^{ // remove transaction from core data
-        [DSTransactionEntity deleteObjects:[DSTransactionEntity objectsMatching:@"txHash == %@",
+        [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
                                             [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
 }

@@ -408,6 +408,47 @@
     }];
 }
 
+-(DSPeer*)peerForLocation:(UInt128)IPAddress port:(uint16_t)port {
+    for (DSPeer * peer in self.peers) {
+        if (uint128_eq(peer.address, IPAddress) && peer.port == port) {
+            return peer;
+        }
+    }
+    return nil;
+}
+
+-(DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port {
+    DSPeer * peer = [self peerForLocation:IPAddress port:port];
+    if (!peer) {
+        return DSPeerStatus_Unknown;
+    } else if ([self.misbehavinPeers containsObject:peer]) {
+        return DSPeerStatus_Banned;
+    } else {
+        return peer.status;
+    }
+}
+
+-(DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port {
+    DSPeer * peer = [self peerForLocation:IPAddress port:port];
+    if (!peer) {
+        return DSPeerType_Unknown;
+    }
+    if ([self.masternodeManager hasMasternodeAtLocation:IPAddress port:port]) {
+        return DSPeerType_MasterNode;
+    } else {
+        return DSPeerType_FullNode;
+    }
+}
+
+-(NSString*)settingsFixedPeerKey {
+    return [NSString stringWithFormat:@"%@_%@",SETTINGS_FIXED_PEER_KEY,self.chain.uniqueID];
+}
+
+-(void)setTrustedPeerHost:(NSString*)host {
+    [[NSUserDefaults standardUserDefaults] setObject:host
+                                              forKey:[self settingsFixedPeerKey]];
+}
+
 // MARK: - Peer Registration
 
 -(void)clearRegisteredPeers {
@@ -498,7 +539,7 @@
             return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
         }]];
         
-        self.fixedPeer = [DSPeer peerWithHost:[defs stringForKey:SETTINGS_FIXED_PEER_KEY] onChain:self.chain];
+        self.fixedPeer = [DSPeer peerWithHost:[defs stringForKey:[self settingsFixedPeerKey]] onChain:self.chain];
         self.maxConnectCount = (self.fixedPeer) ? 1 : PEER_MAX_CONNECTIONS;
         if (self.connectedPeers.count >= self.maxConnectCount) return; // already connected to maxConnectCount peers
         
@@ -890,8 +931,8 @@
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
     
     //Do we need to sync?
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]]) { //no need to do a governance sync if we already completed one recently
-        NSTimeInterval lastSyncedGovernance = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]]) { //no need to do a governance sync if we already completed one recently
+        NSTimeInterval lastSyncedGovernance = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
         NSTimeInterval interval = [[DSOptionsManager sharedInstance] syncGovernanceObjectsInterval];
         NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
         if (lastSyncedGovernance + interval > now) {
@@ -963,8 +1004,8 @@
         [self.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.masternodeManager.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
     } else {
         //Do we need to sync the hashes? (or do we already have them?)
-        if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]]) { //no need to do a governance sync if we already completed one recently
-            NSTimeInterval lastSyncedMasternodeList = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]]) { //no need to do a governance sync if we already completed one recently
+            NSTimeInterval lastSyncedMasternodeList = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
             NSTimeInterval interval = [[DSOptionsManager sharedInstance] syncMasternodeListInterval];
             NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
             if (lastSyncedMasternodeList + interval > now) {

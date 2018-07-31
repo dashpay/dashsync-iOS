@@ -188,12 +188,16 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 @end
 
 typedef NS_ENUM(NSUInteger, DSPeerStatus) {
+    DSPeerStatus_Unknown = -1,
     DSPeerStatus_Disconnected = 0,
     DSPeerStatus_Connecting,
-    DSPeerStatus_Connected
+    DSPeerStatus_Connected,
+    DSPeerStatus_Banned
+    
 };
 
 typedef NS_ENUM(NSUInteger, DSPeerType) {
+    DSPeerType_Unknown = -1,
     DSPeerType_FullNode = 0,
     DSPeerType_MasterNode
 };

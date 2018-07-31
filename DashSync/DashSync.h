@@ -32,6 +32,7 @@
 #import "NSData+Dash.h"
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
+#import "DSPeerEntity+CoreDataProperties.h"
 #import "DSMerkleBlockEntity+CoreDataProperties.h"
 #import "DSMasternodeBroadcastHashEntity+CoreDataProperties.h"
 #import "DSMasternodeBroadcastEntity+CoreDataProperties.h"

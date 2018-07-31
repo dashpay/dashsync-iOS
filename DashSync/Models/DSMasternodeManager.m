@@ -289,7 +289,7 @@ inline static int ceil_log2(int x)
 }
 
 -(void)finishedMasternodeListSyncWithPeer:(DSPeer*)peer {
-    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@-%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
+    [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
 }
 
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
@@ -599,6 +599,24 @@ inline static int ceil_log2(int x)
 
 -(NSUInteger)simplifiedMasternodeEntryCount {
     return [self.simplifiedMasternodeList count];
+}
+
+-(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
+    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in [self.simplifiedMasternodeList allValues]) {
+        if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
+            return simplifiedMasternodeEntry;
+        }
+    }
+    return nil;
+}
+
+-(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
+    if (self.chain.protocolVersion < 70211) {
+        return FALSE;
+    } else {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self simplifiedMasternodeEntryForLocation:IPAddress port:port];
+        return (!!simplifiedMasternodeEntry);
+    }
 }
 
 @end

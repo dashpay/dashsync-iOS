@@ -45,4 +45,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(void)wipeMasternodeInfo;
 
+-(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
+
 @end

@@ -17,6 +17,7 @@
 #import "DSGovernanceObjectListViewController.h"
 #import "DSTransactionsViewController.h"
 #import "DSBlockchainUsersViewController.h"
+#import "DSPeersViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -447,6 +448,9 @@
     } else if ([segue.identifier isEqualToString:@"BlockchainUsersSegue"]) {
         DSBlockchainUsersViewController * blockchainUsersViewController = (DSBlockchainUsersViewController*)segue.destinationViewController;
         blockchainUsersViewController.chainPeerManager = self.chainPeerManager;
+    } else if ([segue.identifier isEqualToString:@"ShowPeersSegue"]) {
+        DSPeersViewController * peersViewController = (DSPeersViewController*)segue.destinationViewController;
+        peersViewController.chainPeerManager = self.chainPeerManager;
     }
 }
 

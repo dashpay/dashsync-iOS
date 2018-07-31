@@ -88,6 +88,8 @@
 		FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */; };
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
 		FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */; };
+		FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB995D9921101C4200AC37D0 /* DSPeersViewController.m */; };
+		FB995D9D21101C9600AC37D0 /* DSPeerTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */; };
 		FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106520D7A72D006883E2 /* DSAddressesExporterViewController.m */; };
 		FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106820D833F4006883E2 /* DSAddDevnetViewController.m */; };
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
@@ -254,6 +256,10 @@
 		FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathTableViewCell.m; sourceTree = "<group>"; };
 		FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
 		FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
+		FB995D9821101C4200AC37D0 /* DSPeersViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSPeersViewController.h; sourceTree = "<group>"; };
+		FB995D9921101C4200AC37D0 /* DSPeersViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPeersViewController.m; sourceTree = "<group>"; };
+		FB995D9B21101C9600AC37D0 /* DSPeerTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSPeerTableViewCell.h; sourceTree = "<group>"; };
+		FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPeerTableViewCell.m; sourceTree = "<group>"; };
 		FB9A106420D7A72D006883E2 /* DSAddressesExporterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressesExporterViewController.h; sourceTree = "<group>"; };
 		FB9A106520D7A72D006883E2 /* DSAddressesExporterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressesExporterViewController.m; sourceTree = "<group>"; };
 		FB9A106720D833F4006883E2 /* DSAddDevnetViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetViewController.h; sourceTree = "<group>"; };
@@ -578,6 +584,8 @@
 				FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */,
 				FB0F15BC210A0208000272E6 /* DSBlockchainUserTableViewCell.h */,
 				FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */,
+				FB995D9B21101C9600AC37D0 /* DSPeerTableViewCell.h */,
+				FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -624,6 +632,15 @@
 			name = Sporks;
 			sourceTree = "<group>";
 		};
+		FB995D9721101C1E00AC37D0 /* Peers */ = {
+			isa = PBXGroup;
+			children = (
+				FB995D9821101C4200AC37D0 /* DSPeersViewController.h */,
+				FB995D9921101C4200AC37D0 /* DSPeersViewController.m */,
+			);
+			name = Peers;
+			sourceTree = "<group>";
+		};
 		FBB25BEC20C5CD040037F5BE /* Blocks */ = {
 			isa = PBXGroup;
 			children = (
@@ -636,6 +653,7 @@
 		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FB995D9721101C1E00AC37D0 /* Peers */,
 				FB0F15C5210AD9E6000272E6 /* Choosing */,
 				FB0F15B421090405000272E6 /* Evolution */,
 				FB23895520D2EBE800921B89 /* Governance */,
@@ -820,6 +838,7 @@
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
 				FB5252F620EE159B009A2BF1 /* DSAccountChooserViewController.m in Sources */,
 				2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */,
+				FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */,
 				2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */,
 				2A3B3EB620F893F4002962FB /* SelectorFormTableViewCell.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
@@ -846,6 +865,7 @@
 				FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */,
 				FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
+				FB995D9D21101C9600AC37D0 /* DSPeerTableViewCell.m in Sources */,
 				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,
