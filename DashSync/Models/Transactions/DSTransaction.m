@@ -224,6 +224,14 @@
     return self;
 }
 
+-(NSData*)payloadData {
+    return nil;
+}
+
+-(NSData*)payloadDataForHash {
+    return nil;
+}
+
 -(DSAccount*)account {
     return [self.chain accountContainingTransaction:self];
 }

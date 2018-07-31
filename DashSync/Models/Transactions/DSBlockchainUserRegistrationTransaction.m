@@ -67,18 +67,7 @@
 }
 
 -(UInt256)payloadHash {
-    NSMutableData * data = [NSMutableData data];
-    [data appendUInt16:self.blockchainUserRegistrationTransactionVersion];
-    [data appendString:self.username];
-    //[data appendData:[self.username dataUsingEncoding:NSUTF8StringEncoding]];
-    NSData * pubkeyData = uint160_data(self.pubkeyHash);
-    [data appendVarInt:pubkeyData.length];
-    [data appendData:pubkeyData];
-    [data appendData:[NSString stringWithFormat:@"%065x",0].hexToData];
-//    [data appendUInt8:0];
-    UInt256 payloadHash = [data SHA256_2];
-    NSLog(@"PayloadHash is %@",uint256_data(payloadHash));
-    return payloadHash;
+    return [self payloadDataForHash].SHA256_2;
 }
 
 -(BOOL)checkPayloadSignature {
@@ -89,6 +78,15 @@
 -(void)signPayloadWithKey:(DSKey*)privateKey {
     NSLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.signature = [privateKey compactSign:[self payloadHash]];
+}
+
+-(NSData*)payloadDataForHash {
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt16:self.blockchainUserRegistrationTransactionVersion];
+    [data appendString:self.username];
+    [data appendUInt160:self.pubkeyHash];
+    [data appendUInt8:0];
+    return data;
 }
 
 -(NSData*)payloadData {

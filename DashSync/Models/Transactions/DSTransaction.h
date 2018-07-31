@@ -69,6 +69,8 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) uint16_t version;
 @property (nonatomic, assign) uint16_t type;
 @property (nonatomic, assign) uint32_t lockTime;
+@property (nonatomic, readonly) NSData * payloadData;
+@property (nonatomic, readonly) NSData * payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
 @property (nonatomic, assign) uint32_t blockHeight;
 @property (nonatomic, assign) NSTimeInterval timestamp; // time interval since refrence date, 00:00:00 01/01/01 GMT

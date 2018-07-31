@@ -107,11 +107,13 @@
     UInt160 pubkeyHash = *(UInt160 *)@"43bfdea7363e6ea738da5059987c7232b58d2afe".hexToData.bytes;
     
     XCTAssertTrue(uint160_eq(pubkeyHash, key.publicKey.hash160), @"Pubkey Hash does not Pubkey");
-    DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithBlockchainUserRegistrationTransactionVersion:1 username:@"crazy1" pubkeyHash:pubkeyHash onChain:devnetDRA];
+    DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithBlockchainUserRegistrationTransactionVersion:1 username:@"crazy2" pubkeyHash:pubkeyHash onChain:devnetDRA];
     UInt256 payloadHash = blockchainUserRegistrationTransaction.payloadHash;
-    NSData * payloadHashDataToConfirm = @"912956c5cbf77a5c3b7cb9ae928bcccd5f7780c48a56d9ffd9ad3a2cb1ad60ce".hexToData;
-    NSData * payloadHashDataToConfirmReverse = @"912956c5cbf77a5c3b7cb9ae928bcccd5f7780c48a56d9ffd9ad3a2cb1ad60ce".hexToData.reverse;
-    XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirm,@"Pubkey Hash does not match Pubkey");
+//    NSData * payloadDataForHash = blockchainUserRegistrationTransaction.payloadDataForHash;
+//    NSData * payloadDataToConfirm = @"0100066372617a793243ffffff363e6eff38ff5059ff7c7232ffff2aff00".hexToData;
+//    NSData * payloadDataToConfirmHash = [NSData dataWithUInt256:payloadDataToConfirm.SHA256_2];
+//    NSData * payloadHashDataToConfirm = @"b29e4bc3dd4e0a02d163599e3be5a315781d1ef9e25ec9767eabbe3bfc250af5".hexToData;
+    NSData * payloadHashDataToConfirmReverse = @"b29e4bc3dd4e0a02d163599e3be5a315781d1ef9e25ec9767eabbe3bfc250af5".hexToData.reverse;
     XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirmReverse,@"Pubkey Hash does not match Pubkey Reverse");
 }
 
