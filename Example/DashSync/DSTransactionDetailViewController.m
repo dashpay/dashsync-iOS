@@ -175,7 +175,7 @@
 {
     DSPriceManager * walletManager = [DSPriceManager sharedInstance];
     DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.transaction.chain];
-    NSUInteger peerCount = peerManager.peerCount;
+    NSUInteger peerCount = peerManager.connectedPeerCount;
     NSUInteger relayCount = [peerManager relayCountForTransaction:self.transaction.txHash];
     DSAccount * account = self.transaction.account;
     NSString *s;

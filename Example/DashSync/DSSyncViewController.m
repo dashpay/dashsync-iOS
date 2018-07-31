@@ -41,7 +41,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,peerConnectionObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -66,6 +66,7 @@
     [self updateReceivedGovernanceProposalCount];
     [self updateReceivedGovernanceVoteCount];
     [self updateBlockchainUsersCount];
+    [self updateConnectedPeerCount];
     
     self.syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
@@ -82,6 +83,11 @@
                                                                [self syncFailed];
                                                            }
                                                        }];
+    
+    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerConnectedPeerDidChangeNotification object:nil
+                                                                                        queue:nil usingBlock:^(NSNotification *note) {
+                                                                                            [self updateConnectedPeerCount];
+                                                                                        }];
     
     
     self.blocksObserver =
@@ -294,13 +300,10 @@
     
     counter++;
     
-    uint64_t connectedPeerCount = self.chainPeerManager.peerCount;
-    
     self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
-    self.connectedPeerCount.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
     self.downloadPeerLabel.text = self.chainPeerManager.downloadPeerName;
     self.chainTipLabel.text = self.chain.chainTip;
     if (progress + DBL_EPSILON >= 1.0) {
@@ -378,6 +381,11 @@
 
 -(void)updateBlockHeight {
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastBlockHeight];
+}
+
+-(void)updateConnectedPeerCount {
+    uint64_t connectedPeerCount = self.chainPeerManager.connectedPeerCount;
+    self.connectedPeerCount.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
 }
 
 -(void)updateSporks {

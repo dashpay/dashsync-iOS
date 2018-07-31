@@ -151,7 +151,7 @@
 }
 
 // number of connected peers
-- (NSUInteger)peerCount
+- (NSUInteger)connectedPeerCount
 {
     NSUInteger count = 0;
     
@@ -687,7 +687,7 @@
     
     // instead of publishing to all peers, leave out the download peer to see if the tx propogates and gets relayed back
     // TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
-    if (self.peerCount > 1 && self.downloadPeer) [peers removeObject:self.downloadPeer];
+    if (self.connectedPeerCount > 1 && self.downloadPeer) [peers removeObject:self.downloadPeer];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [self performSelector:@selector(txTimeout:) withObject:hash afterDelay:PROTOCOL_TIMEOUT];
@@ -718,7 +718,7 @@
     UInt256 h;
     
     // don't remove transactions until we're connected to maxConnectCount peers
-    if (self.peerCount < self.maxConnectCount) return;
+    if (self.connectedPeerCount < self.maxConnectCount) return;
     
     for (DSPeer *p in self.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
         if (! p.synced) return;
@@ -1202,7 +1202,6 @@
         return;
     }
     
-    
     if (self.connected) {
         if (![self.chain syncsBlockchain]) return;
         if (self.chain.estimatedBlockHeight >= peer.lastblock || self.chain.lastBlockHeight >= peer.lastblock) {
@@ -1230,11 +1229,13 @@
                     });
                 }];
             }];
-            NSLog(@"a");
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeerDidChangeNotification
+                                                                    object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            });
             return; // we're already connected to a download peer
         }
     }
-    
     
     // select the peer with the lowest ping time to download the chain from if we're behind
     // BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if two
@@ -1282,6 +1283,10 @@
         [self startGovernanceSync];
         [self getMasternodeList];
     }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeerDidChangeNotification
+                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+    });
 }
 
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error
@@ -1329,6 +1334,8 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeerDidChangeNotification
+                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
     });
 }
