@@ -162,6 +162,12 @@
     return count;
 }
 
+- (NSUInteger)peerCount
+{
+    return self.peers.count;
+}
+
+
 - (NSString *)downloadPeerName
 {
     return [self.downloadPeer.host stringByAppendingFormat:@":%d", self.downloadPeer.port];
@@ -1230,7 +1236,7 @@
                 }];
             }];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeerDidChangeNotification
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeersDidChangeNotification
                                                                     object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             });
             return; // we're already connected to a download peer
@@ -1284,7 +1290,7 @@
         [self getMasternodeList];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeerDidChangeNotification
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
     });
 }
@@ -1334,7 +1340,7 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeerDidChangeNotification
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
     });
@@ -1358,6 +1364,11 @@
     }
     
     if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerPeersDidChangeNotification
+                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+    });
+    
 }
 
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction

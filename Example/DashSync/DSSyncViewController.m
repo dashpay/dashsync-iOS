@@ -27,7 +27,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *lastBlockHeightLabel;
 @property (strong, nonatomic) IBOutlet UIProgressView *progressView, *pulseView;
 @property (assign, nonatomic) NSTimeInterval timeout, start;
-@property (strong, nonatomic) IBOutlet UILabel *connectedPeerCount;
+@property (strong, nonatomic) IBOutlet UILabel *connectedPeerCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *peerCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *downloadPeerLabel;
 @property (strong, nonatomic) IBOutlet UILabel *chainTipLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionCountBalanceLabel;
@@ -41,7 +42,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,peerConnectionObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -66,6 +67,7 @@
     [self updateReceivedGovernanceProposalCount];
     [self updateReceivedGovernanceVoteCount];
     [self updateBlockchainUsersCount];
+    [self updatePeerCount];
     [self updateConnectedPeerCount];
     
     self.syncFinishedObserver =
@@ -84,9 +86,19 @@
                                                            }
                                                        }];
     
-    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerConnectedPeerDidChangeNotification object:nil
+    
+    self.connectedPeerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerConnectedPeersDidChangeNotification object:nil
+                                                                                     queue:nil usingBlock:^(NSNotification *note) {
+                                                                                                                                                    if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                         [self updateConnectedPeerCount];
+                                                                                                                                                    }
+                                                                                     }];
+    
+    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerPeersDidChangeNotification object:nil
                                                                                         queue:nil usingBlock:^(NSNotification *note) {
-                                                                                            [self updateConnectedPeerCount];
+                                                                                                                                                       if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                            [self updatePeerCount];
+                                                                                                                                                       }
                                                                                         }];
     
     
@@ -383,9 +395,14 @@
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",self.chain.lastBlockHeight];
 }
 
+-(void)updatePeerCount {
+    uint64_t connectedPeerCount = self.chainPeerManager.connectedPeerCount;
+    self.connectedPeerCountLabel.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
+}
+
 -(void)updateConnectedPeerCount {
     uint64_t connectedPeerCount = self.chainPeerManager.connectedPeerCount;
-    self.connectedPeerCount.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
+    self.connectedPeerCountLabel.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
 }
 
 -(void)updateSporks {

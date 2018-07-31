@@ -13,7 +13,8 @@ NSString* const DSChainPeerManagerSyncFinishedNotification =     @"DSChainPeerMa
 NSString* const DSChainPeerManagerSyncFailedNotification =       @"DSChainPeerManagerSyncFailedNotification";
 NSString* const DSChainPeerManagerTxStatusNotification =         @"DSChainPeerManagerTxStatusNotification";
 NSString* const DSChainPeerManagerNewBlockNotification =         @"DSChainPeerManagerNewBlockNotification";
-NSString* const DSChainPeerManagerConnectedPeerDidChangeNotification =      @"DSChainPeerManagerPeersUpdateNotification";
+NSString* const DSChainPeerManagerPeersDidChangeNotification =      @"DSChainPeerManagerPeersDidChangeNotification";
+NSString* const DSChainPeerManagerConnectedPeersDidChangeNotification =      @"DSChainPeerManagerConnectedPeersDidChangeNotification";
 
 NSString* const DSChainPeerManagerNotificationChainKey =         @"DSChainPeerManagerNotificationChainKey";
 

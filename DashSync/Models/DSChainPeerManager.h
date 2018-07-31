@@ -42,7 +42,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotific
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNewBlockNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerConnectedPeerDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerPeersDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerConnectedPeersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
 
 #define PEER_MAX_CONNECTIONS 3
@@ -58,6 +59,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) double syncProgress;
+@property (nonatomic, readonly) NSUInteger peerCount;
 @property (nonatomic, readonly) NSUInteger connectedPeerCount; // number of connected peers
 @property (nonatomic, readonly) NSString * _Nullable downloadPeerName;
 @property (nonatomic, readonly) DSChain * chain;
