@@ -79,7 +79,6 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
-@property (nonatomic, readonly) NSData * coinbaseClassicalTransactionData;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;

@@ -221,8 +221,8 @@ CFAllocatorRef SecureAllocator()
     //A little weirder
     uint8_t l = (uint8_t)[message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     uint8_t a = 0x51;
-    uint8_t fullLength = l + 2;
-    [self appendBytes:&fullLength length:sizeof(fullLength)];
+    //uint8_t fullLength = l + 2;
+    //[self appendBytes:&fullLength length:sizeof(fullLength)];
     [self appendBytes:&a length:sizeof(a)];
     [self appendBytes:&l length:sizeof(l)];
     [self appendBytes:message.UTF8String length:l];

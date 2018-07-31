@@ -1078,7 +1078,7 @@
 
 - (void)acceptTxMessage:(NSData *)message
 {
-    DSTransaction *tx = [DSTransaction transactionWithMessage:message onChain:self.chain];
+    DSTransaction *tx = [DSTransactionFactory transactionWithMessage:message onChain:self.chain];
     
     if (! tx) {
         [self error:@"malformed tx message: %@", message];
@@ -1089,13 +1089,14 @@
         return;
     }
     
-    NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
-    
     dispatch_async(self.delegateQueue, ^{
         [self.delegate peer:self relayedTransaction:tx];
     });
     
+    NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
+    
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
+        
         [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
@@ -1109,6 +1110,7 @@
             });
         }
     }
+    
 }
 
 - (void)acceptHeadersMessage:(NSData *)message

@@ -40,7 +40,6 @@
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) NSData * coinbaseClassicalTransactionData;
 
 @end
 
@@ -55,14 +54,13 @@
     DSTransaction * transaction = [[self alloc] initOnChain:chain];
     NSMutableData * coinbaseData = [NSMutableData data];
     [coinbaseData appendDevnetGenesisCoinbaseMessage:identifier];
-    //transaction.inputIndexes
-    [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil];
-    [transaction setCoinbaseClassicalTransactionData:coinbaseData];
+    [transaction addInputHash:UINT256_ZERO index:UINT32_MAX script:nil signature:coinbaseData sequence:UINT32_MAX];
     NSMutableData * outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
     [transaction addOutputScript:outputScript amount:chain.baseReward];
-    NSLog(@"we are hashing %@",transaction.toData);
+//    NSLog(@"we are hashing %@",transaction.toData);
     transaction.txHash = transaction.toData.SHA256_2;
+//    NSLog(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
     return transaction;
 }
 
@@ -417,13 +415,7 @@
     [d appendUInt16:self.type];
     [d appendVarInt:self.hashes.count];
     
-    if ([self isCoinbaseClassicTransaction]) {
-        [d appendBytes:&hash length:sizeof(hash)];
-        [d appendUInt32:UINT32_MAX];
-        [d appendData:self.coinbaseClassicalTransactionData];
-        [d appendUInt32:UINT32_MAX];
-    } else {
-        
+    
         for (NSUInteger i = 0; i < self.hashes.count; i++) {
             [self.hashes[i] getValue:&hash];
             [d appendBytes:&hash length:sizeof(hash)];
@@ -442,7 +434,6 @@
             
             [d appendUInt32:[self.sequences[i] unsignedIntValue]];
         }
-    }
     
     [d appendVarInt:self.amounts.count];
     

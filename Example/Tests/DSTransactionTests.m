@@ -13,6 +13,10 @@
 #import "NSString+Bitcoin.h"
 #import "DSTransaction.h"
 #import "NSMutableData+Dash.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSTransactionFactory.h"
+#import "DSChainManager.h"
+#import "NSData+Dash.h"
 
 @interface DSTransactionTests : XCTestCase
 
@@ -96,4 +100,20 @@
     
     XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
 }
+
+- (void)testBlockchainUserTransaction {
+    DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
+    DSKey * key = [DSKey keyWithPrivateKey:@"cTu5paPRRZ1bby6XPR9oLmJ8XsasXm699xVCMGJuEVFu7qaU8uS5" onChain:devnetDRA];
+    UInt160 pubkeyHash = *(UInt160 *)@"43bfdea7363e6ea738da5059987c7232b58d2afe".hexToData.bytes;
+    
+    XCTAssertTrue(uint160_eq(pubkeyHash, key.publicKey.hash160), @"Pubkey Hash does not Pubkey");
+    DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithBlockchainUserRegistrationTransactionVersion:1 username:@"crazy1" pubkeyHash:pubkeyHash onChain:devnetDRA];
+    UInt256 payloadHash = blockchainUserRegistrationTransaction.payloadHash;
+    NSData * payloadHashDataToConfirm = @"912956c5cbf77a5c3b7cb9ae928bcccd5f7780c48a56d9ffd9ad3a2cb1ad60ce".hexToData;
+    NSData * payloadHashDataToConfirmReverse = @"912956c5cbf77a5c3b7cb9ae928bcccd5f7780c48a56d9ffd9ad3a2cb1ad60ce".hexToData.reverse;
+    XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirm,@"Pubkey Hash does not match Pubkey");
+    XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirmReverse,@"Pubkey Hash does not match Pubkey Reverse");
+}
+
+
 @end
