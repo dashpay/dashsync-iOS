@@ -19,6 +19,8 @@ Pod::Spec.new do |s|
   s.platform = :ios
   s.ios.deployment_target = '10.0'
 
+  s.default_subspec = 'Core'
+
   s.source_files = "DashSync/**/*.{h,m}"
   s.public_header_files = 'DashSync/**/*.h'
   s.libraries = 'bz2', 'sqlite3'
@@ -29,6 +31,14 @@ Pod::Spec.new do |s|
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'
   s.dependency 'secp256k1_dash', '0.1.0'
+
+  s.subspec 'Core' do |core|
+  end
+
+  s.subspec 'AppExtension' do |ext|
+     # For app extensions, disabling code paths using unavailable API
+     ext.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'DASHSYNC_EXTENSIONS=1' }
+  end
   
 end
 

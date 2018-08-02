@@ -353,7 +353,9 @@ static NSUInteger _fetchBatchSize = 100;
         if (self.context.hasChanges) {
             @autoreleasepool {
                 NSError *error = nil;
+#if defined(DASHSYNC_EXTENSIONS)
                 NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+#endif
 
                 // this seems to fix unreleased temporary object IDs
                 [self.context obtainPermanentIDsForObjects:self.context.registeredObjects.allObjects error:nil];
@@ -365,7 +367,9 @@ static NSUInteger _fetchBatchSize = 100;
 #endif
                 }
                 
+#if defined(DASHSYNC_EXTENSIONS)
                 [[UIApplication sharedApplication] endBackgroundTask:taskId];
+#endif
             }
         }
     }];

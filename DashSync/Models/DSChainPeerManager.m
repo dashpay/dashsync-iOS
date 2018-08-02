@@ -479,6 +479,7 @@
             }
             
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
+#if defined(DASHSYNC_EXTENSIONS)
                 self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
                     dispatch_async(self.q, ^{
                         [self.chain saveBlocks];
@@ -486,6 +487,14 @@
                     
                     [self syncStopped];
                 }];
+#else
+                self.taskId = 1;
+                dispatch_async(self.q, ^{
+                    [self.chain saveBlocks];
+                });
+                
+                [self syncStopped];
+#endif
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -567,7 +576,9 @@
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
         
         if (self.taskId != UIBackgroundTaskInvalid) {
+#if defined(DASHSYNC_EXTENSIONS)
             [[UIApplication sharedApplication] endBackgroundTask:self.taskId];
+#endif
             self.taskId = UIBackgroundTaskInvalid;
         }
     });
@@ -735,9 +746,11 @@
                                                    [self rescan];
                                                }];
                 [alert addAction:cancelButton];
+                
+#if defined(DASHSYNC_EXTENSIONS)
                 [alert addAction:rescanButton];
                 [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
-                
+#endif
             }
             else {
                 [[DSEventManager sharedEventManager] saveEvent:@"peer_manager_tx_rejected"];
@@ -751,7 +764,10 @@
                                            handler:^(UIAlertAction * action) {
                                            }];
                 [alert addAction:okButton];
+                
+#if defined(DASHSYNC_EXTENSIONS)
                 [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+#endif
             }
         });
     }
@@ -1280,10 +1296,16 @@
     }
     else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
+#if defined(DASHSYNC_EXTENSIONS)
             if (self.taskId != UIBackgroundTaskInvalid ||
                 [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
                 [self connect]; // try connecting to another peer
             }
+#else
+            if (self.taskId != UIBackgroundTaskInvalid) {
+                [self connect]; // try connecting to another peer
+            }
+#endif
         });
     }
     
@@ -1443,7 +1465,9 @@
                                        handler:^(UIAlertAction * action) {
                                        }];
             [alert addAction:okButton];
+#if defined(DASHSYNC_EXTENSIONS)
             [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+#endif
 #endif
         });
     }

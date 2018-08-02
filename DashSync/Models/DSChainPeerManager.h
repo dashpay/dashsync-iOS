@@ -53,7 +53,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 
 @class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote;
 
-@interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
+@interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) double syncProgress;

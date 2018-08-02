@@ -38,7 +38,9 @@
 {
     if (self == [super init]) {
         // use background fetch to stay synced with the blockchain
+#if defined(DASHSYNC_EXTENSIONS)
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+#endif
         
         if ([[DSOptionsManager sharedInstance] retrievePriceInfo]) {
             [[DSPriceManager sharedInstance] startExchangeRateFetching];

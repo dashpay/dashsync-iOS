@@ -105,8 +105,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            // lockdown the app
                                                            self.didAuthenticate = NO;
+#if defined(DASHSYNC_EXTENSIONS)
                                                            [UIApplication sharedApplication].applicationIconBadgeNumber = 0; // reset app badge number
-                                                           
+#endif
                                                        }];
     
     return self;
@@ -204,6 +205,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 }
 
 -(UIViewController*)presentingViewController {
+#if defined(DASHSYNC_EXTENSIONS)
     UIViewController *topController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
     while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
         topController = topController.presentedViewController;
@@ -212,6 +214,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
         topController = ((UINavigationController*)topController).topViewController;
     }
     return topController;
+#else
+    return nil;
+#endif
 }
 
 -(void)shakeEffectWithCompletion:(void (^ _Nullable)(void))completion {
