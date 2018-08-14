@@ -141,6 +141,13 @@
     XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:tx.txHash],@"The transaction does not match it's desired private key");
 }
 
+-(void)testCoinbaseTransaction {
+    DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
+        NSData * hexData = [NSData dataFromHexString:@"03000500010000000000000000000000000000000000000000000000000000000000000000ffffffff050290070101ffffffff0200c11a3d05000000232103eead733a081b6559bbe32c3a0c55ce861614df5b5c69b65125072e59339ce547ac00c11a3d050000001976a914c490201bdda0e64e3e1d8bdd6bbf7d80686f0e8588ac0000000024900700006c45528d7b8d4e7a33614a1c3806f4faf5c463f0b313aa0ece1ce12c34154a44"];
+    UInt256 txId = *(UInt256 *)@"6ebdddbc922bb897dfffdbc24562b6db08b9ea7cf98411b8ef3879d204ec45ef".hexToData.reverse.bytes;
+    [[DSCoinbaseTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+}
+
 - (void)testCreateBlockchainUserTransactionInputs {
     //this is for v3 transaction versions
     DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];

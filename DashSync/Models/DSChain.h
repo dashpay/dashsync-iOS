@@ -101,6 +101,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 
 @property (nonatomic, readonly) NSArray<DSWallet *> * _Nullable wallets;
 @property (nonatomic, readonly) NSArray<DSDerivationPath *> * _Nullable standaloneDerivationPaths;
+@property (nonatomic, readonly) NSDictionary *recentBlocks;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) UInt256 genesisHash;

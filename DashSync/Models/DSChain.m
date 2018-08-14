@@ -919,6 +919,9 @@ static dispatch_once_t devnetToken = 0;
 
 #define GENESIS_BLOCK_HASH
 
+-(NSDictionary*)recentBlocks {
+    return [[self blocks] copy];
+}
 
 - (NSMutableDictionary *)blocks
 {

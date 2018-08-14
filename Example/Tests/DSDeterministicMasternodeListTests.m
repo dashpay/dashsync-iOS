@@ -18,6 +18,7 @@
 #import "DSChainPeerManager.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSTransactionFactory.h"
+#import "DSMerkleBlock.h"
 #import <arpa/inet.h>
 
 
@@ -185,33 +186,27 @@
     offset += 4;
     
     if (length - offset < 1) return;
+    
     NSNumber * merkleHashCountLength;
-    uint64_t merkleHashCount = [message varIntAtOffset:offset length:&merkleHashCountLength];
+    uint64_t merkleHashCount = (NSUInteger)[message varIntAtOffset:offset length:&merkleHashCountLength]*sizeof(UInt256);
     offset += [merkleHashCountLength unsignedLongValue];
     
-    NSMutableArray * merkleHashes = [NSMutableArray array];
     
-    while (merkleHashCount >= 1) {
-        if (length - offset < 32) return;
-        [merkleHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]]];
-        offset += 32;
-        merkleHashCount--;
-    }
+    NSData * merkleHashes = [message subdataWithRange:NSMakeRange(offset, merkleHashCount)];
+    offset += merkleHashCount;
     
-    if (length - offset < 1) return;
     NSNumber * merkleFlagCountLength;
     uint64_t merkleFlagCount = [message varIntAtOffset:offset length:&merkleFlagCountLength];
     offset += [merkleFlagCountLength unsignedLongValue];
     
-    NSMutableArray * merkleFlags = [NSMutableArray array];
     
-    while (merkleFlagCount >= 1) {
-        if (length - offset < 1) return;
-        offset += 1;
-        merkleFlagCount--;
-    }
+    NSData * merkleFlags = [message subdataWithRange:NSMakeRange(offset, merkleFlagCount)];
+    offset += merkleFlagCount;
+    
     NSData * leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
+    
     DSCoinbaseTransaction *coinbaseTransaction = (DSCoinbaseTransaction*)[DSTransactionFactory transactionWithMessage:[message subdataWithRange:NSMakeRange(offset, message.length - offset)] onChain:devnetDRA];
+    
     if (![coinbaseTransaction isMemberOfClass:[DSCoinbaseTransaction class]]) return;
     offset += coinbaseTransaction.payloadOffset;
     
@@ -322,6 +317,15 @@
     XCTAssertEqualObjects([NSData merkleRootFromHashes:simplifiedMasternodeListHashes],[NSData dataWithUInt256:coinbaseTransaction.merkleRootMNList],
                           @"MerkleRootEqual");
     
+    
+    XCTAssertEqualObjects([NSData merkleRootFromHashes:simplifiedMasternodeListHashes],@"6c45528d7b8d4e7a33614a1c3806f4faf5c463f0b313aa0ece1ce12c34154a44".hexToData,
+                          @"MerkleRootEqual Value");
+    
+    
+    NSData * merkleRoot = @"ef45ec04d27938efb81184f97ceab908dbb66245c2dbffdf97b82b92bcddbd6e".hexToData;
+    DSMerkleBlock * coinbaseVerificationMerkleBlock = [[DSMerkleBlock alloc] initWithBlockHash:blockHash merkleRoot:[merkleRoot UInt256] totalTransactions:totalTransactions hashes:merkleHashes flags:merkleFlags];
+
+    XCTAssert([coinbaseVerificationMerkleBlock isMerkleTreeValid],@"Coinbase is not part of the valid merkle tree");
 }
     
     

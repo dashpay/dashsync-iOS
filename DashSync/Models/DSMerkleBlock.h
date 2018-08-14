@@ -56,6 +56,7 @@ typedef union _UInt256 UInt256;
 // NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
 // target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
 @property (nonatomic, readonly, getter = isValid) BOOL valid;
+@property (nonatomic, readonly, getter = isMerkleTreeValid) BOOL merkleTreeValid;
 
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
@@ -66,6 +67,9 @@ typedef union _UInt256 UInt256;
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
 merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height;
+
+// this init is used to check that the coinbase transaction is properly in the merkle tree of a block
+- (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
 
 // true if the given tx hash is known to be included in the block
 - (BOOL)containsTxHash:(UInt256)txHash;

@@ -125,6 +125,18 @@ inline static int ceil_log2(int x)
     return self;
 }
 
+- (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags
+{
+    if (! (self = [self init])) return nil;
+    
+    _blockHash = blockHash;
+    _merkleRoot = merkleRoot;
+    _totalTransactions = totalTransactions;
+    _hashes = hashes;
+    _flags = flags;
+    return self;
+}
+
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
                        merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
                 totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
@@ -147,17 +159,9 @@ inline static int ceil_log2(int x)
     return self;
 }
 
-// true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
-// NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
-// target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
-- (BOOL)isValid
-{
-    // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
-    // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
-    const uint32_t maxsize = self.chain.maxProofOfWork >> 24, maxtarget = self.chain.maxProofOfWork & 0x00ffffffu;
-    const uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
+-(BOOL)isMerkleTreeValid {
     NSMutableData *d = [NSMutableData data];
-    UInt256 merkleRoot, t = UINT256_ZERO;
+    UInt256 merkleRoot;
     int hashIdx = 0, flagIdx = 0;
     NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
         return hash;
@@ -175,6 +179,20 @@ inline static int ceil_log2(int x)
     
     [root getValue:&merkleRoot];
     if (_totalTransactions > 0 && ! uint256_eq(merkleRoot, _merkleRoot)) return NO; // merkle root check failed
+    return YES;
+}
+
+// true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
+// NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
+// target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
+- (BOOL)isValid
+{
+    // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
+    // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
+    const uint32_t maxsize = self.chain.maxProofOfWork >> 24, maxtarget = self.chain.maxProofOfWork & 0x00ffffffu;
+    const uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
+    UInt256 t = UINT256_ZERO;
+    if (![self isMerkleTreeValid]) return NO;
     
     // check if timestamp is too far in future
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)

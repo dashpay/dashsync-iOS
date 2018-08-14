@@ -20,6 +20,7 @@
 #import "DSTransactionFactory.h"
 #import "NSMutableData+Dash.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSMerkleBlock.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -60,38 +61,38 @@ inline static int ceil_log2(int x)
 
 
 @interface DSMasternodeManager()
-    
-    @property (nonatomic,strong) DSChain * chain;
-    @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
-    
-    //pre 12.4
-    @property (nonatomic,strong) NSOrderedSet * knownHashes;
-    @property (nonatomic,readonly) NSOrderedSet * fulfilledRequestsHashEntities;
-    @property (nonatomic,strong) NSMutableArray *needsRequestsHashEntities;
-    @property (nonatomic,strong) NSMutableArray * requestHashEntities;
-    @property (nonatomic,strong) NSMutableArray<DSMasternodeBroadcast *> * masternodeBroadcasts;
-    @property (nonatomic,assign) NSUInteger masternodeBroadcastsCount;
-    
-    //post 12.4
-    @property (nonatomic,assign) UInt256 baseBlockHash;
-    @property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeList;
-    
-    @end
+
+@property (nonatomic,strong) DSChain * chain;
+@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+
+//pre 12.4
+@property (nonatomic,strong) NSOrderedSet * knownHashes;
+@property (nonatomic,readonly) NSOrderedSet * fulfilledRequestsHashEntities;
+@property (nonatomic,strong) NSMutableArray *needsRequestsHashEntities;
+@property (nonatomic,strong) NSMutableArray * requestHashEntities;
+@property (nonatomic,strong) NSMutableArray<DSMasternodeBroadcast *> * masternodeBroadcasts;
+@property (nonatomic,assign) NSUInteger masternodeBroadcastsCount;
+
+//post 12.4
+@property (nonatomic,assign) UInt256 baseBlockHash;
+@property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeList;
+
+@end
 
 @implementation DSMasternodeManager
-    
+
 - (instancetype)initWithChain:(id)chain
-    {
-        if (! (self = [super init])) return nil;
-        _chain = chain;
-        _masternodeBroadcasts = [NSMutableArray array];
-        _simplifiedMasternodeList = [NSMutableDictionary dictionary];
-        self.managedObjectContext = [NSManagedObject context];
-        return self;
-    }
-    
-    // MARK: - Pre 12.4
-    
+{
+    if (! (self = [super init])) return nil;
+    _chain = chain;
+    _masternodeBroadcasts = [NSMutableArray array];
+    _simplifiedMasternodeList = [NSMutableDictionary dictionary];
+    self.managedObjectContext = [NSManagedObject context];
+    return self;
+}
+
+// MARK: - Pre 12.4
+
 -(NSUInteger)recentMasternodeBroadcastHashesCount {
     __block NSUInteger count = 0;
     [self.managedObjectContext performBlockAndWait:^{
@@ -99,7 +100,7 @@ inline static int ceil_log2(int x)
     }];
     return count;
 }
-    
+
 -(NSUInteger)last3HoursStandaloneBroadcastHashesCount {
     __block NSUInteger count = 0;
     [self.managedObjectContext performBlockAndWait:^{
@@ -108,7 +109,7 @@ inline static int ceil_log2(int x)
     }];
     return count;
 }
-    
+
 -(NSUInteger)masternodeBroadcastsCount {
     
     __block NSUInteger count = 0;
@@ -118,8 +119,8 @@ inline static int ceil_log2(int x)
     }];
     return count;
 }
-    
-    
+
+
 -(void)loadMasternodes:(NSUInteger)count {
     NSFetchRequest * fetchRequest = [[DSMasternodeBroadcastEntity fetchRequest] copy];
     [fetchRequest setFetchLimit:count];
@@ -135,7 +136,7 @@ inline static int ceil_log2(int x)
         [_masternodeBroadcasts addObject:masternodeBroadcast];
     }
 }
-    
+
 -(NSOrderedSet*)knownHashes {
     @synchronized(self) {
         if (_knownHashes) return _knownHashes;
@@ -156,7 +157,7 @@ inline static int ceil_log2(int x)
         return _knownHashes;
     }
 }
-    
+
 -(NSMutableArray*)needsRequestsHashEntities {
     @synchronized(self) {
         if (_needsRequestsHashEntities) return _needsRequestsHashEntities;
@@ -172,7 +173,7 @@ inline static int ceil_log2(int x)
         return _needsRequestsHashEntities;
     }
 }
-    
+
 -(NSArray*)needsRequestsHashes {
     __block NSMutableArray * mArray = [NSMutableArray array];
     [self.managedObjectContext performBlockAndWait:^{
@@ -183,7 +184,7 @@ inline static int ceil_log2(int x)
     }];
     return [mArray copy];
 }
-    
+
 -(NSOrderedSet*)fulfilledRequestsHashEntities {
     @synchronized(self) {
         __block NSOrderedSet * orderedSet;
@@ -199,7 +200,7 @@ inline static int ceil_log2(int x)
         return orderedSet;
     }
 }
-    
+
 -(NSOrderedSet*)fulfilledRequestsHashes {
     NSMutableOrderedSet * mOrderedSet = [NSMutableOrderedSet orderedSet];
     for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in self.fulfilledRequestsHashEntities) {
@@ -207,7 +208,7 @@ inline static int ceil_log2(int x)
     }
     return [mOrderedSet copy];
 }
-    
+
 -(void)requestMasternodeBroadcastsFromPeer:(DSPeer*)peer {
     if (![self.needsRequestsHashEntities count]) {
         //we are done syncing
@@ -220,7 +221,7 @@ inline static int ceil_log2(int x)
     }
     [peer sendGetdataMessageWithMasternodeBroadcastHashes:requestHashes];
 }
-    
+
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
     NSLog(@"peer relayed masternode broadcasts");
     @synchronized(self) {
@@ -287,11 +288,11 @@ inline static int ceil_log2(int x)
         }
     }
 }
-    
+
 -(void)finishedMasternodeListSyncWithPeer:(DSPeer*)peer {
     [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
 }
-    
+
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
     @synchronized(self) {
         [self.managedObjectContext performBlockAndWait:^{
@@ -326,11 +327,11 @@ inline static int ceil_log2(int x)
         
     }
 }
-    
+
 - (void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing {
     
 }
-    
+
 -(DSMasternodeBroadcast*)masternodeBroadcastForUniqueID:(NSString*)uniqueId {
     __block DSMasternodeBroadcast * masternodeBroadcast = nil;
     [self.managedObjectContext performBlockAndWait:^{
@@ -343,7 +344,7 @@ inline static int ceil_log2(int x)
     }];
     return masternodeBroadcast;
 }
-    
+
 -(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO {
     __block DSMasternodeBroadcast * masternodeBroadcast = nil;
     [self.managedObjectContext performBlockAndWait:^{
@@ -360,9 +361,9 @@ inline static int ceil_log2(int x)
     }];
     return masternodeBroadcast;
 }
-    
-    // MARK: - Post 12.4
-    
+
+// MARK: - Post 12.4
+
 -(void)wipeMasternodeInfo {
     [self.masternodeBroadcasts removeAllObjects];
     self.needsRequestsHashEntities = nil;
@@ -371,7 +372,7 @@ inline static int ceil_log2(int x)
     [self.simplifiedMasternodeList removeAllObjects];
     self.baseBlockHash = UINT256_ZERO;
 }
-    
+
 -(void)loadSimplifiedMasternodeEntries:(NSUInteger)count {
     NSFetchRequest * fetchRequest = [[DSSimplifiedMasternodeEntryEntity fetchRequest] copy];
     [fetchRequest setFetchLimit:count];
@@ -381,56 +382,56 @@ inline static int ceil_log2(int x)
         [self.simplifiedMasternodeList setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerTransactionHash];
     }
 }
-    
-    // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
-    // branch(left, right) with the result from each branch
+
+// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
+// branch(left, right) with the result from each branch
 - (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch :(NSData*)simplifiedMasternodeListHashes :(NSData*)flags
-    {
-        if ((*flagIdx)/8 >= flags.length || (*hashIdx + 1)*sizeof(UInt256) > simplifiedMasternodeListHashes.length) return leaf(nil, NO);
+{
+    if ((*flagIdx)/8 >= flags.length || (*hashIdx + 1)*sizeof(UInt256) > simplifiedMasternodeListHashes.length) return leaf(nil, NO);
+    
+    BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
+    
+    (*flagIdx)++;
+    
+    if (! flag || depth == ceil_log2((int)_simplifiedMasternodeList.count)) {
+        UInt256 hash = [simplifiedMasternodeListHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
         
-        BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
-        
-        (*flagIdx)++;
-        
-        if (! flag || depth == ceil_log2((int)_simplifiedMasternodeList.count)) {
-            UInt256 hash = [simplifiedMasternodeListHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
-            
-            (*hashIdx)++;
-            return leaf(uint256_obj(hash), flag);
-        }
-        
-        id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
-        id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
-        
-        return branch(left, right);
+        (*hashIdx)++;
+        return leaf(uint256_obj(hash), flag);
     }
     
+    id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
+    id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
     
-    //-(void)verify {
-    //    NSMutableData * simplifiedMasternodeListHashes = [NSMutableData data];
-    //    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in self.simplifiedMasternodeList) {
-    //        [simplifiedMasternodeListHashes appendUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
-    //    }
-    //    NSMutableData *d = [NSMutableData data];
-    //    UInt256 merkleRoot, t = UINT256_ZERO;
-    //    int hashIdx = 0, flagIdx = 0;
-    //    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-    //        return hash;
-    //    } :^id (id left, id right) {
-    //        UInt256 l, r;
-    //
-    //        if (! right) right = left; // if right branch is missing, duplicate left branch
-    //        [left getValue:&l];
-    //        [right getValue:&r];
-    //        d.length = 0;
-    //        [d appendBytes:&l length:sizeof(l)];
-    //        [d appendBytes:&r length:sizeof(r)];
-    //        return uint256_obj(d.SHA256_2);
-    //    } :simplifiedMasternodeListHashes :flags];
-    //
-    //    [root getValue:&merkleRoot];
-    //}
-    
+    return branch(left, right);
+}
+
+
+//-(void)verify {
+//    NSMutableData * simplifiedMasternodeListHashes = [NSMutableData data];
+//    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in self.simplifiedMasternodeList) {
+//        [simplifiedMasternodeListHashes appendUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
+//    }
+//    NSMutableData *d = [NSMutableData data];
+//    UInt256 merkleRoot, t = UINT256_ZERO;
+//    int hashIdx = 0, flagIdx = 0;
+//    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+//        return hash;
+//    } :^id (id left, id right) {
+//        UInt256 l, r;
+//
+//        if (! right) right = left; // if right branch is missing, duplicate left branch
+//        [left getValue:&l];
+//        [right getValue:&r];
+//        d.length = 0;
+//        [d appendBytes:&l length:sizeof(l)];
+//        [d appendBytes:&r length:sizeof(r)];
+//        return uint256_obj(d.SHA256_2);
+//    } :simplifiedMasternodeListHashes :flags];
+//
+//    [root getValue:&merkleRoot];
+//}
+
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
     NSUInteger length = message.length;
     NSUInteger offset = 0;
@@ -450,31 +451,23 @@ inline static int ceil_log2(int x)
     offset += 4;
     
     if (length - offset < 1) return;
+    
     NSNumber * merkleHashCountLength;
-    uint64_t merkleHashCount = [message varIntAtOffset:offset length:&merkleHashCountLength];
+    uint64_t merkleHashCount = (NSUInteger)[message varIntAtOffset:offset length:&merkleHashCountLength]*sizeof(UInt256);
     offset += [merkleHashCountLength unsignedLongValue];
     
-    NSMutableArray * merkleHashes = [NSMutableArray array];
     
-    while (merkleHashCount >= 1) {
-        if (length - offset < 32) return;
-        [merkleHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]]];
-        offset += 32;
-        merkleHashCount--;
-    }
+    NSData * merkleHashes = [message subdataWithRange:NSMakeRange(offset, merkleHashCount)];
+    offset += merkleHashCount;
     
-    if (length - offset < 1) return;
     NSNumber * merkleFlagCountLength;
     uint64_t merkleFlagCount = [message varIntAtOffset:offset length:&merkleFlagCountLength];
     offset += [merkleFlagCountLength unsignedLongValue];
     
-    NSMutableArray * merkleFlags = [NSMutableArray array];
     
-    while (merkleFlagCount >= 1) {
-        if (length - offset < 1) return;
-        offset += 1;
-        merkleFlagCount--;
-    }
+    NSData * merkleFlags = [message subdataWithRange:NSMakeRange(offset, merkleFlagCount)];
+    offset += merkleFlagCount;
+    
     NSData * leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
     DSCoinbaseTransaction *coinbaseTransaction = (DSCoinbaseTransaction*)[DSTransactionFactory transactionWithMessage:[message subdataWithRange:NSMakeRange(offset, message.length - offset)] onChain:self.chain];
     if (![coinbaseTransaction isMemberOfClass:[DSCoinbaseTransaction class]]) return;
@@ -538,8 +531,30 @@ inline static int ceil_log2(int x)
         [simplifiedMasternodeListHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
     }
     
-    UInt256 merkleRoot = [[NSData merkleRootFromHashes:simplifiedMasternodeListHashes].reverse UInt256];
-    if (uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRoot)) {
+    UInt256 merkleRootMNList = [[NSData merkleRootFromHashes:simplifiedMasternodeListHashes] UInt256];
+    
+    BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRootMNList);
+    
+    DSMerkleBlock * lastBlock = peer.chain.lastBlock;
+    while (lastBlock && !uint256_eq(lastBlock.blockHash, blockHash)) {
+        lastBlock = peer.chain.recentBlocks[uint256_obj(lastBlock.prevBlock)];
+    }
+    
+    //we need to check that the coinbase is in the transaction hashes we got back
+    UInt256 coinbaseHash = coinbaseTransaction.txHash;
+    BOOL foundCoinbase = FALSE;
+    NSData * a = merkleHashes.reverse;
+    for (int i = 0;i<merkleHashes.length;i+=32) {
+        UInt256 randomTransactionHash = [merkleHashes UInt256AtOffset:i];
+        if (uint256_eq(coinbaseHash, randomTransactionHash)) foundCoinbase = TRUE;
+    }
+
+    //we also need to check that the coinbase is in the merkle block
+    DSMerkleBlock * coinbaseVerificationMerkleBlock = [[DSMerkleBlock alloc] initWithBlockHash:blockHash merkleRoot:lastBlock.merkleRoot totalTransactions:totalTransactions hashes:merkleHashes flags:merkleFlags];
+    
+    BOOL validCoinbase = [coinbaseVerificationMerkleBlock isMerkleTreeValid];
+    
+    if (foundCoinbase && validCoinbase && rootMNListValid) {
         //yay this is the correct masternode list verified deterministically
         self.baseBlockHash = blockHash;
         self.simplifiedMasternodeList = tentativeMasternodeList;
@@ -575,11 +590,11 @@ inline static int ceil_log2(int x)
     }
     
 }
-    
+
 -(NSUInteger)simplifiedMasternodeEntryCount {
     return [self.simplifiedMasternodeList count];
 }
-    
+
 -(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
     for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in [self.simplifiedMasternodeList allValues]) {
         if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
@@ -588,7 +603,7 @@ inline static int ceil_log2(int x)
     }
     return nil;
 }
-    
+
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
     if (self.chain.protocolVersion < 70211) {
         return FALSE;
@@ -597,5 +612,5 @@ inline static int ceil_log2(int x)
         return (!!simplifiedMasternodeEntry);
     }
 }
-    
+
 @end

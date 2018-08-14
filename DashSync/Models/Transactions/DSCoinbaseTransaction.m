@@ -36,7 +36,7 @@
     self.merkleRootMNList = merkleRootMNList;
     
     self.payloadOffset = off;
-    
+    self.txHash = self.data.SHA256_2;
     return self;
 }
 
@@ -82,6 +82,11 @@
     
     [d appendUInt32:self.lockTime];
     if (subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
+    
+    NSData * payloadData = [self payloadData];
+    [d appendVarInt:payloadData.length];
+    [d appendData:[self payloadData]];
+    
     return d;
 }
 
