@@ -66,6 +66,21 @@
     return self;
 }
 
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(NSNumber*)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
+    NSMutableArray * realOutputAddresses = [addresses mutableCopy];
+    [realOutputAddresses insertObject:[NSNull null] atIndex:topupIndex];
+    NSMutableArray * realAmounts = [amounts mutableCopy];
+    [realAmounts insertObject:topupAmount atIndex:topupIndex];
+    if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:realOutputAddresses outputAmounts:realAmounts onChain:chain])) return nil;
+    self.type = DSTransactionType_SubscriptionRegistration;
+    self.version = SPECIAL_TX_VERSION;
+    self.blockchainUserRegistrationTransactionVersion = version;
+    self.username = username;
+    self.pubkeyHash = pubkeyHash;
+    NSLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
+    return self;
+}
+
 -(UInt256)payloadHash {
     return [self payloadDataForHash].SHA256_2;
 }
@@ -102,9 +117,15 @@
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
     NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-    NSData * payloadData = [self payloadData];
-    [data appendVarInt:payloadData.length];
-    [data appendData:payloadData];
+
+    if (subscriptIndex != NSNotFound) {
+        NSData * payloadData = [self payloadData];
+        [data appendVarInt:payloadData.length];
+        [data appendData:[self payloadData]];
+    } else {
+        [data appendData:[self payloadDataForHash]];
+    }
+    
     return data;
 }
 

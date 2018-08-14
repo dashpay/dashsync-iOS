@@ -83,6 +83,24 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
+static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i)
+{
+    uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
+    UInt512 I;
+    
+    DSSecp256k1PointGen((DSECPoint *)buf, k);
+    
+    *(UInt256 *)&buf[sizeof(DSECPoint)] = i;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
+    
+    DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
+    *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+    
+    memset(buf, 0, sizeof(buf));
+    memset(&I, 0, sizeof(I));
+}
+
 // Public parent key -> public child key
 //
 // CKDpub((Kpar, cpar), i) -> (Ki, ci) computes a child extended public key from the parent extended public key.

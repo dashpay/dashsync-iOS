@@ -134,6 +134,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 @property (nonatomic, strong) NSString * sporkPublicKey;
 @property (nonatomic, strong) NSString * sporkPrivateKey;
 @property (nonatomic, strong) NSString * sporkAddress;
+@property (nonatomic, readonly) uint16_t transactionVersion;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, readonly) uint32_t blockchainUsersCount;

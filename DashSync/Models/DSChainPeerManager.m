@@ -1690,6 +1690,10 @@
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage {
     [self.masternodeManager peer:peer relayedMasternodeDiffMessage:masternodeDiffMessage];
 }
+    
+-(void)peerRelayedIncorrectMasternodeDiffMessage:(DSPeer *)peer {
+    [self peerMisbehavin:peer];
+}
 
 - (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject {
     [self.governanceSyncManager peer:peer relayedGovernanceObject:governanceObject];

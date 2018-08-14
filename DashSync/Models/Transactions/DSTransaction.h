@@ -94,7 +94,9 @@ typedef union _UInt256 UInt256;
 - (instancetype)initOnChain:(DSChain*)chain;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
-                    outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain*)chain;
+                    outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain*)chain; //for v1
+
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain; //for v2 onwards
 
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script;
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature

@@ -177,6 +177,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes;
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
+- (void)peerRelayedIncorrectMasternodeDiffMessage:(DSPeer *)peer;
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;

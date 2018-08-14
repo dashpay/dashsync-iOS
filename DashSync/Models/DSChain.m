@@ -413,6 +413,20 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(uint16_t)transactionVersion {
+    switch (_chainType) {
+        case DSChainType_MainNet:
+            return 1;
+        case DSChainType_TestNet:
+            return 1;
+        case DSChainType_DevNet:
+            return 3;
+        default:
+            return 3;
+            break;
+    }
+}
+
 -(NSString*)chainWalletsKey {
     return [NSString stringWithFormat:@"%@_%@",CHAIN_WALLETS_KEY,[self uniqueID]];
 }

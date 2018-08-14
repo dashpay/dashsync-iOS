@@ -58,9 +58,9 @@
     NSMutableData * outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
     [transaction addOutputScript:outputScript amount:chain.baseReward];
-//    NSLog(@"we are hashing %@",transaction.toData);
+    //    NSLog(@"we are hashing %@",transaction.toData);
     transaction.txHash = transaction.toData.SHA256_2;
-//    NSLog(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
+    //    NSLog(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
     return transaction;
 }
 
@@ -179,7 +179,7 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences
                     outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain
 {
     if (hashes.count == 0 || hashes.count != indexes.count) return nil;
@@ -189,8 +189,9 @@
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
-    _version = TX_VERSION;
+    _version = chain.transactionVersion;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
+    self.sequences = [NSMutableArray arrayWithArray:inputSequences];
     self.indexes = [NSMutableArray arrayWithArray:indexes];
     
     if (scripts.count > 0) {
@@ -208,20 +209,31 @@
     
     for (int i = 0; i < addresses.count; i++) {
         [self.outScripts addObject:[NSMutableData data]];
-        [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i] forChain:chain];
+        if ([self.addresses[i] isEqual:[NSNull null]]) {
+            [self.outScripts.lastObject appendUInt8:OP_RETURN];
+        } else {
+            [self.outScripts.lastObject appendScriptPubKeyForAddress:self.addresses[i] forChain:chain];
+        }
     }
     
     self.signatures = [NSMutableArray arrayWithCapacity:hashes.count];
-    self.sequences = [NSMutableArray arrayWithCapacity:hashes.count];
     
     for (int i = 0; i < hashes.count; i++) {
         [self.signatures addObject:[NSNull null]];
-        [self.sequences addObject:@(TXIN_SEQUENCE)];
     }
     
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     return self;
+}
+
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts
+                    outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain {
+    NSMutableArray * sequences = [NSMutableArray arrayWithCapacity:hashes.count];
+    for (int i = 0; i < hashes.count; i++) {
+        [sequences addObject:@(TXIN_SEQUENCE)];
+    }
+    return [self initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:sequences outputAddresses:addresses outputAmounts:amounts onChain:chain];
 }
 
 -(NSData*)payloadData {
@@ -384,10 +396,10 @@
     NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
     NSInteger i = 0;
     
-//    for (NSData * data in self.signatures) {
-//        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
-//                           NSLog(@"%@",addr);
-//    }
+    //    for (NSData * data in self.signatures) {
+    //        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
+    //                           NSLog(@"%@",addr);
+    //    }
     
     for (NSData *script in self.inScripts) {
         NSString *addr = [NSString addressWithScriptPubKey:script onChain:self.chain];
@@ -424,24 +436,24 @@
     [d appendVarInt:self.hashes.count];
     
     
-        for (NSUInteger i = 0; i < self.hashes.count; i++) {
-            [self.hashes[i] getValue:&hash];
-            [d appendBytes:&hash length:sizeof(hash)];
-            [d appendUInt32:[self.indexes[i] unsignedIntValue]];
-            
-            if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
-                [d appendVarInt:[self.signatures[i] length]];
-                [d appendData:self.signatures[i]];
-            }
-            else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
-                //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-                [d appendVarInt:[self.inScripts[i] length]];
-                [d appendData:self.inScripts[i]];
-            }
-            else [d appendVarInt:0];
-            
-            [d appendUInt32:[self.sequences[i] unsignedIntValue]];
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        [self.hashes[i] getValue:&hash];
+        [d appendBytes:&hash length:sizeof(hash)];
+        [d appendUInt32:[self.indexes[i] unsignedIntValue]];
+        
+        if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
+            [d appendVarInt:[self.signatures[i] length]];
+            [d appendData:self.signatures[i]];
         }
+        else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
+            //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
+            [d appendVarInt:[self.inScripts[i] length]];
+            [d appendData:self.inScripts[i]];
+        }
+        else [d appendVarInt:0];
+        
+        [d appendUInt32:[self.sequences[i] unsignedIntValue]];
+    }
     
     [d appendVarInt:self.amounts.count];
     
@@ -476,7 +488,8 @@
         if (keyIdx == NSNotFound) continue;
         
         NSMutableData *sig = [NSMutableData data];
-        UInt256 hash = [self toDataWithSubscriptIndex:i].SHA256_2;
+        NSData * data = [self toDataWithSubscriptIndex:i];
+        UInt256 hash = data.SHA256_2;
         NSMutableData *s = [NSMutableData dataWithData:[keys[keyIdx] sign:hash]];
         NSArray *elem = [self.inScripts[i] scriptElements];
         

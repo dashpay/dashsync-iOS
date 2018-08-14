@@ -10,41 +10,45 @@
 #import "NSMutableData+Dash.h"
 
 @interface DSSimplifiedMasternodeEntry()
-
-@property(nonatomic,assign) UInt256 providerRegistrationTransactionHash;
-@property(nonatomic,assign) UInt256 simplifiedMasternodeEntryHash;
-@property(nonatomic,assign) UInt128 address;
-@property(nonatomic,assign) uint16_t port;
-@property(nonatomic,assign) UInt160 keyIDOperator;
-@property(nonatomic,assign) UInt160 keyIDVoting;
-@property(nonatomic,assign) BOOL isValid;
-@property(nonatomic,strong) DSChain * chain;
-
-@end
+    
+    @property(nonatomic,assign) UInt256 providerRegistrationTransactionHash;
+    @property(nonatomic,assign) UInt256 simplifiedMasternodeEntryHash;
+    @property(nonatomic,assign) UInt128 address;
+    @property(nonatomic,assign) uint16_t port;
+    @property(nonatomic,assign) UInt160 keyIDOperator;
+    @property(nonatomic,assign) UInt160 keyIDVoting;
+    @property(nonatomic,assign) BOOL isValid;
+    @property(nonatomic,strong) DSChain * chain;
+    
+    @end
 
 
 @implementation DSSimplifiedMasternodeEntry
-
+    
+    -(NSData*)payloadData {
+        NSMutableData * hashImportantData = [NSMutableData data];
+        [hashImportantData appendUInt256:self.providerRegistrationTransactionHash];
+        [hashImportantData appendUInt128:self.address];
+        [hashImportantData appendUInt16:CFSwapInt16HostToBig(self.port)];
+        
+        [hashImportantData appendUInt160:self.keyIDOperator];
+        [hashImportantData appendUInt160:self.keyIDVoting];
+        [hashImportantData appendUInt8:self.isValid];
+        return [hashImportantData copy];
+    }
+    
 -(UInt256)calculateSimplifiedMasternodeEntryHash {
-    //hash calculation
-    NSMutableData * hashImportantData = [NSMutableData data];
-    [hashImportantData appendUInt256:self.providerRegistrationTransactionHash];
-    [hashImportantData appendUInt128:self.address];
-    [hashImportantData appendUInt32:self.port];
-    [hashImportantData appendUInt160:self.keyIDOperator];
-    [hashImportantData appendUInt160:self.keyIDVoting];
-    [hashImportantData appendUInt8:self.isValid];
-    return hashImportantData.SHA256_2;
+    return [self payloadData].SHA256_2;
 }
-
+    
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain {
     return [[self alloc] initWithMessage:data onChain:chain];
 }
-
+    
 +(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash address:(UInt128)address port:(uint16_t)port keyIDOperator:(UInt160)keyIDOperator keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid onChain:(DSChain*)chain {
     return [self simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:providerRegistrationTransactionHash address:address port:port keyIDOperator:keyIDOperator keyIDVoting:keyIDVoting isValid:isValid simplifiedMasternodeEntryHash:UINT256_ZERO onChain:chain];
 }
-
+    
 +(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash address:(UInt128)address port:(uint16_t)port keyIDOperator:(UInt160)keyIDOperator keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash onChain:(DSChain*)chain {
     DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
@@ -57,7 +61,7 @@
     simplifiedMasternodeEntry.chain = chain;
     return simplifiedMasternodeEntry;
 }
-
+    
 -(instancetype)initWithMessage:(NSData*)message onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     NSUInteger length = message.length;
@@ -71,7 +75,7 @@
     offset += 16;
     
     if (length - offset < 2) return nil;
-    self.port = [message UInt16AtOffset:offset];
+    self.port = CFSwapInt16HostToBig([message UInt16AtOffset:offset]);
     offset += 2;
     
     if (length - offset < 20) return nil;
@@ -91,5 +95,5 @@
     
     return self;
 }
-
-@end
+    
+    @end

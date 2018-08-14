@@ -60,38 +60,38 @@ inline static int ceil_log2(int x)
 
 
 @interface DSMasternodeManager()
-
-@property (nonatomic,strong) DSChain * chain;
-@property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
-
-//pre 12.4
-@property (nonatomic,strong) NSOrderedSet * knownHashes;
-@property (nonatomic,readonly) NSOrderedSet * fulfilledRequestsHashEntities;
-@property (nonatomic,strong) NSMutableArray *needsRequestsHashEntities;
-@property (nonatomic,strong) NSMutableArray * requestHashEntities;
-@property (nonatomic,strong) NSMutableArray<DSMasternodeBroadcast *> * masternodeBroadcasts;
-@property (nonatomic,assign) NSUInteger masternodeBroadcastsCount;
-
-//post 12.4
-@property (nonatomic,assign) UInt256 baseBlockHash;
-@property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeList;
-
-@end
+    
+    @property (nonatomic,strong) DSChain * chain;
+    @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+    
+    //pre 12.4
+    @property (nonatomic,strong) NSOrderedSet * knownHashes;
+    @property (nonatomic,readonly) NSOrderedSet * fulfilledRequestsHashEntities;
+    @property (nonatomic,strong) NSMutableArray *needsRequestsHashEntities;
+    @property (nonatomic,strong) NSMutableArray * requestHashEntities;
+    @property (nonatomic,strong) NSMutableArray<DSMasternodeBroadcast *> * masternodeBroadcasts;
+    @property (nonatomic,assign) NSUInteger masternodeBroadcastsCount;
+    
+    //post 12.4
+    @property (nonatomic,assign) UInt256 baseBlockHash;
+    @property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeList;
+    
+    @end
 
 @implementation DSMasternodeManager
-
+    
 - (instancetype)initWithChain:(id)chain
-{
-    if (! (self = [super init])) return nil;
-    _chain = chain;
-    _masternodeBroadcasts = [NSMutableArray array];
-    _simplifiedMasternodeList = [NSMutableDictionary dictionary];
-    self.managedObjectContext = [NSManagedObject context];
-    return self;
-}
-
-// MARK: - Pre 12.4
-
+    {
+        if (! (self = [super init])) return nil;
+        _chain = chain;
+        _masternodeBroadcasts = [NSMutableArray array];
+        _simplifiedMasternodeList = [NSMutableDictionary dictionary];
+        self.managedObjectContext = [NSManagedObject context];
+        return self;
+    }
+    
+    // MARK: - Pre 12.4
+    
 -(NSUInteger)recentMasternodeBroadcastHashesCount {
     __block NSUInteger count = 0;
     [self.managedObjectContext performBlockAndWait:^{
@@ -99,7 +99,7 @@ inline static int ceil_log2(int x)
     }];
     return count;
 }
-
+    
 -(NSUInteger)last3HoursStandaloneBroadcastHashesCount {
     __block NSUInteger count = 0;
     [self.managedObjectContext performBlockAndWait:^{
@@ -108,7 +108,7 @@ inline static int ceil_log2(int x)
     }];
     return count;
 }
-
+    
 -(NSUInteger)masternodeBroadcastsCount {
     
     __block NSUInteger count = 0;
@@ -118,8 +118,8 @@ inline static int ceil_log2(int x)
     }];
     return count;
 }
-
-
+    
+    
 -(void)loadMasternodes:(NSUInteger)count {
     NSFetchRequest * fetchRequest = [[DSMasternodeBroadcastEntity fetchRequest] copy];
     [fetchRequest setFetchLimit:count];
@@ -135,44 +135,44 @@ inline static int ceil_log2(int x)
         [_masternodeBroadcasts addObject:masternodeBroadcast];
     }
 }
-
+    
 -(NSOrderedSet*)knownHashes {
     @synchronized(self) {
-    if (_knownHashes) return _knownHashes;
-    
-    [self.managedObjectContext performBlockAndWait:^{
-        [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-        NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
-        [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@",self.chain.chainEntity]];
-        [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
-        NSArray<DSMasternodeBroadcastHashEntity *> * knownMasternodeBroadcastHashEntities = [DSMasternodeBroadcastHashEntity fetchObjects:request];
-        NSMutableOrderedSet <NSData*> * rHashes = [NSMutableOrderedSet orderedSetWithCapacity:knownMasternodeBroadcastHashEntities.count];
-        for (DSMasternodeBroadcastHashEntity * knownMasternodeBroadcastHashEntity in knownMasternodeBroadcastHashEntities) {
-            NSData * hash = knownMasternodeBroadcastHashEntity.masternodeBroadcastHash;
-            [rHashes addObject:hash];
-        }
-        self.knownHashes = [rHashes copy];
-    }];
-    return _knownHashes;
+        if (_knownHashes) return _knownHashes;
+        
+        [self.managedObjectContext performBlockAndWait:^{
+            [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
+            NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
+            [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@",self.chain.chainEntity]];
+            [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
+            NSArray<DSMasternodeBroadcastHashEntity *> * knownMasternodeBroadcastHashEntities = [DSMasternodeBroadcastHashEntity fetchObjects:request];
+            NSMutableOrderedSet <NSData*> * rHashes = [NSMutableOrderedSet orderedSetWithCapacity:knownMasternodeBroadcastHashEntities.count];
+            for (DSMasternodeBroadcastHashEntity * knownMasternodeBroadcastHashEntity in knownMasternodeBroadcastHashEntities) {
+                NSData * hash = knownMasternodeBroadcastHashEntity.masternodeBroadcastHash;
+                [rHashes addObject:hash];
+            }
+            self.knownHashes = [rHashes copy];
+        }];
+        return _knownHashes;
     }
 }
-
+    
 -(NSMutableArray*)needsRequestsHashEntities {
     @synchronized(self) {
-    if (_needsRequestsHashEntities) return _needsRequestsHashEntities;
-    
-    [self.managedObjectContext performBlockAndWait:^{
-        [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-        NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
-        [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && masternodeBroadcast == nil",self.chain.chainEntity]];
-        [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
-        self.needsRequestsHashEntities = [[DSMasternodeBroadcastHashEntity fetchObjects:request] mutableCopy];
+        if (_needsRequestsHashEntities) return _needsRequestsHashEntities;
         
-    }];
-    return _needsRequestsHashEntities;
+        [self.managedObjectContext performBlockAndWait:^{
+            [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
+            NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
+            [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && masternodeBroadcast == nil",self.chain.chainEntity]];
+            [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
+            self.needsRequestsHashEntities = [[DSMasternodeBroadcastHashEntity fetchObjects:request] mutableCopy];
+            
+        }];
+        return _needsRequestsHashEntities;
     }
 }
-
+    
 -(NSArray*)needsRequestsHashes {
     __block NSMutableArray * mArray = [NSMutableArray array];
     [self.managedObjectContext performBlockAndWait:^{
@@ -183,23 +183,23 @@ inline static int ceil_log2(int x)
     }];
     return [mArray copy];
 }
-
+    
 -(NSOrderedSet*)fulfilledRequestsHashEntities {
     @synchronized(self) {
-    __block NSOrderedSet * orderedSet;
-    [self.managedObjectContext performBlockAndWait:^{
-        [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
-        [DSChainEntity setContext:self.managedObjectContext];
-        NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
-        [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && masternodeBroadcast != nil",self.chain.chainEntity]];
-        [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
-        orderedSet = [NSOrderedSet orderedSetWithArray:[DSMasternodeBroadcastHashEntity fetchObjects:request]];
-        
-    }];
-    return orderedSet;
+        __block NSOrderedSet * orderedSet;
+        [self.managedObjectContext performBlockAndWait:^{
+            [DSMasternodeBroadcastHashEntity setContext:self.managedObjectContext];
+            [DSChainEntity setContext:self.managedObjectContext];
+            NSFetchRequest *request = DSMasternodeBroadcastHashEntity.fetchReq;
+            [request setPredicate:[NSPredicate predicateWithFormat:@"chain = %@ && masternodeBroadcast != nil",self.chain.chainEntity]];
+            [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"masternodeBroadcastHash" ascending:TRUE]]];
+            orderedSet = [NSOrderedSet orderedSetWithArray:[DSMasternodeBroadcastHashEntity fetchObjects:request]];
+            
+        }];
+        return orderedSet;
     }
 }
-
+    
 -(NSOrderedSet*)fulfilledRequestsHashes {
     NSMutableOrderedSet * mOrderedSet = [NSMutableOrderedSet orderedSet];
     for (DSMasternodeBroadcastHashEntity * masternodeBroadcastHashEntity in self.fulfilledRequestsHashEntities) {
@@ -207,7 +207,7 @@ inline static int ceil_log2(int x)
     }
     return [mOrderedSet copy];
 }
-
+    
 -(void)requestMasternodeBroadcastsFromPeer:(DSPeer*)peer {
     if (![self.needsRequestsHashEntities count]) {
         //we are done syncing
@@ -220,7 +220,7 @@ inline static int ceil_log2(int x)
     }
     [peer sendGetdataMessageWithMasternodeBroadcastHashes:requestHashes];
 }
-
+    
 - (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
     NSLog(@"peer relayed masternode broadcasts");
     @synchronized(self) {
@@ -287,11 +287,11 @@ inline static int ceil_log2(int x)
         }
     }
 }
-
+    
 -(void)finishedMasternodeListSyncWithPeer:(DSPeer*)peer {
     [[NSUserDefaults standardUserDefaults] setInteger:[[NSDate date] timeIntervalSince1970] forKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
 }
-
+    
 - (void)peer:(DSPeer * )peer relayedMasternodeBroadcast:(DSMasternodeBroadcast * )masternodeBroadcast {
     @synchronized(self) {
         [self.managedObjectContext performBlockAndWait:^{
@@ -326,11 +326,11 @@ inline static int ceil_log2(int x)
         
     }
 }
-
+    
 - (void)peer:(DSPeer * _Nullable)peer relayedMasternodePing:(DSMasternodePing*  _Nonnull)masternodePing {
     
 }
-
+    
 -(DSMasternodeBroadcast*)masternodeBroadcastForUniqueID:(NSString*)uniqueId {
     __block DSMasternodeBroadcast * masternodeBroadcast = nil;
     [self.managedObjectContext performBlockAndWait:^{
@@ -343,7 +343,7 @@ inline static int ceil_log2(int x)
     }];
     return masternodeBroadcast;
 }
-
+    
 -(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO {
     __block DSMasternodeBroadcast * masternodeBroadcast = nil;
     [self.managedObjectContext performBlockAndWait:^{
@@ -360,9 +360,9 @@ inline static int ceil_log2(int x)
     }];
     return masternodeBroadcast;
 }
-
-// MARK: - Post 12.4
-
+    
+    // MARK: - Post 12.4
+    
 -(void)wipeMasternodeInfo {
     [self.masternodeBroadcasts removeAllObjects];
     self.needsRequestsHashEntities = nil;
@@ -371,7 +371,7 @@ inline static int ceil_log2(int x)
     [self.simplifiedMasternodeList removeAllObjects];
     self.baseBlockHash = UINT256_ZERO;
 }
-
+    
 -(void)loadSimplifiedMasternodeEntries:(NSUInteger)count {
     NSFetchRequest * fetchRequest = [[DSSimplifiedMasternodeEntryEntity fetchRequest] copy];
     [fetchRequest setFetchLimit:count];
@@ -381,81 +381,56 @@ inline static int ceil_log2(int x)
         [self.simplifiedMasternodeList setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerTransactionHash];
     }
 }
-
-// recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
-// branch(left, right) with the result from each branch
+    
+    // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
+    // branch(left, right) with the result from each branch
 - (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch :(NSData*)simplifiedMasternodeListHashes :(NSData*)flags
-{
-    if ((*flagIdx)/8 >= flags.length || (*hashIdx + 1)*sizeof(UInt256) > simplifiedMasternodeListHashes.length) return leaf(nil, NO);
-    
-    BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
-    
-    (*flagIdx)++;
-    
-    if (! flag || depth == ceil_log2((int)_simplifiedMasternodeList.count)) {
-        UInt256 hash = [simplifiedMasternodeListHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
+    {
+        if ((*flagIdx)/8 >= flags.length || (*hashIdx + 1)*sizeof(UInt256) > simplifiedMasternodeListHashes.length) return leaf(nil, NO);
         
-        (*hashIdx)++;
-        return leaf(uint256_obj(hash), flag);
-    }
-    
-    id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
-    id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
-    
-    return branch(left, right);
-}
-
--(UInt256)merkleRootFromHashes:(NSArray*)hashes {
-    NSMutableArray * higherLevel = nil;
-    NSArray * level = hashes;
-    while (higherLevel && higherLevel.count > 1) {
-        higherLevel = [NSMutableArray array];
-        for (int i = 0; i < level.count;i+=2) {
-            if ([level count] - i > 1) {
-                NSData * left = [level objectAtIndex:0];
-                NSData * right = [level objectAtIndex:1];
-                NSMutableData * combined = [NSMutableData data];
-                [combined appendData:left];
-                [combined appendData:right];
-                [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
-            } else {
-                NSData * left = [level objectAtIndex:0];
-                NSMutableData * combined = [NSMutableData data];
-                [combined appendData:left];
-                [combined appendData:left];
-                [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
-            }
+        BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
+        
+        (*flagIdx)++;
+        
+        if (! flag || depth == ceil_log2((int)_simplifiedMasternodeList.count)) {
+            UInt256 hash = [simplifiedMasternodeListHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
+            
+            (*hashIdx)++;
+            return leaf(uint256_obj(hash), flag);
         }
-        level = [higherLevel copy];
+        
+        id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
+        id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
+        
+        return branch(left, right);
     }
-    return [[higherLevel objectAtIndex:0] UInt256AtOffset:0];
-}
-
-//-(void)verify {
-//    NSMutableData * simplifiedMasternodeListHashes = [NSMutableData data];
-//    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in self.simplifiedMasternodeList) {
-//        [simplifiedMasternodeListHashes appendUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
-//    }
-//    NSMutableData *d = [NSMutableData data];
-//    UInt256 merkleRoot, t = UINT256_ZERO;
-//    int hashIdx = 0, flagIdx = 0;
-//    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
-//        return hash;
-//    } :^id (id left, id right) {
-//        UInt256 l, r;
-//        
-//        if (! right) right = left; // if right branch is missing, duplicate left branch
-//        [left getValue:&l];
-//        [right getValue:&r];
-//        d.length = 0;
-//        [d appendBytes:&l length:sizeof(l)];
-//        [d appendBytes:&r length:sizeof(r)];
-//        return uint256_obj(d.SHA256_2);
-//    } :simplifiedMasternodeListHashes :flags];
-//    
-//    [root getValue:&merkleRoot];
-//}
-
+    
+    
+    //-(void)verify {
+    //    NSMutableData * simplifiedMasternodeListHashes = [NSMutableData data];
+    //    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in self.simplifiedMasternodeList) {
+    //        [simplifiedMasternodeListHashes appendUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
+    //    }
+    //    NSMutableData *d = [NSMutableData data];
+    //    UInt256 merkleRoot, t = UINT256_ZERO;
+    //    int hashIdx = 0, flagIdx = 0;
+    //    NSValue *root = [self _walk:&hashIdx :&flagIdx :0 :^id (id hash, BOOL flag) {
+    //        return hash;
+    //    } :^id (id left, id right) {
+    //        UInt256 l, r;
+    //
+    //        if (! right) right = left; // if right branch is missing, duplicate left branch
+    //        [left getValue:&l];
+    //        [right getValue:&r];
+    //        d.length = 0;
+    //        [d appendBytes:&l length:sizeof(l)];
+    //        [d appendBytes:&r length:sizeof(r)];
+    //        return uint256_obj(d.SHA256_2);
+    //    } :simplifiedMasternodeListHashes :flags];
+    //
+    //    [root getValue:&merkleRoot];
+    //}
+    
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
     NSUInteger length = message.length;
     NSUInteger offset = 0;
@@ -531,7 +506,7 @@ inline static int ceil_log2(int x)
         if (length - offset < 91) return;
         NSData * data = [message subdataWithRange:NSMakeRange(offset, 91)];
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data onChain:self.chain];
-        [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash]];
+        [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse];
         offset += 91;
         addedMasternodeCount--;
     }
@@ -552,8 +527,8 @@ inline static int ceil_log2(int x)
     
     NSArray * proTxHashes = [tentativeMasternodeList allKeys];
     proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        UInt256 hash1 = *(UInt256*)((NSData*)obj1).reverse.bytes;
-        UInt256 hash2 = *(UInt256*)((NSData*)obj2).reverse.bytes;
+        UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+        UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
         return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
     }];
     
@@ -563,44 +538,48 @@ inline static int ceil_log2(int x)
         [simplifiedMasternodeListHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
     }
     
-    UInt256 merkleRoot = [self merkleRootFromHashes:simplifiedMasternodeListHashes];
-    
-    //if (uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRoot)) {
+    UInt256 merkleRoot = [[NSData merkleRootFromHashes:simplifiedMasternodeListHashes].reverse UInt256];
+    if (uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRoot)) {
         //yay this is the correct masternode list verified deterministically
         self.baseBlockHash = blockHash;
         self.simplifiedMasternodeList = tentativeMasternodeList;
-    [self.managedObjectContext performBlockAndWait:^{
-        [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
-        [DSChainEntity setContext:self.managedObjectContext];
-        DSChainEntity * chainEntity = self.chain.chainEntity;
-        if (deletedMasternodeHashes.count) {
-            [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:deletedMasternodeHashes onChain:chainEntity];
-        }
-        for (NSString * addedMasternodeKey in addedMasternodes) {
-            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [addedMasternodes objectForKey:addedMasternodeKey];
-            DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
-            [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry onChain:chainEntity];
-        }
-        for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
-            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
-            DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash] onChain:chainEntity];
-            [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
-        }
-        chainEntity.baseBlockHash = [NSData dataWithUInt256:blockHash];
-        [DSSimplifiedMasternodeEntryEntity saveContext];
-    }];
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-    });
-    //}
+        [self.managedObjectContext performBlockAndWait:^{
+            [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
+            [DSChainEntity setContext:self.managedObjectContext];
+            DSChainEntity * chainEntity = self.chain.chainEntity;
+            if (deletedMasternodeHashes.count) {
+                [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:deletedMasternodeHashes onChain:chainEntity];
+            }
+            for (NSString * addedMasternodeKey in addedMasternodes) {
+                DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [addedMasternodes objectForKey:addedMasternodeKey];
+                DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
+                [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry onChain:chainEntity];
+            }
+            for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
+                DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
+                DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash] onChain:chainEntity];
+                [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
+            }
+            chainEntity.baseBlockHash = [NSData dataWithUInt256:blockHash];
+            [DSSimplifiedMasternodeEntryEntity saveContext];
+        }];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+        });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+        });
+        [peer.delegate peerRelayedIncorrectMasternodeDiffMessage:peer];
+    }
     
 }
-
+    
 -(NSUInteger)simplifiedMasternodeEntryCount {
     return [self.simplifiedMasternodeList count];
 }
-
+    
 -(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
     for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in [self.simplifiedMasternodeList allValues]) {
         if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
@@ -609,7 +588,7 @@ inline static int ceil_log2(int x)
     }
     return nil;
 }
-
+    
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
     if (self.chain.protocolVersion < 70211) {
         return FALSE;
@@ -618,5 +597,5 @@ inline static int ceil_log2(int x)
         return (!!simplifiedMasternodeEntry);
     }
 }
-
+    
 @end

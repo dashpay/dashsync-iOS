@@ -1,18 +1,15 @@
 //
-//  DSBlockchainUserTopupTransaction.h
+//  DSBlockchainUserCloseUserAccountTransaction.h
 //  DashSync
 //
-//  Created by Sam Westrich on 7/30/18.
+//  Created by Sam Westrich on 8/13/18.
 //
 
 #import "DSTransaction.h"
-#import "IntTypes.h"
 
-@class DSKey,DSChain;
+@interface DSBlockchainUserCloseUserAccountTransaction : DSTransaction
 
-@interface DSBlockchainUserTopupTransaction : DSTransaction
-
-@property (nonatomic,readonly) uint16_t blockchainUserTopupTransactionVersion;
+@property (nonatomic,readonly) uint16_t blockchainUserCloseUserAccountTransactionVersion;
 @property (nonatomic,readonly) UInt256 registrationTransactionHash;
 @property (nonatomic,readonly) UInt256 previousSubscriptionTransactionHash;
 @property (nonatomic,readonly) NSNumber * topupAmount;

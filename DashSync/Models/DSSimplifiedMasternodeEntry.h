@@ -19,6 +19,7 @@
 @property(nonatomic,readonly) BOOL isValid;
 @property(nonatomic,readonly) UInt256 simplifiedMasternodeEntryHash;
 @property(nonatomic,readonly) DSChain * chain;
+@property(nonatomic,readonly) NSData * payloadData;
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;
 

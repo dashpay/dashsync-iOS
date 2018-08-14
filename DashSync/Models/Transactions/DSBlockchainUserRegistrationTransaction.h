@@ -19,6 +19,8 @@
 @property (nonatomic,readonly) NSData * signature;
 @property (nonatomic,readonly) UInt256 payloadHash;
 
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(NSNumber*)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain;
+
 -(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain * _Nonnull)chain;
 
 -(void)signPayloadWithKey:(DSKey* _Nonnull)privateKey;

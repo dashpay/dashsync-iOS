@@ -9,6 +9,7 @@
 #import "DSChain.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListValidationErrorNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
 
 @class DSPeer,DSChain,DSMasternodeBroadcast,DSMasternodePing;
@@ -40,8 +41,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(DSMasternodeBroadcast* _Nullable)masternodeBroadcastForUniqueID:(NSString* _Nonnull)uniqueId;
 
 -(DSMasternodeBroadcast*)masternodeBroadcastForUTXO:(DSUTXO)masternodeUTXO;
-
--(UInt256)merkleRootFromHashes:(NSArray*)hashes;
 
 -(void)wipeMasternodeInfo;
 

@@ -17,6 +17,8 @@
 @property (nonatomic,assign) uint16_t blockchainUserTopupTransactionVersion;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;
 @property (nonatomic,assign) UInt256 previousSubscriptionTransactionHash;
+@property (nonatomic,copy) NSNumber * topupAmount;
+@property (nonatomic,assign) uint16_t topupIndex;
 
 @end
 
@@ -43,6 +45,21 @@
     
     self.payloadOffset = off;
     
+    return self;
+}
+
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts BlockchainUserTopupTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousSubscriptionTransactionHash:(UInt256)previousSubscriptionTransactionHash topupAmount:(NSNumber*)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
+    NSMutableArray * realOutputAddresses = [addresses mutableCopy];
+    [realOutputAddresses insertObject:[NSNull null] atIndex:topupIndex];
+    NSMutableArray * realAmounts = [amounts mutableCopy];
+    [realAmounts insertObject:topupAmount atIndex:topupIndex];
+    if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:realOutputAddresses outputAmounts:realAmounts onChain:chain])) return nil;
+    self.type = DSTransactionType_SubscriptionTopUp;
+    self.blockchainUserTopupTransactionVersion = version;
+    self.registrationTransactionHash = registrationTransactionHash;
+    self.previousSubscriptionTransactionHash = previousSubscriptionTransactionHash;
+    self.topupAmount = topupAmount;
+    self.topupIndex = topupIndex;
     return self;
 }
 
