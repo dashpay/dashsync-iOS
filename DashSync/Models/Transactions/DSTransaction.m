@@ -464,7 +464,7 @@
     }
     
     [d appendUInt32:self.lockTime];
-    if (subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
+    if ([self isMemberOfClass:[DSTransaction class]] && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
     return d;
 }
 

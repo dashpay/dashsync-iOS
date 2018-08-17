@@ -30,6 +30,11 @@
     NSUInteger length = message.length;
     uint32_t off = self.payloadOffset;
     
+    if (length - off < 1) return nil;
+    NSNumber * payloadLengthSize = nil;
+    uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
+    off += payloadLengthSize.unsignedLongValue;
+    
     if (length - off < 2) return nil;
     self.blockchainUserRegistrationTransactionVersion = [message UInt16AtOffset:off];
     off += 2;
@@ -44,13 +49,14 @@
     off += 20;
     
     if (length - off < 1) return nil;
-    uint8_t messageSignatureSize = [message UInt8AtOffset:off];
-    off += 1;
+    NSNumber * messageSignatureSizeLength = nil;
+    uint64_t messageSignatureSize = [message varIntAtOffset:off length:&messageSignatureSizeLength];
+    off += messageSignatureSizeLength.unsignedIntegerValue;
     if (length - off < messageSignatureSize) return nil;
     self.signature = [message subdataWithRange:NSMakeRange(off, messageSignatureSize)];
     off+= messageSignatureSize;
-    
     self.payloadOffset = off;
+    if ([self payloadData].length != payloadLength) return nil;
     
     return self;
 }
@@ -117,15 +123,9 @@
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
     NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
-
-    if (subscriptIndex != NSNotFound) {
-        NSData * payloadData = [self payloadData];
-        [data appendVarInt:payloadData.length];
-        [data appendData:[self payloadData]];
-    } else {
-        [data appendData:[self payloadDataForHash]];
-    }
-    
+    [data appendVarInt:self.payloadData.length];
+    [data appendData:[self payloadData]];
+    if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
 }
 

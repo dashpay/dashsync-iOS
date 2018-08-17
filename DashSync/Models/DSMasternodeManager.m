@@ -543,10 +543,12 @@ inline static int ceil_log2(int x)
     //we need to check that the coinbase is in the transaction hashes we got back
     UInt256 coinbaseHash = coinbaseTransaction.txHash;
     BOOL foundCoinbase = FALSE;
-    NSData * a = merkleHashes.reverse;
     for (int i = 0;i<merkleHashes.length;i+=32) {
         UInt256 randomTransactionHash = [merkleHashes UInt256AtOffset:i];
-        if (uint256_eq(coinbaseHash, randomTransactionHash)) foundCoinbase = TRUE;
+        if (uint256_eq(coinbaseHash, randomTransactionHash)) {
+            foundCoinbase = TRUE;
+            break;
+        }
     }
 
     //we also need to check that the coinbase is in the merkle block

@@ -14,6 +14,9 @@
 #import "NSCoder+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserResetUserKeyTransaction.h"
+#import "DSBlockchainUserCloseUserAccountTransaction.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -23,12 +26,13 @@
 @property (nonatomic,strong) NSString * username;
 @property (nonatomic,strong) NSString * uniqueIdentifier;
 @property (nonatomic,assign) uint32_t index;
+@property (nonatomic,assign) UInt256 registrationTransactionHash;
 
 @end
 
 @implementation DSBlockchainUser
 
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet; {
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet {
     if (!(self = [super init])) return nil;
     self.username = username;
     self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,username];
@@ -69,5 +73,27 @@
     });
     
 }
+
+-(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion {
+    self.wallet.seedRequestBlock(@"Topup Blockchain User", topupAmount,^void (NSData * _Nullable seed) {
+        if (!seed) {
+            completion(nil);
+            return;
+        }
+        DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
+        DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+        
+//        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithBlockchainUserTopupTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousSubscriptionTransactionHash:(UInt256)previousSubscriptionTransactionHash onChain:self.wallet.chain];
+//    BlockchainUserRegistrationTransactionVersion:1 username:self.username pubkeyHash:[privateKey.publicKey hash160] onChain:self.wallet.chain];
+//        [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
+//        NSMutableData * opReturnScript = [NSMutableData data];
+//        [opReturnScript appendUInt8:OP_RETURN];
+//        [fundingAccount updateTransaction:blockchainUserRegistrationTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO toShapeshiftAddress:nil];
+//
+//        completion(blockchainUserRegistrationTransaction);
+    });
+    
+}
+
 
 @end

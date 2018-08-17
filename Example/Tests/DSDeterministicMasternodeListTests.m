@@ -321,7 +321,20 @@
     XCTAssertEqualObjects([NSData merkleRootFromHashes:simplifiedMasternodeListHashes],@"6c45528d7b8d4e7a33614a1c3806f4faf5c463f0b313aa0ece1ce12c34154a44".hexToData,
                           @"MerkleRootEqual Value");
     
+    //we need to check that the coinbase is in the transaction hashes we got back
+    UInt256 coinbaseHash = coinbaseTransaction.txHash;
+    BOOL foundCoinbase = FALSE;
+    for (int i = 0;i<merkleHashes.length;i+=32) {
+        UInt256 randomTransactionHash = [merkleHashes UInt256AtOffset:i];
+        if (uint256_eq(coinbaseHash, randomTransactionHash)) {
+            foundCoinbase = TRUE;
+            break;
+        }
+    }
     
+    XCTAssert(foundCoinbase,@"The coinbase was not part of provided hashes");
+    
+    //we need to check that the merkle tree is correct
     NSData * merkleRoot = @"ef45ec04d27938efb81184f97ceab908dbb66245c2dbffdf97b82b92bcddbd6e".hexToData;
     DSMerkleBlock * coinbaseVerificationMerkleBlock = [[DSMerkleBlock alloc] initWithBlockHash:blockHash merkleRoot:[merkleRoot UInt256] totalTransactions:totalTransactions hashes:merkleHashes flags:merkleFlags];
 

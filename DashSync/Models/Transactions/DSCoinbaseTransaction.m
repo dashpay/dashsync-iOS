@@ -40,54 +40,25 @@
     return self;
 }
 
+-(NSData*)payloadData {
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt32:self.height];
+    [data appendUInt256:self.merkleRootMNList];
+    return data;
+}
+
 // Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
 // subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
-    UInt256 hash = UINT256_ZERO;
-    NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE*self.hashes.count +
-                        TX_OUTPUT_SIZE*self.addresses.count];
-    
-    [d appendUInt16:self.version];
-    [d appendUInt16:self.type];
-    [d appendVarInt:self.hashes.count];
+    NSMutableData * data = [[super toDataWithSubscriptIndex:subscriptIndex] mutableCopy];
+  
+        NSData * payloadData = [self payloadData];
+        [data appendVarInt:payloadData.length];
+        [data appendData:[self payloadData]];
     
     
-    for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        [self.hashes[i] getValue:&hash];
-        [d appendBytes:&hash length:sizeof(hash)];
-        [d appendUInt32:[self.indexes[i] unsignedIntValue]];
-        
-        if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
-            [d appendVarInt:[self.signatures[i] length]];
-            [d appendData:self.signatures[i]];
-        }
-        else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
-            //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-            [d appendVarInt:[self.inScripts[i] length]];
-            [d appendData:self.inScripts[i]];
-        }
-        else [d appendVarInt:0];
-        
-        [d appendUInt32:[self.sequences[i] unsignedIntValue]];
-    }
-    
-    [d appendVarInt:self.amounts.count];
-    
-    for (NSUInteger i = 0; i < self.amounts.count; i++) {
-        [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
-        [d appendVarInt:[self.outScripts[i] length]];
-        [d appendData:self.outScripts[i]];
-    }
-    
-    [d appendUInt32:self.lockTime];
-    if (subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
-    
-    NSData * payloadData = [self payloadData];
-    [d appendVarInt:payloadData.length];
-    [d appendData:[self payloadData]];
-    
-    return d;
+    return data;
 }
 
 @end

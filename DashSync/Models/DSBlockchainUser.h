@@ -7,12 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSWallet,DSBlockchainUserRegistrationTransaction,DSAccount;
+@class DSWallet,DSBlockchainUserRegistrationTransaction,DSAccount,DSChain;
 
 @interface DSBlockchainUser : NSObject
 
 @property (nonatomic,readonly) DSWallet * wallet;
 @property (nonatomic,readonly) NSString * uniqueIdentifier;
+@property (nonatomic,readonly) UInt256 registrationTransactionHash;
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSString * username;
 @property (nonatomic,readonly) NSString * publicKeyHash;
