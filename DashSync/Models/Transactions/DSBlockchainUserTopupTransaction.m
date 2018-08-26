@@ -29,6 +29,11 @@
     NSUInteger length = message.length;
     uint32_t off = self.payloadOffset;
     
+    if (length - off < 1) return nil;
+    NSNumber * payloadLengthSize = nil;
+    uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
+    off += payloadLengthSize.unsignedLongValue;
+    
     if (length - off < 2) return nil;
     self.blockchainUserTopupTransactionVersion = [message UInt16AtOffset:off];
     off += 2;
@@ -38,6 +43,7 @@
     off += 32;
     
     self.payloadOffset = off;
+    if ([self payloadData].length != payloadLength) return nil;
     
     return self;
 }
@@ -76,6 +82,7 @@
     NSData * payloadData = [self payloadData];
     [data appendVarInt:payloadData.length];
     [data appendData:payloadData];
+    if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
 }
 

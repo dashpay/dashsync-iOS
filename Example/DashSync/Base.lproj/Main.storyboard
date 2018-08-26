@@ -1475,6 +1475,13 @@
                             <outlet property="delegate" destination="4ux-Sm-z8L" id="egD-IB-j0d"/>
                         </connections>
                     </tableView>
+                    <navigationItem key="navigationItem" title="Topup" id="IUp-go-lTa">
+                        <barButtonItem key="rightBarButtonItem" style="done" systemItem="done" id="glP-hl-URu">
+                            <connections>
+                                <action selector="done:" destination="4ux-Sm-z8L" id="6JK-dT-ead"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="fundingAccountIdentifierLabel" destination="7zt-ji-wHz" id="gsP-vn-Tw4"/>
                         <outlet property="topupAmountLabel" destination="1kA-gd-a2f" id="pur-gc-jQT"/>
@@ -1693,7 +1700,7 @@
                                 <action selector="cancel:" destination="csg-gD-j67" id="nyt-6w-brJ"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="OOP-qu-BET">
+                        <barButtonItem key="rightBarButtonItem" style="done" systemItem="done" id="OOP-qu-BET">
                             <connections>
                                 <action selector="done:" destination="csg-gD-j67" id="tDn-UG-eAG"/>
                             </connections>

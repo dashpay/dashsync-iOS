@@ -81,17 +81,13 @@
             completion(nil);
             return;
         }
-        DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
-        DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithBlockchainUserTopupTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash onChain:self.wallet.chain];
         
-//        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithBlockchainUserTopupTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousSubscriptionTransactionHash:(UInt256)previousSubscriptionTransactionHash onChain:self.wallet.chain];
-//    BlockchainUserRegistrationTransactionVersion:1 username:self.username pubkeyHash:[privateKey.publicKey hash160] onChain:self.wallet.chain];
-//        [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
-//        NSMutableData * opReturnScript = [NSMutableData data];
-//        [opReturnScript appendUInt8:OP_RETURN];
-//        [fundingAccount updateTransaction:blockchainUserRegistrationTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO toShapeshiftAddress:nil];
-//
-//        completion(blockchainUserRegistrationTransaction);
+        NSMutableData * opReturnScript = [NSMutableData data];
+        [opReturnScript appendUInt8:OP_RETURN];
+        [fundingAccount updateTransaction:blockchainUserTopupTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO toShapeshiftAddress:nil];
+
+        completion(blockchainUserTopupTransaction);
     });
     
 }

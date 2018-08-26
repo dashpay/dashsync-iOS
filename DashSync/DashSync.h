@@ -50,6 +50,8 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSPaymentRequest.h"
 #import "DSPaymentProtocol.h"
+#import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
 
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;

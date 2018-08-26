@@ -210,12 +210,6 @@
     NSString * checkInputAddress = [privateKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(checkInputAddress,inputAddress,@"Private key does not match input address");
     
-    DSKey * payloadKey = [DSKey keyWithPrivateKey:@"cVBJqSygvC7hHQVuarUZQv868NgHUavceAfeqgo32LYiBYYswTv6" onChain:devnetDRA];
-    NSString * payloadAddress = @"yeAUXizK9bD6iuxaArDsh7XGX3Q75ZgE3Y";
-    UInt160 pubkeyHash = *(UInt160 *)@"467d271aff54f66134ad7513bb7992a48cecbfc3".hexToData.reverse.bytes;
-    NSString * checkPayloadAddress = [payloadKey addressForChain:devnetDRA];
-    XCTAssertEqualObjects(checkPayloadAddress,payloadAddress,@"Payload key does not match input address");
-    
     NSString * outputAddress0 = @"yP8JPjWoc2u8rSN6F4eE5FQn3nQiQJ9jDs";
     NSMutableData *script = [NSMutableData data];
     
@@ -228,6 +222,8 @@
     XCTAssertEqualObjects(blockchainUserTopupTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
     
     DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainUserTopupTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash topupAmount:@100000000 topupIndex:0 onChain:devnetDRA];
+    
+    [blockchainUserTopupTransaction signWithPrivateKeys:@[inputPrivateKey]];
 
     NSData * inputSignature = @"483045022100a65429d4f2ab2df58cafdaaffe874ef260f610e068e89a4455fbf92261156bb7022015733ae5aef3006fd5781b91f97ca1102edf09e9383ca761e407c619d13db7660121034c1f31446c5971558b9027499c3678483b0deb06af5b5ccd41e1f536af1e34ca".hexToData;
     XCTAssertEqualObjects(blockchainUserTopupTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");

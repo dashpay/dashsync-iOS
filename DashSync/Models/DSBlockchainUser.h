@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class DSWallet,DSBlockchainUserRegistrationTransaction,DSAccount,DSChain;
+@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSAccount,DSChain;
 
 @interface DSBlockchainUser : NSObject
 
@@ -23,5 +23,7 @@
 -(void)registerBlockchainUser:(void (^ _Nullable)(BOOL registered))completion;
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount* _Nonnull)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion;
+
+-(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount* _Nonnull)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion;
 
 @end

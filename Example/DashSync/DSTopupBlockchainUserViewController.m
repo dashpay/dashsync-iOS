@@ -83,52 +83,39 @@
 }
 
 - (IBAction)done:(id)sender {
-    /*NSScanner *scanner = [NSScanner scannerWithString:self.topupAmountLabel.text];
+    NSScanner *scanner = [NSScanner scannerWithString:self.topupAmountLabel.text];
     uint64_t topupAmount = 0;
     [scanner scanUnsignedLongLong:&topupAmount];
-    if (desiredUsername.length < 3) {
-        [self raiseIssue:@"Username too short" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
-        return;
-    } else if (desiredUsername.length > 23) {
-        [self raiseIssue:@"Username too long" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
-        return;
-    } else if (!_wallet) {
+    if (!_wallet) {
         [self raiseIssue:@"No wallet with balance" message:@"To topup a blockchain user you must have a wallet with enough balance to pay a credit fee"];
         return;
     } else if (!_fundingAccount) {
         [self raiseIssue:@"No funding account with balance" message:@"To topup a blockchain user you must have a wallet with enough balance to pay a credit fee"];
         return;
-    } else {
-        NSCharacterSet * illegalChars = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
-        if ([desiredUsername rangeOfCharacterFromSet:illegalChars].location != NSNotFound) {
-            [self raiseIssue:@"Username contains illegal characters" message:@"Your blockchain username must be between 4 and 23 characters long and contain only alphanumeric characters. Underscores are also permitted."];
-            return;
-        }
     }
     
-            [self.blockchainUser registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction) {
-                if (blockchainUserRegistrationTransaction) {
-                    [self.fundingAccount signTransaction:blockchainUserRegistrationTransaction withPrompt:@"Hello" completion:^(BOOL signedTransaction) {
-                        if (signedTransaction) {
-                            [self.chainPeerManager publishTransaction:blockchainUserRegistrationTransaction completion:^(NSError * _Nullable error) {
-                                if (error) {
-                                    [self raiseIssue:@"Error" message:error.localizedDescription];
-                                    
-                                } else {
-                                    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                                }
-                            }];
-                        } else {
-                            [self raiseIssue:@"Error" message:@"Transaction was not signed."];
+    [self.blockchainUser topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserTopUpTransaction *blockchainUserTopupTransaction) {
+        if (blockchainUserTopupTransaction) {
+            [self.fundingAccount signTransaction:blockchainUserTopupTransaction withPrompt:@"Hello" completion:^(BOOL signedTransaction) {
+                if (signedTransaction) {
+                    [self.chainPeerManager publishTransaction:blockchainUserTopupTransaction completion:^(NSError * _Nullable error) {
+                        if (error) {
+                            [self raiseIssue:@"Error" message:error.localizedDescription];
                             
+                        } else {
+                            [self.navigationController popViewControllerAnimated:TRUE];
                         }
                     }];
                 } else {
-                    [self raiseIssue:@"Error" message:@"Unable to create BlockchainUserRegistrationTransaction."];
+                    [self raiseIssue:@"Error" message:@"Transaction was not signed."];
                     
                 }
             }];
-*/
+        } else {
+            [self raiseIssue:@"Error" message:@"Unable to create BlockchainUserTopupTransaction."];
+            
+        }
+    }];
 }
 
 -(void)viewController:(UIViewController*)controller didChooseWallet:(DSWallet*)wallet {
