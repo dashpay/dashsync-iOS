@@ -192,6 +192,11 @@
 
 // MARK: - Peers
 
+-(void)removeTrustedPeerHost {
+    [self disconnect];
+    [self setTrustedPeerHost:nil];
+}
+
 -(void)clearPeers {
     [self disconnect];
     _peers = nil;
@@ -450,8 +455,17 @@
     return [NSString stringWithFormat:@"%@_%@",SETTINGS_FIXED_PEER_KEY,self.chain.uniqueID];
 }
 
+-(NSString*)trustedPeerHost {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:[self settingsFixedPeerKey]]) {
+        return [[NSUserDefaults standardUserDefaults] stringForKey:[self settingsFixedPeerKey]];
+    } else {
+        return nil;
+    }
+}
+
 -(void)setTrustedPeerHost:(NSString*)host {
-    [[NSUserDefaults standardUserDefaults] setObject:host
+    if (!host) [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self settingsFixedPeerKey]];
+    else [[NSUserDefaults standardUserDefaults] setObject:host
                                               forKey:[self settingsFixedPeerKey]];
 }
 
@@ -545,7 +559,7 @@
             return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
         }]];
         
-        self.fixedPeer = [DSPeer peerWithHost:[defs stringForKey:[self settingsFixedPeerKey]] onChain:self.chain];
+        self.fixedPeer = [self trustedPeerHost]?[DSPeer peerWithHost:[self trustedPeerHost] onChain:self.chain]:nil;
         self.maxConnectCount = (self.fixedPeer) ? 1 : PEER_MAX_CONNECTIONS;
         if (self.connectedPeers.count >= self.maxConnectCount) return; // already connected to maxConnectCount peers
         

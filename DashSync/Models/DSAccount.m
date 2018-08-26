@@ -220,13 +220,13 @@
         [derivationPath loadAddresses];
     }
     if (!self.isViewOnlyAccount) {
-    if (self.bip44DerivationPath) {
-        self.defaultDerivationPath = self.bip44DerivationPath;
-    } else if (self.bip32DerivationPath) {
-        self.defaultDerivationPath = self.bip32DerivationPath;
-    } else {
-        self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
-    }
+        if (self.bip44DerivationPath) {
+            self.defaultDerivationPath = self.bip44DerivationPath;
+        } else if (self.bip32DerivationPath) {
+            self.defaultDerivationPath = self.bip32DerivationPath;
+        } else {
+            self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
+        }
     }
 }
 
@@ -634,20 +634,26 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 {
     if (_isViewOnlyAccount) return;
     int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
-    NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
-    *internalIndexes = [NSMutableOrderedSet orderedSet];
     
-    for (NSString *addr in transaction.inputAddresses) {
-        NSInteger index = [self.defaultDerivationPath.allChangeAddresses indexOfObject:addr];
-        if (index != NSNotFound) {
-            [internalIndexes addObject:@(index)];
-            continue;
+    NSMutableArray * usedDerivationPaths = [NSMutableArray array];
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
+        *internalIndexes = [NSMutableOrderedSet orderedSet];
+        for (NSString *addr in transaction.inputAddresses) {
+            
+            if (!(derivationPath.type == DSDerivationPathFundsType_Clear || derivationPath.type == DSDerivationPathFundsType_Anonymous)) continue;
+            NSInteger index = [derivationPath.allChangeAddresses indexOfObject:addr];
+            if (index != NSNotFound) {
+                [internalIndexes addObject:@(index)];
+                continue;
+            }
+            index = [derivationPath.allReceiveAddresses indexOfObject:addr];
+            if (index != NSNotFound) {
+                [externalIndexes addObject:@(index)];
+                continue;
+            }
         }
-        index = [self.defaultDerivationPath.allReceiveAddresses indexOfObject:addr];
-        if (index != NSNotFound) {
-            [externalIndexes addObject:@(index)];
-            continue;
-        }
+        [usedDerivationPaths addObject:@{@"derivationPath":derivationPath,@"externalIndexes":externalIndexes,@"internalIndexes":internalIndexes}];
     }
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
@@ -656,8 +662,13 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 if (completion) completion(YES);
             } else {
                 NSMutableArray *privkeys = [NSMutableArray array];
-                [privkeys addObjectsFromArray:[self.defaultDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                [privkeys addObjectsFromArray:[self.defaultDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                for (NSDictionary * dictionary in usedDerivationPaths) {
+                    DSDerivationPath * derivationPath = dictionary[@"derivationPath"];
+                    NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+                    *internalIndexes = dictionary[@"internalIndexes"];
+                    [privkeys addObjectsFromArray:[derivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                    [privkeys addObjectsFromArray:[derivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                }
                 
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
                 if (completion) completion(signedSuccessfully);
@@ -764,7 +775,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     [self.moc performBlock:^{ // remove transaction from core data
         [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
-                                            [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
+                                                [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
 }
 
@@ -1007,15 +1018,15 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     [entities addObject:e];
                 }
                 
-//                if (height != TX_UNCONFIRMED) {
-//                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
-//                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
-//                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
-//
-//                    for (NSManagedObject *e in entities) {
-//                        [self.moc refreshObject:e mergeChanges:NO];
-//                    }
-//                }
+                //                if (height != TX_UNCONFIRMED) {
+                //                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
+                //                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
+                //                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
+                //
+                //                    for (NSManagedObject *e in entities) {
+                //                        [self.moc refreshObject:e mergeChanges:NO];
+                //                    }
+                //                }
                 for (DSTransactionHashEntity *e in entities) {
                     NSLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
                 }
@@ -1065,7 +1076,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             
         }];
         
-         
+        
         
         return;
     }
@@ -1084,51 +1095,51 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     [[DSInsightManager sharedInstance] utxosForAddresses:@[address]
-                 completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-                     DSTransaction *tx = [DSTransaction new];
-                     uint64_t balance = 0, feeAmount = 0;
-                     NSUInteger i = 0;
-                     
-                     if (error) {
-                         completion(nil, 0, error);
-                         return;
-                     }
-                     
-                     //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
-                     for (NSValue *output in utxos) {
-                         DSUTXO o;
-                         
-                         [output getValue:&o];
-                         [tx addInputHash:o.hash index:o.n script:scripts[i]];
-                         balance += [amounts[i++] unsignedLongLongValue];
-                     }
-                     
-                     if (balance == 0) {
-                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           NSLocalizedString(@"this private key is empty", nil)}]);
-                         return;
-                     }
-                     
-                     // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                     if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
-                     
-                     if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
-                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           NSLocalizedString(@"transaction fees would cost more than the funds available on this "
-                                                                                                                             "private key (due to tiny \"dust\" deposits)",nil)}]);
-                         return;
-                     }
-                     
-                     [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
-                     
-                     if (! [tx signWithPrivateKeys:@[privKey]]) {
-                         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                           NSLocalizedString(@"error signing transaction", nil)}]);
-                         return;
-                     }
-                     
-                     completion(tx, feeAmount, nil);
-                 }];
+                                              completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
+                                                  DSTransaction *tx = [DSTransaction new];
+                                                  uint64_t balance = 0, feeAmount = 0;
+                                                  NSUInteger i = 0;
+                                                  
+                                                  if (error) {
+                                                      completion(nil, 0, error);
+                                                      return;
+                                                  }
+                                                  
+                                                  //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
+                                                  for (NSValue *output in utxos) {
+                                                      DSUTXO o;
+                                                      
+                                                      [output getValue:&o];
+                                                      [tx addInputHash:o.hash index:o.n script:scripts[i]];
+                                                      balance += [amounts[i++] unsignedLongLongValue];
+                                                  }
+                                                  
+                                                  if (balance == 0) {
+                                                      completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                                                        NSLocalizedString(@"this private key is empty", nil)}]);
+                                                      return;
+                                                  }
+                                                  
+                                                  // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
+                                                  if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+                                                  
+                                                  if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
+                                                      completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                                                        NSLocalizedString(@"transaction fees would cost more than the funds available on this "
+                                                                                                                                                          "private key (due to tiny \"dust\" deposits)",nil)}]);
+                                                      return;
+                                                  }
+                                                  
+                                                  [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
+                                                  
+                                                  if (! [tx signWithPrivateKeys:@[privKey]]) {
+                                                      completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                                                        NSLocalizedString(@"error signing transaction", nil)}]);
+                                                      return;
+                                                  }
+                                                  
+                                                  completion(tx, feeAmount, nil);
+                                              }];
 }
 
 @end

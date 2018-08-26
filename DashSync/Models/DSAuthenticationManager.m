@@ -469,6 +469,21 @@ replacementString:(NSString *)string
 
 // MARK: - Authentication
 
+- (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet* _Nonnull)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
+    if (forceAuthentication) {
+        [wallet seedWithPrompt:authprompt forAmount:amount completion:completion];
+    } else {
+        @autoreleasepool {
+            NSString * seedPhrase = [wallet seedPhraseIfAuthenticated];
+            if (seedPhrase) {
+                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil]);
+            } else {
+                [wallet seedWithPrompt:authprompt forAmount:amount completion:completion];
+            }
+        }
+    }
+}
+
 // prompts user to authenticate with touch id or passcode
 - (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
 {

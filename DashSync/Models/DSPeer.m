@@ -337,7 +337,9 @@
     
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
-        NSLog(@"%@:%u sending %@", self.host, self.port, type);
+        if (![type isEqualToString:@"getdata"]) { //we log this somewhere else for better accuracy of what data is being got
+            NSLog(@"%@:%u sending %@", self.host, self.port, type);
+        }
 #endif
         
         [self.outputBuffer appendMessage:message type:type forChain:self.chain];
@@ -561,6 +563,9 @@
     }
     
     self.sentGetdataTxBlocks = YES;
+#if MESSAGE_LOGGING
+        NSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
+#endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -584,6 +589,9 @@
     }
     
     self.sentGetdataMasternode = YES;
+#if MESSAGE_LOGGING
+    NSLog(@"%@:%u sending getdata (masternodes)", self.host, self.port);
+#endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -615,6 +623,9 @@
     }
     
     self.sentGetdataGovernance = YES;
+#if MESSAGE_LOGGING
+    NSLog(@"%@:%u sending getdata (governance objects)", self.host, self.port);
+#endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
@@ -637,6 +648,9 @@
     }
     
     self.sentGetdataGovernanceVotes = YES;
+#if MESSAGE_LOGGING
+    NSLog(@"%@:%u sending getdata (governance votes)", self.host, self.port);
+#endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
 

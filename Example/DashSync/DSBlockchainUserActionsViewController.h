@@ -7,7 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <DashSync/DashSync.h>
 
 @interface DSBlockchainUserActionsViewController : UITableViewController
+
+@property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSBlockchainUser * blockchainUser;
 
 @end

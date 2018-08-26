@@ -93,5 +93,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 -(DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
 -(DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
 -(void)setTrustedPeerHost:(NSString*)host;
+-(void)removeTrustedPeerHost;
 
 @end

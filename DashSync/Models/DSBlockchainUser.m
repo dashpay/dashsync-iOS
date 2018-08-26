@@ -17,6 +17,7 @@
 #import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserResetUserKeyTransaction.h"
 #import "DSBlockchainUserCloseUserAccountTransaction.h"
+#import "DSAuthenticationManager.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -42,7 +43,7 @@
 }
 
 -(void)registerBlockchainUser:(void (^ _Nullable)(BOOL registered))completion {
-    self.wallet.seedRequestBlock(@"Generate Blockchain User", 0,^void (NSData * _Nullable seed) {
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"Generate Blockchain User" forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed) {
         if (!seed) {
             completion(NO);
             return;
@@ -51,11 +52,11 @@
         [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
         [self.wallet registerBlockchainUser:self];
         completion(YES);
-    });
+    }];
 }
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion {
-    self.wallet.seedRequestBlock(@"Generate Blockchain User", topupAmount,^void (NSData * _Nullable seed) {
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"Topup Blockchain User" forWallet:self.wallet forAmount:topupAmount forceAuthentication:NO completion:^(NSData * _Nullable seed) {
         if (!seed) {
             completion(nil);
             return;
@@ -70,7 +71,7 @@
         [fundingAccount updateTransaction:blockchainUserRegistrationTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO toShapeshiftAddress:nil];
         
         completion(blockchainUserRegistrationTransaction);
-    });
+    }];
     
 }
 

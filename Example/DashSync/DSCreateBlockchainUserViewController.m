@@ -115,7 +115,7 @@
         if (registered) {
             [blockchainUser registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction) {
                 if (blockchainUserRegistrationTransaction) {
-                    [self.fundingAccount signTransaction:blockchainUserRegistrationTransaction withPrompt:@"Hello" completion:^(BOOL signedTransaction) {
+                    [self.fundingAccount signTransaction:blockchainUserRegistrationTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction) {
                         if (signedTransaction) {
                             [self.chainPeerManager publishTransaction:blockchainUserRegistrationTransaction completion:^(NSError * _Nullable error) {
                                 if (error) {

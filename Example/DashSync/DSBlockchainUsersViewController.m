@@ -9,6 +9,7 @@
 #import "DSBlockchainUsersViewController.h"
 #import "DSBlockchainUserTableViewCell.h"
 #import "DSCreateBlockchainUserViewController.h"
+#import "DSBlockchainUserActionsViewController.h"
 
 @interface DSBlockchainUsersViewController ()
 
@@ -83,6 +84,13 @@
     if ([segue.identifier isEqualToString:@"CreateBlockchainUserSegue"]) {
         DSCreateBlockchainUserViewController * createBlockchainUserViewController = (DSCreateBlockchainUserViewController*)((UINavigationController*)segue.destinationViewController).topViewController;
         createBlockchainUserViewController.chainPeerManager = self.chainPeerManager;
+    } else if ([segue.identifier isEqualToString:@"BlockchainUserActionsSegue"]) {
+        DSBlockchainUserActionsViewController * blockchainUserActionsViewController = segue.destinationViewController;
+        blockchainUserActionsViewController.chainPeerManager = self.chainPeerManager;
+        NSIndexPath * indexPath = [self.tableView indexPathForSelectedRow];
+        DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:indexPath.section];
+        DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
+        blockchainUserActionsViewController.blockchainUser = blockchainUser;
     }
 }
 

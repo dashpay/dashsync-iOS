@@ -21,9 +21,9 @@
     uint64_t extraPayloadSize = [message varIntAtOffset:off length:&extraPayloadNumber];
     off += [extraPayloadNumber unsignedLongValue];
     
-//    if (length - off < 2) return nil;
-//    uint16_t version = [message UInt16AtOffset:off];
-//    off += 2;
+    if (length - off < 2) return nil;
+    uint16_t version = [message UInt16AtOffset:off];
+    off += 2;
     if (length - off < 4) return nil;
     uint32_t height = [message UInt32AtOffset:off];
     off += 4;
@@ -31,7 +31,7 @@
     UInt256 merkleRootMNList = [message UInt256AtOffset:off];
     off += 32;
     
-    //self.coinbaseTransactionVersion = version;
+    self.coinbaseTransactionVersion = version;
     self.height = height;
     self.merkleRootMNList = merkleRootMNList;
     
@@ -42,6 +42,7 @@
 
 -(NSData*)payloadData {
     NSMutableData * data = [NSMutableData data];
+    [data appendUInt16:self.coinbaseTransactionVersion];
     [data appendUInt32:self.height];
     [data appendUInt256:self.merkleRootMNList];
     return data;

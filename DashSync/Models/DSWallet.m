@@ -214,10 +214,10 @@
 }
 
 // authenticates user and returns seed
-- (void)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount completion:(void (^)(NSData * seed))completion
+- (void)seedWithPrompt:(NSString *)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion
 {
     @autoreleasepool {
-        BOOL touchid = (self.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO;
+        BOOL touchid = amount?((self.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO):NO;
         
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt andTouchId:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {

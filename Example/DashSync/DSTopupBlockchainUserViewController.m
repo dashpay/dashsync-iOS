@@ -14,7 +14,7 @@
 @interface DSTopupBlockchainUserViewController ()
 
 - (IBAction)done:(id)sender;
-@property (strong, nonatomic) IBOutlet UITextField *usernameLabel;
+@property (strong, nonatomic) IBOutlet UILabel *usernameLabel;
 @property (strong, nonatomic) IBOutlet UITextField *topupAmountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
@@ -30,6 +30,7 @@
     [self setToDefaultAccount];
     if (self.fundingAccount) {
         self.wallet = self.fundingAccount.wallet;
+        self.usernameLabel.text = self.blockchainUser.username;
     }
 }
 
@@ -82,9 +83,7 @@
 }
 
 - (IBAction)done:(id)sender {
-    
-    NSString * desiredUsername = [self.usernameLabel.text lowercaseString];
-    NSScanner *scanner = [NSScanner scannerWithString:self.topupAmountLabel.text];
+    /*NSScanner *scanner = [NSScanner scannerWithString:self.topupAmountLabel.text];
     uint64_t topupAmount = 0;
     [scanner scanUnsignedLongLong:&topupAmount];
     if (desiredUsername.length < 3) {
@@ -129,7 +128,7 @@
                     
                 }
             }];
-
+*/
 }
 
 -(void)viewController:(UIViewController*)controller didChooseWallet:(DSWallet*)wallet {

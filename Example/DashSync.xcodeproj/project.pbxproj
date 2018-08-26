@@ -99,6 +99,7 @@
 		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
+		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
 /* End PBXBuildFile section */
 
@@ -280,6 +281,8 @@
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
 		FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTopupBlockchainUserViewController.m; sourceTree = "<group>"; };
+		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
+		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -596,6 +599,8 @@
 				FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */,
 				FB995D9B21101C9600AC37D0 /* DSPeerTableViewCell.h */,
 				FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */,
+				FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */,
+				FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -850,6 +855,7 @@
 				2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */,
 				FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */,
 				2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */,
+				FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */,
 				2A3B3EB620F893F4002962FB /* SelectorFormTableViewCell.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */,

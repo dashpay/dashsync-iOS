@@ -32,7 +32,7 @@
 #import "DSChain.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
-
+#define LOG_MERKLE_BLOCKS 1
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -121,6 +121,10 @@ inline static int ceil_log2(int x)
     [d appendUInt32:_nonce];
     _blockHash = d.x11;
     self.chain = chain;
+    
+#if LOG_MERKLE_BLOCKS
+    NSLog(@"%d - merkle block %@ has %d transactions",_height,[NSData dataWithUInt256:_blockHash].hexString,_totalTransactions);
+#endif
     
     return self;
 }

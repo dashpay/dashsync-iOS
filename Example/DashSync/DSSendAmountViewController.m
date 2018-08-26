@@ -138,7 +138,7 @@
         if (authenticationManager.didAuthenticate) {
             [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
         } else {
-            [authenticationManager seedWithPrompt:prompt forWallet:self.account.wallet forAmount:amount completion:^(NSData * _Nullable seed) {
+            [authenticationManager seedWithPrompt:prompt forWallet:self.account.wallet forAmount:amount forceAuthentication:NO completion:^(NSData * _Nullable seed) {
                 if (seed) {
                     [self insufficientFundsForTransaction:tx forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
                 } else {

@@ -80,6 +80,7 @@
 
 -(void)wipePeerDataForChain:(DSChain*)chain {
     [self stopSyncForChain:chain];
+    [[[DSChainManager sharedInstance] peerManagerForChain:chain] removeTrustedPeerHost];
     [[[DSChainManager sharedInstance] peerManagerForChain:chain] clearPeers];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSPeerEntity deletePeersForChain:chainEntity];
