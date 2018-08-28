@@ -22,7 +22,9 @@
 
 -(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash;
 
--(void)registerBlockchainUser:(void (^ _Nullable)(BOOL registered))completion;
+-(void)generateBlockchainUserExtendedPublicKey:(void (^ _Nullable)(BOOL registered))completion;
+
+-(void)registerInWallet;
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount* _Nonnull)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion;
 

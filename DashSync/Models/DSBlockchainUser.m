@@ -15,8 +15,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserTopupTransaction.h"
-#import "DSBlockchainUserResetUserKeyTransaction.h"
-#import "DSBlockchainUserCloseUserAccountTransaction.h"
+#import "DSBlockchainUserResetTransaction.h"
+#import "DSBlockchainUserCloseTransaction.h"
 #import "DSAuthenticationManager.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
@@ -53,17 +53,24 @@
     return self;
 }
 
--(void)registerBlockchainUser:(void (^ _Nullable)(BOOL registered))completion {
-    [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"Generate Blockchain User" forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed) {
+-(void)generateBlockchainUserExtendedPublicKey:(void (^ _Nullable)(BOOL registered))completion {
+    __block DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
+    if (derivationPath.extendedPublicKey) {
+        completion(YES);
+        return;
+    }
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"Generate Blockchain User" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed) {
         if (!seed) {
             completion(NO);
             return;
         }
-        DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
         [derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
-        [self.wallet registerBlockchainUser:self];
         completion(YES);
     }];
+}
+
+-(void)registerInWallet {
+    [self.wallet registerBlockchainUser:self];
 }
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion {

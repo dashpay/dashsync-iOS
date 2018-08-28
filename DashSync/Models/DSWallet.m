@@ -36,6 +36,8 @@
 #import "DSEnvironment.h"
 #import "DSChainManager.h"
 #import "DSBlockchainUser.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainUserResetTransaction.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -431,6 +433,14 @@
 // MARK: - Blockchain Users
 
 - (DSBlockchainUserRegistrationTransaction *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSAccount * account in self.accounts) {
+        DSBlockchainUserRegistrationTransaction * transaction = [account registrationTransactionForPublicKeyHash:publicKeyHash];
+        if (transaction) return transaction;
+    }
+    return nil;
+}
+
+- (DSBlockchainUserResetTransaction *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSAccount * account in self.accounts) {
         DSBlockchainUserRegistrationTransaction * transaction = [account registrationTransactionForPublicKeyHash:publicKeyHash];
         if (transaction) return transaction;

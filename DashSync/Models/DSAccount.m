@@ -33,6 +33,7 @@
 #import "DSTransaction.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserResetTransaction.h"
 
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
@@ -479,6 +480,18 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)transaction;
             if (uint160_eq(blockchainUserRegistrationTransaction.pubkeyHash, publicKeyHash)) {
                 return (DSBlockchainUserRegistrationTransaction *)transaction;
+            }
+        }
+    }
+    return nil;
+}
+
+- (DSBlockchainUserResetTransaction*)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+            DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
+            if (uint160_eq(blockchainUserResetTransaction.replacementPublicKey.UInt160, publicKeyHash)) {
+                return (DSBlockchainUserResetTransaction *)transaction;
             }
         }
     }

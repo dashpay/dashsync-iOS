@@ -111,8 +111,8 @@
         }
     }
     DSBlockchainUser * blockchainUser = [self.wallet createBlockchainUserForUsername:desiredUsername];
-    [blockchainUser registerBlockchainUser:^(BOOL registered) {
-        if (registered) {
+    [blockchainUser generateBlockchainUserExtendedPublicKey:^(BOOL exists) {
+        if (exists) {
             [blockchainUser registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction) {
                 if (blockchainUserRegistrationTransaction) {
                     [self.fundingAccount signTransaction:blockchainUserRegistrationTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction) {
@@ -120,27 +120,23 @@
                             [self.chainPeerManager publishTransaction:blockchainUserRegistrationTransaction completion:^(NSError * _Nullable error) {
                                 if (error) {
                                     [self raiseIssue:@"Error" message:error.localizedDescription];
-                                    [self.wallet unregisterBlockchainUser:blockchainUser];
                                 } else {
+                                    [blockchainUser registerInWallet];
                                     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
                                 }
                             }];
                         } else {
                             [self raiseIssue:@"Error" message:@"Transaction was not signed."];
-                            [self.wallet unregisterBlockchainUser:blockchainUser];
                         }
                     }];
                 } else {
                     [self raiseIssue:@"Error" message:@"Unable to create BlockchainUserRegistrationTransaction."];
-                    [self.wallet unregisterBlockchainUser:blockchainUser];
                 }
             }];
         } else {
             [self raiseIssue:@"Error" message:@"Unable to register blockchain user."];
-            [self.wallet unregisterBlockchainUser:blockchainUser];
         }
     }];
-    
 }
 
 -(void)viewController:(UIViewController*)controller didChooseWallet:(DSWallet*)wallet {

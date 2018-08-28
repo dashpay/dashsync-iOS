@@ -29,7 +29,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSDerivationPath.h"
 
-@class DSDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction;
+@class DSDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
 
 @interface DSAccount : NSObject
 
@@ -157,8 +157,11 @@
 // This loads transactions once the account is set to a wallet
 - (void)loadTransactions;
 
-// This gets a blockchain user registration transaction that has a specific address
+// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
 - (DSBlockchainUserRegistrationTransaction*)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+
+// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
+- (DSBlockchainUserResetTransaction*)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 
 //This removes all transactions from the account
 - (void)wipeBlockchainInfo;
