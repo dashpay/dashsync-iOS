@@ -36,6 +36,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
+#import "DSTransactionEntity+CoreDataClass.h"
 
 @interface DSTransaction ()
 
@@ -562,6 +563,10 @@
 {
     if (uint256_is_zero(_txHash)) return super.hash;
     return *(const NSUInteger *)&_txHash;
+}
+
+-(Class)entityClass {
+    return [DSTransactionEntity class];
 }
 
 - (BOOL)isEqual:(id)object

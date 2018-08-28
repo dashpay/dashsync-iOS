@@ -142,6 +142,18 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // inform the derivation path that the address has been used by a transaction
 - (void)registerTransactionAddress:(NSString * _Nonnull)address;
 
+// gets a public key at an index
+- (NSData*)publicKeyAtIndex:(uint32_t)index;
+
+// gets a public key at an index path
+- (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath;
+
+// gets an addess at an index
+- (NSString *)addressAtIndex:(uint32_t)index;
+
+// gets an address at an index path
+- (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath;
+
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain

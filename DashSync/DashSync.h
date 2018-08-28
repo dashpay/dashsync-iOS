@@ -50,6 +50,8 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSPaymentRequest.h"
 #import "DSPaymentProtocol.h"
+
+#import "DSTransactionFactory.h"
 #import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 

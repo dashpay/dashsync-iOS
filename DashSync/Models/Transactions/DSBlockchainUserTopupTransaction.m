@@ -11,12 +11,9 @@
 #import "DSKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
+#import "DSBlockchainUserTopupTransactionEntity+CoreDataClass.h"
 
 @interface DSBlockchainUserTopupTransaction()
-
-@property (nonatomic,assign) uint16_t blockchainUserTopupTransactionVersion;
-@property (nonatomic,assign) UInt256 registrationTransactionHash;
-@property (nonatomic,copy) NSNumber * topupAmount;
 
 @end
 
@@ -44,15 +41,16 @@
     
     self.payloadOffset = off;
     if ([self payloadData].length != payloadLength) return nil;
+    self.txHash = self.data.SHA256_2;
     
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserTopupTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash topupAmount:(NSNumber*)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserTopupTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
     NSMutableArray * realOutputAddresses = [addresses mutableCopy];
     [realOutputAddresses insertObject:[NSNull null] atIndex:topupIndex];
     NSMutableArray * realAmounts = [amounts mutableCopy];
-    [realAmounts insertObject:topupAmount atIndex:topupIndex];
+    [realAmounts insertObject:@(topupAmount) atIndex:topupIndex];
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:realOutputAddresses outputAmounts:realAmounts onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionTopUp;
     self.blockchainUserTopupTransactionVersion = version;
@@ -89,6 +87,10 @@
 - (size_t)size
 {
     return [super size] + [self payloadData].length;
+}
+
+-(Class)entityClass {
+    return [DSBlockchainUserTopupTransactionEntity class];
 }
 
 @end

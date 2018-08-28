@@ -18,7 +18,9 @@
 @property (nonatomic,readonly) NSString * username;
 @property (nonatomic,readonly) NSString * publicKeyHash;
 
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet;
+-(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet;
+
+-(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash;
 
 -(void)registerBlockchainUser:(void (^ _Nullable)(BOOL registered))completion;
 

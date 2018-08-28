@@ -10,6 +10,7 @@
 #import "DSWalletChooserViewController.h"
 #import "DSAccountChooserViewController.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
+#import <DashSync/DashSync.h>
 
 @interface DSTopupBlockchainUserViewController ()
 
@@ -94,9 +95,9 @@
         return;
     }
     
-    [self.blockchainUser topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserTopUpTransaction *blockchainUserTopupTransaction) {
+    [self.blockchainUser topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction) {
         if (blockchainUserTopupTransaction) {
-            [self.fundingAccount signTransaction:blockchainUserTopupTransaction withPrompt:@"Hello" completion:^(BOOL signedTransaction) {
+            [self.fundingAccount signTransaction:blockchainUserTopupTransaction withPrompt:@"Fund Transaction" completion:^(BOOL signedTransaction) {
                 if (signedTransaction) {
                     [self.chainPeerManager publishTransaction:blockchainUserTopupTransaction completion:^(NSError * _Nullable error) {
                         if (error) {

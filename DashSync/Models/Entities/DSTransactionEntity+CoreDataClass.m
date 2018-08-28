@@ -107,7 +107,7 @@
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
     if (!chain) chain = [self.chain chain];
-    DSTransaction *tx = [[DSTransaction alloc] initOnChain:chain];
+    DSTransaction *tx = [[[self transactionClass] alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
         NSData *txHash = self.transactionHash.txHash;
@@ -140,6 +140,10 @@
     }
     
     [super deleteObject];
+}
+
+-(Class)transactionClass {
+    return [DSTransaction class];
 }
 
 @end

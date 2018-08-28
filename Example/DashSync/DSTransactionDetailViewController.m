@@ -156,7 +156,7 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return 3;
+    return ([self.transaction type] == DSTransactionType_Classic)?3:4;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -166,6 +166,17 @@
         case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?5:4):3;
         case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
+        case 3: {
+            switch ([self.transaction type]) {
+                case DSTransactionType_ProviderRegistration:
+                    return 3;
+                    break;
+                    
+                default:
+                    return 0;
+                    break;
+            }
+        }
     }
     
     return 1;
@@ -349,6 +360,19 @@
             
             
             break;
+        case 3:
+        {
+            DSTransactionDetailTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
+            [self setBackgroundForCell:cell indexPath:indexPath];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            
+            cell.addressLabel.text = NSLocalizedString(@"unknown address", nil);
+            cell.typeInfoLabel.text = NSLocalizedString(@"spent input", nil);
+            cell.amountLabel.text = nil;
+            cell.fiatAmountLabel.text = nil;
+            return cell;
+        }
+            break;
     }
     return nil;
 }
@@ -359,6 +383,7 @@
         case 0: return nil;
         case 1: return (self.sent > 0) ? NSLocalizedString(@"to:", nil) : NSLocalizedString(@"from:", nil);
         case 2: return (self.sent > 0) ? NSLocalizedString(@"from:", nil) : NSLocalizedString(@"to:", nil);
+        case 3: return @"payload:";
     }
     
     return nil;

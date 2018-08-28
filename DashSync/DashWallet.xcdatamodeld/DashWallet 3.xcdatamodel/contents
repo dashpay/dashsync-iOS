@@ -15,12 +15,12 @@
         <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
         <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
     </entity>
-    <entity name="DSBlockchainUserRegistrationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
-        <attribute name="amount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+    <entity name="DSBlockchainUserRegistrationTransactionEntity" representedClassName="DSBlockchainUserRegistrationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="payloadSignature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="publicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
-    <entity name="DSBlockchainUserTopupTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
-        <attribute name="previousSubscriptionTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+    <entity name="DSBlockchainUserTopupTransactionEntity" representedClassName="DSBlockchainUserTopupTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <attribute name="registrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
     </entity>
     <entity name="DSChainEntity" representedClassName="DSChainEntity" syncable="YES">
@@ -227,7 +227,7 @@
             </compoundIndex>
         </compoundIndexes>
     </entity>
-    <entity name="DSSpecialTransactionEntity" parentEntity="DSTransactionEntity" syncable="YES">
+    <entity name="DSSpecialTransactionEntity" representedClassName="DSSpecialTransactionEntity" parentEntity="DSTransactionEntity" syncable="YES">
         <attribute name="specialTransactionVersion" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
     </entity>
     <entity name="DSSporkEntity" representedClassName="DSSporkEntity" syncable="YES">
@@ -305,8 +305,8 @@
         <element name="DSTransactionHashEntity" positionX="18" positionY="153" width="128" height="120"/>
         <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="0" positionY="0" width="128" height="195"/>
-        <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="18" positionY="153" width="128" height="75"/>
-        <element name="DSBlockchainUserTopupTransactionEntity" positionX="27" positionY="162" width="128" height="75"/>
+        <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="18" positionY="153" width="128" height="90"/>
+        <element name="DSBlockchainUserTopupTransactionEntity" positionX="27" positionY="162" width="128" height="60"/>
         <element name="DSSpecialTransactionEntity" positionX="36" positionY="171" width="128" height="60"/>
     </elements>
 </model>

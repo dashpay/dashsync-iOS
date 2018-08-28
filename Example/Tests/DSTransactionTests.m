@@ -181,7 +181,7 @@
     
     XCTAssertEqualObjects(blockchainUserRegistrationTransactionFromMessage.toData,hexData,@"Blockchain user transaction does not match it's data");
     
-    DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainUserRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:@1000000 topupIndex:0 onChain:devnetDRA];
+    DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainUserRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
     [blockchainUserRegistrationTransaction signPayloadWithKey:payloadKey];
     NSData * payloadDataToConfirm = @"01000873616d697366756ec3bfec8ca49279bb1375ad3461f654ff1a277d464120f19af9563ef387fef19c82bc4027152ef5642fe8158ffeb3b8a411d9a967b6af0104b95659106c8a9d7451478010abe042e58afc9cdaf006f77cab16edcb6f84".hexToData;
     NSData * payloadData = blockchainUserRegistrationTransaction.payloadData;
@@ -221,7 +221,7 @@
     
     XCTAssertEqualObjects(blockchainUserTopupTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
     
-    DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainUserTopupTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash topupAmount:@100000000 topupIndex:0 onChain:devnetDRA];
+    DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainUserTopupTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash topupAmount:100000000 topupIndex:0 onChain:devnetDRA];
     
     [blockchainUserTopupTransaction signWithPrivateKeys:@[inputPrivateKey]];
 

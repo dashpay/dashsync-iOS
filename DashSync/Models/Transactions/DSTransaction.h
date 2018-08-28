@@ -84,6 +84,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
+@property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;

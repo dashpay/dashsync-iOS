@@ -38,6 +38,17 @@
     self.username = username;
     self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,username];
     self.wallet = wallet;
+    self.registrationTransactionHash = UINT256_ZERO;
+    self.index = index;
+    return self;
+}
+
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash {
+    if (!(self = [super init])) return nil;
+    self.username = username;
+    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,username];
+    self.wallet = wallet;
+    self.registrationTransactionHash = registrationTransactionHash;
     self.index = index;
     return self;
 }

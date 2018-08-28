@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSTransaction *)transactionForChain:(DSChain*)chain;
 + (NSArray<DSTransactionEntity*> * _Nonnull)transactionsForChain:(DSChainEntity*)chain;
 
+@property (nonatomic, readonly) Class transactionClass;
+
 @end
 
 NS_ASSUME_NONNULL_END

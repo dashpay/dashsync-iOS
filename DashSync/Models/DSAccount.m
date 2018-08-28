@@ -29,11 +29,16 @@
 #import "DSKey.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
+
 #import "DSTransaction.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainUserTopupTransaction.h"
+
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
+
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSChainPeerManager.h"
 #import "NSData+Bitcoin.h"
@@ -468,6 +473,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return NSNotFound;
 }
 
+- (DSBlockchainUserRegistrationTransaction*)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+            DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)transaction;
+            if (uint160_eq(blockchainUserRegistrationTransaction.pubkeyHash, publicKeyHash)) {
+                return (DSBlockchainUserRegistrationTransaction *)transaction;
+            }
+        }
+    }
+    return nil;
+}
 
 // this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
 // each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
@@ -736,12 +752,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     [self.moc performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:self.moc];
-        [DSTransactionEntity setContext:self.moc];
+        Class transactionEntityClass = [transaction entityClass];
+        [transactionEntityClass setContext:self.moc];
         [DSTransactionHashEntity setContext:self.moc];
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
-            DSTransactionEntity * transactionEntity = [DSTransactionEntity managedObject];
+            
+            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
             [transactionEntity setAttributesFromTx:transaction];
-            [DSTransactionEntity saveContext];
+            [transactionEntityClass saveContext];
         }
     }];
     

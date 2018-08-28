@@ -11,13 +11,9 @@
 #import "DSKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
+#import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 
 @interface DSBlockchainUserRegistrationTransaction()
-
-@property (nonatomic,assign) uint16_t blockchainUserRegistrationTransactionVersion;
-@property (nonatomic,copy) NSString * username;
-@property (nonatomic,assign) UInt160 pubkeyHash;
-@property (nonatomic,strong) NSData * signature;
 
 @end
 
@@ -53,10 +49,11 @@
     uint64_t messageSignatureSize = [message varIntAtOffset:off length:&messageSignatureSizeLength];
     off += messageSignatureSizeLength.unsignedIntegerValue;
     if (length - off < messageSignatureSize) return nil;
-    self.signature = [message subdataWithRange:NSMakeRange(off, messageSignatureSize)];
+    self.payloadSignature = [message subdataWithRange:NSMakeRange(off, messageSignatureSize)];
     off+= messageSignatureSize;
     self.payloadOffset = off;
     if ([self payloadData].length != payloadLength) return nil;
+    self.txHash = self.data.SHA256_2;
     
     return self;
 }
@@ -72,17 +69,18 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(NSNumber*)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
     NSMutableArray * realOutputAddresses = [addresses mutableCopy];
     [realOutputAddresses insertObject:[NSNull null] atIndex:topupIndex];
     NSMutableArray * realAmounts = [amounts mutableCopy];
-    [realAmounts insertObject:topupAmount atIndex:topupIndex];
+    [realAmounts insertObject:@(topupAmount) atIndex:topupIndex];
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:realOutputAddresses outputAmounts:realAmounts onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionRegistration;
     self.version = SPECIAL_TX_VERSION;
     self.blockchainUserRegistrationTransactionVersion = version;
     self.username = username;
     self.pubkeyHash = pubkeyHash;
+    self.topupAmount = topupAmount;
     NSLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
     return self;
 }
@@ -92,13 +90,13 @@
 }
 
 -(BOOL)checkPayloadSignature {
-    DSKey * blockchainUserPublicKey = [DSKey keyRecoveredFromCompactSig:self.signature andMessageDigest:[self payloadHash]];
+    DSKey * blockchainUserPublicKey = [DSKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
     return uint160_eq([blockchainUserPublicKey hash160], self.pubkeyHash);
 }
 
 -(void)signPayloadWithKey:(DSKey*)privateKey {
     NSLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
-    self.signature = [privateKey compactSign:[self payloadHash]];
+    self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }
 
 -(NSData*)payloadDataForHash {
@@ -115,8 +113,8 @@
     [data appendUInt16:self.blockchainUserRegistrationTransactionVersion];
     [data appendString:self.username];
     [data appendUInt160:self.pubkeyHash];
-    [data appendUInt8:self.signature.length];
-    [data appendData:self.signature];
+    [data appendUInt8:self.payloadSignature.length];
+    [data appendData:self.payloadSignature];
     return data;
 }
 
@@ -132,6 +130,10 @@
 - (size_t)size
 {
     return [super size] + [self payloadData].length;
+}
+
+-(Class)entityClass {
+    return [DSBlockchainUserRegistrationTransactionEntity class];
 }
 
 @end

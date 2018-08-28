@@ -430,6 +430,20 @@
 
 // MARK: - Blockchain Users
 
+- (DSBlockchainUserRegistrationTransaction *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSAccount * account in self.accounts) {
+        DSBlockchainUserRegistrationTransaction * transaction = [account registrationTransactionForPublicKeyHash:publicKeyHash];
+        if (transaction) return transaction;
+    }
+    return nil;
+}
+
+-(DSBlockchainUserRegistrationTransaction *)registrationTransactionForIndex:(uint32_t)index {
+    DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self];
+    UInt160 hash160 = [derivationPath publicKeyAtIndex:index].hash160;
+    return [self registrationTransactionForPublicKeyHash:hash160];
+}
+
 -(void)unregisterBlockchainUser:(DSBlockchainUser *)blockchainUser {
     NSAssert(blockchainUser.wallet == self, @"the blockchainUser you are trying to remove is not in this wallet");
     [self.mBlockchainUsers removeObjectForKey:blockchainUser.username];
