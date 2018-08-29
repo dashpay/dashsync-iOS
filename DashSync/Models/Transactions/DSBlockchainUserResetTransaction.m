@@ -64,6 +64,7 @@
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKey:(NSData*)replacementPublicKey creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionResetKey;
+    self.version = SPECIAL_TX_VERSION;
     self.blockchainUserResetTransactionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
     self.previousBlockchainUserTransactionHash = previousBlockchainUserTransactionHash;
@@ -75,6 +76,7 @@
 -(instancetype)initWithBlockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKey:(NSData*)replacementPublicKey creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionTopUp;
+    self.version = SPECIAL_TX_VERSION;
     self.blockchainUserResetTransactionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
     self.previousBlockchainUserTransactionHash = previousBlockchainUserTransactionHash;

@@ -53,6 +53,7 @@
     [realAmounts insertObject:@(topupAmount) atIndex:topupIndex];
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:realOutputAddresses outputAmounts:realAmounts onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionTopUp;
+    self.version = SPECIAL_TX_VERSION;
     self.blockchainUserTopupTransactionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
     self.topupAmount = topupAmount;
@@ -62,6 +63,7 @@
 -(instancetype)initWithBlockchainUserTopupTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash onChain:(DSChain *)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionTopUp;
+    self.version = SPECIAL_TX_VERSION;
     self.blockchainUserTopupTransactionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
     return self;

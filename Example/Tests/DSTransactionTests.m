@@ -15,6 +15,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserResetTransaction.h"
+#import "DSBlockchainUserCloseTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSChainManager.h"
 #import "NSData+Dash.h"
@@ -232,6 +234,32 @@
     XCTAssertEqualObjects(blockchainUserTopupTransaction.data,hexData,@"The transaction data does not match it's expected values");
     XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserTopupTransaction.txHash],@"The transaction does not match it's desired private key");
 }
+
+- (void)testResetBlockchainUserTransactionInputs {
+    //this is for v3 transaction versions
+    DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
+    NSData * hexData = [NSData dataFromHexString:@"03000a00000000000000a00100659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370d659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370de803000000000000f6f5abf4ba75c554b9ef001a78c35ce5edb3ccb1411fd442ee3bb6dac571f432e56def3d06f64a15cc74f382184ca4d5d4cad781ced01ae4e8109411f548da5c5fa6bfce5a23a8d620104e6953600539728b95077e19"];
+    UInt256 txId = *(UInt256 *)@"251961000a115bafbb7bdb6e1baf23d88e37ecf2fe6af5d9572884cabaecdcc0".hexToData.reverse.bytes;
+    UInt256 blockchainUserRegistrationTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
+    UInt256 blockchainUserPreviousTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
+    
+    DSBlockchainUserResetTransaction *blockchainUserResetTransactionFromMessage = [[DSBlockchainUserResetTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    
+    XCTAssertEqualObjects(blockchainUserResetTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
+    
+    DSBlockchainUserResetTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[@0] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainUserTopupTransactionVersion:<#(uint16_t)#> registrationTransactionHash:<#(UInt256)#> topupAmount:<#(uint64_t)#> topupIndex:<#(uint16_t)#> onChain:<#(DSChain *)#>];
+    
+    [blockchainUserTopupTransaction signWithPrivateKeys:@[inputPrivateKey]];
+    
+    NSData * inputSignature = @"483045022100a65429d4f2ab2df58cafdaaffe874ef260f610e068e89a4455fbf92261156bb7022015733ae5aef3006fd5781b91f97ca1102edf09e9383ca761e407c619d13db7660121034c1f31446c5971558b9027499c3678483b0deb06af5b5ccd41e1f536af1e34ca".hexToData;
+    XCTAssertEqualObjects(blockchainUserTopupTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
+    
+    
+    XCTAssertEqualObjects(blockchainUserTopupTransaction.data,hexData,@"The transaction data does not match it's expected values");
+    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserTopupTransaction.txHash],@"The transaction does not match it's desired private key");
+}
+
+
 
 
 @end

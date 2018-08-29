@@ -491,7 +491,8 @@
     NSMutableArray * rArray = [NSMutableArray array];
     if (keyChainDictionary) {
         for (NSString * username in keyChainDictionary) {
-            [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self]];
+            uint32_t index = [keyChainDictionary[username] unsignedIntValue];
+            [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:[self registrationTransactionForIndex:index].txHash]];
         }
     }
     return [rArray copy];

@@ -663,7 +663,7 @@
 - (void)addTransactionToPublishList:(DSTransaction *)transaction
 {
     if (transaction.blockHeight == TX_UNCONFIRMED) {
-        NSLog(@"[DSChainPeerManager] add transaction to publish list %@", transaction);
+        NSLog(@"[DSChainPeerManager] add transaction to publish list %@ (%@)", transaction,transaction.toData);
         self.publishedTx[uint256_obj(transaction.txHash)] = transaction;
         
         for (NSValue *hash in transaction.inputHashes) {
