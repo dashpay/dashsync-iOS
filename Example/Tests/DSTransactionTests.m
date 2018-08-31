@@ -243,20 +243,31 @@
     UInt256 blockchainUserRegistrationTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
     UInt256 blockchainUserPreviousTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
     
+    DSKey * payloadKey = [DSKey keyWithPrivateKey:@"cVxAzue29NemggDqJyUwMsZ7KJsm4y9ntoW5UeCaTfQdruH2BKQR" onChain:devnetDRA];
+    NSString * payloadAddress = @"yfguWspuwx7ceKthnqqDc8CiZGZGRN7eFp";
+    NSString * checkPayloadAddress = [payloadKey addressForChain:devnetDRA];
+    XCTAssertEqualObjects(checkPayloadAddress,payloadAddress,@"Payload key does not match input address");
+    
+    DSKey * replacementPayloadKey = [DSKey keyWithPrivateKey:@"cPG7GuByFnYkGvkrZqw8chGNfJYmKYnXt6TBjHruaApC42CPwwTE" onChain:devnetDRA];
+    NSString * replacementPayloadAddress = @"yiqFNxn9kbWEKj7B87aEnoyChBL8rMFymt";
+    UInt160 replacementPubkeyHash = *(UInt160 *)@"b1ccb3ede55cc3781a00efb954c575baf4abf5f6".hexToData.reverse.bytes;
+    NSString * replacementCheckPayloadAddress = [replacementPayloadKey addressForChain:devnetDRA];
+    XCTAssertEqualObjects(replacementCheckPayloadAddress,replacementPayloadAddress,@"Replacement payload key does not match input address");
+    
     DSBlockchainUserResetTransaction *blockchainUserResetTransactionFromMessage = [[DSBlockchainUserResetTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
     
-    XCTAssertEqualObjects(blockchainUserResetTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
+    XCTAssertEqualObjects(blockchainUserResetTransactionFromMessage.toData,hexData,@"Blockchain user reset transaction does not match it's data");
     
-    DSBlockchainUserResetTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[@0] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainUserTopupTransactionVersion:<#(uint16_t)#> registrationTransactionHash:<#(UInt256)#> topupAmount:<#(uint64_t)#> topupIndex:<#(uint16_t)#> onChain:<#(DSChain *)#>];
-    
-    [blockchainUserTopupTransaction signWithPrivateKeys:@[inputPrivateKey]];
-    
-    NSData * inputSignature = @"483045022100a65429d4f2ab2df58cafdaaffe874ef260f610e068e89a4455fbf92261156bb7022015733ae5aef3006fd5781b91f97ca1102edf09e9383ca761e407c619d13db7660121034c1f31446c5971558b9027499c3678483b0deb06af5b5ccd41e1f536af1e34ca".hexToData;
-    XCTAssertEqualObjects(blockchainUserTopupTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
-    
-    
-    XCTAssertEqualObjects(blockchainUserTopupTransaction.data,hexData,@"The transaction data does not match it's expected values");
-    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserTopupTransaction.txHash],@"The transaction does not match it's desired private key");
+    DSBlockchainUserResetTransaction *blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainUserResetTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash previousBlockchainUserTransactionHash:blockchainUserPreviousTransactionHash replacementPublicKeyHash:replacementPubkeyHash creditFee:1000 onChain:devnetDRA];
+
+    [blockchainUserResetTransaction signPayloadWithKey:payloadKey];
+    NSData * payloadDataToConfirm = @"0100659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370d659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370de803000000000000f6f5abf4ba75c554b9ef001a78c35ce5edb3ccb1411fd442ee3bb6dac571f432e56def3d06f64a15cc74f382184ca4d5d4cad781ced01ae4e8109411f548da5c5fa6bfce5a23a8d620104e6953600539728b95077e19".hexToData;
+    NSData * payloadData = blockchainUserResetTransaction.payloadData;
+    XCTAssertEqualObjects(payloadData,payloadDataToConfirm,@"Payload Data does not match, signing payload does not work");
+
+
+    XCTAssertEqualObjects(blockchainUserResetTransaction.data,hexData,@"The transaction data does not match it's expected values");
+    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserResetTransaction.txHash],@"The transaction does not match it's desired private key");
 }
 
 

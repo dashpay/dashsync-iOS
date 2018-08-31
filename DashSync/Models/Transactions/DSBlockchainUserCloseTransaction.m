@@ -108,5 +108,9 @@
     return [DSBlockchainUserCloseTransactionEntity class];
 }
 
+-(BOOL)transactionTypeRequiresInputs {
+    return NO;
+}
+
 
 @end

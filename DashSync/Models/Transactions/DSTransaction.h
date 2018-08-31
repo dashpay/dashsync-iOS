@@ -86,6 +86,8 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) DSAccount * account;
 @property (nonatomic, readonly) Class entityClass;
 
+@property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
+
 @property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
 

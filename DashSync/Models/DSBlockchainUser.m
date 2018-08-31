@@ -29,6 +29,7 @@
 @property (nonatomic,strong) NSString * uniqueIdentifier;
 @property (nonatomic,assign) uint32_t index;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;
+@property (nonatomic,assign) UInt256 lastBlockchainUserTransactionHash;
 
 @end
 
@@ -44,12 +45,13 @@
     return self;
 }
 
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash {
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastBlockchainUserTransactionHash:(UInt256)lastBlockchainUserTransactionHash {
     if (!(self = [super init])) return nil;
     self.username = username;
     self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,username];
     self.wallet = wallet;
     self.registrationTransactionHash = registrationTransactionHash;
+    self.lastBlockchainUserTransactionHash = lastBlockchainUserTransactionHash; //except topup and close, including state transitions
     self.index = index;
     return self;
 }
@@ -76,7 +78,7 @@
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion {
     NSString * question = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you would like to register the username %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
-    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:NO completion:^(NSData * _Nullable seed) {
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed) {
         if (!seed) {
             completion(nil);
             return;
@@ -97,7 +99,7 @@
 
 -(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion {
     NSString * question = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you would like to topup %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
-    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:NO completion:^(NSData * _Nullable seed) {
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed) {
         if (!seed) {
             completion(nil);
             return;
@@ -111,6 +113,25 @@
         completion(blockchainUserTopupTransaction);
     }];
     
+}
+
+-(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainUserResetTransaction * blockchainUserResetTransaction))completion {
+    NSString * question = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you would like to reset this user?", nil)];
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed) {
+        if (!seed) {
+            completion(nil);
+            return;
+        }
+        DSDerivationPath * oldDerivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
+        DSKey * oldPrivateKey = [oldDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+        DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
+        DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
+        
+        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithBlockchainUserResetTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousBlockchainUserTransactionHash:self.lastBlockchainUserTransactionHash replacementPublicKeyHash:[privateKey.publicKey hash160] creditFee:1000 onChain:self.wallet.chain];
+        [blockchainUserResetTransaction signPayloadWithKey:oldPrivateKey];
+        NSLog(@"%@",blockchainUserResetTransaction.toData);
+        completion(blockchainUserResetTransaction);
+    }];
 }
 
 

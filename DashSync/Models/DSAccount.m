@@ -490,12 +490,50 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     for (DSTransaction * transaction in self.transactions) {
         if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
             DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
-            if (uint160_eq(blockchainUserResetTransaction.replacementPublicKey.UInt160, publicKeyHash)) {
+            if (uint160_eq(blockchainUserResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
                 return (DSBlockchainUserResetTransaction *)transaction;
             }
         }
     }
     return nil;
+}
+
+- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
+    NSMutableArray * subscriptionTransactions = [NSMutableArray array];
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
+            DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction*)transaction;
+            if (uint256_eq(blockchainUserTopupTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
+                [subscriptionTransactions addObject:transaction];
+            }
+        } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+            DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
+            if (uint256_eq(blockchainUserResetTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
+                [subscriptionTransactions addObject:transaction];
+            }
+        }
+    }
+    return [subscriptionTransactions copy];
+}
+
+-(UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
+    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self subscriptionTransactionsForRegistrationTransactionHash:blockchainUserRegistrationTransactionHash]];
+    UInt256 lastSubscriptionTransactionHash = blockchainUserRegistrationTransactionHash;
+    while ([subscriptionTransactions count]) {
+        BOOL found = FALSE;
+        for (DSTransaction * transaction in subscriptionTransactions) {
+            if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+                DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
+                if (uint256_eq(blockchainUserResetTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
+                    lastSubscriptionTransactionHash = blockchainUserResetTransaction.txHash;
+                    found = TRUE;
+                    [subscriptionTransactions removeObject:blockchainUserResetTransaction];
+                }
+            }
+        }
+        if (!found) break;
+    }
+    return lastSubscriptionTransactionHash;
 }
 
 // this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within

@@ -78,6 +78,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // the total amount received by the wallet (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived;
 
+// the first unused index for blockchain users
+@property (nonatomic, readonly) uint32_t unusedBlockchainUserIndex;
+
 @property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;

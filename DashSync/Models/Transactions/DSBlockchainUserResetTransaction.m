@@ -43,10 +43,14 @@
     self.creditFee = [message UInt64AtOffset:off];
     off += 8;
     
-    if (length - off < 1) return nil;
-    NSNumber * replacementPubKeyLength = nil;
-    self.replacementPublicKey = [message dataAtOffset:off length:&replacementPubKeyLength];
-    off += replacementPubKeyLength.unsignedLongValue;
+    if (length - off < 20) return nil;
+    self.replacementPublicKeyHash = [message UInt160AtOffset:off];
+    off += 20;
+    
+//    if (length - off < 1) return nil;
+//    NSNumber * replacementPubKeyLength = nil;
+//    self.replacementPublicKey = [message dataAtOffset:off length:&replacementPubKeyLength];
+//    off += replacementPubKeyLength.unsignedLongValue;
     
     if (length - off < 1) return nil;
     NSNumber * oldPublicKeyPayloadSignatureLength = nil;
@@ -61,7 +65,7 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKey:(NSData*)replacementPublicKey creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKeyHash:(UInt160)replacementPublicKeyHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionResetKey;
     self.version = SPECIAL_TX_VERSION;
@@ -69,21 +73,46 @@
     self.registrationTransactionHash = registrationTransactionHash;
     self.previousBlockchainUserTransactionHash = previousBlockchainUserTransactionHash;
     self.creditFee = creditFee;
-    self.replacementPublicKey = replacementPublicKey;
+    self.replacementPublicKeyHash = replacementPublicKeyHash;
     return self;
 }
 
--(instancetype)initWithBlockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKey:(NSData*)replacementPublicKey creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
+-(instancetype)initWithBlockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKeyHash:(UInt160)replacementPublicKeyHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
     if (!(self = [super initOnChain:chain])) return nil;
-    self.type = DSTransactionType_SubscriptionTopUp;
+    self.type = DSTransactionType_SubscriptionResetKey;
     self.version = SPECIAL_TX_VERSION;
     self.blockchainUserResetTransactionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
     self.previousBlockchainUserTransactionHash = previousBlockchainUserTransactionHash;
     self.creditFee = creditFee;
-    self.replacementPublicKey = replacementPublicKey;
+    self.replacementPublicKeyHash = replacementPublicKeyHash;
     return self;
 }
+
+//-(NSData*)payloadData {
+//    NSMutableData * data = [NSMutableData data];
+//    [data appendUInt16:self.blockchainUserResetTransactionVersion];
+//    [data appendUInt256:self.registrationTransactionHash];
+//    [data appendUInt256:self.previousBlockchainUserTransactionHash];
+//    [data appendUInt64:self.creditFee];
+//    [data appendVarInt:self.replacementPublicKey.length];
+//    [data appendData:self.replacementPublicKey];
+//    [data appendVarInt:self.oldPublicKeyPayloadSignature.length];
+//    [data appendData:self.oldPublicKeyPayloadSignature];
+//    return data;
+//}
+//
+//-(NSData*)payloadDataForHash {
+//    NSMutableData * data = [NSMutableData data];
+//    [data appendUInt16:self.blockchainUserResetTransactionVersion];
+//    [data appendUInt256:self.registrationTransactionHash];
+//    [data appendUInt256:self.previousBlockchainUserTransactionHash];
+//    [data appendUInt64:self.creditFee];
+//    [data appendVarInt:self.replacementPublicKey.length];
+//    [data appendData:self.replacementPublicKey];
+//    [data appendUInt8:0];
+//    return data;
+//}
 
 -(NSData*)payloadData {
     NSMutableData * data = [NSMutableData data];
@@ -91,12 +120,38 @@
     [data appendUInt256:self.registrationTransactionHash];
     [data appendUInt256:self.previousBlockchainUserTransactionHash];
     [data appendUInt64:self.creditFee];
-    [data appendVarInt:self.replacementPublicKey.length];
-    [data appendData:self.replacementPublicKey];
+    [data appendUInt160:self.replacementPublicKeyHash];
     [data appendVarInt:self.oldPublicKeyPayloadSignature.length];
     [data appendData:self.oldPublicKeyPayloadSignature];
     return data;
 }
+
+-(NSData*)payloadDataForHash {
+    NSMutableData * data = [NSMutableData data];
+    [data appendUInt16:self.blockchainUserResetTransactionVersion];
+    [data appendUInt256:self.registrationTransactionHash];
+    [data appendUInt256:self.previousBlockchainUserTransactionHash];
+    [data appendUInt64:self.creditFee];
+    [data appendUInt160:self.replacementPublicKeyHash];
+    [data appendUInt8:0];
+    return data;
+}
+
+-(UInt256)payloadHash {
+    return [self payloadDataForHash].SHA256_2;
+}
+
+-(BOOL)checkPayloadSignatureIsSignedByPublicKeyWithHash:(UInt160)oldPublicKeyHash {
+    DSKey * blockchainUserPublicKey = [DSKey keyRecoveredFromCompactSig:self.oldPublicKeyPayloadSignature andMessageDigest:[self payloadHash]];
+    return uint160_eq([blockchainUserPublicKey hash160], oldPublicKeyHash);
+}
+
+-(void)signPayloadWithKey:(DSKey*)privateKey {
+    NSLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    self.oldPublicKeyPayloadSignature = [privateKey compactSign:[self payloadHash]];
+    self.txHash = self.data.SHA256_2; //once the payload is signed the transaction hash is ready to go.
+}
+
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
 {
@@ -115,6 +170,10 @@
 
 -(Class)entityClass {
     return [DSBlockchainUserResetTransactionEntity class];
+}
+
+-(BOOL)transactionTypeRequiresInputs {
+    return NO;
 }
 
 @end

@@ -22,7 +22,7 @@
         self.registrationTransactionHash = [NSData dataWithUInt256:blockchainUserResetTransaction.registrationTransactionHash];
         self.creditFee = blockchainUserResetTransaction.creditFee;
         self.oldPubKeyPayloadSignature = blockchainUserResetTransaction.oldPublicKeyPayloadSignature;
-        self.replacementPublicKey = blockchainUserResetTransaction.replacementPublicKey;
+        self.replacementPublicKey = [NSData dataWithUInt160:blockchainUserResetTransaction.replacementPublicKeyHash];
         
     }];
     
@@ -38,7 +38,7 @@
         transaction.registrationTransactionHash = self.registrationTransactionHash.UInt256;
         transaction.creditFee = self.creditFee;
         transaction.oldPublicKeyPayloadSignature = self.oldPubKeyPayloadSignature;
-        transaction.replacementPublicKey = self.replacementPublicKey;
+        transaction.replacementPublicKeyHash = self.replacementPublicKey.UInt160;
     }];
     
     return transaction;

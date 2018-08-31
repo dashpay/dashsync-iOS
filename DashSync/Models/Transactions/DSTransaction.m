@@ -107,7 +107,9 @@
         _type = [message UInt16AtOffset:off]; // tx type
         off += sizeof(uint16_t);
         count = [message varIntAtOffset:off length:&l]; // input count
-        if (count == 0) return nil; // at least one input is required
+        if (count == 0) {
+            if ([self transactionTypeRequiresInputs]) return nil; // at least one input is required
+        }
         off += l.unsignedIntegerValue;
         
         for (NSUInteger i = 0; i < count; i++) { // inputs
@@ -183,7 +185,8 @@
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences
                     outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts onChain:(DSChain *)chain
 {
-    if (hashes.count == 0 || hashes.count != indexes.count) return nil;
+    if ([self transactionTypeRequiresInputs] && hashes.count == 0) return nil;
+    if (hashes.count != indexes.count) return nil;
     if (scripts.count > 0 && hashes.count != scripts.count) return nil;
     if (addresses.count != amounts.count) return nil;
     
@@ -572,6 +575,12 @@
 - (BOOL)isEqual:(id)object
 {
     return self == object || ([object isKindOfClass:[DSTransaction class]] && uint256_eq(_txHash, [object txHash]));
+}
+
+#pragma mark - Polymorphic data
+
+-(BOOL)transactionTypeRequiresInputs {
+    return YES;
 }
 
 #pragma mark - Extra shapeshift methods

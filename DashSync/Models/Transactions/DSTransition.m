@@ -9,4 +9,8 @@
 
 @implementation DSTransition
 
+-(BOOL)transactionTypeRequiresInputs {
+    return NO;
+}
+
 @end

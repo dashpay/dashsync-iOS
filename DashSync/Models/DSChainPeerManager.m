@@ -678,7 +678,7 @@
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
     NSLog(@"[DSChainPeerManager] publish transaction %@", transaction);
-    if (! transaction.isSigned) {
+    if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"peer_manager:not_signed"];
             completion([NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:

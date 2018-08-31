@@ -174,4 +174,8 @@
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
              completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
+- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
+
+- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
+
 @end

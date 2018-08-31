@@ -30,6 +30,35 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(void)raiseIssue:(NSString*)issue message:(NSString*)message {
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }]];
+    [self presentViewController:alert animated:TRUE completion:^{
+        
+    }];
+}
+
+-(IBAction)reset:(id)sender {
+    [self.blockchainUser resetTransactionUsingNewIndex:self.blockchainUser.wallet.unusedBlockchainUserIndex completion:^(DSBlockchainUserResetTransaction *blockchainUserResetTransaction) {
+        [self.chainPeerManager publishTransaction:blockchainUserResetTransaction completion:^(NSError * _Nullable error) {
+            if (error) {
+                [self raiseIssue:@"Error" message:error.localizedDescription];
+                
+            } else {
+                [self.navigationController popViewControllerAnimated:TRUE];
+            }
+        }];
+    }];
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 1) {
+        [self reset:self];
+    }
+}
+
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"BlockchainUserTopupSegue"]) {
         DSTopupBlockchainUserViewController * topupBlockchainUserViewController = (DSTopupBlockchainUserViewController*)segue.destinationViewController;
