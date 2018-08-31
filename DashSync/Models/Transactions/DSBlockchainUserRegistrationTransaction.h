@@ -18,7 +18,7 @@
 @property (nonatomic,copy) NSString * username;
 @property (nonatomic,assign) UInt160 pubkeyHash;
 @property (nonatomic,strong) NSData * payloadSignature;
-@property (nonatomic,assign) uint64_t topupAmount;
+@property (nonatomic,readonly) uint64_t topupAmount;
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain;
 

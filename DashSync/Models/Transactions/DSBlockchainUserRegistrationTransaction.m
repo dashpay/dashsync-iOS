@@ -80,7 +80,6 @@
     self.blockchainUserRegistrationTransactionVersion = version;
     self.username = username;
     self.pubkeyHash = pubkeyHash;
-    self.topupAmount = topupAmount;
     NSLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
     return self;
 }
@@ -125,6 +124,16 @@
     [data appendData:[self payloadData]];
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
+}
+
+-(uint64_t)topupAmount {
+    for (int i =0;i<self.outputScripts.count;i++) {
+        NSData * data = self.outputScripts[i];
+        if ([data UInt8AtOffset:0] == OP_RETURN) {
+            return [self.amounts[i] unsignedLongLongValue];
+        }
+    }
+    return 0;
 }
 
 - (size_t)size

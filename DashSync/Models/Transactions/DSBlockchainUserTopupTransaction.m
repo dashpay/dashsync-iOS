@@ -56,7 +56,6 @@
     self.version = SPECIAL_TX_VERSION;
     self.blockchainUserTopupTransactionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
-    self.topupAmount = topupAmount;
     return self;
 }
 
@@ -84,6 +83,16 @@
     [data appendData:payloadData];
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
+}
+
+-(uint64_t)topupAmount {
+    for (int i =0;i<self.outputScripts.count;i++) {
+        NSData * data = self.outputScripts[i];
+        if ([data UInt8AtOffset:0] == OP_RETURN) {
+            return [self.amounts[i] unsignedLongLongValue];
+        }
+    }
+    return 0;
 }
 
 - (size_t)size
