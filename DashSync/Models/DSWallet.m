@@ -435,6 +435,12 @@
 
 // MARK: - Blockchain Users
 
+-(NSArray*)blockchainUserAddresses {
+    DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self];
+    if (!derivationPath.extendedPublicKey) return @[];
+    return [derivationPath addressesToIndex:[self unusedBlockchainUserIndex] + 10];
+}
+
 - (DSBlockchainUserRegistrationTransaction *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSAccount * account in self.accounts) {
         DSBlockchainUserRegistrationTransaction * transaction = [account registrationTransactionForPublicKeyHash:publicKeyHash];

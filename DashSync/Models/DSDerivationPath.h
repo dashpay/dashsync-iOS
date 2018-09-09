@@ -165,6 +165,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 - (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
+- (NSArray * _Nonnull)publicKeysToIndex:(NSUInteger)index;
+- (NSArray * _Nonnull)addressesToIndex:(NSUInteger)index;
 - (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath* _Nonnull)indexPath fromSeed:(NSData * _Nonnull)seed;
 - (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
 - (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;

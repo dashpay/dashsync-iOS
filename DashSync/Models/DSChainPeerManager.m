@@ -1109,6 +1109,9 @@
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddresses addObjectsFromArray:[addresses allObjects]];
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
+        
+        //we should also add the blockchain user public keys to the filter
+        [allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
     }
     
     for (DSDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {

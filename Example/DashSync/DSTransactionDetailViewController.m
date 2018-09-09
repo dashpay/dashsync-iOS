@@ -432,7 +432,7 @@
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"topup amount:", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%llu", blockchainUserRegistrationTransaction.topupAmount];
+                        cell.statusLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:blockchainUserRegistrationTransaction.topupAmount];
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
@@ -472,7 +472,7 @@
                         [self setBackgroundForCell:cell indexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"topup amount:", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%llu", blockchainUserTopupTransaction.topupAmount];
+                        cell.statusLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:blockchainUserTopupTransaction.topupAmount];
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;

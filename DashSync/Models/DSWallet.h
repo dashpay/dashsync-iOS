@@ -43,6 +43,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSArray * blockchainUsers;
 
+@property (nonatomic, readonly) NSArray * blockchainUserAddresses;
+
 @property (nonatomic, readonly) NSString * uniqueID;
 
 @property (nonatomic, readonly) NSString * mnemonicUniqueID;
