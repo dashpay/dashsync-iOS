@@ -29,6 +29,7 @@ Pod::Spec.new do |s|
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'
   s.dependency 'secp256k1_dash', '0.1.0'
+  s.dependency 'AFJSONRPCClient', '0.1.0', :git => 'https://github.com/QuantumExplorer/AFJSONRPCClient'
   
 end
 
