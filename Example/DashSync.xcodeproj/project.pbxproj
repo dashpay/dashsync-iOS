@@ -100,6 +100,7 @@
 		FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBB4E36B2145B2D0008040B7 /* Layer2.storyboard */; };
 		FBB4E36F2145B414008040B7 /* DSLayer2ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E36E2145B414008040B7 /* DSLayer2ViewController.m */; };
 		FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E3722145B5B3008040B7 /* DSDAPListViewController.m */; };
+		FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E37B214A937D008040B7 /* DSDAPICallsViewController.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
@@ -285,6 +286,8 @@
 		FBB4E36E2145B414008040B7 /* DSLayer2ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSLayer2ViewController.m; sourceTree = "<group>"; };
 		FBB4E3712145B5B3008040B7 /* DSDAPListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPListViewController.h; sourceTree = "<group>"; };
 		FBB4E3722145B5B3008040B7 /* DSDAPListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPListViewController.m; sourceTree = "<group>"; };
+		FBB4E37A214A937D008040B7 /* DSDAPICallsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPICallsViewController.h; sourceTree = "<group>"; };
+		FBB4E37B214A937D008040B7 /* DSDAPICallsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPICallsViewController.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -563,6 +566,8 @@
 				FB9A106820D833F4006883E2 /* DSAddDevnetViewController.m */,
 				FBB4E36D2145B414008040B7 /* DSLayer2ViewController.h */,
 				FBB4E36E2145B414008040B7 /* DSLayer2ViewController.m */,
+				FBB4E37A214A937D008040B7 /* DSDAPICallsViewController.h */,
+				FBB4E37B214A937D008040B7 /* DSDAPICallsViewController.m */,
 			);
 			name = Main;
 			sourceTree = "<group>";
@@ -897,6 +902,7 @@
 				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
+				FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
 				FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */,
 				FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */,

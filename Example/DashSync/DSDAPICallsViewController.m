@@ -1,19 +1,18 @@
 //
-//  DSLayer2ViewController.m
+//  DSDAPICallsViewController.m
 //  DashSync_Example
 //
-//  Created by Sam Westrich on 9/10/18.
+//  Created by Sam Westrich on 9/13/18.
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import "DSLayer2ViewController.h"
 #import "DSDAPICallsViewController.h"
 
-@interface DSLayer2ViewController ()
+@interface DSDAPICallsViewController ()
 
 @end
 
-@implementation DSLayer2ViewController
+@implementation DSDAPICallsViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -30,12 +29,8 @@
     // Dispose of any resources that can be recreated.
 }
 
-
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"Layer2Segue"]) {
-        DSDAPICallsViewController * DAPICallsViewController = (DSDAPICallsViewController*)segue.destinationViewController;
-        DAPICallsViewController.chainPeerManager = self.chainPeerManager;
-    }
+-(IBAction)getBestBlockHeight:(id)sender {
+    //[self.chainPeerManager.DAPIPeerManager getBes]
 }
 
 @end

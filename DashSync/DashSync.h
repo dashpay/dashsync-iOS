@@ -15,6 +15,7 @@
 #import "DSChainManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
+#import "DSDAPIPeerManager.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"

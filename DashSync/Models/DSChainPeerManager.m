@@ -50,6 +50,7 @@
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
 #import "DSWallet.h"
+#import "DSDAPIPeerManager.h"
 
 #define PEER_LOGGING 1
 
@@ -88,6 +89,7 @@
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
+@property (nonatomic, strong) DSDAPIPeerManager * DAPIPeerManager;
 
 @end
 
@@ -100,6 +102,7 @@
     self.chain = chain;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
+    self.DAPIPeerManager = [[DSDAPIPeerManager alloc] initWithChainPeerManager:self];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
