@@ -8,6 +8,7 @@
 
 #import "DSLayer2ViewController.h"
 #import "DSDAPICallsViewController.h"
+#import "DSDAPListViewController.h"
 
 @interface DSLayer2ViewController ()
 
@@ -32,9 +33,12 @@
 
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"Layer2Segue"]) {
+    if ([segue.identifier isEqualToString:@"DAPICallsSegue"]) {
         DSDAPICallsViewController * DAPICallsViewController = (DSDAPICallsViewController*)segue.destinationViewController;
         DAPICallsViewController.chainPeerManager = self.chainPeerManager;
+    } else if ([segue.identifier isEqualToString:@"DAPsSegue"]) {
+        DSDAPListViewController * DAPListViewController = (DSDAPListViewController*)segue.destinationViewController;
+        DAPListViewController.chainPeerManager = self.chainPeerManager;
     }
 }
 

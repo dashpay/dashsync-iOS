@@ -101,6 +101,8 @@
 		FBB4E36F2145B414008040B7 /* DSLayer2ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E36E2145B414008040B7 /* DSLayer2ViewController.m */; };
 		FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E3722145B5B3008040B7 /* DSDAPListViewController.m */; };
 		FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E37B214A937D008040B7 /* DSDAPICallsViewController.m */; };
+		FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E37F214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m */; };
+		FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
@@ -288,6 +290,10 @@
 		FBB4E3722145B5B3008040B7 /* DSDAPListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPListViewController.m; sourceTree = "<group>"; };
 		FBB4E37A214A937D008040B7 /* DSDAPICallsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPICallsViewController.h; sourceTree = "<group>"; };
 		FBB4E37B214A937D008040B7 /* DSDAPICallsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPICallsViewController.m; sourceTree = "<group>"; };
+		FBB4E37E214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPIGetAddressSummaryViewController.h; sourceTree = "<group>"; };
+		FBB4E37F214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPIGetAddressSummaryViewController.m; sourceTree = "<group>"; };
+		FBB4E381214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDAPIGetUserInfoViewController.h; sourceTree = "<group>"; };
+		FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPIGetUserInfoViewController.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -684,6 +690,7 @@
 		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FBB4E37D214A9EC4008040B7 /* DAPI Calls */,
 				FBB4E3702145B54F008040B7 /* DAPs */,
 				FB995D9721101C1E00AC37D0 /* Peers */,
 				FB0F15C5210AD9E6000272E6 /* Choosing */,
@@ -705,6 +712,17 @@
 				FBB4E3722145B5B3008040B7 /* DSDAPListViewController.m */,
 			);
 			name = DAPs;
+			sourceTree = "<group>";
+		};
+		FBB4E37D214A9EC4008040B7 /* DAPI Calls */ = {
+			isa = PBXGroup;
+			children = (
+				FBB4E37E214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.h */,
+				FBB4E37F214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m */,
+				FBB4E381214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.h */,
+				FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */,
+			);
+			name = "DAPI Calls";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -900,7 +918,9 @@
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
 				2A3B3EB420F893F4002962FB /* SelectorFormCellModel.m in Sources */,
 				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
+				FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
+				FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
 				FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,

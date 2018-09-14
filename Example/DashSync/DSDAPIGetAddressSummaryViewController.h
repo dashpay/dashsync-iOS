@@ -1,15 +1,15 @@
 //
-//  DSDAPListViewController.h
+//  DSDAPIGetAddressSummaryViewController.h
 //  DashSync_Example
 //
-//  Created by Sam Westrich on 9/10/18.
+//  Created by Sam Westrich on 9/13/18.
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
 
-@interface DSDAPListViewController : UITableViewController
+@interface DSDAPIGetAddressSummaryViewController : UITableViewController
 
 @property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
 
