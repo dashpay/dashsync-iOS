@@ -33,7 +33,7 @@
 #pragma mark - Table view data source
 
 -(IBAction)fetch:(id)sender {
-    [self.chainPeerManager.DAPIPeerManager getDAPsMatching:@"" withSuccess:^(NSDictionary *userInfo) {
+    [self.chainPeerManager.DAPIPeerManager getDAPsWithSuccess:^(NSDictionary *userInfo) {
             NSLog(@"%@",userInfo);
         [self.tableView.refreshControl endRefreshing];
         } failure:^(NSError *error) {
