@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *baseBlockHash;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
 @property (nonatomic, assign) uint32_t standardPort;
+@property (nonatomic, assign) uint32_t standardDapiPort;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint16_t type;

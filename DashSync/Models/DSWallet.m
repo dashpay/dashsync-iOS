@@ -437,7 +437,7 @@
 
 -(NSArray*)blockchainUserAddresses {
     DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self];
-    if (!derivationPath.extendedPublicKey) return @[];
+    if (!derivationPath.hasExtendedPublicKey) return @[];
     return [derivationPath addressesToIndex:[self unusedBlockchainUserIndex] + 10];
 }
 

@@ -168,13 +168,14 @@ static checkpoint mainnet_checkpoint_array[] = {
     return self;
 }
 
-- (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints port:(uint32_t)port
+- (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort
 {
     if (! (self = [self init])) return nil;
     _chainType = type;
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.standardPort = port;
+    self.standardDapiPort = dapiPort;
     self.mainThreadChainEntity = [self chainEntity];
     [self retrieveWallets];
     [self retrieveStandaloneDerivationPaths];
@@ -182,7 +183,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 }
 
 
--(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort
 {
     //for devnet the genesis checkpoint is really the second block
     if (! (self = [self init])) return nil;
@@ -199,6 +200,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 //    NSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
 //    NSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.standardPort = port;
+    self.standardDapiPort = dapiPort;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
     [self retrieveWallets];
@@ -291,7 +293,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     static dispatch_once_t mainnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
-        _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT];
+        _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT dapiPort:MAINNET_DAPI_STANDARD_PORT];
         
         inSetUp = TRUE;
         //NSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
@@ -312,7 +314,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     static dispatch_once_t testnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&testnetToken, ^{
-        _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT];
+        _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT dapiPort:TESTNET_DAPI_STANDARD_PORT];
         inSetUp = TRUE;
     });
     if (inSetUp) {
@@ -337,14 +339,14 @@ static dispatch_once_t devnetToken = 0;
     return devnetChain;
 }
 
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port {
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
     DSChain * devnetChain = nil;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];

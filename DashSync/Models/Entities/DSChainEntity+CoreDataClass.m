@@ -42,12 +42,14 @@
 - (DSChain *)chain {
     __block DSChainType type;
     __block uint32_t port;
+    __block uint32_t dapiPort;
     __block NSString * devnetIdentifier;
     __block NSData * data;
     __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     [self.managedObjectContext performBlockAndWait:^{
         port = self.standardPort;
+        dapiPort = self.standardDapiPort;
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
@@ -63,7 +65,7 @@
             return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port];
+            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiPort:dapiPort];
         }
     }
     return nil;
@@ -94,6 +96,13 @@
         chainEntity.standardPort = TESTNET_STANDARD_PORT;
     } else {
         chainEntity.standardPort = DEVNET_STANDARD_PORT;
+    }
+    if (type == DSChainType_MainNet) {
+        chainEntity.standardDapiPort = MAINNET_DAPI_STANDARD_PORT;
+    } else if (type == DSChainType_TestNet) {
+        chainEntity.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
+    } else {
+        chainEntity.standardDapiPort = DEVNET_DAPI_STANDARD_PORT;
     }
     return chainEntity;
 }

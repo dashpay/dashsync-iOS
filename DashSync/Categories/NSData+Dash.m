@@ -154,17 +154,17 @@ sph_echo512(&ctx_echo, self.bytes, self.length);
     sph_blake512_init(&ctx_blake);
     sph_blake512(&ctx_blake, copy.bytes, copy.length);
     sph_blake512_close(&ctx_blake, &x11Data);
-    
+
     sph_bmw_big_context ctx_bmw;
     sph_bmw512_init(&ctx_bmw);
     sph_bmw512(&ctx_bmw, &x11Data, 64);
     sph_bmw512_close(&ctx_bmw, &x11Data);
-    
+
     sph_groestl_big_context ctx_groestl;
     sph_groestl512_init(&ctx_groestl);
     sph_groestl512(&ctx_groestl, &x11Data, 64);
     sph_groestl512_close(&ctx_groestl, &x11Data);
-    
+
     sph_skein_big_context ctx_skein;
     sph_skein512_init(&ctx_skein);
     sph_skein512(&ctx_skein, &x11Data, 64);
@@ -200,15 +200,12 @@ sph_echo512(&ctx_echo, self.bytes, self.length);
     sph_simd512(&ctx_simd, &x11Data, 64);
     sph_simd512_close(&ctx_simd, &x11Data);
     
-    UInt256 rData = UINT256_ZERO;
-    
     sph_echo_big_context ctx_echo;
     sph_echo512_init(&ctx_echo);
     sph_echo512(&ctx_echo, &x11Data, 64);
-    echo_big_close(&ctx_echo, 0,0,&rData,16);
+    sph_echo512_close(&ctx_echo,&x11Data);
     
-
-    return rData;
+    return *(UInt256 *)(uint8_t*)x11Data.u8;
     
 }
 

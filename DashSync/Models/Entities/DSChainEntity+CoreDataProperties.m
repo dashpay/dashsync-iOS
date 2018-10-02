@@ -33,6 +33,7 @@
 @dynamic checkpoints;
 @dynamic devnetIdentifier;
 @dynamic standardPort;
+@dynamic standardDapiPort;
 @dynamic type;
 @dynamic peers;
 @dynamic transactionHashes;

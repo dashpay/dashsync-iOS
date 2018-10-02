@@ -317,6 +317,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return self.chain;
 }
 
+-(BOOL)hasExtendedPublicKey {
+    return (!!_extendedPublicKey);
+}
+
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
         if (self.wallet) {

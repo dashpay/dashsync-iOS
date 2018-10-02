@@ -152,11 +152,62 @@
                             <outlet property="delegate" destination="jW4-Ft-A1B" id="s60-lC-eIM"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="DAPs" id="8Db-h9-C4g"/>
+                    <navigationItem key="navigationItem" title="DAPs" id="8Db-h9-C4g">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="pvK-5P-lqZ">
+                            <connections>
+                                <segue destination="ijQ-9T-3Og" kind="show" identifier="AddDAPSegue" id="h0q-mf-Y7H"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FmS-kb-TkD" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="873" y="187"/>
+        </scene>
+        <!--Add DAP-->
+        <scene sceneID="DVH-vj-OqO">
+            <objects>
+                <tableViewController id="ijQ-9T-3Og" customClass="DSAddDAPViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="aqR-h9-M0F">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <sections>
+                            <tableViewSection id="rfA-QH-bmb">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" rowHeight="52" id="yfF-GP-pTq">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="52"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="yfF-GP-pTq" id="A0W-Hl-C2u">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="51.666666666666664"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DashPay" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3KS-uy-Wmp">
+                                                    <rect key="frame" x="16" y="16" width="67" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="3KS-uy-Wmp" firstAttribute="top" secondItem="A0W-Hl-C2u" secondAttribute="top" constant="16" id="1QH-iL-w2P"/>
+                                                <constraint firstItem="3KS-uy-Wmp" firstAttribute="leading" secondItem="A0W-Hl-C2u" secondAttribute="leading" constant="16" id="DbF-XB-Ewa"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="ijQ-9T-3Og" id="VF0-5Z-cl6"/>
+                            <outlet property="delegate" destination="ijQ-9T-3Og" id="vhS-Pi-KfH"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Add DAP" id="Z8a-Dc-8L6"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="M9w-nG-aZF" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1591" y="187"/>
         </scene>
         <!--DAPI Calls-->
         <scene sceneID="dNL-wj-xrX">

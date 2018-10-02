@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "IntTypes.h"
 
 typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
     DSSporkIdentifier_Spork2InstantSendEnabled = 10001,

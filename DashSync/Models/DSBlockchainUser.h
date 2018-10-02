@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "IntTypes.h"
 
 @class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSAccount,DSChain;
 

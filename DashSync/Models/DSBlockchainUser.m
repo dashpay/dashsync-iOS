@@ -58,7 +58,7 @@
 
 -(void)generateBlockchainUserExtendedPublicKey:(void (^ _Nullable)(BOOL registered))completion {
     __block DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
-    if (derivationPath.extendedPublicKey) {
+    if ([derivationPath hasExtendedPublicKey]) {
         completion(YES);
         return;
     }

@@ -7,6 +7,7 @@
 //
 
 #import "DSDAPListViewController.h"
+#import "DSAddDAPViewController.h"
 
 @interface DSDAPListViewController ()
 
@@ -41,6 +42,13 @@
             [self.tableView.refreshControl endRefreshing];
         }];
     
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"AddDAPSegue"]) {
+        DSAddDAPViewController * addDAPViewController = (DSAddDAPViewController*)segue.destinationViewController;
+        addDAPViewController.chainPeerManager = self.chainPeerManager;
+    }
 }
 
 @end

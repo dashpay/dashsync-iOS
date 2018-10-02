@@ -41,6 +41,10 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 12999
 
+#define MAINNET_DAPI_STANDARD_PORT 3000
+#define TESTNET_DAPI_STANDARD_PORT 3000
+#define DEVNET_DAPI_STANDARD_PORT 3000
+
 #define PROTOCOL_VERSION_MAINNET   70210
 #define MIN_PROTOCOL_VERSION_MAINNET  70209
 
@@ -104,6 +108,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 @property (nonatomic, readonly) NSDictionary *recentBlocks;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
+@property (nonatomic, assign) uint32_t standardDapiPort;
 @property (nonatomic, assign) UInt256 genesisHash;
 @property (nonatomic, readonly) NSString * _Nullable chainTip;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
@@ -155,7 +160,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 +(DSChain*)testnet;
 
 +(DSChain*)devnetWithIdentifier:(NSString*)identifier;
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port;
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort;
 
 +(DSChain*)chainForNetworkName:(NSString*)networkName;
 

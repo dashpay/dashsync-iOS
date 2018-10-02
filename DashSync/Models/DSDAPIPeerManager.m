@@ -14,6 +14,7 @@
 #import "NSString+Dash.h"
 #import "DSTransaction.h"
 #import "DSMerkleBlock.h"
+#import "DSChainPeerManager.h"
 
 @interface DSDAPIPeerManager()
 @property (nonatomic,readonly) AFJSONRPCClient * client;
@@ -29,7 +30,8 @@
 }
 
 -(NSURL*)mainDAPINodeURL {
-    return [NSURL URLWithString:@"http://54.169.131.115:3000"];
+    NSString * hostString = @"54.169.131.115:3000";//[NSString stringWithFormat:@"http://%@:3000",self.chainPeerManager.downloadPeer.host];
+    return [NSURL URLWithString:hostString];
 }
 
 -(AFJSONRPCClient*)client {
@@ -112,7 +114,7 @@
 }
 
 -(void)sendRawTransition:(NSData*)stateTransitionData transitionData:(NSData*)data withSuccess:(void (^)(UInt256 transitionHashId))success failure:(void (^)(NSError *error))failure {
-    [self.client invokeMethod:@"sendRawTransition" withParameters:@{@"rawTransitionHeader":stateTransitionData.hexString,@"rawTransitionPacket":data} success:^(NSURLSessionDataTask *task, id responseObject) {
+    [self.client invokeMethod:@"sendRawTransition" withParameters:@{@"rawTransitionHeader":stateTransitionData.hexString,@"rawTransitionPacket":data.hexString} success:^(NSURLSessionDataTask *task, id responseObject) {
         NSString * responseString = responseObject;
         success([responseString.hexToData UInt256]);
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
