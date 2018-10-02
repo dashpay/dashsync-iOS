@@ -991,9 +991,11 @@ static dispatch_once_t devnetToken = 0;
         
         if (!_lastBlock) {
             if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
-                UInt256 checkpointHash = self.checkpoints[0].checkpointHash;
-                
+                NSUInteger genesisHeight = [self isDevnetAny]?1:0;
+                UInt256 checkpointHash = self.checkpoints[genesisHeight].checkpointHash;
+                    
                 _lastBlock = self.blocks[uint256_obj(checkpointHash)];
+                
             } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
                 // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
                 for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
