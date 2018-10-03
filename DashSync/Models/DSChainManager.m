@@ -14,6 +14,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "DSWallet.h"
+#import "DashSync.h"
 #include <arpa/inet.h>
 
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
@@ -227,6 +228,12 @@
         setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
     }
     [self.knownDevnetChains removeObject:chain];
+    [[DashSync sharedSyncController] wipePeerDataForChain:chain];
+    [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
+    [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+    [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
+    [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain];
+    [[DashSync sharedSyncController] wipeWalletDataForChain:chain]; //this takes care of blockchain info as well;
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
     });

@@ -27,6 +27,8 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSChain.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 
@@ -44,7 +46,7 @@
     self.shapeshiftOutboundAddress = [DSTransaction shapeshiftOutboundAddressForScript:self.script];
     self.transaction = transactionEntity;
     if (self.address) {
-        NSArray * addressEntities = [DSAddressEntity objectsMatching:@"address == %@",self.address];
+        NSArray * addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",self.address,tx.chain.chainEntity];
         if ([addressEntities count]) {
             NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
             self.localAddress = [addressEntities objectAtIndex:0];
