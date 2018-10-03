@@ -43,7 +43,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainUsersObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -186,6 +186,13 @@
                                                                [self updateWalletCount];
                                                            }
                                                        }];
+    
+    self.blockchainUsersObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlockchainUsersDidChangeNotification object:nil
+                                                                                          queue:nil usingBlock:^(NSNotification *note) {
+                                                                                              if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                  [self updateBlockchainUsersCount];
+                                                                                              }
+                                                                                          }];
     self.chainStandaloneDerivationPathObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {

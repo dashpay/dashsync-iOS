@@ -19,6 +19,7 @@
 #import "DSBlockchainUserCloseTransaction.h"
 #import "DSAuthenticationManager.h"
 #import "DSPriceManager.h"
+#import "DSChainPeerManager.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
