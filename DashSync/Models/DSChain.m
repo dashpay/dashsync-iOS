@@ -1316,7 +1316,8 @@ static dispatch_once_t devnetToken = 0;
     _lastBlock = nil;
     
     if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
-        UInt256 checkpointHash = self.checkpoints[0].checkpointHash;
+        NSUInteger genesisHeight = [self isDevnetAny]?1:0;
+        UInt256 checkpointHash = self.checkpoints[genesisHeight].checkpointHash;
         
         _lastBlock = self.blocks[uint256_obj(checkpointHash)];
     } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
