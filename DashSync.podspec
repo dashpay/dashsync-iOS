@@ -16,8 +16,8 @@ Pod::Spec.new do |s|
   s.author           = { 'quantumexplorer' => 'quantum@dash.org' }
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
-  s.platform = :ios
   s.ios.deployment_target = '10.0'
+  s.watchos.deployment_target = '2.0'
 
   s.source_files = "DashSync/**/*.{h,m}"
   s.public_header_files = 'DashSync/**/*.h'
@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'secp256k1_dash', '0.1.0'
+  s.dependency 'secp256k1_dash', '0.1.1'
   s.dependency 'AFJSONRPCClient_DASH', '2.1.4'
   
 end
