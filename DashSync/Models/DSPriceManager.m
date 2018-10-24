@@ -41,7 +41,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
-#import "NSAttributedString+Attachments.h"
+
 #import "NSString+Dash.h"
 #import "Reachability.h"
 #import "DSChainPeerManager.h"
