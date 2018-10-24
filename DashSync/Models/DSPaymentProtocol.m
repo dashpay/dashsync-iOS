@@ -2,7 +2,7 @@
 //  DSPaymentProtocol.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 4/21/14.
+//  Created by Aaron Voisine for BreadWallet on 4/21/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>

@@ -30,7 +30,7 @@
 }
 
 -(NSURL*)mainDAPINodeURL {
-    NSString * hostString = @"54.169.131.115:3000";//[NSString stringWithFormat:@"http://%@:3000",self.chainPeerManager.downloadPeer.host];
+    NSString * hostString = @"http://54.169.131.115:3000";//[NSString stringWithFormat:@"http://%@:3000",self.chainPeerManager.downloadPeer.host];
     return [NSURL URLWithString:hostString];
 }
 
@@ -264,7 +264,7 @@
 }
 
 -(void)fetchDapContractForDap:(NSString*)dapId withSuccess:(void (^)(NSDictionary *dapInfo))success failure:(void (^)(NSError *error))failure {
-    [self.client invokeMethod:@"fetchDapContract" withParameters:@{@"dapId":@"*"} success:^(NSURLSessionDataTask *task, id responseObject) {
+    [self.client invokeMethod:@"fetchDapContract" withParameters:@{@"dapId":dapId} success:^(NSURLSessionDataTask *task, id responseObject) {
         success(responseObject);
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
         failure(error);

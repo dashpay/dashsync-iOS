@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 
 #import "DSBIP39Mnemonic.h"
+#import "DSDerivationPath.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSBIP39Tests : XCTestCase
@@ -305,6 +306,31 @@
     XCTAssertEqualObjects(seed_nfkd, seed_nfc, @"[DSBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
     XCTAssertEqualObjects(seed_nfkd, seed_nfkc, @"[DSBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
     XCTAssertEqualObjects(seed_nfkd, seed_nfd, @"[DSBIP39Mnemonic deriveKeyFromPhrase: withPassphrase:]");
+}
+
+- (void)testFindLastWordOfMnemonic
+{
+    DSBIP39Mnemonic *m = [DSBIP39Mnemonic sharedInstance];
+    NSString * address = @"XADDRESS";
+    
+    NSMutableArray * possibleWords = [NSMutableArray array];
+    for (NSString * word in m.words) {
+        NSString * passphrase = [NSString stringWithFormat:@"words go here %@",word];
+        
+        if ([m phraseIsValid:passphrase]) {
+            [possibleWords addObject:word];
+            NSData * data = [m deriveKeyFromPhrase:passphrase withPassphrase:nil];
+            DSDerivationPath * derivationPath = [DSDerivationPath bip44DerivationPathOnChain:[DSChain mainnet] forAccountNumber:0];
+            [derivationPath generateExtendedPublicKeyFromSeed:data storeUnderWalletUniqueId:nil];
+            NSUInteger indexArr[] = {0,0};
+            NSString * firstAddress = [derivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndexes:indexArr length:2]];
+            if ([firstAddress isEqualToString:address]) {
+                NSLog(@"word is %@",word);
+            }
+            
+        }
+    }
+    XCTAssert(possibleWords.count,@"words need to exist");
 }
 
 @end

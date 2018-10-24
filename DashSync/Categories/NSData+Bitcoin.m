@@ -2,8 +2,9 @@
 //  NSData+Bitcoin.m
 //  DashSync
 //
-//  Created by Aaron Voisine on 10/09/13.
+//  Created by Aaron Voisine for BreadWallet on 10/09/13.
 //  Copyright (c) 2013 Aaron Voisine <voisine@gmail.com>
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
@@ -28,6 +29,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "NSData+Dash.h"
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {

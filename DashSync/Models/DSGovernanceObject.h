@@ -65,6 +65,8 @@ typedef NS_ENUM(uint32_t, DSGovernanceObjectType) {
 
 -(NSData*)dataMessage;
 
+-(NSData*)proposalInfo;
+
 @end
 
 @protocol DSGovernanceObjectDelegate<NSObject>

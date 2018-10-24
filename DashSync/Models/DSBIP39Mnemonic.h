@@ -2,7 +2,7 @@
 //  DSBIP39Mnemonic.h
 //  DashSync
 //
-//  Created by Aaron Voisine on 3/21/14.
+//  Created by Aaron Voisine for BreadWallet on 3/21/14.
 //  Copyright (c) 2014 Aaron Voisine <voisine@gmail.com>
 //  Updated by Quantum Explorer on 05/11/18.
 //  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
@@ -34,6 +34,8 @@
 #define BIP39_CREATION_TIME (1427587200.0 - NSTimeIntervalSince1970)
 
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
+
+@property (nonatomic, readonly) NSArray *words;
 
 + (instancetype _Nullable)sharedInstance;
 
