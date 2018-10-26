@@ -23,6 +23,7 @@ Pod::Spec.new do |s|
 
   s.ios.source_files = "DashSync/**/*.{h,m}"
   s.ios.public_header_files = 'DashSync/**/*.h'
+  s.ios.private_header_files = 'DashSync/crypto/x11/*.h'
   s.ios.libraries = 'bz2', 'sqlite3'
   s.ios.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
   
