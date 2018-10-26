@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 @class DSMasternodePing,DSMasternodeBroadcastEntity;
 

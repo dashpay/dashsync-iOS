@@ -6,7 +6,7 @@
 //
 
 #import "DSTransaction.h"
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 @class DSKey;
 

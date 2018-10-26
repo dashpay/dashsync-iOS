@@ -24,7 +24,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 typedef struct _DSUTXO {
     UInt256 hash;

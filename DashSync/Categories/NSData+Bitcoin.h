@@ -27,7 +27,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 #define SEC_ATTR_SERVICE    @"org.dashfoundation.dash"
 

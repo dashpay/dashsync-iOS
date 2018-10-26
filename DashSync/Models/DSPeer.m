@@ -1568,7 +1568,7 @@
 
 - (void)acceptDarksendTransactionMessage:(NSData *)message
 {
-    //    BRTransaction *tx = [BRTransaction transactionWithMessage:message];
+    //    DSTransaction *tx = [DSTransaction transactionWithMessage:message];
     //
     //    if (! tx) {
     //        [self error:@"malformed tx message: %@", message];

@@ -37,6 +37,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 @interface DSAuthenticationManager : NSObject <UITextFieldDelegate>
 
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
+@property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, assign) BOOL usesAuthentication;
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false

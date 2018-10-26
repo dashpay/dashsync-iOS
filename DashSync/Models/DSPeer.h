@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_Error = 0,

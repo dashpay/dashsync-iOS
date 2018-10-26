@@ -66,27 +66,8 @@
 }
 
 -(void)testFind {
-    NSArray * names = @[@"DASHHubKumasiBUSINESSDEVELOPMENTPLAN",@"DashHubKumasiBUSINESSDEVELOPMENTPLAN",@"DashhubKumasiBUSINESSDEVELOPMENTPLAN",@"DashhubkumasiBUSINESSDEVELOPMENTPLAN"];
-    NSArray * addressArray = @[@"XazT64z1Fm1H3rKyc6YcX3wwoc3iUSTgWe",
-                              @"XbHyKmFNP8EDnECFJLPQfoepXXuQJSTti7",
-                              @"Xd4jjVenYtEm63scYVKbFxGwWWA3c9FoFe",
-                              @"XdVYZGLbD2aLyuBQbPfGnPXLueLWb29cKy",
-                              @"XehfdMNEcm5s23U4hEYK72KensXRmW9Dfs",
-                              @"XfL2faTB3KvhiZWTS4MtFNvPeYiAFsrHJu",
-                              @"XghXLXbwi9NkzBPx2oCZzWruVbQn52ABck",
-                              @"XhDueL5YM9xesZK326SnuSvLbETdxX6SVr",
-                              @"XhN2mB4rDa2eGHq4GK7u4Uv3j5H6HMiKFf",
-                              @"XieriB2j5HgAg3W3LneqSKee7YBiFVt9JD",
-                              @"XjQNF3q2GXBZHt39cxen9NMJ8CweVVhVJF",
-                              @"XjXw33EKqd7BxHr82hhxzSJf3GcQaRS3id",
-                              @"XmMPbMGnXsYcEkhAaYrTPMnhXP3GKLhMyu",
-                              @"XmgeCqXhaed8obKkYJ665uBNS6KrBMZa4w",
-                              @"Xp4u1ddtYjQCT9R8nMteqmnMa4LRazMkCV",
-                              @"XpH9D4p4R69t5SbUzHUdMn3xXAqoWbCsMW",
-                              @"XpPxouVSgsf3gYYfogZmnQC181pN74a6og",
-                              @"XwrVh25SUaZzNsjTikhjZE2nEZcaku6jVe",
-                              @"XwxdB9FYTcs7MU5oEfohxK6wFzYcT4jRah",
-                              @"Xx6YXz8gn8zbbtQtG6qF32Wb1MMx713GvA"];
+    NSArray * names = @[@""];
+    NSArray * addressArray = @[@""];
     
     UInt256 hash = *(UInt256 *)@"20499001e2b0c5dd34b9214a5475be07afad2f68f8d02e5f52be79280500f7d7ff".hexToData.bytes;
     UInt256 reversedHash = *(UInt256 *)@"20499001e2b0c5dd34b9214a5475be07afad2f68f8d02e5f52be79280500f7d7ff".hexToData.reverse.bytes;

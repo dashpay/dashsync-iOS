@@ -17,14 +17,16 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '10.0'
-  s.watchos.deployment_target = '2.0'
-
-  s.source_files = "DashSync/**/*.{h,m}"
-  s.public_header_files = 'DashSync/**/*.h'
-  s.libraries = 'bz2', 'sqlite3'
+  #s.watchos.deployment_target = '2.0'
+  
   s.requires_arc = true
 
-  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
+  s.ios.source_files = "DashSync/**/*.{h,m}"
+  s.ios.public_header_files = 'DashSync/**/*.h'
+  s.ios.libraries = 'bz2', 'sqlite3'
+  s.ios.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
+  
+  #s.watchos.source_files = "DashSync/**/*.{h,m}"
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'

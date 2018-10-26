@@ -131,8 +131,26 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 // true if touch id is enabled
 - (BOOL)isTouchIdEnabled
 {
-    return ([LAContext class] &&
-            [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
+    if (@available(iOS 11.0, *)) {
+        if (![LAContext class]) return FALSE; //sanity check
+        LAContext * context = [LAContext new];
+        return ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] && context.biometryType == LABiometryTypeTouchID);
+    } else {
+        return ([LAContext class] &&
+                [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil]) ? YES : NO;
+    }
+}
+
+// true if touch id is enabled
+- (BOOL)isFaceIdEnabled
+{
+    if (@available(iOS 11.0, *)) {
+        if (![LAContext class]) return FALSE; //sanity check
+        LAContext * context = [LAContext new];
+        return ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] && context.biometryType == LABiometryTypeFaceID);
+    } else {
+        return FALSE;
+    }
 }
 
 // true if device passcode is enabled

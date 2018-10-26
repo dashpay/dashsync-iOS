@@ -28,7 +28,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 CF_IMPLICIT_BRIDGING_ENABLED
 

@@ -27,17 +27,17 @@
 
 #import "DSTransaction.h"
 
-typedef enum : NSInteger {
-    DSTransactionTypeSent,
-    DSTransactionTypeReceive,
-    DSTransactionTypeMove,
-    DSTransactionTypeInvalid
-} DSTransactionType;
+typedef NS_ENUM(NSUInteger, DSTransactionStatus) {
+    DSTransactionStatus_Sent,
+    DSTransactionStatus_Receive,
+    DSTransactionStatus_Move,
+    DSTransactionStatus_Invalid
+};
 
 @interface DSTransaction (Utils)
 
-- (DSTransactionType)transactionTypeInWallet:(DSWallet*)wallet;
-- (DSTransactionType)transactionTypeInAccount:(DSAccount*)account;
+- (DSTransactionStatus)transactionStatusInWallet:(DSWallet*)wallet;
+- (DSTransactionStatus)transactionStatusInAccount:(DSAccount*)account;
 - (NSString*)amountTextReceivedInAccount:(DSAccount*)account;
 - (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account;
 - (NSString*)dateText;

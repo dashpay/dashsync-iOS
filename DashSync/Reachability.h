@@ -7,7 +7,9 @@
  */
 
 #import <Foundation/Foundation.h>
+#if (TARGET_OS_IOS | TARGET_OS_SIMULATOR)
 #import <SystemConfiguration/SystemConfiguration.h>
+#endif
 #import <netinet/in.h>
 
 

@@ -27,15 +27,12 @@
 
 #import "DSTransaction+Utils.h"
 #import "DSPriceManager.h"
-#import "DSChainPeerManager.h"
-#import "DSChainManager.h"
-#import "DSChain.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
 
 @implementation DSTransaction (Utils)
 
-- (DSTransactionType)transactionTypeInAccount:(DSAccount*)account
+- (DSTransactionStatus)transactionStatusInAccount:(DSAccount*)account
 {
     uint64_t received = [account amountReceivedFromTransaction:self],
              sent = [account amountSentByTransaction:self];
@@ -43,19 +40,19 @@
     uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
 
     if (confirms == 0 && ! [account transactionIsValid:self]) {
-        return DSTransactionTypeInvalid;
+        return DSTransactionStatus_Invalid;
     }
     
     if (sent > 0 && received == sent) {
-        return DSTransactionTypeMove;
+        return DSTransactionStatus_Move;
     }
     else if (sent > 0) {
-        return DSTransactionTypeSent;
+        return DSTransactionStatus_Sent;
     }
-    else return DSTransactionTypeReceive;
+    else return DSTransactionStatus_Receive;
 }
 
-- (DSTransactionType)transactionTypeInWallet:(DSWallet*)wallet
+- (DSTransactionStatus)transactionStatusInWallet:(DSWallet*)wallet
 {
     uint64_t received = [wallet amountReceivedFromTransaction:self],
     sent = [wallet amountSentByTransaction:self];
@@ -63,16 +60,16 @@
     uint32_t confirms = ([self lastBlockHeight] > blockHeight) ? 0 : (blockHeight - [self lastBlockHeight]) + 1;
     
     if (confirms == 0 && ! [wallet transactionIsValid:self]) {
-        return DSTransactionTypeInvalid;
+        return DSTransactionStatus_Invalid;
     }
     
     if (sent > 0 && received == sent) {
-        return DSTransactionTypeMove;
+        return DSTransactionStatus_Move;
     }
     else if (sent > 0) {
-        return DSTransactionTypeSent;
+        return DSTransactionStatus_Sent;
     }
-    else return DSTransactionTypeReceive;
+    else return DSTransactionStatus_Receive;
 }
 
 - (NSString*)localCurrencyTextForAmountReceivedInAccount:(DSAccount*)account

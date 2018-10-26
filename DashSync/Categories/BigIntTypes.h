@@ -1,5 +1,5 @@
 //
-//  IntTypes.h
+//  BigIntTypes.h
 //  DashSync
 //
 //  Created by Sam Westrich on 7/20/16.
@@ -23,8 +23,8 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#ifndef IntTypes_h
-#define IntTypes_h
+#ifndef BigIntTypes_h
+#define BigIntTypes_h
 
 typedef union _UInt512 {
     uint8_t u8[512/8];
@@ -91,4 +91,4 @@ typedef union _UInt128 {
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 
 
-#endif /* IntTypes_h */
+#endif /* BigIntTypes_h */

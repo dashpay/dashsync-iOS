@@ -25,7 +25,7 @@
 #import <Foundation/Foundation.h>
 #import "DSBlockchainUser.h"
 
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);

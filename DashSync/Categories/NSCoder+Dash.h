@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "IntTypes.h"
+#import "BigIntTypes.h"
 
 @interface NSCoder (Dash)
 

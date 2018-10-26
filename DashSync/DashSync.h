@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Reachability.h"
+#import "DSEnvironment.h"
 #import "DSChainPeerManager.h"
 #import "DSChain.h"
 #import "DSBlockchainUser.h"
@@ -21,6 +23,7 @@
 #import "DSGovernanceVote.h"
 #import "DSSporkManager.h"
 #import "DSAuthenticationManager.h"
+#import "DSInsightManager.h"
 #import "DSEventManager.h"
 #import "DSShapeshiftManager.h"
 #import "DSBIP39Mnemonic.h"
@@ -53,6 +56,8 @@
 #import "DSPaymentProtocol.h"
 
 #import "DSTransactionFactory.h"
+#import "DSTransaction+Utils.h"
+
 #import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
