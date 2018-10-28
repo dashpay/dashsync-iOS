@@ -33,7 +33,7 @@
 #import "DSChain.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
-#define LOG_MERKLE_BLOCKS 1
+#define LOG_MERKLE_BLOCKS 0
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the

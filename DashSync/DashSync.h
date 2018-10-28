@@ -22,6 +22,7 @@
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
 #import "DSSporkManager.h"
+#import "DSVersionManager.h"
 #import "DSAuthenticationManager.h"
 #import "DSInsightManager.h"
 #import "DSEventManager.h"

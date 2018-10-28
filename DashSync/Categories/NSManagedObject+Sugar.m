@@ -28,6 +28,7 @@
 
 #import "NSManagedObject+Sugar.h"
 #import <objc/runtime.h>
+#import "DSTransaction.h"
 
 static const char *_contextKey = "contextKey";
 static const char *_storeURLKey = "storeURLKey";
@@ -263,7 +264,8 @@ static NSUInteger _fetchBatchSize = 100;
     
     dispatch_once(&onceToken, ^{
         NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
-        NSURL *bundleURL = [[NSBundle.mainBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+        NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
+        NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
         NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
         NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
         NSString *projName = modelURL.lastPathComponent.stringByDeletingPathExtension;
@@ -279,8 +281,8 @@ static NSUInteger _fetchBatchSize = 100;
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-
-        NSURL *bundleURL = [[NSBundle.mainBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
+        NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
+        NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
         NSBundle *resourceBundle = [NSBundle bundleWithURL:bundleURL];
         NSURL *modelURL = [resourceBundle URLsForResourcesWithExtension:@"momd" subdirectory:nil].lastObject;
         

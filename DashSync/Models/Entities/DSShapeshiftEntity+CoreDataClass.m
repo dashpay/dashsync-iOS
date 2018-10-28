@@ -103,7 +103,7 @@
     DSChainPeerManager * manager = [[DSChainManager sharedInstance] mainnetManager];
     uint32_t h = [[manager chain] lastBlockHeight];
     if (h > 20) height = h - 20; //only care about shapeshifts in last 20 blocks
-    NSArray * shapeshiftsInProgress = [DSShapeshiftEntity objectsMatching:@"(shapeshiftStatus == %@ || shapeshiftStatus == %@) && transaction.blockHeight > %@",@(eShapeshiftAddressStatus_NoDeposits), @(eShapeshiftAddressStatus_Received),@(height)];
+    NSArray * shapeshiftsInProgress = [DSShapeshiftEntity objectsMatching:@"(shapeshiftStatus == %@ || shapeshiftStatus == %@) && transaction.transactionHash.blockHeight > %@",@(eShapeshiftAddressStatus_NoDeposits), @(eShapeshiftAddressStatus_Received),@(height)];
     
     return shapeshiftsInProgress;
 }

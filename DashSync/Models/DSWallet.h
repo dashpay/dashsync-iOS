@@ -132,6 +132,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 //returns the seed phrase after authenticating
 -(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
+- (void)seedPhraseAfterAuthenticationWithPrompt:(NSString *)authprompt completion:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 
 -(NSString* _Nullable)seedPhraseIfAuthenticated;
 

@@ -167,7 +167,7 @@
 
 - (void)seedPhraseAfterAuthentication:(void (^)(NSString * _Nullable))completion
 {
-    [self seedPhraseWithPrompt:nil completion:completion];
+    [self seedPhraseAfterAuthenticationWithPrompt:nil completion:completion];
 }
 
 -(BOOL)hasSeedPhrase {
@@ -248,7 +248,7 @@
 }
 
 // authenticates user and returns seedPhrase
-- (void)seedPhraseWithPrompt:(NSString *)authprompt completion:(void (^)(NSString * seedPhrase))completion
+- (void)seedPhraseAfterAuthenticationWithPrompt:(NSString *)authprompt completion:(void (^)(NSString * seedPhrase))completion
 {
     @autoreleasepool {
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
