@@ -318,6 +318,13 @@
     return FALSE;
 }
 
+-(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        if ([derivationPath containsAddress:address]) return derivationPath;
+    }
+    return nil;
+}
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {

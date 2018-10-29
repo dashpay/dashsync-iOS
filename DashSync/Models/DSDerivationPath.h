@@ -104,6 +104,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // all previously used addresses
 @property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
 
+// purpose of the derivation path if BIP 43 based
+@property (nonatomic, readonly) NSUInteger purpose;
+
 // currently the derivationPath is synced to this block height
 @property (nonatomic, assign) uint32_t syncBlockHeight;
 
@@ -131,6 +134,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
+
+-(BOOL)isBIP32Only;
+-(BOOL)isBIP43Based;
 
 // set the account, can not be later changed
 - (void)setAccount:(DSAccount *)account;

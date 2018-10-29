@@ -1153,10 +1153,10 @@
         _relaySpeed = _relaySpeed*0.9 + speed*0.1;
         _relayStartTime = 0;
     }
-    for (int i = 0; i < count; i++) {
-        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
-        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
-    }
+//    for (int i = 0; i < count; i++) {
+//        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
+//        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
+//    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     // Devnets can run slower than usual

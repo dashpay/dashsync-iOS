@@ -92,6 +92,9 @@
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
+// the high level (hardened) derivation path containing the address
+-(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address;
 

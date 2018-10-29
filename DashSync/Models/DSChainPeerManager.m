@@ -61,9 +61,9 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#define TESTNET_DNS_SEEDS @[@"test.dnsseed.masternode.io",@"testnet-seed.dashdot.io"]
+#define TESTNET_DNS_SEEDS @[@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io"]
 
-#define MAINNET_DNS_SEEDS @[@"dnsseed.dashpay.io",@"dnsseed.masternode.io",@"dnsseed.dashdot.io"]
+#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org",@"dnsseed.masternode.io"]
 
 
 #define FIXED_PEERS          @"FixedPeers"
@@ -1283,7 +1283,6 @@
     
     if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastblock)) { // start blockchain sync
         self.lastRelayTime = 0;
-        NSLog(@"b");
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
@@ -1302,7 +1301,6 @@
         });
     }
     else { // we're already synced
-        NSLog(@"c");
         self.syncStartHeight = 0;
         [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
         [self loadMempools];

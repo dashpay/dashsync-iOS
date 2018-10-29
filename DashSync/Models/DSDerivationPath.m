@@ -289,6 +289,23 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
+// MARK: - Purpose
+
+-(BOOL)isBIP32Only {
+    if (self.length == 1) return true;
+    return false;
+}
+
+-(BOOL)isBIP43Based {
+    if (self.length != 1) return true;
+    return false;
+}
+
+-(NSUInteger)purpose {
+    if ([self isBIP43Based]) return [self indexAtPosition:0];
+    return 0;
+}
+
 // MARK: - Account
 
 -(NSUInteger)accountNumber {

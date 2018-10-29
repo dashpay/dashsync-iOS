@@ -10,6 +10,7 @@
 @implementation DSOptionsManager
 
 @dynamic keepHeaders;
+@dynamic shouldSyncFromHeight;
 @dynamic syncFromHeight;
 @dynamic syncGovernanceObjectsInterval;
 @dynamic syncMasternodeListInterval;
@@ -28,6 +29,7 @@
 - (instancetype)init {
     NSDictionary *defaults = @{
         @"keepHeaders" : @NO,
+        @"shouldSyncFromHeight":@NO,
         @"syncGovernanceObjectsInterval" : @600, // 10 min
         @"syncMasternodeListInterval" : @600,    // 10 min
         @"syncFromHeight" : @0,
@@ -44,20 +46,17 @@
 
 #pragma mark Manual
 
-- (BOOL)shouldSyncFromHeight {
-    NSString *key = @"syncFromHeight";
-    return [[self userDefaults] objectForKey:key];
-}
-
 - (void)setSyncFromGenesis:(BOOL)syncFromGenesis {
     NSString *key = @"syncFromHeight";
     if (syncFromGenesis) {
         self.syncFromHeight = 0;
+        self.shouldSyncFromHeight = TRUE;
     }
     else if ([[self userDefaults] objectForKey:key]) {
         uint32_t height = self.syncFromHeight;
         if (height == 0) {
             [[self userDefaults] removeObjectForKey:key];
+            self.shouldSyncFromHeight = FALSE;
         }
     }
 }

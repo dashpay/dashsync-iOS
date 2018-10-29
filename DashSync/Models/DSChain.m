@@ -1136,7 +1136,7 @@ static dispatch_once_t devnetToken = 0;
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
         [self.blocks removeObjectsForKeys:blocksToRemove];
-        NSLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
+        //NSLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
     }
     
     // verify block difficulty if block is past last checkpoint

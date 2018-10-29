@@ -67,8 +67,8 @@
     return wallet;
 }
 
-+ (DSWallet*)standardWalletWithRandomSeedPhraseForChain:(DSChain* )chain {
-    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] forChain:chain storeSeedPhrase:YES];
++ (DSWallet*)standardWalletWithRandomSeedPhraseForChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
+    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] forChain:chain storeSeedPhrase:store];
 }
 
 -(instancetype)initWithChain:(DSChain*)chain {
@@ -88,6 +88,7 @@
             //this happens when we request the seed
             [weakSelf seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
         };
+        [chain registerWallet:self];
     }
     if (account) [self addAccount:account]; //this must be last, as adding the account queries the wallet unique ID
     NSError * error = nil;
@@ -252,7 +253,7 @@
 {
     @autoreleasepool {
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-            NSString * rSeedPhrase = authenticated?getKeychainString(self.uniqueID, nil):nil;
+            NSString * rSeedPhrase = authenticated?getKeychainString(self.mnemonicUniqueID, nil):nil;
             completion(rSeedPhrase);
         }];
     }
