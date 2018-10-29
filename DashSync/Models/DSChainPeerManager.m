@@ -61,9 +61,9 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#define TESTNET_DNS_SEEDS @[@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io"]
+#define TESTNET_DNS_SEEDS @[@"testnet-dnsseed.dash.org"]
 
-#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org",@"dnsseed.masternode.io"]
+#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 
 #define FIXED_PEERS          @"FixedPeers"

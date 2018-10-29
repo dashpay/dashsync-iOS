@@ -227,6 +227,7 @@
         [registeredDevnetsDictionary removeObjectForKey:chain.devnetIdentifier];
         setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
     }
+    [chain wipeWalletsAndDerivatives];
     [self.knownDevnetChains removeObject:chain];
     [[DashSync sharedSyncController] wipePeerDataForChain:chain];
     [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
