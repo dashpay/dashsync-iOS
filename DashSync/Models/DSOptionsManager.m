@@ -64,7 +64,7 @@
 - (BOOL)syncFromGenesis {
     NSString *key = @"syncFromHeight";
     id syncFromHeight = [[self userDefaults] objectForKey:key];
-    if (syncFromHeight) {
+    if ([syncFromHeight integerValue]) {
         return !self.syncFromHeight;
     }
     else {
