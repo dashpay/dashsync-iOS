@@ -82,12 +82,12 @@
 -(instancetype)initWithUniqueID:(NSString*)uniqueID andAccount:(DSAccount*)account forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
     if (! (self = [self initWithChain:chain])) return nil;
     self.uniqueID = uniqueID;
+    __weak typeof(self) weakSelf = self;
+    self.seedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
+        //this happens when we request the seed
+        [weakSelf seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
+    };
     if (store) {
-        __weak typeof(self) weakSelf = self;
-        self.seedRequestBlock = ^void(NSString *authprompt, uint64_t amount, SeedCompletionBlock seedCompletion) {
-            //this happens when we request the seed
-            [weakSelf seedWithPrompt:authprompt forAmount:amount completion:seedCompletion];
-        };
         [chain registerWallet:self];
     }
     if (account) [self addAccount:account]; //this must be last, as adding the account queries the wallet unique ID
@@ -98,7 +98,7 @@
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
-    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]] forChain:chain storeSeedPhrase:YES])) return nil;
+    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]] forChain:chain storeSeedPhrase:NO])) return nil;
     
     return self;
 }
