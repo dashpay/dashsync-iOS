@@ -480,7 +480,7 @@
         [self requestGovernanceVotesFromPeer:peer];
         [DSGovernanceVoteEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:peer.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:peer.chain}];
         });
     }
 }

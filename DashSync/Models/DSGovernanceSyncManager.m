@@ -345,7 +345,7 @@
             [self requestGovernanceObjectsFromPeer:peer];
             [DSGovernanceObjectEntity saveContext];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:self userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             });
         }
         __block BOOL finished = FALSE;
