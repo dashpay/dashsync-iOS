@@ -54,9 +54,9 @@
 #define NSLog(...)
 #endif
 
-#define MESSAGE_LOGGING 1
+#define MESSAGE_LOGGING 0
 
-#define HEADER_LENGTH      24
+#define HEADER_LENGTH      24 
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes

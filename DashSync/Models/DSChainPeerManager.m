@@ -61,7 +61,7 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#define TESTNET_DNS_SEEDS @[@"testnet-dnsseed.dash.org"]
+#define TESTNET_DNS_SEEDS @[@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io",@"testnet-seed.dashdot.io"]
 
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
@@ -149,7 +149,7 @@
 - (double)syncProgress
 {
     if (! self.downloadPeer && self.syncStartHeight == 0) return 0.0;
-    if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
+    //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
     if (self.chain.lastBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
     return 0.1 + 0.9*(self.chain.lastBlockHeight - self.syncStartHeight)/(self.chain.estimatedBlockHeight - self.syncStartHeight);
 }

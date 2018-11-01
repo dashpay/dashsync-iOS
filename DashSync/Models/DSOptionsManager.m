@@ -65,7 +65,7 @@
     NSString *key = @"syncFromHeight";
     id syncFromHeight = [[self userDefaults] objectForKey:key];
     if (syncFromHeight) {
-        return !self.syncFromHeight;
+        return !self.syncFromHeight && self.shouldSyncFromHeight;
     }
     else {
         return NO;
