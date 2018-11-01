@@ -1,13 +1,10 @@
-platform :ios, '10.0'
-
 target 'DashSync_Example' do
-  pod 'DashSync', :path => '../'
+  platform :ios, '10.0'
   
+  pod 'DashSync', :path => '../'
   pod 'KVO-MVVM', '0.5.1'
 
   target 'DashSync_Tests' do
     inherit! :search_paths
-
-    
   end
 end

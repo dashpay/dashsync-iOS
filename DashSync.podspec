@@ -17,21 +17,18 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/dashevo/dashsync-iOS.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '10.0'
-  #s.watchos.deployment_target = '2.0'
   
   s.requires_arc = true
 
-  s.ios.source_files = "DashSync/**/*.{h,m}"
-  s.ios.public_header_files = 'DashSync/**/*.h'
-  s.ios.private_header_files = 'DashSync/crypto/x11/*.h'
-  s.ios.libraries = 'bz2', 'sqlite3'
-  s.ios.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
-  
-  #s.watchos.source_files = "DashSync/**/*.{h,m}"
+  s.source_files = "DashSync/**/*.{h,m}"
+  s.public_header_files = 'DashSync/**/*.h'
+  s.private_header_files = 'DashSync/crypto/x11/*.h'
+  s.libraries = 'bz2', 'sqlite3'
+  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist']}
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'secp256k1_dash', '0.1.1'
+  s.dependency 'secp256k1_dash', '0.1.2'
   #s.dependency 'bls-signatures-pod', '0.2.0'
   #s.dependency 'AFJSONRPCClient_DASH', '2.1.4'
   s.dependency 'AFNetworking', '~> 3.0'
