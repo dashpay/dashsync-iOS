@@ -203,7 +203,8 @@
         NSData * publicKey = [DSKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKey;
         uniqueID = [NSData dataWithUInt256:[publicKey SHA256]].shortHexString; //one way injective function
         if (storeOnKeychain) {
-            if (! setKeychainString(seedPhrase, [DSWallet mnemonicUniqueIDForUniqueID:uniqueID], YES) || ! setKeychainData([NSData dataWithBytes:&time length:sizeof(time)], [DSWallet creationTimeUniqueIDForUniqueID:uniqueID], NO)) {
+            NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
+            if (! setKeychainString(seedPhrase, [DSWallet mnemonicUniqueIDForUniqueID:uniqueID], YES) || ! setKeychainData([NSData dataWithBytes:&currentTime length:sizeof(currentTime)], [DSWallet creationTimeUniqueIDForUniqueID:uniqueID], NO)) {
                 NSAssert(FALSE, @"error setting wallet seed");
                 
                 return nil;

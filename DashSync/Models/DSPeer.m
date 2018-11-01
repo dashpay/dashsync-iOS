@@ -392,6 +392,7 @@
 - (void)sendFilterloadMessage:(NSData *)filter
 {
     self.sentFilter = YES;
+    NSLog(@"Sending filter with fingerprint %@ to node %@",[NSData dataWithUInt256:filter.SHA256].shortHexString,self.host);
     [self sendMessage:filter type:MSG_FILTERLOAD];
 }
 
@@ -982,11 +983,21 @@
         NSLog(@"%@:%u got inv with %u items (first item %@)", self.host, self.port, (int)count,[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]]);
     }
     
+    BOOL onlyPrivateSendTransactions = NO;
+    
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
         DSInvType type = [message UInt32AtOffset:off];
         UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
         
         if (uint256_is_zero(hash)) continue;
+        
+        if (off == l.unsignedIntegerValue && type == DSInvType_DSTx) {
+            onlyPrivateSendTransactions = YES;
+        }
+        
+        if (type != DSInvType_DSTx) {
+            onlyPrivateSendTransactions = NO;
+        }
         
         switch (type) {
             case DSInvType_Tx:
@@ -1011,8 +1022,8 @@
         }
     }
     
-    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks) {
-        if (txHashes.count > 0) [self error:@"got inv message before loading a filter"];
+    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count > 0) && !onlyPrivateSendTransactions) {
+        [self error:@"got tx inv message before loading a filter"];
         return;
     }
     else if (txHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
