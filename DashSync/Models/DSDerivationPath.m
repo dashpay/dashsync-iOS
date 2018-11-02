@@ -625,7 +625,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return _walletBasedExtendedPublicKeyLocationString;
 }
 
-// MARK: - Key Generation
+// MARK: - ECDSA Key Generation
 
 //this is for upgrade purposes only
 - (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed
@@ -817,6 +817,37 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     
     return a;
+}
+
+// MARK: - BLS Key Generation
+
+// master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
+- (NSData *)generateExtendedBLSPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
+{
+    if (! seed) return nil;
+    if (![self length]) return nil; //there needs to be at least 1 length
+    NSMutableData *mpk = [NSMutableData secureData];
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    for (NSInteger i = 0;i<[self length] - 1;i++) {
+        uint32_t derivation = (uint32_t)[self indexAtPosition:i];
+        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+    }
+    [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
+    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
+    
+    [mpk appendBytes:&chain length:sizeof(chain)];
+    [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
+    
+    _extendedPublicKey = mpk;
+    if (walletUniqueId) {
+        setKeychainData(mpk,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
+    }
+    
+    return mpk;
 }
 
 // MARK: - Authentication Key Generation
