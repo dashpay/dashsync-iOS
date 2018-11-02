@@ -1001,9 +1001,9 @@
         
         switch (type) {
             case DSInvType_Tx:
-            case DSInvType_DSTx:
             case DSInvType_TxLockRequest:
                 [txHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_DSTx: break;
             case DSInvType_TxLockVote: break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
