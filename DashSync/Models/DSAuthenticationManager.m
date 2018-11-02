@@ -454,7 +454,7 @@ replacementString:(NSString *)string
             NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
             NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
                                                                                    normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase forChain:[DSChain mainnet] storeSeedPhrase:NO];
+            DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:[DSChain mainnet] storeSeedPhrase:NO];
             DSAccount * account = [wallet accountWithNumber:0];
             DSDerivationPath * derivationPath = [account bip44DerivationPath];
             NSData * extendedPublicKey = derivationPath.extendedPublicKey;

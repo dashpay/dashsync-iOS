@@ -87,7 +87,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
-+ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase;
++ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store;
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain;

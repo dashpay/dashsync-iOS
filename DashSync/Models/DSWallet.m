@@ -59,16 +59,16 @@
 
 @implementation DSWallet
 
-+ (DSWallet*)standardWalletWithSeedPhrase:(NSString*)seedPhrase forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
++ (DSWallet*)standardWalletWithSeedPhrase:(NSString*)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
     DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]];
-    NSString * uniqueId = [self setSeedPhrase:seedPhrase withAccounts:@[account] storeOnKeychain:store]; //make sure we can create the wallet first
+    NSString * uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
     DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccount:account forChain:chain storeSeedPhrase:store];
     return wallet;
 }
 
 + (DSWallet*)standardWalletWithRandomSeedPhraseForChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
-    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] forChain:chain storeSeedPhrase:store];
+    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:chain storeSeedPhrase:store];
 }
 
 -(instancetype)initWithChain:(DSChain*)chain {
@@ -186,7 +186,7 @@
     return ([DSEnvironment sharedInstance].watchOnly) ? 0 : BIP39_CREATION_TIME;
 }
 
-+ (NSString*)setSeedPhrase:(NSString *)seedPhrase withAccounts:(NSArray*)accounts storeOnKeychain:(BOOL)storeOnKeychain
++ (NSString*)setSeedPhrase:(NSString *)seedPhrase createdAt:(NSTimeInterval)createdAt withAccounts:(NSArray*)accounts storeOnKeychain:(BOOL)storeOnKeychain
 {
     if (!seedPhrase) return nil;
     NSString * uniqueID = nil;
@@ -203,8 +203,7 @@
         NSData * publicKey = [DSKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKey;
         uniqueID = [NSData dataWithUInt256:[publicKey SHA256]].shortHexString; //one way injective function
         if (storeOnKeychain) {
-            NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
-            if (! setKeychainString(seedPhrase, [DSWallet mnemonicUniqueIDForUniqueID:uniqueID], YES) || ! setKeychainData([NSData dataWithBytes:&currentTime length:sizeof(currentTime)], [DSWallet creationTimeUniqueIDForUniqueID:uniqueID], NO)) {
+            if (! setKeychainString(seedPhrase, [DSWallet mnemonicUniqueIDForUniqueID:uniqueID], YES) || ! setKeychainData([NSData dataWithBytes:&createdAt length:sizeof(createdAt)], [DSWallet creationTimeUniqueIDForUniqueID:uniqueID], NO)) {
                 NSAssert(FALSE, @"error setting wallet seed");
                 
                 return nil;
