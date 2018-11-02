@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   
   s.requires_arc = true
 
-  s.source_files = "DashSync/**/*.{h,m}"
+  s.source_files = "DashSync/**/*.{h,m,mm}"
   s.public_header_files = 'DashSync/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
   s.libraries = 'bz2', 'sqlite3'
@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'
   s.dependency 'secp256k1_dash', '0.1.2'
-  s.dependency 'bls-signatures-pod', '0.2.0'
+  s.dependency 'bls-signatures-pod', '0.2.3'
   #s.dependency 'AFJSONRPCClient_DASH', '2.1.4'
   s.dependency 'AFNetworking', '~> 3.0'
   
