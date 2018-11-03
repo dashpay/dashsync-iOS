@@ -35,22 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages;
 
-//@property (nullable, nonatomic, readonly) NSData *publicKey;
-//@property (nonatomic, readonly) UInt160 hash160;
-//@property (nonatomic, readonly) const UInt256 secretKey;
-//@property (nonatomic, readonly) uint32_t publicKeyFingerprint;
-//
-//
-//
-//- (nullable NSData *)sign:(UInt256)md;
-//- (BOOL)verify:(UInt256)md signature:(nonnull NSData *)sig;
-//
-//- (NSString *)privateKeyStringForChain:(DSChain*)chain;
-//- (NSString *)addressForChain:(DSChain*)chain;
-//// Pieter Wuille's compact signature encoding used for bitcoin message signing
-//// to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey
-//- (nullable NSData *)compactSign:(UInt256)md;
-
 @end
 
 NS_ASSUME_NONNULL_END
