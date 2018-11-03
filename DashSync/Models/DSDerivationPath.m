@@ -310,7 +310,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 // MARK: - Account
 
 -(NSUInteger)accountNumber {
-    return [self indexAtPosition:[self length] - 1];
+    return [self indexAtPosition:[self length] - 1] & ~BIP32_HARD;
 }
 
 - (void)setAccount:(DSAccount *)account {
