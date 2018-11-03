@@ -26,12 +26,27 @@
 #ifndef BigIntTypes_h
 #define BigIntTypes_h
 
+
+typedef union _UInt768 {
+    uint8_t u8[768/8];
+    uint16_t u16[768/16];
+    uint32_t u32[768/32];
+    uint64_t u64[768/64];
+} UInt768;
+
 typedef union _UInt512 {
     uint8_t u8[512/8];
     uint16_t u16[512/16];
     uint32_t u32[512/32];
     uint64_t u64[512/64];
 } UInt512;
+
+typedef union _UInt384 {
+    uint8_t u8[384/8];
+    uint16_t u16[384/16];
+    uint32_t u32[384/32];
+    uint64_t u64[384/64];
+} UInt384;
 
 typedef union _UInt256 {
     uint8_t u8[256/8];
@@ -53,10 +68,16 @@ typedef union _UInt128 {
     uint64_t u64[128/64];
 } UInt128;
 
-
+#define uint768_eq(a, b)\
+((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3] &&\
+(a).u64[4] == (b).u64[4] && (a).u64[5] == (b).u64[5] && (a).u64[6] == (b).u64[6] && (a).u64[7] == (b).u64[7] &&\
+(a).u64[8] == (b).u64[8] && (a).u64[9] == (b).u64[9] && (a).u64[10] == (b).u64[10] && (a).u64[11] == (b).u64[11])
 #define uint512_eq(a, b)\
 ((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3] &&\
 (a).u64[4] == (b).u64[4] && (a).u64[5] == (b).u64[5] && (a).u64[6] == (b).u64[6] && (a).u64[7] == (b).u64[7])
+#define uint384_eq(a, b)\
+((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3] &&\
+(a).u64[4] == (b).u64[4] && (a).u64[5] == (b).u64[5])
 #define uint256_eq(a, b)\
 ((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3])
 #define uint160_eq(a, b)\
@@ -69,9 +90,12 @@ typedef union _UInt128 {
 #define uint256_sup(a, b) (a.u64[3] > b.u64[3]) || ((a.u64[3] == b.u64[3]) && ((a.u64[2] > b.u64[2]) || ((a.u64[2] == b.u64[2]) && ((a.u64[1] > b.u64[1]) || ((a.u64[1] == b.u64[1]) && (a.u64[0] > b.u64[0]))))))
 
 
-
+#define uint768_is_zero(u)\
+(((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7] | (u).u64[8] | (u).u64[9] | (u).u64[10] | (u).u64[11]) == 0)
 #define uint512_is_zero(u)\
 (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7]) == 0)
+#define uint384_is_zero(u)\
+(((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5]) == 0)
 #define uint256_is_zero(u) (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3]) == 0)
 #define uint160_is_zero(u) (((u).u32[0] | (u).u32[1] | (u).u32[2] | (u).u32[3] | (u).u32[4]) == 0)
 #define uint128_is_zero(u) (((u).u64[0] | (u).u64[1]) == 0)
@@ -84,7 +108,9 @@ typedef union _UInt128 {
 #define uint160_data(u) [NSData dataWithUInt160:u]
 #define uint256_data(u) [NSData dataWithUInt256:u]
 
+#define UINT768_ZERO ((UInt768) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT512_ZERO ((UInt512) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0 } })
+#define UINT384_ZERO ((UInt384) { .u64 = { 0, 0, 0, 0, 0, 0 } })
 #define UINT256_ZERO ((UInt256) { .u64 = { 0, 0, 0, 0 } })
 #define UINT256_MAX ((UInt256) { .u64 = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF } })
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })

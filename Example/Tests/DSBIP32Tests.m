@@ -13,6 +13,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
+#import "DSBLSKey.h"
 
 
 @interface DSBIP32Tests : XCTestCase
@@ -31,6 +32,88 @@
     self.chain = [DSChain mainnet];
 }
 
+// MARK: - testBIP32BLSSequence
+
+//TEST_CASE("Key generation") {
+//    SECTION("Should generate a keypair from a seed") {
+//        uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+//
+//
+//        PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
+//        PublicKey pk = sk.GetPublicKey();
+//        REQUIRE(core_get()->code == STS_OK);
+//        REQUIRE(pk.GetFingerprint() == 0xddad59bb);
+//    }
+//    SECTION("Should calculate public key fingerprints") {
+//        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
+//        ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(
+//                                                              seed, sizeof(seed));
+//        uint32_t fingerprint = esk.GetPublicKey().GetFingerprint();
+//        REQUIRE(fingerprint == 0xa4700b27);
+//    }
+//}
+-(void)testBLSFingerprintFromSeed {
+    uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    NSData * seedData = [NSData dataWithBytes:seed length:10];
+    DSBLSKey * keyPair = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData onChain:[DSChain mainnet]];
+    uint32_t fingerprint =keyPair.publicKeyFingerprint;
+    XCTAssertEqual(fingerprint, 0xddad59bb,@"Testing BLS private child public key fingerprint");
+    
+    uint8_t seed2[] = {1, 50, 6, 244, 24, 199, 1, 25};
+    NSData * seedData2 = [NSData dataWithBytes:seed2 length:8];
+    DSBLSKey * keyPair2 = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seedData2 onChain:[DSChain mainnet]];
+    uint32_t fingerprint2 = keyPair2.publicKeyFingerprint;
+    XCTAssertEqual(fingerprint2, 0xa4700b27,@"Testing BLS extended private child public key fingerprint");
+}
+
+//SECTION("Test vector 3") {
+//    uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
+//    ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(
+//                                                          seed, sizeof(seed));
+//    REQUIRE(esk.GetPublicKey().GetFingerprint() == 0xa4700b27);
+//    uint8_t chainCode[32];
+//    esk.GetChainCode().Serialize(chainCode);
+//    REQUIRE(Util::HexStr(chainCode, 32) == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3");
+//
+//    ExtendedPrivateKey esk77 = esk.PrivateChild(77 + (1 << 31));
+//    esk77.GetChainCode().Serialize(chainCode);
+//    REQUIRE(Util::HexStr(chainCode, 32) == "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b");
+//    REQUIRE(esk77.GetPrivateKey().GetPublicKey().GetFingerprint() == 0xa8063dcf);
+//
+//    REQUIRE(esk.PrivateChild(3)
+//            .PrivateChild(17)
+//            .GetPublicKey()
+//            .GetFingerprint() == 0xff26a31f);
+//    REQUIRE(esk.GetExtendedPublicKey()
+//            .PublicChild(3)
+//            .PublicChild(17)
+//            .GetPublicKey()
+//            .GetFingerprint() == 0xff26a31f);
+//}
+-(void)testBLSDerivation {
+    uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
+    NSData * seedData = [NSData dataWithBytes:seed length:8];
+    DSBLSKey * keyPair = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seedData onChain:[DSChain mainnet]];
+    
+    UInt256 chainCode = keyPair.chainCode;
+    XCTAssertEqualObjects([NSData dataWithUInt256:chainCode].hexString, @"d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3",@"Testing BLS derivation chain code");
+    
+    NSUInteger derivationPathIndexes1[] = {77 + (1 << 31)};
+    DSDerivationPath * derivationPath1 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes1 length:1 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair1 = [keyPair deriveToPath:derivationPath1];
+    UInt256 chainCode1 = keyPair1.chainCode;
+    XCTAssertEqualObjects([NSData dataWithUInt256:chainCode1].hexString, @"f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b",@"Testing BLS private child derivation returning chain code");
+    XCTAssertEqual(keyPair1.publicKeyFingerprint, 0xa8063dcf,@"Testing BLS extended private child public key fingerprint");
+    
+    NSUInteger derivationPathIndexes2[] = {3,17};
+    DSDerivationPath * derivationPath2 = [DSDerivationPath derivationPathWithIndexes:derivationPathIndexes2 length:2 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_Unknown onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair2 = [keyPair deriveToPath:derivationPath2];
+    XCTAssertEqual(keyPair2.publicKeyFingerprint, 0xff26a31f,@"Testing BLS extended private child public key fingerprint");
+    
+    DSBLSKey * keyPair3 = [keyPair publicDeriveToPath:derivationPath2];
+    XCTAssertEqual(keyPair3.publicKeyFingerprint, 0xff26a31f,@"Testing BLS extended private child public key fingerprint");
+}
+
 // MARK: - testBIP32Sequence
 
 - (void)testBIP32SequencePrivateKeyFromString
@@ -38,7 +121,7 @@
     //from plastic upon blast park salon ticket timber disease tree camera economy what alpha birth category
     NSString *seedString = @"000102030405060708090a0b0c0d0e0f";
     
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString forChain:self.chain storeSeedPhrase:YES];
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:self.chain storeSeedPhrase:YES];
     DSAccount *account = [wallet accountWithNumber:0];
     DSDerivationPath *derivationPath = account.bip32DerivationPath;
     
@@ -96,7 +179,7 @@
 //    DSBIP32Sequence *seq = [DSBIP32Sequence new];
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString forChain:self.chain storeSeedPhrase:YES];
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:self.chain storeSeedPhrase:YES];
     NSString *xprv = [wallet serializedPrivateMasterFromSeed:seed];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);

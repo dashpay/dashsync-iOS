@@ -143,6 +143,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 @interface NSData (Bitcoin)
 
++ (nonnull instancetype)dataWithUInt768:(UInt768)n;
++ (nonnull instancetype)dataWithUInt512:(UInt512)n;
++ (nonnull instancetype)dataWithUInt384:(UInt384)n;
 + (nonnull instancetype)dataWithUInt256:(UInt256)n;
 + (nonnull instancetype)dataWithUInt160:(UInt160)n;
 + (nonnull instancetype)dataWithUInt128:(UInt128)n;
@@ -168,6 +171,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (UInt128)UInt128;
 - (UInt160)UInt160;
 - (UInt256)UInt256;
+- (UInt384)UInt384;
+- (UInt512)UInt512;
+- (UInt768)UInt768;
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber * _Nonnull * _Nullable)length;
 - (UInt256)hashAtOffset:(NSUInteger)offset;
 - (NSString *_Nullable)stringAtOffset:(NSUInteger)offset length:(NSNumber * _Nonnull * _Nullable)length;

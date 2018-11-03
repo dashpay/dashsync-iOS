@@ -43,6 +43,7 @@
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "DSBlockchainUser.h"
+#import "DSBLSKey.h"
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -164,27 +165,27 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 // MARK: - Derivation Path initialization
 
 + (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
-    NSUInteger indexes[] = {accountNumber};
+    NSUInteger indexes[] = {accountNumber | BIP32_HARD};
     return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
     if (chain.chainType == DSChainType_MainNet) {
-        NSUInteger indexes[] = {44,5,accountNumber};
+        NSUInteger indexes[] = {44 | BIP32_HARD, 5 | BIP32_HARD, accountNumber | BIP32_HARD};
         return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44 onChain:chain];
     } else {
-        NSUInteger indexes[] = {44,1,accountNumber};
+        NSUInteger indexes[] = {44 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD};
         return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44 onChain:chain];
     }
 }
 
 + (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet {
     if (wallet.chain.chainType == DSChainType_MainNet) {
-        NSUInteger indexes[] = {5,5,11};
+        NSUInteger indexes[] = {5 | BIP32_HARD, 5 | BIP32_HARD, 11 | BIP32_HARD};
         DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Authentication reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
         derivationPath.wallet = wallet;
         return derivationPath;
     } else {
-        NSUInteger indexes[] = {5,1,11};
+        NSUInteger indexes[] = {5 | BIP32_HARD, 1 | BIP32_HARD, 11 | BIP32_HARD};
         DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Authentication reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
         derivationPath.wallet = wallet;
         return derivationPath;
@@ -309,7 +310,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 // MARK: - Account
 
 -(NSUInteger)accountNumber {
-    return [self indexAtPosition:[self length] - 1];
+    return [self indexAtPosition:[self length] - 1] & ~BIP32_HARD;
 }
 
 - (void)setAccount:(DSAccount *)account {
@@ -625,7 +626,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return _walletBasedExtendedPublicKeyLocationString;
 }
 
-// MARK: - Key Generation
+// MARK: - ECDSA Key Generation
 
 //this is for upgrade purposes only
 - (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed
@@ -643,7 +644,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+        CKDpriv(&secret, &chain, derivation);
     }
     
     [mpk appendBytes:&chain length:sizeof(chain)];
@@ -666,10 +667,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     for (NSInteger i = 0;i<[self length] - 1;i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+        CKDpriv(&secret, &chain, derivation);
     }
     [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
+    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1]); // account 0H
     
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
@@ -695,7 +696,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     for (NSInteger i = 0;i<[self length] - 1;i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+        CKDpriv(&secret, &chain, derivation);
     }
     for (NSInteger i = 0;i<[indexPath length];i++) {
         uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
@@ -703,7 +704,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     
     [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
-    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
+    CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1]); // account 0H
     
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
@@ -768,7 +769,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+        CKDpriv(&secret, &chain, derivation);
     }
     
     for (NSInteger i = 0;i<[indexPath length];i++) {
@@ -799,7 +800,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+        CKDpriv(&secret, &chain, derivation);
     }
     
     CKDpriv(&secret, &chain, internal ? 1 : 0); // internal or external chain
@@ -817,6 +818,26 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     
     return a;
+}
+
+// MARK: - BLS Key Generation
+
+// master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
+- (NSData *)generateExtendedBLSPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
+{
+    if (! seed) return nil;
+    if (![self length]) return nil; //there needs to be at least 1 length
+    NSMutableData *mpk = [NSMutableData secureData];
+    
+    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed onChain:self.chain];
+    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:self];
+    
+    _extendedPublicKey = derivationPathExtendedKey.extendedPublicKeyData;
+    if (walletUniqueId) {
+        setKeychainData(mpk,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
+    }
+    
+    return mpk;
 }
 
 // MARK: - Authentication Key Generation
@@ -907,10 +928,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         
         for (NSInteger i = 0;i<[self length] - 1;i++) {
             uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-            CKDpriv(&secret, &chain, derivation | BIP32_HARD);
+            CKDpriv(&secret, &chain, derivation);
         }
         uint32_t fingerprint = [DSKey keyWithSecret:secret compressed:YES].hash160.u32[0];
-        CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1] | BIP32_HARD); // account 0H
+        CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1]); // account 0H
         
         return serialize([self length], fingerprint, self.account.accountNumber | BIP32_HARD, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.chain isMainnet]);
     }
