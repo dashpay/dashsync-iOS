@@ -207,6 +207,15 @@
     return signature;
 }
 
+- (UInt768)signDigest:(UInt256)md {
+    if (uint256_is_zero(self.secretKey) && !self.extendedPrivateKeyData.length) return UINT768_ZERO;
+    bls::PrivateKey blsPrivateKey = [self blsPrivateKey];
+    bls::Signature blsSignature = blsPrivateKey.Sign(md.u8, 32);
+    UInt768 signature = UINT768_ZERO;
+    blsSignature.Serialize(signature.u8);
+    return signature;
+}
+
 // MARK: - Signature Aggregation
 
 + (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages {
