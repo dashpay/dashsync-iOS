@@ -27,9 +27,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-
-typedef union _UInt256 UInt256;
-typedef union _UInt160 UInt160;
+#import "BigIntTypes.h"
 
 typedef struct {
     uint8_t p[33];

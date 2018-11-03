@@ -9,7 +9,12 @@
 #import "DSDerivationPath.h"
 #import "NSIndexPath+Dash.h"
 
-#include <bls-signatures-pod/bls.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic ignored "-Wconditional-uninitialized"
+#import <bls-signatures-pod/bls.hpp>
+#pragma clang diagnostic pop
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,14 +28,56 @@ NS_ASSUME_NONNULL_BEGIN
     return [self derive:skChild indexes:[indexPath indexPathByRemovingFirstIndex]];
 }
 
-+(UInt256)privateKeyDerivedFromSeed:(UInt512)seed toPath:(DSDerivationPath*)derivationPath {
++(UInt256)privateKeyDerivedFromBytes:(uint8_t *)bytes toPath:(DSDerivationPath*)derivationPath {
 
-    bls::ExtendedPrivateKey esk = bls::ExtendedPrivateKey::FromSeed(seed.u8, sizeof(seed.u8));
-
+    bls::ExtendedPrivateKey esk = bls::ExtendedPrivateKey::FromBytes(bytes);
     bls::ExtendedPrivateKey skChild = [self derive:esk indexes:derivationPath];
     UInt256 privateKey;
     skChild.GetPrivateKey().Serialize(privateKey.u8);
     return privateKey;
+}
+
++(UInt256)privateKeyDerivedFromSeed:(uint8_t *)seed seedLength:(size_t)seedLength toPath:(DSDerivationPath*)derivationPath {
+    bls::ExtendedPrivateKey esk = bls::ExtendedPrivateKey::FromSeed(seed, seedLength);
+    bls::ExtendedPrivateKey skChild = [self derive:esk indexes:derivationPath];
+    UInt256 privateKey;
+    skChild.GetPrivateKey().Serialize(privateKey.u8);
+    return privateKey;
+}
+
++(UInt256)chainCodeFromSeed:(uint8_t *)seed seedLength:(size_t)seedLength derivedToPath:(DSDerivationPath* _Nullable)derivationPath {
+    bls::ExtendedPrivateKey esk = bls::ExtendedPrivateKey::FromSeed(seed, seedLength);
+    if (!derivationPath) {
+        UInt256 chainCode;
+        esk.GetChainCode().Serialize(chainCode.u8);
+        return chainCode;
+    }
+    bls::ExtendedPrivateKey skChild = [self derive:esk indexes:derivationPath];
+    UInt256 chainCode;
+    skChild.GetChainCode().Serialize(chainCode.u8);
+    return chainCode;
+}
+
++(uint32_t)publicKeyFingerprintFromPrivateKey:(UInt256)privateKey {
+    return [self publicKeyFingerprintFromPrivateKeyFromBytes:privateKey.u8];
+}
+    
++(uint32_t)publicKeyFingerprintFromPrivateKeyFromBytes:(uint8_t*)privateKeyBytes {
+    bls::ExtendedPrivateKey blsPrivateKey = bls::ExtendedPrivateKey::FromBytes(privateKeyBytes);
+    bls::PublicKey blsPublicKey = blsPrivateKey.GetPrivateKey().GetPublicKey();
+    return blsPublicKey.GetFingerprint();
+}
+
++(uint32_t)publicKeyFingerprintFromPrivateKeyFromSeed:(uint8_t*)seed seedLength:(size_t)seedLength {
+    bls::PrivateKey sk = bls::PrivateKey::FromSeed(seed, seedLength);
+    bls::PublicKey pk = sk.GetPublicKey();
+    return pk.GetFingerprint();
+}
+
++(uint32_t)publicKeyFingerprintFromExtendedPrivateKeyFromSeed:(uint8_t*)seed seedLength:(size_t)seedLength {
+    bls::ExtendedPrivateKey sk = bls::ExtendedPrivateKey::FromSeed(seed, seedLength);
+    bls::PublicKey pk = sk.GetPublicKey();
+    return pk.GetFingerprint();
 }
 
 + (void)testSomeBLSSignaturesMethods {

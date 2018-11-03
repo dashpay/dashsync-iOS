@@ -10,9 +10,10 @@
 @implementation NSIndexPath (Dash)
 
 -(NSIndexPath*)indexPathByRemovingFirstIndex {
+    if (self.length == 1) return [[NSIndexPath alloc] init];
     NSUInteger indexes[[self length]];
     [self getIndexes:indexes range:NSMakeRange(1, [self length] - 1)];
-    return nil;
+    return [NSIndexPath indexPathWithIndexes:indexes length:self.length - 1];
 }
 
 @end
