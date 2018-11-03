@@ -958,6 +958,21 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 @implementation NSData (Bitcoin)
 
++ (instancetype)dataWithUInt768:(UInt768)n
+{
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
++ (instancetype)dataWithUInt512:(UInt512)n
+{
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
++ (instancetype)dataWithUInt384:(UInt384)n
+{
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
 + (instancetype)dataWithUInt256:(UInt256)n
 {
     return [NSData dataWithBytes:&n length:sizeof(n)];
@@ -1110,6 +1125,25 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 {
     if (self.length < sizeof(UInt256)) return UINT256_ZERO;
     return *(UInt256 *)(self.bytes);
+}
+
+- (UInt384)UInt384
+{
+    if (self.length < sizeof(UInt384)) return UINT384_ZERO;
+    return *(UInt384 *)(self.bytes);
+}
+
+- (UInt512)UInt512
+{
+    if (self.length < sizeof(UInt512)) return UINT512_ZERO;
+    return *(UInt512 *)(self.bytes);
+}
+
+
+- (UInt768)UInt768
+{
+    if (self.length < sizeof(UInt768)) return UINT768_ZERO;
+    return *(UInt768 *)(self.bytes);
 }
 
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber **)length

@@ -13,6 +13,7 @@
 #import "DSKey+BIP38.h"
 #import "DSChain.h"
 #import "NSData+Bitcoin.h"
+#import "DSBLSKey.h"
 
 @interface DSKeyTests : XCTestCase
 
@@ -203,6 +204,108 @@
     key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
     XCTAssertEqualObjects(key.publicKey, pubkey);
+}
+
+// MARK: - test BLS Sign
+
+//SECTION("Test vectors 1") {
+//    uint8_t seed1[5] = {1, 2, 3, 4, 5};
+//    uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
+//    uint8_t message1[3] = {7, 8, 9};
+//
+//    PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+//    PublicKey pk1 = sk1.GetPublicKey();
+//    Signature sig1 = sk1.Sign(message1, sizeof(message1));
+//
+//    PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+//    PublicKey pk2 = sk2.GetPublicKey();
+//    Signature sig2 = sk2.Sign(message1, sizeof(message1));
+//
+//    uint8_t buf[Signature::SIGNATURE_SIZE];
+//    uint8_t buf2[PrivateKey::PRIVATE_KEY_SIZE];
+//
+//    REQUIRE(pk1.GetFingerprint() == 0x26d53247);
+//    REQUIRE(pk2.GetFingerprint() == 0x289bb56e);
+//
+//
+//    sig1.Serialize(buf);
+//    sk1.Serialize(buf2);
+//
+//    REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+//            == "93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065");
+//    REQUIRE(Util::HexStr(buf2, PrivateKey::PRIVATE_KEY_SIZE)
+//            == "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
+//
+//    sig2.Serialize(buf);
+//    REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+//            == "975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e");
+//
+//    vector<Signature> sigs = {sig1, sig2};
+//    Signature aggSig1 = Signature::AggregateSigs(sigs);
+//
+//    aggSig1.Serialize(buf);
+//    REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+//            == "0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658");
+//    REQUIRE(aggSig1.Verify());
+//
+//    uint8_t message2[3] = {1, 2, 3};
+//    uint8_t message3[4] = {1, 2, 3, 4};
+//    uint8_t message4[2] = {1, 2};
+//    Signature sig3 = sk1.Sign(message2, sizeof(message2));
+//    Signature sig4 = sk1.Sign(message3, sizeof(message3));
+//    Signature sig5 = sk2.Sign(message4, sizeof(message4));
+//    vector<Signature> sigs2 = {sig3, sig4, sig5};
+//    Signature aggSig2 = Signature::AggregateSigs(sigs2);
+//    REQUIRE(aggSig2.Verify());
+//    aggSig2.Serialize(buf);
+//    REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+//            == "8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b");
+//}
+
+-(void)testBLSSign {
+    uint8_t seed1[5] = {1, 2, 3, 4, 5};
+    NSData * seedData1 = [NSData dataWithBytes:seed1 length:5];
+    uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
+    NSData * seedData2 = [NSData dataWithBytes:seed2 length:6];
+    uint8_t message1[3] = {7, 8, 9};
+        uint8_t message2[3] = {1, 2, 3};
+        uint8_t message3[4] = {1, 2, 3, 4};
+        uint8_t message4[2] = {1, 2};
+    NSData * messageData1 = [NSData dataWithBytes:message1 length:3];
+    NSData * messageData2 = [NSData dataWithBytes:message2 length:3];
+    NSData * messageData3 = [NSData dataWithBytes:message3 length:4];
+    NSData * messageData4 = [NSData dataWithBytes:message4 length:2];
+    DSBLSKey * keyPair1 = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData1 onChain:[DSChain mainnet]];
+    DSBLSKey * keyPair2 = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData2 onChain:[DSChain mainnet]];
+    
+    uint32_t fingerprint1 =keyPair1.publicKeyFingerprint;
+    XCTAssertEqual(fingerprint1, 0x26d53247,@"Testing BLS private child public key fingerprint");
+    
+    uint32_t fingerprint2 =keyPair2.publicKeyFingerprint;
+    XCTAssertEqual(fingerprint2, 0x289bb56e,@"Testing BLS private child public key fingerprint");
+    
+    UInt768 signature1 = [keyPair1 signData:messageData1];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signature1].hexString, @"93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065",@"Testing BLS signing");
+    
+    XCTAssertEqualObjects([NSData dataWithUInt256:keyPair1.secretKey].hexString, @"022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e",@"Testing BLS private key");
+    
+    UInt768 signature2 = [keyPair2 signData:messageData1];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signature2].hexString, @"975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e",@"Testing BLS signing");
+    
+    UInt768 aggregateSignature1 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature1],[NSData dataWithUInt768:signature2]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData1,messageData1]];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature1].hexString, @"0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658",@"Testing BLS simple signature aggregation");
+    
+    UInt768 signature3 = [keyPair1 signData:messageData2];
+    UInt768 signature4 = [keyPair1 signData:messageData3];
+    UInt768 signature5 = [keyPair2 signData:messageData4];
+    
+    UInt768 aggregateSignature2 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature3],[NSData dataWithUInt768:signature4],[NSData dataWithUInt768:signature5]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData2,messageData3,messageData4]];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature2].hexString, @"8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b",@"Testing BLS complex signature aggregation");
+    
 }
 
 @end

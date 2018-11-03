@@ -13,7 +13,6 @@
 #import "NSString+Bitcoin.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSBLSSignatures.h"
 #import "DSBLSKey.h"
 
 
@@ -66,38 +65,6 @@
     uint32_t fingerprint2 = keyPair2.publicKeyFingerprint;
     XCTAssertEqual(fingerprint2, 0xa4700b27,@"Testing BLS extended private child public key fingerprint");
 }
-
-//SECTION("Should create an extended private key from seed") {
-//    uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
-//    ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(
-//                                                          seed, sizeof(seed));
-//
-//    ExtendedPrivateKey esk77 = esk.PrivateChild(77 + (1 << 31));
-//    ExtendedPrivateKey esk77copy = esk.PrivateChild(77 + (1 << 31));
-//
-//    REQUIRE(esk77 == esk77copy);
-//
-//    ExtendedPrivateKey esk77nh = esk.PrivateChild(77);
-//
-//    auto eskLong = esk.PrivateChild((1 << 31) + 5)
-//    .PrivateChild(0)
-//    .PrivateChild(0)
-//    .PrivateChild((1 << 31) + 56)
-//    .PrivateChild(70)
-//    .PrivateChild(4);
-//    uint8_t chainCode[32];
-//    eskLong.GetChainCode().Serialize(chainCode);
-//}
-
-//-(void)testBLSFingerprintFromSeed {
-//    uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-//    uint32_t fingerprint =[DSBLSSignatures publicKeyFingerprintFromPrivateKeyFromSeed:seed seedLength:10];
-//    XCTAssertEqual(fingerprint, 0xddad59bb,@"Testing BLS private child public key fingerprint");
-//
-//    uint8_t seed2[] = {1, 50, 6, 244, 24, 199, 1, 25};
-//    uint32_t fingerprint2 =[DSBLSSignatures publicKeyFingerprintFromExtendedPrivateKeyFromSeed:seed2 seedLength:8];
-//    XCTAssertEqual(fingerprint2, 0xa4700b27,@"Testing BLS extended private child public key derivation");
-//}
 
 //SECTION("Test vector 3") {
 //    uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
