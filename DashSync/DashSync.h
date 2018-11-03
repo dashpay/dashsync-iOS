@@ -64,6 +64,8 @@
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
 
+#import "DSBLSSignatures.h"
+
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;
 

@@ -103,43 +103,43 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 
 @interface DSChain : NSObject
 
-@property (nonatomic, readonly) NSArray<DSWallet *> * _Nullable wallets;
-@property (nonatomic, readonly) NSArray<DSDerivationPath *> * _Nullable standaloneDerivationPaths;
-@property (nonatomic, readonly) NSDictionary *recentBlocks;
+@property (nonatomic, readonly,nonnull) NSArray<DSWallet *> * wallets;
+@property (nonatomic, readonly,nonnull) NSArray<DSDerivationPath *> * standaloneDerivationPaths;
+@property (nonatomic, readonly,nonnull) NSDictionary *recentBlocks;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) uint32_t standardDapiPort;
 @property (nonatomic, assign) UInt256 genesisHash;
-@property (nonatomic, readonly) NSString * _Nullable chainTip;
+@property (nonatomic, readonly,nullable) NSString * chainTip;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
-@property (nonatomic, readonly) NSString * networkName;
-@property (nonatomic, readonly) NSString * name;
-@property (nonatomic, readonly) NSString * uniqueID;
+@property (nonatomic, readonly,nonnull) NSString * networkName;
+@property (nonatomic, readonly,nonnull) NSString * name;
+@property (nonatomic, readonly,nonnull) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
-@property (nonatomic, weak) DSChainPeerManager * peerManagerDelegate;
-@property (nonatomic, readonly) DSMerkleBlock * lastBlock;
-@property (nonatomic, readonly) NSArray * blockLocatorArray;
-@property (nonatomic, readonly) DSMerkleBlock *lastOrphan;
-@property (nonatomic, readonly) DSChainEntity *chainEntity;
+@property (nonatomic, weak,nullable) DSChainPeerManager * peerManagerDelegate;
+@property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
+@property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
+@property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
+@property (nonatomic, readonly,nullable) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
-@property (nonatomic, readonly) NSString * chainWalletsKey;
+@property (nonatomic, readonly,nonnull) NSString * chainWalletsKey;
 @property (nonatomic, readonly) uint64_t baseReward;
 @property (nonatomic, readonly) BOOL canConstructAFilter;
 @property (nonatomic, readonly) BOOL hasAWallet;
 @property (nonatomic, readonly) BOOL hasAStandaloneDerivationPath;
 @property (nonatomic, readonly) BOOL syncsBlockchain;
-@property (nonatomic, readonly) NSString * devnetIdentifier;
+@property (nonatomic, readonly,nullable) NSString * devnetIdentifier;
 @property (nonatomic, assign) uint64_t feePerKb;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
-@property (nonatomic, readonly) NSString * registeredPeersKey;
-@property (nonatomic, readonly) NSArray<DSCheckpoint*> * checkpoints;
+@property (nonatomic, readonly,nullable) NSString * registeredPeersKey;
+@property (nonatomic, readonly,nonnull) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, assign) uint32_t minProtocolVersion;
 @property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, readonly) uint32_t maxProofOfWork;
-@property (nonatomic, strong) NSString * sporkPublicKey;
-@property (nonatomic, strong) NSString * sporkPrivateKey;
-@property (nonatomic, strong) NSString * sporkAddress;
+@property (nonatomic, strong, nullable) NSString * sporkPublicKey;
+@property (nonatomic, strong, nullable) NSString * sporkPrivateKey;
+@property (nonatomic, strong, nullable) NSString * sporkAddress;
 @property (nonatomic, readonly) uint16_t transactionVersion;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
@@ -156,13 +156,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 
-+(DSChain*)mainnet;
-+(DSChain*)testnet;
++(DSChain* _Nonnull)mainnet;
++(DSChain* _Nonnull)testnet;
 
-+(DSChain*)devnetWithIdentifier:(NSString*)identifier;
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort;
++(DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
++(DSChain* _Nonnull)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort;
 
-+(DSChain*)chainForNetworkName:(NSString*)networkName;
++(DSChain* _Nullable)chainForNetworkName:(NSString*)networkName;
 
 
 -(BOOL)isMainnet;
@@ -172,24 +172,24 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 
 -(void)save;
 
--(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
--(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
+-(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer* _Nonnull)peer;
+-(BOOL)addBlock:(DSMerkleBlock * _Nonnull)block fromPeer:(DSPeer* _Nonnull)peer;
 -(void)saveBlocks;
 -(void)wipeWalletsAndDerivatives;
 -(void)clearOrphans;
 -(void)setLastBlockHeightForRescan;
--(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
+-(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray * _Nonnull)txHashes;
 -(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
 
 -(void)unregisterWallet:(DSWallet* _Nonnull)wallet;
 -(void)addWallet:(DSWallet* _Nonnull)wallet;
 -(void)registerWallet:(DSWallet* _Nonnull)wallet;
 
--(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
--(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
--(void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
+-(void)unregisterStandaloneDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
+-(void)addStandaloneDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
+-(void)registerStandaloneDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
 
--(void)registerVotingKey:(NSData*)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
+-(void)registerVotingKey:(NSData* _Nonnull)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast* _Nonnull)masternodeBroadcast;
 
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
@@ -206,9 +206,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
 
--(NSData*)votingKeyForMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
+-(NSData* _Nullable)votingKeyForMasternodeBroadcast:(DSMasternodeBroadcast* _Nonnull)masternodeBroadcast;
 
--(NSArray*)registeredMasternodes;
+-(NSArray* _Nonnull)registeredMasternodes;
 
 //This removes all blockchain information from the chain's wallets and derivation paths
 - (void)wipeBlockchainInfo;

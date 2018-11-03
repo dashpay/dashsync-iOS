@@ -22,5 +22,6 @@
 @dynamic isValid;
 @dynamic simplifiedMasternodeEntryHash;
 @dynamic chain;
+@dynamic claimed;
 
 @end

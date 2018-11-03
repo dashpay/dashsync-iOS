@@ -6,10 +6,15 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSDerivationPath;
+
 @interface DSBLSSignatures : NSObject
+
++(UInt256)privateKeyDerivedFromSeed:(UInt512)seed toPath:(DSDerivationPath*)derivationPath;
 
 @end
 

@@ -43,6 +43,7 @@
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "DSBlockchainUser.h"
+#import "DSBLSSignatures.h"
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
