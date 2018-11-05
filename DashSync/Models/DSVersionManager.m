@@ -15,6 +15,10 @@
 #import "DSChainManager.h"
 #import "NSMutableData+Dash.h"
 
+#define COMPATIBILITY_MNEMONIC_KEY        @"mnemonic"
+#define COMPATIBILITY_CREATION_TIME_KEY   @"creationtime"
+
+
 @implementation DSVersionManager
 
 + (instancetype)sharedInstance
@@ -29,7 +33,7 @@
     return singleton;
 }
 
-- (BOOL)hasAOldWallet
+- (BOOL)noOldWallet
 {
     NSError *error = nil;
     if (getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error) || error) return NO;
@@ -66,12 +70,12 @@
 
 
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeExtendedKeysForWallet:(DSWallet*)wallet withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+- (void)upgradeExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
 {
     DSAccount * account = [wallet accountWithNumber:0];
     NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
     NSError * error = nil;
-    BOOL hasV2BIP44Data = hasKeychainData(keyString, &error);
+    BOOL hasV2BIP44Data = keyString ? hasKeychainData(keyString, &error) : NO;
     if (error) {
         completion(NO,NO,NO,NO);
         return;
@@ -92,7 +96,8 @@
                 return;
             }
             @autoreleasepool {
-                NSString * seedPhrase = authenticated?getKeychainString(wallet.mnemonicUniqueID, nil):nil;
+                NSString *seedPhraseKey = wallet.mnemonicUniqueID ?: COMPATIBILITY_MNEMONIC_KEY;
+                NSString * seedPhrase = authenticated?getKeychainString(seedPhraseKey, nil):nil;
                 if (!seedPhrase) {
                     completion(NO,YES,YES,NO);
                     return;
@@ -100,6 +105,9 @@
                 NSData * derivedKeyData = (seedPhrase) ?[[DSBIP39Mnemonic sharedInstance]
                                                          deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
                 BOOL failed = NO;
+                
+                DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:[self compatibleSeedCreationTime] forChain:chain storeSeedPhrase:YES];
+                
                 for (DSAccount * account in wallet.accounts) {
                     for (DSDerivationPath * derivationPath in account.derivationPaths) {
                         NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:wallet.uniqueID];
@@ -123,6 +131,16 @@
     } else {
         completion(YES,NO,NO,NO);
     }
+}
+
+- (NSTimeInterval)compatibleSeedCreationTime {
+    NSData *d = getKeychainData(COMPATIBILITY_CREATION_TIME_KEY, nil);
+    
+    if (d.length == sizeof(NSTimeInterval)) {
+        return *(const NSTimeInterval *)d.bytes;
+    }
+    
+    return BIP39_CREATION_TIME;
 }
 
 @end
