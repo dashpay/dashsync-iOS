@@ -47,6 +47,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "NSDate+Utils.h"
 
 #define PEER_LOGGING 1
 
@@ -362,7 +363,7 @@
     
     [msg appendUInt32:self.chain.protocolVersion]; // version
     [msg appendUInt64:ENABLED_SERVICES]; // services
-    [msg appendUInt64:[NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970]; // timestamp
+    [msg appendUInt64:[NSDate timeIntervalSince1970]]; // timestamp
     [msg appendUInt64:self.services]; // services of remote peer
     [msg appendBytes:&_address length:sizeof(_address)]; // IPv6 address of remote peer
     [msg appendBytes:&port length:sizeof(port)]; // port of remote peer
@@ -378,7 +379,7 @@
     }
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
-    self.pingStartTime = [NSDate timeIntervalSinceReferenceDate];
+    self.pingStartTime = [NSDate timeIntervalSince1970];
     [self sendMessage:msg type:MSG_VERSION];
 }
 
@@ -479,7 +480,7 @@
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
-    if (self.relayStartTime == 0) self.relayStartTime = [NSDate timeIntervalSinceReferenceDate];
+    if (self.relayStartTime == 0) self.relayStartTime = [NSDate timeIntervalSince1970];
     [self sendMessage:msg type:MSG_GETHEADERS];
 }
 
@@ -671,7 +672,7 @@
         if (! self.pongHandlers) self.pongHandlers = [NSMutableArray array];
         [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
         [msg appendUInt64:self.localNonce];
-        self.pingStartTime = [NSDate timeIntervalSinceReferenceDate];
+        self.pingStartTime = [NSDate timeIntervalSince1970];
         [self sendMessage:msg type:MSG_PING];
     });
 }
@@ -831,7 +832,7 @@
     
     _version = [message UInt32AtOffset:0];
     _services = [message UInt64AtOffset:4];
-    _timestamp = [message UInt64AtOffset:12] - NSTimeIntervalSince1970;
+    _timestamp = [message UInt64AtOffset:12];
     _useragent = [message stringAtOffset:80 length:&l];
     
     if (message.length < 80 + l.unsignedIntegerValue + sizeof(uint32_t)) {
@@ -858,7 +859,7 @@
         return;
     }
     
-    _pingTime = [NSDate timeIntervalSinceReferenceDate] - self.pingStartTime; // use verack time as initial ping time
+    _pingTime = [NSDate timeIntervalSince1970] - self.pingStartTime; // use verack time as initial ping time
     self.pingStartTime = 0;
 #if MESSAGE_LOGGING
     NSLog(@"%@:%u got verack in %fs", self.host, self.port, self.pingTime);
@@ -880,7 +881,7 @@
     }
     else if (! self.sentGetaddr) return; // simple anti-tarpitting tactic, don't accept unsolicited addresses
     
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [NSDate timeIntervalSince1970];
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableArray *peers = [NSMutableArray array];
@@ -897,7 +898,7 @@
     else NSLog(@"%@:%u got addr with %u addresses", self.host, self.port, (int)count);
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 30*count; off += 30) {
-        NSTimeInterval timestamp = [message UInt32AtOffset:off] - NSTimeIntervalSince1970;
+        NSTimeInterval timestamp = [message UInt32AtOffset:off];
         uint64_t services = [message UInt64AtOffset:off + sizeof(uint32_t)];
         UInt128 address = *(UInt128 *)((const uint8_t *)message.bytes + off + sizeof(uint32_t) + sizeof(uint64_t));
         uint16_t port = CFSwapInt16BigToHost(*(const uint16_t *)((const uint8_t *)message.bytes + off +
@@ -1158,7 +1159,7 @@
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
     
     if (_relayStartTime != 0) { // keep track of relay peformance
-        NSTimeInterval speed = count/([NSDate timeIntervalSinceReferenceDate] - self.relayStartTime);
+        NSTimeInterval speed = count/([NSDate timeIntervalSince1970] - self.relayStartTime);
         
         if (_relaySpeed == 0) _relaySpeed = speed;
         _relaySpeed = _relaySpeed*0.9 + speed*0.1;
@@ -1171,7 +1172,7 @@
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     // Devnets can run slower than usual
-    NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68] - NSTimeIntervalSince1970;
+    NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     if (count >= 2000 || t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
         UInt256 firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
@@ -1179,11 +1180,11 @@
         NSValue *lastHash = uint256_obj(lastX11);
         
         if (t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
-            t = [message UInt32AtOffset:l + 81 + 68] - NSTimeIntervalSince1970;
+            t = [message UInt32AtOffset:l + 81 + 68];
             
             for (off = l; t > 0 && t < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
                 off += 81;
-                t = [message UInt32AtOffset:off + 81 + 68] - NSTimeIntervalSince1970;
+                t = [message UInt32AtOffset:off + 81 + 68];
             }
             
             lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
@@ -1363,7 +1364,7 @@
     }
     
     if (self.pingStartTime > 1) {
-        NSTimeInterval pingTime = [NSDate timeIntervalSinceReferenceDate] - self.pingStartTime;
+        NSTimeInterval pingTime = [NSDate timeIntervalSince1970] - self.pingStartTime;
         
         // 50% low pass filter on current ping time
         _pingTime = self.pingTime*0.5 + pingTime*0.5;
@@ -1652,10 +1653,10 @@
         case NSStreamEventOpenCompleted:
             NSLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
                   (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),
-                  [NSDate timeIntervalSinceReferenceDate] - self.pingStartTime);
+                  [NSDate timeIntervalSince1970] - self.pingStartTime);
             
             if (aStream == self.outputStream) {
-                self.pingStartTime = [NSDate timeIntervalSinceReferenceDate]; // don't count connect time in ping time
+                self.pingStartTime = [NSDate timeIntervalSince1970]; // don't count connect time in ping time
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
                            withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE

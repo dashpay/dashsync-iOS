@@ -52,6 +52,7 @@
 #import "DSGovernanceVote.h"
 #import "DSWallet.h"
 #import "DSDAPIPeerManager.h"
+#import "NSDate+Utils.h"
 
 #define PEER_LOGGING 1
 
@@ -235,7 +236,7 @@
         }
         
         // DNS peer discovery
-        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval now = [NSDate timeIntervalSince1970];
         NSMutableArray *peers = [NSMutableArray arrayWithObject:[NSMutableArray array]];
         NSArray * dnsSeeds = [self dnsSeeds];
         if (_peers.count < PEER_MAX_CONNECTIONS || ((DSPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*24*60*60 < now) {
@@ -507,7 +508,7 @@
     for (NSDictionary * peerDictionary in registeredPeersArray) {
         UInt128 ipAddress = *(UInt128*)((NSData*)peerDictionary[@"address"]).bytes;
         uint16_t port = [peerDictionary[@"port"] unsignedShortValue];
-        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval now = [NSDate timeIntervalSince1970];
         [registeredPeers addObject:[[DSPeer alloc] initWithAddress:ipAddress port:port onChain:self.chain timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60)) services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
     }
     return [registeredPeers copy];
@@ -609,7 +610,7 @@
 
 - (void)syncTimeout
 {
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [NSDate timeIntervalSince1970];
     
     if (now - self.lastRelayTime < PROTOCOL_TIMEOUT) { // the download peer relayed something in time, so restart timer
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
@@ -1210,7 +1211,7 @@
 
 - (void)peerConnected:(DSPeer *)peer
 {
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [NSDate timeIntervalSince1970];
     
     if (peer.timestamp > now + 2*60*60 || peer.timestamp < now - 2*60*60) peer.timestamp = now; //timestamp sanity check
     self.connectFailures = 0;
@@ -1293,7 +1294,7 @@
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
                 // BUG: XXX headers can timeout on slow connections (each message is over 160k)
                 BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-                if (startingDevnetSync || self.chain.lastBlock.timestamp + 7*24*60*60 >= self.chain.earliestWalletCreationTime + NSTimeIntervalSince1970) {
+                if (startingDevnetSync || self.chain.lastBlock.timestamp + 7*24*60*60 >= self.chain.earliestWalletCreationTime) {
                     [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
                 }
                 else [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
@@ -1375,7 +1376,7 @@
     // limit total to 2500 peers
     if (self.peers.count > 2500) [self.peers removeObjectsInRange:NSMakeRange(2500, self.peers.count - 2500)];
     
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [NSDate timeIntervalSince1970];
     
     // remove peers more than 3 hours old, or until there are only 1000 left
     while (self.peers.count > 1000 && ((DSPeer *)self.peers.lastObject).timestamp + 3*60*60 < now) {
@@ -1398,11 +1399,11 @@
     
     NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
     
-    transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
+    transaction.timestamp = [NSDate timeIntervalSince1970];
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
     if (syncing && !account) return;
     if (![account registerTransaction:transaction]) return;
-    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSince1970];
     
     if ([account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
         [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
@@ -1417,7 +1418,7 @@
         if ([self.txRelays[hash] count] >= self.maxConnectCount &&
             [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
             [account transactionForHash:transaction.txHash].timestamp == 0) {
-            [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+            [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
                         forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
@@ -1466,7 +1467,7 @@
         if (!account) return;
     }
     if (![account registerTransaction:transaction]) return;
-    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSince1970];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
@@ -1477,7 +1478,7 @@
         if ([self.txRelays[hash] count] >= self.maxConnectCount &&
             [self.chain transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
             [self.chain transactionForHash:txHash].timestamp == 0) {
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSinceReferenceDate]
+            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
                            forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
         
@@ -1545,7 +1546,7 @@
 {
     // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
-        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + NSTimeIntervalSince1970 + HOUR_TIME_INTERVAL/2) {
+        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + HOUR_TIME_INTERVAL/2) {
         return;
     }
     
@@ -1572,7 +1573,7 @@
     }
     
     if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+        if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSince1970];
         return;
     }
     
@@ -1765,7 +1766,7 @@
 }
 
 -(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
-    if (onMainChain && (peer == self.downloadPeer)) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (onMainChain && (peer == self.downloadPeer)) self.lastRelayTime = [NSDate timeIntervalSince1970];
     NSLog(@"chain finished syncing");
     self.syncStartHeight = 0;
     [self loadMempools];
@@ -1781,7 +1782,7 @@
 
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {
     // ignore orphans older than one week ago
-    if (block.timestamp < [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 - 7*24*60*60) return;
+    if (block.timestamp < [NSDate timeIntervalSince1970] - 7*24*60*60) return;
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
     if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {

@@ -37,7 +37,7 @@
         self.version = block.version;
         self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
         self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
-        self.timestamp = block.timestamp - NSTimeIntervalSince1970;
+        self.timestamp = block.timestamp;
         self.target = block.target;
         self.nonce = block.nonce;
         self.totalTransactions = block.totalTransactions;
@@ -56,7 +56,7 @@
         self.version = block.version;
         self.prevBlock = [NSData dataWithBytes:block.prevBlock.u8 length:sizeof(UInt256)];
         self.merkleRoot = [NSData dataWithBytes:block.merkleRoot.u8 length:sizeof(UInt256)];
-        self.timestamp = block.timestamp - NSTimeIntervalSince1970;
+        self.timestamp = block.timestamp;
         self.target = block.target;
         self.nonce = block.nonce;
         self.totalTransactions = block.totalTransactions;
@@ -80,7 +80,7 @@
         root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
         
         block = [[DSMerkleBlock alloc] initWithBlockHash:hash onChain:self.chain.chain version:self.version prevBlock:prev merkleRoot:root
-                                               timestamp:self.timestamp + NSTimeIntervalSince1970 target:self.target nonce:self.nonce
+                                               timestamp:self.timestamp target:self.target nonce:self.nonce
                                        totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
     }];
     

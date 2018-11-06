@@ -53,9 +53,11 @@
 #import "DSAuthenticationManager.h"
 #import "DSInsightManager.h"
 #import "DSKey+BIP38.h"
+#import "NSDate+Utils.h"
 
 #define AUTH_SWEEP_KEY @"AUTH_SWEEP_KEY"
 #define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
+
 
 @class DSDerivationPath,DSAccount;
 
@@ -341,7 +343,7 @@
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
-    uint32_t now = [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970;
+    uint32_t now = [NSDate timeIntervalSince1970];
     
     for (DSTransaction *tx in [self.transactions reverseObjectEnumerator]) {
         @autoreleasepool {
@@ -899,7 +901,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime < TX_MAX_LOCK_HEIGHT &&
             transaction.lockTime > self.wallet.chain.bestBlockHeight + 1) return YES;
         if (sequence.unsignedIntValue < UINT32_MAX && transaction.lockTime >= TX_MAX_LOCK_HEIGHT &&
-            transaction.lockTime > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970) return YES;
+            transaction.lockTime > [NSDate timeIntervalSince1970]) return YES;
     }
     
     for (NSNumber *amount in transaction.outputAmounts) { // check that no outputs are dust

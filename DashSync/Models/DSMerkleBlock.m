@@ -31,6 +31,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
 #import "DSChain.h"
+#import "NSDate+Utils.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
 #define LOG_MERKLE_BLOCKS 0
@@ -201,7 +202,7 @@ inline static int ceil_log2(int x)
     
     // check if timestamp is too far in future
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
-    if (_timestamp > [NSDate timeIntervalSinceReferenceDate] + NSTimeIntervalSince1970 + MAX_TIME_DRIFT) return NO;
+    if (_timestamp > [NSDate timeIntervalSince1970] + MAX_TIME_DRIFT) return NO;
     
     // check if proof-of-work target is out of range
     if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;

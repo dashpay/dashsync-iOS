@@ -927,7 +927,7 @@ static dispatch_once_t devnetToken = 0;
     if ([self syncsBlockchain]) {
         return [self earliestWalletCreationTime];
     } else {
-        return self.checkpoints.lastObject.timestamp - NSTimeIntervalSince1970;
+        return self.checkpoints.lastObject.timestamp;
     }
 }
 
@@ -1022,7 +1022,7 @@ static dispatch_once_t devnetToken = 0;
                     }
                 }
             } else {
-                NSTimeInterval startSyncTime = self.startSyncFromTime + NSTimeIntervalSince1970;
+                NSTimeInterval startSyncTime = self.startSyncFromTime;
                 // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
                 for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
                     if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + WEEK_TIME_INTERVAL < startSyncTime)) {
@@ -1059,10 +1059,10 @@ static dispatch_once_t devnetToken = 0;
 // NOTE: this is only accurate for the last two weeks worth of blocks, other timestamps are estimated from checkpoints
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
 {
-    if (blockHeight == TX_UNCONFIRMED) return (self.lastBlock.timestamp) + 10*60; //next block
+    if (blockHeight == TX_UNCONFIRMED) return (self.lastBlock.timestamp) + 2.5*60; //next block
     
-    if (blockHeight >= self.lastBlockHeight) { // future block, assume 10 minutes per block after last block
-        return (self.lastBlock.timestamp) + (blockHeight - self.lastBlockHeight)*10*60;
+    if (blockHeight >= self.lastBlockHeight) { // future block, assume 2.5 minutes per block after last block
+        return (self.lastBlock.timestamp) + (blockHeight - self.lastBlockHeight)*2.5*60;
     }
     
     if (_blocks.count > 0) {
@@ -1182,7 +1182,7 @@ static dispatch_once_t devnetToken = 0;
         
         self.blocks[blockHash] = block;
         self.lastBlock = block;
-        [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:txHashes];
+        [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
         peer.currentBlockHeight = block.height; //might be download peer instead
         if (block.height == _estimatedBlockHeight) syncDone = YES;
         onMainChain = TRUE;
@@ -1199,7 +1199,7 @@ static dispatch_once_t devnetToken = 0;
         while (b && b.height > block.height) b = self.blocks[uint256_obj(b.prevBlock)]; // is block in main chain?
         
         if (uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
-            [self setBlockHeight:block.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:txHashes];
+            [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
             if (block.height == self.lastBlockHeight) self.lastBlock = block;
         }
     }
@@ -1244,7 +1244,7 @@ static dispatch_once_t devnetToken = 0;
         b = block;
         
         while (b.height > b2.height) { // set transaction heights for new main chain
-            [self setBlockHeight:b.height andTimestamp:txTime - NSTimeIntervalSince1970 forTxHashes:b.txHashes];
+            [self setBlockHeight:b.height andTimestamp:txTime forTxHashes:b.txHashes];
             b = self.blocks[uint256_obj(b.prevBlock)];
             txTime = b.timestamp/2 + ((DSMerkleBlock *)self.blocks[uint256_obj(b.prevBlock)]).timestamp/2;
         }
@@ -1346,7 +1346,7 @@ static dispatch_once_t devnetToken = 0;
         
         // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
         for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime + NSTimeIntervalSince1970)) {
+            if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime)) {
                 UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
                 _lastBlock = self.blocks[uint256_obj(checkpointHash)];

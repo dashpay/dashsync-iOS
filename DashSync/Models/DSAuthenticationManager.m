@@ -36,6 +36,7 @@
 #import "DSVersionManager.h"
 #import "NSData+Bitcoin.h"
 #import <LocalAuthentication/LocalAuthentication.h>
+#import "NSDate+Utils.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -258,8 +259,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     if (error) {
         return NSIntegerMax;
     }
-    NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0 -
-    (self.secureTime + NSTimeIntervalSince1970);
+    NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0 - self.secureTime;
     return wait;
 }
 
@@ -344,7 +344,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
         if ([currentPin isEqual:previousPin]) {
             context.pinField.text = nil;
             setKeychainString(previousPin, PIN_KEY, NO);
-            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
+            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             [context.pinField resignFirstResponder];
             [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
@@ -454,7 +454,7 @@ replacementString:(NSString *)string
             NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
             NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
                                                                                    normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:[DSChain mainnet] storeSeedPhrase:NO];
+            DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:[DSChain mainnet] storeSeedPhrase:NO];
             DSAccount * account = [wallet accountWithNumber:0];
             DSDerivationPath * derivationPath = [account bip44DerivationPath];
             NSData * extendedPublicKey = derivationPath.extendedPublicKey;
@@ -514,7 +514,7 @@ replacementString:(NSString *)string
         LAContext *context = [[LAContext alloc] init];
         NSError *error = nil;
         if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSinceReferenceDate] &&
+            pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSince1970] &&
             getKeychainInt(PIN_FAIL_COUNT_KEY, nil) == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
             
             void(^localAuthBlock)(void) = ^{
@@ -712,8 +712,8 @@ replacementString:(NSString *)string
             completion(NO,NO);
             return; // error reading failHeight from keychain
         }
-        NSLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime - NSTimeIntervalSince1970);
-        if (self.secureTime + NSTimeIntervalSince1970 < failHeight + pow(6, failCount - 3)*60.0) { // locked out
+        NSLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime);
+        if (self.secureTime < failHeight + pow(6, failCount - 3)*60.0) { // locked out
             if (alertIfLockout) {
                 [self userLockedOut];
             }
@@ -770,7 +770,7 @@ replacementString:(NSString *)string
             setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
             
             [[DSChainManager sharedInstance] resetSpendingLimits];
-            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
+            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             if (completion) completion(YES,NO);
             return TRUE;
@@ -789,8 +789,8 @@ replacementString:(NSString *)string
                 return FALSE;
             }
             
-            if (self.secureTime + NSTimeIntervalSince1970 > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
-                setKeychainInt(self.secureTime + NSTimeIntervalSince1970, PIN_FAIL_HEIGHT_KEY, NO);
+            if (self.secureTime > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
+                setKeychainInt(self.secureTime, PIN_FAIL_HEIGHT_KEY, NO);
             }
             
             if (failCount >= 3) {

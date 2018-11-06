@@ -136,7 +136,7 @@
 
 - (NSDate *)transactionDate
 {
-    return [NSDate dateWithTimeIntervalSinceReferenceDate:self.timestamp];
+    return [NSDate dateWithTimeIntervalSince1970:self.timestamp];
 }
 
 static NSString *dateFormat(NSString *template)
