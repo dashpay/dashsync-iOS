@@ -1059,10 +1059,10 @@ static dispatch_once_t devnetToken = 0;
 // NOTE: this is only accurate for the last two weeks worth of blocks, other timestamps are estimated from checkpoints
 - (NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight
 {
-    if (blockHeight == TX_UNCONFIRMED) return (self.lastBlock.timestamp - NSTimeIntervalSince1970) + 10*60; //next block
+    if (blockHeight == TX_UNCONFIRMED) return (self.lastBlock.timestamp) + 10*60; //next block
     
     if (blockHeight >= self.lastBlockHeight) { // future block, assume 10 minutes per block after last block
-        return (self.lastBlock.timestamp - NSTimeIntervalSince1970) + (blockHeight - self.lastBlockHeight)*10*60;
+        return (self.lastBlock.timestamp) + (blockHeight - self.lastBlockHeight)*10*60;
     }
     
     if (_blocks.count > 0) {
@@ -1070,7 +1070,7 @@ static dispatch_once_t devnetToken = 0;
             DSMerkleBlock *block = self.lastBlock;
             
             while (block && block.height > blockHeight) block = self.blocks[uint256_obj(block.prevBlock)];
-            if (block) return block.timestamp - NSTimeIntervalSince1970;
+            if (block) return block.timestamp;
         }
     }
     else [[DSMerkleBlockEntity context] performBlock:^{ [self blocks]; }];
@@ -1081,14 +1081,14 @@ static dispatch_once_t devnetToken = 0;
         if (self.checkpoints[i].height <= blockHeight) {
             t = self.checkpoints[i].timestamp + (t - self.checkpoints[i].timestamp)*
             (blockHeight - self.checkpoints[i].height)/(h - self.checkpoints[i].height);
-            return t - NSTimeIntervalSince1970;
+            return t;
         }
         
         h = self.checkpoints[i].height;
         t = self.checkpoints[i].timestamp;
     }
     
-    return self.checkpoints[0].timestamp - NSTimeIntervalSince1970;
+    return self.checkpoints[0].timestamp;
 }
 
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes

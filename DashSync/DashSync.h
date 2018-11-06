@@ -35,6 +35,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSOptionsManager.h"
 #import "NSData+Dash.h"
+#import "NSDate+Utils.h"
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "DSPeerEntity+CoreDataProperties.h"

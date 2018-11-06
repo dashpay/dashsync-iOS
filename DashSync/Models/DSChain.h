@@ -179,7 +179,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 -(void)clearOrphans;
 -(void)setLastBlockHeightForRescan;
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray * _Nonnull)txHashes;
--(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since reference date, 00:00:00 01/01/01 GMT
+-(NSTimeInterval)timestampForBlockHeight:(uint32_t)blockHeight; // seconds since 1970, 00:00:00 01/01/01 GMT
 
 -(void)unregisterWallet:(DSWallet* _Nonnull)wallet;
 -(void)addWallet:(DSWallet* _Nonnull)wallet;

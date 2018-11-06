@@ -121,7 +121,7 @@
 
     NSTimeInterval t = (self.timestamp > 1) ? self.timestamp :
                        [self.chain timestampForBlockHeight:self.blockHeight] - 5*60;
-    NSString *date = [df stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:t]];
+    NSString *date = [df stringFromDate:[NSDate dateWithTimeIntervalSince1970:t]];
 
     date = [date stringByReplacingOccurrencesOfString:@"am" withString:@"a"];
     date = [date stringByReplacingOccurrencesOfString:@"pm" withString:@"p"];
