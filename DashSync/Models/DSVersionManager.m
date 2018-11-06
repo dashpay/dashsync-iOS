@@ -102,18 +102,14 @@
                     completion(NO,YES,YES,NO);
                     return;
                 }
-                NSData * derivedKeyData = (seedPhrase) ?[[DSBIP39Mnemonic sharedInstance]
-                                                         deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
                 BOOL failed = NO;
                 
                 DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:[self compatibleSeedCreationTime] forChain:chain storeSeedPhrase:YES];
-                
-                for (DSAccount * account in wallet.accounts) {
-                    for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                        NSData * data = [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:wallet.uniqueID];
-                        failed = failed | !setKeychainData(data, [derivationPath walletBasedExtendedPublicKeyLocationString], NO);
-                    }
+                NSParameterAssert(wallet);
+                if (!wallet) {
+                    failed = YES;
                 }
+                
                 if (hasV0BIP44Data) {
                     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //old keys
                     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //old keys
