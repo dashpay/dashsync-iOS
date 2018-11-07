@@ -25,6 +25,7 @@
 
 @property (nonatomic,strong) NSMutableArray * knownChains;
 @property (nonatomic,strong) NSMutableArray * knownDevnetChains;
+@property (nonatomic,strong) NSMutableDictionary * devnetGenesisDictionary;
 @property (nonatomic,strong) Reachability *reachability;
 
 @end
@@ -88,22 +89,21 @@
 
 
 -(DSChainPeerManager*)devnetManagerForChain:(DSChain*)chain {
-    static NSMutableDictionary * _devnetDictionary = nil;
     static dispatch_once_t devnetToken = 0;
     dispatch_once(&devnetToken, ^{
-        _devnetDictionary = [NSMutableDictionary dictionary];
+        self.devnetGenesisDictionary = [NSMutableDictionary dictionary];
     });
     NSValue * genesisValue = uint256_obj(chain.genesisHash);
     DSChainPeerManager * devnetChainPeerManager = nil;
     @synchronized(self) {
-        if (![_devnetDictionary objectForKey:genesisValue]) {
+        if (![self.devnetGenesisDictionary objectForKey:genesisValue]) {
             devnetChainPeerManager = [[DSChainPeerManager alloc] initWithChain:chain];
             chain.peerManagerDelegate = devnetChainPeerManager;
             [self.knownChains addObject:chain];
             [self.knownDevnetChains addObject:chain];
-            [_devnetDictionary setObject:devnetChainPeerManager forKey:genesisValue];
+            [self.devnetGenesisDictionary setObject:devnetChainPeerManager forKey:genesisValue];
         } else {
-            devnetChainPeerManager = [_devnetDictionary objectForKey:genesisValue];
+            devnetChainPeerManager = [self.devnetGenesisDictionary objectForKey:genesisValue];
         }
     }
     return devnetChainPeerManager;
@@ -217,27 +217,35 @@
 }
 
 -(void)removeDevnetChain:(DSChain* _Nonnull)chain {
-    NSError * error = nil;
-    DSChainPeerManager * chainPeerManager = [self peerManagerForChain:chain];
-    [chainPeerManager clearRegisteredPeers];
-    NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Remove Devnet?" andTouchId:FALSE alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+        if (!cancelled && authenticatedOrSuccess) {
+            NSError * error = nil;
+            DSChainPeerManager * chainPeerManager = [self peerManagerForChain:chain];
+            [chainPeerManager clearRegisteredPeers];
+            NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
+            
+            if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
+            if ([[registeredDevnetsDictionary allKeys] containsObject:chain.devnetIdentifier]) {
+                [registeredDevnetsDictionary removeObjectForKey:chain.devnetIdentifier];
+                setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
+            }
+            [chain wipeWalletsAndDerivatives];
+            [[DashSync sharedSyncController] wipePeerDataForChain:chain];
+            [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
+            [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+            [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
+            [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain];
+            [[DashSync sharedSyncController] wipeWalletDataForChain:chain forceReauthentication:NO]; //this takes care of blockchain info as well;
+            [self.knownDevnetChains removeObject:chain];
+            [self.knownChains removeObject:chain];
+            NSValue * genesisValue = uint256_obj(chain.genesisHash);
+            [self.devnetGenesisDictionary removeObjectForKey:genesisValue];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
+            });
+        }
+    }];
     
-    if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
-    if ([[registeredDevnetsDictionary allKeys] containsObject:chain.devnetIdentifier]) {
-        [registeredDevnetsDictionary removeObjectForKey:chain.devnetIdentifier];
-        setKeychainDict(registeredDevnetsDictionary, DEVNET_CHAINS_KEY, NO);
-    }
-    [chain wipeWalletsAndDerivatives];
-    [self.knownDevnetChains removeObject:chain];
-    [[DashSync sharedSyncController] wipePeerDataForChain:chain];
-    [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
-    [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
-    [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
-    [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain];
-    [[DashSync sharedSyncController] wipeWalletDataForChain:chain]; //this takes care of blockchain info as well;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainsDidChangeNotification object:nil];
-    });
 }
 
 // MARK: - Spending Limits

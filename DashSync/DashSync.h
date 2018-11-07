@@ -90,7 +90,7 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 -(void)wipeGovernanceDataForChain:(DSChain*)chain;
 -(void)wipeMasternodeDataForChain:(DSChain*)chain;
 -(void)wipeSporkDataForChain:(DSChain*)chain;
--(void)wipeWalletDataForChain:(DSChain*)chain;
+-(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication;
 
 -(uint64_t)dbSize;
 

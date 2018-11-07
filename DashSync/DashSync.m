@@ -158,8 +158,16 @@
     });
 }
 
--(void)wipeWalletDataForChain:(DSChain*)chain {
+-(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication {
     [self wipeBlockchainDataForChain:chain];
+    if (!forceReauthentication && [[DSAuthenticationManager sharedInstance] didAuthenticate]) {
+        [chain wipeWalletsAndDerivatives];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneAddressesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
+        });
+    } else {
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
         if (authenticatedOrSuccess) {
             [chain wipeWalletsAndDerivatives];
@@ -170,6 +178,7 @@
             });
         }
     }];
+    }
 
 }
 
