@@ -135,6 +135,8 @@
             return @"Require sentinel flag";
         case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
             return @"Deterministic masternodese enabled at block";
+        case DSSporkIdentifier_Spork16InstantSendAutoLocks:
+            return @"Instant Send auto-locks";
         default:
             return @"Unknown spork";
             break;

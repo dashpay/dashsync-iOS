@@ -50,6 +50,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
 #import "DSMasternodeBroadcastEntity+CoreDataClass.h"
+#import "DSSporkManager.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -1409,12 +1410,18 @@ static dispatch_once_t devnetToken = 0;
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
 {
+    uint64_t standardFee = size*TX_FEE_PER_KB; // standard fee based on tx size
     if (isInstant) {
-        return TX_FEE_PER_INPUT*inputCount;
+        DSSporkManager * sporkManager = [self peerManagerDelegate].sporkManager;
+        if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= 4) {
+            return standardFee;
+        } else {
+            return TX_FEE_PER_INPUT*inputCount;
+        }
     } else {
-        uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB; // standard fee based on tx size rounded up to nearest kb
+        
 #if (!!FEE_PER_KB_URL)
-        uint64_t fee = (((size*self.feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
+        uint64_t fee = ((size*self.feePerKb + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
         return (fee > standardFee) ? fee : standardFee;
 #else
         return standardFee;

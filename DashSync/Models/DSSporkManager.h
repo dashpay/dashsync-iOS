@@ -16,6 +16,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 @interface DSSporkManager : NSObject
     
 @property (nonatomic,readonly) BOOL instantSendActive;
+@property (nonatomic,readonly) BOOL instantSendAutoLocks;
 @property (nonatomic,readonly) BOOL sporksUpdatedSignatures;
 
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
