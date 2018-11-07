@@ -119,6 +119,24 @@
                     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
                 }
                 
+                //update pin unlock time
+                
+                NSTimeInterval pinUnlockTimeSinceReferenceDate = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
+                
+                NSTimeInterval pinUnlockTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:pinUnlockTimeSinceReferenceDate] timeIntervalSince1970];
+                
+                [[NSUserDefaults standardUserDefaults] setDouble:pinUnlockTimeSince1970
+                                                          forKey:PIN_UNLOCK_TIME_KEY];
+                
+                //secure time
+                
+                NSTimeInterval secureTimeSinceReferenceDate = [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
+                
+                NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
+                
+                [[NSUserDefaults standardUserDefaults] setDouble:secureTimeSince1970
+                                                          forKey:SECURE_TIME_KEY];
+                
                 completion(!failed,YES,YES,NO);
                 
             }

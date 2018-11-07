@@ -48,6 +48,7 @@
 #import "DSDerivationPath.h"
 #import "DSAuthenticationManager.h"
 #import "NSData+Bitcoin.h"
+#import "NSDate+Utils.h"
 
 #define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
@@ -194,7 +195,7 @@
     if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
     _localCurrencyCode = [code copy];
     
-    if (i < _currencyPrices.count && [DSAuthenticationManager sharedInstance].secureTime + 3*24*60*60 > [NSDate timeIntervalSinceReferenceDate]) {
+    if (i < _currencyPrices.count && [DSAuthenticationManager sharedInstance].secureTime + 3*24*60*60 > [NSDate timeIntervalSince1970]) {
         self.localCurrencyBitcoinPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
     }
     else self.localCurrencyBitcoinPrice = @(0);
@@ -281,7 +282,7 @@
                                              NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
                                              NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
                                                                     matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                                                   date].timeIntervalSinceReferenceDate;
+                                                                   date].timeIntervalSince1970;
                                              
                                              if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
                                          }
@@ -339,7 +340,7 @@
                                              NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
                                              NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
                                                                     matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                                                   date].timeIntervalSinceReferenceDate;
+                                                                   date].timeIntervalSince1970;
                                              
                                              if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
                                          }
@@ -390,7 +391,7 @@
             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
             NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
                                    matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                  date].timeIntervalSinceReferenceDate;
+                                  date].timeIntervalSince1970;
             
             if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
         }

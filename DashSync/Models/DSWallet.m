@@ -38,6 +38,7 @@
 #import "DSBlockchainUser.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
+#import "NSDate+Utils.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -68,7 +69,7 @@
 }
 
 + (DSWallet*)standardWalletWithRandomSeedPhraseForChain:(DSChain*)chain storeSeedPhrase:(BOOL)store {
-    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:chain storeSeedPhrase:store];
+    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store];
 }
 
 -(instancetype)initWithChain:(DSChain*)chain {
