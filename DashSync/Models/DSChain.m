@@ -1024,9 +1024,10 @@ static dispatch_once_t devnetToken = 0;
                 }
             } else {
                 NSTimeInterval startSyncTime = self.startSyncFromTime;
+                NSUInteger genesisHeight = [self isDevnetAny]?1:0;
                 // if we don't have any blocks yet, use the latest checkpoint that's at least a week older than earliestKeyTime
-                for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-                    if (i == 0 || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + WEEK_TIME_INTERVAL < startSyncTime)) {
+                for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= genesisHeight; i--) {
+                    if (i == genesisHeight || ![self syncsBlockchain] || (self.checkpoints[i].timestamp + WEEK_TIME_INTERVAL < startSyncTime)) {
                         UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                         
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
