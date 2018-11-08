@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14315.18" systemVersion="17G65" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18B75" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -298,31 +298,31 @@
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="DSAccountEntity" positionX="18" positionY="153" width="128" height="105"/>
-        <element name="DSAddressEntity" positionX="0" positionY="0" width="128" height="150"/>
-        <element name="DSBlockchainUserCloseTransactionEntity" positionX="45" positionY="180" width="128" height="105"/>
-        <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="18" positionY="153" width="128" height="90"/>
-        <element name="DSBlockchainUserResetTransactionEntity" positionX="54" positionY="189" width="128" height="120"/>
-        <element name="DSBlockchainUserTopupTransactionEntity" positionX="27" positionY="162" width="128" height="60"/>
-        <element name="DSChainEntity" positionX="9" positionY="99" width="128" height="300"/>
-        <element name="DSDerivationPathEntity" positionX="9" positionY="99" width="128" height="135"/>
-        <element name="DSGovernanceObjectEntity" positionX="36" positionY="162" width="128" height="270"/>
-        <element name="DSGovernanceObjectHashEntity" positionX="27" positionY="153" width="128" height="105"/>
-        <element name="DSGovernanceVoteEntity" positionX="27" positionY="162" width="128" height="180"/>
-        <element name="DSGovernanceVoteHashEntity" positionX="18" positionY="153" width="128" height="120"/>
-        <element name="DSMasternodeBroadcastEntity" positionX="18" positionY="126" width="128" height="225"/>
-        <element name="DSMasternodeBroadcastHashEntity" positionX="9" positionY="144" width="128" height="105"/>
-        <element name="DSMasternodePingEntity" positionX="27" positionY="135" width="128" height="60"/>
-        <element name="DSMerkleBlockEntity" positionX="0" positionY="0" width="128" height="225"/>
-        <element name="DSPeerEntity" positionX="0" positionY="0" width="128" height="195"/>
-        <element name="DSShapeshiftEntity" positionX="0" positionY="0" width="128" height="225"/>
-        <element name="DSSimplifiedMasternodeEntryEntity" positionX="27" positionY="162" width="128" height="180"/>
-        <element name="DSSpecialTransactionEntity" positionX="36" positionY="171" width="128" height="60"/>
-        <element name="DSSporkEntity" positionX="9" positionY="117" width="128" height="120"/>
-        <element name="DSSporkHashEntity" positionX="18" positionY="153" width="128" height="90"/>
-        <element name="DSTransactionEntity" positionX="0" positionY="0" width="128" height="120"/>
-        <element name="DSTransactionHashEntity" positionX="18" positionY="153" width="128" height="120"/>
-        <element name="DSTxInputEntity" positionX="0" positionY="0" width="128" height="150"/>
-        <element name="DSTxOutputEntity" positionX="0" positionY="0" width="128" height="195"/>
+        <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="105"/>
+        <element name="DSAddressEntity" positionX="-2527.6015625" positionY="327.6796875" width="128" height="150"/>
+        <element name="DSBlockchainUserCloseTransactionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="105"/>
+        <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="90"/>
+        <element name="DSBlockchainUserResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="120"/>
+        <element name="DSBlockchainUserTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="60"/>
+        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="300"/>
+        <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="135"/>
+        <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>
+        <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
+        <element name="DSGovernanceVoteEntity" positionX="-681.9609375" positionY="527.89453125" width="128" height="180"/>
+        <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
+        <element name="DSMasternodeBroadcastEntity" positionX="-947.11328125" positionY="483.17578125" width="128" height="225"/>
+        <element name="DSMasternodeBroadcastHashEntity" positionX="-1152.91015625" positionY="588.2734375" width="128" height="105"/>
+        <element name="DSMasternodePingEntity" positionX="-679.73046875" positionY="964.87109375" width="128" height="60"/>
+        <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="225"/>
+        <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
+        <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="180"/>
+        <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="60"/>
+        <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
+        <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>
+        <element name="DSTransactionEntity" positionX="-1146.0078125" positionY="967.49609375" width="128" height="120"/>
+        <element name="DSTransactionHashEntity" positionX="-1340.45703125" positionY="712.484375" width="128" height="120"/>
+        <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
+        <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
     </elements>
 </model>
