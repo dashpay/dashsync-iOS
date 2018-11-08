@@ -591,7 +591,7 @@
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSError *error = [NSError errorWithDomain:@"DashWallet" code:1
-                                                 userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"no peers found", nil)}];
+                                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"no peers found", nil)}];
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
                                                                     object:nil userInfo:@{@"error":error,DSChainPeerManagerNotificationChainKey:self.chain}];
@@ -687,7 +687,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"peer_manager:not_signed"];
             completion([NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                      NSLocalizedString(@"dash transaction not signed", nil)}]);
+                                                                                      DSLocalizedString(@"dash transaction not signed", nil)}]);
         }
         
         return;
@@ -696,7 +696,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"peer_manager:not_connected"];
             completion([NSError errorWithDomain:@"DashWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                        NSLocalizedString(@"not connected to the dash network", nil)}]);
+                                                                                        DSLocalizedString(@"not connected to the dash network", nil)}]);
         }
         
         return;
@@ -785,17 +785,17 @@
             if (rescan) {
                 [[DSEventManager sharedEventManager] saveEvent:@"peer_manager:tx_rejected_rescan"];
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"transaction rejected", nil)
-                                             message:NSLocalizedString(@"Your wallet may be out of sync.\n"
+                                             alertControllerWithTitle:DSLocalizedString(@"transaction rejected", nil)
+                                             message:DSLocalizedString(@"Your wallet may be out of sync.\n"
                                                                        "This can often be fixed by rescanning the blockchain.", nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                               actionWithTitle:DSLocalizedString(@"cancel", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
                 UIAlertAction* rescanButton = [UIAlertAction
-                                               actionWithTitle:NSLocalizedString(@"rescan", nil)
+                                               actionWithTitle:DSLocalizedString(@"rescan", nil)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
                                                    [self rescan];
@@ -808,11 +808,11 @@
             else {
                 [[DSEventManager sharedEventManager] saveEvent:@"peer_manager_tx_rejected"];
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:NSLocalizedString(@"transaction rejected", nil)
+                                             alertControllerWithTitle:DSLocalizedString(@"transaction rejected", nil)
                                              message:@""
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           actionWithTitle:DSLocalizedString(@"ok", nil)
                                            style:UIAlertActionStyleCancel
                                            handler:^(UIAlertAction * action) {
                                            }];
@@ -840,7 +840,7 @@
     if (callback) {
         [[DSEventManager sharedEventManager] saveEvent:@"peer_manager:tx_canceled_timeout"];
         callback([NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                 NSLocalizedString(@"transaction canceled, network timeout", nil)}]);
+                                                                                                 DSLocalizedString(@"transaction canceled, network timeout", nil)}]);
     }
 }
 
@@ -1620,7 +1620,7 @@
     if (callback && ! [account transactionIsValid:transaction]) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"DashWallet" code:401
-                                userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}];
+                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
     }
     else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {
         [[DSTransactionEntity context] performBlock:^{

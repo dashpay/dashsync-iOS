@@ -1,0 +1,693 @@
+
+/* No comment provided by engineer. */
+" and " = " and ";
+
+/* No comment provided by engineer. */
+"%@ is for 'mDASH'. %@ = 1 DASH." = "%1$@ είναι για τα 'mDASH'. %2$@ = 1 DASH.";
+
+/* No comment provided by engineer. */
+"%@ is not allowed to access the camera" = "%@ δεν επιτρέπεται να έχετε πρόσβαση στην κάμερα";
+
+/* No comment provided by engineer. */
+"%@\n\nbalance: %@ (%@)" = "%1$@\n\nποσό: %2$@ (%3$@)";
+
+/* No comment provided by engineer. */
+"%d confirmations" = "%d επιβεβαιώσεις";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"0 confirmations" = "0 επιβεβαιώσεις";
+
+/* No comment provided by engineer. */
+"1 confirmation" = "1 επιβεβαίωση";
+
+/* No comment provided by engineer. */
+"\"%@\" is not a recovery phrase word" = "\"%@\" δεν είναι μια φράση αποκατάστασης";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         σύνολο %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%@\n\nif you ever lose your phone, you will need it to recover your wallet" = "\n%@\n\nεάν χάσετε ποτέ το τηλέφωνό σας, θα το χρειαστείτε ώστε να ανακτήσετε το πορτοφόλι σας";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d προσπάθειες που απομένουν\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 προσπάθεια απομένει\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nA device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "\nΈνας κωδικός συσκευής είναι απαραίτητος για τη διαφύλαξη του πορτοφολιού σας. Μεταβείτε στην επιλογή Ρυθμίσεις και ενεργοποιήστε τον κωδικό για να συνεχίσετε.";
+
+/* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+
+/* No comment provided by engineer. */
+"\nallow camera access in\nSettings->Privacy->Camera->%@" = "\nεπιτρέψτε στην κάμερα πρόσβαση στις\nρυθμίσεις-> απορρήτο-> κάμερα->%@";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nαμοιβή δικτύου +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %@" = "\ntry again in %@";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = " \nΔοκιμάστε ξανά σε %1$d %2$@";
+
+/* No comment provided by engineer. */
+"About" = "σχετικά με";
+
+/* No comment provided by engineer. */
+"Action Needed" = "Action Needed";
+
+/* No comment provided by engineer. */
+"always require passcode" = "πάντα να ζητείται κωδικός πρόσβασης";
+
+/* No comment provided by engineer. */
+"amount too small" = "το ποσό είναι πολύ μικρό";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting a payment to" = "Application %@ is requesting a payment to";
+
+/* No comment provided by engineer. */
+"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?" = "Application %@ is requesting an address so it can pay you.  Would you like to authorize this?";
+
+/* No comment provided by engineer. */
+"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash." = "Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.";
+
+/* No comment provided by engineer. */
+"Are you sure?" = "Are you sure?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
+
+/* No comment provided by engineer. */
+"bad payment request" = "λάθος αίτηση πληρωμής";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "λάθος URL αίτησης πληρωμής";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "λάθος URL πληρωμής";
+
+/* No comment provided by engineer. */
+"bad recovery phrase" = "λάθος φράση ανάκτησης";
+
+/* No comment provided by engineer. */
+"Bitcoin address (shapeshift)" = "Bitcoin address (shapeshift)";
+
+/* No comment provided by engineer. */
+"bitcoin payments can't be less than %@" = "bitcoin payments can't be less than %@";
+
+/* No comment provided by engineer. */
+"block #%d of %d" = "μπλόκ %1$d απο %2$d";
+
+/* No comment provided by engineer. */
+"Buy Dash" = "Buy Dash";
+
+/* No comment provided by engineer. */
+"Buy dash in dashwallet!" = "Buy dash in dashwallet!";
+
+/* No comment provided by engineer. */
+"By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code." = "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your pin code.";
+
+/* No comment provided by engineer. */
+"cancel" = "άκυρο";
+
+/* No comment provided by engineer. */
+"change" = "αλλαγή";
+
+/* No comment provided by engineer. */
+"Change passcode" = "αλλάξτε κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"change payment amount?" = "αλλαγή του ποσού πληρωμής?";
+
+/* No comment provided by engineer. */
+"checking address balance..." = "έλεγχος του ποσού της διεύθυνσης...";
+
+/* No comment provided by engineer. */
+"checking private key balance..." = "έλεγχος ποσού του ιδιωτικού κλειδιού...";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "επιλέξτε κωδικό πρόσβασης για το %@";
+
+/* No comment provided by engineer. */
+"clear" = "clear";
+
+/* No comment provided by engineer. */
+"clear trusted node?" = "clear trusted node?";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash address" = "clipboard doesn't contain a valid dash address";
+
+/* No comment provided by engineer. */
+"clipboard doesn't contain a valid dash or bitcoin address" = "clipboard doesn't contain a valid dash or bitcoin address";
+
+/* No comment provided by engineer. */
+"close app" = "κλείστε την εφαρμογή";
+
+/* Confirm */
+"Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"confirmed in block #%d" = "επιβεβαιώθηκε στο μπλόκ #%d";
+
+/* No comment provided by engineer. */
+"connect timeout" = "λήξη χρονικού ορίου";
+
+/* No comment provided by engineer. */
+"copied" = "αντιγράφηκε";
+
+/* No comment provided by engineer. */
+"copy" = "αντιγραφή";
+
+/* No comment provided by engineer. */
+"copy address to clipboard" = "αντιγραφή διεύθυνσης στο πρόχειρο";
+
+/* No comment provided by engineer. */
+"copy request to clipboard" = "αντιγραφή αίτησης στο πρόχειρο";
+
+/* No comment provided by engineer. */
+"copy wallet addresses to clipboard?" = "αντιγραφή διευθύνσης πορτοφολιού στο πρόχειρο?";
+
+/* No comment provided by engineer. */
+"couldn't check address balance" = "δεν μπορούσα να ελέγξω το υπόλοιπο της διεύθυνσης";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "δεν μπορούσα να προβώ σε πληρωμή";
+
+/* No comment provided by engineer. */
+"couldn't sweep balance" = "δεν μπορούσα να σαρώσω τα χρήματα";
+
+/* No comment provided by engineer. */
+"couldn't transmit payment to dash network" = "δεν μπορούσα να μεταδώσω την πληρωμή στο δίκτυο dash";
+
+/* No comment provided by engineer. */
+"CRITICAL" = "CRITICAL";
+
+/* No comment provided by engineer. */
+"Dash address" = "Διεύθυνση Dash";
+
+/* No comment provided by engineer. */
+"Dash addresses can also be copied to the clipboard. A dash address always starts with 'X' or '7'." = "Οι Διευθύνσεις Dash μπορούν επίσης να αντιγραφούν στο πρόχειρο. Μια διεύθυνση dash ξεκινά πάντα με το 'X' ή το '7'.";
+
+/* No comment provided by engineer. */
+"dash network fee" = "Bitcoin αμοιβή δικτύου";
+
+/* No comment provided by engineer. */
+"dash payments can't be less than %@" = "Οι πληρωμές Bitcoin δεν μπορεί να είναι μικρότερες από %@";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "Η συναλλαγή dash δεν έχει υπογραφεί";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "Η συναλλαγή εξόδου Bitcoin δεν μπορεί να είναι μικρότερη από %@";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash)." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα dash σας).";
+
+/* No comment provided by engineer. */
+"DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your dash). Wipe this wallet immediately and restore on a secure device." = "Η ΑΣΦΑΛΕΙΑ ΤΗΣ ΣΥΣΚΕΥΗΣ ΕΧΕΙ ΤΕΘΕΙ ΣΕ ΚΙΝΔΥΝΟ\nΟποιαδήποτε 'σπασμένη' εφαρμογή μπορεί να έχει πρόσβαση σε οποιαδήποτε άλλης εφαρμογής τα δεδομένα (και να κλέψει τα dash σας). Καθαρίστε το πορτοφόλι σας και επαναφέρετε το σε μια ασφαλή συσκευή.";
+
+/* No comment provided by engineer. */
+"do it later" = "θα το κάνω αργότερα";
+
+/* No comment provided by engineer. */
+"DO NOT let anyone see your recovery phrase or they can spend your dash." = "ΜΗΝ αφήσετε κανέναν να δεί την φράση ανάκτησης σας αλλιώς μπορούν να ξοδεψουν τα dash σας.";
+
+/* No comment provided by engineer. */
+"DO NOT take a screenshot. Screenshots are visible to other apps and devices." = "DO NOT take a screenshot. Screenshots are visible to other apps and devices.";
+
+/* No comment provided by engineer. */
+"Done" = "Done";
+
+/* No comment provided by engineer. */
+"double spend" = "διπλό ξόδεμα";
+
+/* No comment provided by engineer. */
+"email not configured" = "η διεύθυνση ηλεκτρονικού ταχυδρομείου δεν έχει ρυθμιστεί";
+
+/* No comment provided by engineer. */
+"enable" = "enable";
+
+/* No comment provided by engineer. */
+"Enable receive notifications" = "Enable receive notifications";
+
+/* No comment provided by engineer. */
+"enter" = "enter";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "εισάγετε τον παλιό κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"error signing dash transaction" = "σφάλμα υπογραφής συναλλαγής dash";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "σφάλμα υπογραφής συναλλαγής";
+
+/* No comment provided by engineer. */
+"exit" = "exit";
+
+/* No comment provided by engineer. */
+"Face ID limit" = "Face ID limit";
+
+/* No comment provided by engineer. */
+"Face ID spending limit" = "αναγνωριστικό όριο ξοδέματος αφής";
+
+/* No comment provided by engineer. */
+"Failed wallet update" = "Failed wallet update";
+
+/* No comment provided by engineer. */
+"from:" = "από:";
+
+/* No comment provided by engineer. */
+"GENERAL" = "GENERAL";
+
+/* No comment provided by engineer. */
+"hour" = "ώρα";
+
+/* No comment provided by engineer. */
+"hours" = "ώρες";
+
+/* No comment provided by engineer. */
+"I accept that I will lose my coins if I no longer possess the recovery phrase" = "I accept that I will lose my coins if I no longer possess the recovery phrase";
+
+/* No comment provided by engineer. */
+"id:" = "αναγνωριστικό:";
+
+/* No comment provided by engineer. */
+"If you still would like to wipe it please input: \"%@\"" = "If you still would like to wipe it please input: \"%@\"";
+
+/* No comment provided by engineer. */
+"ignore" = "παράβλεψη";
+
+/* No comment provided by engineer. */
+"Import private key" = "εισαγωγή ιδιωτικού κλειδιού";
+
+/* No comment provided by engineer. */
+"IMPORTANT" = "ΣΗΜΑΝΤΙΚΟ";
+
+/* No comment provided by engineer. */
+"In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again." = "In a previous version of Dashwallet, when initially displaying your passphrase on this device we have determined that this App did not correctly display all 12 seed words. Please write down your full passphrase again.";
+
+/* No comment provided by engineer. */
+"instant payment" = "instant payment";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "ανεπαρκή χρήματα";
+
+/* No comment provided by engineer. */
+"insufficient funds for dash network fee" = "ανεπαρκή χρηματοδότηση για την αμοιβή του δικτύου dash";
+
+/* No comment provided by engineer. */
+"INVALID" = "ΑΚΥΡΟ";
+
+/* No comment provided by engineer. */
+"Let others scan this QR code to get your dash address. Anyone can send dash to your wallet by transferring them to your address." = "Αφήστε τους άλλους να σαρώσουν αυτόν τον κωδικό QR για να πάρουν την διεύθυνση των dash σας. Ο καθένας μπορεί να στείλει dash στο πορτοφόλι σας, μεταφέροντάς τα στη διεύθυνσή σας.";
+
+/* No comment provided by engineer. */
+"minute" = "λεπτό";
+
+/* No comment provided by engineer. */
+"minutes" = "λεπτά";
+
+/* No comment provided by engineer. */
+"missing certificate" = "λείπει το πιστοποιητικό";
+
+/* No comment provided by engineer. */
+"more..." = "περισσότερα...";
+
+/* No comment provided by engineer. */
+"Moved" = "μετακινηθηκε";
+
+/* No comment provided by engineer. */
+"NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected." = "NEVER type your recovery phrase into password managers or elsewhere. Other devices may be infected.";
+
+/* No comment provided by engineer. */
+"next, write down your recovery phrase" = "στη συνέχεια, γράψτε την φράση ανακτησής σας";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash address" = "NFC device didn't transmit a valid dash address";
+
+/* No comment provided by engineer. */
+"NFC device didn't transmit a valid dash or bitcoin address" = "NFC device didn't transmit a valid dash or bitcoin address";
+
+/* No comment provided by engineer. */
+"no exchange rate data" = "δεν υπάρχουν δεδομένα συναλλαγματικής ισοτιμίας";
+
+/* No comment provided by engineer. */
+"no peers found" = "δε βρέθηκαν κόμβοι";
+
+/* No comment provided by engineer. */
+"not a dash or bitcoin QR code" = "not a dash or bitcoin QR code";
+
+/* No comment provided by engineer. */
+"not a dash QR code" = "not a dash QR code";
+
+/* No comment provided by engineer. */
+"not a valid bitcoin address" = "δεν είναι μια έγκυρη διεύθυνση bitcoin";
+
+/* No comment provided by engineer. */
+"not a valid dash address" = "δεν είναι μια έγκυρη διεύθυνση dash";
+
+/* No comment provided by engineer. */
+"not a valid dash or bitcoin address" = "not a valid dash or bitcoin address";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "δεν είναι ενα έγκυρο ιδιωτικό κλειδί";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "δεν είστε συνδεδεμένος με το δίκτυο dash";
+
+/* No comment provided by engineer. */
+"ok" = "Εντάξει";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"passcode" = "κωδικός πρόσβασης";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "κωδικός πρόσβασης για το %@";
+
+/* No comment provided by engineer. */
+"password" = "κωδικός πρόσβασης";
+
+/* No comment provided by engineer. */
+"password protected key" = "προστατευμένο κλειδί με κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"Pay" = "πληρώστε";
+
+/* No comment provided by engineer. */
+"payee identity isn't certified" = "η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";
+
+/* No comment provided by engineer. */
+"payment address" = "διεύθυνση πληρωμής";
+
+/* No comment provided by engineer. */
+"payment output" = "έξοδος πληρωμής";
+
+/* No comment provided by engineer. */
+"pending" = "pending";
+
+/* No comment provided by engineer. */
+"Please enter pin to upgrade wallet" = "Please enter pin to upgrade wallet";
+
+/* No comment provided by engineer. */
+"Please place your phone near NFC device." = "Please place your phone near NFC device.";
+
+/* No comment provided by engineer. */
+"rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@" = "rate: %@ = %@\nupdated: %@\nblock #%d of %d\nconnected peers: %d\ndl peer: %@";
+
+/* No comment provided by engineer. */
+"Receive dash at this address: %@" = "Λάβετε dash σε αυτή τη διεύθυνση: %@";
+
+/* No comment provided by engineer. */
+"Received" = "ελήφθησαν";
+
+/* No comment provided by engineer. */
+"received %@ (%@)" = "ελήφθη %1$@ (%2$@)";
+
+/* Recovery phrase */
+"Recovery phrase" = "φράση ανάκτησης";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "δεν ταιριάζει η φράση ανάκτησης";
+
+/* No comment provided by engineer. */
+"recovery phrase must have %d words" = "η φράση ανάκτηση πρέπει να έχει %d λέξεις";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "μειώση του ποσού πληρωμής κατά\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Remind me later" = "Remind me later";
+
+/* No comment provided by engineer. */
+"Request" = "αίτηση";
+
+/* No comment provided by engineer. */
+"request an amount" = "αίτηση για ένα ποσό";
+
+/* No comment provided by engineer. */
+"request expired" = "το αίτημα έληξε";
+
+/* No comment provided by engineer. */
+"request is for an instant payment but you have disabled instant payments" = "request is for an instant payment but you have disabled instant payments";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" instead of \"%@\"" = "αίτηση δικτύου \"%1$@\" αντί για \"%2$@\"";
+
+/* No comment provided by engineer. */
+"rescan" = "επανάληψη της σάρωσης";
+
+/* No comment provided by engineer. */
+"Rescan blockchain" = "σάρωση της αλυσίδας μπλόκ";
+
+/* No comment provided by engineer. */
+"rescan blockchain if you think you may have missing transactions, or are having trouble sending (rescanning can take several minutes)" = "κάντε επανάληψη της σάρωσης της αλυσίδας των μπλόκ αν νομίζετε ότι μπορεί να έχετε συναλλαγές που λείπουν ή άν έχετε προβλήματα αποστολής (η νέα σάρωση μπορεί να πάρει αρκετά λεπτά)";
+
+/* No comment provided by engineer. */
+"reset" = "επαναφορά";
+
+/* No comment provided by engineer. */
+"retry" = "retry";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address." = "Scan someone else's QR code to get their dash or bitcoin address. You can send a payment to anyone with an address.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές και συσκευές. Παράξτε μια νέα φράση ανάκτησης και κρατήστε την μυστική.";
+
+/* No comment provided by engineer. */
+"Screenshots are visible to other apps and devices. Your funds are at risk. Transfer your balance to another wallet." = "Οι λήψεις οθόνης είναι ορατές σε άλλες εφαρμογές και συσκευές. Τα χρήματα σας κινδυνεύουν. Μεταφέρετε τα σε άλλο πορτοφόλι.";
+
+/* No comment provided by engineer. */
+"second" = "second";
+
+/* No comment provided by engineer. */
+"seconds" = "seconds";
+
+/* No comment provided by engineer. */
+"seen by %d of %d peers" = "το έχουν δει %1$d από τους %2$d κόμβους";
+
+/* No comment provided by engineer. */
+"send" = "αποστολή";
+
+/* No comment provided by engineer. */
+"Send %@ (%@) from this private key into your wallet? The dash network will receive a fee of %@ (%@)." = "Στείλτε %1$@ (%2$@) από το ιδιωτικό κλειδί σας στο πορτοφόλι σας? Το δίκτυο dash θα λάβει ένα τέλος %3$@ (%4$@).";
+
+/* No comment provided by engineer. */
+"send address as email" = "αποστολή διεύθυνσης ως email";
+
+/* No comment provided by engineer. */
+"send address as message" = "αποστολή διεύθυνσης ως μήνυμα";
+
+/* No comment provided by engineer. */
+"send request as email" = "στείλτε αίτημα ως email";
+
+/* No comment provided by engineer. */
+"send request as message" = "στείλτε αίτημα ως μήνυμα";
+
+/* No comment provided by engineer. */
+"Sent" = "εστάλη";
+
+/* No comment provided by engineer. */
+"sent!" = "εστάλη!";
+
+/* No comment provided by engineer. */
+"set a trusted node" = "set a trusted node";
+
+/* No comment provided by engineer. */
+"Settings" = "ρυθμίσεις";
+
+/* No comment provided by engineer. */
+"shapeshift bitcoin id:" = "shapeshift bitcoin id:";
+
+/* No comment provided by engineer. */
+"shapeshift failed" = "shapeshift failed";
+
+/* No comment provided by engineer. */
+"shapeshift status:" = "shapeshift status:";
+
+/* No comment provided by engineer. */
+"shapeshift succeeded" = "shapeshift succeeded";
+
+/* No comment provided by engineer. */
+"show" = "εμφάνιση";
+
+/* No comment provided by engineer. */
+"show phrase" = "εμφάνιση φράσης";
+
+/* No comment provided by engineer. */
+"sms not currently available" = "το sms δεν είναι διαθέσιμο επί του παρόντος";
+
+/* No comment provided by engineer. */
+"spent address" = "διεύθυνση εξόφλησης";
+
+/* No comment provided by engineer. */
+"spent input" = "εξοφλημένες εισόδοι";
+
+/* No comment provided by engineer. */
+"Starting Shapeshift!" = "Starting Shapeshift!";
+
+/* No comment provided by engineer. */
+"status:" = "κατάσταση:";
+
+/* No comment provided by engineer. */
+"swept!" = "σαρώθηκε!";
+
+/* No comment provided by engineer. */
+"Syncing:" = "Syncing:";
+
+/* No comment provided by engineer. */
+"The amount you wanted to shapeshift is too high, please input a value under %@" = "The amount you wanted to shapeshift is too high, please input a value under %@";
+
+/* No comment provided by engineer. */
+"The amount you wanted to shapeshift is too low, please input a value over %@" = "The amount you wanted to shapeshift is too low, please input a value over %@";
+
+/* No comment provided by engineer. */
+"the app will now close" = "η εφαρμογή θα κλείσει τώρα";
+
+/* No comment provided by engineer. */
+"This is your dash address. Tap to copy it or send it by email or sms. The address will change each time you receive funds, but old addresses always work." = "Αυτή είναι η διεύθυνση dash σας. Πατήστε για να την αντιγράψετε ή να το στείλετε με email ή sms. Η διεύθυνση θα αλλάξει κάθε φορά που λαμβάνετε χρήματα, αλλά λειτουργούν πάντα οι παλιές διευθύνσεις.";
+
+/* No comment provided by engineer. */
+"This is your dash balance." = "This is your dash balance.";
+
+/* No comment provided by engineer. */
+"This is your dash balance. Dash is a currency. The exchange rate changes with the market." = "Αυτό είναι το υπόλοιπό σας σε dash. Το Dash είναι ένα νόμισμα. Οι μεταβολές των συναλλαγματικών ισοτιμιών αλλάζουν με την αγορά.";
+
+/* No comment provided by engineer. */
+"this payment address is already in your wallet" = "αυτή η διεύθυνση πληρωμής είναι ήδη στο πορτοφόλι σας";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "αυτό το ιδιωτικό κλειδί είναι άδειο";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+
+/* No comment provided by engineer. */
+"this request requires an instant payment but you have disabled instant payments" = "this request requires an instant payment but you have disabled instant payments";
+
+/* No comment provided by engineer. */
+"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase" = "This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase";
+
+/* No comment provided by engineer. */
+"to:" = "προς:";
+
+/* No comment provided by engineer. */
+"to: %@" = "προς: %@";
+
+/* No comment provided by engineer. */
+"to: %@ (via Shapeshift)" = "to: %@ (via Shapeshift)";
+
+/* No comment provided by engineer. */
+"Touch ID limit" = "αναγνωριστικό όριο αφής";
+
+/* No comment provided by engineer. */
+"Touch ID spending limit" = "αναγνωριστικό όριο ξοδέματος αφής";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "η συναλλαγή ακυρώθηκε, λήξη χρονικού ορίου δικτύου";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "οι αμοιβή δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
+
+/* No comment provided by engineer. */
+"Transaction history" = "ιστορικό συναλλαγής";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "η συναλλαγή απορρίφθηκε";
+
+/* No comment provided by engineer. */
+"trust" = "trust";
+
+/* No comment provided by engineer. */
+"Try It!" = "Try It!";
+
+/* No comment provided by engineer. */
+"turn device passcode on" = "ενεργοποιήστε τον κωδικό πρόσβασης της συσκευής";
+
+/* No comment provided by engineer. */
+"Unable to get new qr code" = "Unable to get new qr code";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "απρόσμενη απάντηση από %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "άγνωστη διεύθυνση";
+
+/* No comment provided by engineer. */
+"unrecognized address" = "μη αναγνωρισμένη διεύθυνση";
+
+/* No comment provided by engineer. */
+"unsupported or corrupted document" = "μη υποστηριζόμενο ή κατεστραμμένο έγγραφο";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "μη υποστηριζόμενος τύπος υπογραφής";
+
+/* No comment provided by engineer. */
+"unsupported url" = "μη υποστηριζόμενο url";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "μη αξιόπιστο πιστοποιητικό";
+
+/* No comment provided by engineer. */
+"unverified" = "χωρίς επαλήθευση";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
+
+/* No comment provided by engineer. */
+"verified, waiting for confirmation" = "επαληθευμένη, αναμονή για επιβεβαίωση";
+
+/* No comment provided by engineer. */
+"verify passcode" = "επιβεβαιώστε τον κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"wallet address" = "διεύθυνση πορτοφόλιού";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "το πορτοφόλι απενεργοποιήθηκε";
+
+/* No comment provided by engineer. */
+"WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";
+
+/* No comment provided by engineer. */
+"wipe" = "εκκαθάριση";
+
+/* No comment provided by engineer. */
+"WRITE DOWN YOUR RECOVERY PHRASE" = "ΓΡΑΨΤΕ ΤΗΝ ΦΡΑΣΗ ΑΝΑΚΤΗΣΗΣ ΣΑΣ";
+
+/* No comment provided by engineer. */
+"You can now buy dash in\ndashwallet with cash or\nbank transfer." = "You can now buy dash in\ndashwallet with cash or\nbank transfer.";
+
+/* No comment provided by engineer. */
+"You must enter your pin in order to enter dashwallet" = "You must enter your pin in order to enter dashwallet";
+
+/* No comment provided by engineer. */
+"you received dash!" = "λάβατε dash!";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Το πορτοφόλι σας μπορεί να είναι εκτός συγχρονισμού. Αυτό μπορεί συχνά να διορθωθεί με την επανεξέταση των μπλόκ συναλλαγών.";
