@@ -33,5 +33,13 @@ Pod::Spec.new do |s|
   #s.dependency 'AFJSONRPCClient_DASH', '2.1.4'
   s.dependency 'AFNetworking', '~> 3.0'
   
+  s.script_phase = { :name => 'Localization', :script => 'if which bartycrouch > /dev/null; then\
+      # Add new keys to Localizable.strings files from NSLocalizedString in code\
+      bartycrouch code -p "$PROJECT_DIR" -l "$PROJECT_DIR" -c -s -k -f "DSLocalizedString"\
+      else\
+      echo "warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch"\
+      fi'
+  }
+  
 end
 
