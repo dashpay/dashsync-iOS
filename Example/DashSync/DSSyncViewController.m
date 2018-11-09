@@ -367,7 +367,7 @@
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain forceReauthentication:YES];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
@@ -376,7 +376,7 @@
         [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
         [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain]; //this takes care of blockchain info as well;
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain forceReauthentication:YES]; //this takes care of blockchain info as well;
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {

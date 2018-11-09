@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " và ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         tổng số %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d lần thử còn lại\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(số lượng yêu cầu ở địa phương: 1%@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 lần thử còn lại\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     số lượng %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nthử lại %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "sai mật khẩu, hãy thử lại";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "địa chỉ URL của yêu cầu thanh toán không đúng";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "địa chỉ thanh toán URL không đúng";
+
+/* No comment provided by engineer. */
+"cancel" = "huỷ bỏ";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "hãy chọn mật khẩu cho %@";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "hết thời hạn kết nối";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "giao dịch dash không được ký";
+
+/* No comment provided by engineer. */
+"double spend" = "tiêu lặp";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "nhập mật khẩu cũ";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "lỗi khi ký giao dịch";
+
+/* No comment provided by engineer. */
+"hour" = "giờ";
+
+/* No comment provided by engineer. */
+"hours" = "giờ";
+
+/* No comment provided by engineer. */
+"minute" = "phút";
+
+/* No comment provided by engineer. */
+"minutes" = "phút";
+
+/* No comment provided by engineer. */
+"missing certificate" = "thiếu chứng thực";
+
+/* No comment provided by engineer. */
+"no peers found" = "không tìm thấy nút ngang hàng";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "không phải một khoá riêng hợp lệ";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "chưa được kết nối với mạng lưới của dash";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "mật khẩu";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "mật khẩu cho %@";
+
+/* No comment provided by engineer. */
+"password" = "mật khẩu";
+
+/* No comment provided by engineer. */
+"password protected key" = "khoá được bảo vệ bởi mật khẩu";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "cụm từ phục hồi không đúng";
+
+/* No comment provided by engineer. */
+"request expired" = "yêu cầu đã hết hạn";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "quét lại";
+
+/* No comment provided by engineer. */
+"reset" = "khởi tạo lại";
+
+/* No comment provided by engineer. */
+"second" = "giây";
+
+/* No comment provided by engineer. */
+"seconds" = "giây";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "khoá riêng này đã có trong ví của bạn";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "khoá riêng này không có gì";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "giao dịch bị huỷ, hết thời gian";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "phí giao dịch có thể nhiều hơn số tiền có trong địa chỉ này (do nhiều các khoản gửi tí xíu)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "giao dịch bị từ chối";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "phản hồi không mong đợi từ %@";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "kiểu chữ ký không được hỗ trợ";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "chứng chỉ không đáng tin";
+
+/* Updating Price */
+"Updating Price" = "Đang cập nhật giá";
+
+/* No comment provided by engineer. */
+"verify passcode" = "kiểm tra mật khẩu";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "ví bị tắt";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ví của bạn có thể bị mất đồng bộ.\nĐiều này có thể được xử lý bằng cách quét lại blockchain.";

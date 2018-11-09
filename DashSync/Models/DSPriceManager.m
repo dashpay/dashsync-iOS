@@ -587,7 +587,7 @@
 {
     NSNumber *n = [self localCurrencyNumberForDashAmount:amount];
     if (!n) {
-        return NSLocalizedString(@"Updating Price",@"Updating Price");
+        return DSLocalizedString(@"Updating Price",@"Updating Price");
     }
     return [self.localFormat stringFromNumber:n];
 }

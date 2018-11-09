@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " en ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         totaal %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\nnog %d pogingen\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(lokaal gevraagd bedrag: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\nnog 1 poging\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nprobeer opnieuw over %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "onjuist wachtwoord, probeer opnieuw";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "foutieve betaalverzoek-URL";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "foutieve betaal-URL";
+
+/* No comment provided by engineer. */
+"cancel" = "annuleer";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "kies toegangscode voor %@";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "verbindingstime-out";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "dash-transactie is niet ondertekend";
+
+/* No comment provided by engineer. */
+"double spend" = "dubbel uitgegeven";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "voer oude toegangscode i";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "fout bij het ondertekenen van de transactie";
+
+/* No comment provided by engineer. */
+"hour" = "uur";
+
+/* No comment provided by engineer. */
+"hours" = "uur";
+
+/* No comment provided by engineer. */
+"minute" = "minuut";
+
+/* No comment provided by engineer. */
+"minutes" = "minuten";
+
+/* No comment provided by engineer. */
+"missing certificate" = "certificaat ontbreekt";
+
+/* No comment provided by engineer. */
+"no peers found" = "geen peers gevonden";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "ongeldige persoonlijke sleutel";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "niet verbonden met het dash-netwerk";
+
+/* No comment provided by engineer. */
+"ok" = "oké";
+
+/* No comment provided by engineer. */
+"passcode" = "toegangscode";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "toegangscode voor %@";
+
+/* No comment provided by engineer. */
+"password" = "wachtwoord";
+
+/* No comment provided by engineer. */
+"password protected key" = "met wachtwoord beveiligde sleutel";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "de herstelzin komt niet overeen";
+
+/* No comment provided by engineer. */
+"request expired" = "verzoek verlopen";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "scan opnieuw";
+
+/* No comment provided by engineer. */
+"reset" = "herstel";
+
+/* No comment provided by engineer. */
+"second" = "seconde";
+
+/* No comment provided by engineer. */
+"seconds" = "seconden";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "deze persoonlijke sleutel staat al in je portemonnee";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "deze persoonlijke sleutel is leeg";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transactie geannuleerd, netwerktime-out";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "de transactievergoeding zou meer zijn dan het beschikbare tegoed op deze persoonlijke sleutel (als gevolg van kleine \"stof\"-stortingen)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transactie geweigerd";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "onverwacht antwoord van %@";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "niet-ondersteunde handtekeningsoort";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "niet-vertrouwd certificaat";
+
+/* Updating Price */
+"Updating Price" = "Bezig met bijwerken van prijs";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verifieer toegangscode";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "portemonnee uitgeschakeld";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Je portemonnee is mogelijk niet gesynchroniseerd.\nDit kan vaak worden opgelost door de blockchain opnieuw te scannen.";

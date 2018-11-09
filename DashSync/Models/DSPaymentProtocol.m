@@ -407,8 +407,8 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
-            _errorMessage = (certs.count > 0) ? NSLocalizedString(@"untrusted certificate", nil) :
-                            NSLocalizedString(@"missing certificate", nil);
+            _errorMessage = (certs.count > 0) ? DSLocalizedString(@"untrusted certificate", nil) :
+                            DSLocalizedString(@"missing certificate", nil);
 
             for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
                 if (! [property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
@@ -440,7 +440,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
 
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
-                _errorMessage = NSLocalizedString(@"unsupported signature type", nil);
+                _errorMessage = DSLocalizedString(@"unsupported signature type", nil);
                 NSLog(@"%@", _errorMessage);
             }
             else {
@@ -457,7 +457,7 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
     }
 
     if (r && self.details.expires >= 1 && [NSDate timeIntervalSince1970] > self.details.expires) {
-        _errorMessage = NSLocalizedString(@"request expired", nil);
+        _errorMessage = DSLocalizedString(@"request expired", nil);
         r = NO;
     }
 

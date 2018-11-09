@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = "和";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n總額 %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n尚餘 %d次嘗試機會\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(本地請求金額: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n尚餘 1 次嘗試機會\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n金額 %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\n網絡費用 +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\n在 %1$d %2$@ 後重試";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "密碼錯誤，請重試";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "錯誤付款請求鏈接";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "錯誤支付鏈接";
+
+/* No comment provided by engineer. */
+"cancel" = "取消";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "選擇 %@ 的驗證碼";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "連接超時";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "達世幣交易尚未簽署";
+
+/* No comment provided by engineer. */
+"double spend" = "雙花";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "輸入舊的驗證碼 ";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "簽署交易時發生錯誤";
+
+/* No comment provided by engineer. */
+"hour" = "小時";
+
+/* No comment provided by engineer. */
+"hours" = "小時";
+
+/* No comment provided by engineer. */
+"minute" = "分鐘";
+
+/* No comment provided by engineer. */
+"minutes" = "分鐘";
+
+/* No comment provided by engineer. */
+"missing certificate" = "缺少認證";
+
+/* No comment provided by engineer. */
+"no peers found" = "沒有找到節點";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "不是一個有效的私鑰";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "未連接到達世幣網絡";
+
+/* No comment provided by engineer. */
+"ok" = "確定";
+
+/* No comment provided by engineer. */
+"passcode" = "驗證碼";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "%@ 的驗證碼";
+
+/* No comment provided by engineer. */
+"password" = "密碼";
+
+/* No comment provided by engineer. */
+"password protected key" = "受密碼保護的密鑰";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "恢復詞組不符";
+
+/* No comment provided by engineer. */
+"request expired" = "請求已經過期";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "重新掃瞄";
+
+/* No comment provided by engineer. */
+"reset" = "重置";
+
+/* No comment provided by engineer. */
+"second" = "秒";
+
+/* No comment provided by engineer. */
+"seconds" = "秒";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "這個私鑰已在你的錢包中";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "此私鑰是空的";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "交易取消，網絡超時";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "交易費用花費將多於在這個私鑰的可動用資金 (由於極小的 \"粉塵\" 存款)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "交易被拒絕";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "從 %@ 傳來的意外回應";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "不支援的簽名類型";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "不受信任的憑證";
+
+/* Updating Price */
+"Updating Price" = "正在更新價格";
+
+/* No comment provided by engineer. */
+"verify passcode" = "審核驗證碼";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "錢包被禁用";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的錢包可能不同步。\n這通常可以通過重新掃描區塊鏈來修復。";

@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " и ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n       общо %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d оставащи опита\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(локална заявка за сума: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 оставащ опит\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     количество %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nмрежова такса +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nопитайте отново след %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "грешна парола, опитайте отново";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "грешна заявка за плащане URL";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "грешно плащане URL";
+
+/* No comment provided by engineer. */
+"cancel" = "отказ";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "избор на парола за %@";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "таймаут на връзката";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "dash транзакцията не е подписана";
+
+/* No comment provided by engineer. */
+"double spend" = "двойно похарчени";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "въведете старата парола";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "грешно подписана транзакция";
+
+/* No comment provided by engineer. */
+"hour" = "час";
+
+/* No comment provided by engineer. */
+"hours" = "часа";
+
+/* No comment provided by engineer. */
+"minute" = "минута";
+
+/* No comment provided by engineer. */
+"minutes" = "минути";
+
+/* No comment provided by engineer. */
+"missing certificate" = "липсващ сертификат";
+
+/* No comment provided by engineer. */
+"no peers found" = "няма намерени пиъри";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "не е валиден частен ключ";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "не е свързан към dash мрежата";
+
+/* No comment provided by engineer. */
+"ok" = "ок";
+
+/* No comment provided by engineer. */
+"passcode" = "парола";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "парола за %@";
+
+/* No comment provided by engineer. */
+"password" = "парола";
+
+/* No comment provided by engineer. */
+"password protected key" = "защитен с парола ключ";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "фразата за възстановяване не съвпада";
+
+/* No comment provided by engineer. */
+"request expired" = "изтекло искане";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "повторно сканиране";
+
+/* No comment provided by engineer. */
+"reset" = "изчистване";
+
+/* No comment provided by engineer. */
+"second" = "секунда";
+
+/* No comment provided by engineer. */
+"seconds" = "секунди";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "този частен ключ е вече в твоя портфейл";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "този частен ключ е празен";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "отказана транзакция, мрежово прекъсване";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "таксата за транзакцията може да е по-голяма от наличните средства в този частен ключ(поради малките\"отпадъчни\" депозити)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "отхвърлена транзакция";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "неочакван отговор от %@";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "неподдържан тип подпис";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "ненадежден сертификат";
+
+/* Updating Price */
+"Updating Price" = "Актуализиране на цената";
+
+/* No comment provided by engineer. */
+"verify passcode" = "провери парола";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "изключен портфейл";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Твоят портфейл вероятно не е синхронизиран.\nТова обикновено се фиксира след сканиране на блок веригата.";

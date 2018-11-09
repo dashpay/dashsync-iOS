@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " and ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         σύνολο %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d προσπάθειες που απομένουν\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 προσπάθεια απομένει\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nαμοιβή δικτύου +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = " \nΔοκιμάστε ξανά σε %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "λάθος URL αίτησης πληρωμής";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "λάθος URL πληρωμής";
+
+/* No comment provided by engineer. */
+"cancel" = "άκυρο";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "επιλέξτε κωδικό πρόσβασης για το %@";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "λήξη χρονικού ορίου";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "Η συναλλαγή dash δεν έχει υπογραφεί";
+
+/* No comment provided by engineer. */
+"double spend" = "διπλό ξόδεμα";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "εισάγετε τον παλιό κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "σφάλμα υπογραφής συναλλαγής";
+
+/* No comment provided by engineer. */
+"hour" = "ώρα";
+
+/* No comment provided by engineer. */
+"hours" = "ώρες";
+
+/* No comment provided by engineer. */
+"minute" = "λεπτό";
+
+/* No comment provided by engineer. */
+"minutes" = "λεπτά";
+
+/* No comment provided by engineer. */
+"missing certificate" = "λείπει το πιστοποιητικό";
+
+/* No comment provided by engineer. */
+"no peers found" = "δε βρέθηκαν κόμβοι";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "δεν είναι ενα έγκυρο ιδιωτικό κλειδί";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "δεν είστε συνδεδεμένος με το δίκτυο dash";
+
+/* No comment provided by engineer. */
+"ok" = "Εντάξει";
+
+/* No comment provided by engineer. */
+"passcode" = "κωδικός πρόσβασης";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "κωδικός πρόσβασης για το %@";
+
+/* No comment provided by engineer. */
+"password" = "κωδικός πρόσβασης";
+
+/* No comment provided by engineer. */
+"password protected key" = "προστατευμένο κλειδί με κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "δεν ταιριάζει η φράση ανάκτησης";
+
+/* No comment provided by engineer. */
+"request expired" = "το αίτημα έληξε";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "επανάληψη της σάρωσης";
+
+/* No comment provided by engineer. */
+"reset" = "επαναφορά";
+
+/* No comment provided by engineer. */
+"second" = "second";
+
+/* No comment provided by engineer. */
+"seconds" = "seconds";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "αυτό το ιδιωτικό κλειδί είναι άδειο";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "η συναλλαγή ακυρώθηκε, λήξη χρονικού ορίου δικτύου";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "οι αμοιβή δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "η συναλλαγή απορρίφθηκε";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "απρόσμενη απάντηση από %@";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "μη υποστηριζόμενος τύπος υπογραφής";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "μη αξιόπιστο πιστοποιητικό";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
+
+/* No comment provided by engineer. */
+"verify passcode" = "επιβεβαιώστε τον κωδικό πρόσβασης";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "το πορτοφόλι απενεργοποιήθηκε";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Το πορτοφόλι σας μπορεί να είναι εκτός συγχρονισμού. Αυτό μπορεί συχνά να διορθωθεί με την επανεξέταση των μπλόκ συναλλαγών.";

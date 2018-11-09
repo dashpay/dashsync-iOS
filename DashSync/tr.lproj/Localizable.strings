@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " ve ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         toplam %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%d deneme hakkı kaldı\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(yerel istenilen miktar: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 deneme hakkı kaldı\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     miktar %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\n%1$d %2$@ içinde tekrar deneyin";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "hatalı şifre, yeniden deneyin";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "hatalı ödeme talep linki";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "hatalı ödeme linki";
+
+/* No comment provided by engineer. */
+"cancel" = "iptal";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "%@ için şifre seçin";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "bağlantı zaman aşımı";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "dash işlemi imzalanmamış";
+
+/* No comment provided by engineer. */
+"double spend" = "çift ödeme";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "eski şifreyi giriniz";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "işlem kaydı hatası";
+
+/* No comment provided by engineer. */
+"hour" = "saat";
+
+/* No comment provided by engineer. */
+"hours" = "saat";
+
+/* No comment provided by engineer. */
+"minute" = "dakika";
+
+/* No comment provided by engineer. */
+"minutes" = "dakika";
+
+/* No comment provided by engineer. */
+"missing certificate" = "eksik sertifika";
+
+/* No comment provided by engineer. */
+"no peers found" = "eşler bulunamadı";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "geçerli bir özel anahtar değil";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "dash ağına bağlı değil";
+
+/* No comment provided by engineer. */
+"ok" = "tamam";
+
+/* No comment provided by engineer. */
+"passcode" = "şifre";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "%@ için şifre";
+
+/* No comment provided by engineer. */
+"password" = "şifre";
+
+/* No comment provided by engineer. */
+"password protected key" = "şifre korumalı anahtar";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "kurtarma cümlesi eşleşmiyor";
+
+/* No comment provided by engineer. */
+"request expired" = "istek süresi bitti";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "yeniden tara";
+
+/* No comment provided by engineer. */
+"reset" = "sıfırla";
+
+/* No comment provided by engineer. */
+"second" = "saniye";
+
+/* No comment provided by engineer. */
+"seconds" = "saniye";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "bu özel anahtar zaten cüzdanınızda var";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "bu özel anahtar boş";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "işlem iptal edildi, ağ zaman aşımına uğradı";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "işlem ücretleri bu anahtarda kullanılabilir olan paradan daha pahalıya mal olabilir(küçük \"para\" deposu nedeniyle)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "işlem reddedildi";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "%@'den beklenmeyen yanıt";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "desteklenmeyen imza türü";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "güvenilir olmayan sertifika";
+
+/* Updating Price */
+"Updating Price" = "Fiyat Güncelleniyor";
+
+/* No comment provided by engineer. */
+"verify passcode" = "şifreyi doğrulayın";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "cüzdan devre dışı";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";

@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " a ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         celkovo %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\nzostávajú %d pokusy\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(miestna vyžadovaná suma: %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\nzostáva 1 pokus\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n suma %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nsieťový poplatok +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nskúsiť znova za %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "zlé heslo, skúste znova";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "zlá URL požiadavky na platbu";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "zlá URL platby";
+
+/* No comment provided by engineer. */
+"cancel" = "zrušiť";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "choose passcode for %@";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "vypršal čas spojenia";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "dash transaction not signed";
+
+/* No comment provided by engineer. */
+"double spend" = "double spend";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "zadať starý číselný kód";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "error signing transaction";
+
+/* No comment provided by engineer. */
+"hour" = "hodina";
+
+/* No comment provided by engineer. */
+"hours" = "hodiny";
+
+/* No comment provided by engineer. */
+"minute" = "minuta";
+
+/* No comment provided by engineer. */
+"minutes" = "minút";
+
+/* No comment provided by engineer. */
+"missing certificate" = "missing certificate";
+
+/* No comment provided by engineer. */
+"no peers found" = "no peers found";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "not a valid private key";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "not connected to the dash network";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "číselný kód";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "číselný kód pre %@";
+
+/* No comment provided by engineer. */
+"password" = "heslo";
+
+/* No comment provided by engineer. */
+"password protected key" = "password protected key";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "recovery phrase doesn't match";
+
+/* No comment provided by engineer. */
+"request expired" = "žiadosť vypršala";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "pre-skenovať";
+
+/* No comment provided by engineer. */
+"reset" = "vynulovať";
+
+/* No comment provided by engineer. */
+"second" = "sekunda";
+
+/* No comment provided by engineer. */
+"seconds" = "sekúnd";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "this private key is already in your wallet";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "tento privátny kľúč je prázdny";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transaction canceled, network timeout";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transaction rejected";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "unexpected response from %@";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "unsupported signature type";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "untrusted certificate";
+
+/* Updating Price */
+"Updating Price" = "Updating Price";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verify passcode";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "wallet disabled";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";

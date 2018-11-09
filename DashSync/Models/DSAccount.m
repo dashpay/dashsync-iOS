@@ -1163,12 +1163,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSString * address = [key addressForChain:self.wallet.chain];
     if (! address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          NSLocalizedString(@"not a valid private key", nil)}]);
+                                                                                          DSLocalizedString(@"not a valid private key", nil)}]);
         return;
     }
     if ([self.wallet containsAddress:address]) {
         completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          NSLocalizedString(@"this private key is already in your wallet", nil)}]);
+                                                                                          DSLocalizedString(@"this private key is already in your wallet", nil)}]);
         return;
     }
     
@@ -1194,7 +1194,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   if (balance == 0) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                        NSLocalizedString(@"this private key is empty", nil)}]);
+                                                                                                                                        DSLocalizedString(@"this private key is empty", nil)}]);
                                                       return;
                                                   }
                                                   
@@ -1203,7 +1203,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                        NSLocalizedString(@"transaction fees would cost more than the funds available on this "
+                                                                                                                                        DSLocalizedString(@"transaction fees would cost more than the funds available on this "
                                                                                                                                                           "private key (due to tiny \"dust\" deposits)",nil)}]);
                                                       return;
                                                   }
@@ -1212,7 +1212,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   if (! [tx signWithPrivateKeys:@[privKey]]) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                        NSLocalizedString(@"error signing transaction", nil)}]);
+                                                                                                                                        DSLocalizedString(@"error signing transaction", nil)}]);
                                                       return;
                                                   }
                                                   

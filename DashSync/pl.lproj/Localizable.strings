@@ -1,0 +1,168 @@
+
+/* No comment provided by engineer. */
+" and " = " oraz ";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         suma %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\npozostało %d prób\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "(żądana ilość: 1%@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\npozostała jedna próba\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     kwota %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nprowizje sieci +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\nspróbuj ponownie za %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "błedne hasło, spróbuj ponownie";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "błędny URL żądania zapłaty";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "błędny URL zapłaty";
+
+/* No comment provided by engineer. */
+"cancel" = "anuluj";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "ustal hasło dla %@";
+
+/* No comment provided by engineer. */
+"confirm" = "confirm";
+
+/* No comment provided by engineer. */
+"connect timeout" = "nieudana próba połączenia";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "transakcja dash nie podpisana";
+
+/* No comment provided by engineer. */
+"double spend" = "podwójny wydatek";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "wprowadź stare hasło";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "błąd podczas podpisywania transakcji";
+
+/* No comment provided by engineer. */
+"hour" = "godzina";
+
+/* No comment provided by engineer. */
+"hours" = "godziny";
+
+/* No comment provided by engineer. */
+"minute" = "minuta";
+
+/* No comment provided by engineer. */
+"minutes" = "minuty";
+
+/* No comment provided by engineer. */
+"missing certificate" = "brak certyfikatu";
+
+/* No comment provided by engineer. */
+"no peers found" = "nie znaleziono węzłów sieci";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "nieprawidłowy klucz prywatny";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "nie połączono z siecią dash";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"passcode" = "PIN";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "PIN dla %@";
+
+/* No comment provided by engineer. */
+"password" = "hasło";
+
+/* No comment provided by engineer. */
+"password protected key" = "klucz chroniony hasłem";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "recovery phrase";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "fraza odzyskiwania nieprawidłowa";
+
+/* No comment provided by engineer. */
+"request expired" = "wniosek się przedawnił";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+
+/* No comment provided by engineer. */
+"rescan" = "ponownie zeskanuj";
+
+/* No comment provided by engineer. */
+"reset" = "resetuj";
+
+/* No comment provided by engineer. */
+"second" = "sekunda";
+
+/* No comment provided by engineer. */
+"seconds" = "sekundy";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "ten klucz prywatny jest już w twoim portfelu";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "ten klucz prywatny jest pusty";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transakcja anulowana, przekroczono limit czasu oczekiwania sieci";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "prowizje kosztowałyby więcej niż środki dostępne na tym kluczu prywatnym (ze względu na małe depozyty; tak zwany \"pył\")";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transakcja odrzucona";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "niespodziewana odpowiedź od %@";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "nieobsługiwany typ podpisu";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "niezaufany certyfikat";
+
+/* Updating Price */
+"Updating Price" = "Aktualizacja Ceny";
+
+/* No comment provided by engineer. */
+"verify passcode" = "potwierdź hasło";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "portfel wyłączony";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Twój portfel może nie być zsynchronizowany.\nTo często można naprawić przez ponowne przeskanowanie łańcucha bloków.";

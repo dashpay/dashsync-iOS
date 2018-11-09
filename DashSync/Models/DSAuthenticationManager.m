@@ -186,7 +186,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     if (! isSecure && prompt.length > 0) prompt = [prompt stringByAppendingString:@"\n"];
     if (! isSecure || prompt.length == 0) prompt = [prompt stringByAppendingString:address];
     if (memo.length > 0) prompt = [prompt stringByAppendingFormat:@"\n\n%@", sanitizeString(memo)];
-    prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n\n     amount %@ (%@)", nil),
+    prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\n\n     amount %@ (%@)", nil),
               [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];
     
     if (localCurrency && localCurrencyAmount && ![localCurrency isEqualToString:manager.localCurrencyCode]) {
@@ -195,13 +195,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
         numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
         NSNumber *localAmount = [NSDecimalNumber decimalNumberWithString:localCurrencyAmount];
         NSString *requestedAmount = [numberFormatter stringFromNumber:localAmount];
-        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n(local requested amount: %@)", nil), requestedAmount];
+        prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\n(local requested amount: %@)", nil), requestedAmount];
     }
     
     if (fee > 0) {
-        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\nnetwork fee +%@ (%@)", nil),
+        prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\nnetwork fee +%@ (%@)", nil),
                   [manager stringForDashAmount:fee], [manager localCurrencyStringForDashAmount:fee]];
-        prompt = [prompt stringByAppendingFormat:NSLocalizedString(@"\n         total %@ (%@)", nil),
+        prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\n         total %@ (%@)", nil),
                   [manager stringForDashAmount:amount], [manager localCurrencyStringForDashAmount:amount]];
     }
     
@@ -264,7 +264,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 }
 
 -(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"recovery phrase", nil) message:nil
+    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"recovery phrase", nil) message:nil
                                                                        preferredStyle:UIAlertControllerStyleAlert];
     [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
         textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -273,7 +273,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
         textField.delegate = self;
     }];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        if (resetCancelHandlerBlock) {
@@ -300,7 +300,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 // prompts the user to set or change their wallet pin and returns true if the pin was successfully set
 - (void)setBrandNewPinWithCompletion:(void (^ _Nullable)(BOOL success))completion {
     NSString *title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                       [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+                       [NSString stringWithFormat:DSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
     if (!self.pinAlertController) {
         self.pinAlertController = [UIAlertController
                                    alertControllerWithTitle:title
@@ -333,7 +333,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
         v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
     } completion:^(BOOL finished) {
         self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                         NSLocalizedString(@"verify passcode", nil)];
+                                         DSLocalizedString(@"verify passcode", nil)];
         v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
         [self textField:self.pinField shouldChangeCharactersInRange:NSMakeRange(0, 0) replacementString:@""];
         [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
@@ -387,7 +387,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     [DSEventManager saveEvent:@"wallet_manager:set_pin"];
     
     if (pin.length == 4) { //already had a pin, replacing it
-        [self authenticatePinWithTitle:NSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 self.didAuthenticate = FALSE;
                 UIView *v = [self pinTitleView].superview;
@@ -397,7 +397,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
                     v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
                 } completion:^(BOOL finished) {
                     self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                                     [NSString stringWithFormat:NSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+                                                     [NSString stringWithFormat:DSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
                     self.pinAlertController.message = nil;
                     v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
                     [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
@@ -459,13 +459,13 @@ replacementString:(NSString *)string
             DSDerivationPath * derivationPath = [account bip44DerivationPath];
             NSData * extendedPublicKey = derivationPath.extendedPublicKey;
             if (extendedPublicKey && ![extendedPublicKey isEqual:oldData]) {
-                self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
+                self.resetAlertController.title = DSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
+                                                withObject:DSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             } else if (extendedPublicKey && ![[derivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
-                self.resetAlertController.title = NSLocalizedString(@"recovery phrase doesn't match", nil);
+                self.resetAlertController.title = DSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:NSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
+                                                withObject:DSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
             }
             else {
                 if (oldData) {
@@ -540,16 +540,16 @@ replacementString:(NSString *)string
                 }
             }
             if (authprompt && shouldPreprompt) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"confirm", nil)
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"confirm", nil)
                                                                                message:authprompt
                                                                         preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
+                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"cancel", nil)
                                                                        style:UIAlertActionStyleCancel
                                                                      handler:^(UIAlertAction * action) {
                                                                          completion(NO, YES);
                                                                      }];
                 [alert addAction:cancelAction];
-                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"ok", nil)
+                UIAlertAction *okAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"ok", nil)
                                                                    style:UIAlertActionStyleDefault
                                                                  handler:^(UIAlertAction * action) {
                                                                      localAuthBlock();
@@ -572,7 +572,7 @@ replacementString:(NSString *)string
     }
     else {
         // TODO explain reason when touch id is disabled after 30 days without pin unlock
-        [self authenticatePinWithTitle:[NSString stringWithFormat:NSLocalizedString(@"passcode for %@", nil),
+        [self authenticatePinWithTitle:[NSString stringWithFormat:DSLocalizedString(@"passcode for %@", nil),
                                         DISPLAY_NAME] message:authprompt alertIfLockout:alertIfLockout completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
                 [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
@@ -591,7 +591,7 @@ replacementString:(NSString *)string
     [DSEventManager saveEvent:@"wallet_manager:touchid_auth"];
     
     __block NSInteger result = 0;
-    context.localizedFallbackTitle = NSLocalizedString(@"passcode", nil);
+    context.localizedFallbackTitle = DSLocalizedString(@"passcode", nil);
     [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
             localizedReason:(prompt.length > 0 ? prompt : @" ")
                       reply:^(BOOL success, NSError *error) {
@@ -630,28 +630,28 @@ replacementString:(NSString *)string
         return;
     }
     NSTimeInterval wait = [self lockoutWaitTime];
-    NSString *unit = NSLocalizedString(@"minutes", nil);
+    NSString *unit = DSLocalizedString(@"minutes", nil);
     
     if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-    if (wait < 2.0) wait = 1.0, unit = NSLocalizedString(@"minute", nil);
+    if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
     
     if (wait >= 60.0) {
         wait /= 60.0;
-        unit = (wait < 2.0) ? NSLocalizedString(@"hour", nil) : NSLocalizedString(@"hours", nil);
+        unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
     }
     UIAlertController * alertController = [UIAlertController
-                                           alertControllerWithTitle:NSLocalizedString(@"wallet disabled", nil)
-                                           message:[NSString stringWithFormat:NSLocalizedString(@"\ntry again in %d %@", nil),
+                                           alertControllerWithTitle:DSLocalizedString(@"wallet disabled", nil)
+                                           message:[NSString stringWithFormat:DSLocalizedString(@"\ntry again in %d %@", nil),
                                                     (int)wait, unit]
                                            preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* resetButton = [UIAlertAction
-                                  actionWithTitle:NSLocalizedString(@"reset", nil)
+                                  actionWithTitle:DSLocalizedString(@"reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
                                       [self showResetWalletWithCancelHandler:nil];
                                   }];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               actionWithTitle:DSLocalizedString(@"ok", nil)
                                style:UIAlertActionStyleCancel
                                handler:^(UIAlertAction * action) {
                                    
@@ -721,8 +721,8 @@ replacementString:(NSString *)string
             return;
         } else {
             //no longer locked out, give the user a try
-            message = [(failCount >= 7 ? NSLocalizedString(@"\n1 attempt remaining\n", nil) :
-                        [NSString stringWithFormat:NSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
+            message = [(failCount >= 7 ? DSLocalizedString(@"\n1 attempt remaining\n", nil) :
+                        [NSString stringWithFormat:DSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
                        stringByAppendingString:(message) ? message : @""];
         }
     }
@@ -736,7 +736,7 @@ replacementString:(NSString *)string
     self.pinField = nil; // reset pinField so a new one is created
     [self.pinAlertController.view addSubview:self.pinField];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        completion(NO,YES);
@@ -816,20 +816,20 @@ replacementString:(NSString *)string
 
 -(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
     
-    UIAlertController * alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
     [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
         textField.secureTextEntry = true;
         textField.returnKeyType = UIReturnKeyDone;
-        textField.placeholder = NSLocalizedString(@"password", nil);
+        textField.placeholder = DSLocalizedString(@"password", nil);
     }];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        cancel();
                                    }];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               actionWithTitle:DSLocalizedString(@"ok", nil)
                                style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {
                                    NSString *password = alert.textFields[0].text;
@@ -845,18 +845,18 @@ replacementString:(NSString *)string
 -(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel {
     
     UIAlertController * alert = [UIAlertController
-                                 alertControllerWithTitle:NSLocalizedString(@"password protected key", nil)
-                                 message:NSLocalizedString(@"bad password, try again", nil)
+                                 alertControllerWithTitle:DSLocalizedString(@"password protected key", nil)
+                                 message:DSLocalizedString(@"bad password, try again", nil)
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        if (cancel) completion();
                                        
                                    }];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:NSLocalizedString(@"ok", nil)
+                               actionWithTitle:DSLocalizedString(@"ok", nil)
                                style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {
                                    if (completion) completion();
