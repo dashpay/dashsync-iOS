@@ -47,13 +47,27 @@
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
-        NSURL *docURL = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].lastObject;
         NSBundle *frameworkBundle = [NSBundle bundleForClass:[DSTransaction class]];
         NSURL *bundleURL = [[frameworkBundle resourceURL] URLByAppendingPathComponent:@"DashSync.bundle"];
         resourceBundle = [NSBundle bundleWithURL:bundleURL];
     });
     return resourceBundle;
 }
+
+-(NSBundle*)languageBundle {
+    static NSBundle * langBundle = nil;
+    static dispatch_once_t onceToken = 0;
+    
+    dispatch_once(&onceToken, ^{
+        NSLocale * locale = [NSLocale currentLocale];
+        NSString * language = [locale languageCode];
+        NSBundle * resourceBundle = self.resourceBundle;
+        NSString * bundlePath = [resourceBundle pathForResource:@"Localizable" ofType:@"strings" inDirectory:nil forLocalization:language];
+        langBundle = [[NSBundle alloc] initWithPath:[bundlePath stringByDeletingLastPathComponent]];
+    });
+    return langBundle;
+}
+
 
 
 @end

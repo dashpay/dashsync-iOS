@@ -39,5 +39,6 @@
 @dynamic timestamp;
 @dynamic chain;
 @dynamic lastRequestedMasternodeList;
+@dynamic lastRequestedGovernanceSync;
 
 @end

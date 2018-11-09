@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.public_header_files = 'DashSync/**/*.h'
   s.private_header_files = 'DashSync/crypto/x11/*.h'
   s.libraries = 'bz2', 'sqlite3'
-  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.plist', 'DashSync/*.lproj/*.strings']}
+  s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj/*.{plist,strings}']}
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
   s.compiler_flags = '-Wno-comma'
@@ -33,6 +33,9 @@ Pod::Spec.new do |s|
   #s.dependency 'AFJSONRPCClient_DASH', '2.1.4'
   s.dependency 'AFNetworking', '~> 3.0'
   s.prefix_header_contents = '#import "DSEnvironment.h"'
+  s.prepare_command = '<<-CMD
+  find Resources -name "*.strings" -exec plutil -convert binary1 {} \;
+  CMD'
   
 end
 

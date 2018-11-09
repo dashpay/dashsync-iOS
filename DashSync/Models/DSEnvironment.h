@@ -14,7 +14,8 @@
 
 @property (nonatomic, readonly) BOOL watchOnly; // true if this is a "watch only" wallet with no signing ability
 
-@property (nonatomic,strong) NSBundle * resourceBundle;
+@property (nonatomic,strong) NSBundle * _Nonnull resourceBundle;
+@property (nonatomic,strong) NSBundle * _Nonnull languageBundle;
 
 + (instancetype _Nullable)sharedInstance;
 
