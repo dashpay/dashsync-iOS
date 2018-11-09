@@ -742,6 +742,7 @@
 				6003F587195388D20070C39A /* Frameworks */,
 				6003F588195388D20070C39A /* Resources */,
 				F3524DD5332FD019D466B225 /* [CP] Copy Pods Resources */,
+				FB5A0FA7219506140079CF42 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -888,6 +889,23 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		FB5A0FA7219506140079CF42 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which bartycrouch > /dev/null; then\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR/../DashSync/\" -l \"$PROJECT_DIR/../DashSync/\" -c -s -k -f \"DSLocalizedString\"\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
