@@ -1446,11 +1446,11 @@
         return;
     }
     
-    _feePerKb = [message UInt64AtOffset:0];
-    NSLog(@"%@:%u got feefilter with rate %llu", self.host, self.port, self.feePerKb);
+    _feePerByte = ceilf((float)[message UInt64AtOffset:0]/1000.0f);
+    NSLog(@"%@:%u got feefilter with rate %llu per Byte", self.host, self.port, self.feePerByte);
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self setFeePerKb:self.feePerKb];
+        [self.delegate peer:self setFeePerByte:self.feePerByte];
     });
 }
 

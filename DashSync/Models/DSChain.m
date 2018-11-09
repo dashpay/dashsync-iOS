@@ -125,7 +125,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 960000, "000000000000004a74127b49e7eebbde24253f08677880b4d0fd20c5637ab68c", 1540510859, 0x1965c6b0u }
 };
 
-#define FEE_PER_KB_KEY          @"FEE_PER_KB"
+#define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
 
 #define CHAIN_WALLETS_KEY  @"CHAIN_WALLETS_KEY"
 #define CHAIN_STANDALONE_DERIVATIONS_KEY  @"CHAIN_STANDALONE_DERIVATIONS_KEY"
@@ -167,9 +167,9 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
     
-    self.feePerKb = DEFAULT_FEE_PER_KB;
-    uint64_t feePerKb = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_KB_KEY];
-    if (feePerKb >= MIN_FEE_PER_KB && feePerKb <= MAX_FEE_PER_KB) self.feePerKb = feePerKb;
+    self.feePerByte = DEFAULT_FEE_PER_B;
+    uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
+    if (feePerByte >= MIN_FEE_PER_B && feePerByte <= MAX_FEE_PER_B) self.feePerByte = feePerByte;
     return self;
 }
 
@@ -1411,7 +1411,7 @@ static dispatch_once_t devnetToken = 0;
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
 {
-    uint64_t standardFee = size*TX_FEE_PER_KB; // standard fee based on tx size
+    uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
     if (isInstant) {
         DSSporkManager * sporkManager = [self peerManagerDelegate].sporkManager;
         if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= 4) {
@@ -1422,7 +1422,7 @@ static dispatch_once_t devnetToken = 0;
     } else {
         
 #if (!!FEE_PER_KB_URL)
-        uint64_t fee = ((size*self.feePerKb + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
+        uint64_t fee = ((size*self.feePerByte + 99)/100)*100; // fee using feePerByte, rounded up to nearest 100 satoshi
         return (fee > standardFee) ? fee : standardFee;
 #else
         return standardFee;
@@ -1434,7 +1434,7 @@ static dispatch_once_t devnetToken = 0;
 // outputs below this amount are uneconomical due to fees
 - (uint64_t)minOutputAmount
 {
-    uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerKb + MIN_FEE_PER_KB - 1)/MIN_FEE_PER_KB;
+    uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerByte + MIN_FEE_PER_B - 1)/MIN_FEE_PER_B;
     
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
 }
