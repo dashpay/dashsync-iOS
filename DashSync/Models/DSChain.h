@@ -115,6 +115,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 @property (nonatomic, readonly) uint32_t estimatedBlockHeight; // last block height reported by current download peer
 @property (nonatomic, readonly,nonnull) NSString * networkName;
 @property (nonatomic, readonly,nonnull) NSString * name;
+@property (nonatomic, readonly,nonnull) NSString * localizedName;
 @property (nonatomic, readonly,nonnull) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
 @property (nonatomic, weak,nullable) DSChainPeerManager * peerManagerDelegate;
