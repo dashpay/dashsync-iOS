@@ -622,7 +622,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 - (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress
 {
     
-    uint64_t amount = 0, balance = 0, feeAmount = 0;
+    uint64_t amount = 0, balance = 0, feeAmount = 0, feeAmountWithoutChange = 0;
     DSTransaction *tx;
     NSUInteger i = 0, cpfpSize = 0;
     DSUTXO o;
@@ -647,8 +647,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (isInstant && (tx.blockHeight >= (self.blockHeight - IX_PREVIOUS_CONFIRMATIONS_NEEDED))) continue;
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         
-        if (transaction.size + 34 > TX_MAX_SIZE) { // transaction size-in-bytes too large
-            NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*34;
+        if (transaction.size + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
+            NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*TX_OUTPUT_SIZE;
             
             // check for sufficient total funds before building a smaller transaction
             if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
@@ -677,14 +677,21 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) {
-            feeAmount = [self.wallet.chain feeForTxSize:transaction.size + 34 + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
-            if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
+            feeAmountWithoutChange = [self.wallet.chain feeForTxSize:transaction.size + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count];
+            if (balance == amount + feeAmountWithoutChange) {
+                feeAmount = feeAmountWithoutChange;
+                break;
+            }
+            feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+            //if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.wallet.chain.minOutputAmount) break;
     }
     
     transaction.isInstant = isInstant;
+    
+    feeAmount = [self.wallet.chain feeForTxSize:transaction.size + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
     
     if (balance < amount + feeAmount) { // insufficient funds
         NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
