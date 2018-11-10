@@ -1588,19 +1588,19 @@
     }
 }
 
-- (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb
+- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb
 {
-    uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
+    uint64_t maxFeePerByte = 0, secondFeePerByte = 0;
     
     for (DSPeer *p in self.connectedPeers) { // find second highest fee rate
         if (p.status != DSPeerStatus_Connected) continue;
-        if (p.feePerKb > maxFeePerKb) secondFeePerKb = maxFeePerKb, maxFeePerKb = p.feePerKb;
+        if (p.feePerByte > maxFeePerByte) secondFeePerByte = maxFeePerByte, maxFeePerByte = p.feePerByte;
     }
     
-    if (secondFeePerKb*2 > MIN_FEE_PER_KB && secondFeePerKb*2 <= MAX_FEE_PER_KB &&
-        secondFeePerKb*2 > self.chain.feePerKb) {
-        NSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerKb*2);
-        self.chain.feePerKb = secondFeePerKb*2;
+    if (secondFeePerByte*2 > MIN_FEE_PER_B && secondFeePerByte*2 <= MAX_FEE_PER_B &&
+        secondFeePerByte*2 > self.chain.feePerByte) {
+        NSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte*2);
+        self.chain.feePerByte = secondFeePerByte*2;
     }
 }
 

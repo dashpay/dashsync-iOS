@@ -71,9 +71,9 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define SPORK_ADDRESS_TESTNET @"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
 
 
-#define DEFAULT_FEE_PER_KB ((5000ULL*100 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
-#define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
-#define MAX_FEE_PER_KB     ((100100ULL*1000 + 190)/191) // slightly higher than a 1000bit fee on a 191byte tx
+#define DEFAULT_FEE_PER_B 1
+#define MIN_FEE_PER_B     1 // minimum relay fee on a 191byte tx
+#define MAX_FEE_PER_B     1000 // slightly higher than a 1000bit fee on a 191byte tx
 
 typedef NS_ENUM(uint16_t, DSChainType) {
     DSChainType_MainNet,
@@ -130,7 +130,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 @property (nonatomic, readonly) BOOL hasAStandaloneDerivationPath;
 @property (nonatomic, readonly) BOOL syncsBlockchain;
 @property (nonatomic, readonly,nullable) NSString * devnetIdentifier;
-@property (nonatomic, assign) uint64_t feePerKb;
+@property (nonatomic, assign) uint64_t feePerByte;
 @property (nonatomic, readonly) NSTimeInterval earliestWalletCreationTime;
 @property (nonatomic, readonly,nullable) NSString * registeredPeersKey;
 @property (nonatomic, readonly,nonnull) NSArray<DSCheckpoint*> * checkpoints;

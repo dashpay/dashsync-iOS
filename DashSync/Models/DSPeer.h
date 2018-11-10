@@ -162,7 +162,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
 
 - (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
-- (void)peer:(DSPeer *)peer setFeePerKb:(uint64_t)feePerKb;
+- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
 - (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
 - (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
@@ -222,7 +222,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, readonly) uint64_t nonce;
 @property (nonatomic, readonly) NSString *useragent;
 @property (nonatomic, readonly) uint32_t lastblock;
-@property (nonatomic, readonly) uint64_t feePerKb; // minimum tx fee rate peer will accept
+@property (nonatomic, readonly) uint64_t feePerByte; // minimum tx fee rate peer will accept
 @property (nonatomic, readonly) NSTimeInterval pingTime;
 @property (nonatomic, readonly) NSTimeInterval relaySpeed; // headers or block->totalTx per second being relayed
 @property (nonatomic, assign) NSTimeInterval timestamp; // timestamp reported by peer (interval since refrence date)

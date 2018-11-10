@@ -320,7 +320,7 @@
 
 - (uint64_t)standardFee
 {
-    return ((self.size + 999)/1000)*TX_FEE_PER_KB;
+    return self.size*TX_FEE_PER_B;
 }
 
 - (uint64_t)standardInstantFee
