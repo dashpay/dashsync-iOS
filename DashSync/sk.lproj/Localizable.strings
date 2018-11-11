@@ -60,6 +60,9 @@
 "dash transaction not signed" = "dash transaction not signed";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "double spend";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "hodiny";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "minuta";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "sekúnd";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "this private key is already in your wallet";

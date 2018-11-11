@@ -60,6 +60,9 @@
 "dash transaction not signed" = "대쉬 거래가 서명되지 않음";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "이중지불";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "시간";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "분";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "초";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "이 비밀 키는 이미 당신의 지갑에 있습니다";

@@ -60,6 +60,9 @@
 "dash transaction not signed" = "ธุรกรรม dash นี้ ยังไม่ถูกลงนาม";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "จ่ายเงินสองเท่า";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "ชั่วโมง";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "นาที";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "ที่สอง";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "คีย์ส่วนตัวนี้อยู่ใน wallet ของคุณแล้ว";

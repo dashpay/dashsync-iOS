@@ -60,6 +60,9 @@
 "dash transaction not signed" = "取引が署名されていません";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "２重支払い";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "時間";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "分";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "秒";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "この秘密鍵は既にあなたのウォレットに含まれています";

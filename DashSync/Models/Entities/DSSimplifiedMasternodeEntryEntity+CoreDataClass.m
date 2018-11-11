@@ -25,7 +25,7 @@
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChain:(DSChainEntity*)chainEntity {
-    self.providerTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
+    self.providerRegistrationTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     self.address = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
     self.port = simplifiedMasternodeEntry.port;
     self.keyIDVoting = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
@@ -60,7 +60,7 @@
 
 - (DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
     UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
-    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerTransactionHash UInt256AtOffset:0] address:address port:self.port keyIDOperator:[self.keyIDOperator UInt160AtOffset:0] keyIDVoting:[self.keyIDVoting UInt160AtOffset:0] isValid:self.isValid simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256AtOffset:0] onChain:self.chain.chain];
+    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256AtOffset:0] address:address port:self.port keyIDOperator:[self.keyIDOperator UInt160AtOffset:0] keyIDVoting:[self.keyIDVoting UInt160AtOffset:0] isValid:self.isValid simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256AtOffset:0] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 

@@ -35,10 +35,8 @@
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
 #import "Reachability.h"
-#import "DSMasternodeBroadcast.h"
 #import "DSGovernanceObject.h"
 #import <arpa/inet.h>
-#import "DSMasternodePing.h"
 #import "DSBloomFilter.h"
 #import "DSGovernanceVote.h"
 #import "DSChainPeerManager.h"
@@ -1499,15 +1497,7 @@
 
 -(void)acceptMNBMessage:(NSData *)message
 {
-    if (self.chain.protocolVersion < 70211) {
-        BOOL syncsMasternodeList = !!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList);
-        if (syncsMasternodeList) {
-            DSMasternodeBroadcast * broadcast = [DSMasternodeBroadcast masternodeBroadcastFromMessage:message onChain:self.chain];
-            if (broadcast) {
-                [self.delegate peer:self relayedMasternodeBroadcast:broadcast];
-            }
-        }
-    }
+    //deprecated since version 70211
 }
 
 -(void)acceptMNLISTDIFFMessage:(NSData*)message

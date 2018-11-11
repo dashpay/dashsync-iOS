@@ -40,8 +40,6 @@
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "DSPeerEntity+CoreDataProperties.h"
 #import "DSMerkleBlockEntity+CoreDataProperties.h"
-#import "DSMasternodeBroadcastHashEntity+CoreDataProperties.h"
-#import "DSMasternodeBroadcastEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectHashEntity+CoreDataProperties.h"
 #import "DSGovernanceVoteEntity+CoreDataProperties.h"

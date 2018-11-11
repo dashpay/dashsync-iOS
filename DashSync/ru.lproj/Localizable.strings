@@ -60,6 +60,9 @@
 "dash transaction not signed" = "Транзакция не подписана";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "Двойное расходование";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "часов";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "минут";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "секунды";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "Этот закрытый ключ уже находится в вашем кошельке";

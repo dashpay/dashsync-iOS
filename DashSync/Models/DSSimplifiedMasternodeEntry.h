@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSChain;
+@class DSChain,DSSimplifiedMasternodeEntryEntity;
 
 @interface DSSimplifiedMasternodeEntry : NSObject
 
@@ -21,6 +21,8 @@
 @property(nonatomic,readonly) UInt256 simplifiedMasternodeEntryHash;
 @property(nonatomic,readonly) DSChain * chain;
 @property(nonatomic,readonly) NSData * payloadData;
+@property(nonatomic,readonly) NSString * uniqueID;
+@property(nonatomic,readonly) DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity;
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;
 

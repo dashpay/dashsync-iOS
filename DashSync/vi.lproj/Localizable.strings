@@ -60,6 +60,9 @@
 "dash transaction not signed" = "giao dịch dash không được ký";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "tiêu lặp";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "giờ";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "phút";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "giây";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "khoá riêng này đã có trong ví của bạn";

@@ -43,14 +43,14 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
-#import "DSMasternodeBroadcast.h"
 #import "DSChainManager.h"
 #import "DSMasternodeManager.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
-#import "DSMasternodeBroadcastEntity+CoreDataClass.h"
 #import "DSSporkManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
+#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -785,10 +785,10 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Voting Keys
 
--(NSData*)votingKeyForMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
+-(NSData*)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry {
     NSError * error = nil;
     NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    NSData * votingKey = [keyChainDictionary objectForKey:masternodeBroadcast.uniqueID];
+    NSData * votingKey = [keyChainDictionary objectForKey:masternodeEntry.uniqueID];
     return votingKey;
 }
 
@@ -797,25 +797,25 @@ static dispatch_once_t devnetToken = 0;
     NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
     DSChainPeerManager * chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self];
     NSMutableArray * registeredMasternodes = [NSMutableArray array];
-    for (NSString * key in keyChainDictionary) {
-        DSMasternodeBroadcast * masternodeBroadcast = [chainPeerManager.masternodeManager masternodeBroadcastForUniqueID:key];
-        [registeredMasternodes addObject:masternodeBroadcast];
+    for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
+        DSSimplifiedMasternodeEntry * masternode = [chainPeerManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
+        [registeredMasternodes addObject:masternode];
     }
     return [registeredMasternodes copy];
 }
 
--(void)registerVotingKey:(NSData*)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
+-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry {
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary setObject:votingKey forKey:masternodeBroadcast.uniqueID];
+    [keyChainDictionary setObject:votingKey forKey:[NSData dataWithUInt256:masternodeEntry.providerRegistrationTransactionHash]];
     setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
-    NSManagedObjectContext * context = [DSMasternodeBroadcastEntity context];
+    NSManagedObjectContext * context = [DSSimplifiedMasternodeEntryEntity context];
     [context performBlockAndWait:^{
-        [DSMasternodeBroadcastEntity setContext:context];
-        DSMasternodeBroadcastEntity * masternodeBroadcastEntity = masternodeBroadcast.masternodeBroadcastEntity;
-        masternodeBroadcastEntity.claimed = TRUE;
-        [DSMasternodeBroadcastEntity saveContext];
+        [DSSimplifiedMasternodeEntryEntity setContext:context];
+        DSSimplifiedMasternodeEntryEntity * masternodeEntryEntity = masternodeEntry.simplifiedMasternodeEntryEntity;
+        masternodeEntryEntity.claimed = TRUE;
+        [DSSimplifiedMasternodeEntryEntity saveContext];
     }];
 }
 

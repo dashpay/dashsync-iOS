@@ -60,6 +60,9 @@
 "dash transaction not signed" = "達世幣交易尚未簽署";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "雙花";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "小時";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "分鐘";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "秒";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "這個私鑰已在你的錢包中";
