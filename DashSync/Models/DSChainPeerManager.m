@@ -62,12 +62,13 @@
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
-#define TESTNET_DNS_SEEDS @[@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io",@"testnet-seed.dashdot.io"]
+#define TESTNET_DNS_SEEDS @[/*@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io",@"testnet-seed.dashdot.io"*/]
 
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
 
 #define FIXED_PEERS          @"FixedPeers"
+#define TESTNET_FIXED_PEERS  @"TestnetFixedPeers"
 #define PROTOCOL_TIMEOUT     20.0
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
@@ -248,6 +249,7 @@
         }
         
         if (peers.count > 0) {
+            if ([dnsSeeds count]) {
             dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
                 NSString *servname = @(self.chain.standardPort).stringValue;
                 struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
@@ -281,10 +283,11 @@
                     NSLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
                 }
             });
+            }
             
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
             
-            if (![self.chain isMainnet]) {
+            if (![self.chain isMainnet] && ![self.chain isTestnet]) {
                 [self sortPeers];
                 return _peers;
             }
@@ -295,7 +298,8 @@
                 
                 NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
                 NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-                for (NSNumber *address in [NSArray arrayWithContentsOfFile:[bundle pathForResource:FIXED_PEERS ofType:@"plist"]]) {
+                NSString * path = [bundle pathForResource:[self.chain isMainnet]?FIXED_PEERS:TESTNET_FIXED_PEERS ofType:@"plist"];
+                for (NSNumber *address in [NSArray arrayWithContentsOfFile:path]) {
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
                     [_peers addObject:[[DSPeer alloc] initWithAddress:addr port:self.chain.standardPort onChain:self.chain
