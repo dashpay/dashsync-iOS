@@ -577,6 +577,24 @@ static dispatch_once_t devnetToken = 0;
     if (_networkName) return _networkName;
 }
 
+-(NSString*)localizedName {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return DSLocalizedString(@"Mainnet",nil);
+            break;
+        case DSChainType_TestNet:
+            return DSLocalizedString(@"Testnet",nil);
+            break;
+        case DSChainType_DevNet:
+            if (_networkName) return _networkName;
+            return [NSString stringWithFormat:@"%@ - %@", DSLocalizedString(@"Devnet",nil),self.devnetIdentifier];
+            break;
+        default:
+            break;
+    }
+    if (_networkName) return _networkName;
+}
+
 -(uint64_t)baseReward {
     if ([self chainType] == DSChainType_MainNet) return 5 * DUFFS;
     return 50 * DUFFS;

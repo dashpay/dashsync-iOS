@@ -147,6 +147,10 @@
 
 // MARK: - Info
 
+-(NSString*)syncStartHeightKey {
+    return [NSString stringWithFormat:@"%@_%@",SYNC_STARTHEIGHT_KEY,[self.chain uniqueID]];
+}
+
 - (double)syncProgress
 {
     if (! self.downloadPeer && self.syncStartHeight == 0) return 0.0;
@@ -537,11 +541,11 @@
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
         
         if (self.syncProgress < 1.0) {
-            if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[defs integerForKey:SYNC_STARTHEIGHT_KEY];
+            if (self.syncStartHeight == 0) self.syncStartHeight = (uint32_t)[defs integerForKey:self.syncStartHeightKey];
             
             if (self.syncStartHeight == 0) {
                 self.syncStartHeight = self.chain.lastBlockHeight;
-                [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:SYNC_STARTHEIGHT_KEY];
+                [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
             }
             
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
@@ -657,7 +661,7 @@
         }
         
         self.syncStartHeight = self.chain.lastBlockHeight;
-        [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:SYNC_STARTHEIGHT_KEY];
+        [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
         [self connect];
     });
 }
@@ -1303,7 +1307,7 @@
     }
     else { // we're already synced
         self.syncStartHeight = 0;
-        [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:SYNC_STARTHEIGHT_KEY];
+        [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.syncStartHeightKey];
         [self loadMempools];
         [self getSporks];
         [self startGovernanceSync];
