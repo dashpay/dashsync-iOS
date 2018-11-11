@@ -41,7 +41,6 @@
 @dynamic derivationPaths;
 @dynamic totalMasternodeCount;
 @dynamic totalGovernanceObjectsCount;
-@dynamic masternodeBroadcastHashes;
 @dynamic simplifiedMasternodeEntries;
 @dynamic baseBlockHash;
 

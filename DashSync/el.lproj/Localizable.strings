@@ -60,6 +60,9 @@
 "dash transaction not signed" = "Η συναλλαγή dash δεν έχει υπογραφεί";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "διπλό ξόδεμα";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "ώρες";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "λεπτό";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "seconds";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";

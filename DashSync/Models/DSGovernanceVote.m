@@ -15,13 +15,13 @@
 #import "DSMasternodeManager.h"
 #import "DSChainManager.h"
 #import "DSChainPeerManager.h"
-#import "DSMasternodeBroadcast.h"
-#import "DSMasternodeBroadcastEntity+CoreDataClass.h"
+#import "DSSimplifiedMasternodeEntry.h"
+#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
 @interface DSGovernanceVote()
 
-@property (nonatomic,strong) DSMasternodeBroadcast * masternodeBroadcast;
+@property (nonatomic,strong) DSSimplifiedMasternodeEntry * masternode;
 @property (nonatomic,assign) DSGovernanceVoteOutcome outcome;
 @property (nonatomic,assign) DSGovernanceVoteSignal signal;
 @property (nonatomic,assign) NSTimeInterval createdAt;
@@ -144,14 +144,11 @@
     return self;
 }
 
--(DSMasternodeBroadcast *)masternodeBroadcast {
-    if (_masternodeBroadcast) return _masternodeBroadcast;
-    NSArray * masternodeBroadcasts = [DSMasternodeBroadcastEntity objectsMatching:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash],@(self.masternodeUTXO.n)];
-    if ([masternodeBroadcasts count]) {
-        DSMasternodeBroadcastEntity * masternodeBroadcastEntity = [masternodeBroadcasts firstObject];
-        return [masternodeBroadcastEntity masternodeBroadcast];
-    }
-    return nil;
+-(DSSimplifiedMasternodeEntry *)masternode {
+    if (!_masternode) {
+    self.masternode = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"utxoHash = %@ && utxoIndex = %@",[NSData dataWithUInt256:(UInt256)self.masternodeUTXO.hash],@(self.masternodeUTXO.n)].simplifiedMasternodeEntry;
+}
+    return _masternode;
 }
 
 -(void)signWithKey:(DSKey*)key {
@@ -162,11 +159,13 @@
     if (uint256_is_zero(self.masternodeUTXO.hash)) return FALSE;
     if (!self.createdAt) return FALSE;
     if (uint256_is_zero(self.parentHash)) return FALSE;
-    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
-    DSMasternodeBroadcast * masternodeBroacast = [peerManager.masternodeManager masternodeBroadcastForUTXO:self.masternodeUTXO];
-    DSKey * key = [DSKey keyWithPublicKey:masternodeBroacast.publicKey];
-    BOOL isValid = [key verify:self.governanceVoteHash signature:self.signature];
-    return isValid;
+//    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+//    DSSimplifiedMasternodeEntry * masternode = [peerManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:self.masternodeUTXO];
+//    DSKey * key = [DSKey keyWithPublicKey:masternode.keyIDVoting];
+//    BOOL isValid = [key verify:self.governanceVoteHash signature:self.signature];
+//    return isValid;
+    //TO DO fix voting
+    return NO;
 }
 
 @end

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSGovernanceObjectEntity, DSGovernanceVoteHashEntity, DSMasternodeBroadcastEntity,DSChainEntity,DSGovernanceVote;
+@class DSGovernanceObjectEntity, DSGovernanceVoteHashEntity, DSSimplifiedMasternodeEntry,DSChainEntity,DSGovernanceVote;
 
 NS_ASSUME_NONNULL_BEGIN
 

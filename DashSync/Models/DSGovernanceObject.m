@@ -20,7 +20,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSChainPeerManager.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSMasternodeBroadcast.h"
+#import "DSSimplifiedMasternodeEntry.h"
 #import "DSAccount.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 
@@ -310,7 +310,7 @@
     if (!_knownGovernanceVoteHashesForExistingGovernanceVotes) _knownGovernanceVoteHashesForExistingGovernanceVotes = [NSMutableOrderedSet orderedSet];
     for (DSGovernanceVoteEntity * governanceVoteEntity in governanceVoteEntities) {
         DSGovernanceVote * governanceVote = [governanceVoteEntity governanceVote];
-        NSLog(@"%@ : %@ -> %d/%d",self.identifier,[NSData dataWithUInt256:governanceVote.masternodeBroadcast.masternodeBroadcastHash].shortHexString,governanceVote.outcome, governanceVote.signal);
+        NSLog(@"%@ : %@ -> %d/%d",self.identifier,[NSData dataWithUInt256:governanceVote.masternode.simplifiedMasternodeEntryHash].shortHexString,governanceVote.outcome, governanceVote.signal);
         [_knownGovernanceVoteHashesForExistingGovernanceVotes addObject:[NSData dataWithUInt256:governanceVote.governanceVoteHash]];
         [_governanceVotes addObject:governanceVote];
     }

@@ -14,7 +14,7 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSSimplifiedMasternodeEntryEntity"];
 }
 
-@dynamic providerTransactionHash;
+@dynamic providerRegistrationTransactionHash;
 @dynamic address;
 @dynamic port;
 @dynamic keyIDOperator;

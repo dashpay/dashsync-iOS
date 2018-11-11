@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSSimplifiedMasternodeEntryEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *providerTransactionHash;
+@property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 @property (nonatomic, assign) uint32_t address;
 @property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) BOOL claimed;

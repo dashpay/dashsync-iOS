@@ -60,6 +60,9 @@
 "dash transaction not signed" = "dash işlemi imzalanmamış";
 
 /* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
 "double spend" = "çift ödeme";
 
 /* No comment provided by engineer. */
@@ -73,6 +76,9 @@
 
 /* No comment provided by engineer. */
 "hours" = "saat";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
 "minute" = "dakika";
@@ -130,6 +136,9 @@
 
 /* No comment provided by engineer. */
 "seconds" = "saniye";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "bu özel anahtar zaten cüzdanınızda var";

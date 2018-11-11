@@ -146,7 +146,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceRequestState) {
 
 typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSMasternodeBroadcast,DSMasternodePing,DSGovernanceObject,DSGovernanceVote;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSGovernanceObject,DSGovernanceVote;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -170,8 +170,6 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
-- (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast;
-- (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing;
 
 - (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
 - (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;

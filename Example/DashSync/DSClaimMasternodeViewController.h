@@ -11,7 +11,7 @@
 
 @interface DSClaimMasternodeViewController : UIViewController
 
-@property (nonatomic,strong) DSMasternodeBroadcast * masternode;
+@property (nonatomic,strong) DSSimplifiedMasternodeEntry * masternode;
 @property (nonatomic,strong) DSChain * chain;
 
 @end

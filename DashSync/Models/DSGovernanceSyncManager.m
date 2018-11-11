@@ -8,7 +8,6 @@
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
-#import "DSMasternodePing.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 #import "DSGovernanceObjectHashEntity+CoreDataProperties.h"
 #import "DSGovernanceVoteEntity+CoreDataProperties.h"
@@ -19,7 +18,7 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Dash.h"
 #import "DSOptionsManager.h"
-#import "DSMasternodeBroadcast.h"
+#import "DSSimplifiedMasternodeEntry.h"
 #import "DSKey.h"
 #import "DSChainPeerManager.h"
 #import "DSChainManager.h"
@@ -440,21 +439,22 @@
 // MARK:- Voting
 
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject*)governanceObject {
-    NSArray * registeredMasternodes = [self.chain registeredMasternodes];
-    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
-    NSMutableArray * votesToRelay = [NSMutableArray array];
-    for (DSMasternodeBroadcast * masternodeBroadcast in registeredMasternodes) {
-        NSData * votingKey = [self.chain votingKeyForMasternodeBroadcast:masternodeBroadcast];
-        DSKey * key = [DSKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
-        UInt256 proposalHash = governanceObject.governanceObjectHash;
-        DSUTXO masternodeUTXO = masternodeBroadcast.utxo;
-        NSTimeInterval now = floor([[NSDate date] timeIntervalSince1970]);
-        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:proposalHash forMasternodeUTXO:masternodeUTXO voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:now signature:nil onChain:self.chain];
-        [governanceVote signWithKey:key];
-        [votesToRelay addObject:governanceVote];
-        [self.publishVotes setObject:governanceVote forKey:uint256_data(governanceVote.governanceVoteHash)];
-    }
-    [peerManager publishVotes:votesToRelay];
+    //TODO fix voting
+//    NSArray * registeredMasternodes = [self.chain registeredMasternodes];
+//    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+//    NSMutableArray * votesToRelay = [NSMutableArray array];
+//    for (DSSimplifiedMasternodeEntry * masternodeEntry in registeredMasternodes) {
+//        NSData * votingKey = [self.chain votingKeyForMasternode:masternodeEntry];
+//        DSKey * key = [DSKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
+//        UInt256 proposalHash = governanceObject.governanceObjectHash;
+//        DSUTXO masternodeUTXO = masternodeEntry.utxo;
+//        NSTimeInterval now = floor([[NSDate date] timeIntervalSince1970]);
+//        DSGovernanceVote * governanceVote = [[DSGovernanceVote alloc] initWithParentHash:proposalHash forMasternodeUTXO:masternodeUTXO voteOutcome:governanceVoteOutcome voteSignal:DSGovernanceVoteSignal_None createdAt:now signature:nil onChain:self.chain];
+//        [governanceVote signWithKey:key];
+//        [votesToRelay addObject:governanceVote];
+//        [self.publishVotes setObject:governanceVote forKey:uint256_data(governanceVote.governanceVoteHash)];
+//    }
+//    [peerManager publishVotes:votesToRelay];
 }
 
 -(void)wipeGovernanceInfo {

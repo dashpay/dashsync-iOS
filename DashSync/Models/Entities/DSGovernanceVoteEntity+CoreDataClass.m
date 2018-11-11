@@ -8,13 +8,13 @@
 
 #import "DSGovernanceVoteEntity+CoreDataClass.h"
 #import "DSGovernanceVoteHashEntity+CoreDataClass.h"
-#import "DSMasternodeBroadcastEntity+CoreDataClass.h"
 #import "DSGovernanceObjectEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSData+Dash.h"
 #import "DSGovernanceVote.h"
 #import "DSGovernanceObject.h"
+#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 
 @implementation DSGovernanceVoteEntity
 
@@ -28,7 +28,7 @@
         NSData * masternodeHashData = [NSData dataWithUInt256:governanceVote.masternodeUTXO.hash];
         self.masternodeHash = masternodeHashData;
         self.masternodeIndex = (uint32_t)governanceVote.masternodeUTXO.n;
-        NSArray * matchingMasternodeEntities = [DSMasternodeBroadcastEntity objectsMatching:@"utxoHash == %@ && utxoIndex == %@",masternodeHashData,@(governanceVote.masternodeUTXO.n)];
+        NSArray * matchingMasternodeEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"utxoHash == %@ && utxoIndex == %@",masternodeHashData,@(governanceVote.masternodeUTXO.n)];
         if ([matchingMasternodeEntities count]) {
             self.masternode = [matchingMasternodeEntities firstObject];
         }

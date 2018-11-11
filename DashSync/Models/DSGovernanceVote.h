@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
 
-@class DSGovernanceObject,DSMasternodeBroadcast,DSChain,DSKey;
+@class DSGovernanceObject,DSSimplifiedMasternodeEntry,DSChain,DSKey;
 
 typedef NS_ENUM(uint32_t, DSGovernanceVoteSignal) {
     DSGovernanceVoteSignal_None = 0,
@@ -28,7 +28,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 @interface DSGovernanceVote : NSObject
 
 @property (nonatomic,strong) DSGovernanceObject * governanceObject;
-@property (nonatomic,readonly) DSMasternodeBroadcast * masternodeBroadcast;
+@property (nonatomic,readonly) DSSimplifiedMasternodeEntry * masternode;
 @property (nonatomic,readonly) DSGovernanceVoteOutcome outcome;
 @property (nonatomic,readonly) DSGovernanceVoteSignal signal;
 @property (nonatomic,readonly) NSTimeInterval createdAt;

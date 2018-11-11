@@ -43,7 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) NSSet<DSTransactionHashEntity *> *transactionHashes;
 @property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
 @property (nonnull, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
-@property (nonnull, nonatomic, retain) NSSet<DSMasternodeBroadcastHashEntity *> *masternodeBroadcastHashes;
 @property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeEntries;
 
 @end

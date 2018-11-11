@@ -48,11 +48,11 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define PROTOCOL_VERSION_MAINNET   70210
 #define MIN_PROTOCOL_VERSION_MAINNET  70209
 
-#define PROTOCOL_VERSION_TESTNET   70210
-#define MIN_PROTOCOL_VERSION_TESTNET  70209
+#define PROTOCOL_VERSION_TESTNET   70212
+#define MIN_PROTOCOL_VERSION_TESTNET  70212
 
-#define PROTOCOL_VERSION_DEVNET   70209
-#define MIN_PROTOCOL_VERSION_DEVNET  70209
+#define PROTOCOL_VERSION_DEVNET   70212
+#define MIN_PROTOCOL_VERSION_DEVNET  70212
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
@@ -87,7 +87,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneDerivationPathsDidCh
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSMasternodeBroadcast,DSChainPeerManager,DSBlockchainUser;
+@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSChainPeerManager,DSBlockchainUser;
 
 @protocol DSChainDelegate;
 
@@ -190,7 +190,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 -(void)addStandaloneDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
 -(void)registerStandaloneDerivationPath:(DSDerivationPath* _Nonnull)derivationPath;
 
--(void)registerVotingKey:(NSData* _Nonnull)votingKey forMasternodeBroadcast:(DSMasternodeBroadcast* _Nonnull)masternodeBroadcast;
+-(void)registerVotingKey:(NSData* _Nonnull)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry* _Nonnull)masternodeEntry;
 
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
@@ -207,7 +207,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainBlocksDidChangeNotification;
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
 
--(NSData* _Nullable)votingKeyForMasternodeBroadcast:(DSMasternodeBroadcast* _Nonnull)masternodeBroadcast;
+-(NSData* _Nullable)votingKeyForMasternode:(DSSimplifiedMasternodeEntry* _Nonnull)masternodeEntry;
 
 -(NSArray* _Nonnull)registeredMasternodes;
 

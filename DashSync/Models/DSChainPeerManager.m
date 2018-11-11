@@ -1007,64 +1007,11 @@
 
 // MARK: - Masternode List Sync
 
--(void)continueGettingMasternodeList {
-    NSLog(@"--> Continuing Getting MasternodeList");
-    NSUInteger last3HoursStandaloneBroadcastHashesCount = [self.masternodeManager last3HoursStandaloneBroadcastHashesCount];
-    if (last3HoursStandaloneBroadcastHashesCount) {
-        DSPeer * downloadPeer = nil;
-        
-        //find download peer (ie the peer that we will ask for governance objects from
-        for (DSPeer * peer in self.connectedPeers) {
-            if (peer.status != DSPeerStatus_Connected) continue;
-            downloadPeer = peer;
-            break;
-        }
-        
-        [self.masternodeManager requestMasternodeBroadcastsFromPeer:downloadPeer];
-    }
-}
-
 -(void)getMasternodeList {
-    
-    //Do we want to sync masternode list?
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) return; // make sure we care about masternode list
-    
-    if (self.chain.protocolVersion > 70210) { //change to 70210 later
-        [self.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.masternodeManager.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
-    } else {
-        //Do we need to sync the hashes? (or do we already have them?)
-        if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]]) { //no need to do a governance sync if we already completed one recently
-            NSTimeInterval lastSyncedMasternodeList = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
-            NSTimeInterval interval = [[DSOptionsManager sharedInstance] syncMasternodeListInterval];
-            NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-            if (lastSyncedMasternodeList + interval > now) {
-                [self continueGettingMasternodeList];
-                return;
-            };
-        }
-        
-        NSArray * sortedPeers = [self.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedMasternodeList" ascending:YES]]];
-        BOOL requestedMasternodeList = FALSE;
-        for (DSPeer * peer in sortedPeers) {
-            if (peer.status != DSPeerStatus_Connected) continue;
-            if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedMasternodeList < 10800) continue; //don't request less than every 3 hours from a peer
-            peer.lastRequestedMasternodeList = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
-            DSUTXO emptyUTXO;
-            emptyUTXO.hash = UINT256_ZERO;
-            emptyUTXO.n = 0;
-            [peer sendDSegMessage:emptyUTXO];
-            [self savePeer:peer];
-            requestedMasternodeList = TRUE;
-            break;
-        }
-        if (!requestedMasternodeList) { //we have requested masternode list from connected peers too recently, let's connect to different peers
-            [self continueGettingMasternodeList];
-        }
-    }
+    [self.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.masternodeManager.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
 }
 
 // MARK: - Bloom Filters
-
 
 - (void)updateFilter
 {
@@ -1707,10 +1654,6 @@
     }
 }
 
-- (void)peer:(DSPeer *)peer hasMasternodeBroadcastHashes:(NSSet*)masternodeBroadcastHashes {
-    [self.masternodeManager peer:peer hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
-}
-
 - (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage {
     [self.masternodeManager peer:peer relayedMasternodeDiffMessage:masternodeDiffMessage];
 }
@@ -1737,14 +1680,6 @@
 
 - (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes {
     [self.sporkManager peer:peer hasSporkHashes:sporkHashes];
-}
-
-- (void)peer:(DSPeer *)peer relayedMasternodeBroadcast:(DSMasternodeBroadcast*)masternodeBroadcast {
-    [self.masternodeManager peer:peer relayedMasternodeBroadcast:masternodeBroadcast];
-}
-
-- (void)peer:(DSPeer *)peer relayedMasternodePing:(DSMasternodePing*)masternodePing {
-    [self.masternodeManager peer:peer relayedMasternodePing:masternodePing];
 }
 
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
