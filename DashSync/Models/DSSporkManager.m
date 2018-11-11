@@ -106,11 +106,11 @@
     [dictionary setObject:spork forKey:@"new"];
     [dictionary setObject:self.chain forKey:DSChainPeerManagerNotificationChainKey];
     if (!currentSpork || updatedSpork) {
-        @autoreleasepool {
-            [[DSSporkEntity managedObject] setAttributesFromSpork:spork]; // add new peers
-            [DSSporkEntity saveContext];
-        }
         dispatch_async(dispatch_get_main_queue(), ^{
+            @autoreleasepool {
+                [[DSSporkEntity managedObject] setAttributesFromSpork:spork]; // add new peers
+                [DSSporkEntity saveContext];
+            }
             [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:dictionary];
         });
     }
