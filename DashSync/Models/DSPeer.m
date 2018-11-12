@@ -570,32 +570,6 @@
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
-- (void)sendGetdataMessageWithMasternodeBroadcastHashes:(NSArray<NSData*> *)masternodeBroadcastHashes
-{
-    if (masternodeBroadcastHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
-        NSLog(@"%@:%u couldn't send masternode getdata, %u is too many items, max is %u", self.host, self.port,
-              (int)masternodeBroadcastHashes.count, MAX_GETDATA_HASHES);
-        return;
-    }
-    else if (masternodeBroadcastHashes.count == 0) return;
-    
-    NSMutableData *msg = [NSMutableData data];
-    
-    [msg appendVarInt:masternodeBroadcastHashes.count];
-    
-    for (NSData *dataHash in masternodeBroadcastHashes) {
-        [msg appendUInt32:DSInvType_MasternodeBroadcast];
-        
-        [msg appendBytes:dataHash.bytes length:sizeof(UInt256)];
-    }
-    
-    self.sentGetdataMasternode = YES;
-#if MESSAGE_LOGGING
-    NSLog(@"%@:%u sending getdata (masternodes)", self.host, self.port);
-#endif
-    [self sendMessage:msg type:MSG_GETDATA];
-}
-
 -(void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash {
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:previousBlockHash];
@@ -964,8 +938,6 @@
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectVoteHashes = [NSMutableSet set];
-    NSMutableSet *masternodeVerifications = [NSMutableSet set]; //mnv messages
-    NSMutableSet *masternodeBroadcastHashes = [NSMutableSet set]; //mnb messages
     
     if (l.unsignedIntegerValue == 0 || message.length < l.unsignedIntegerValue + count*36) {
         [self error:@"malformed inv message, length is %u, should be %u for %u items", (int)message.length,
@@ -1011,8 +983,8 @@
             case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_MasternodePing: break;//[masternodePingHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_MasternodePaymentVote: break;
-            case DSInvType_MasternodeVerify: [masternodeVerifications addObject:[NSData dataWithUInt256:hash]]; break;
-            case DSInvType_MasternodeBroadcast: [masternodeBroadcastHashes addObject:[NSData dataWithUInt256:hash]]; break;
+            case DSInvType_MasternodeVerify: break;
+            case DSInvType_MasternodeBroadcast: break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");
@@ -1091,10 +1063,6 @@
     }
     if (governanceObjectVoteHashes.count > 0) {
         [self.delegate peer:self hasGovernanceVoteHashes:governanceObjectVoteHashes];
-    }
-    if (masternodeBroadcastHashes.count > 0) {
-        NSLog(@"requesting data on %lu broadcasts",(unsigned long)masternodeBroadcastHashes.count);
-        [self.delegate peer:self hasMasternodeBroadcastHashes:masternodeBroadcastHashes];
     }
     if (sporkHashes.count > 0) {
         [self.delegate peer:self hasSporkHashes:sporkHashes];
