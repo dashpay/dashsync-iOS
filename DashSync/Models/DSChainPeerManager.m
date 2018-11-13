@@ -380,7 +380,8 @@
     }
     
     [[DSPeerEntity context] performBlock:^{
-        [DSPeerEntity deleteObjects:[DSPeerEntity objectsMatching:@"! (address in %@)", addrs]]; // remove deleted peers
+        [DSChainEntity setContext:[DSPeerEntity context]];
+        [DSPeerEntity deleteObjects:[DSPeerEntity objectsMatching:@"(chain == %@) && !(address in %@)",self.chain.chainEntity, addrs]]; // remove deleted peers
         
         for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"address in %@", addrs]) { // update existing peers
             @autoreleasepool {
