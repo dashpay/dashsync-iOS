@@ -263,7 +263,7 @@
 
 - (void)disconnectWithError:(NSError *)error
 {
-    NSLog(@"Disconnected with error %@",error);
+    NSLog(@"Disconnected from peer %@ with error %@",self.host,error);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
     
     if (_status == DSPeerStatus_Disconnected) return;

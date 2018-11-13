@@ -100,7 +100,6 @@
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
     if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]] forChain:chain storeSeedPhrase:NO])) return nil;
-    
     return self;
 }
 
@@ -133,6 +132,21 @@
 
 - (DSAccount* _Nullable)accountWithNumber:(NSUInteger)accountNumber {
     return [self.mAccounts objectForKey:@(accountNumber)];
+}
+
+-(void)copyForChain:(DSChain*)chain completion:(void (^ _Nonnull)(DSWallet * copiedWallet))completion {
+    if ([self.chain isEqual:chain]) {
+        completion(self);
+        return;
+    }
+    [self seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+        if (!seedPhrase) {
+            completion(nil);
+            return;
+        }
+        DSWallet * wallet = [self.class standardWalletWithSeedPhrase:seedPhrase setCreationDate:self.walletCreationTime forChain:chain storeSeedPhrase:YES];
+        completion(wallet);
+    }];
 }
 
 // MARK: - Unique Identifiers
