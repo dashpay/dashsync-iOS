@@ -1197,7 +1197,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (uint256_eq(block.prevBlock, self.lastBlock.blockHash)) { // new block extends main chain
         if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
-            NSLog(@"adding block at height: %d", block.height);
+            NSLog(@"adding block at height: %d from peer %@", block.height,peer.host);
         }
         
         self.blocks[blockHash] = block;
@@ -1319,7 +1319,7 @@ static dispatch_once_t devnetToken = 0;
             if ([recentOrphans count])  NSLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
             [DSMerkleBlockEntity deleteObjects:recentOrphans];
         } else {
-            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"!(blockHash in %@)",blocks.allKeys];
+            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && !(blockHash in %@)",self.delegateQueueChainEntity,blocks.allKeys];
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
         }
         
