@@ -169,9 +169,10 @@
     <entity name="DSSimplifiedMasternodeEntryEntity" representedClassName="DSSimplifiedMasternodeEntryEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="claimed" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="confirmedHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="isValid" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="keyIDOperator" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="keyIDVoting" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="operatorBLSPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="simplifiedMasternodeEntryHash" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -189,6 +190,11 @@
             <compoundIndex>
                 <index value="chain"/>
                 <index value="simplifiedMasternodeEntryHash"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="chain"/>
+                <index value="providerRegistrationTransactionHash"/>
+                <index value="confirmedHash"/>
             </compoundIndex>
         </compoundIndexes>
     </entity>
@@ -264,7 +270,7 @@
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
-        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="195"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="210"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="60"/>
         <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
         <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>

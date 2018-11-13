@@ -159,6 +159,22 @@ CFAllocatorRef SecureAllocator()
     [self appendBytes:&i length:sizeof(i)];
 }
 
+- (void)appendUInt384:(UInt384)i
+{
+    [self appendBytes:&i length:sizeof(i)];
+}
+
+- (void)appendUInt512:(UInt512)i
+{
+    [self appendBytes:&i length:sizeof(i)];
+}
+
+- (void)appendUInt768:(UInt768)i
+{
+    [self appendBytes:&i length:sizeof(i)];
+}
+
+
 
 - (void)appendVarInt:(uint64_t)i
 {
