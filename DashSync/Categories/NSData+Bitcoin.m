@@ -1127,10 +1127,22 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt256 *)(self.bytes);
 }
 
+- (UInt384)UInt384AtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + sizeof(UInt384)) return UINT384_ZERO;
+    return *(UInt384 *)(self.bytes + offset);
+}
+
 - (UInt384)UInt384
 {
     if (self.length < sizeof(UInt384)) return UINT384_ZERO;
     return *(UInt384 *)(self.bytes);
+}
+
+- (UInt512)UInt512AtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + sizeof(UInt512)) return UINT512_ZERO;
+    return *(UInt512 *)(self.bytes + offset);
 }
 
 - (UInt512)UInt512
@@ -1139,6 +1151,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt512 *)(self.bytes);
 }
 
+- (UInt768)UInt768AtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + sizeof(UInt768)) return UINT768_ZERO;
+    return *(UInt768 *)(self.bytes + offset);
+}
 
 - (UInt768)UInt768
 {

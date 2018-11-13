@@ -15,9 +15,10 @@
 }
 
 @dynamic providerRegistrationTransactionHash;
+@dynamic confirmedHash;
 @dynamic address;
 @dynamic port;
-@dynamic keyIDOperator;
+@dynamic operatorBLSPublicKey;
 @dynamic keyIDVoting;
 @dynamic isValid;
 @dynamic simplifiedMasternodeEntryHash;

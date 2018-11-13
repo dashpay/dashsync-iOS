@@ -16,10 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSSimplifiedMasternodeEntryEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
+@property (nullable, nonatomic, retain) NSData *confirmedHash;
 @property (nonatomic, assign) uint32_t address;
 @property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) BOOL claimed;
-@property (nullable, nonatomic, retain) NSData *keyIDOperator;
+@property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nonatomic, assign) Boolean isValid;
 @property (nullable, nonatomic, retain) NSData *simplifiedMasternodeEntryHash;
