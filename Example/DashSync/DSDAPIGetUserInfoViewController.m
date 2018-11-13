@@ -61,7 +61,8 @@
                 case 1:
                     return self.regTxIdCell;
                 default:
-                    return nil;
+                    NSAssert(NO, @"Unknown cell");
+                    return [[UITableViewCell alloc] init];
             }
         case 1:
         {
@@ -69,7 +70,8 @@
             return cell;
         }
         default:
-            return nil;
+            NSAssert(NO, @"Unknown cell");
+            return [[UITableViewCell alloc] init];
     }
 }
 

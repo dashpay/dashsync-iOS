@@ -33,10 +33,9 @@
     return singleton;
 }
 
-
-- (id)init
-{
-    if (self == [super init]) {
+- (instancetype)init {
+    self = [super init];
+    if (self) {
         // use background fetch to stay synced with the blockchain
         [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         

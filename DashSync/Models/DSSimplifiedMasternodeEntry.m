@@ -100,7 +100,7 @@
     offset += 1;
     
     self.simplifiedMasternodeEntryHash = [self calculateSimplifiedMasternodeEntryHash];
-    self.chain = chain;;
+    self.chain = chain;
     
     return self;
 }

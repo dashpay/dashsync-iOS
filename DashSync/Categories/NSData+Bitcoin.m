@@ -1198,7 +1198,7 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     NSUInteger l = (NSUInteger)[self varIntAtOffset:offset length:&ll];
     
     if (length) *length = @(ll.unsignedIntegerValue + l);
-    if (ll == 0 || self.length < offset + ll.unsignedIntegerValue + l) return nil;
+    if (ll == nil || self.length < offset + ll.unsignedIntegerValue + l) return nil;
     return [[NSString alloc] initWithBytes:(const char *)self.bytes + offset + ll.unsignedIntegerValue length:l
             encoding:NSUTF8StringEncoding];
 }
@@ -1209,7 +1209,7 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     NSUInteger l = (NSUInteger)[self varIntAtOffset:offset length:&ll];
     
     if (length) *length = @(ll.unsignedIntegerValue + l);
-    if (ll == 0 || self.length < offset + ll.unsignedIntegerValue + l) return nil;
+    if (ll == nil || self.length < offset + ll.unsignedIntegerValue + l) return nil;
     return [self subdataWithRange:NSMakeRange(offset + ll.unsignedIntegerValue, l)];
 }
 

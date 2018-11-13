@@ -540,7 +540,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 // MARK: - Derivation Path Information
 
 -(NSNumber*)depth {
-    if (_depth) return _depth;
+    if (_depth != nil) return _depth;
     else return @(self.length);
 }
 
@@ -567,7 +567,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         for (NSInteger i = 0;i<[self.depth integerValue] - 1;i++) {
             [mutableString appendFormat:@"/?'"];
         }
-        if (self.child) {
+        if (self.child != nil) {
             if ([self.child unsignedIntValue] & BIP32_HARD) {
                 [mutableString appendFormat:@"/%lu'",[self.child unsignedIntegerValue] - BIP32_HARD];
             } else {
@@ -760,12 +760,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    uint8_t version;
-    if ([self.chain isMainnet]) {
-        version = DASH_PRIVKEY;
-    } else {
-        version = DASH_PRIVKEY_TEST;
-    }
     
     for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
@@ -919,12 +913,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
         
         UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-        uint8_t version;
-        if ([self.chain isMainnet]) {
-            version = DASH_PRIVKEY;
-        } else {
-            version = DASH_PRIVKEY_TEST;
-        }
         
         for (NSInteger i = 0;i<[self length] - 1;i++) {
             uint32_t derivation = (uint32_t)[self indexAtPosition:i];
@@ -962,7 +950,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     uint32_t fingerprint = CFSwapInt32BigToHost(*(const uint32_t *)self.extendedPublicKey.bytes);
     UInt256 chain = *(UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
     DSECPoint pubKey = *(DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-    uint32_t child = self.child?[self.child unsignedIntValue]:self.account.accountNumber | BIP32_HARD;
+    uint32_t child = self.child != nil ? [self.child unsignedIntValue] : self.account.accountNumber | BIP32_HARD;
     return serialize([self.depth unsignedCharValue], fingerprint, child, chain, [NSData dataWithBytes:&pubKey length:sizeof(pubKey)],[self.chain isMainnet]);
 }
 

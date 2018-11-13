@@ -94,7 +94,6 @@
             [alert addAction:cancelButton];
             [alert addAction:reduceButton];
             [self presentViewController:alert animated:YES completion:nil];
-            requestedSendAmount = amount;
         }
         else {
             UIAlertController * alert = [UIAlertController

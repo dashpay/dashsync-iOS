@@ -410,10 +410,12 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
             _errorMessage = (certs.count > 0) ? DSLocalizedString(@"untrusted certificate", nil) :
                             DSLocalizedString(@"missing certificate", nil);
 
-            for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
-                if (! [property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
-                _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
-                break;
+            if (trust) {
+                for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
+                    if (! [property[@"type"] isEqual:(__bridge id)kSecPropertyTypeError]) continue;
+                    _errorMessage = [_errorMessage stringByAppendingFormat:@" - %@", property[@"value"]];
+                    break;
+                }
             }
             
             r = NO;

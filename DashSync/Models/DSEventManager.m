@@ -205,14 +205,6 @@
         return; // no need to run if the user isn't in sample group or has already been asked for permission
     }
     
-    // grab a blurred image for the background
-    UIGraphicsBeginImageContext(viewController.view.bounds.size);
-    [viewController.view drawViewHierarchyInRect:viewController.view.bounds afterScreenUpdates:NO];
-    UIImage *bgImg = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    UIImage *blurredBgImg = [bgImg blurWithRadius:3];
-    
-
     [viewController.view addSubview:self.eventConfirmView];
     
     [UIView animateWithDuration:.5 animations:^{

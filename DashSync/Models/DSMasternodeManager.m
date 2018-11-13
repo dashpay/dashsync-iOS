@@ -176,7 +176,7 @@ inline static int ceil_log2(int x)
     NSData * merkleFlags = [message subdataWithRange:NSMakeRange(offset, merkleFlagCount)];
     offset += merkleFlagCount;
     
-    NSData * leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
+    __unused NSData * leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
     DSCoinbaseTransaction *coinbaseTransaction = (DSCoinbaseTransaction*)[DSTransactionFactory transactionWithMessage:[message subdataWithRange:NSMakeRange(offset, message.length - offset)] onChain:self.chain];
     if (![coinbaseTransaction isMemberOfClass:[DSCoinbaseTransaction class]]) return;
     offset += coinbaseTransaction.payloadOffset;

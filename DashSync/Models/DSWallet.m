@@ -512,7 +512,7 @@
 
 - (void)registerBlockchainUser:(DSBlockchainUser *)blockchainUser
 {
-    if (![self.mBlockchainUsers objectForKey:blockchainUser.username]) {
+    if ([self.mBlockchainUsers objectForKey:blockchainUser.username] == nil) {
         [self addBlockchainUser:blockchainUser];
     }
     NSError * error = nil;
@@ -543,7 +543,7 @@
 -(uint32_t)unusedBlockchainUserIndex {
     NSArray * indexes = [_mBlockchainUsers allValues];
     NSNumber * max = [indexes valueForKeyPath:@"@max.intValue"];
-    return max?([max unsignedIntValue] + 1):0;
+    return max != nil ? ([max unsignedIntValue] + 1) : 0;
 }
 
 -(DSBlockchainUser*)createBlockchainUserForUsername:(NSString*)username {

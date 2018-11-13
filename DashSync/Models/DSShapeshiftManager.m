@@ -378,7 +378,6 @@
     [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:[self httpBodyForParamsDictionary:params]];
-    NSString * s = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
     NSURLSession *session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
@@ -464,7 +463,6 @@
     [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:[self httpBodyForParamsDictionary:params]];
-    NSString * s = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
     NSURLSession *session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable connectionError) {
                                if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError || !data) {

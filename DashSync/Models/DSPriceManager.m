@@ -508,7 +508,7 @@
 }
 
 -(NSNumber* _Nonnull)localCurrencyDashPrice {
-    if (!_bitcoinDashPrice || !_localCurrencyBitcoinPrice) {
+    if (_bitcoinDashPrice == nil || _localCurrencyBitcoinPrice == nil) {
         return _localCurrencyDashPrice;
     } else {
         return @(_bitcoinDashPrice.doubleValue * _localCurrencyBitcoinPrice.doubleValue);
@@ -586,7 +586,7 @@
 - (NSString *)localCurrencyStringForDashAmount:(int64_t)amount
 {
     NSNumber *n = [self localCurrencyNumberForDashAmount:amount];
-    if (!n) {
+    if (n == nil) {
         return DSLocalizedString(@"Updating Price",@"Updating Price");
     }
     return [self.localFormat stringFromNumber:n];
@@ -614,7 +614,7 @@
         return @0;
     }
     
-    if (!self.localCurrencyBitcoinPrice || !self.bitcoinDashPrice) {
+    if (self.localCurrencyBitcoinPrice == nil || self.bitcoinDashPrice == nil) {
         return nil;
     }
     
