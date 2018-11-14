@@ -29,6 +29,7 @@
 
 
 import os
+import sys
 import urllib2
 import json
 import plistlib
@@ -37,13 +38,25 @@ import struct
 import sqlite3
 
 # configuration
-PLIST_PATH = '../DashWallet/FixedPeers.plist'
-API_HTTP_URL = 'https://www.dashninja.pl/data/masternodeslistfull-0.json'
-LOCAL_MASTERNODES_FILE = 'masternodeslistfull-0.json'
+
 SOCKET_CONNECTION_TIMEOUT = 3
-MASTERNODE_DEFAULT_PORT = 9999
-MASTERNODE_MIN_PROTOCOL = 70208
-FIXED_PEERS_COUNT = 100
+FIXED_PEERS_COUNT = 4
+
+def PLIST_PATH():
+    return '../DashSync/TestnetFixedPeers.plist' if TESTNET else '../DashWallet/FixedPeers.plist'
+
+def API_HTTP_URL():
+    return 'https://test.dashninja.pl/data/masternodeslistfull-1.json' if TESTNET else 'https://www.dashninja.pl/data/masternodeslistfull-0.json'
+
+def LOCAL_MASTERNODES_FILE():
+    return 'masternodeslistfull-1.json' if TESTNET else 'masternodeslistfull-0.json'
+
+def MASTERNODE_DEFAULT_PORT():
+    return 19999 if TESTNET else 9999
+
+def MASTERNODE_MIN_PROTOCOL():
+    return 70212 if TESTNET else 70208
+
 
 # global in-memory database
 CONNECTION = sqlite3.connect(":memory:")
@@ -72,7 +85,7 @@ def ip2int(str_ip):
 def import_all_masternodes():
 
     def load_all_masternodes_from_api():
-        req = urllib2.Request(API_HTTP_URL)
+        req = urllib2.Request(API_HTTP_URL())
         try:
             resp = urllib2.urlopen(req, timeout=30)
             resp_json_str = resp.read()
@@ -86,7 +99,7 @@ def import_all_masternodes():
 
     def load_all_masternodes_from_file():
         json_response = None
-        with open(LOCAL_MASTERNODES_FILE) as data_file:
+        with open(LOCAL_MASTERNODES_FILE()) as data_file:
             json_response = json.loads(data_file.read())
         return json_response
 
@@ -113,7 +126,7 @@ def import_all_masternodes():
         CONNECTION.commit()
 
     json_response = None
-    if os.path.isfile(LOCAL_MASTERNODES_FILE):
+    if os.path.isfile(LOCAL_MASTERNODES_FILE()):
         print 'Loading masternodes list from local file...',
         json_response = load_all_masternodes_from_file()
     else:
@@ -137,7 +150,7 @@ def get_best_masternodes(count, exceptlist=None):
     # group them by country and pick some
     query = 'SELECT ip, countrycode FROM masternodes' \
             ' WHERE port = {} AND portcheck = 1 AND countrycode != "__" AND protocol >= {}' \
-            ' ORDER BY activeseconds DESC'.format(MASTERNODE_DEFAULT_PORT, MASTERNODE_MIN_PROTOCOL)
+            ' ORDER BY activeseconds DESC'.format(MASTERNODE_DEFAULT_PORT(), MASTERNODE_MIN_PROTOCOL())
     cursor = CONNECTION.cursor()
     cursor.execute(query)
     filtered_masternodes = cursor.fetchall()
@@ -199,7 +212,7 @@ def validated_ips_from_fixed_plist():
         else:
             return False
 
-    plist_values = plistlib.readPlist(PLIST_PATH)
+    plist_values = plistlib.readPlist(PLIST_PATH())
     fixed_ips = map(lambda i: int2ip(i), plist_values)
 
     result = []
@@ -214,7 +227,7 @@ def validated_ips_from_fixed_plist():
             print '... OK ✅'
             result.append(ip)
         else:
-            alive = is_socket_alive(ip, MASTERNODE_DEFAULT_PORT)
+            alive = is_socket_alive(ip, MASTERNODE_DEFAULT_PORT())
             if alive:
                 print '... OK ✅'
                 result.append(ip)
@@ -227,6 +240,21 @@ def validated_ips_from_fixed_plist():
 
 
 def main():
+    global TESTNET
+
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        if arg == '--testnet':
+            TESTNET = True
+        else:
+            print 'Invalid command line arguments', sys.argv[1:], '❌'
+            print 'Usage:', sys.argv[0], '[--testnet]'
+            exit(-1)
+    else:
+        TESTNET = False
+
+    print 'Checking with TESTNET =', TESTNET
+
     import_all_masternodes()
 
     validated_fixed = validated_ips_from_fixed_plist()
@@ -237,9 +265,9 @@ def main():
     result = validated_fixed + best_masternodes
     result_int = map(lambda s: ip2int(s), result)
 
-    plistlib.writePlist(result_int, PLIST_PATH)
+    plistlib.writePlist(result_int, PLIST_PATH())
 
-    print PLIST_PATH, 'updated 🎉'
+    print PLIST_PATH(), 'updated 🎉'
 
 
 if __name__ == '__main__':
