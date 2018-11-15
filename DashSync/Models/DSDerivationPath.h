@@ -29,6 +29,8 @@
 #import "DSDerivationPath.h"
 #import "DSChain.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 #define SEQUENCE_GAP_LIMIT_EXTERNAL 10
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
 
@@ -65,9 +67,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // account for the derivation path
 @property (nonatomic, readonly) DSChain * chain;
 // account for the derivation path
-@property (nonatomic, readonly, weak) DSAccount * account;
+@property (nonatomic, readonly, weak, nullable) DSAccount * account;
 
-@property (nonatomic, readonly, weak) DSWallet * wallet;
+@property (nonatomic, readonly, weak, nullable) DSWallet * wallet;
 
 // extended Public Key
 @property (nonatomic, readonly) NSData * extendedPublicKey;
@@ -75,34 +77,34 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly) BOOL hasExtendedPublicKey;
 
 // this returns the derivation path's visual representation (e.g. m/44'/5'/0')
-@property (nonatomic, readonly) NSString * _Nonnull stringRepresentation;
+@property (nonatomic, readonly) NSString * stringRepresentation;
 
 // extended Public Key Identifier, which is just the short hex string of the extended public key
-@property (nonatomic, readonly) NSString * _Nullable standaloneExtendedPublicKeyUniqueID;
+@property (nonatomic, readonly, nullable) NSString * standaloneExtendedPublicKeyUniqueID;
 
 // the walletBasedExtendedPublicKeyLocationString is the key used to store the public key in nsuserdefaults
-@property (nonatomic, readonly) NSString * _Nullable walletBasedExtendedPublicKeyLocationString;
+@property (nonatomic, readonly, nullable) NSString * walletBasedExtendedPublicKeyLocationString;
 
 // current derivation path balance excluding transactions known to be invalid
 @property (nonatomic, assign) uint64_t balance;
 
 // returns the first unused external address
-@property (nonatomic, readonly) NSString * _Nullable receiveAddress;
+@property (nonatomic, readonly, nullable) NSString * receiveAddress;
 
 // returns the first unused internal address
-@property (nonatomic, readonly) NSString * _Nullable changeAddress;
+@property (nonatomic, readonly, nullable) NSString * changeAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSArray * _Nonnull allReceiveAddresses;
+@property (nonatomic, readonly) NSArray * allReceiveAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSArray * _Nonnull allChangeAddresses;
+@property (nonatomic, readonly) NSArray * allChangeAddresses;
 
 // all previously generated addresses
-@property (nonatomic, readonly) NSSet * _Nonnull allAddresses;
+@property (nonatomic, readonly) NSSet * allAddresses;
 
 // all previously used addresses
-@property (nonatomic, readonly) NSSet * _Nonnull usedAddresses;
+@property (nonatomic, readonly) NSSet * usedAddresses;
 
 // purpose of the derivation path if BIP 43 based
 @property (nonatomic, readonly) NSUInteger purpose;
@@ -117,20 +119,20 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
-+ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
-+ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
-+ (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
-+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString* _Nonnull)serializedExtendedPrivateKey fundsType:(DSDerivationPathFundsType)fundsType onChain:(DSChain* _Nonnull)chain;
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathFundsType)fundsType onChain:(DSChain*)chain;
 
-+ (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString* _Nonnull)serializedExtendedPublicKey onChain:(DSChain* _Nonnull)chain;
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString*)serializedExtendedPublicKey onChain:(DSChain*)chain;
 
-- (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain;
+- (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString*)extendedPublicKeyIdentifier onChain:(DSChain*)chain;
 
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                      type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
@@ -142,13 +144,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (void)setAccount:(DSAccount *)account;
 
 // true if the address is controlled by the wallet
-- (BOOL)containsAddress:(NSString * _Nonnull)address;
+- (BOOL)containsAddress:(NSString *)address;
 
 // true if the address was previously used as an input or output in any wallet transaction
-- (BOOL)addressIsUsed:(NSString * _Nonnull)address;
+- (BOOL)addressIsUsed:(NSString *)address;
 
 // inform the derivation path that the address has been used by a transaction
-- (void)registerTransactionAddress:(NSString * _Nonnull)address;
+- (void)registerTransactionAddress:(NSString *)address;
 
 // gets a public key at an index
 - (NSData*)publicKeyAtIndex:(uint32_t)index;
@@ -171,29 +173,29 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
-- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData * _Nonnull)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
+- (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 - (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
-- (NSArray * _Nonnull)publicKeysToIndex:(NSUInteger)index;
-- (NSArray * _Nonnull)addressesToIndex:(NSUInteger)index;
-- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath* _Nonnull)indexPath fromSeed:(NSData * _Nonnull)seed;
-- (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
-- (NSArray * _Nullable)privateKeys:(NSArray * _Nonnull)n internal:(BOOL)internal fromSeed:(NSData * _Nonnull)seed;
+- (NSArray *)publicKeysToIndex:(NSUInteger)index;
+- (NSArray *)addressesToIndex:(NSUInteger)index;
+- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
+- (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSArray * _Nullable)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
-+ (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain* _Nonnull)chain;
++ (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
 
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
-+ (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString * _Nonnull)uri fromSeed:(NSData * _Nonnull)seed forChain:(DSChain* _Nonnull)chain;
++ (NSString * _Nullable)bitIdPrivateKey:(uint32_t)n forURI:(NSString *)uri fromSeed:(NSData *)seed forChain:(DSChain*)chain;
 
 - (NSString * _Nullable)serializedExtendedPublicKey;
 
 - (NSString * _Nullable)serializedExtendedPrivateKeyFromSeed:(NSData * _Nullable)seed;
-+ (NSData * _Nullable)deserializedExtendedPrivateKey:(NSString * _Nonnull)extendedPrivateKeyString onChain:(DSChain* _Nonnull)chain;
++ (NSData * _Nullable)deserializedExtendedPrivateKey:(NSString *)extendedPrivateKeyString onChain:(DSChain*)chain;
 
-+ (NSData *)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString onChain:(DSChain* _Nonnull)chain;
-- (NSData * _Nullable)deserializedExtendedPublicKey:(NSString * _Nonnull)extendedPublicKeyString;
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain;
+- (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
-- (NSArray * _Nonnull)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange;
+- (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange;
 
 //this loads the derivation path once it is set to an account that has a wallet;
 -(void)loadAddresses;
@@ -201,3 +203,5 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 -(BOOL)isDerivationPathEqual:(id)object;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -58,11 +58,11 @@
 }
 
 
-+ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain {
++ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
     return [[DSBLSKey alloc] initWithPrivateKeyFromSeed:seed onChain:chain];
 }
 
-- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain {
+- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     
     bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);
@@ -79,11 +79,11 @@
     return self;
 }
 
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain {
++ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
     return [[DSBLSKey alloc] initWithExtendedPrivateKeyFromSeed:seed onChain:chain];
 }
 
-- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain {
+- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromSeed((uint8_t *)seed.bytes, seed.length);

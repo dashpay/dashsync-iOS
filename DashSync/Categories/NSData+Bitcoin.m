@@ -33,6 +33,7 @@
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
+    NSCParameterAssert(key);
     if (! key) return NO;
     
     id accessible = (authenticated) ? (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly
@@ -78,6 +79,9 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 
 BOOL hasKeychainData(NSString *key, NSError **error)
 {
+    NSCParameterAssert(key);
+    if (! key) return NO;
+
     NSDictionary *query = @{(__bridge id)kSecClass:(__bridge id)kSecClassGenericPassword,
                             (__bridge id)kSecAttrService:SEC_ATTR_SERVICE,
                             (__bridge id)kSecAttrAccount:key,
@@ -1302,33 +1306,33 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [opReturnScript copy];
 }
     
-    +(NSData*)merkleRootFromHashes:(NSArray*)hashes {
-        NSMutableArray * higherLevel = [NSMutableArray array];
-        NSArray * level = hashes;
-        if (hashes.count == 1) return [hashes objectAtIndex:0];
-        if (hashes.count == 0) return nil;
-        while (level.count != 1) {
-            for (int i = 0; i < level.count;i+=2) {
-                if ([level count] - i > 1) {
-                    NSData * left = [level objectAtIndex:i + 0];
-                    NSData * right = [level objectAtIndex:i + 1];
-                    NSMutableData * combined = [NSMutableData data];
-                    [combined appendData:left];
-                    [combined appendData:right];
-                    [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
-                } else {
-                    NSData * left = [level objectAtIndex:i];
-                    NSMutableData * combined = [NSMutableData data];
-                    [combined appendData:left];
-                    [combined appendData:left];
-                    [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
-                }
++(NSData*)merkleRootFromHashes:(NSArray*)hashes {
+    NSMutableArray * higherLevel = [NSMutableArray array];
+    NSArray * level = hashes;
+    if (hashes.count == 1) return [hashes objectAtIndex:0];
+    if (hashes.count == 0) return nil;
+    while (level.count != 1) {
+        for (int i = 0; i < level.count;i+=2) {
+            if ([level count] - i > 1) {
+                NSData * left = [level objectAtIndex:i + 0];
+                NSData * right = [level objectAtIndex:i + 1];
+                NSMutableData * combined = [NSMutableData data];
+                [combined appendData:left];
+                [combined appendData:right];
+                [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
+            } else {
+                NSData * left = [level objectAtIndex:i];
+                NSMutableData * combined = [NSMutableData data];
+                [combined appendData:left];
+                [combined appendData:left];
+                [higherLevel addObject:[NSData dataWithUInt256:combined.SHA256_2]];
             }
-            level = [higherLevel copy];
-            higherLevel = [NSMutableArray array];
         }
-        return [level objectAtIndex:0];
+        level = [higherLevel copy];
+        higherLevel = [NSMutableArray array];
     }
+    return [level objectAtIndex:0];
+}
 
 
 @end
