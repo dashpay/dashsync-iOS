@@ -11,7 +11,7 @@
 #import "DSAddressTableViewCell.h"
 #import <DashSync/DashSync.h>
 
-@interface DSStandaloneAddressesViewController ()
+@interface DSStandaloneAddressesViewController () <NSFetchedResultsControllerDelegate>
 
 @end
 

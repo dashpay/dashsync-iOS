@@ -263,7 +263,6 @@
 // MARK: time
 
 +(NSString*)waitTimeFromNow:(NSTimeInterval)wait {
-    NSString * unit = nil;
     NSUInteger seconds = wait;
     NSUInteger hours = seconds / 360;
     seconds %= 360;

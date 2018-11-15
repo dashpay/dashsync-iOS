@@ -84,7 +84,7 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
-static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i)
+__unused static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i)
 {
     uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
     UInt512 I;
@@ -966,6 +966,14 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     [masterPublicKey appendBytes:&chainHash length:32];
     [masterPublicKey appendData:pubkey];
     return [masterPublicKey copy];
+}
+
++ (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain *)chain
+{
+    __unused uint8_t depth = 0;
+    __unused uint32_t child = 0;
+    NSData * extendedPublicKey = [self deserializedExtendedPublicKey:extendedPublicKeyString onChain:chain rDepth:&depth rChild:&child];
+    return extendedPublicKey;
 }
 
 - (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString

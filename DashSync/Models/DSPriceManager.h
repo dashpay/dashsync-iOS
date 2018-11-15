@@ -77,6 +77,4 @@ typedef void (^ResetCancelHandlerBlock)(void);
 - (NSNumber * _Nullable)localCurrencyNumberForDashAmount:(int64_t)amount;
 - (NSNumber* _Nonnull)localCurrencyDashPrice;
 
-- (void)showResetWalletWithCancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
-
 @end

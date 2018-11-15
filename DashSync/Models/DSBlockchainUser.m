@@ -117,7 +117,7 @@
 }
 
 -(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainUserResetTransaction * blockchainUserResetTransaction))completion {
-    NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to reset this user?", nil)];
+    NSString * question = DSLocalizedString(@"Are you sure you would like to reset this user?", nil);
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed) {
         if (!seed) {
             completion(nil);

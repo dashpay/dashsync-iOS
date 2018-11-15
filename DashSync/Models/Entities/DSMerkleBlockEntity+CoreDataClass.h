@@ -36,7 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMerkleBlock *)merkleBlock;
 
 + (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity;
-+ (DSMerkleBlock *)lastBlockOnChain:(DSChainEntity*)chainEntity;
 + (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity;
 
 @end

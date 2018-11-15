@@ -743,7 +743,13 @@ replacementString:(NSString *)string
                                    }];
     [self.pinAlertController addAction:cancelButton];
     
+    __weak __typeof__(self) weakSelf = self;
     self.pinVerificationBlock = ^BOOL(NSString * currentPin,DSAuthenticationManager * context) {
+        __strong __typeof__(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return NO;
+        }
+
         NSError * error = nil;
         uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
         
@@ -789,8 +795,8 @@ replacementString:(NSString *)string
                 return FALSE;
             }
             
-            if (self.secureTime > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
-                setKeychainInt(self.secureTime, PIN_FAIL_HEIGHT_KEY, NO);
+            if (strongSelf.secureTime > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
+                setKeychainInt(strongSelf.secureTime, PIN_FAIL_HEIGHT_KEY, NO);
             }
             
             if (failCount >= 3) {

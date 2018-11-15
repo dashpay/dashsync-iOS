@@ -184,7 +184,7 @@
                 [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
                                                                    queue:nil usingBlock:^(NSNotification *note) {
                                                                        if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
-                                                                           _status = DSPeerStatus_Disconnected;
+                                                                           self->_status = DSPeerStatus_Disconnected;
                                                                            [self connect];
                                                                        }
                                                                    }];
@@ -317,7 +317,7 @@
     _status = DSPeerStatus_Connected;
     
     dispatch_async(self.delegateQueue, ^{
-        if (_status == DSPeerStatus_Connected) [self.delegate peerConnected:self];
+        if (self->_status == DSPeerStatus_Connected) [self.delegate peerConnected:self];
     });
 }
 
@@ -413,7 +413,7 @@
     if (completion) {
         if (self.mempoolCompletion) {
             dispatch_async(self.delegateQueue, ^{
-                if (_status == DSPeerStatus_Connected) completion(NO);
+                if (self->_status == DSPeerStatus_Connected) completion(NO);
             });
         }
         else {
@@ -889,7 +889,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        if (_status == DSPeerStatus_Connected) [self.delegate peer:self relayedPeers:peers];
+        if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self relayedPeers:peers];
     });
 }
 
@@ -1342,7 +1342,7 @@
 #endif
     
     dispatch_async(self.delegateQueue, ^{
-        if (_status == DSPeerStatus_Connected && self.pongHandlers.count) {
+        if (self->_status == DSPeerStatus_Connected && self.pongHandlers.count) {
             ((void (^)(BOOL))self.pongHandlers[0])(YES);
             [self.pongHandlers removeObjectAtIndex:0];
         }

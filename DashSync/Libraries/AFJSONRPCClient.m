@@ -117,6 +117,8 @@ static NSString * AFJSONRPCLocalizedErrorMessageForCode(NSInteger code) {
     payload[@"params"] = parameters;
     payload[@"id"] = [requestId description];
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [self POST:@"" parameters:payload success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
         NSInteger code = 0;
         NSString *message = nil;
@@ -174,6 +176,7 @@ static NSString * AFJSONRPCLocalizedErrorMessageForCode(NSInteger code) {
             failure(task, error);
         }
     }];
+#pragma clang diagnostic pop
 }
 
 - (id)proxyWithProtocol:(Protocol *)protocol {

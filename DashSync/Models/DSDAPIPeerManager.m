@@ -238,6 +238,11 @@
     }];
 }
 
+- (void)fetchDapContract:(void (^)(NSDictionary *))success failure:(void (^)(NSError *))failure {
+    // TODO: implement
+    NSAssert(NO, @"Not implemented");
+}
+
 -(void)getUserDapSpaceForUser:(NSString*)userId forDap:(NSString*)dapId withSuccess:(void (^)(NSDictionary *userInfo))success failure:(void (^)(NSError *error))failure {
     [self.client invokeMethod:@"getUserDapSpace" withParameters:@{@"userId":userId,@"dapId":dapId} success:^(NSURLSessionDataTask *task, id responseObject) {
         success(responseObject);
