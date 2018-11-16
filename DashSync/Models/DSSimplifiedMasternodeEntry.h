@@ -23,6 +23,7 @@
 @property(nonatomic,readonly) DSChain * chain;
 @property(nonatomic,readonly) NSData * payloadData;
 @property(nonatomic,readonly) NSString * uniqueID;
+@property(nonatomic,readonly,class) uint32_t payloadLength;
 @property(nonatomic,readonly) DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity;
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;

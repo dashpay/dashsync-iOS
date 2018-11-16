@@ -105,6 +105,10 @@
     return self;
 }
 
++(uint32_t)payloadLength {
+    return 151;
+}
+
 -(NSString*)uniqueID {
     return [NSData dataWithUInt256:self.providerRegistrationTransactionHash].shortHexString;
 }
