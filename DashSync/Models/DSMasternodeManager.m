@@ -154,6 +154,8 @@ inline static int ceil_log2(int x)
     UInt256 blockHash = [message UInt256AtOffset:offset];
     offset += 32;
     
+    NSLog(@"baseBlockHash %@ blockHash %@",[NSData dataWithUInt256:baseBlockHash].hexString,[NSData dataWithUInt256:blockHash].hexString);
+    
     if (length - offset < 4) return;
     uint32_t totalTransactions = [message UInt32AtOffset:offset];
     offset += 4;
@@ -204,11 +206,11 @@ inline static int ceil_log2(int x)
     NSMutableDictionary * addedOrModifiedMasternodes = [NSMutableDictionary dictionary];
     
     while (addedMasternodeCount >= 1) {
-        if (length - offset < 91) return;
-        NSData * data = [message subdataWithRange:NSMakeRange(offset, 91)];
+        if (length - offset < [DSSimplifiedMasternodeEntry payloadLength]) return;
+        NSData * data = [message subdataWithRange:NSMakeRange(offset, [DSSimplifiedMasternodeEntry payloadLength])];
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data onChain:self.chain];
         [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse];
-        offset += 91;
+        offset += [DSSimplifiedMasternodeEntry payloadLength];
         addedMasternodeCount--;
     }
     
