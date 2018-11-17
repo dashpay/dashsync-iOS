@@ -109,7 +109,8 @@
                 case 4:
                     return self.dapiPortTableViewCell;
                 default:
-                    return nil;
+                    NSAssert(NO, @"Unknown cell");
+                    return [[UITableViewCell alloc] init];
             }
         }
         case 1:
@@ -119,7 +120,8 @@
                 case 1:
                     return self.sporkPrivateKeyTableViewCell;
                 default:
-                    return nil;
+                    NSAssert(NO, @"Unknown cell");
+                    return [[UITableViewCell alloc] init];
             }
         case 2:
         {    if (indexPath.row == _insertedIPAddresses.count + 1) return self.addDevnetAddIPAddressTableViewCell;
@@ -127,7 +129,8 @@
             
         }
     }
-    return nil;
+    NSAssert(NO, @"Unknown cell");
+    return [[UITableViewCell alloc] init];
 
 }
 

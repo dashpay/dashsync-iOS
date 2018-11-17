@@ -1218,7 +1218,7 @@ static dispatch_once_t devnetToken = 0;
         
         while (b && b.height > block.height) b = self.blocks[uint256_obj(b.prevBlock)]; // is block in main chain?
         
-        if (uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
+        if (b != nil && uint256_eq(b.blockHash, block.blockHash)) { // if it's not on a fork, set block heights for its transactions
             [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
             if (block.height == self.lastBlockHeight) self.lastBlock = block;
         }

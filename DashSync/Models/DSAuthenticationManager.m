@@ -621,7 +621,7 @@ replacementString:(NSString *)string
 
 -(void)userLockedOut {
     NSError * error = nil;
-    uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
+    __unused uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
     if (error) {
         return;
     }

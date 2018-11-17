@@ -44,8 +44,9 @@
     return singleton;
 }
 
--(id)init {
-    if ([super init] == self) {
+- (instancetype)init {
+    self = [super init];
+    if (self) {
         self.knownChains = [NSMutableArray array];
         NSError * error = nil;
         NSMutableDictionary * registeredDevnetIdentifiers = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];

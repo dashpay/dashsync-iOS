@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSPeerEntity : NSManagedObject
 
-- (instancetype)setAttributesFromPeer:(DSPeer *)peer;
+- (nullable instancetype)setAttributesFromPeer:(DSPeer *)peer;
 - (DSPeer *)peer;
 + (void)deletePeersForChain:(DSChainEntity*)chainEntity;
 

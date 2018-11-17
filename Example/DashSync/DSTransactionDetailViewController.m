@@ -526,7 +526,8 @@
         }
             break;
     }
-    return nil;
+    NSAssert(NO, @"Unknown cell");
+    return [[UITableViewCell alloc] init];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
