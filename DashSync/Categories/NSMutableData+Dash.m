@@ -209,7 +209,6 @@ CFAllocatorRef SecureAllocator()
 - (void)appendCoinbaseMessage:(NSString *)message atHeight:(uint32_t)height
 {
     NSUInteger l = [message lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
-    uint8_t bytesInHeight;
     if (height < VAR_INT16_HEADER) {
         uint8_t header = l;
         uint8_t payload = (uint8_t)height;
@@ -313,7 +312,7 @@ CFAllocatorRef SecureAllocator()
 
 - (void)appendShapeshiftMemoForAddress:(NSString *)address
 {
-    static uint8_t pubkeyAddress = BITCOIN_PUBKEY_ADDRESS, scriptAddress = BITCOIN_SCRIPT_ADDRESS;
+    static uint8_t scriptAddress = BITCOIN_SCRIPT_ADDRESS;
     NSData *d = address.base58checkToData;
     
     if (d.length != 21) return;
@@ -367,7 +366,6 @@ CFAllocatorRef SecureAllocator()
 // MARK: - dash protocol
 
 - (void)appendProposalInfo:(NSData*)proposalInfo {
-    static uint8_t pubkeyAddress = BITCOIN_PUBKEY_ADDRESS, scriptAddress = BITCOIN_SCRIPT_ADDRESS;
     NSMutableData * hashMutableData = [[NSMutableData alloc] init];
 
     [hashMutableData appendUInt256:proposalInfo.SHA256_2];

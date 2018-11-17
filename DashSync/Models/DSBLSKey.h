@@ -22,16 +22,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) UInt256 secretKey;
 @property (nonatomic,readonly) UInt384 publicKey;
 
-+ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain;
-- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain;
-+ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain;
-- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData * _Nonnull)seed onChain:(DSChain*)chain;
++ (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
+- (nullable instancetype)initWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
++ (nullable instancetype)blsKeyWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
+- (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;
 
-- (DSBLSKey* _Nullable)deriveToPath:(DSDerivationPath* _Nonnull)derivationPath;
-- (DSBLSKey* _Nullable)publicDeriveToPath:(DSDerivationPath* _Nonnull)derivationPath;
+- (DSBLSKey* _Nullable)deriveToPath:(DSDerivationPath *)derivationPath;
+- (DSBLSKey* _Nullable)publicDeriveToPath:(DSDerivationPath *)derivationPath;
 
 - (UInt768)signDigest:(UInt256)md;
-- (UInt768)signData:(NSData * _Nonnull)data;
+- (UInt768)signData:(NSData *)data;
 
 + (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages;
 

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="rF7-st-e6I">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="rF7-st-e6I">
     <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -1453,7 +1453,7 @@
                                                 </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="username" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gkb-vV-kkN">
                                                     <rect key="frame" x="283" y="12" width="76" height="21"/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
@@ -1629,7 +1629,7 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Standalone Derivation Paths" id="7vi-op-gSf">
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="XxV-zm-RYY">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="XxV-zm-RYY">
                             <connections>
                                 <segue destination="aMd-m6-cjI" kind="show" identifier="AddStandaloneDerivationPathSegue" id="SDt-iM-Vhv"/>
                             </connections>
@@ -1924,7 +1924,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <navigationItem key="navigationItem" title="Add" id="8Ur-vy-MiT">
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="save" id="Os7-bX-U8y">
+                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="Os7-bX-U8y">
                             <connections>
                                 <action selector="createDerivationPath:" destination="aMd-m6-cjI" id="KmQ-QP-f4E"/>
                             </connections>
@@ -2008,7 +2008,7 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Wallets" id="90H-jm-fcb">
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="add" id="0aZ-cF-Z2f">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="0aZ-cF-Z2f">
                             <connections>
                                 <segue destination="c3Z-zJ-Q1f" kind="show" identifier="AddWalletSegue" id="dqY-2k-FS1"/>
                             </connections>
@@ -2841,7 +2841,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="xIa-ct-iwp">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TableViewCell" id="xIa-ct-iwp">
                                 <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="xIa-ct-iwp" id="yFv-hQ-734">
@@ -3444,7 +3444,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
                     <navigationItem key="navigationItem" title="Passphrase" id="lh8-Xi-nZW">
-                        <barButtonItem key="rightBarButtonItem" style="plain" systemItem="save" id="RFC-wO-nca">
+                        <barButtonItem key="rightBarButtonItem" systemItem="save" id="RFC-wO-nca">
                             <connections>
                                 <action selector="createWallet:" destination="c3Z-zJ-Q1f" id="vfc-O7-JDN"/>
                             </connections>
@@ -4418,7 +4418,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="shapeshift" width="64" height="64"/>
+        <image name="shapeshift" width="128" height="128"/>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="Unp-kP-fWV"/>

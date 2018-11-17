@@ -962,13 +962,13 @@ static dispatch_once_t devnetToken = 0;
     if (_blocks.count > 0) return _blocks;
     
     [[DSMerkleBlockEntity context] performBlockAndWait:^{
-        if (_blocks.count > 0) return;
-        _blocks = [NSMutableDictionary dictionary];
+        if (self->_blocks.count > 0) return;
+        self->_blocks = [NSMutableDictionary dictionary];
         self.checkpointsDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
-            _blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
+            self->_blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                                  merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
                                                                                      target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
                                                                                       flags:nil height:checkpoint.height];
@@ -979,7 +979,7 @@ static dispatch_once_t devnetToken = 0;
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
-                if (b) _blocks[uint256_obj(b.blockHash)] = b;
+                if (b) self->_blocks[uint256_obj(b.blockHash)] = b;
             }
         };
     }];
@@ -1134,7 +1134,7 @@ static dispatch_once_t devnetToken = 0;
     
     NSValue *blockHash = uint256_obj(block.blockHash), *prevBlock = uint256_obj(block.prevBlock);
     DSMerkleBlock *prev = self.blocks[prevBlock];
-    uint32_t transitionTime = 0, txTime = 0;
+    uint32_t txTime = 0;
     UInt256 checkpoint = UINT256_ZERO;
     BOOL syncDone = NO;
     
