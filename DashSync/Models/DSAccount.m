@@ -691,7 +691,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     transaction.isInstant = isInstant;
     
-    feeAmount = [self.wallet.chain feeForTxSize:transaction.size + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+    if (!feeAmount) {
+        feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+    }
     
     if (balance < amount + feeAmount) { // insufficient funds
         NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
