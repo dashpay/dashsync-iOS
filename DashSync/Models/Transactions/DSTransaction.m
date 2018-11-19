@@ -37,6 +37,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
+#import "DSAccount.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 
 @interface DSTransaction ()
@@ -576,6 +577,19 @@
 - (BOOL)isEqual:(id)object
 {
     return self == object || ([object isKindOfClass:[DSTransaction class]] && uint256_eq(_txHash, [object txHash]));
+}
+
+// returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
+- (uint64_t)feeUsed
+{
+    return [self.account feeForTransaction:self];
+}
+
+- (uint64_t)feeCostPerByte
+{
+    float feeUsed = [self feeUsed];
+    if (feeUsed == UINT64_MAX) return UINT64_MAX;
+    return ceilf(feeUsed/self.size);
 }
 
 #pragma mark - Polymorphic data

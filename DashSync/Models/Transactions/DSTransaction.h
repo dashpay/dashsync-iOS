@@ -31,7 +31,7 @@
 
 @class DSChain,DSAccount,DSWallet;
 
-#define TX_FEE_PER_B        1ULL    // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
@@ -70,6 +70,8 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) uint16_t version;
 @property (nonatomic, assign) uint16_t type;
 @property (nonatomic, assign) uint32_t lockTime;
+@property (nonatomic, assign) uint64_t feeUsed;
+@property (nonatomic, assign) uint64_t feeCostPerByte;
 @property (nonatomic, readonly) NSData * payloadData;
 @property (nonatomic, readonly) NSData * payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;

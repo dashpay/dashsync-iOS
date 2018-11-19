@@ -73,8 +73,8 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define SPORK_ADDRESS_TESTNET @"yjPtiKh2uwk3bDutTEA2q9mCtXyiZRWn55"
 
 
-#define DEFAULT_FEE_PER_B 1
-#define MIN_FEE_PER_B     1 // minimum relay fee on a 191byte tx
+#define DEFAULT_FEE_PER_B TX_FEE_PER_B
+#define MIN_FEE_PER_B     TX_FEE_PER_B // minimum relay fee on a 191byte tx
 #define MAX_FEE_PER_B     1000 // slightly higher than a 1000bit fee on a 191byte tx
 
 typedef NS_ENUM(uint16_t, DSChainType) {
