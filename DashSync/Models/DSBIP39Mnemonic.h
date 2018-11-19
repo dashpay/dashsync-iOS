@@ -32,6 +32,7 @@
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
 #define BIP39_CREATION_TIME 1427587200.0
+#define BIP39_WALLET_UNKNOWN_CREATION_TIME 0
 
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
 

@@ -136,6 +136,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 -(NSString* _Nullable)seedPhraseIfAuthenticated;
 
+//this is used from the account to help determine best start sync position for future resync
+-(void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
+
 
 //generate a random Mnemonic seed
 + (NSString *)generateRandomSeed;

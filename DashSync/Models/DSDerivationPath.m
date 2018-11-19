@@ -166,41 +166,41 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 + (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
     NSUInteger indexes[] = {accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP32 onChain:chain];
+    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
     if (chain.chainType == DSChainType_MainNet) {
         NSUInteger indexes[] = {44 | BIP32_HARD, 5 | BIP32_HARD, accountNumber | BIP32_HARD};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44 onChain:chain];
+        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
     } else {
         NSUInteger indexes[] = {44 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Clear reference:DSDerivationPathReference_BIP44 onChain:chain];
+        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
     }
 }
 
 + (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet {
     if (wallet.chain.chainType == DSChainType_MainNet) {
         NSUInteger indexes[] = {5 | BIP32_HARD, 5 | BIP32_HARD, 11 | BIP32_HARD};
-        DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Authentication reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
+        DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
         derivationPath.wallet = wallet;
         return derivationPath;
     } else {
         NSUInteger indexes[] = {5 | BIP32_HARD, 1 | BIP32_HARD, 11 | BIP32_HARD};
-        DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathFundsType_Authentication reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
+        DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
         derivationPath.wallet = wallet;
         return derivationPath;
     }
 }
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
-    return [[self alloc] initWithIndexes:indexes length:length type:type reference:reference onChain:chain];
+                                               type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+    return [[self alloc] initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain];
 }
 
-+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathFundsType)fundsType onChain:(DSChain*)chain {
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathType)fundsType signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm onChain:(DSChain*)chain {
     NSData * extendedPrivateKey = [self deserializedExtendedPrivateKey:serializedExtendedPrivateKey onChain:chain];
     NSUInteger indexes[] = {};
-    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:fundsType reference:DSDerivationPathReference_Unknown onChain:chain];
+    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:fundsType signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain];
     derivationPath.extendedPublicKey = [DSKey keyWithSecret:*(UInt256*)extendedPrivateKey.bytes compressed:YES].publicKey;
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
@@ -211,7 +211,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     uint32_t child = 0;
     NSData * extendedPublicKey = [self deserializedExtendedPublicKey:serializedExtendedPublicKey onChain:chain rDepth:&depth rChild:&child];
     NSUInteger indexes[] = {};
-    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown onChain:chain];
+    DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain]; //we are going to assume this is only ecdsa for now
     derivationPath.extendedPublicKey = extendedPublicKey;
     derivationPath.depth = @(depth);
     derivationPath.child = @(child);
@@ -222,7 +222,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString* _Nonnull)extendedPublicKeyIdentifier onChain:(DSChain* _Nonnull)chain {
     NSUInteger indexes[] = {};
-    if (!(self = [self initWithIndexes:indexes length:0 type:DSDerivationPathFundsType_ViewOnly reference:DSDerivationPathReference_Unknown onChain:chain])) return nil;
+    if (!(self = [self initWithIndexes:indexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain])) return nil;
     NSError * error = nil;
     _walletBasedExtendedPublicKeyLocationString = extendedPublicKeyIdentifier;
     _extendedPublicKey = getKeychainData([DSDerivationPath standaloneExtendedPublicKeyLocationStringForUniqueID:extendedPublicKeyIdentifier], &error);
@@ -237,7 +237,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+                           type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
     if (length) {
         if (! (self = [super initWithIndexes:indexes length:length])) return nil;
     } else {
@@ -247,6 +247,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     _chain = chain;
     _reference = reference;
     _type = type;
+    _signingAlgorithm = signingAlgorithm;
     _derivationPathIsKnown = YES;
     _addressesLoaded = FALSE;
     self.allAddresses = [NSMutableSet set];
@@ -469,6 +470,13 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath
 {
     NSData *pubKey = [self generatePublicKeyAtIndexPath:indexPath];
+    return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+}
+
+// gets an address at an index path
+- (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal
+{
+    NSData *pubKey = [self generatePublicKeyAtIndex:index internal:internal];
     return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
