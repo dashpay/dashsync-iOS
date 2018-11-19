@@ -1197,7 +1197,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (uint256_eq(block.prevBlock, self.lastBlock.blockHash)) { // new block extends main chain
         if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
-            NSLog(@"adding block at height: %d from peer %@", block.height,peer.host);
+            NSLog(@"adding block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
         
         self.blocks[blockHash] = block;

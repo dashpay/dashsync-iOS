@@ -83,7 +83,7 @@
 @property (nonatomic, assign) double fpRate;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, assign) NSTimeInterval lastRelayTime;
-@property (nonatomic, strong) dispatch_queue_t q;
+@property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, assign) uint32_t syncStartHeight, filterUpdateHeight;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
@@ -115,7 +115,7 @@
     self.misbehavinPeers = [NSMutableSet set];
     self.nonFpTx = [NSMutableSet set];
     self.taskId = UIBackgroundTaskInvalid;
-    self.q = dispatch_queue_create("org.dashcore.dashsync.peermanager", DISPATCH_QUEUE_SERIAL);
+    self.chainPeerManagerQueue = dispatch_queue_create("org.dashcore.dashsync.peermanager", DISPATCH_QUEUE_SERIAL);
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
     
     self.backgroundObserver =
@@ -540,7 +540,7 @@
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     
-    dispatch_async(self.q, ^{
+    dispatch_async(self.chainPeerManagerQueue, ^{
         
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
         if (self.connectFailures >= MAX_CONNECT_FAILURES) self.connectFailures = 0; // this attempt is a manual retry
@@ -555,7 +555,7 @@
             
             if (self.taskId == UIBackgroundTaskInvalid) { // start a background task for the chain sync
                 self.taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-                    dispatch_async(self.q, ^{
+                    dispatch_async(self.chainPeerManagerQueue, ^{
                         [self.chain saveBlocks];
                     });
                     
@@ -586,7 +586,7 @@
             DSPeer *p = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
             
             if (p && ! [self.connectedPeers containsObject:p]) {
-                [p setDelegate:self queue:self.q];
+                [p setDelegate:self queue:self.chainPeerManagerQueue];
                 p.earliestKeyTime = self.chain.earliestWalletCreationTime;
                 [self.connectedPeers addObject:p];
                 [p connect];
@@ -628,7 +628,7 @@
         return;
     }
     
-    dispatch_async(self.q, ^{
+    dispatch_async(self.chainPeerManagerQueue, ^{
         if (! self.downloadPeer) return;
         NSLog(@"%@:%d chain sync timed out", self.downloadPeer.host, self.downloadPeer.port);
         [self.peers removeObject:self.downloadPeer];
@@ -657,7 +657,7 @@
 {
     if (! self.connected) return;
     
-    dispatch_async(self.q, ^{
+    dispatch_async(self.chainPeerManagerQueue, ^{
         [self.chain setLastBlockHeightForRescan];
         
         if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
@@ -1246,7 +1246,7 @@
             
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
             
-            dispatch_async(self.q, ^{
+            dispatch_async(self.chainPeerManagerQueue, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
                 // BUG: XXX headers can timeout on slow connections (each message is over 160k)
                 BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
