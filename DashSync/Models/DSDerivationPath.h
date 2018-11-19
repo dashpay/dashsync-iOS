@@ -45,11 +45,19 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 @class DSTransaction,DSKey,DSAccount,DSDerivationPath;
 
-typedef NS_ENUM(NSUInteger, DSDerivationPathFundsType) {
-    DSDerivationPathFundsType_Clear,
-    DSDerivationPathFundsType_Anonymous,
-    DSDerivationPathFundsType_ViewOnly,
-    DSDerivationPathFundsType_Authentication,
+typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
+    DSDerivationPathType_ClearFunds = 1,
+    DSDerivationPathType_AnonymousFunds = 1 << 1,
+    DSDerivationPathType_ViewOnlyFunds = 1 << 2,
+    DSDerivationPathType_Authentication = 1 << 3,
+    DSDerivationPathType_Transitioning = 1 << 4,
+    
+    DSDerivationPathType_IsForFunds = DSDerivationPathType_ClearFunds | DSDerivationPathType_AnonymousFunds | DSDerivationPathType_ViewOnlyFunds
+};
+
+typedef NS_ENUM(NSUInteger, DSDerivationPathSigningAlgorith) {
+    DSDerivationPathSigningAlgorith_ECDSA,
+    DSDerivationPathSigningAlgorith_BLS
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
@@ -62,7 +70,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @interface DSDerivationPath : NSIndexPath
 
 //is this an open account
-@property (nonatomic,assign,readonly) DSDerivationPathFundsType type;
+@property (nonatomic,assign,readonly) DSDerivationPathType type;
+
+@property (nonatomic,assign,readonly) DSDerivationPathSigningAlgorith signingAlgorithm;
 
 // account for the derivation path
 @property (nonatomic, readonly) DSChain * chain;
@@ -126,16 +136,16 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (instancetype)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
+                                               type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
-+ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathFundsType)fundsType onChain:(DSChain*)chain;
++ (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathType)fundsType signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm onChain:(DSChain*)chain;
 
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPublicKey:(NSString*)serializedExtendedPublicKey onChain:(DSChain*)chain;
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString*)extendedPublicKeyIdentifier onChain:(DSChain*)chain;
 
 - (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                     type:(DSDerivationPathFundsType)type reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
+                                     type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
 -(BOOL)isBIP32Only;
 -(BOOL)isBIP43Based;
@@ -163,6 +173,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath;
+
+// gets an addess at an index one level down based on bip32
+- (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal;
 
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
