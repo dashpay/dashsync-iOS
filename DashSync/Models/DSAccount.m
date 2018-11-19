@@ -784,7 +784,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if ([derivationPath type] & DSDerivationPathType_IsForFunds)  {
             NSString * firstAddress = [derivationPath addressAtIndex:0 internal:NO];
             if ([transaction.outputAddresses containsObject:firstAddress]) {
-                [self.wallet setGuessedWalletCreationTime:transaction.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
                 return TRUE;
             }
         }
@@ -803,7 +802,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (![self containsTransaction:transaction]) {
         
         if (transaction.blockHeight == TX_UNCONFIRMED) {
-            if (![self.allTx count]) [self checkIsFirstTransaction:transaction];
+            if (![self.allTx count] && [self checkIsFirstTransaction:transaction]) [self.wallet setGuessedWalletCreationTime:transaction.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
             self.allTx[hash] = transaction;
         }
         return NO;
@@ -813,7 +812,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     NSLog(@"[DSAccount] received unseen transaction %@", transaction);
-    if (![self.allTx count]) [self checkIsFirstTransaction:transaction];
+    if (![self.allTx count] && [self checkIsFirstTransaction:transaction]) [self.wallet setGuessedWalletCreationTime:transaction.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
     for (NSString * address in transaction.inputAddresses) {
