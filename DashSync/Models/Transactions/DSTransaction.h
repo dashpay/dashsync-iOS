@@ -29,7 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-@class DSChain,DSAccount,DSWallet;
+@class DSChain,DSAccount,DSWallet,DSTransactionLockVote;
 
 #define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
@@ -93,6 +93,8 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
+
+@property (nonatomic, strong) NSSet <DSTransactionLockVote*> *lockVotes;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain;

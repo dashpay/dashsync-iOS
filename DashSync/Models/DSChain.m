@@ -1366,7 +1366,7 @@ static dispatch_once_t devnetToken = 0;
         
         // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
         for (long i = self.checkpoints.count - 1; ! _lastBlock && i >= 0; i--) {
-            if (i == 0 || (self.checkpoints[i].timestamp + 7*24*60*60 < self.startSyncFromTime)) {
+            if (i == 0 || (self.checkpoints[i].timestamp + WEEK_TIME_INTERVAL < self.startSyncFromTime)) {
                 UInt256 checkpointHash = self.checkpoints[i].checkpointHash;
                 
                 _lastBlock = self.blocks[uint256_obj(checkpointHash)];

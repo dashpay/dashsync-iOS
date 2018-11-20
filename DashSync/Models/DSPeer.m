@@ -79,7 +79,7 @@
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
@@ -209,6 +209,7 @@
     self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
+    self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
 
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
@@ -934,6 +935,7 @@
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
@@ -975,7 +977,7 @@
             case DSInvType_TxLockRequest:
                 [txHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_DSTx: break;
-            case DSInvType_TxLockVote: break;
+            case DSInvType_TxLockVote: [txLockVoteHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Spork: [sporkHashes addObject:[NSData dataWithUInt256:hash]]; break;
@@ -1056,6 +1058,10 @@
         
         [self sendPingMessageWithPongHandler:self.mempoolCompletion];
         self.mempoolCompletion = nil;
+    }
+    
+    if (txLockVoteHashes.count > 0) {
+        [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
     }
     
     if (governanceObjectHashes.count > 0) {

@@ -53,6 +53,7 @@
 #import "DSWallet.h"
 #import "DSDAPIPeerManager.h"
 #import "NSDate+Utils.h"
+#import "DSTransactionManager.h"
 
 #define PEER_LOGGING 1
 
@@ -93,6 +94,7 @@
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
 @property (nonatomic, strong) DSDAPIPeerManager * DAPIPeerManager;
+@property (nonatomic, strong) DSTransactionManager * transactionManager;
 
 @end
 
@@ -107,6 +109,7 @@
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
     self.DAPIPeerManager = [[DSDAPIPeerManager alloc] initWithChainPeerManager:self];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
+    self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.connectedPeers = [NSMutableSet set];
     self.txRelays = [NSMutableDictionary dictionary];
     self.txRequests = [NSMutableDictionary dictionary];
@@ -412,7 +415,7 @@
 -(void)savePeer:(DSPeer*)peer
 {
     [[DSPeerEntity context] performBlock:^{
-        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@", @(CFSwapInt32BigToHost(peer.address.u32[3]))];
+        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(peer.address.u32[3])),@(peer.port)];
         if ([peerEntities count]) {
             DSPeerEntity * e = [peerEntities firstObject];
             
@@ -1690,6 +1693,10 @@
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
     [self peerMisbehavin:peer];
     [self connect];
+}
+
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes {
+    
 }
 
 // MARK: - DSChainDelegate

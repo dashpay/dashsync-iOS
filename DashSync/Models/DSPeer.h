@@ -184,6 +184,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes;
+
 @end
 
 typedef NS_ENUM(NSUInteger, DSPeerStatus) {

@@ -43,6 +43,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *receivingAddressLabel;
 @property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainUsersObserver;
 
 - (IBAction)startSync:(id)sender;
@@ -57,6 +58,7 @@
 {
     [super viewDidLoad];
     
+    [self updateReceivingAddress];
     [self updateBalance];
     [self updateSporks];
     [self updateBlockHeight];
@@ -393,6 +395,16 @@
 
 -(void)syncFailed {
     
+}
+
+-(void)updateReceivingAddress {
+    if (self.chain.wallets.count) {
+        DSWallet * firstWallet = self.chain.wallets[0];
+        DSAccount * account = [firstWallet accountWithNumber:0];
+        self.receivingAddressLabel.text = [account receiveAddress];
+    } else {
+        self.receivingAddressLabel.text = @"";
+    }
 }
 
 -(void)updateBalance {
