@@ -42,10 +42,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotifica
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNewBlockNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerPeersDidChangeNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerConnectedPeersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
+
+FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;
 
 #define PEER_MAX_CONNECTIONS 3
 #define SETTINGS_FIXED_PEER_KEY @"SETTINGS_FIXED_PEER"
@@ -56,20 +56,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 
 @class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote,DSDAPIPeerManager,DSTransactionManager;
 
-@interface DSPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
+@interface DSPeerManager : NSObject <DSPeerDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
-@property (nonatomic, readonly) double syncProgress;
 @property (nonatomic, readonly) NSUInteger peerCount;
 @property (nonatomic, readonly) NSUInteger connectedPeerCount; // number of connected peers
 @property (nonatomic, readonly) NSString * _Nullable downloadPeerName;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
-@property (nonatomic, readonly) DSSporkManager * sporkManager;
-@property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
-@property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
-@property (nonatomic, readonly) DSDAPIPeerManager * DAPIPeerManager;
-@property (nonatomic, readonly) DSTransactionManager * transactionManager;
 @property (nonatomic, readonly) NSArray* registeredDevnetPeers;
 @property (nonatomic, readonly) NSArray* registeredDevnetPeerServices;
 
@@ -79,11 +73,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 - (void)clearPeers;
 - (void)disconnect;
 - (void)rescan;
+
+//Publishing actions
 - (void)publishTransaction:(DSTransaction * _Nonnull)transaction
                 completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
--(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes;
--(void)publishProposal:(DSGovernanceObject*)goveranceProposal;
-- (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
+- (void)publishVotes:(NSArray<DSGovernanceVote*>*)votes;
+- (void)publishProposal:(DSGovernanceObject*)goveranceProposal;
 
 // Masternodes
 //-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
@@ -92,7 +87,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 -(void)clearRegisteredPeers;
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
 
--(void)getSporks;
 -(DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
 -(DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
 -(void)setTrustedPeerHost:(NSString*)host;

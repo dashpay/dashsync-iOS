@@ -12,7 +12,7 @@
 #import "DSAccount.h"
 #import "DSAuthenticationManager.h"
 #import "DSBIP39Mnemonic.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "NSMutableData+Dash.h"
 
 #define COMPATIBILITY_MNEMONIC_KEY        @"mnemonic"
@@ -60,7 +60,7 @@
 
 -(NSArray<DSWallet*>*)allWallets {
     NSMutableArray * wallets = [NSMutableArray array];
-    for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
+    for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
         if ([chain hasAWallet]) {
             [wallets addObjectsFromArray:chain.wallets];
         }

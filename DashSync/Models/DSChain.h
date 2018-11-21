@@ -88,8 +88,9 @@ FOUNDATION_EXPORT NSString* const DSChainBlockchainUsersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSPeerManager,DSBlockchainUser;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser;
 
 @protocol DSChainDelegate;
 
@@ -120,7 +121,7 @@ FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 @property (nonatomic, readonly) NSString * localizedName;
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
-@property (nonatomic, weak,nullable) DSPeerManager * peerManagerDelegate;
+@property (nonatomic, weak,nullable) DSChainManager * chainManager;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
 @property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
 @property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
@@ -221,8 +222,11 @@ FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 
 @protocol DSChainDelegate
 
+@required
 -(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx;
 -(void)chainWasWiped:(DSChain*)chain;
+
+@optional
 -(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;

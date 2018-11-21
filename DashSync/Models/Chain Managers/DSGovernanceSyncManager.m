@@ -3,7 +3,25 @@
 //  DashSync
 //
 //  Created by Sam Westrich on 6/12/18.
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
@@ -20,8 +38,8 @@
 #import "DSOptionsManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSKey.h"
-#import "DSPeerManager.h"
-#import "DSChainManager.h"
+#import "DSPeerManager+Protected.h"
+#import "DSChainsManager.h"
 #import "DSAccount.h"
 
 #define REQUEST_GOVERNANCE_OBJECT_COUNT 500
@@ -59,6 +77,103 @@
     self.publishVotes = [[NSMutableDictionary alloc] init];
     self.publishGovernanceObjects = [[NSMutableDictionary alloc] init];
     return self;
+}
+
+-(DSPeerManager*)peerManager {
+    return self.chain.chainManager.peerManager;
+}
+
+// MARK: - Governance Sync
+
+-(void)continueGovernanceSync {
+    NSLog(@"--> Continuing Governance Sync");
+    NSUInteger last3HoursStandaloneBroadcastHashesCount = [self last3HoursStandaloneGovernanceObjectHashesCount];
+    if (last3HoursStandaloneBroadcastHashesCount) {
+        DSPeer * downloadPeer = nil;
+        
+        //find download peer (ie the peer that we will ask for governance objects from
+        for (DSPeer * peer in self.peerManager.connectedPeers) {
+            if (peer.status != DSPeerStatus_Connected) continue;
+            downloadPeer = peer;
+            break;
+        }
+        
+        if (downloadPeer) {
+            downloadPeer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects; //force this by bypassing normal route
+            
+            [self requestGovernanceObjectsFromPeer:downloadPeer];
+        }
+    } else {
+        if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return; // make sure we care about Governance objects
+        DSPeer * downloadPeer = nil;
+        //find download peer (ie the peer that we will ask for governance objects from
+        for (DSPeer * peer in self.peerManager.connectedPeers) {
+            if (peer.status != DSPeerStatus_Connected) continue;
+            downloadPeer = peer;
+            break;
+        }
+        
+        if (downloadPeer) {
+            downloadPeer.governanceRequestState = DSGovernanceRequestState_GovernanceObjects; //force this by bypassing normal route
+            
+            //we will request governance objects
+            //however since governance objects are all accounted for
+            //and we want votes, then votes will be requested instead for each governance object
+            [self requestGovernanceObjectsFromPeer:downloadPeer];
+        }
+    }
+}
+
+
+-(void)startGovernanceSync {
+    
+    //Do we want to sync?
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
+    
+    //Do we need to sync?
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]]) { //no need to do a governance sync if we already completed one recently
+        NSTimeInterval lastSyncedGovernance = [[NSUserDefaults standardUserDefaults] integerForKey:[NSString stringWithFormat:@"%@_%@",self.chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
+        NSTimeInterval interval = [[DSOptionsManager sharedInstance] syncGovernanceObjectsInterval];
+        NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+        if (lastSyncedGovernance + interval > now) {
+            [self continueGovernanceSync];
+            return;
+        };
+    }
+    
+    //We need to sync
+    NSLog(@"--> Trying to start governance sync");
+    NSArray * sortedPeers = [self.peerManager.connectedPeers sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"lastRequestedGovernanceSync" ascending:YES]]];
+    BOOL startedGovernanceSync = FALSE;
+    for (DSPeer * peer in sortedPeers) {
+        if (peer.status != DSPeerStatus_Connected) continue;
+        if ([[NSDate date] timeIntervalSince1970] - peer.lastRequestedGovernanceSync < 10800) {
+            NSLog(@"--> Peer recently used");
+            continue; //don't request less than every 3 hours from a peer
+        }
+        peer.lastRequestedGovernanceSync = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
+        [peer sendGovSync];
+        [self savePeer:peer];
+        startedGovernanceSync = TRUE;
+        break;
+    }
+    if (!startedGovernanceSync) { //we have requested masternode list from connected peers too recently, let's connect to different peers
+        [self continueGovernanceSync];
+    }
+}
+
+-(void)publishProposal:(DSGovernanceObject*)goveranceProposal {
+    if (![goveranceProposal isValid]) return;
+    [self.downloadPeer sendGovObject:goveranceProposal];
+}
+
+-(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
+    NSMutableArray * voteHashes = [NSMutableArray array];
+    for (DSGovernanceVote * vote in votes) {
+        if (![vote isValid]) continue;
+        [voteHashes addObject:uint256_obj(vote.governanceVoteHash)];
+    }
+    [self.downloadPeer sendInvMessageForHashes:voteHashes ofType:DSInvType_GovernanceObjectVote];
 }
 
 // MARK:- Control
@@ -441,7 +556,7 @@
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject*)governanceObject {
     //TODO fix voting
 //    NSArray * registeredMasternodes = [self.chain registeredMasternodes];
-//    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+//    DSPeerManager * peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain];
 //    NSMutableArray * votesToRelay = [NSMutableArray array];
 //    for (DSSimplifiedMasternodeEntry * masternodeEntry in registeredMasternodes) {
 //        NSData * votingKey = [self.chain votingKeyForMasternode:masternodeEntry];

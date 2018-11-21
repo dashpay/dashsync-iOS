@@ -1,8 +1,8 @@
 //
-//  DSDAPIPeerManager.h
+//  DSMempoolManager.h
 //  DashSync
 //
-//  Created by Sam Westrich on 9/12/18.
+//  Created by Sam Westrich on 11/21/18.
 //  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,14 +24,19 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "DSDAPIProtocol.h"
 
-@class DSPeerManager;
+NS_ASSUME_NONNULL_BEGIN
 
-@interface DSDAPIPeerManager : NSObject <DSDAPIProtocol>
+@class DSChain;
 
-@property (nonatomic,weak) DSPeerManager * chainPeerManager; //owned by chainPeerManager
+@interface DSMempoolManager : NSObject
 
--(instancetype)initWithChainPeerManager:(DSPeerManager*)chainPeerManager;
+@property (nonatomic,readonly) DSChain * chain;
+
+- (instancetype)initWithChain:(DSChain*)chain;
+
+- (void)loadMempools;
 
 @end
+
+NS_ASSUME_NONNULL_END

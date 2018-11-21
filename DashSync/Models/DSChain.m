@@ -43,7 +43,7 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSMasternodeManager.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
@@ -795,10 +795,10 @@ static dispatch_once_t devnetToken = 0;
 -(NSArray*)registeredMasternodes {
     NSError * error = nil;
     NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    DSPeerManager * chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self];
+    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self];
     NSMutableArray * registeredMasternodes = [NSMutableArray array];
     for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
-        DSSimplifiedMasternodeEntry * masternode = [chainPeerManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
+        DSSimplifiedMasternodeEntry * masternode = [chainManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
         [registeredMasternodes addObject:masternode];
     }
     return [registeredMasternodes copy];
@@ -830,7 +830,7 @@ static dispatch_once_t devnetToken = 0;
     _blocks = nil;
     _lastBlock = nil;
     [self setLastBlockHeightForRescan];
-    [self.peerManagerDelegate chainWasWiped:self];
+    [self.chainManager chainWasWiped:self];
 }
 
 -(void)wipeWalletsAndDerivatives {
@@ -1124,7 +1124,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     
-    [self.peerManagerDelegate chain:self didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
+    [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
 }
 
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer
@@ -1146,7 +1146,7 @@ static dispatch_once_t devnetToken = 0;
         NSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, height %d", peer.host, peer.port,
               blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight);
         
-        [self.peerManagerDelegate chain:self receivedOrphanBlock:block fromPeer:peer];
+        [self.chainManager chain:self receivedOrphanBlock:block fromPeer:peer];
         
         self.orphans[prevBlock] = block; // orphans are indexed by prevBlock instead of blockHash
         self.lastOrphan = block;
@@ -1179,7 +1179,7 @@ static dispatch_once_t devnetToken = 0;
         uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
         NSLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
               block.height,block.target,foundDifficulty, blockHash);
-        [self.peerManagerDelegate chain:self badBlockReceivedFromPeer:peer];
+        [self.chainManager chain:self badBlockReceivedFromPeer:peer];
         return FALSE;
     }
     
@@ -1189,7 +1189,7 @@ static dispatch_once_t devnetToken = 0;
     if (! uint256_is_zero(checkpoint) && ! uint256_eq(block.blockHash, checkpoint)) {
         NSLog(@"%@:%d relayed a block that differs from the checkpoint at height %d, blockHash: %@, expected: %@",
               peer.host, peer.port, block.height, blockHash, self.checkpointsDictionary[@(block.height)]);
-        [self.peerManagerDelegate chain:self badBlockReceivedFromPeer:peer];
+        [self.chainManager chain:self badBlockReceivedFromPeer:peer];
         return FALSE;
     }
     
@@ -1278,7 +1278,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (syncDone) { // chain download is complete
         [self saveBlocks];
-        [self.peerManagerDelegate chainFinishedSyncing:self fromPeer:peer onMainChain:onMainChain];
+        [self.chainManager chainFinishedSyncing:self fromPeer:peer onMainChain:onMainChain];
     }
     
     if (block.height > _estimatedBlockHeight) {
@@ -1286,7 +1286,7 @@ static dispatch_once_t devnetToken = 0;
         
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerNewBlockNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewBlockNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
         });
     }
     
@@ -1431,7 +1431,7 @@ static dispatch_once_t devnetToken = 0;
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
     if (isInstant) {
-        DSSporkManager * sporkManager = [self peerManagerDelegate].sporkManager;
+        DSSporkManager * sporkManager = [self chainManager].sporkManager;
         if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= 4) {
             return standardFee;
         } else {

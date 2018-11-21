@@ -28,7 +28,7 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSChain.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSPriceManager.h"
 #import "DSDerivationPath.h"
 #import "DSBIP39Mnemonic.h"
@@ -775,7 +775,7 @@ replacementString:(NSString *)string
             setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
             setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
             
-            [[DSChainManager sharedInstance] resetSpendingLimits];
+            [[DSChainsManager sharedInstance] resetSpendingLimits];
             [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             if (completion) completion(YES,NO);

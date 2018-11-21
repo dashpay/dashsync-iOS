@@ -62,25 +62,25 @@
 
 -(void)startSyncForChain:(DSChain*)chain
 {
-    [[[DSChainManager sharedInstance] peerManagerForChain:chain] connect];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager connect];
 }
 
 -(void)stopSyncAllChains {
-    NSArray * chains = [[DSChainManager sharedInstance] chains];
+    NSArray * chains = [[DSChainsManager sharedInstance] chains];
     for (DSChain * chain in chains) {
-        [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
+        [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect];
     }
 }
 
 -(void)stopSyncForChain:(DSChain*)chain
 {
-    [[[DSChainManager sharedInstance] peerManagerForChain:chain] disconnect];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect];
 }
 
 -(void)wipePeerDataForChain:(DSChain*)chain {
     [self stopSyncForChain:chain];
-    [[[DSChainManager sharedInstance] peerManagerForChain:chain] removeTrustedPeerHost];
-    [[[DSChainManager sharedInstance] peerManagerForChain:chain] clearPeers];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager removeTrustedPeerHost];
+    [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager clearPeers];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSPeerEntity deletePeersForChain:chainEntity];
     [DSPeerEntity saveContext];
@@ -108,9 +108,9 @@
         [DSSimplifiedMasternodeEntryEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-        DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
-        [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
-        [peerManager.masternodeManager wipeMasternodeInfo];
+        DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
+        [chainManager.peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
+        [chainManager.masternodeManager wipeMasternodeInfo];
         [DSSimplifiedMasternodeEntryEntity saveContext];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -125,8 +125,8 @@
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSSporkEntity deleteSporksOnChain:chainEntity];
-    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
-    [peerManager.sporkManager wipeSporkInfo];
+    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
+    [chainManager.sporkManager wipeSporkInfo];
     [DSSporkEntity saveContext];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:chain}];
@@ -138,10 +138,10 @@
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
     [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
-    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
-    [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObject];
-    [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
-    [peerManager.governanceSyncManager wipeGovernanceInfo];
+    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
+    [chainManager.peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObject];
+    [chainManager.peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
+    [chainManager.governanceSyncManager wipeGovernanceInfo];
     [DSGovernanceObjectHashEntity saveContext];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -192,6 +192,7 @@
 
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
+    //todo this needs to be made per chain
     __block id protectedObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
     __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
     void (^cleanup)(void) = ^() {
@@ -202,7 +203,7 @@
         protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
     };
     
-    if ([[DSChainManager sharedInstance] mainnetManager].syncProgress >= 1.0) {
+    if ([[DSChainsManager sharedInstance] mainnetManager].syncProgress >= 1.0) {
         NSLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
@@ -211,8 +212,8 @@
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [[DSChainManager sharedInstance] mainnetManager].syncProgress);
-            completion(([[DSChainManager sharedInstance] mainnetManager].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
+            NSLog(@"background fetch timeout with progress: %f", [[DSChainsManager sharedInstance] mainnetManager].syncProgress);
+            completion(([[DSChainsManager sharedInstance] mainnetManager].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
                        UIBackgroundFetchResultFailed);
             cleanup();
         }
@@ -223,7 +224,7 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch protected data available");
-                                                           [[[DSChainManager sharedInstance] mainnetManager] connect];
+                                                           [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
                                                        }];
     
     syncFinishedObserver =
@@ -243,7 +244,7 @@
                                                        }];
     
     NSLog(@"background fetch starting");
-    [[[DSChainManager sharedInstance] mainnetManager] connect];
+    [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
     
     // sync events to the server
     [[DSEventManager sharedEventManager] sync];

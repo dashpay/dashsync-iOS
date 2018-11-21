@@ -7,7 +7,7 @@
 
 #import "DSEnvironment.h"
 #import "DSWallet.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSAccount.h"
 
 @implementation DSEnvironment
@@ -28,7 +28,7 @@
 - (BOOL)watchOnly
 {
     @autoreleasepool {
-        for (DSChain * chain in [[DSChainManager sharedInstance] chains]) {
+        for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
             for (DSWallet * wallet in [chain wallets]) {
                 DSAccount * account = [wallet accountWithNumber:0];
                 NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];

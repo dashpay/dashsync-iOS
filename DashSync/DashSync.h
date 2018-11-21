@@ -14,7 +14,7 @@
 #import "DSBlockchainUser.h"
 #import "DSKey.h"
 #import "DSDerivationPath.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
 #import "DSDAPIPeerManager.h"

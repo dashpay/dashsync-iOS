@@ -27,7 +27,7 @@
 
 #import "DSPriceManager.h"
 #import "DSWallet.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSAccount.h"
 #import "DSKey.h"
 #import "DSChain.h"

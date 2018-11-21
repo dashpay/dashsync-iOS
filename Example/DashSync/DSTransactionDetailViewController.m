@@ -191,7 +191,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     DSPriceManager * walletManager = [DSPriceManager sharedInstance];
-    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.transaction.chain];
+    DSPeerManager * peerManager = [[DSChainsManager sharedInstance] peerManagerForChain:self.transaction.chain];
     NSUInteger peerCount = peerManager.connectedPeerCount;
     NSUInteger relayCount = [peerManager relayCountForTransaction:self.transaction.txHash];
     DSAccount * account = self.transaction.account;

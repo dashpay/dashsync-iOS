@@ -2,35 +2,54 @@
 //  DSChainManager.h
 //  DashSync
 //
-//  Created by Sam Westrich on 5/6/18.
+//  Created by Sam Westrich on 11/21/18.
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "DSPeerManager.h"
+#import "DSChain.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
+NS_ASSUME_NONNULL_BEGIN
 
-#define SPEND_LIMIT_KEY     @"SPEND_LIMIT_KEY"
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIPeerManager, DSTransactionManager, DSMempoolManager, DSBloomFilter;
 
-@interface DSChainManager : NSObject
+@interface DSChainManager : NSObject <DSChainDelegate>
 
-@property (nonatomic,strong) DSPeerManager * mainnetManager;
-@property (nonatomic,strong) DSPeerManager * testnetManager;
-@property (nonatomic,strong) NSArray * devnetManagers;
-@property (nonatomic,readonly) NSArray * chains;
-@property (nonatomic,readonly) NSArray * devnetChains;
-@property (nonatomic,readonly) uint64_t spendingLimit;
+@property (nonatomic, readonly) double syncProgress;
+@property (nonatomic, readonly) DSSporkManager * sporkManager;
+@property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
+@property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
+@property (nonatomic, readonly) DSDAPIPeerManager * DAPIPeerManager;
+@property (nonatomic, readonly) DSTransactionManager * transactionManager;
+@property (nonatomic, readonly) DSPeerManager * peerManager;
+@property (nonatomic, readonly) DSMempoolManager * mempoolManager;
+@property (nonatomic, readonly) DSChain * chain;
 
--(DSPeerManager*)peerManagerForChain:(DSChain*)chain;
+- (instancetype)initWithChain:(DSChain*)chain;
 
--(void)updateDevnetChain:(DSChain* _Nonnull)chain forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations  standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString* _Nullable)sporkPrivateKey;
+- (void)rescan;
 
--(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString* _Nonnull)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort  protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString* _Nullable)sporkPrivateKey;
+- (void)updateFilter;
 
--(void)removeDevnetChain:(DSChain* _Nonnull)chain;
-
-+ (instancetype _Nullable)sharedInstance;
-
--(void)resetSpendingLimits;
+- (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer;
 
 @end
+
+NS_ASSUME_NONNULL_END

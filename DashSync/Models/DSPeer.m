@@ -46,6 +46,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSDate+Utils.h"
+#import "DSPeerEntity+CoreDataClass.h"
 
 #define PEER_LOGGING 1
 
@@ -1607,6 +1608,31 @@
 
 -(NSString*)chainTip {
     return [NSData dataWithUInt256:self.currentBlock.blockHash].shortHexString;
+}
+
+// MARK: - Saving to Disk
+
+-(void)save {
+    [[DSPeerEntity context] performBlock:^{
+        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(self.address.u32[3])),@(self.port)];
+        if ([peerEntities count]) {
+            DSPeerEntity * e = [peerEntities firstObject];
+            
+            @autoreleasepool {
+                e.timestamp = self.timestamp;
+                e.services = self.services;
+                e.misbehavin = self.misbehavin;
+                e.priority = self.priority;
+                e.lowPreferenceTill = self.lowPreferenceTill;
+                e.lastRequestedMasternodeList = self.lastRequestedMasternodeList;
+                e.lastRequestedGovernanceSync = self.lastRequestedGovernanceSync;
+            }
+        } else {
+            @autoreleasepool {
+                [[DSPeerEntity managedObject] setAttributesFromPeer:self]; // add new peers
+            }
+        }
+    }];
 }
 
 // MARK: - NSStreamDelegate

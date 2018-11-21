@@ -90,14 +90,14 @@
                                                        }];
     
     
-    self.connectedPeerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerConnectedPeersDidChangeNotification object:nil
+    self.connectedPeerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerConnectedPeersDidChangeNotification object:nil
                                                                                      queue:nil usingBlock:^(NSNotification *note) {
                                                                                                                                                     if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                          [self updateConnectedPeerCount];
                                                                                                                                                     }
                                                                                      }];
     
-    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerPeersDidChangeNotification object:nil
+    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerPeersDidChangeNotification object:nil
                                                                                         queue:nil usingBlock:^(NSNotification *note) {
                                                                                                                                                        if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                             [self updatePeerCount];
@@ -106,7 +106,7 @@
     
     
     self.blocksObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerNewBlockNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewBlockNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            
                                                            if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {

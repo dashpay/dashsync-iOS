@@ -44,14 +44,14 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 2 + [[[DSChainManager sharedInstance] devnetChains] count];
+    return 2 + [[[DSChainsManager sharedInstance] devnetChains] count];
 }
 
 -(DSChain*)chainForIndex:(NSInteger)index {
     if (index == 0) return [DSChain mainnet];
     if (index == 1) return [DSChain testnet];
     NSInteger devnetIndex = index - 2;
-    NSArray * devnetChains = [[DSChainManager sharedInstance] devnetChains];
+    NSArray * devnetChains = [[DSChainsManager sharedInstance] devnetChains];
     return [devnetChains objectAtIndex:devnetIndex];
 }
 
@@ -80,7 +80,7 @@
 -(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
         DSChain * chain = [self chainForIndex:indexPath.row];
-        [[DSChainManager sharedInstance] removeDevnetChain:chain];
+        [[DSChainsManager sharedInstance] removeDevnetChain:chain];
         
     }];
     UITableViewRowAction * editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"Edit" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
@@ -128,7 +128,7 @@
     if ([segue.identifier isEqualToString:@"ChainDetailsSegue"]) {
         DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
         DSChain * chain = [self chainForIndex:index];
-        syncViewController.chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+        syncViewController.chainPeerManager = [[DSChainsManager sharedInstance] peerManagerForChain:chain];
         syncViewController.title = chain.name;
     } else if ([segue.identifier isEqualToString:@"AddDevnetSegue"]) {
         if ([sender isKindOfClass:[UITableViewCell class]]) {

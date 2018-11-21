@@ -34,7 +34,7 @@
 #import "DSKey.h"
 #import "NSData+Bitcoin.h"
 #import "DSEnvironment.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSBlockchainUser.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"

@@ -268,7 +268,9 @@ services:(uint64_t)services;
 - (void)sendDSegMessage:(DSUTXO)utxo;
 - (void)rerequestBlocksFrom:(UInt256)blockHash; // useful to get additional transactions after a bloom filter update
 
--(NSString*)chainTip;
+- (NSString*)chainTip;
+
+- (void)save;
 
 
 

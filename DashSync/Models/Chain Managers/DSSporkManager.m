@@ -1,10 +1,27 @@
 //
 //  DSSporkManager.m
-//  dashwallet
+//  DashSync
 //
 //  Created by Sam Westrich on 10/18/17.
-//  Copyright © 2017 Aaron Voisine. All rights reserved.
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
 #import "DSSporkManager.h"
 #import "DSSpork.h"
@@ -14,6 +31,8 @@
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "DSPeerManager.h"
+#import "DSOptionsManager.h"
+#import "DSChainManager.h"
 
 @interface DSSporkManager()
     
@@ -50,6 +69,10 @@
     _sporkHashesMarkedForRetrieval = sporkHashesMarkedForRetrieval;
     return self;
 }
+
+-(DSPeerManager*)peerManager {
+    return self.chain.chainManager.peerManager;
+}
     
 -(BOOL)instantSendActive {
     DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork2InstantSendEnabled)];
@@ -75,6 +98,22 @@
     return [_sporkDictionary copy];
 }
 
+// MARK: - Spork Sync
+
+-(void)getSporks {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
+    for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, get sporks from other peers
+        if (p.status != DSPeerStatus_Connected) continue;
+        
+        [p sendPingMessageWithPongHandler:^(BOOL success) {
+            if (success) {
+                [p sendGetSporks];
+            }
+        }];
+    }
+}
+
+
 - (void)peer:(DSPeer * _Nonnull)peer hasSporkHashes:(NSSet* _Nonnull)sporkHashes {
     BOOL hasNew = FALSE;
     for (NSData * sporkHash in sporkHashes) {
@@ -83,7 +122,7 @@
             hasNew = TRUE;
         }
     }
-    if (hasNew) [self.chain.peerManagerDelegate getSporks];
+    if (hasNew) [self.chain.chainManager getSporks];
 }
     
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {

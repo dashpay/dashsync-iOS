@@ -1,9 +1,9 @@
 //
-//  DSDAPIPeerManager.h
+//  DSPeerManager+Protected.h
 //  DashSync
 //
-//  Created by Sam Westrich on 9/12/18.
-//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
+//  Created by Sam Westrich on 11/21/18.
+//  Copyright (c) 2018 Quantum Explorer <quantum@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
-#import "DSDAPIProtocol.h"
+#import "DSPeerManager.h"
 
-@class DSPeerManager;
+NS_ASSUME_NONNULL_BEGIN
 
-@interface DSDAPIPeerManager : NSObject <DSDAPIProtocol>
+#define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
-@property (nonatomic,weak) DSPeerManager * chainPeerManager; //owned by chainPeerManager
+@interface DSPeerManager (Protected)
 
--(instancetype)initWithChainPeerManager:(DSPeerManager*)chainPeerManager;
+@property (nonatomic, readonly) NSUInteger connectFailures, misbehavinCount, maxConnectCount;
+@property (nonatomic, readonly) NSSet *connectedPeers;
+
+- (void)peerMisbehavin:(DSPeer *)peer;
 
 @end
+
+NS_ASSUME_NONNULL_END
