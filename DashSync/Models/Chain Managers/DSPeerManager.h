@@ -1,5 +1,5 @@
 //
-//  DSChainPeerManager.h
+//  DSPeerManager.h
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 10/6/13.
@@ -56,7 +56,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKe
 
 @class DSTransaction,DSGovernanceSyncManager,DSMasternodeManager,DSSporkManager,DSPeer,DSGovernanceVote,DSDAPIPeerManager,DSTransactionManager;
 
-@interface DSChainPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
+@interface DSPeerManager : NSObject <DSPeerDelegate, DSChainDelegate, UIAlertViewDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) double syncProgress;

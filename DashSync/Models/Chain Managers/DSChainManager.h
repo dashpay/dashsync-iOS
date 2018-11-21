@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 
@@ -14,14 +14,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 
 @interface DSChainManager : NSObject
 
-@property (nonatomic,strong) DSChainPeerManager * mainnetManager;
-@property (nonatomic,strong) DSChainPeerManager * testnetManager;
+@property (nonatomic,strong) DSPeerManager * mainnetManager;
+@property (nonatomic,strong) DSPeerManager * testnetManager;
 @property (nonatomic,strong) NSArray * devnetManagers;
 @property (nonatomic,readonly) NSArray * chains;
 @property (nonatomic,readonly) NSArray * devnetChains;
 @property (nonatomic,readonly) uint64_t spendingLimit;
 
--(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain;
+-(DSPeerManager*)peerManagerForChain:(DSChain*)chain;
 
 -(void)updateDevnetChain:(DSChain* _Nonnull)chain forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations  standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString* _Nullable)sporkPrivateKey;
 

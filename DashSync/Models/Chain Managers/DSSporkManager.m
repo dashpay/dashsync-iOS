@@ -13,7 +13,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataProperties.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 
 @interface DSSporkManager()
     

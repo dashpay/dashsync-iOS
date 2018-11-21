@@ -14,7 +14,7 @@
 #import "NSString+Dash.h"
 #import "DSTransaction.h"
 #import "DSMerkleBlock.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 
 @interface DSDAPIPeerManager()
 @property (nonatomic,readonly) AFJSONRPCClient * client;
@@ -22,7 +22,7 @@
 
 @implementation DSDAPIPeerManager
 
--(instancetype)initWithChainPeerManager:(DSChainPeerManager*)chainPeerManager
+-(instancetype)initWithChainPeerManager:(DSPeerManager*)chainPeerManager
 {
     if (! (self = [super init])) return nil;
     _chainPeerManager = chainPeerManager;

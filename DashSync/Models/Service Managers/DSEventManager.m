@@ -26,7 +26,7 @@
 //  THE SOFTWARE.
 
 #import "DSEventManager.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "UIImage+DSUtils.h"
 
 #define HAS_DETERMINED_SAMPLE_GROUP     @"has_determined_sample_group"

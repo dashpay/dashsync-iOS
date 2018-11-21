@@ -20,7 +20,7 @@
 #import "DSOptionsManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSKey.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSChainManager.h"
 #import "DSAccount.h"
 
@@ -441,7 +441,7 @@
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject*)governanceObject {
     //TODO fix voting
 //    NSArray * registeredMasternodes = [self.chain registeredMasternodes];
-//    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+//    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
 //    NSMutableArray * votesToRelay = [NSMutableArray array];
 //    for (DSSimplifiedMasternodeEntry * masternodeEntry in registeredMasternodes) {
 //        NSData * votingKey = [self.chain votingKeyForMasternode:masternodeEntry];

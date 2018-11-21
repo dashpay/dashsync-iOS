@@ -12,7 +12,7 @@
 
 @interface DSTopupBlockchainUserViewController : UITableViewController <DSWalletChooserDelegate,DSAccountChooserDelegate>
 
-@property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSPeerManager * chainPeerManager;
 @property (nonatomic,strong) DSBlockchainUser * blockchainUser;
 
 @end

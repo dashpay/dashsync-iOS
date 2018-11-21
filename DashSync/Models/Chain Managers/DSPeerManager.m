@@ -26,7 +26,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSPeer.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSBloomFilter.h"
@@ -75,7 +75,7 @@
 
 #define SYNC_COUNT_INFO @"SYNC_COUNT_INFO"
 
-@interface DSChainPeerManager ()
+@interface DSPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
@@ -98,7 +98,7 @@
 
 @end
 
-@implementation DSChainPeerManager
+@implementation DSPeerManager
 
 - (instancetype)initWithChain:(DSChain*)chain
 {

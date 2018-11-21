@@ -14,7 +14,7 @@
 #import "DSKey.h"
 #import "DSChain.h"
 #import "DSSporkManager.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 
 @interface DSSpork()
 

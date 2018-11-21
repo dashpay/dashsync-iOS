@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Reachability.h"
 #import "DSEnvironment.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSChain.h"
 #import "DSBlockchainUser.h"
 #import "DSKey.h"

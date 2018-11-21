@@ -12,7 +12,7 @@
 #import "DSChain.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSTransactionFactory.h"
 #import "NSMutableData+Dash.h"
 #import "DSSimplifiedMasternodeEntry.h"

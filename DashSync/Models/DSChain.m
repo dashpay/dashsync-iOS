@@ -36,7 +36,7 @@
 #import "DSPriceManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSWallet.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSCoder+Dash.h"
 #import "DSAccount.h"
@@ -795,7 +795,7 @@ static dispatch_once_t devnetToken = 0;
 -(NSArray*)registeredMasternodes {
     NSError * error = nil;
     NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    DSChainPeerManager * chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self];
+    DSPeerManager * chainPeerManager = [[DSChainManager sharedInstance] peerManagerForChain:self];
     NSMutableArray * registeredMasternodes = [NSMutableArray array];
     for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
         DSSimplifiedMasternodeEntry * masternode = [chainPeerManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];

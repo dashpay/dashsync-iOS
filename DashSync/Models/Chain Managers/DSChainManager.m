@@ -60,13 +60,13 @@
     return self;
 }
 
--(DSChainPeerManager*)mainnetManager {
+-(DSPeerManager*)mainnetManager {
     static id _mainnetManager = nil;
     static dispatch_once_t mainnetToken = 0;
     
     dispatch_once(&mainnetToken, ^{
         DSChain * mainnet = [DSChain mainnet];
-        _mainnetManager = [[DSChainPeerManager alloc] initWithChain:mainnet];
+        _mainnetManager = [[DSPeerManager alloc] initWithChain:mainnet];
         mainnet.peerManagerDelegate = _mainnetManager;
         
         [self.knownChains addObject:[DSChain mainnet]];
@@ -74,13 +74,13 @@
     return _mainnetManager;
 }
 
--(DSChainPeerManager*)testnetManager {
+-(DSPeerManager*)testnetManager {
     static id _testnetManager = nil;
     static dispatch_once_t testnetToken = 0;
     
     dispatch_once(&testnetToken, ^{
         DSChain * testnet = [DSChain testnet];
-        _testnetManager = [[DSChainPeerManager alloc] initWithChain:testnet];
+        _testnetManager = [[DSPeerManager alloc] initWithChain:testnet];
         testnet.peerManagerDelegate = _testnetManager;
         [self.knownChains addObject:[DSChain testnet]];
     });
@@ -88,16 +88,16 @@
 }
 
 
--(DSChainPeerManager*)devnetManagerForChain:(DSChain*)chain {
+-(DSPeerManager*)devnetManagerForChain:(DSChain*)chain {
     static dispatch_once_t devnetToken = 0;
     dispatch_once(&devnetToken, ^{
         self.devnetGenesisDictionary = [NSMutableDictionary dictionary];
     });
     NSValue * genesisValue = uint256_obj(chain.genesisHash);
-    DSChainPeerManager * devnetChainPeerManager = nil;
+    DSPeerManager * devnetChainPeerManager = nil;
     @synchronized(self) {
         if (![self.devnetGenesisDictionary objectForKey:genesisValue]) {
-            devnetChainPeerManager = [[DSChainPeerManager alloc] initWithChain:chain];
+            devnetChainPeerManager = [[DSPeerManager alloc] initWithChain:chain];
             chain.peerManagerDelegate = devnetChainPeerManager;
             [self.knownChains addObject:chain];
             [self.knownDevnetChains addObject:chain];
@@ -109,7 +109,7 @@
     return devnetChainPeerManager;
 }
 
--(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain {
+-(DSPeerManager*)peerManagerForChain:(DSChain*)chain {
     if ([chain isMainnet]) {
         return [self mainnetManager];
     } else if ([chain isTestnet]) {
@@ -129,7 +129,7 @@
 }
 
 -(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
-    DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
+    DSPeerManager * peerManager = [self peerManagerForChain:chain];
     [peerManager clearRegisteredPeers];
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
@@ -181,7 +181,7 @@
     if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
         chain.sporkPrivateKey = sporkPrivateKey;
     }
-    DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
+    DSPeerManager * peerManager = [self peerManagerForChain:chain];
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];
@@ -220,7 +220,7 @@
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Remove Devnet?" andTouchId:FALSE alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
         if (!cancelled && authenticatedOrSuccess) {
             NSError * error = nil;
-            DSChainPeerManager * chainPeerManager = [self peerManagerForChain:chain];
+            DSPeerManager * chainPeerManager = [self peerManagerForChain:chain];
             [chainPeerManager clearRegisteredPeers];
             NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
             

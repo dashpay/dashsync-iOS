@@ -108,7 +108,7 @@
         [DSSimplifiedMasternodeEntryEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-        DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+        DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
         [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
         [peerManager.masternodeManager wipeMasternodeInfo];
         [DSSimplifiedMasternodeEntryEntity saveContext];
@@ -125,7 +125,7 @@
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSSporkEntity deleteSporksOnChain:chainEntity];
-    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
     [peerManager.sporkManager wipeSporkInfo];
     [DSSporkEntity saveContext];
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -138,7 +138,7 @@
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
     [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
-    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
+    DSPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:chain];
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObject];
     [peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
     [peerManager.governanceSyncManager wipeGovernanceInfo];

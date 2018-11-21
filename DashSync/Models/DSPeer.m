@@ -39,7 +39,7 @@
 #import <arpa/inet.h>
 #import "DSBloomFilter.h"
 #import "DSGovernanceVote.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSOptionsManager.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"

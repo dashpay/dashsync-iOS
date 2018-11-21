@@ -44,7 +44,7 @@
 
 #import "NSString+Dash.h"
 #import "Reachability.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSDerivationPath.h"
 #import "DSAuthenticationManager.h"
 #import "NSData+Bitcoin.h"
