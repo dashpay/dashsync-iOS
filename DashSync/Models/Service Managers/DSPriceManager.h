@@ -38,6 +38,8 @@
 #define DISPLAY_NAME [NSString stringWithFormat:LDQUOTE @"%@" RDQUOTE,\
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
+#define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
+
 typedef void (^ResetCancelHandlerBlock)(void);
 
 @interface DSPriceManager : NSObject

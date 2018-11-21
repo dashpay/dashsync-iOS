@@ -9,6 +9,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSChain;
+
 @interface DSTransactionManager : NSObject
 
 @property (nonatomic,readonly) DSChain * chain;
