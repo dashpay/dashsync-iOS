@@ -293,17 +293,18 @@ static checkpoint mainnet_checkpoint_array[] = {
     return chainEntity;
 }
 
+static DSChain* _mainnet = nil;
+static dispatch_once_t mainnetToken = 0;
+static BOOL mainnetInSetUp = FALSE;
+
 +(DSChain*)mainnet {
-    static DSChain* _mainnet = nil;
-    static dispatch_once_t mainnetToken = 0;
-    __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
         _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT dapiPort:MAINNET_DAPI_STANDARD_PORT];
         
-        inSetUp = TRUE;
+        mainnetInSetUp = TRUE;
         //NSLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
-    if (inSetUp) {
+    if (mainnetInSetUp) {
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_mainnet chainEntity];
             _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
@@ -331,6 +332,12 @@ static checkpoint mainnet_checkpoint_array[] = {
     }
     
     return _testnet;
+}
+
++ (void)resetMainnet {
+    _mainnet = nil;
+    mainnetToken = 0;
+    mainnetInSetUp = FALSE;
 }
 
 static NSMutableDictionary * _devnetDictionary = nil;

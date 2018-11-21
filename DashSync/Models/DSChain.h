@@ -162,6 +162,8 @@ FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 +(DSChain*)mainnet;
 +(DSChain*)testnet;
 
++ (void)resetMainnet;
+
 +(DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
 +(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort;
 
