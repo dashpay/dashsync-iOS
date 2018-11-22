@@ -42,7 +42,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotifica
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerNotificationChainKey;
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;

@@ -36,6 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)peerMisbehavin:(DSPeer *)peer;
 
+
+
+- (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END
+

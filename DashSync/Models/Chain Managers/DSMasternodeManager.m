@@ -35,7 +35,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSMerkleBlock.h"
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
+#import "DSPeerManager+Protected.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -321,13 +322,13 @@ inline static int ceil_log2(int x)
         }];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
-        [peer.delegate peerRelayedIncorrectMasternodeDiffMessage:peer];
+        [self.peerManager peerMisbehavin:peer];
     }
     
 }

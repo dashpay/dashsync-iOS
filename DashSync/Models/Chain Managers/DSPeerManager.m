@@ -69,7 +69,6 @@
 
 #define FIXED_PEERS          @"FixedPeers"
 #define TESTNET_FIXED_PEERS  @"TestnetFixedPeers"
-#define PROTOCOL_TIMEOUT     20.0
 
 #define SYNC_COUNT_INFO @"SYNC_COUNT_INFO"
 
@@ -241,39 +240,39 @@
         
         if (peers.count > 0) {
             if ([dnsSeeds count]) {
-            dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
-                NSString *servname = @(self.chain.standardPort).stringValue;
-                struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
-                UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
-                
-                NSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
-                NSString * dnsSeed = [dnsSeeds objectAtIndex:i];
-                
-                if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
-                    for (p = servinfo; p != NULL; p = p->ai_next) {
-                        if (p->ai_family == AF_INET) {
-                            addr.u64[0] = 0;
-                            addr.u32[2] = CFSwapInt32HostToBig(0xffff);
-                            addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-                        }
-                        //                        else if (p->ai_family == AF_INET6) {
-                        //                            addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
-                        //                        }
-                        else continue;
-                        
-                        uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-                        NSTimeInterval age = 3*24*60*60 + arc4random_uniform(4*24*60*60); // add between 3 and 7 days
-                        
-                        [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr port:port onChain:self.chain
-                                                                  timestamp:(i > 0 ? now - age : now)
-                                                                   services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
-                    }
+                dispatch_apply(peers.count, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(size_t i) {
+                    NSString *servname = @(self.chain.standardPort).stringValue;
+                    struct addrinfo hints = { 0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL }, *servinfo, *p;
+                    UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                     
-                    freeaddrinfo(servinfo);
-                } else {
-                    NSLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
-                }
-            });
+                    NSLog(@"DNS lookup %@", [dnsSeeds objectAtIndex:i]);
+                    NSString * dnsSeed = [dnsSeeds objectAtIndex:i];
+                    
+                    if (getaddrinfo([dnsSeed UTF8String], servname.UTF8String, &hints, &servinfo) == 0) {
+                        for (p = servinfo; p != NULL; p = p->ai_next) {
+                            if (p->ai_family == AF_INET) {
+                                addr.u64[0] = 0;
+                                addr.u32[2] = CFSwapInt32HostToBig(0xffff);
+                                addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                            }
+                            //                        else if (p->ai_family == AF_INET6) {
+                            //                            addr = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                            //                        }
+                            else continue;
+                            
+                            uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
+                            NSTimeInterval age = 3*24*60*60 + arc4random_uniform(4*24*60*60); // add between 3 and 7 days
+                            
+                            [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr port:port onChain:self.chain
+                                                                      timestamp:(i > 0 ? now - age : now)
+                                                                       services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+                        }
+                        
+                        freeaddrinfo(servinfo);
+                    } else {
+                        NSLog(@"failed getaddrinfo for %@", dnsSeeds[i]);
+                    }
+                });
             }
             
             for (NSArray *a in peers) [_peers addObjectsFromArray:a];
@@ -447,7 +446,7 @@
 -(void)setTrustedPeerHost:(NSString*)host {
     if (!host) [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self settingsFixedPeerKey]];
     else [[NSUserDefaults standardUserDefaults] setObject:host
-                                              forKey:[self settingsFixedPeerKey]];
+                                                   forKey:[self settingsFixedPeerKey]];
 }
 
 // MARK: - Peer Registration
@@ -526,7 +525,7 @@
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncStartedNotification
-                                                                    object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                                    object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
         }
         
@@ -564,7 +563,7 @@
                                                  userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"no peers found", nil)}];
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
-                                                                    object:nil userInfo:@{@"error":error,DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                                    object:nil userInfo:@{@"error":error,DSChainManagerNotificationChainKey:self.chain}];
             });
         }
     });
@@ -578,6 +577,17 @@
     }
 }
 
+- (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion {
+    
+    dispatch_async(self.chainPeerManagerQueue, ^{
+        if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
+            [self.peers removeObject:self.downloadPeer];
+            [self.downloadPeer disconnect];
+        }
+        completion(TRUE);
+    });
+}
+
 - (void)syncTimeout
 {
     NSTimeInterval now = [NSDate timeIntervalSince1970];
@@ -588,13 +598,7 @@
                    afterDelay:PROTOCOL_TIMEOUT - (now - self.chainManager.lastChainRelayTime)];
         return;
     }
-    
-    dispatch_async(self.chainPeerManagerQueue, ^{
-        if (! self.downloadPeer) return;
-        NSLog(@"%@:%d chain sync timed out", self.downloadPeer.host, self.downloadPeer.port);
-        [self.peers removeObject:self.downloadPeer];
-        [self.downloadPeer disconnect];
-    });
+    [self disconnectDownloadPeer];
 }
 
 - (void)syncStopped
@@ -681,13 +685,13 @@
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification
-                                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                     });
                 }];
             }];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
-                                                                    object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                                    object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
             return; // we're already connected to a download peer
         }
@@ -716,7 +720,7 @@
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             
             dispatch_async(self.chainPeerManagerQueue, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
@@ -738,7 +742,7 @@
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
-                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 
@@ -772,7 +776,7 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
-                                                                object:nil userInfo:(error) ? @{@"error":error,DSChainPeerManagerNotificationChainKey:self.chain} : @{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                                object:nil userInfo:(error) ? @{@"error":error,DSChainManagerNotificationChainKey:self.chain} : @{DSChainManagerNotificationChainKey:self.chain}];
         });
     }
     else if (self.connectFailures < MAX_CONNECT_FAILURES) {
@@ -786,8 +790,8 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
-                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 
@@ -811,160 +815,9 @@
     if (peers.count > 1 && peers.count < 1000) [self savePeers]; // peer relaying is complete when we receive <1000
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerPeersDidChangeNotification
-                                                            object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
     
-}
-
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction
-{
-    NSValue *hash = uint256_obj(transaction.txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
-    void (^callback)(NSError *error) = self.publishedCallback[hash];
-    
-    NSLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
-    
-    transaction.timestamp = [NSDate timeIntervalSince1970];
-    DSAccount * account = [self.chain accountContainingTransaction:transaction];
-    if (syncing && !account) return;
-    if (![account registerTransaction:transaction]) return;
-    if (peer == self.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
-    
-    if ([account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-        [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
-    }
-    
-    // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
-        if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-        [self.txRelays[hash] addObject:peer];
-        if (callback) [self.publishedCallback removeObjectForKey:hash];
-        
-        if ([self.txRelays[hash] count] >= self.maxConnectCount &&
-            [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
-            [account transactionForHash:transaction.txHash].timestamp == 0) {
-            [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
-                        forTxHashes:@[hash]]; // set timestamp when tx is verified
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-            if (callback) callback(nil);
-            
-        });
-    }
-    
-    [self.nonFpTx addObject:hash];
-    [self.txRequests[hash] removeObject:peer];
-    if (! _bloomFilter) return; // bloom filter is aready being updated
-    
-    // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
-    // unused addresses are still matched by the bloom filter
-    NSArray *external = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-    *internal = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
-    
-    for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
-        NSData *hash = address.addressToHash160;
-        
-        if (! hash || [_bloomFilter containsData:hash]) continue;
-        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-        [self updateFilter];
-        break;
-    }
-}
-
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash
-{
-    NSValue *hash = uint256_obj(txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
-    DSTransaction *transaction = self.publishedTx[hash];
-    void (^callback)(NSError *error) = self.publishedCallback[hash];
-    
-    NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
-    if (!transaction) transaction = [self.chain transactionForHash:txHash];
-    if (!transaction) return;
-    DSAccount * account = nil;
-    if (syncing) {
-        account = [self.chain accountContainingTransaction:transaction];
-        if (!account) return;
-    }
-    if (![account registerTransaction:transaction]) return;
-    if (peer == self.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
-    
-    // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
-        if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-        [self.txRelays[hash] addObject:peer];
-        if (callback) [self.publishedCallback removeObjectForKey:hash];
-        
-        if ([self.txRelays[hash] count] >= self.maxConnectCount &&
-            [self.chain transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
-            [self.chain transactionForHash:txHash].timestamp == 0) {
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
-                           forTxHashes:@[hash]]; // set timestamp when tx is verified
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-            if (callback) callback(nil);
-            
-        });
-    }
-    
-    [self.nonFpTx addObject:hash];
-    [self.txRequests[hash] removeObject:peer];
-}
-
-- (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
-{
-    DSTransaction *transaction = nil;
-    DSAccount * account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
-    NSValue *hash = uint256_obj(txHash);
-    
-    if ([self.txRelays[hash] containsObject:peer]) {
-        [self.txRelays[hash] removeObject:peer];
-        
-        if (transaction.blockHeight == TX_UNCONFIRMED) { // set timestamp 0 for unverified
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
-#if DEBUG
-            UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:@"transaction rejected"
-                                         message:[NSString stringWithFormat:@"rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
-                                         preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:@"ok"
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                       }];
-            [alert addAction:okButton];
-            [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
-#endif
-        });
-    }
-    
-    [self.txRequests[hash] removeObject:peer];
-    
-    // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
-    if (code != REJECT_SPENT && [account amountSentByTransaction:transaction] > 0) {
-        for (hash in transaction.inputHashes) { // check that all inputs are confirmed before dropping peer
-            UInt256 h = UINT256_ZERO;
-            
-            [hash getValue:&h];
-            if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
-        }
-        
-        [self peerMisbehavin:peer];
-    }
 }
 
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
@@ -1029,48 +882,6 @@
     }
 }
 
-- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
-{
-    NSValue *hash = uint256_obj(txHash);
-    DSTransaction *transaction = self.publishedTx[hash];
-    DSAccount * account = [self.chain accountContainingTransaction:transaction];
-    void (^callback)(NSError *error) = self.publishedCallback[hash];
-    NSError *error = nil;
-    
-    if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-    [self.txRelays[hash] addObject:peer];
-    [self.nonFpTx addObject:hash];
-    [self.publishedCallback removeObjectForKey:hash];
-    
-    if (callback && ! [account transactionIsValid:transaction]) {
-        [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithDomain:@"DashWallet" code:401
-                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
-    }
-    else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {
-        [[DSTransactionEntity context] performBlock:^{
-            [DSTransactionEntity saveContext]; // persist transactions to core data
-        }];
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-        if (callback) callback(error);
-    });
-    
-    //    [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
-    //        if (! success) return;
-    //
-    //        if (! [self.txRequests[hash] containsObject:peer]) {
-    //            if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
-    //            [self.txRequests[hash] addObject:peer];
-    //            [peer sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
-    //        }
-    //    }];
-    
-    return transaction;
-}
-
 - (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash {
     return [self.governanceSyncManager peer:peer requestedVote:voteHash];
 }
@@ -1095,14 +906,14 @@
         case DSSyncCountInfo_List:
         {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainPeerManagerNotificationChainKey:self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
             });
             break;
         }
         case DSSyncCountInfo_GovernanceObject:
         {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainPeerManagerNotificationChainKey:self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
             });
             break;
         }
@@ -1116,7 +927,7 @@
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
                 } else {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainPeerManagerNotificationChainKey:self.chain}];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
                     });
                 }
             }
@@ -1128,41 +939,8 @@
     }
 }
 
-- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage {
-    [self.masternodeManager peer:peer relayedMasternodeDiffMessage:masternodeDiffMessage];
-}
-    
--(void)peerRelayedIncorrectMasternodeDiffMessage:(DSPeer *)peer {
-    [self peerMisbehavin:peer];
-}
-
-- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject {
-    [self.governanceSyncManager peer:peer relayedGovernanceObject:governanceObject];
-}
-
-- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote {
-    [self.governanceSyncManager peer:peer relayedGovernanceVote:governanceVote];
-}
-
-- (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
-    [self.governanceSyncManager peer:peer hasGovernanceObjectHashes:governanceObjectHashes];
-}
-
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
     [self.governanceSyncManager.currentGovernanceSyncObject peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
-}
-
-- (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes {
-    [self.sporkManager peer:peer hasSporkHashes:sporkHashes];
-}
-
-- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
-    [self peerMisbehavin:peer];
-    [self connect];
-}
-
-- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes {
-    
 }
 
 @end

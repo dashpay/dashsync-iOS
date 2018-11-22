@@ -153,7 +153,7 @@
         }
         peer.lastRequestedGovernanceSync = [[NSDate date] timeIntervalSince1970]; //we are requesting the list from this peer
         [peer sendGovSync];
-        [self savePeer:peer];
+        [peer save];
         startedGovernanceSync = TRUE;
         break;
     }
@@ -164,7 +164,7 @@
 
 -(void)publishProposal:(DSGovernanceObject*)goveranceProposal {
     if (![goveranceProposal isValid]) return;
-    [self.downloadPeer sendGovObject:goveranceProposal];
+    [self.peerManager.downloadPeer sendGovObject:goveranceProposal];
 }
 
 -(void)publishVotes:(NSArray<DSGovernanceVote*>*)votes {
@@ -173,7 +173,7 @@
         if (![vote isValid]) continue;
         [voteHashes addObject:uint256_obj(vote.governanceVoteHash)];
     }
-    [self.downloadPeer sendInvMessageForHashes:voteHashes ofType:DSInvType_GovernanceObjectVote];
+    [self.peerManager.downloadPeer sendInvMessageForHashes:voteHashes ofType:DSInvType_GovernanceObjectVote];
 }
 
 // MARK:- Control
@@ -459,7 +459,7 @@
             [self requestGovernanceObjectsFromPeer:peer];
             [DSGovernanceObjectEntity saveContext];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
         }
         __block BOOL finished = FALSE;
@@ -534,6 +534,11 @@
         NSLog(@"Peer requested unknown proposal");
     }
     return proposal;
+}
+
+- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
+    [self.peerManager peerMisbehavin:peer];
+    [self.peerManager connect];
 }
 
 // MARK:- Governance ObjectDelegate

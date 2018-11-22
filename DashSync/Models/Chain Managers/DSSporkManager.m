@@ -30,9 +30,9 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataProperties.h"
-#import "DSPeerManager.h"
+#import "DSPeerManager+Protected.h"
 #import "DSOptionsManager.h"
-#import "DSChainManager.h"
+#import "DSChainManager+Protected.h"
 
 @interface DSSporkManager()
     
@@ -122,7 +122,7 @@
             hasNew = TRUE;
         }
     }
-    if (hasNew) [self.chain.chainManager getSporks];
+    if (hasNew) [self getSporks];
 }
     
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
@@ -143,7 +143,7 @@
         _sporkDictionary[@(spork.identifier)] = spork;
     }
     [dictionary setObject:spork forKey:@"new"];
-    [dictionary setObject:self.chain forKey:DSChainPeerManagerNotificationChainKey];
+    [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
     if (!currentSpork || updatedSpork) {
         dispatch_async(dispatch_get_main_queue(), ^{
             @autoreleasepool {

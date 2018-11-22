@@ -40,10 +40,10 @@
 
 @implementation DSDAPIPeerManager
 
--(instancetype)initWithChainPeerManager:(DSPeerManager*)chainPeerManager
+-(instancetype)initWithChainManager:(DSChainManager*)chainManager
 {
     if (! (self = [super init])) return nil;
-    _chainPeerManager = chainPeerManager;
+    _chainManager = chainManager;
     return self;
 }
 

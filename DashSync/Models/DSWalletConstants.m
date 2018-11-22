@@ -38,4 +38,4 @@ NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
-NSString* const DSChainPeerManagerNotificationChainKey =         @"DSChainPeerManagerNotificationChainKey";
+NSString* const DSChainManagerNotificationChainKey =         @"DSChainManagerNotificationChainKey";

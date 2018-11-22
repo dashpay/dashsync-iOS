@@ -26,6 +26,7 @@
 #import <Foundation/Foundation.h>
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
+#import "DSPeer.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotification;
@@ -37,7 +38,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 @class DSPeer,DSChain,DSGovernanceObject,DSGovernanceVote;
 
-@interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate>
+@interface DSGovernanceSyncManager : NSObject <DSGovernanceObjectDelegate,DSPeerGovernanceDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger recentGovernanceObjectHashesCount;
@@ -52,6 +53,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 
 -(instancetype)initWithChain:(DSChain*)chain;
+
+-(void)startGovernanceSync;
 
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceObject:(DSGovernanceObject * _Nonnull)governanceObject;
 

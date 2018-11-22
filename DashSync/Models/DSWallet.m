@@ -533,7 +533,7 @@
     [keyChainDictionary removeObjectForKey:blockchainUser.username];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 -(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser {
@@ -551,7 +551,7 @@
     [keyChainDictionary setObject:@(blockchainUser.index) forKey:blockchainUser.username];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 

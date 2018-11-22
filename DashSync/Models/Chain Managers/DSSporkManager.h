@@ -25,12 +25,13 @@
 
 #import <Foundation/Foundation.h>
 #import "DSSpork.h"
+#import "DSPeer.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 
 @class DSPeer,DSChain;
 
-@interface DSSporkManager : NSObject
+@interface DSSporkManager : NSObject <DSPeerSporkDelegate>
     
 @property (nonatomic,readonly) BOOL instantSendActive;
 @property (nonatomic,readonly) BOOL instantSendAutoLocks;

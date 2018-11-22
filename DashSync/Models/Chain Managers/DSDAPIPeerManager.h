@@ -26,12 +26,12 @@
 #import <Foundation/Foundation.h>
 #import "DSDAPIProtocol.h"
 
-@class DSPeerManager;
+@class DSChainManager;
 
 @interface DSDAPIPeerManager : NSObject <DSDAPIProtocol>
 
-@property (nonatomic,weak) DSPeerManager * chainPeerManager; //owned by chainPeerManager
+@property (nonatomic,weak) DSChainManager * chainManager; //owned by chainPeerManager
 
--(instancetype)initWithChainPeerManager:(DSPeerManager*)chainPeerManager;
+-(instancetype)initWithChainManager:(DSChainManager*)chainManager;
 
 @end

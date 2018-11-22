@@ -51,6 +51,7 @@
 #import "DSSporkManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
+#import "DSChainManager.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -757,7 +758,7 @@ static dispatch_once_t devnetToken = 0;
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     [self.viewingAccount removeDerivationPath:derivationPath];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
     });
 }
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath {
@@ -775,7 +776,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:derivationPath.standaloneExtendedPublicKeyUniqueID];
     setKeychainArray(keyChainArray, self.chainStandaloneDerivationPathsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
     });
 }
 
@@ -817,6 +818,81 @@ static dispatch_once_t devnetToken = 0;
         masternodeEntryEntity.claimed = TRUE;
         [DSSimplifiedMasternodeEntryEntity saveContext];
     }];
+}
+
+// MARK: - Probabilistic Filters
+
+- (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak {
+    NSMutableSet * allAddresses = [NSMutableSet set];
+    NSMutableSet * allUTXOs = [NSMutableSet set];
+    for (DSWallet * wallet in self.wallets) {
+        // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
+        // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
+        // transaction is encountered during the blockchain download
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
+        NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
+        [allAddresses addObjectsFromArray:[addresses allObjects]];
+        [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
+        
+        //we should also add the blockchain user public keys to the filter
+        [allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
+    }
+    
+    for (DSDerivationPath * derivationPath in self.standaloneDerivationPaths) {
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
+        NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
+        [allAddresses addObjectsFromArray:addresses];
+    }
+    
+    
+    [self clearOrphans];
+    
+    DSUTXO o;
+    NSData *d;
+    NSUInteger i, elemCount = allAddresses.count + allUTXOs.count;
+    NSMutableArray *inputs = [NSMutableArray new];
+    
+    for (DSWallet * wallet in self.wallets) {
+        for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
+            if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.lastBlockHeight) break;
+            i = 0;
+            
+            for (NSValue *hash in tx.inputHashes) {
+                [hash getValue:&o.hash];
+                o.n = [tx.inputIndexes[i++] unsignedIntValue];
+                
+                DSTransaction *t = [wallet transactionForHash:o.hash];
+                
+                if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
+                    [inputs addObject:dsutxo_data(o)];
+                    elemCount++;
+                }
+            }
+        }
+    }
+    
+    DSBloomFilter *filter = [[DSBloomFilter alloc] initWithFalsePositiveRate:falsePositiveRate
+                                                             forElementCount:(elemCount < 200 ? 300 : elemCount + 100) tweak:tweak
+                                                                       flags:BLOOM_UPDATE_ALL];
+    
+    for (NSString *addr in allAddresses) {// add addresses to watch for tx receiveing money to the wallet
+        NSData *hash = addr.addressToHash160;
+        
+        if (hash && ! [filter containsData:hash]) [filter insertData:hash];
+    }
+    
+    for (NSValue *utxo in allUTXOs) { // add UTXOs to watch for tx sending money from the wallet
+        [utxo getValue:&o];
+        d = dsutxo_data(o);
+        if (! [filter containsData:d]) [filter insertData:d];
+    }
+    
+    for (d in inputs) { // also add TXOs spent within the last 100 blocks
+        if (! [filter containsData:d]) [filter insertData:d];
+    }
+    return filter;
 }
 
 // MARK: - Wallet
@@ -883,7 +959,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray removeObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
     });
 }
 -(void)addWallet:(DSWallet*)wallet {
@@ -909,7 +985,7 @@ static dispatch_once_t devnetToken = 0;
     [keyChainArray addObject:wallet.uniqueID];
     setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
     });
     }
 }
@@ -1286,7 +1362,7 @@ static dispatch_once_t devnetToken = 0;
         
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewBlockNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
         });
     }
     

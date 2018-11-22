@@ -25,12 +25,14 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import "DSChain.h"
+#import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain;
 
-@interface DSTransactionManager : NSObject <DSChainDelegate>
+@interface DSTransactionManager : NSObject <DSChainDelegate,DSPeerTransactionDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 

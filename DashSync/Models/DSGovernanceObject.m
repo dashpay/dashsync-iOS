@@ -22,6 +22,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSAccount.h"
+#import "DSChainManager.h"
 #import "DSGovernanceObjectEntity+CoreDataProperties.h"
 
 #define REQUEST_GOVERNANCE_VOTE_COUNT 500
@@ -480,7 +481,7 @@
         [self requestGovernanceVotesFromPeer:peer];
         [DSGovernanceVoteEntity saveContext];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:peer.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:peer.chain}];
         });
     }
 }

@@ -154,37 +154,53 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peerConnected:(DSPeer *)peer;
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers;
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction;
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash;
-- (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
 
 - (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
-- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
-- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
-- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
-
-- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
 
-- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
-- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
+@end
 
-- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
-- (void)peerRelayedIncorrectMasternodeDiffMessage:(DSPeer *)peer;
+@protocol DSPeerTransactionDelegate<NSObject>
+@required
 
+- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction;
+- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash;
+- (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes;
+
+@end
+
+@protocol DSPeerGovernanceDelegate<NSObject>
+@required
+
+- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
+- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
-
-- (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes;
-
+- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
+- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
-- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes;
+@end
+
+@protocol DSPeerSporkDelegate<NSObject>
+@required
+
+- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
+- (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes;
+
+@end
+
+@protocol DSPeerMasternodeDelegate<NSObject>
+@required
+
+- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 @end
 

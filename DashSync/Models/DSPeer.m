@@ -67,7 +67,11 @@
 
 @interface DSPeer ()
 
-@property (nonatomic, assign) id<DSPeerDelegate> delegate;
+@property (nonatomic, weak) id<DSPeerDelegate> peerDelegate;
+@property (nonatomic, weak) id<DSPeerTransactionDelegate> transactionDelegate;
+@property (nonatomic, weak) id<DSPeerGovernanceDelegate> governanceDelegate;
+@property (nonatomic, weak) id<DSPeerSporkDelegate> sporkDelegate;
+@property (nonatomic, weak) id<DSPeerMasternodeDelegate> masternodeDelegate;
 @property (nonatomic, strong) dispatch_queue_t delegateQueue;
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
@@ -722,7 +726,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
             NSLog(@"%@:%u Peer ignored request for governance object hashes",self.host, self.port);
-            [self.delegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
+            [self.governanceDelegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
         }
     });
 }
@@ -1032,7 +1036,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h];
             });
         }
         
@@ -1062,17 +1066,17 @@
     }
     
     if (txLockVoteHashes.count > 0) {
-        [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+        [self.governanceDelegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
     }
     
     if (governanceObjectHashes.count > 0) {
-        [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+        [self.governanceDelegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
     }
     if (governanceObjectVoteHashes.count > 0) {
-        [self.delegate peer:self hasGovernanceVoteHashes:governanceObjectVoteHashes];
+        [self.governanceDelegate peer:self hasGovernanceVoteHashes:governanceObjectVoteHashes];
     }
     if (sporkHashes.count > 0) {
-        [self.delegate peer:self hasSporkHashes:sporkHashes];
+        [self.sporkDelegate peer:self hasSporkHashes:sporkHashes];
     }
 }
 
@@ -1090,7 +1094,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self relayedTransaction:tx];
+        [self.transactionDelegate peer:self relayedTransaction:tx];
     });
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
@@ -1225,7 +1229,7 @@
             switch (type) {
                 case DSInvType_Tx:
                 case DSInvType_TxLockRequest:
-                    transaction = [self.delegate peer:self requestedTransaction:hash];
+                    transaction = [self.transactionDelegate peer:self requestedTransaction:hash];
                     
                     if (transaction) {
                         [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
@@ -1237,7 +1241,7 @@
                     }
                 case DSInvType_GovernanceObjectVote:
                 {
-                    DSGovernanceVote * vote = [self.delegate peer:self requestedVote:hash];
+                    DSGovernanceVote * vote = [self.governanceDelegate peer:self requestedVote:hash];
                     if (vote) {
                         [self sendMessage:vote.dataMessage type:MSG_GOVOBJVOTE];
                         break;
@@ -1250,7 +1254,7 @@
                 }
                 case DSInvType_GovernanceObject:
                 {
-                    DSGovernanceObject * governanceObject = [self.delegate peer:self requestedGovernanceObject:hash];
+                    DSGovernanceObject * governanceObject = [self.governanceDelegate peer:self requestedGovernanceObject:hash];
                     if (governanceObject) {
                         [self sendMessage:governanceObject.dataMessage type:MSG_GOVOBJ];
                         break;
@@ -1406,7 +1410,7 @@
     
     if (! uint256_is_zero(txHash)) {
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self rejectedTransaction:txHash withCode:code];
+            [self.transactionDelegate peer:self rejectedTransaction:txHash withCode:code];
         });
     }
 }
@@ -1432,7 +1436,7 @@
 - (void)acceptSporkMessage:(NSData *)message
 {
     DSSpork * spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    [self.delegate peer:self relayedSpork:spork];
+    [self.sporkDelegate peer:self relayedSpork:spork];
 }
 
 // MARK: - accept Masternode
@@ -1477,7 +1481,7 @@
 
 -(void)acceptMNLISTDIFFMessage:(NSData*)message
 {
-    [self.delegate peer:self relayedMasternodeDiffMessage:message];
+    [self.mas peer:self relayedMasternodeDiffMessage:message];
 }
 
 

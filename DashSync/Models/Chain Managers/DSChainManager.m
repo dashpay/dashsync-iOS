@@ -29,7 +29,7 @@
 #import "DSChain.h"
 #import "DSSporkManager.h"
 #import "DSOptionsManager.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSDAPIPeerManager.h"
 #import "DSTransactionManager+Protected.h"
@@ -69,7 +69,7 @@
     self.chain = chain;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
-    self.DAPIPeerManager = [[DSDAPIPeerManager alloc] initWithChainPeerManager:self];
+    self.DAPIPeerManager = [[DSDAPIPeerManager alloc] initWithChainManager:self];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
@@ -118,84 +118,25 @@
     }];
 }
 
-
+//This returns the bloom filter for the peer, currently the filter is only tweaked per peer, and we only cache the filter of the download peer.
+//It makes sense to keep this in this class because it is not a property of the chain, but intead of a effemeral item used in the synchronization of the chain.
 - (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer
 {
-    NSMutableSet * allAddresses = [NSMutableSet set];
-    NSMutableSet * allUTXOs = [NSMutableSet set];
-    for (DSWallet * wallet in self.chain.wallets) {
-        // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
-        // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
-        // transaction is encountered during the blockchain download
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
-        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
-        NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
-        [allAddresses addObjectsFromArray:[addresses allObjects]];
-        [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
-        
-        //we should also add the blockchain user public keys to the filter
-        [allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
-    }
     
-    for (DSDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
-        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
-        NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
-        [allAddresses addObjectsFromArray:addresses];
-    }
-    
-    
-    [self.chain clearOrphans];
-    self.filterUpdateHeight = self.chain.lastBlockHeight;
-    self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
-    
-    DSUTXO o;
-    NSData *d;
-    NSUInteger i, elemCount = allAddresses.count + allUTXOs.count;
-    NSMutableArray *inputs = [NSMutableArray new];
-    
+    //TODO: XXXX move this somewhere more suitable, not sure why we are adding transaction to publish list here
     for (DSWallet * wallet in self.chain.wallets) {
         for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
             [self.transactionManager addTransactionToPublishList:tx]; // also populate the tx publish list
-            if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.chain.lastBlockHeight) break;
-            i = 0;
-            
-            for (NSValue *hash in tx.inputHashes) {
-                [hash getValue:&o.hash];
-                o.n = [tx.inputIndexes[i++] unsignedIntValue];
-                
-                DSTransaction *t = [wallet transactionForHash:o.hash];
-                
-                if (o.n < t.outputAddresses.count && [wallet containsAddress:t.outputAddresses[o.n]]) {
-                    [inputs addObject:dsutxo_data(o)];
-                    elemCount++;
-                }
-            }
         }
     }
     
-    DSBloomFilter *filter = [[DSBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
-                                                             forElementCount:(elemCount < 200 ? 300 : elemCount + 100) tweak:(uint32_t)peer.hash
-                                                                       flags:BLOOM_UPDATE_ALL];
     
-    for (NSString *addr in allAddresses) {// add addresses to watch for tx receiveing money to the wallet
-        NSData *hash = addr.addressToHash160;
-        
-        if (hash && ! [filter containsData:hash]) [filter insertData:hash];
-    }
+    self.filterUpdateHeight = self.chain.lastBlockHeight;
+    self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     
-    for (NSValue *utxo in allUTXOs) { // add UTXOs to watch for tx sending money from the wallet
-        [utxo getValue:&o];
-        d = dsutxo_data(o);
-        if (! [filter containsData:d]) [filter insertData:d];
-    }
-    
-    for (d in inputs) { // also add TXOs spent within the last 100 blocks
-        if (! [filter containsData:d]) [filter insertData:d];
-    }
     
     // TODO: XXXX if already synced, recursively add inputs of unconfirmed receives
-    _bloomFilter = filter;
+    _bloomFilter = [self.chain bloomFilterWithFalsePositiveRate:self.fpRate withTweak:(uint32_t)peer.hash];
     return _bloomFilter;
 }
 
@@ -236,18 +177,13 @@
 {
     if (!self.peerManager.connected) return;
     
-    dispatch_async(self.chainPeerManagerQueue, ^{
+    [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
         [self.chain setLastBlockHeightForRescan];
-        
-        if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
-            [self.peers removeObject:self.downloadPeer];
-            [self.downloadPeer disconnect];
-        }
-        
         self.syncStartHeight = self.chain.lastBlockHeight;
         [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
-        [self connect];
-    });
+    }];
+    
+    [self.peerManager connect];
 }
 
 // MARK: - DSChainDelegate
@@ -262,7 +198,7 @@
 }
 
 -(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
-    if (onMainChain && (peer == self.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (onMainChain && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     NSLog(@"chain finished syncing");
     self.syncStartHeight = 0;
     [self.mempoolManager loadMempools];
@@ -286,10 +222,5 @@
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }
-
-
-// MARK: - DSChainDelegate
-
-
 
 @end

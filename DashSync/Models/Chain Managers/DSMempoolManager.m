@@ -65,7 +65,7 @@
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                             postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                         });
                     }
                     
@@ -74,7 +74,7 @@
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                         });
                     }
                 }];
@@ -84,7 +84,7 @@
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter]
-                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                 });
             }
         }];

@@ -23,6 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 #import <Foundation/Foundation.h>
+#import "DSPeer.h"
 #import "DSChain.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification;
@@ -31,7 +32,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 @class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSMasternodePing;
 
-@interface DSMasternodeManager : NSObject
+@interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
@@ -39,8 +40,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 
 -(instancetype)initWithChain:(DSChain*)chain;
-
--(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 //-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 

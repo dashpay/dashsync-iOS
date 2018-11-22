@@ -90,7 +90,7 @@ FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotificatio
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter;
 
 @protocol DSChainDelegate;
 
@@ -217,6 +217,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
 //This removes all blockchain information from the chain's wallets and derivation paths
 - (void)wipeBlockchainInfo;
 
+
+- (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
 @end
 

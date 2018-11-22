@@ -28,6 +28,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define PROTOCOL_TIMEOUT     20.0
+
+FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
+
 @class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIPeerManager, DSTransactionManager, DSMempoolManager, DSBloomFilter;
 
 @interface DSChainManager : NSObject <DSChainDelegate>
