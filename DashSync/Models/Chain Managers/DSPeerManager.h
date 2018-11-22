@@ -64,7 +64,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)connect;
 - (void)clearPeers;
 - (void)disconnect;
-- (void)rescan;
 
 // Masternodes
 //-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
