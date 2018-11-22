@@ -43,8 +43,8 @@
     if (!self.chain) {
         self.insertedIPAddresses = [NSMutableOrderedSet orderedSet];
     } else {
-        DSPeerManager * chainPeerManager = [[DSChainsManager sharedInstance] peerManagerForChain:self.chain];
-        self.insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:chainPeerManager.registeredDevnetPeerServices];
+        DSPeerManager * peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain].peerManager;
+        self.insertedIPAddresses = [NSMutableOrderedSet orderedSetWithArray:peerManager.registeredDevnetPeerServices];
         self.addDevnetNameTableViewCell.valueTextField.text = self.chain.devnetIdentifier;
         self.protocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.protocolVersion];
         self.minProtocolVersionTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.minProtocolVersion];

@@ -1354,7 +1354,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (syncDone) { // chain download is complete
         [self saveBlocks];
-        [self.chainManager chainFinishedSyncing:self fromPeer:peer onMainChain:onMainChain];
+        [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
     }
     
     if (block.height > _estimatedBlockHeight) {

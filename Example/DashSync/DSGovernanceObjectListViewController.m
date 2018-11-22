@@ -42,16 +42,16 @@
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
-            return [NSPredicate predicateWithFormat:@"type == %@ && governanceObjectHash.chain == %@ && (identifier == %@)",@(DSGovernanceObjectType_Proposal),self.chainPeerManager.chain.chainEntity,@([self.searchString longLongValue])];
+            return [NSPredicate predicateWithFormat:@"type == %@ && governanceObjectHash.chain == %@ && (identifier == %@)",@(DSGovernanceObjectType_Proposal),self.chainManager.chain.chainEntity,@([self.searchString longLongValue])];
         } else {
-            return [NSPredicate predicateWithFormat:@"type == %@ && governanceObjectHash.chain == %@",@(DSGovernanceObjectType_Proposal),self.chainPeerManager.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"type == %@ && governanceObjectHash.chain == %@",@(DSGovernanceObjectType_Proposal),self.chainManager.chain.chainEntity];
         }
         //        else {
         //            return [NSPredicate predicateWithFormat:@"(blockHash == %@)",self.searchString];
         //        }
         
     } else {
-        return [NSPredicate predicateWithFormat:@"type == %@ && governanceObjectHash.chain == %@",@(DSGovernanceObjectType_Proposal),self.chainPeerManager.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"type == %@ && governanceObjectHash.chain == %@",@(DSGovernanceObjectType_Proposal),self.chainManager.chain.chainEntity];
     }
     
 }
@@ -227,7 +227,7 @@
 
 -(void)vote:(DSGovernanceVoteOutcome)outcome {
     DSGovernanceObjectEntity * proposalEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
-    [self.chainPeerManager.governanceSyncManager vote:outcome onGovernanceProposal:[proposalEntity governanceObject]];
+    [self.chainManager.governanceSyncManager vote:outcome onGovernanceProposal:[proposalEntity governanceObject]];
 }
 
 - (IBAction)showVoteDialog:(id)sender {
@@ -252,7 +252,7 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
 if ([segue.identifier isEqualToString:@"ProposalCreationSegue"]) {
     DSProposalCreatorViewController * proposalCreatorViewController = (DSProposalCreatorViewController*)(((UINavigationController*)segue.destinationViewController).topViewController);
-    proposalCreatorViewController.chainPeerManager = self.chainPeerManager;
+    proposalCreatorViewController.chainManager = self.chainManager;
 }
 }
 

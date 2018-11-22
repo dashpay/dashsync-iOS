@@ -47,6 +47,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSDate+Utils.h"
 #import "DSPeerEntity+CoreDataClass.h"
+#import "DSChainManager.h"
 
 #define PEER_LOGGING 1
 
@@ -68,6 +69,7 @@
 @interface DSPeer ()
 
 @property (nonatomic, weak) id<DSPeerDelegate> peerDelegate;
+@property (nonatomic, weak) id<DSPeerChainDelegate> peerChainDelegate;
 @property (nonatomic, weak) id<DSPeerTransactionDelegate> transactionDelegate;
 @property (nonatomic, weak) id<DSPeerGovernanceDelegate> governanceDelegate;
 @property (nonatomic, weak) id<DSPeerSporkDelegate> sporkDelegate;
@@ -157,9 +159,15 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (void)setDelegate:(id<DSPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue
+- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue
 {
-    _delegate = delegate;
+    _peerChainDelegate = chainDelegate;
+    _peerDelegate = peerDelegate;
+    _transactionDelegate = transactionDelegate;
+    _governanceDelegate = governanceDelegate;
+    _sporkDelegate = sporkDelegate;
+    _masternodeDelegate = masternodeDelegate;
+    
     _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
 }
 
@@ -300,7 +308,7 @@
         
         if (self.mempoolCompletion) self.mempoolCompletion(NO);
         self.mempoolCompletion = nil;
-        [self.delegate peer:self disconnectedWithError:error];
+        [self.peerDelegate peer:self disconnectedWithError:error];
     });
 }
 
@@ -323,7 +331,7 @@
     _status = DSPeerStatus_Connected;
     
     dispatch_async(self.delegateQueue, ^{
-        if (self->_status == DSPeerStatus_Connected) [self.delegate peerConnected:self];
+        if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peerConnected:self];
     });
 }
 
@@ -895,7 +903,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self relayedPeers:peers];
+        if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peer:self relayedPeers:peers];
     });
 }
 
@@ -1110,7 +1118,7 @@
             self.currentBlockTxHashes = nil;
             
             dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
-                [self.delegate peer:self relayedBlock:block];
+                [self.transactionDelegate peer:self relayedBlock:block];
             });
         }
     }
@@ -1186,7 +1194,7 @@
         }
         
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self relayedBlock:block];
+            [self.transactionDelegate peer:self relayedBlock:block];
         });
     }
 }
@@ -1308,7 +1316,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
+        [self.transactionDelegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
     });
 }
 
@@ -1387,7 +1395,7 @@
     }
     else {
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self relayedBlock:block];
+            [self.transactionDelegate peer:self relayedBlock:block];
         });
     }
 }
@@ -1427,7 +1435,7 @@
     NSLog(@"%@:%u got feefilter with rate %llu per Byte", self.host, self.port, self.feePerByte);
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self setFeePerByte:self.feePerByte];
+        [self.transactionDelegate peer:self setFeePerByte:self.feePerByte];
     });
 }
 
@@ -1451,23 +1459,23 @@
         case DSSyncCountInfo_GovernanceObject:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashesCountReceived;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             } else if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesReceived) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             }
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVoteHashesCountReceived;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             } else if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             }
             break;
         default:
-            [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             break;
     }
     //ignore when count = 0; (for votes)

@@ -35,6 +35,10 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(DSPeerManager*)peerManager {
+    return self.chainManager.peerManager;
+}
+
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
@@ -47,7 +51,7 @@
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {
             NSArray * ipArray = [self.searchString componentsSeparatedByString:@"."];
             NSMutableArray *partPredicates = [NSMutableArray array];
-            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",self.chainPeerManager.chain.chainEntity];
+            NSPredicate * chainPredicate = [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
             [partPredicates addObject:chainPredicate];
             for (int i = 0; i< MIN(ipArray.count,4); i++) {
                 if ([ipArray[i] isEqualToString:@""]) break;
@@ -57,11 +61,11 @@
             
             return [NSCompoundPredicate andPredicateWithSubpredicates:partPredicates];
         } else {
-            return [NSPredicate predicateWithFormat:@"chain == %@",self.chainPeerManager.chain.chainEntity];
+            return [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
         }
         
     } else {
-        return [NSPredicate predicateWithFormat:@"chain == %@",self.chainPeerManager.chain.chainEntity];
+        return [NSPredicate predicateWithFormat:@"chain == %@",self.chainManager.chain.chainEntity];
     }
     
 }
@@ -165,7 +169,7 @@
 
     UInt128 address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), ipAddress } };
     
-    DSPeerStatus status = [self.chainPeerManager statusForLocation:address port:peerEntity.port];
+    DSPeerStatus status = [self.chainManager.peerManager statusForLocation:address port:peerEntity.port];
     NSString * statusString;
     switch (status) {
         case DSPeerStatus_Unknown:
@@ -187,7 +191,7 @@
             break;
     }
     cell.statusLabel.text = statusString;
-    DSPeerType type = [self.chainPeerManager typeForLocation:address port:peerEntity.port];
+    DSPeerType type = [self.chainManager.peerManager typeForLocation:address port:peerEntity.port];
     NSString * typeString;
     switch (type) {
         case DSPeerType_Unknown:
@@ -223,10 +227,10 @@
     
     uint32_t ipAddress = CFSwapInt32HostToBig(peerEntity.address);
     char s[INET6_ADDRSTRLEN];
-    [self.chainPeerManager setTrustedPeerHost:[NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), peerEntity.port]];
-    if (self.chainPeerManager.connected) {
-        [self.chainPeerManager disconnect];
-        [self.chainPeerManager connect];
+    [self.peerManager setTrustedPeerHost:[NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), peerEntity.port]];
+    if (self.peerManager.connected) {
+        [self.peerManager disconnect];
+        [self.peerManager connect];
     }
 }
 

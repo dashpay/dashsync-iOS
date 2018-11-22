@@ -262,13 +262,13 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: - Mempools Sync
 
-- (void)loadMempools
+- (void)retrieveMempool
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
     for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, load filters and get mempools from other peers
         if (p.status != DSPeerStatus_Connected) continue;
         
-        if ([self.chain canConstructAFilter] && (p != self.peerManager.downloadPeer || self.transactionManager.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
+        if ([self.chain canConstructAFilter] && (p != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
             [p sendFilterloadMessage:[self transactionsBloomFilterForPeer:p].data];
         }
         
@@ -288,7 +288,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                     }
                     
                     if (p == self.peerManager.downloadPeer) {
-                        [self.chainManager syncStopped];
+                        [self.peerManager syncStopped];
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
@@ -298,7 +298,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                 }];
             }
             else if (p == self.peerManager.downloadPeer) {
-                [self.chainManager syncStopped];
+                [self.peerManager syncStopped];
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter]
@@ -338,20 +338,40 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
     // unused addresses are still matched by the bloom filter
-    NSArray *external = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-    NSArray *internal = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    NSMutableArray *allAddressesArray = [NSMutableArray array];
     
-    for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+    for (DSWallet * wallet in self.chain.wallets) {
+        // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used for
+        // one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a wallet
+        // transaction is encountered during the blockchain download
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+        [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
+        [allAddressesArray addObjectsFromArray:[addresses allObjects]];
+    }
+    
+    for (DSDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+        [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+        NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
+        [allAddressesArray addObjectsFromArray:addresses];
+    }
+    
+    for (NSString *address in allAddressesArray) {
         NSData *hash = address.addressToHash160;
         
         if (! hash || [_bloomFilter containsData:hash]) continue;
         _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-        [self updateFilter];
+        [self.peerManager updateFilterOnPeers];
         break;
     }
 }
 
-// MARK: - DSChainDelegate
+- (void)clearTransactionsBloomFilter {
+    self.bloomFilter = nil;
+}
+
+// MARK: - DSChainTransactionsDelegate
 
 -(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
@@ -365,7 +385,10 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [self.txRelays removeAllObjects];
     [self.publishedTx removeAllObjects];
     [self.publishedCallback removeAllObjects];
+    _bloomFilter = nil;
 }
+
+// MARK: - DSPeerTransactionsDelegate
 
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction
 {
@@ -410,7 +433,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.txRequests[hash] removeObject:peer];
-    [self updateFilter];
+    [self updateTransactionsBloomFilter];
 }
 
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
@@ -425,26 +448,26 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
     if (peer == self.peerManager.downloadPeer && block.totalTransactions > 0) {
-        NSMutableSet *fp = [NSMutableSet setWithArray:txHashes];
+        NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
         
         // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
-        [fp minusSet:self.nonFalsePositiveTransactions]; // wallet tx are not false-positives
+        [falsePositives minusSet:self.nonFalsePositiveTransactions]; // wallet tx are not false-positives
         [self.nonFalsePositiveTransactions removeAllObjects];
-        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*fp.count/1400;
+        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*falsePositives.count/1400;
         
         // false positive rate sanity check
-        if (self.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
+        if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
             NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
                   peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
-            [self.downloadPeer disconnect];
+            [self.peerManager.downloadPeer disconnect];
         }
         else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
-            [self.chainManager updateFilter]; // rebuild bloom filter when it starts to degrade
+            [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
         }
     }
     
     if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        if (peer == self.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
+        if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
         return;
     }
     
@@ -475,7 +498,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         if (!account) return;
     }
     if (![account registerTransaction:transaction]) return;
-    if (peer == self.peerManager.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
@@ -595,6 +618,22 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     //    }];
     
     return transaction;
+}
+
+- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb
+{
+    uint64_t maxFeePerByte = 0, secondFeePerByte = 0;
+    
+    for (DSPeer *p in self.peerManager.connectedPeers) { // find second highest fee rate
+        if (p.status != DSPeerStatus_Connected) continue;
+        if (p.feePerByte > maxFeePerByte) secondFeePerByte = maxFeePerByte, maxFeePerByte = p.feePerByte;
+    }
+    
+    if (secondFeePerByte*2 > MIN_FEE_PER_B && secondFeePerByte*2 <= MAX_FEE_PER_B &&
+        secondFeePerByte*2 > self.chain.feePerByte) {
+        NSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte*2);
+        self.chain.feePerByte = secondFeePerByte*2;
+    }
 }
 
 @end

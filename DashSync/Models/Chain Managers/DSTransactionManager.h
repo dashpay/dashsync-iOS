@@ -32,15 +32,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain;
 
-@interface DSTransactionManager : NSObject <DSChainDelegate,DSPeerTransactionDelegate>
+@interface DSTransactionManager : NSObject <DSChainTransactionsDelegate,DSPeerTransactionDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
+- (void)retrieveMempool;
+
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer;
+
+- (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
 @end
 

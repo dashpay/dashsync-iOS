@@ -11,6 +11,6 @@
 
 @interface DSTransactionsViewController : UITableViewController <NSFetchedResultsControllerDelegate>
 
-@property (nonatomic, strong) DSPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSChainManager * chainManager;
 
 @end

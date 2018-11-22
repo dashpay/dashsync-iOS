@@ -34,7 +34,7 @@
 #pragma mark - Table view data source
 
 -(IBAction)fetch:(id)sender {
-    [self.chainPeerManager.DAPIPeerManager getDAPsWithSuccess:^(NSDictionary *userInfo) {
+    [self.chainManager.DAPIPeerManager getDAPsWithSuccess:^(NSDictionary *userInfo) {
             NSLog(@"%@",userInfo);
         [self.tableView.refreshControl endRefreshing];
         } failure:^(NSError *error) {
@@ -47,7 +47,7 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"AddDAPSegue"]) {
         DSAddDAPViewController * addDAPViewController = (DSAddDAPViewController*)segue.destinationViewController;
-        addDAPViewController.chainPeerManager = self.chainPeerManager;
+        addDAPViewController.chainManager = self.chainManager;
     }
 }
 

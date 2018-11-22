@@ -176,7 +176,7 @@
                 
                 __block BOOL waiting = YES, sent = NO;
                 
-                [[[DSChainManager sharedInstance] peerManagerForChain:self.account.wallet.chain] publishTransaction:tx completion:^(NSError *error) {
+                [[[DSChainsManager sharedInstance] chainManagerForChain:self.account.wallet.chain].transactionManager publishTransaction:tx completion:^(NSError *error) {
                     if (error) {
                         if (! waiting && ! sent) {
                             UIAlertController * alert = [UIAlertController

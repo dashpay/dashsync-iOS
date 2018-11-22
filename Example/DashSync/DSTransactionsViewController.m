@@ -75,10 +75,10 @@ static NSString *dateFormat(NSString *template)
         self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([self.chainPeerManager.chain
-                                                                    timestampForBlockHeight:self.chainPeerManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                               if ([self.chainManager.chain
+                                                                    timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSinceReferenceDate] &&
-                                                                   self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                                                                   self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
                                                                    self.navigationItem.titleView = nil;
                                                                    self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
                                                                }
@@ -111,9 +111,9 @@ static NSString *dateFormat(NSString *template)
     titleLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [titleLabel setBackgroundColor:[UIColor clearColor]];
     
-    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:self.chainPeerManager.chain.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+    NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:self.chainManager.chain.balance withTintColor:[UIColor whiteColor]] mutableCopy];
     NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                              [manager localCurrencyStringForDashAmount:self.chainPeerManager.chain.balance]];
+                              [manager localCurrencyStringForDashAmount:self.chainManager.chain.balance]];
     [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
     titleLabel.attributedText = attributedDashString;
     return titleLabel;
@@ -122,9 +122,9 @@ static NSString *dateFormat(NSString *template)
 -(void)updateTitleView {
     if (self.navigationItem.titleView && [self.navigationItem.titleView isKindOfClass:[UILabel class]]) {
         DSPriceManager *manager = [DSPriceManager sharedInstance];
-        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:self.chainPeerManager.chain.balance withTintColor:[UIColor whiteColor]] mutableCopy];
+        NSMutableAttributedString * attributedDashString = [[manager attributedStringForDashAmount:self.chainManager.chain.balance withTintColor:[UIColor whiteColor]] mutableCopy];
         NSString * titleString = [NSString stringWithFormat:@" (%@)",
-                                  [manager localCurrencyStringForDashAmount:self.chainPeerManager.chain.balance]];
+                                  [manager localCurrencyStringForDashAmount:self.chainManager.chain.balance]];
         [attributedDashString appendAttributedString:[[NSAttributedString alloc] initWithString:titleString attributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]}]];
         ((UILabel*)self.navigationItem.titleView).attributedText = attributedDashString;
         [((UILabel*)self.navigationItem.titleView) sizeToFit];
@@ -165,7 +165,7 @@ static NSString *dateFormat(NSString *template)
 - (uint32_t)blockHeight
 {
     static uint32_t height = 0;
-    uint32_t h = self.chainPeerManager.chain.lastBlockHeight;
+    uint32_t h = self.chainManager.chain.lastBlockHeight;
     
     if (h > height) height = h;
     return height;
@@ -179,7 +179,7 @@ static NSString *dateFormat(NSString *template)
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@",self.chainPeerManager.chain.chainEntity];
+    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@",self.chainManager.chain.chainEntity];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -281,7 +281,7 @@ static NSString *dateFormat(NSString *template)
     });
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
-    NSTimeInterval now = [self.chainPeerManager.chain timestampForBlockHeight:TX_UNCONFIRMED];
+    NSTimeInterval now = [self.chainManager.chain timestampForBlockHeight:TX_UNCONFIRMED];
     NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
     
     if (date) return date;
@@ -318,9 +318,9 @@ static NSString *dateFormat(NSString *template)
     DSAuthenticationManager * authenticationManager = [DSAuthenticationManager sharedInstance];
     DSTransactionEntity * transactionEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     NSLog(@"%u",transactionEntity.transactionHash.blockHeight);
-    DSTransaction *tx = [transactionEntity transactionForChain:self.chainPeerManager.chain];
+    DSTransaction *tx = [transactionEntity transactionForChain:self.chainManager.chain];
     [self.transactions setObject:tx forKey:uint256_data(tx.txHash)];
-    DSAccount * account = [self.chainPeerManager.chain accountContainingTransaction:tx];
+    DSAccount * account = [self.chainManager.chain accountContainingTransaction:tx];
     uint64_t received = [account amountReceivedFromTransaction:tx],
     sent = [account amountSentByTransaction:tx],
     balance = [account balanceAfterTransaction:tx];

@@ -109,7 +109,7 @@
         DSChainEntity * chainEntity = chain.chainEntity;
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-        [chainManager.peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
+        [chainManager setCount:0 forSyncCountInfo:DSSyncCountInfo_List];
         [chainManager.masternodeManager wipeMasternodeInfo];
         [DSSimplifiedMasternodeEntryEntity saveContext];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
@@ -139,8 +139,8 @@
     [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
     [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
     DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-    [chainManager.peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObject];
-    [chainManager.peerManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
+    [chainManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObject];
+    [chainManager setCount:0 forSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
     [chainManager.governanceSyncManager wipeGovernanceInfo];
     [DSGovernanceObjectHashEntity saveContext];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];

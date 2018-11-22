@@ -11,6 +11,6 @@
 
 @interface DSDAPIGetAddressSummaryViewController : UITableViewController
 
-@property (nonatomic,strong) DSPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSChainManager * chainManager;
 
 @end

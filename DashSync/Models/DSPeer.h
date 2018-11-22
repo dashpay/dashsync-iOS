@@ -155,11 +155,16 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers;
 
-- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
+@end
+
+@protocol DSPeerChainDelegate<NSObject>
+@required
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
 
 @end
+
+
 
 @protocol DSPeerTransactionDelegate<NSObject>
 @required
@@ -172,6 +177,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 - (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes;
+- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 
 @end
 
@@ -220,7 +226,12 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 
 @interface DSPeer : NSObject<NSStreamDelegate>
 
-@property (nonatomic, readonly) id<DSPeerDelegate> delegate;
+@property (nonatomic, readonly,weak) id<DSPeerDelegate> peerDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerTransactionDelegate> transactionDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerGovernanceDelegate> governanceDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerSporkDelegate> sporkDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerMasternodeDelegate> masternodeDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerChainDelegate> peerChainDelegate;
 @property (nonatomic, readonly) dispatch_queue_t delegateQueue;
 
 // set this to the timestamp when the wallet was created to improve initial sync time (interval since reference date)
@@ -260,7 +271,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 - (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain*)chain timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain*)chain;
-- (void)setDelegate:(id<DSPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;
+- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;

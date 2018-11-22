@@ -33,7 +33,6 @@
 #import "DSGovernanceSyncManager.h"
 #import "DSDAPIPeerManager.h"
 #import "DSTransactionManager+Protected.h"
-#import "DSMempoolManager.h"
 #import "DSBloomFilter.h"
 #import "DSMerkleBlock.h"
 #import "DSWallet.h"
@@ -52,7 +51,6 @@
 @property (nonatomic, strong) DSDAPIPeerManager * DAPIPeerManager;
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
-@property (nonatomic, strong) DSMempoolManager * mempoolManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
 @property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
 
@@ -71,7 +69,6 @@
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
-    self.mempoolManager = [[DSMempoolManager alloc] initWithChain:chain];
     
     return self;
 }
@@ -109,6 +106,10 @@
     self.lastChainRelayTime = [NSDate timeIntervalSince1970];
 }
 
+-(void)resetLastRelayedItemTime {
+    self.lastChainRelayTime = 0;
+}
+
 // MARK: - Blockchain Sync
 
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
@@ -134,19 +135,17 @@
 
 -(void)chainWasWiped:(DSChain*)chain {
     [self.transactionManager chainWasWiped:chain];
-    _bloomFilter = nil;
 }
 
--(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
+-(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     NSLog(@"chain finished syncing");
     self.syncStartHeight = 0;
-    [self.mempoolManager loadMempools];
+    [self.transactionManager retrieveMempool];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
     [self.masternodeManager getMasternodeList];
 }
-
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
     NSLog(@"peer at address %@ is misbehaving",peer.host);
@@ -155,12 +154,79 @@
 
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {
     // ignore orphans older than one week ago
-    if (block.timestamp < [NSDate timeIntervalSince1970] - 7*24*60*60) return;
+    if (block.timestamp < [NSDate timeIntervalSince1970] - WEEK_TIME_INTERVAL) return;
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
     if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
         NSLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+    }
+}
+
+// MARK: - Count Info
+
+-(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+    //    if (syncCountInfo ==  DSSyncCountInfo_List || syncCountInfo == DSSyncCountInfo_GovernanceObject) {
+    //        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
+    //        [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
+    //        [self.syncCountInfo setObject:@(count) forKey:@(syncCountInfo)];
+    //    }
+    switch (syncCountInfo) {
+        case DSSyncCountInfo_List:
+            self.chain.totalMasternodeCount = count;
+            [self.chain save];
+            break;
+        case DSSyncCountInfo_GovernanceObject:
+            self.chain.totalGovernanceObjectsCount = count;
+            [self.chain save];
+            break;
+        case DSSyncCountInfo_GovernanceObjectVote:
+            self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
+            [self.governanceSyncManager.currentGovernanceSyncObject save];
+            break;
+        default:
+            break;
+    }
+}
+
+// MARK: - DSPeerChainDelegate
+
+- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
+    [self setCount:count forSyncCountInfo:syncCountInfo];
+    switch (syncCountInfo) {
+        case DSSyncCountInfo_List:
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
+            });
+            break;
+        }
+        case DSSyncCountInfo_GovernanceObject:
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
+            });
+            break;
+        }
+        case DSSyncCountInfo_GovernanceObjectVote:
+        {
+            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
+                if (count == 0) {
+                    //there were no votes
+                    NSLog(@"no votes on object, going to next object");
+                    peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
+                    [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
+                    });
+                }
+            }
+            
+            break;
+        }
+        default:
+            break;
     }
 }
 

@@ -12,6 +12,6 @@
 
 @interface DSCreateBlockchainUserViewController : UITableViewController <DSWalletChooserDelegate,DSAccountChooserDelegate>
 
-@property (nonatomic,strong) DSPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSChainManager * chainManager;
 
 @end

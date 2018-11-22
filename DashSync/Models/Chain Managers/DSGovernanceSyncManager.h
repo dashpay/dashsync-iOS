@@ -76,5 +76,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 -(DSGovernanceObject*)createProposalWithIdentifier:(NSString*)identifier toPaymentAddress:(NSString*)paymentAddress forAmount:(uint64_t)amount fromAccount:(DSAccount*)account startDate:(NSDate*)date cycles:(NSUInteger)cycles url:(NSString*)url;
 
+-(void)publishProposal:(DSGovernanceObject*)goveranceProposal;
+
 
 @end

@@ -128,7 +128,7 @@
     if ([segue.identifier isEqualToString:@"ChainDetailsSegue"]) {
         DSSyncViewController * syncViewController = (DSSyncViewController *)segue.destinationViewController;
         DSChain * chain = [self chainForIndex:index];
-        syncViewController.chainPeerManager = [[DSChainsManager sharedInstance] peerManagerForChain:chain];
+        syncViewController.chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         syncViewController.title = chain.name;
     } else if ([segue.identifier isEqualToString:@"AddDevnetSegue"]) {
         if ([sender isKindOfClass:[UITableViewCell class]]) {

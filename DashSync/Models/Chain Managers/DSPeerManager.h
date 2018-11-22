@@ -31,13 +31,6 @@
 #import "DSChain.h"
 #import "DSPeer.h"
 
-typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
-    DSSyncCountInfo_List = 2,
-    DSSyncCountInfo_MNW = 3,
-    DSSyncCountInfo_GovernanceObject = 10,
-    DSSyncCountInfo_GovernanceObjectVote = 11,
-};
-
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
@@ -73,15 +66,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)disconnect;
 - (void)rescan;
 
-//Publishing actions
-- (void)publishTransaction:(DSTransaction * _Nonnull)transaction
-                completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
-- (void)publishVotes:(NSArray<DSGovernanceVote*>*)votes;
-- (void)publishProposal:(DSGovernanceObject*)goveranceProposal;
-
 // Masternodes
 //-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
--(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 -(void)clearRegisteredPeers;
 -(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;

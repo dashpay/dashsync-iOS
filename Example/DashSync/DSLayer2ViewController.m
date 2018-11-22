@@ -35,10 +35,10 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"DAPICallsSegue"]) {
         DSDAPICallsViewController * DAPICallsViewController = (DSDAPICallsViewController*)segue.destinationViewController;
-        DAPICallsViewController.chainPeerManager = self.chainPeerManager;
+        DAPICallsViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"DAPsSegue"]) {
         DSDAPListViewController * DAPListViewController = (DSDAPListViewController*)segue.destinationViewController;
-        DAPListViewController.chainPeerManager = self.chainPeerManager;
+        DAPListViewController.chainManager = self.chainManager;
     }
 }
 

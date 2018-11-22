@@ -35,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSSet *connectedPeers;
 
 - (void)peerMisbehaving:(DSPeer *)peer;
-
-
+- (void)syncStopped;
+- (void)updateFilterOnPeers;
 
 - (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion;
 

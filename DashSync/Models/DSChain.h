@@ -222,14 +222,19 @@ FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
 
 @end
 
-@protocol DSChainDelegate
-
+@protocol DSChainTransactionsDelegate
 @required
+
 -(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx;
 -(void)chainWasWiped:(DSChain*)chain;
 
-@optional
--(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
+@end
+
+@protocol DSChainDelegate <DSChainTransactionsDelegate>
+
+@required
+
+-(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 

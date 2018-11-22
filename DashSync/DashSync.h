@@ -15,6 +15,8 @@
 #import "DSKey.h"
 #import "DSDerivationPath.h"
 #import "DSChainsManager.h"
+#import "DSChainManager.h"
+#import "DSTransactionManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
 #import "DSDAPIPeerManager.h"

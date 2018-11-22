@@ -11,7 +11,7 @@
 
 @interface DSBlockchainUserActionsViewController : UITableViewController
 
-@property (nonatomic,strong) DSPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSChainManager * chainManager;
 @property (nonatomic,strong) DSBlockchainUser * blockchainUser;
 
 @end

@@ -135,12 +135,12 @@
     return self.chain.chainManager.transactionManager;
 }
 
--(DSMempoolManager*)mempoolManager {
-    return self.chain.chainManager.mempoolManager;
-}
-
 -(DSGovernanceSyncManager*)governanceSyncManager {
     return self.chain.chainManager.governanceSyncManager;
+}
+
+-(DSSporkManager*)sporkManager {
+    return self.chain.chainManager.sporkManager;
 }
 
 -(DSChainManager*)chainManager {
@@ -459,10 +459,10 @@
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
         NSLog(@"updating filter with newly created wallet addresses");
-        self->_bloomFilter = nil;
+        [self.transactionManager clearBloomFilter];
         
         if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
-            [self.downloadPeer sendFilterloadMessage:[self.chainManager bloomFilterForPeer:self.downloadPeer].data];
+            [self.downloadPeer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:self.downloadPeer].data];
             [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so filter is loaded
                 if (! success) return;
                 self.downloadPeer.needsFilterUpdate = NO;
@@ -477,7 +477,7 @@
         else {
             for (DSPeer *p in self.connectedPeers) {
                 if (p.status != DSPeerStatus_Connected) continue;
-                [p sendFilterloadMessage:[self.chainManager bloomFilterForPeer:p].data];
+                [p sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:p].data];
                 [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
                     if (! success) return;
                     p.needsFilterUpdate = NO;
@@ -582,16 +582,16 @@
         
         while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
             // pick a random peer biased towards peers with more recent timestamps
-            DSPeer *p = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
+            DSPeer *peer = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
             
-            if (p && ! [self.connectedPeers containsObject:p]) {
-                [p setDelegate:self queue:self.chainPeerManagerQueue];
-                p.earliestKeyTime = self.chain.earliestWalletCreationTime;
-                [self.connectedPeers addObject:p];
-                [p connect];
+            if (peer && ! [self.connectedPeers containsObject:peer]) {
+                [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.chainPeerManagerQueue];
+                peer.earliestKeyTime = self.chain.earliestWalletCreationTime;
+                [self.connectedPeers addObject:peer];
+                [peer connect];
             }
             
-            [peers removeObject:p];
+            [peers removeObject:peer];
         }
         
         if (self.connectedPeers.count == 0) {
@@ -652,32 +652,6 @@
     });
 }
 
-// MARK: - Count Info
-
--(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-    //    if (syncCountInfo ==  DSSyncCountInfo_List || syncCountInfo == DSSyncCountInfo_GovernanceObject) {
-    //        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
-    //        [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
-    //        [self.syncCountInfo setObject:@(count) forKey:@(syncCountInfo)];
-    //    }
-    switch (syncCountInfo) {
-        case DSSyncCountInfo_List:
-            self.chain.totalMasternodeCount = count;
-            [self.chain save];
-            break;
-        case DSSyncCountInfo_GovernanceObject:
-            self.chain.totalGovernanceObjectsCount = count;
-            [self.chain save];
-            break;
-        case DSSyncCountInfo_GovernanceObjectVote:
-            self.governanceSyncManager.currentGovernanceSyncObject.totalGovernanceVoteCount = count;
-            [self.governanceSyncManager.currentGovernanceSyncObject save];
-            break;
-        default:
-            break;
-    }
-}
-
 // MARK: - DSPeerDelegate
 
 - (void)peerConnected:(DSPeer *)peer
@@ -709,7 +683,7 @@
                 return; // don't load bloom filter yet if we're syncing
             }
             if ([self.chain canConstructAFilter]) {
-                [peer sendFilterloadMessage:[self.chainManager bloomFilterForPeer:peer].data];
+                [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
                 [peer sendInvMessageForHashes:self.transactionManager.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
             } else {
                 [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
@@ -749,12 +723,12 @@
     _connected = YES;
     [self.chain setEstimatedBlockHeight:peer.lastblock fromPeer:peer];
     if ([self.chain syncsBlockchain] && [self.chain canConstructAFilter]) {
-        [peer sendFilterloadMessage:[self.chainManager bloomFilterForPeer:peer].data];
+        [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
     }
     peer.currentBlockHeight = self.chain.lastBlockHeight;
     
     if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastblock)) { // start blockchain sync
-        self.chainManager.lastChainRelayTime = 0;
+        [self.chainManager resetLastRelayedItemTime];
         dispatch_async(dispatch_get_main_queue(), ^{ // setup a timer to detect if the sync stalls
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
@@ -773,7 +747,7 @@
         });
     }
     else { // we're already synced
-        [self.chainManager chainFinishedSyncing:self.chain fromPeer:nil onMainChain:TRUE];
+        [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self.chain fromPeer:nil onMainChain:TRUE];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
@@ -853,71 +827,6 @@
                                                             object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
     
-}
-
-- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb
-{
-    uint64_t maxFeePerByte = 0, secondFeePerByte = 0;
-    
-    for (DSPeer *p in self.connectedPeers) { // find second highest fee rate
-        if (p.status != DSPeerStatus_Connected) continue;
-        if (p.feePerByte > maxFeePerByte) secondFeePerByte = maxFeePerByte, maxFeePerByte = p.feePerByte;
-    }
-    
-    if (secondFeePerByte*2 > MIN_FEE_PER_B && secondFeePerByte*2 <= MAX_FEE_PER_B &&
-        secondFeePerByte*2 > self.chain.feePerByte) {
-        NSLog(@"increasing feePerKb to %llu based on feefilter messages from peers", secondFeePerByte*2);
-        self.chain.feePerByte = secondFeePerByte*2;
-    }
-}
-
-- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash {
-    return [self.governanceSyncManager peer:peer requestedVote:voteHash];
-}
-- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash {
-    return [self.governanceSyncManager peer:peer requestedGovernanceObject:governanceObjectHash];
-}
-
-
-// MARK: Dash Specific
-
-- (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
-    [self setCount:count forSyncCountInfo:syncCountInfo];
-    switch (syncCountInfo) {
-        case DSSyncCountInfo_List:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
-            });
-            break;
-        }
-        case DSSyncCountInfo_GovernanceObject:
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
-            });
-            break;
-        }
-        case DSSyncCountInfo_GovernanceObjectVote:
-        {
-            if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
-                if (count == 0) {
-                    //there were no votes
-                    NSLog(@"no votes on object, going to next object");
-                    peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
-                    [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
-                } else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
-                    });
-                }
-            }
-            
-            break;
-        }
-        default:
-            break;
-    }
 }
 
 @end

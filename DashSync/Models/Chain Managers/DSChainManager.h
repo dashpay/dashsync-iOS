@@ -25,16 +25,24 @@
 
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
+#import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
+    DSSyncCountInfo_List = 2,
+    DSSyncCountInfo_MNW = 3,
+    DSSyncCountInfo_GovernanceObject = 10,
+    DSSyncCountInfo_GovernanceObjectVote = 11,
+};
 
 #define PROTOCOL_TIMEOUT     20.0
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIPeerManager, DSTransactionManager, DSMempoolManager, DSBloomFilter;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIPeerManager, DSTransactionManager, DSBloomFilter;
 
-@interface DSChainManager : NSObject <DSChainDelegate>
+@interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
 @property (nonatomic, readonly) double syncProgress;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
@@ -43,10 +51,11 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 @property (nonatomic, readonly) DSDAPIPeerManager * DAPIPeerManager;
 @property (nonatomic, readonly) DSTransactionManager * transactionManager;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
-@property (nonatomic, readonly) DSMempoolManager * mempoolManager;
 @property (nonatomic, readonly) DSChain * chain;
 
 - (instancetype)initWithChain:(DSChain*)chain;
+
+- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 - (void)rescan;
 
