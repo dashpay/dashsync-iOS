@@ -121,7 +121,7 @@
     //from plastic upon blast park salon ticket timber disease tree camera economy what alpha birth category
     NSString *seedString = @"000102030405060708090a0b0c0d0e0f";
     
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:self.chain storeSeedPhrase:YES];
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[[NSDate date] timeIntervalSince1970] forChain:self.chain storeSeedPhrase:YES];
     DSAccount *account = [wallet accountWithNumber:0];
     DSDerivationPath *derivationPath = account.bip32DerivationPath;
     
@@ -179,7 +179,7 @@
 //    DSBIP32Sequence *seq = [DSBIP32Sequence new];
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[NSDate timeIntervalSinceReferenceDate] forChain:self.chain storeSeedPhrase:YES];
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[[NSDate date] timeIntervalSince1970] forChain:self.chain storeSeedPhrase:YES];
     NSString *xprv = [wallet serializedPrivateMasterFromSeed:seed];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);

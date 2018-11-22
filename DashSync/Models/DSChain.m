@@ -929,7 +929,7 @@ static dispatch_once_t devnetToken = 0;
     return [self.mWallets copy];
 }
 
-// This is a time interval since the reference date 2001
+// This is a time interval since 1970
 -(NSTimeInterval)earliestWalletCreationTime {
     if (![self.wallets count]) return BIP39_CREATION_TIME;
     NSTimeInterval timeInterval = [[NSDate date] timeIntervalSince1970];

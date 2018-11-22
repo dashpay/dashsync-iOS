@@ -77,8 +77,8 @@ static NSString *dateFormat(NSString *template)
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if ([self.chainPeerManager.chain
                                                                     timestampForBlockHeight:self.chainPeerManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
-                                                                   [NSDate timeIntervalSinceReferenceDate] &&
-                                                                   self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                                                                   [NSDate timeIntervalSince1970] &&
+                                                                   self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                                                                    self.navigationItem.titleView = nil;
                                                                    self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
                                                                }
@@ -289,7 +289,7 @@ static NSString *dateFormat(NSString *template)
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]];
+    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:txTime]];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }
