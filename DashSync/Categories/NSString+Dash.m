@@ -228,7 +228,7 @@
     NSTextAttachment *dashSymbol = [[NSTextAttachment alloc] init];
     
     dashSymbol.bounds = CGRectMake(0, 0, dashSymbolSize.width, dashSymbolSize.height);
-    dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] imageWithTintColor:color];
+    dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:color];
     return [NSAttributedString attributedStringWithAttachment:dashSymbol];
 }
 

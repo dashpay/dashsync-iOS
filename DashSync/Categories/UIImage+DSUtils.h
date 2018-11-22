@@ -31,10 +31,6 @@
 
 @interface UIImage (DSUtils)
 
-+ (instancetype)imageWithQRCodeData:(NSData *)data color:(CIColor *)color;
-
-- (UIImage *)resize:(CGSize)size withInterpolationQuality:(CGInterpolationQuality)quality;
-- (UIImage *)blurWithRadius:(CGFloat)radius;
-- (UIImage *)imageWithTintColor:(UIColor *)tintColor;
+- (UIImage *)ds_imageWithTintColor:(UIColor *)tintColor;
 
 @end
