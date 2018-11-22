@@ -223,14 +223,14 @@
 {
     double progress = self.chainPeerManager.syncProgress;
     
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
         self.explanationLabel.text = NSLocalizedString(@"Syncing:", nil);
     }
 }
 
 - (void)startActivityWithTimeout:(NSTimeInterval)timeout
 {
-    NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval start = [NSDate timeIntervalSince1970];
     
     if (timeout > 1 && start + timeout > self.start + self.timeout) {
         self.timeout = timeout;
@@ -239,7 +239,7 @@
     
     if (timeout <= DBL_EPSILON) {
         if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
-            WEEK_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+            WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
             if (self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
             }
@@ -291,7 +291,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateProgressView) object:nil];
     
     static int counter = 0;
-    NSTimeInterval elapsed = [NSDate timeIntervalSinceReferenceDate] - self.start;
+    NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
     double progress = self.chainPeerManager.syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
     uint32_t lastBlockHeight = self.chain.lastBlockHeight;
