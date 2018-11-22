@@ -26,6 +26,9 @@
 #import "DSMempoolManager.h"
 #import "DSOptionsManager.h"
 #import "DSChain.h"
+#import "DSChainManager+Protected.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSPeerManager+Protected.h"
 
 @implementation DSMempoolManager
 
@@ -33,62 +36,18 @@
 {
     if (! (self = [super init])) return nil;
     _chain = chain;
-    self.managedObjectContext = [NSManagedObject context];
     return self;
 }
 
 -(DSPeerManager*)peerManager {
-    return chain.chainManager.peerManager;
+    return self.chain.chainManager.peerManager;
+}
+
+-(DSTransactionManager*)transactionManager {
+    return self.chain.chainManager.transactionManager;
 }
 
 
-// MARK: - Mempools Sync
 
-- (void)loadMempools
-{
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
-    for (DSPeer *p in self.connectedPeers) { // after syncing, load filters and get mempools from other peers
-        if (p.status != DSPeerStatus_Connected) continue;
-        
-        if ([self.chain canConstructAFilter] && (p != self.downloadPeer || self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
-            [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
-        }
-        
-        [p sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
-        [p sendPingMessageWithPongHandler:^(BOOL success) {
-            if (success) {
-                [p sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
-                    if (success) {
-                        p.synced = YES;
-                        [self removeUnrelayedTransactions];
-                        [p sendGetaddrMessage]; // request a list of other bitcoin peers
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-                        });
-                    }
-                    
-                    if (p == self.downloadPeer) {
-                        [self syncStopped];
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-                        });
-                    }
-                }];
-            }
-            else if (p == self.downloadPeer) {
-                [self syncStopped];
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter]
-                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-                });
-            }
-        }];
-    }
-}
 
 @end

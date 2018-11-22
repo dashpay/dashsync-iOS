@@ -116,12 +116,12 @@ static uint32_t murmur3_32(const void *data, size_t len, uint32_t seed)
     return self;
 }
 
-- (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
+- (instancetype)initWithFalsePositiveRate:(double)transactionsBloomFilterFalsePositiveRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags
 {
     if (! (self = [self init])) return nil;
 
-    NSUInteger length = (fpRate < DBL_EPSILON) ? BLOOM_MAX_FILTER_LENGTH : (-1.0/(M_LN2*M_LN2))*count*log(fpRate)/8.0;
+    NSUInteger length = (transactionsBloomFilterFalsePositiveRate < DBL_EPSILON) ? BLOOM_MAX_FILTER_LENGTH : (-1.0/(M_LN2*M_LN2))*count*log(transactionsBloomFilterFalsePositiveRate)/8.0;
 
     if (length > BLOOM_MAX_FILTER_LENGTH) length = BLOOM_MAX_FILTER_LENGTH;
     self.filter = [NSMutableData dataWithLength:(length < 1) ? 1 : length];

@@ -53,9 +53,7 @@
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
 @property (nonatomic, strong) DSMempoolManager * mempoolManager;
-@property (nonatomic, strong) DSBloomFilter *bloomFilter;
-@property (nonatomic, assign) uint32_t syncStartHeight, filterUpdateHeight;
-@property (nonatomic, assign) double fpRate;
+@property (nonatomic, assign) uint32_t syncStartHeight;
 @property (nonatomic, assign) NSTimeInterval lastChainRelayTime;
 
 @end
@@ -76,68 +74,6 @@
     self.mempoolManager = [[DSMempoolManager alloc] initWithChain:chain];
     
     return self;
-}
-
-// MARK: - Bloom Filters
-
-- (void)updateFilter
-{
-    if (self.peerManager.downloadPeer.needsFilterUpdate) return;
-    self.peerManager.downloadPeer.needsFilterUpdate = YES;
-    NSLog(@"filter update needed, waiting for pong");
-    
-    [self.peerManager.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
-        if (! success) return;
-        NSLog(@"updating filter with newly created wallet addresses");
-        self->_bloomFilter = nil;
-        
-        if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
-            [self.peerManager.downloadPeer sendFilterloadMessage:[self bloomFilterForPeer:self.peerManager.downloadPeer].data];
-            [self.peerManager.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so filter is loaded
-                if (! success) return;
-                self.peerManager.downloadPeer.needsFilterUpdate = NO;
-                [self.peerManager.downloadPeer rerequestBlocksFrom:self.chain.lastBlock.blockHash];
-                [self.peerManager.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) {
-                    if (! success || self.peerManager.downloadPeer.needsFilterUpdate) return;
-                    [self.peerManager.downloadPeer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray]
-                                                            andHashStop:UINT256_ZERO];
-                }];
-            }];
-        }
-        else {
-            for (DSPeer *p in self.peerManager.connectedPeers) {
-                if (p.status != DSPeerStatus_Connected) continue;
-                [p sendFilterloadMessage:[self bloomFilterForPeer:p].data];
-                [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
-                    if (! success) return;
-                    p.needsFilterUpdate = NO;
-                    [p sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:nil];
-                }];
-            }
-        }
-    }];
-}
-
-//This returns the bloom filter for the peer, currently the filter is only tweaked per peer, and we only cache the filter of the download peer.
-//It makes sense to keep this in this class because it is not a property of the chain, but intead of a effemeral item used in the synchronization of the chain.
-- (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer
-{
-    
-    //TODO: XXXX move this somewhere more suitable, not sure why we are adding transaction to publish list here
-    for (DSWallet * wallet in self.chain.wallets) {
-        for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
-            [self.transactionManager addTransactionToPublishList:tx]; // also populate the tx publish list
-        }
-    }
-    
-    
-    self.filterUpdateHeight = self.chain.lastBlockHeight;
-    self.fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
-    
-    
-    // TODO: XXXX if already synced, recursively add inputs of unconfirmed receives
-    _bloomFilter = [self.chain bloomFilterWithFalsePositiveRate:self.fpRate withTweak:(uint32_t)peer.hash];
-    return _bloomFilter;
 }
 
 // MARK: - Info
@@ -169,6 +105,10 @@
     [[NSUserDefaults standardUserDefaults] setInteger:0 forKey:self.syncStartHeightKey];
 }
 
+- (void)relayedNewItem {
+    self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+}
+
 // MARK: - Blockchain Sync
 
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
@@ -198,7 +138,7 @@
 }
 
 -(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
-    if (onMainChain && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     NSLog(@"chain finished syncing");
     self.syncStartHeight = 0;
     [self.mempoolManager loadMempools];
@@ -207,9 +147,10 @@
     [self.masternodeManager getMasternodeList];
 }
 
+
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
     NSLog(@"peer at address %@ is misbehaving",peer.host);
-    [self.peerManager peerMisbehavin:peer];
+    [self.peerManager peerMisbehaving:peer];
 }
 
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {

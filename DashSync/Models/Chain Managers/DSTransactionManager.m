@@ -32,11 +32,21 @@
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "NSDate+Utils.h"
+#import "DSTransactionEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSMerkleBlock.h"
+#import "DSBloomFilter.h"
+#import "NSString+Bitcoin.h"
+#import "DSOptionsManager.h"
 
 @interface DSTransactionManager()
 
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
+@property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
+@property (nonatomic, strong) DSBloomFilter *bloomFilter;
+@property (nonatomic, assign) uint32_t filterUpdateHeight;
+@property (nonatomic, assign) double transactionsBloomFilterFalsePositiveRate;
 
 @end
 
@@ -50,6 +60,7 @@
     self.txRequests = [NSMutableDictionary dictionary];
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
+    self.nonFalsePositiveTransactions = [NSMutableSet set];
     return self;
 }
 
@@ -249,6 +260,97 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 }
 }
 
+// MARK: - Mempools Sync
+
+- (void)loadMempools
+{
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
+    for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, load filters and get mempools from other peers
+        if (p.status != DSPeerStatus_Connected) continue;
+        
+        if ([self.chain canConstructAFilter] && (p != self.peerManager.downloadPeer || self.transactionManager.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
+            [p sendFilterloadMessage:[self transactionsBloomFilterForPeer:p].data];
+        }
+        
+        [p sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
+        [p sendPingMessageWithPongHandler:^(BOOL success) {
+            if (success) {
+                [p sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
+                    if (success) {
+                        p.synced = YES;
+                        [self removeUnrelayedTransactions];
+                        [p sendGetaddrMessage]; // request a list of other bitcoin peers
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[NSNotificationCenter defaultCenter]
+                             postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                        });
+                    }
+                    
+                    if (p == self.peerManager.downloadPeer) {
+                        [self.chainManager syncStopped];
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[NSNotificationCenter defaultCenter]
+                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                        });
+                    }
+                }];
+            }
+            else if (p == self.peerManager.downloadPeer) {
+                [self.chainManager syncStopped];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter]
+                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                });
+            }
+        }];
+    }
+}
+
+// MARK: - Bloom Filters
+
+//This returns the bloom filter for the peer, currently the filter is only tweaked per peer, and we only cache the filter of the download peer.
+//It makes sense to keep this in this class because it is not a property of the chain, but intead of a effemeral item used in the synchronization of the chain.
+- (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer
+{
+    
+    //TODO: XXXX move this somewhere more suitable, not sure why we are adding transaction to publish list here
+    for (DSWallet * wallet in self.chain.wallets) {
+        for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
+            [self addTransactionToPublishList:tx]; // also populate the tx publish list
+        }
+    }
+    
+    
+    self.filterUpdateHeight = self.chain.lastBlockHeight;
+    self.transactionsBloomFilterFalsePositiveRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+    
+    
+    // TODO: XXXX if already synced, recursively add inputs of unconfirmed receives
+    _bloomFilter = [self.chain bloomFilterWithFalsePositiveRate:self.transactionsBloomFilterFalsePositiveRate withTweak:(uint32_t)peer.hash];
+    return _bloomFilter;
+}
+
+-(void)updateTransactionsBloomFilter {
+    if (! _bloomFilter) return; // bloom filter is aready being updated
+    
+    // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+    // unused addresses are still matched by the bloom filter
+    NSArray *external = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+    NSArray *internal = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    
+    for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
+        NSData *hash = address.addressToHash160;
+        
+        if (! hash || [_bloomFilter containsData:hash]) continue;
+        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
+        [self updateFilter];
+        break;
+    }
+}
+
 // MARK: - DSChainDelegate
 
 -(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx {
@@ -277,7 +379,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
     if (syncing && !account) return;
     if (![account registerTransaction:transaction]) return;
-    if (peer == self.peerManager.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
     if ([account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
         [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
@@ -306,22 +408,54 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         });
     }
     
-    [self.nonFpTx addObject:hash];
+    [self.nonFalsePositiveTransactions addObject:hash];
     [self.txRequests[hash] removeObject:peer];
-    if (! _bloomFilter) return; // bloom filter is aready being updated
+    [self updateFilter];
+}
+
+- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
+{
+    // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
+    if (block.totalTransactions == 0 &&
+        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + HOUR_TIME_INTERVAL/2) {
+        return;
+    }
     
-    // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
-    // unused addresses are still matched by the bloom filter
-    NSArray *external = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO],
-    *internal = [account registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+    NSArray *txHashes = block.txHashes;
     
-    for (NSString *address in [external arrayByAddingObjectsFromArray:internal]) {
-        NSData *hash = address.addressToHash160;
+    // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
+    if (peer == self.peerManager.downloadPeer && block.totalTransactions > 0) {
+        NSMutableSet *fp = [NSMutableSet setWithArray:txHashes];
         
-        if (! hash || [_bloomFilter containsData:hash]) continue;
-        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-        [self updateFilter];
-        break;
+        // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
+        [fp minusSet:self.nonFalsePositiveTransactions]; // wallet tx are not false-positives
+        [self.nonFalsePositiveTransactions removeAllObjects];
+        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*fp.count/1400;
+        
+        // false positive rate sanity check
+        if (self.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
+            NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
+                  peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
+            [self.downloadPeer disconnect];
+        }
+        else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+            [self.chainManager updateFilter]; // rebuild bloom filter when it starts to degrade
+        }
+    }
+    
+    if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
+        if (peer == self.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
+        return;
+    }
+    
+    [self.chain addBlock:block fromPeer:peer];
+}
+
+- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
+{
+    for (NSValue *hash in txHashes) {
+        [self.txRelays[hash] removeObject:peer];
+        [self.txRequests[hash] removeObject:peer];
     }
 }
 
@@ -365,7 +499,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         });
     }
     
-    [self.nonFpTx addObject:hash];
+    [self.nonFalsePositiveTransactions addObject:hash];
     [self.txRequests[hash] removeObject:peer];
 }
 
@@ -412,7 +546,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
         }
         
-        [self.peerManager peerMisbehavin:peer];
+        [self.peerManager peerMisbehaving:peer];
     }
 }
 
@@ -431,7 +565,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
     [self.txRelays[hash] addObject:peer];
-    [self.nonFpTx addObject:hash];
+    [self.nonFalsePositiveTransactions addObject:hash];
     [self.publishedCallback removeObjectForKey:hash];
     
     if (callback && ! [account transactionIsValid:transaction]) {

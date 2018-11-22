@@ -51,7 +51,7 @@
 
 - (instancetype)initWithMessage:(NSData *)message;
 - (instancetype)initWithFullMatch;
-- (instancetype)initWithFalsePositiveRate:(double)fpRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
+- (instancetype)initWithFalsePositiveRate:(double)transactionsBloomFilterFalsePositiveRate forElementCount:(NSUInteger)count tweak:(uint32_t)tweak
 flags:(uint8_t)flags;
 - (BOOL)containsData:(NSData *)data;
 - (void)insertData:(NSData *)data;

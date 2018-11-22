@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
+- (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer;
+
 @end
 
 NS_ASSUME_NONNULL_END

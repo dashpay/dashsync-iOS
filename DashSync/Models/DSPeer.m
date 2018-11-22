@@ -1481,7 +1481,7 @@
 
 -(void)acceptMNLISTDIFFMessage:(NSData*)message
 {
-    [self.mas peer:self relayedMasternodeDiffMessage:message];
+    [self.masternodeDelegate peer:self relayedMasternodeDiffMessage:message];
 }
 
 
@@ -1493,7 +1493,7 @@
 {
     DSGovernanceObject * governanceObject = [DSGovernanceObject governanceObjectFromMessage:message onChain:self.chain];
     if (governanceObject) {
-        [self.delegate peer:self relayedGovernanceObject:governanceObject];
+        [self.governanceDelegate peer:self relayedGovernanceObject:governanceObject];
     }
 }
 
@@ -1501,7 +1501,7 @@
 {
     DSGovernanceVote * governanceVote = [DSGovernanceVote governanceVoteFromMessage:message onChain:self.chain];
     if (governanceVote) {
-        [self.delegate peer:self relayedGovernanceVote:governanceVote];
+        [self.governanceDelegate peer:self relayedGovernanceVote:governanceVote];
     }
 }
 

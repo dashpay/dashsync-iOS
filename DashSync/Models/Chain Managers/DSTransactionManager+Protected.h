@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addTransactionToPublishList:(DSTransaction *)transaction;
 - (void)clearTransactionRelaysForPeer:(DSPeer*)peer;
 - (void)removeUnrelayedTransactions;
+- (void)updateTransactionsBloomFilter;
 
 @end
 

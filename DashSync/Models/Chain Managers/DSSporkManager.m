@@ -126,7 +126,10 @@
 }
     
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
-    if (!spork.isValid) return; //sanity check
+    if (!spork.isValid) {
+        [self.peerManager peerMisbehaving:peer];
+        return;
+    }
     DSSpork * currentSpork = self.sporkDictionary[@(spork.identifier)];
     BOOL updatedSpork = FALSE;
     __block NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];

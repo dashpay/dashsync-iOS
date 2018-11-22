@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)resetSyncStartHeight;
 - (void)restartSyncStartHeight;
+- (void)relayedNewItem;
 
 @end
 

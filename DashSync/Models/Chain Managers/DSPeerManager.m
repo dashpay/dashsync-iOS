@@ -75,7 +75,7 @@
 @interface DSPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
-@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavinPeers, *nonFpTx;
+@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
@@ -92,8 +92,7 @@
     
     self.chain = chain;
     self.connectedPeers = [NSMutableSet set];
-    self.misbehavinPeers = [NSMutableSet set];
-    self.nonFpTx = [NSMutableSet set];
+    self.misbehavingPeers = [NSMutableSet set];
     self.taskId = UIBackgroundTaskInvalid;
     self.chainPeerManagerQueue = dispatch_queue_create("org.dashcore.dashsync.peermanager", DISPATCH_QUEUE_SERIAL);
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
@@ -215,7 +214,7 @@
             for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"chain == %@",self.chain.chainEntity]) {
                 @autoreleasepool {
                     if (e.misbehavin == 0) [self->_peers addObject:[e peer]];
-                    else [self.misbehavinPeers addObject:[e peer]];
+                    else [self.misbehavingPeers addObject:[e peer]];
                 }
             }
         }];
@@ -314,15 +313,15 @@
     }
 }
 
-- (void)peerMisbehavin:(DSPeer *)peer
+- (void)peerMisbehaving:(DSPeer *)peer
 {
     peer.misbehavin++;
     [self.peers removeObject:peer];
-    [self.misbehavinPeers addObject:peer];
+    [self.misbehavingPeers addObject:peer];
     
     if (++self.misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
         self.misbehavinCount = 0;
-        [self.misbehavinPeers removeAllObjects];
+        [self.misbehavingPeers removeAllObjects];
         [DSPeerEntity deleteAllObjects];
         _peers = nil;
     }
@@ -361,7 +360,7 @@
 - (void)savePeers
 {
     NSLog(@"[DSChainPeerManager] save peers");
-    NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavinPeers] mutableCopy];
+    NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavingPeers] mutableCopy];
     NSMutableSet *addrs = [NSMutableSet set];
     
     for (DSPeer *p in peers) {
@@ -412,7 +411,7 @@
     DSPeer * peer = [self peerForLocation:IPAddress port:port];
     if (!peer) {
         return DSPeerStatus_Unknown;
-    } else if ([self.misbehavinPeers containsObject:peer]) {
+    } else if ([self.misbehavingPeers containsObject:peer]) {
         return DSPeerStatus_Banned;
     } else {
         return peer.status;
@@ -447,6 +446,46 @@
     if (!host) [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self settingsFixedPeerKey]];
     else [[NSUserDefaults standardUserDefaults] setObject:host
                                                    forKey:[self settingsFixedPeerKey]];
+}
+
+// MARK: - Peer Registration
+
+- (void)updateFilterOnPeers
+{
+    if (self.downloadPeer.needsFilterUpdate) return;
+    self.downloadPeer.needsFilterUpdate = YES;
+    NSLog(@"filter update needed, waiting for pong");
+    
+    [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
+        if (! success) return;
+        NSLog(@"updating filter with newly created wallet addresses");
+        self->_bloomFilter = nil;
+        
+        if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
+            [self.downloadPeer sendFilterloadMessage:[self.chainManager bloomFilterForPeer:self.downloadPeer].data];
+            [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so filter is loaded
+                if (! success) return;
+                self.downloadPeer.needsFilterUpdate = NO;
+                [self.downloadPeer rerequestBlocksFrom:self.chain.lastBlock.blockHash];
+                [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) {
+                    if (! success || self.downloadPeer.needsFilterUpdate) return;
+                    [self.downloadPeer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray]
+                                                                        andHashStop:UINT256_ZERO];
+                }];
+            }];
+        }
+        else {
+            for (DSPeer *p in self.connectedPeers) {
+                if (p.status != DSPeerStatus_Connected) continue;
+                [p sendFilterloadMessage:[self.chainManager bloomFilterForPeer:p].data];
+                [p sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we know filter is loaded
+                    if (! success) return;
+                    p.needsFilterUpdate = NO;
+                    [p sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:nil];
+                }];
+            }
+        }
+    }];
 }
 
 // MARK: - Peer Registration
@@ -584,7 +623,7 @@
             [self.peers removeObject:self.downloadPeer];
             [self.downloadPeer disconnect];
         }
-        completion(TRUE);
+        if (completion) completion(TRUE);
     });
 }
 
@@ -598,7 +637,7 @@
                    afterDelay:PROTOCOL_TIMEOUT - (now - self.chainManager.lastChainRelayTime)];
         return;
     }
-    [self disconnectDownloadPeer];
+    [self disconnectDownloadPeerWithCompletion:nil];
 }
 
 - (void)syncStopped
@@ -734,11 +773,7 @@
         });
     }
     else { // we're already synced
-        [self.chainManager restartSyncStartHeight];
-        [self loadMempools];
-        [self getSporks];
-        [self startGovernanceSync];
-        [self getMasternodeList];
+        [self.chainManager chainFinishedSyncing:self.chain fromPeer:nil onMainChain:TRUE];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
@@ -751,7 +786,7 @@
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
     if ([error.domain isEqual:@"DashWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
-        [self peerMisbehavin:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
+        [self peerMisbehaving:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
     else if (error) { // timeout or some non-protocol related network error
         [self.peers removeObject:peer];
@@ -770,7 +805,7 @@
         [self syncStopped];
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
-        [self.misbehavinPeers removeAllObjects];
+        [self.misbehavingPeers removeAllObjects];
         [DSPeerEntity deleteAllObjects];
         _peers = nil;
         
@@ -799,7 +834,7 @@
 {
     NSLog(@"%@:%d relayed %d peer(s)", peer.host, peer.port, (int)peers.count);
     [self.peers addObjectsFromArray:peers];
-    [self.peers minusSet:self.misbehavinPeers];
+    [self.peers minusSet:self.misbehavingPeers];
     [self sortPeers];
     
     // limit total to 2500 peers
@@ -818,52 +853,6 @@
                                                             object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
     
-}
-
-- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
-{
-    // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
-    if (block.totalTransactions == 0 &&
-        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + HOUR_TIME_INTERVAL/2) {
-        return;
-    }
-    
-    NSArray *txHashes = block.txHashes;
-    
-    // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
-    if (peer == self.downloadPeer && block.totalTransactions > 0) {
-        NSMutableSet *fp = [NSMutableSet setWithArray:txHashes];
-        
-        // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
-        [fp minusSet:self.nonFpTx]; // wallet tx are not false-positives
-        [self.nonFpTx removeAllObjects];
-        self.fpRate = self.fpRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*fp.count/1400;
-        
-        // false positive rate sanity check
-        if (self.downloadPeer.status == DSPeerStatus_Connected && self.fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
-            NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                  peer.port, self.fpRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
-            [self.downloadPeer disconnect];
-        }
-        else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
-            [self updateFilter]; // rebuild bloom filter when it starts to degrade
-        }
-    }
-    
-    if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        if (peer == self.downloadPeer) self.chainManager.lastChainRelayTime = [NSDate timeIntervalSince1970];
-        return;
-    }
-    
-    [self.chain addBlock:block fromPeer:peer];
-}
-
-- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
-{
-    for (NSValue *hash in txHashes) {
-        [self.txRelays[hash] removeObject:peer];
-        [self.txRequests[hash] removeObject:peer];
-    }
 }
 
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb
@@ -891,14 +880,6 @@
 
 
 // MARK: Dash Specific
-
-- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
-    if (spork.isValid) {
-        [self.sporkManager peer:(DSPeer*)peer relayedSpork:spork];
-    } else {
-        [self peerMisbehavin:peer];
-    }
-}
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count {
     [self setCount:count forSyncCountInfo:syncCountInfo];
@@ -937,10 +918,6 @@
         default:
             break;
     }
-}
-
-- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
-    [self.governanceSyncManager.currentGovernanceSyncObject peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
 }
 
 @end

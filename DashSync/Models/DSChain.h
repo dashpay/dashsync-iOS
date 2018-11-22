@@ -229,7 +229,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
 -(void)chainWasWiped:(DSChain*)chain;
 
 @optional
--(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain;
+-(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 

@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSUInteger connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, readonly) NSSet *connectedPeers;
 
-- (void)peerMisbehavin:(DSPeer *)peer;
+- (void)peerMisbehaving:(DSPeer *)peer;
 
 
 

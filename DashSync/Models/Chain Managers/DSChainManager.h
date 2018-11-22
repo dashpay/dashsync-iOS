@@ -50,10 +50,6 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
 - (void)rescan;
 
-- (void)updateFilter;
-
-- (DSBloomFilter *)bloomFilterForPeer:(DSPeer *)peer;
-
 @end
 
 NS_ASSUME_NONNULL_END

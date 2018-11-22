@@ -537,7 +537,7 @@
 }
 
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
-    [self.peerManager peerMisbehavin:peer];
+    [self.peerManager peerMisbehaving:peer];
     [self.peerManager connect];
 }
 
@@ -545,6 +545,10 @@
 
 -(void)governanceObject:(DSGovernanceObject*)governanceObject didReceiveUnknownHashes:(NSSet*)hash fromPeer:(DSPeer*)peer {
     
+}
+
+- (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
+    [self.currentGovernanceSyncObject peer:peer hasGovernanceVoteHashes:governanceVoteHashes];
 }
 
 // MARK:- Proposal Creation

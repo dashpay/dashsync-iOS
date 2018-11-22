@@ -155,10 +155,6 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers;
 
-// called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
-- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
-
-- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
@@ -168,6 +164,9 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 @protocol DSPeerTransactionDelegate<NSObject>
 @required
 
+// called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
+- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
+- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction;
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash;
