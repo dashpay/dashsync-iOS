@@ -167,7 +167,7 @@
         dateFormatter.dateStyle = NSDateFormatterMediumStyle;
         dateFormatter.timeStyle = NSDateFormatterMediumStyle;
     });
-    NSDate * date = [NSDate dateWithTimeIntervalSinceReferenceDate:transactionEntity.transactionHash.timestamp];
+    NSDate * date = [NSDate dateWithTimeIntervalSince1970:transactionEntity.transactionHash.timestamp];
     cell.dateLabel.text = [dateFormatter stringFromDate:date];
     cell.transactionLabel.text = transactionEntity.transactionHash.txHash.reverse.hexString;
 }

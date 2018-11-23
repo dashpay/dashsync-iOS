@@ -196,7 +196,7 @@
                     }
                     else if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
                         sent = YES;
-                        tx.timestamp = [NSDate timeIntervalSinceReferenceDate];
+                        tx.timestamp = [NSDate timeIntervalSince1970];
                         [self.account registerTransaction:tx];
                         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]

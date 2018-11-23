@@ -75,10 +75,9 @@ static NSString *dateFormat(NSString *template)
         self.syncStartedObserver =
         [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
-                                                               if ([self.chainManager.chain
-                                                                    timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
-                                                                   [NSDate timeIntervalSinceReferenceDate] &&
-                                                                   self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSinceReferenceDate]) {
+                                                               if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
+                                                                   [NSDate timeIntervalSince1970] &&
+                                                                   self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
                                                                    self.navigationItem.titleView = nil;
                                                                    self.navigationItem.title = NSLocalizedString(@"Syncing:", nil);
                                                                }
@@ -289,7 +288,7 @@ static NSString *dateFormat(NSString *template)
     NSTimeInterval txTime = (tx.timestamp > 1) ? tx.timestamp : now;
     NSDateFormatter *desiredFormatter = (txTime > year) ? monthDayHourFormatter : yearMonthDayHourFormatter;
     
-    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:txTime]];
+    date = [desiredFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:txTime]];
     if (tx.blockHeight != TX_UNCONFIRMED) self.txDates[uint256_obj(tx.txHash)] = date;
     return date;
 }
