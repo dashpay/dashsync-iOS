@@ -30,8 +30,8 @@
 #import "DSSporkManager.h"
 #import "DSOptionsManager.h"
 #import "DSMasternodeManager+Protected.h"
-#import "DSGovernanceSyncManager.h"
-#import "DSDAPIPeerManager.h"
+#import "DSGovernanceSyncManager+Protected.h"
+#import "DSDAPIPeerManager+Protected.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSBloomFilter.h"
 #import "DSMerkleBlock.h"
@@ -141,7 +141,7 @@
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     NSLog(@"chain finished syncing");
     self.syncStartHeight = 0;
-    [self.transactionManager retrieveMempool];
+    [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
     [self.masternodeManager getMasternodeList];
@@ -164,6 +164,10 @@
 }
 
 // MARK: - Count Info
+
+-(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
+    [self setCount:0 forSyncCountInfo:syncCountInfo];
+}
 
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
     //    if (syncCountInfo ==  DSSyncCountInfo_List || syncCountInfo == DSSyncCountInfo_GovernanceObject) {

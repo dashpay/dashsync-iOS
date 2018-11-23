@@ -262,7 +262,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: - Mempools Sync
 
-- (void)retrieveMempool
+- (void)fetchMempoolFromNetwork
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
     for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, load filters and get mempools from other peers

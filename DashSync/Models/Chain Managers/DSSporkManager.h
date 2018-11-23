@@ -35,7 +35,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
     
 @property (nonatomic,readonly) BOOL instantSendActive;
 @property (nonatomic,readonly) BOOL instantSendAutoLocks;
-@property (nonatomic,readonly) BOOL sporksUpdatedSignatures;
 
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
 @property (nonatomic,readonly) DSChain * chain;
@@ -43,9 +42,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 - (instancetype)initWithChain:(DSChain*)chain;
 
 - (void)getSporks;
-
-- (void)peer:(DSPeer * _Nonnull)peer relayedSpork:(DSSpork * _Nonnull)spork;
-- (void)peer:(DSPeer * _Nonnull)peer hasSporkHashes:(NSSet* _Nonnull)sporkHashes;
 
 - (void)wipeSporkInfo;
 

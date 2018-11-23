@@ -55,7 +55,7 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
-- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 - (void)rescan;
 

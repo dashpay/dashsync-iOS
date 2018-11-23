@@ -1,8 +1,8 @@
 //
-//  DSTransactionManager+Protected.h
+//  DSSporkManager+Protected.h
 //  DashSync
 //
-//  Created by Sam Westrich on 11/21/18.
+//  Created by Sam Westrich on 11/23/18.
 //  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,20 +23,13 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTransactionManager.h"
+#import "DSSporkManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSTransactionManager (Protected)
+@interface DSSporkManager (Protected)
 
-@property (nonatomic, readonly) NSDictionary *txRelays, *txRequests;
-@property (nonatomic, readonly) NSDictionary *publishedTx, *publishedCallback;
-
-- (void)addTransactionToPublishList:(DSTransaction *)transaction;
-- (void)clearTransactionRelaysForPeer:(DSPeer*)peer;
-- (void)removeUnrelayedTransactions;
-- (void)updateTransactionsBloomFilter;
-- (void)clearBloomFilter;
+@property (nonatomic,readonly) BOOL sporksUpdatedSignatures;
 
 @end
 

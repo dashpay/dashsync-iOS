@@ -65,15 +65,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)clearPeers;
 - (void)disconnect;
 
-// Masternodes
-//-(uint32_t)countForSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
+- (void)clearRegisteredPeers;
+- (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
 
--(void)clearRegisteredPeers;
--(void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
-
--(DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
--(DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
--(void)setTrustedPeerHost:(NSString*)host;
--(void)removeTrustedPeerHost;
+- (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
+- (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
+- (void)setTrustedPeerHost:(NSString*)host;
+- (void)removeTrustedPeerHost;
 
 @end

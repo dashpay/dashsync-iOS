@@ -13,7 +13,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSKey.h"
 #import "DSChain.h"
-#import "DSSporkManager.h"
+#import "DSSporkManager+Protected.h"
 #import "DSPeerManager.h"
 #import "DSChainManager.h"
 

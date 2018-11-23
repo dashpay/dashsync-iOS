@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)restartSyncStartHeight;
 - (void)relayedNewItem;
 - (void)resetLastRelayedItemTime;
+- (void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 
 @end
 

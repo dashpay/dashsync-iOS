@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
-- (void)retrieveMempool;
+- (void)fetchMempoolFromNetwork;
 
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
