@@ -38,6 +38,7 @@
 #import "DSBloomFilter.h"
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
+#import "UIWindow+DSUtils.h"
 
 @interface DSTransactionManager()
 
@@ -70,6 +71,12 @@
 
 -(DSChainManager*)chainManager {
     return self.chain.chainManager;
+}
+
+// MARK: - Helpers
+
+-(UIViewController *)presentingViewController {
+    return [[[UIApplication sharedApplication] keyWindow] ds_presentingViewController];
 }
 
 // MARK: - Blockchain Transactions
@@ -212,7 +219,7 @@
                                                }];
                 [alert addAction:cancelButton];
                 [alert addAction:rescanButton];
-                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+                [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
                 
             }
             else {
@@ -227,7 +234,7 @@
                                            handler:^(UIAlertAction * action) {
                                            }];
                 [alert addAction:okButton];
-                [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+                [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
             }
         });
     }
@@ -553,7 +560,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                                        handler:^(UIAlertAction * action) {
                                        }];
             [alert addAction:okButton];
-            [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+            [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
 #endif
         });
     }

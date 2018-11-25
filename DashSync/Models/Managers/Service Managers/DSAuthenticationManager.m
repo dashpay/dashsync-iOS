@@ -37,6 +37,7 @@
 #import "NSData+Bitcoin.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 #import "NSDate+Utils.h"
+#import "UIWindow+DSUtils.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -125,6 +126,10 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 - (NSTimeInterval)secureTime
 {
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
+}
+
+-(UIViewController *)presentingViewController {
+    return [[[UIApplication sharedApplication] keyWindow] ds_presentingViewController];
 }
 
 // MARK: - Device
@@ -220,17 +225,6 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     _pinField.secureTextEntry = YES;
     _pinField.delegate = self;
     return _pinField;
-}
-
--(UIViewController*)presentingViewController {
-    UIViewController *topController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-    while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
-        topController = topController.presentedViewController;
-    }
-    if ([topController isKindOfClass:[UINavigationController class]]) {
-        topController = ((UINavigationController*)topController).topViewController;
-    }
-    return topController;
 }
 
 -(void)shakeEffectWithCompletion:(void (^ _Nullable)(void))completion {
