@@ -74,8 +74,8 @@
 
 @interface DSPeerManager ()
 
-@property (nonatomic, strong) NSMutableOrderedSet *peers;
-@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers;
+@property (atomic, strong) NSMutableOrderedSet *peers; //atomic might be needed here for thread safety (todo : check this)
+@property (atomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers; //atomic is needed here for thread safety
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
@@ -154,7 +154,7 @@
 {
     NSUInteger count = 0;
     
-    for (DSPeer *peer in [self.connectedPeers copy]) {
+    for (DSPeer *peer in self.connectedPeers) {
         if (peer.status == DSPeerStatus_Connected) count++;
     }
     
