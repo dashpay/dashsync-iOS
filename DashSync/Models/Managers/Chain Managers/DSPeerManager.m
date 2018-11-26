@@ -75,7 +75,7 @@
 @interface DSPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
-@property (atomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers; //atomic is needed here for thread safety
+@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
@@ -105,7 +105,9 @@
                                                            
                                                            if (self.taskId == UIBackgroundTaskInvalid) {
                                                                self.misbehavinCount = 0;
-                                                               [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
+                                                               dispatch_async(self.chainPeerManagerQueue, ^{
+                                                                   [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
+                                                               });
                                                            }
                                                        }];
     
@@ -152,11 +154,12 @@
 // number of connected peers
 - (NSUInteger)connectedPeerCount
 {
-    NSUInteger count = 0;
-    
-    for (DSPeer *peer in self.connectedPeers) {
-        if (peer.status == DSPeerStatus_Connected) count++;
-    }
+    __block NSUInteger count = 0;
+    dispatch_sync(self.chainPeerManagerQueue, ^{
+        for (DSPeer *peer in self.connectedPeers) {
+            if (peer.status == DSPeerStatus_Connected) count++;
+        }
+    });
     
     return count;
 }
@@ -306,11 +309,13 @@
 
 
 - (void)changeCurrentPeers {
+    dispatch_async(self.chainPeerManagerQueue, ^{
     for (DSPeer *p in self.connectedPeers) {
         p.priority--;
         NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier: NSCalendarIdentifierGregorian];
         p.lowPreferenceTill = [[calendar dateByAddingUnit:NSCalendarUnitDay value:5 toDate:[NSDate date] options:0] timeIntervalSince1970];
     }
+    });
 }
 
 - (void)peerMisbehaving:(DSPeer *)peer
@@ -458,6 +463,7 @@
     
     [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) { // wait for pong so we include already sent tx
         if (! success) return;
+        //we are on chainPeerManagerQueue
         NSLog(@"updating filter with newly created wallet addresses");
         [self.transactionManager clearBloomFilter];
         
@@ -470,7 +476,7 @@
                 [self.downloadPeer sendPingMessageWithPongHandler:^(BOOL success) {
                     if (! success || self.downloadPeer.needsFilterUpdate) return;
                     [self.downloadPeer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray]
-                                                                        andHashStop:UINT256_ZERO];
+                                                            andHashStop:UINT256_ZERO];
                 }];
             }];
         }
@@ -610,10 +616,12 @@
 
 - (void)disconnect
 {
-    for (DSPeer *peer in self.connectedPeers) {
-        self.connectFailures = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
-        [peer disconnect];
-    }
+    dispatch_async(self.chainPeerManagerQueue, ^{
+        for (DSPeer *peer in self.connectedPeers) {
+            self.connectFailures = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
+            [peer disconnect];
+        }
+    });
 }
 
 - (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion {
