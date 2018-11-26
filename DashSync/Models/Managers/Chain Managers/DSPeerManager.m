@@ -1,5 +1,5 @@
 //
-//  DSChainPeerManager.m
+//  DSPeerManager.m
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 10/6/13.
@@ -94,7 +94,9 @@
     self.connectedPeers = [NSMutableSet set];
     self.misbehavingPeers = [NSMutableSet set];
     self.taskId = UIBackgroundTaskInvalid;
-    self.chainPeerManagerQueue = dispatch_queue_create("org.dashcore.dashsync.peermanager", DISPATCH_QUEUE_SERIAL);
+    
+    //there should be one queue per chain
+    self.chainPeerManagerQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.peermanager.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     self.maxConnectCount = PEER_MAX_CONNECTIONS;
     
     self.backgroundObserver =
@@ -154,13 +156,12 @@
 // number of connected peers
 - (NSUInteger)connectedPeerCount
 {
-    __block NSUInteger count = 0;
-    dispatch_sync(self.chainPeerManagerQueue, ^{
+    NSUInteger count = 0;
+    @synchronized (self.connectedPeers) {
         for (DSPeer *peer in self.connectedPeers) {
             if (peer.status == DSPeerStatus_Connected) count++;
         }
-    });
-    
+    }
     return count;
 }
 
@@ -310,11 +311,11 @@
 
 - (void)changeCurrentPeers {
     dispatch_async(self.chainPeerManagerQueue, ^{
-    for (DSPeer *p in self.connectedPeers) {
-        p.priority--;
-        NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier: NSCalendarIdentifierGregorian];
-        p.lowPreferenceTill = [[calendar dateByAddingUnit:NSCalendarUnitDay value:5 toDate:[NSDate date] options:0] timeIntervalSince1970];
-    }
+        for (DSPeer *p in self.connectedPeers) {
+            p.priority--;
+            NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier: NSCalendarIdentifierGregorian];
+            p.lowPreferenceTill = [[calendar dateByAddingUnit:NSCalendarUnitDay value:5 toDate:[NSDate date] options:0] timeIntervalSince1970];
+        }
     });
 }
 
@@ -364,7 +365,7 @@
 
 - (void)savePeers
 {
-    NSLog(@"[DSChainPeerManager] save peers");
+    NSLog(@"[DSPeerManager] save peers");
     NSMutableSet *peers = [[self.peers.set setByAddingObjectsFromSet:self.misbehavingPeers] mutableCopy];
     NSMutableSet *addrs = [NSMutableSet set];
     
@@ -569,14 +570,16 @@
             }
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncStartedNotification
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncStartedNotification
                                                                     object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
         }
         
-        [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
-            return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
-        }]];
+        @synchronized (self.connectedPeers) {
+            [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+                return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
+            }]];
+        }
         
         self.fixedPeer = [self trustedPeerHost]?[DSPeer peerWithHost:[self trustedPeerHost] onChain:self.chain]:nil;
         self.maxConnectCount = (self.fixedPeer) ? 1 : PEER_MAX_CONNECTIONS;
@@ -586,28 +589,34 @@
         
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
         
-        while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
-            // pick a random peer biased towards peers with more recent timestamps
-            DSPeer *peer = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
-            
-            if (peer && ! [self.connectedPeers containsObject:peer]) {
-                [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.chainPeerManagerQueue];
-                peer.earliestKeyTime = self.chain.earliestWalletCreationTime;
-                [self.connectedPeers addObject:peer];
-                [peer connect];
+        if (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
+            @synchronized (self.connectedPeers) {
+                while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
+                    // pick a random peer biased towards peers with more recent timestamps
+                    DSPeer *peer = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
+                    
+                    if (peer && ! [self.connectedPeers containsObject:peer]) {
+                        [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.chainPeerManagerQueue];
+                        peer.earliestKeyTime = self.chain.earliestWalletCreationTime;
+                        
+                        [self.connectedPeers addObject:peer];
+                        
+                        [peer connect];
+                    }
+                    
+                    [peers removeObject:peer];
+                }
             }
-            
-            [peers removeObject:peer];
         }
         
         if (self.connectedPeers.count == 0) {
             [self syncStopped];
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSError *error = [NSError errorWithDomain:@"DashWallet" code:1
+                NSError *error = [NSError errorWithDomain:@"DashSync" code:1
                                                  userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"no peers found", nil)}];
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncFailedNotification
                                                                     object:nil userInfo:@{@"error":error,DSChainManagerNotificationChainKey:self.chain}];
             });
         }
@@ -705,7 +714,7 @@
                     [peer sendGetaddrMessage]; // request a list of other dash peers
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification
+                        [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification
                                                                             object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                     });
                 }];
@@ -741,7 +750,7 @@
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncTimeout) object:nil];
             [self performSelector:@selector(syncTimeout) withObject:nil afterDelay:PROTOCOL_TIMEOUT];
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             
             dispatch_async(self.chainPeerManagerQueue, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
@@ -767,7 +776,7 @@
 {
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
-    if ([error.domain isEqual:@"DashWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
+    if ([error.domain isEqual:@"DashWallet"] && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
     else if (error) { // timeout or some non-protocol related network error
@@ -792,7 +801,7 @@
         _peers = nil;
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerSyncFailedNotification
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncFailedNotification
                                                                 object:nil userInfo:(error) ? @{@"error":error,DSChainManagerNotificationChainKey:self.chain} : @{DSChainManagerNotificationChainKey:self.chain}];
         });
     }
@@ -808,7 +817,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        //Commented out for now, don't think we need this
+//        [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 

@@ -103,7 +103,7 @@
     if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];
-            completion([NSError errorWithDomain:@"DashWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
+            completion([NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
                                                                                       DSLocalizedString(@"dash transaction not signed", nil)}]);
         }
         
@@ -112,7 +112,7 @@
     else if (! self.peerManager.connected && self.peerManager.connectFailures >= MAX_CONNECT_FAILURES) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
-            completion([NSError errorWithDomain:@"DashWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
+            completion([NSError errorWithDomain:@"DashSync" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
                                                                                         DSLocalizedString(@"not connected to the dash network", nil)}]);
         }
         
@@ -256,7 +256,7 @@
     
     if (callback) {
         [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
-        callback([NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
+        callback([NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
                                                                                                  DSLocalizedString(@"transaction canceled, network timeout", nil)}]);
     }
 }
@@ -271,6 +271,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 - (void)fetchMempoolFromNetwork
 {
+    // this can come from any queue
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
     for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, load filters and get mempools from other peers
         if (p.status != DSPeerStatus_Connected) continue;
@@ -290,7 +291,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                             postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                         });
                     }
                     
@@ -299,7 +300,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                         
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                             postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                         });
                     }
                 }];
@@ -309,7 +310,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [[NSNotificationCenter defaultCenter]
-                     postNotificationName:DSChainPeerManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                     postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                 });
             }
         }];
@@ -431,7 +432,8 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
             
@@ -523,7 +525,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
             
         });
@@ -547,7 +549,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainPeerManagerTxStatusNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
 #if DEBUG
             UIAlertController * alert = [UIAlertController
@@ -600,7 +602,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     if (callback && ! [account transactionIsValid:transaction]) {
         [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithDomain:@"DashWallet" code:401
+        error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
     }
     else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {

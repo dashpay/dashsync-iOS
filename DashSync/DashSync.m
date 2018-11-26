@@ -228,7 +228,7 @@
                                                        }];
     
     syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch sync finished");
                                                            if (completion) completion(UIBackgroundFetchResultNewData);
@@ -236,7 +236,7 @@
                                                        }];
     
     syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch sync failed");
                                                            if (completion) completion(UIBackgroundFetchResultFailed);

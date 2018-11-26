@@ -297,7 +297,7 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
 //  [req addValue:@"text/uri-list" forHTTPHeaderField:@"Accept"]; // breaks some BIP72 implementations, notably bitpay's
 
     if (! req) {
-        completion(nil, [NSError errorWithDomain:@"DashWallet" code:417
+        completion(nil, [NSError errorWithDomain:@"DashSync" code:417
                          userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"bad payment request URL", nil)}]);
         return;
     }
@@ -326,12 +326,12 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
         if (! request) {
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            completion(nil, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+            completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                              [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
                               req.URL.host]}]);
         }
         else if (![request.details.chain isActive]) {
-            completion(nil, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+            completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                              [NSString stringWithFormat:DSLocalizedString(@"requested network \"%@\" not currently in use",
                                                                           nil), request.details.chain.networkName]}]);
         }
@@ -348,7 +348,7 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
     
     if (! req) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:@"DashWallet" code:417
+            completion(nil, [NSError errorWithDomain:@"DashSync" code:417
                              userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"bad payment URL", nil)}]);
         }
         
@@ -377,7 +377,7 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             if (completion) {
-                completion(nil, [NSError errorWithDomain:@"DashWallet" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                  [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
                                   req.URL.host]}]);
             }

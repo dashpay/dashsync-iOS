@@ -30,6 +30,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncStartedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFinishedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFailedNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceivedNotification;
+
 @class DSChain;
 
 @interface DSTransactionManager : NSObject <DSChainTransactionsDelegate,DSPeerTransactionDelegate>

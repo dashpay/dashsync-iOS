@@ -31,11 +31,6 @@
 #import "DSChain.h"
 #import "DSPeer.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncStartedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFinishedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerSyncFailedNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainPeerManagerTxStatusNotification;
-
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;
 

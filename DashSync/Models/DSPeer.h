@@ -48,7 +48,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_MasternodeVerify = 19,
 };
 
-#define BITCOIN_TIMEOUT_CODE  1001
+#define DASH_PEER_TIMEOUT_CODE  1001
 
 #define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
 #define SERVICES_NODE_BLOOM   0x04 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
