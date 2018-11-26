@@ -591,13 +591,14 @@
         
         if (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
             @synchronized (self.connectedPeers) {
+                NSTimeInterval earliestWalletCreationTime = self.chain.earliestWalletCreationTime;;
                 while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
                     // pick a random peer biased towards peers with more recent timestamps
                     DSPeer *peer = peers[(NSUInteger)(pow(arc4random_uniform((uint32_t)peers.count), 2)/peers.count)];
                     
                     if (peer && ! [self.connectedPeers containsObject:peer]) {
                         [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.chainPeerManagerQueue];
-                        peer.earliestKeyTime = self.chain.earliestWalletCreationTime;
+                        peer.earliestKeyTime = earliestWalletCreationTime;
                         
                         [self.connectedPeers addObject:peer];
                         

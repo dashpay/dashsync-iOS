@@ -184,10 +184,13 @@
     NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
     
     if (d.length == sizeof(NSTimeInterval)) {
-        _walletCreationTime = *(const NSTimeInterval *)d.bytes;
-        return _walletCreationTime;
+        NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
+        if (potentialWalletCreationTime != BIP39_CREATION_TIME) {
+            _walletCreationTime = potentialWalletCreationTime;
+            return _walletCreationTime;
+        }
     }
-    if ([DSEnvironment sharedInstance].watchOnly) return 0;
+    if ([DSEnvironment sharedInstance].watchOnly) return BIP39_WALLET_UNKNOWN_CREATION_TIME; //0
     if ([self guessedWalletCreationTime]) return [self guessedWalletCreationTime];
     return BIP39_CREATION_TIME;
 }
@@ -196,7 +199,7 @@
     NSData *d = getKeychainData(self.creationGuessTimeUniqueID, nil);
     
     if (d.length == sizeof(NSTimeInterval)) return *(const NSTimeInterval *)d.bytes;
-    return 0;
+    return BIP39_WALLET_UNKNOWN_CREATION_TIME; //0
 }
 
 -(void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime {

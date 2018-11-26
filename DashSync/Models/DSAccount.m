@@ -54,6 +54,7 @@
 #import "DSInsightManager.h"
 #import "DSKey+BIP38.h"
 #import "NSDate+Utils.h"
+#import "DSBIP39Mnemonic.h"
 
 #define AUTH_SWEEP_KEY @"AUTH_SWEEP_KEY"
 #define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
@@ -87,6 +88,8 @@
 @property (nonatomic, strong) DSDerivationPath * bip32DerivationPath;
 
 @property (nonatomic, assign) BOOL isViewOnlyAccount;
+
+@property (nonatomic, assign) UInt256 firstTransactionHash;
 
 
 @end
@@ -802,7 +805,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (![self containsTransaction:transaction]) {
         
         if (transaction.blockHeight == TX_UNCONFIRMED) {
-            if (![self.allTx count] && [self checkIsFirstTransaction:transaction]) [self.wallet setGuessedWalletCreationTime:transaction.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
+            if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
             self.allTx[hash] = transaction;
         }
         return NO;
@@ -812,7 +815,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     NSLog(@"[DSAccount] received unseen transaction %@", transaction);
-    if (![self.allTx count] && [self checkIsFirstTransaction:transaction]) [self.wallet setGuessedWalletCreationTime:transaction.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
+    if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
     for (NSString * address in transaction.inputAddresses) {
@@ -1087,7 +1090,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 {
     NSMutableArray *hashes = [NSMutableArray array], *updated = [NSMutableArray array];
     BOOL needsUpdate = NO;
-    
+    NSTimeInterval walletCreationTime = [self.wallet walletCreationTime];
     for (NSValue *hash in txHashes) {
         DSTransaction *tx = self.allTx[hash];
         UInt256 h;
@@ -1100,6 +1103,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [hash getValue:&h];
             [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
             [updated addObject:hash];
+            
+            if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && uint256_eq(h, _firstTransactionHash)) {
+                [self.wallet setGuessedWalletCreationTime:tx.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
+            }
             if ([self.pendingTx containsObject:hash] || [self.invalidTx containsObject:hash]) needsUpdate = YES;
         }
         else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
