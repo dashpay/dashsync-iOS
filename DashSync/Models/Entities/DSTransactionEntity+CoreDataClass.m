@@ -44,7 +44,7 @@
     [DSTxOutputEntity setContext:context];
 }
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
         NSMutableOrderedSet *inputs = [self mutableOrderedSetValueForKey:@"inputs"];
@@ -71,7 +71,7 @@
         }
         
         for (DSTxInputEntity *e in inputs) {
-            [e setAttributesFromTx:tx inputIndex:idx++ forTransactionEntity:self];
+            [e setAttributesFromTransaction:tx inputIndex:idx++ forTransactionEntity:self];
         }
         
         while (outputs.count < tx.outputAddresses.count) {
@@ -85,7 +85,7 @@
         idx = 0;
         
         for (DSTxOutputEntity *e in outputs) {
-            [e setAttributesFromTx:tx outputIndex:idx++ forTransactionEntity:self];
+            [e setAttributesFromTransaction:tx outputIndex:idx++ forTransactionEntity:self];
         }
         
         self.lockTime = tx.lockTime;

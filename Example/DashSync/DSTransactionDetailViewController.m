@@ -40,7 +40,7 @@
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                DSTransaction *tx = [self.transaction.chain
                                                                                     transactionForHash:self.transaction.txHash];

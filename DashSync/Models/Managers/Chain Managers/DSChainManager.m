@@ -39,6 +39,7 @@
 #import "DSDerivationPath.h"
 #import "NSString+Bitcoin.h"
 #import "NSDate+Utils.h"
+#import "DashSync.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
@@ -113,7 +114,17 @@
 // MARK: - Blockchain Sync
 
 -(void)disconnectedRescan {
-    [self.chain setLastBlockHeightForRescan];
+    DSChainEntity * chainEntity = self.chain.chainEntity;
+    [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
+    [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+    [self.chain wipeBlockchainInfo];
+    [DSTransactionEntity saveContext];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
+    });
+    
     self.syncStartHeight = self.chain.lastBlockHeight;
     [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
     [self.peerManager connect];

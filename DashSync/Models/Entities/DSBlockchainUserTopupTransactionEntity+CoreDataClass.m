@@ -13,10 +13,10 @@
 
 @implementation DSBlockchainUserTopupTransactionEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [super setAttributesFromTx:tx];
+        [super setAttributesFromTransaction:tx];
         DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction*)tx;
         self.specialTransactionVersion = blockchainUserTopupTransaction.blockchainUserTopupTransactionVersion;
         self.registrationTransactionHash = [NSData dataWithUInt256:blockchainUserTopupTransaction.registrationTransactionHash];

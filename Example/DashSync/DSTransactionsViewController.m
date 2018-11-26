@@ -65,7 +65,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.txStatusObserver) {
         self.txStatusObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerTxStatusNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                [self.tableView reloadData];
                                                            }];
@@ -73,7 +73,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncStartedObserver) {
         self.syncStartedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncStartedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncStartedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if ([self.chainManager.chain timestampForBlockHeight:self.chainManager.chain.lastBlockHeight] + WEEK_TIME_INTERVAL <
                                                                    [NSDate timeIntervalSince1970] &&
@@ -86,7 +86,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFinishedObserver) {
         self.syncFinishedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                else [self updateTitleView];
@@ -95,7 +95,7 @@ static NSString *dateFormat(NSString *template)
     
     if (! self.syncFailedObserver) {
         self.syncFailedObserver =
-        [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                            queue:nil usingBlock:^(NSNotification *note) {
                                                                if (! authenticationManager.didAuthenticate) self.navigationItem.titleView = self.logo;
                                                                [self updateTitleView];

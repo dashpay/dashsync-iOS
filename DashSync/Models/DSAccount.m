@@ -165,10 +165,10 @@
         [DSTxInputEntity setContext:self.moc];
         [DSTxOutputEntity setContext:self.moc];
         [DSDerivationPathEntity setContext:self.moc];
-        if ([DSTransactionEntity countAllObjects] > self.allTx.count) {
+        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity] > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
-            [DSTxInputEntity allObjects];
-            [DSTxOutputEntity allObjects];
+            [DSTxInputEntity objectsMatching:@"transaction.transactionHash.chain == %@",self.wallet.chain.chainEntity];
+            [DSTxOutputEntity objectsMatching:@"transaction.transactionHash.chain == %@",self.wallet.chain.chainEntity];
             DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:self.accountNumber];
             for (DSTxOutputEntity *e in accountEntity.transactionOutputs) {
                 @autoreleasepool {
@@ -846,7 +846,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
             
             DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
-            [transactionEntity setAttributesFromTx:transaction];
+            [transactionEntity setAttributesFromTransaction:transaction];
             [transactionEntityClass saveContext];
         }
     }];

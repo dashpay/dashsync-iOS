@@ -34,7 +34,7 @@
 
 @implementation DSTxOutputEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx outputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
 {
     UInt256 txHash = tx.txHash;
     
@@ -52,6 +52,8 @@
             self.localAddress = [addressEntities objectAtIndex:0];
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
+    } else {
+        NSLog(@"Output had no address");
     }
     return self;
 }
