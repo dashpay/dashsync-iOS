@@ -75,12 +75,14 @@
 @interface DSPeerManager ()
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
+
 @property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
 
 @end
 
@@ -550,7 +552,7 @@
 
 - (void)connect
 {
-    
+    self.desiredState = DSPeerManagerDesiredState_Connected;
     dispatch_async(self.chainPeerManagerQueue, ^{
         
         if ([self.chain syncsBlockchain] && ![self.chain canConstructAFilter]) return; // check to make sure the wallet has been created if only are a basic wallet with no dash features
@@ -626,6 +628,7 @@
 
 - (void)disconnect
 {
+    self.desiredState = DSPeerManagerDesiredState_Disconnected;
     dispatch_async(self.chainPeerManagerQueue, ^{
         for (DSPeer *peer in self.connectedPeers) {
             self.connectFailures = MAX_CONNECT_FAILURES; // prevent futher automatic reconnect attempts
@@ -635,11 +638,10 @@
 }
 
 - (void)disconnectDownloadPeerWithCompletion:(void (^ _Nullable)(BOOL success))completion {
-    
+    [self.downloadPeer disconnect];
     dispatch_async(self.chainPeerManagerQueue, ^{
         if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
             [self.peers removeObject:self.downloadPeer];
-            [self.downloadPeer disconnect];
         }
         if (completion) completion(TRUE);
     });
@@ -808,8 +810,8 @@
     }
     else if (self.connectFailures < MAX_CONNECT_FAILURES) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (self.taskId != UIBackgroundTaskInvalid ||
-                [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
+            if ((self.desiredState == DSPeerManagerDesiredState_Connected) && (self.taskId != UIBackgroundTaskInvalid ||
+                [UIApplication sharedApplication].applicationState != UIApplicationStateBackground)) {
                 [self connect]; // try connecting to another peer
             }
         });

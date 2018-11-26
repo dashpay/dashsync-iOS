@@ -112,19 +112,24 @@
 
 // MARK: - Blockchain Sync
 
+-(void)disconnectedRescan {
+    [self.chain setLastBlockHeightForRescan];
+    self.syncStartHeight = self.chain.lastBlockHeight;
+    [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
+    [self.peerManager connect];
+}
+
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
 - (void)rescan
 {
-    if (!self.peerManager.connected) return;
-    
-    [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
-        [self.chain setLastBlockHeightForRescan];
-        self.syncStartHeight = self.chain.lastBlockHeight;
-        [[NSUserDefaults standardUserDefaults] setInteger:self.syncStartHeight forKey:self.syncStartHeightKey];
-    }];
-    
-    [self.peerManager connect];
+    if (!self.peerManager.connected) {
+        [self disconnectedRescan];
+    } else {
+        [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
+            [self disconnectedRescan];
+        }];
+    }
 }
 
 // MARK: - DSChainDelegate

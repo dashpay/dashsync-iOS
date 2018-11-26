@@ -27,12 +27,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
+    DSPeerManagerDesiredState_Unknown = -1,
+    DSPeerManagerDesiredState_Connected = 1,
+    DSPeerManagerDesiredState_Disconnected
+};
+
 #define MAX_CONNECT_FAILURES 20 // notify user of network problems after this many connect failures in a row
 
 @interface DSPeerManager (Protected)
 
 @property (nonatomic, readonly) NSUInteger connectFailures, misbehavinCount, maxConnectCount;
 @property (nonatomic, readonly) NSSet *connectedPeers;
+@property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
 
 - (void)peerMisbehaving:(DSPeer *)peer;
 - (void)syncStopped;
