@@ -88,8 +88,9 @@ FOUNDATION_EXPORT NSString* const DSChainBlockchainUsersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainPeerManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSChainPeerManager,DSBlockchainUser;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter;
 
 @protocol DSChainDelegate;
 
@@ -120,7 +121,7 @@ FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 @property (nonatomic, readonly) NSString * localizedName;
 @property (nonatomic, readonly) NSString * uniqueID;
 @property (nonatomic, readonly,getter=isActive) BOOL active;
-@property (nonatomic, weak,nullable) DSChainPeerManager * peerManagerDelegate;
+@property (nonatomic, weak,nullable) DSChainManager * chainManager;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
 @property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
 @property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
@@ -217,13 +218,23 @@ FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 - (void)wipeBlockchainInfo;
 
 
+- (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
+
 @end
 
-@protocol DSChainDelegate
+@protocol DSChainTransactionsDelegate
+@required
 
 -(void)chain:(DSChain*)chain didSetBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes updatedTx:(NSArray *)updatedTx;
 -(void)chainWasWiped:(DSChain*)chain;
--(void)chainFinishedSyncing:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain;
+
+@end
+
+@protocol DSChainDelegate <DSChainTransactionsDelegate>
+
+@required
+
+-(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 

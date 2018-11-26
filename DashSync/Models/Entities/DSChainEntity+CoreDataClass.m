@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 
 #import "DSChainEntity+CoreDataProperties.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "NSString+Dash.h"

@@ -48,7 +48,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_MasternodeVerify = 19,
 };
 
-#define BITCOIN_TIMEOUT_CODE  1001
+#define DASH_PEER_TIMEOUT_CODE  1001
 
 #define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
 #define SERVICES_NODE_BLOOM   0x04 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
@@ -154,35 +154,58 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peerConnected:(DSPeer *)peer;
 - (void)peer:(DSPeer *)peer disconnectedWithError:(NSError *)error;
 - (void)peer:(DSPeer *)peer relayedPeers:(NSArray *)peers;
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction;
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash;
-- (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 
-// called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
-- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
+@end
 
-- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
-- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
-- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
-- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
-- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
-
-- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
+@protocol DSPeerChainDelegate<NSObject>
+@required
 
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
 
-- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
-- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
+@end
 
-- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
-- (void)peerRelayedIncorrectMasternodeDiffMessage:(DSPeer *)peer;
 
+
+@protocol DSPeerTransactionDelegate<NSObject>
+@required
+
+// called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
+- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
+- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes;
+- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction;
+- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash;
+- (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes;
+- (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
+
+@end
+
+@protocol DSPeerGovernanceDelegate<NSObject>
+@required
+
+- (DSGovernanceVote *)peer:(DSPeer *)peer requestedVote:(UInt256)voteHash;
+- (DSGovernanceObject *)peer:(DSPeer *)peer requestedGovernanceObject:(UInt256)governanceObjectHash;
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes;
 - (void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes;
+- (void)peer:(DSPeer *)peer relayedGovernanceObject:(DSGovernanceObject *)governanceObject;
+- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote;
+- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
 
+@end
+
+@protocol DSPeerSporkDelegate<NSObject>
+@required
+
+- (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork;
 - (void)peer:(DSPeer *)peer hasSporkHashes:(NSSet*)sporkHashes;
 
-- (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState;
+@end
+
+@protocol DSPeerMasternodeDelegate<NSObject>
+@required
+
+- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 @end
 
@@ -203,7 +226,12 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 
 @interface DSPeer : NSObject<NSStreamDelegate>
 
-@property (nonatomic, readonly) id<DSPeerDelegate> delegate;
+@property (nonatomic, readonly,weak) id<DSPeerDelegate> peerDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerTransactionDelegate> transactionDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerGovernanceDelegate> governanceDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerSporkDelegate> sporkDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerMasternodeDelegate> masternodeDelegate;
+@property (nonatomic, readonly,weak) id<DSPeerChainDelegate> peerChainDelegate;
 @property (nonatomic, readonly) dispatch_queue_t delegateQueue;
 
 // set this to the timestamp when the wallet was created to improve initial sync time (interval since reference date)
@@ -243,7 +271,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 - (instancetype)initWithAddress:(UInt128)address port:(uint16_t)port onChain:(DSChain*)chain timestamp:(NSTimeInterval)timestamp
 services:(uint64_t)services;
 - (instancetype)initWithHost:(NSString *)host onChain:(DSChain*)chain;
-- (void)setDelegate:(id<DSPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue;
+- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
@@ -266,7 +294,9 @@ services:(uint64_t)services;
 - (void)sendDSegMessage:(DSUTXO)utxo;
 - (void)rerequestBlocksFrom:(UInt256)blockHash; // useful to get additional transactions after a bloom filter update
 
--(NSString*)chainTip;
+- (NSString*)chainTip;
+
+- (void)save;
 
 
 

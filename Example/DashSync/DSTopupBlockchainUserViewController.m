@@ -42,7 +42,7 @@
 
 -(void)setToDefaultAccount {
     self.fundingAccount = nil;
-    for (DSWallet * wallet in self.chainPeerManager.chain.wallets) {
+    for (DSWallet * wallet in self.chainManager.chain.wallets) {
         for (DSAccount * account in wallet.accounts) {
             if (account.balance > 0) {
                 self.fundingAccount = account;
@@ -99,7 +99,7 @@
         if (blockchainUserTopupTransaction) {
             [self.fundingAccount signTransaction:blockchainUserTopupTransaction withPrompt:@"Fund Transaction" completion:^(BOOL signedTransaction) {
                 if (signedTransaction) {
-                    [self.chainPeerManager publishTransaction:blockchainUserTopupTransaction completion:^(NSError * _Nullable error) {
+                    [self.chainManager.transactionManager publishTransaction:blockchainUserTopupTransaction completion:^(NSError * _Nullable error) {
                         if (error) {
                             [self raiseIssue:@"Error" message:error.localizedDescription];
                             
@@ -131,11 +131,11 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"BlockchainUserTopupChooseWalletSegue"]) {
         DSWalletChooserViewController * chooseWalletSegue = (DSWalletChooserViewController*)segue.destinationViewController;
-        chooseWalletSegue.chain = self.chainPeerManager.chain;
+        chooseWalletSegue.chain = self.chainManager.chain;
         chooseWalletSegue.delegate = self;
     } else if ([segue.identifier isEqualToString:@"BlockchainUserTopupChooseFundingAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
-        chooseAccountSegue.chain = self.chainPeerManager.chain;
+        chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.delegate = self;
     }
 }

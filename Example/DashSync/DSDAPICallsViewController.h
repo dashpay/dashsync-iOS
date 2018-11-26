@@ -11,6 +11,6 @@
 
 @interface DSDAPICallsViewController : UITableViewController
 
-@property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSChainManager * chainManager;
 
 @end

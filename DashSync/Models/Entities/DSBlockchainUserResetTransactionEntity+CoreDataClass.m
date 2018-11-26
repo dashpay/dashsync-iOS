@@ -13,10 +13,10 @@
 
 @implementation DSBlockchainUserResetTransactionEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [super setAttributesFromTx:tx];
+        [super setAttributesFromTransaction:tx];
         DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)tx;
         self.specialTransactionVersion = blockchainUserResetTransaction.blockchainUserResetTransactionVersion;
         self.registrationTransactionHash = [NSData dataWithUInt256:blockchainUserResetTransaction.registrationTransactionHash];

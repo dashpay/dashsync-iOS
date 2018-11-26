@@ -39,6 +39,7 @@
 #import "DSChain.h"
 #import "DSAccount.h"
 #import "DSTransactionEntity+CoreDataClass.h"
+#import "DSTransactionLockVote.h"
 
 @interface DSTransaction ()
 

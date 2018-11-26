@@ -13,10 +13,10 @@
 
 @implementation DSBlockchainUserRegistrationTransactionEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [super setAttributesFromTx:tx];
+        [super setAttributesFromTransaction:tx];
         DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)tx;
         self.specialTransactionVersion = blockchainUserRegistrationTransaction.blockchainUserRegistrationTransactionVersion;
         self.publicKey = [NSData dataWithUInt160:blockchainUserRegistrationTransaction.pubkeyHash];

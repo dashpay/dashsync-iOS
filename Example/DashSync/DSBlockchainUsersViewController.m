@@ -36,12 +36,12 @@
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:section];
+    DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:section];
     return [wallet.blockchainUsers count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return [self.chainPeerManager.chain.wallets count];
+    return [self.chainManager.chain.wallets count];
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -54,7 +54,7 @@
 
 -(void)configureCell:(DSBlockchainUserTableViewCell*)blockchainUserCell atIndexPath:(NSIndexPath *)indexPath {
     @autoreleasepool {
-        DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:indexPath.section];
+        DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
         DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
         blockchainUserCell.usernameLabel.text = blockchainUser.username;
         blockchainUserCell.publicKeyLabel.text = blockchainUser.publicKeyHash;
@@ -69,7 +69,7 @@
 
 -(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
-        DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:indexPath.section];
+        DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
         DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
         [wallet unregisterBlockchainUser:blockchainUser];
     }];
@@ -83,12 +83,12 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"CreateBlockchainUserSegue"]) {
         DSCreateBlockchainUserViewController * createBlockchainUserViewController = (DSCreateBlockchainUserViewController*)((UINavigationController*)segue.destinationViewController).topViewController;
-        createBlockchainUserViewController.chainPeerManager = self.chainPeerManager;
+        createBlockchainUserViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"BlockchainUserActionsSegue"]) {
         DSBlockchainUserActionsViewController * blockchainUserActionsViewController = segue.destinationViewController;
-        blockchainUserActionsViewController.chainPeerManager = self.chainPeerManager;
+        blockchainUserActionsViewController.chainManager = self.chainManager;
         NSIndexPath * indexPath = [self.tableView indexPathForSelectedRow];
-        DSWallet * wallet = [self.chainPeerManager.chain.wallets objectAtIndex:indexPath.section];
+        DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
         DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
         blockchainUserActionsViewController.blockchainUser = blockchainUser;
     }

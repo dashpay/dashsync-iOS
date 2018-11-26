@@ -3,13 +3,30 @@
 //  DashSync
 //
 //  Created by Sam Westrich on 5/6/18.
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
-#import "DSPriceManager.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"
@@ -17,11 +34,10 @@
 #import "DashSync.h"
 #include <arpa/inet.h>
 
-#define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 
-@interface DSChainManager()
+@interface DSChainsManager()
 
 @property (nonatomic,strong) NSMutableArray * knownChains;
 @property (nonatomic,strong) NSMutableArray * knownDevnetChains;
@@ -30,7 +46,7 @@
 
 @end
 
-@implementation DSChainManager
+@implementation DSChainsManager
 
 + (instancetype)sharedInstance
 {
@@ -61,56 +77,56 @@
     return self;
 }
 
--(DSChainPeerManager*)mainnetManager {
+-(DSChainManager*)mainnetManager {
     static id _mainnetManager = nil;
     static dispatch_once_t mainnetToken = 0;
     
     dispatch_once(&mainnetToken, ^{
         DSChain * mainnet = [DSChain mainnet];
-        _mainnetManager = [[DSChainPeerManager alloc] initWithChain:mainnet];
-        mainnet.peerManagerDelegate = _mainnetManager;
+        _mainnetManager = [[DSChainManager alloc] initWithChain:mainnet];
+        mainnet.chainManager = _mainnetManager;
         
         [self.knownChains addObject:[DSChain mainnet]];
     });
     return _mainnetManager;
 }
 
--(DSChainPeerManager*)testnetManager {
+-(DSChainManager*)testnetManager {
     static id _testnetManager = nil;
     static dispatch_once_t testnetToken = 0;
     
     dispatch_once(&testnetToken, ^{
         DSChain * testnet = [DSChain testnet];
-        _testnetManager = [[DSChainPeerManager alloc] initWithChain:testnet];
-        testnet.peerManagerDelegate = _testnetManager;
+        _testnetManager = [[DSChainManager alloc] initWithChain:testnet];
+        testnet.chainManager = _testnetManager;
         [self.knownChains addObject:[DSChain testnet]];
     });
     return _testnetManager;
 }
 
 
--(DSChainPeerManager*)devnetManagerForChain:(DSChain*)chain {
+-(DSChainManager*)devnetManagerForChain:(DSChain*)chain {
     static dispatch_once_t devnetToken = 0;
     dispatch_once(&devnetToken, ^{
         self.devnetGenesisDictionary = [NSMutableDictionary dictionary];
     });
     NSValue * genesisValue = uint256_obj(chain.genesisHash);
-    DSChainPeerManager * devnetChainPeerManager = nil;
+    DSChainManager * devnetChainManager = nil;
     @synchronized(self) {
         if (![self.devnetGenesisDictionary objectForKey:genesisValue]) {
-            devnetChainPeerManager = [[DSChainPeerManager alloc] initWithChain:chain];
-            chain.peerManagerDelegate = devnetChainPeerManager;
+            devnetChainManager = [[DSChainManager alloc] initWithChain:chain];
+            chain.chainManager = devnetChainManager;
             [self.knownChains addObject:chain];
             [self.knownDevnetChains addObject:chain];
-            [self.devnetGenesisDictionary setObject:devnetChainPeerManager forKey:genesisValue];
+            [self.devnetGenesisDictionary setObject:devnetChainManager forKey:genesisValue];
         } else {
-            devnetChainPeerManager = [self.devnetGenesisDictionary objectForKey:genesisValue];
+            devnetChainManager = [self.devnetGenesisDictionary objectForKey:genesisValue];
         }
     }
-    return devnetChainPeerManager;
+    return devnetChainManager;
 }
 
--(DSChainPeerManager*)peerManagerForChain:(DSChain*)chain {
+-(DSChainManager*)chainManagerForChain:(DSChain*)chain {
     if ([chain isMainnet]) {
         return [self mainnetManager];
     } else if ([chain isTestnet]) {
@@ -130,7 +146,8 @@
 }
 
 -(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
-    DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
+    DSChainManager * chainManager = [self chainManagerForChain:chain];
+    DSPeerManager * peerManager = chainManager.peerManager;
     [peerManager clearRegisteredPeers];
     if (protocolVersion) {
         chain.protocolVersion = protocolVersion;
@@ -182,7 +199,8 @@
     if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
         chain.sporkPrivateKey = sporkPrivateKey;
     }
-    DSChainPeerManager * peerManager = [self peerManagerForChain:chain];
+    DSChainManager * chainManager = [self chainManagerForChain:chain];
+    DSPeerManager * peerManager = chainManager.peerManager;
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];
@@ -221,8 +239,9 @@
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Remove Devnet?" andTouchId:FALSE alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
         if (!cancelled && authenticatedOrSuccess) {
             NSError * error = nil;
-            DSChainPeerManager * chainPeerManager = [self peerManagerForChain:chain];
-            [chainPeerManager clearRegisteredPeers];
+            DSChainManager * chainManager = [self chainManagerForChain:chain];
+            DSPeerManager * peerManager = chainManager.peerManager;
+            [peerManager clearRegisteredPeers];
             NSMutableDictionary * registeredDevnetsDictionary = [getKeychainDict(DEVNET_CHAINS_KEY, &error) mutableCopy];
             
             if (!registeredDevnetsDictionary) registeredDevnetsDictionary = [NSMutableDictionary dictionary];
@@ -287,49 +306,5 @@
     
 }
 
-
-// MARK: - floating fees
-
-- (void)updateFeePerKb
-{
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
-    
-#if (!!FEE_PER_KB_URL)
-    
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
-                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
-    
-    //    NSLog(@"%@", req.URL.absoluteString);
-    
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                                         if (error != nil) {
-                                             NSLog(@"unable to fetch fee-per-kb: %@", error);
-                                             return;
-                                         }
-                                         
-                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                         
-                                         if (error || ! [json isKindOfClass:[NSDictionary class]] ||
-                                             ! [json[@"fee_per_kb"] isKindOfClass:[NSNumber class]]) {
-                                             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                                             return;
-                                         }
-                                         
-                                         uint64_t newFee = [json[@"fee_per_kb"] unsignedLongLongValue];
-                                         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                         
-                                         if (newFee >= MIN_FEE_PER_KB && newFee <= MAX_FEE_PER_KB && newFee != [defs doubleForKey:FEE_PER_KB_KEY]) {
-                                             NSLog(@"setting new fee-per-kb %lld", newFee);
-                                             [defs setDouble:newFee forKey:FEE_PER_KB_KEY]; // use setDouble since setInteger won't hold a uint64_t
-                                             _wallet.feePerKb = newFee;
-                                         }
-                                     }] resume];
-    
-#else
-    return;
-#endif
-}
 
 @end

@@ -28,8 +28,8 @@
 
 - (IBAction)checkAddress:(id)sender {
     NSString * address = self.addressTextField.text;
-    if ([address isValidDashAddressOnChain:self.chainPeerManager.chain]) {
-        [self.chainPeerManager.DAPIPeerManager getAddressSummary:address withSuccess:^(NSDictionary *addressInfo) {
+    if ([address isValidDashAddressOnChain:self.chainManager.chain]) {
+        [self.chainManager.DAPIPeerManager getAddressSummary:address withSuccess:^(NSDictionary *addressInfo) {
         NSLog(@"%@",addressInfo);
     } failure:^(NSError *error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@",error.localizedDescription]

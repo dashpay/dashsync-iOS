@@ -34,7 +34,7 @@
 #import "DSKey.h"
 #import "NSData+Bitcoin.h"
 #import "DSEnvironment.h"
-#import "DSChainManager.h"
+#import "DSChainsManager.h"
 #import "DSBlockchainUser.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
@@ -184,10 +184,13 @@
     NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
     
     if (d.length == sizeof(NSTimeInterval)) {
-        _walletCreationTime = *(const NSTimeInterval *)d.bytes;
-        return _walletCreationTime;
+        NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
+        if (potentialWalletCreationTime != BIP39_CREATION_TIME) {
+            _walletCreationTime = potentialWalletCreationTime;
+            return _walletCreationTime;
+        }
     }
-    if ([DSEnvironment sharedInstance].watchOnly) return 0;
+    if ([DSEnvironment sharedInstance].watchOnly) return BIP39_WALLET_UNKNOWN_CREATION_TIME; //0
     if ([self guessedWalletCreationTime]) return [self guessedWalletCreationTime];
     return BIP39_CREATION_TIME;
 }
@@ -196,7 +199,7 @@
     NSData *d = getKeychainData(self.creationGuessTimeUniqueID, nil);
     
     if (d.length == sizeof(NSTimeInterval)) return *(const NSTimeInterval *)d.bytes;
-    return 0;
+    return BIP39_WALLET_UNKNOWN_CREATION_TIME; //0
 }
 
 -(void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime {
@@ -533,7 +536,7 @@
     [keyChainDictionary removeObjectForKey:blockchainUser.username];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 -(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser {
@@ -551,7 +554,7 @@
     [keyChainDictionary setObject:@(blockchainUser.index) forKey:blockchainUser.username];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 

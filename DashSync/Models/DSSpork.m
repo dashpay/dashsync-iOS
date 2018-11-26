@@ -13,8 +13,9 @@
 #import "NSMutableData+Dash.h"
 #import "DSKey.h"
 #import "DSChain.h"
-#import "DSSporkManager.h"
-#import "DSChainPeerManager.h"
+#import "DSSporkManager+Protected.h"
+#import "DSPeerManager.h"
+#import "DSChainManager.h"
 
 @interface DSSpork()
 
@@ -92,7 +93,7 @@
     } else {
         DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:self.sporkHash];
         NSString * sporkAddress = [messagePublicKey addressForChain:self.chain];
-        DSSporkManager * sporkManager = self.chain.peerManagerDelegate.sporkManager;
+        DSSporkManager * sporkManager = self.chain.chainManager.sporkManager;
         return [[self sporkAddress] isEqualToString:sporkAddress] || (![sporkManager sporksUpdatedSignatures] && [self checkSignature70208Method:signature]);
     }
 }

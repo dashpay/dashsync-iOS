@@ -13,8 +13,8 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeManager.h"
-#import "DSChainManager.h"
-#import "DSChainPeerManager.h"
+#import "DSChainsManager.h"
+#import "DSPeerManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
@@ -159,7 +159,7 @@
     if (uint256_is_zero(self.masternodeUTXO.hash)) return FALSE;
     if (!self.createdAt) return FALSE;
     if (uint256_is_zero(self.parentHash)) return FALSE;
-//    DSChainPeerManager * peerManager = [[DSChainManager sharedInstance] peerManagerForChain:self.chain];
+//    DSPeerManager * peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain];
 //    DSSimplifiedMasternodeEntry * masternode = [peerManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:self.masternodeUTXO];
 //    DSKey * key = [DSKey keyWithPublicKey:masternode.keyIDVoting];
 //    BOOL isValid = [key verify:self.governanceVoteHash signature:self.signature];

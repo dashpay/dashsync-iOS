@@ -13,10 +13,10 @@
 
 @implementation DSBlockchainUserCloseTransactionEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
-        [super setAttributesFromTx:tx];
+        [super setAttributesFromTransaction:tx];
         DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction*)tx;
         self.specialTransactionVersion = blockchainUserCloseTransaction.blockchainUserCloseTransactionVersion;
         self.registrationTransactionHash = [NSData dataWithUInt256:blockchainUserCloseTransaction.registrationTransactionHash];

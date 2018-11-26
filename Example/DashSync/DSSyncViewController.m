@@ -43,6 +43,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *receivingAddressLabel;
 @property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainUsersObserver;
 
 - (IBAction)startSync:(id)sender;
@@ -57,6 +58,7 @@
 {
     [super viewDidLoad];
     
+    [self updateReceivingAddress];
     [self updateBalance];
     [self updateSporks];
     [self updateBlockHeight];
@@ -72,42 +74,42 @@
     [self updateConnectedPeerCount];
     
     self.syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFinishedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            NSLog(@"background fetch sync finished");
                                                            [self syncFinished];
                                                        }];
     
     self.syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerSyncFailedNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                NSLog(@"background fetch sync failed");
                                                                [self syncFailed];
                                                            }
                                                        }];
     
     
-    self.connectedPeerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerConnectedPeersDidChangeNotification object:nil
+    self.connectedPeerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerConnectedPeersDidChangeNotification object:nil
                                                                                      queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                                                                    if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                                                                    if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                          [self updateConnectedPeerCount];
                                                                                                                                                     }
                                                                                      }];
     
-    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerPeersDidChangeNotification object:nil
+    self.peerConnectionObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSPeerManagerPeersDidChangeNotification object:nil
                                                                                         queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                                                                       if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                                                                       if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                             [self updatePeerCount];
                                                                                                                                                        }
                                                                                         }];
     
     
     self.blocksObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainPeerManagerNewBlockNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewBlockNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            
-                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                NSLog(@"update blockheight");
                                                                [self updateBlockHeight];
                                                            }
@@ -123,7 +125,7 @@
     self.balanceObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSWalletBalanceDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if (!note.userInfo[DSChainPeerManagerNotificationChainKey] ||[note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           if (!note.userInfo[DSChainManagerNotificationChainKey] ||[note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                //NSLog(@"update balance");
                                                                [self updateBalance];
                                                            }
@@ -131,35 +133,35 @@
     self.sporkObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSSporkListDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                NSLog(@"update spork count");
                                                                [self updateSporks];
                                                            }
                                                        }];
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
-                                                                                     if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                     if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                          NSLog(@"update masternode broadcast count");
                                                                                          [self updateMasternodeList];
                                                                                      }
                                                                                  }];
     self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
                                                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                                                          if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                          if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                               NSLog(@"update masternode count");
                                                                                               [self updateMasternodeCount];
                                                                                           }
                                                                                       }];
     self.governanceObjectCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectCountUpdateNotification object:nil
                                                                                             queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                     NSLog(@"update governance object count");
                                                                                                     [self updateReceivedGovernanceProposalCount];
                                                                                                 }
                                                                                             }];
     self.governanceObjectReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectListDidChangeNotification object:nil
                                                                                                     queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                        if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                        if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                             NSLog(@"update governance received object count");
                                                                                                             [self updateReceivedGovernanceProposalCount];
                                                                                                         }
@@ -167,14 +169,14 @@
     
     self.governanceVoteCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVoteCountUpdateNotification object:nil
                                                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                                                              if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                              if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                   NSLog(@"update governance vote count");
                                                                                                   [self updateReceivedGovernanceVoteCount];
                                                                                               }
                                                                                           }];
     self.governanceVoteReceivedCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceVotesDidChangeNotification object:nil
                                                                                                   queue:nil usingBlock:^(NSNotification *note) {
-                                                                                                      if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                           NSLog(@"update governance received vote count");
                                                                                                           [self updateReceivedGovernanceVoteCount];
                                                                                                       }
@@ -182,27 +184,27 @@
     self.chainWalletObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainWalletsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                [self updateWalletCount];
                                                            }
                                                        }];
     
     self.blockchainUsersObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlockchainUsersDidChangeNotification object:nil
                                                                                           queue:nil usingBlock:^(NSNotification *note) {
-                                                                                              if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                              if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                   [self updateBlockchainUsersCount];
                                                                                               }
                                                                                           }];
     self.chainStandaloneDerivationPathObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                [self updateStandaloneDerivationPathsCount];
                                                            }
                                                        }];
     //    self.chainSingleAddressObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil
     //                                                                                         queue:nil usingBlock:^(NSNotification *note) {
-    //                                                                                             if ([note.userInfo[DSChainPeerManagerNotificationChainKey] isEqual:[self chain]]) {
+    //                                                                                             if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
     //                                                                                             [self updateStandaloneDerivationPathsCount];
     //                                                                                             }
     //                                                                                         }];
@@ -216,14 +218,14 @@
 }
 
 -(DSChain*)chain {
-    return self.chainPeerManager.chain;
+    return self.chainManager.chain;
 }
 
 - (void)showSyncing
 {
-    double progress = self.chainPeerManager.syncProgress;
+    double progress = self.chainManager.syncProgress;
     
-    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
+    if (progress > DBL_EPSILON && progress + DBL_EPSILON < 1.0 && self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
         self.explanationLabel.text = NSLocalizedString(@"Syncing:", nil);
     }
 }
@@ -240,7 +242,7 @@
     if (timeout <= DBL_EPSILON) {
         if ([self.chain timestampForBlockHeight:self.chain.lastBlockHeight] +
             WEEK_TIME_INTERVAL < [NSDate timeIntervalSince1970]) {
-            if (self.chainPeerManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
+            if (self.chainManager.chain.earliestWalletCreationTime + DAY_TIME_INTERVAL < start) {
                 self.explanationLabel.text = NSLocalizedString(@"Syncing", nil);
             }
         }
@@ -256,7 +258,7 @@
 
 - (void)stopActivityWithSuccess:(BOOL)success
 {
-    double progressView = self.chainPeerManager.syncProgress;
+    double progressView = self.chainManager.syncProgress;
     
     self.start = self.timeout = 0.0;
     if (progressView > DBL_EPSILON && progressView + DBL_EPSILON < 1.0) return; // not done syncing
@@ -292,7 +294,7 @@
     
     static int counter = 0;
     NSTimeInterval elapsed = [NSDate timeIntervalSince1970] - self.start;
-    double progress = self.chainPeerManager.syncProgress;
+    double progress = self.chainManager.syncProgress;
     uint64_t dbFileSize = [DashSync sharedSyncController].dbSize;
     uint32_t lastBlockHeight = self.chain.lastBlockHeight;
     if (self.timeout > 1.0 && 0.1 + 0.9*elapsed/self.timeout < progress) progress = 0.1 + 0.9*elapsed/self.timeout;
@@ -324,7 +326,7 @@
     self.percentageLabel.text = [NSString stringWithFormat:@"%0.1f%%",(progress > 0.1 ? progress - 0.1 : 0.0)*111.0];
     self.dbSizeLabel.text = [NSString stringWithFormat:@"%0.1llu KB",dbFileSize/1000];
     self.lastBlockHeightLabel.text = [NSString stringWithFormat:@"%d",lastBlockHeight];
-    self.downloadPeerLabel.text = self.chainPeerManager.downloadPeerName;
+    self.downloadPeerLabel.text = self.chainManager.peerManager.downloadPeerName;
     self.chainTipLabel.text = self.chain.chainTip;
     if (progress + DBL_EPSILON >= 1.0) {
         self.percentageLabel.text = @"100%";
@@ -334,12 +336,12 @@
 }
 
 - (IBAction)startSync:(id)sender {
-    [[DashSync sharedSyncController] startSyncForChain:self.chainPeerManager.chain];
+    [[DashSync sharedSyncController] startSyncForChain:self.chainManager.chain];
     [self startActivityWithTimeout:5.0];
 }
 
 - (IBAction)stopSync:(id)sender {
-    [[DashSync sharedSyncController] stopSyncForChain:self.chainPeerManager.chain];
+    [[DashSync sharedSyncController] stopSyncForChain:self.chainManager.chain];
     [self startActivityWithTimeout:5.0];
 }
 
@@ -347,36 +349,36 @@
     UIAlertController * wipeDataAlertController = [UIAlertController alertControllerWithTitle:@"What do you wish to Wipe?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Peer Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Masternode Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Governance Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Spork Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Wallet Data" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain forceReauthentication:YES];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES];
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Everything" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainPeerManager.chain];
-        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainPeerManager.chain];
-        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainPeerManager.chain];
-        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainPeerManager.chain];
-        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainPeerManager.chain];
-        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainPeerManager.chain forceReauthentication:YES]; //this takes care of blockchain info as well;
+        [[DashSync sharedSyncController] wipePeerDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeSporkDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeGovernanceDataForChain:self.chainManager.chain];
+        [[DashSync sharedSyncController] wipeWalletDataForChain:self.chainManager.chain forceReauthentication:YES]; //this takes care of blockchain info as well;
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -395,8 +397,18 @@
     
 }
 
+-(void)updateReceivingAddress {
+    if (self.chain.wallets.count) {
+        DSWallet * firstWallet = self.chain.wallets[0];
+        DSAccount * account = [firstWallet accountWithNumber:0];
+        self.receivingAddressLabel.text = [account receiveAddress];
+    } else {
+        self.receivingAddressLabel.text = @"";
+    }
+}
+
 -(void)updateBalance {
-    self.transactionCountBalanceLabel.text = [NSString stringWithFormat:@"%lu / %@",[self.chain.allTransactions count],[[DSPriceManager sharedInstance] stringForDashAmount:self.chainPeerManager.chain.balance]];
+    self.transactionCountBalanceLabel.text = [NSString stringWithFormat:@"%lu / %@",[self.chain.allTransactions count],[[DSPriceManager sharedInstance] stringForDashAmount:self.chainManager.chain.balance]];
 }
 
 -(void)updateBlockHeight {
@@ -404,35 +416,35 @@
 }
 
 -(void)updatePeerCount {
-    uint64_t peerCount = self.chainPeerManager.peerCount;
+    uint64_t peerCount = self.chainManager.peerManager.peerCount;
     self.peerCountLabel.text = [NSString stringWithFormat:@"%llu",peerCount];
 }
 
 -(void)updateConnectedPeerCount {
-    uint64_t connectedPeerCount = self.chainPeerManager.connectedPeerCount;
+    uint64_t connectedPeerCount = self.chainManager.peerManager.connectedPeerCount;
     self.connectedPeerCountLabel.text = [NSString stringWithFormat:@"%llu",connectedPeerCount];
 }
 
 -(void)updateSporks {
-    self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[self.chainPeerManager.sporkManager.sporkDictionary allKeys] count]];
+    self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[self.chainManager.sporkManager.sporkDictionary allKeys] count]];
 }
 
 -(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",self.chainPeerManager.chain.totalMasternodeCount];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.totalMasternodeCount];
 }
 
 -(void)updateMasternodeList {
-        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager simplifiedMasternodeEntryCount]];
-        self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager simplifiedMasternodeEntryCount]];
-        self.verifiedMasternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainPeerManager.masternodeManager simplifiedMasternodeEntryCount]];
+        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
+        self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
+        self.verifiedMasternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
 }
 
 -(void)updateWalletCount {
-    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.wallets count]];
+    self.walletCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainManager.chain.wallets count]];
 }
 
 -(void)updateStandaloneDerivationPathsCount {
-    self.standaloneDerivationPathsCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainPeerManager.chain.standaloneDerivationPaths count]];
+    self.standaloneDerivationPathsCountLabel.text = [NSString stringWithFormat:@"%lu",[self.chainManager.chain.standaloneDerivationPaths count]];
 }
 
 -(void)updateSingleAddressesCount {
@@ -440,49 +452,49 @@
 }
 
 -(void)updateReceivedGovernanceVoteCount {
-    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainPeerManager.governanceSyncManager governanceVotesCount],self.chainPeerManager.governanceSyncManager.totalGovernanceVotesCount];
+    self.receivedVotesCountLabel.text = [NSString stringWithFormat:@"%lu / %lu",(unsigned long)[self.chainManager.governanceSyncManager governanceVotesCount],self.chainManager.governanceSyncManager.totalGovernanceVotesCount];
 }
 
 -(void)updateBlockchainUsersCount {
-    self.blockchainUsersCountLabel.text = [NSString stringWithFormat:@"%u",self.chainPeerManager.chain.blockchainUsersCount];
+    self.blockchainUsersCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.blockchainUsersCount];
 }
 
 -(void)updateReceivedGovernanceProposalCount {
-    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %lu / %u",(unsigned long)[self.chainPeerManager.governanceSyncManager proposalObjectsCount],(unsigned long)[self.chainPeerManager.governanceSyncManager governanceObjectsCount],self.chainPeerManager.chain.totalGovernanceObjectsCount];
+    self.receivedProposalCountLabel.text = [NSString stringWithFormat:@"%lu / %lu / %u",(unsigned long)[self.chainManager.governanceSyncManager proposalObjectsCount],(unsigned long)[self.chainManager.governanceSyncManager governanceObjectsCount],self.chainManager.chain.totalGovernanceObjectsCount];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"WalletsListSegue"]) {
         DSWalletViewController * walletViewController = (DSWalletViewController*)segue.destinationViewController;
-        walletViewController.chain = self.chainPeerManager.chain;
+        walletViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"StandaloneDerivationPathsSegue"]) {
         DSStandaloneDerivationPathController * standaloneDerivationPathController = (DSStandaloneDerivationPathController*)segue.destinationViewController;
-        standaloneDerivationPathController.chain = self.chainPeerManager.chain;
+        standaloneDerivationPathController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"SporksListSegue"]) {
         DSSporksViewController * sporksViewController = (DSSporksViewController*)segue.destinationViewController;
-        sporksViewController.chain = self.chainPeerManager.chain;
-        sporksViewController.sporksArray = [[[[self.chainPeerManager.sporkManager sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
+        sporksViewController.chain = self.chainManager.chain;
+        sporksViewController.sporksArray = [[[[self.chainManager.sporkManager sporkDictionary] allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"identifier" ascending:TRUE]]] mutableCopy];
     } else if ([segue.identifier isEqualToString:@"BlockchainExplorerSegue"]) {
         DSBlockchainExplorerViewController * blockchainExplorerViewController = (DSBlockchainExplorerViewController*)segue.destinationViewController;
-        blockchainExplorerViewController.chain = self.chainPeerManager.chain;
+        blockchainExplorerViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;
-        masternodeViewController.chain = self.chainPeerManager.chain;
+        masternodeViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"GovernanceObjectsSegue"]) {
         DSGovernanceObjectListViewController * governanceObjectViewController = (DSGovernanceObjectListViewController*)segue.destinationViewController;
-        governanceObjectViewController.chainPeerManager = self.chainPeerManager;
+        governanceObjectViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"TransactionsViewSegue"]) {
         DSTransactionsViewController * transactionsViewController = (DSTransactionsViewController*)segue.destinationViewController;
-        transactionsViewController.chainPeerManager = self.chainPeerManager;
+        transactionsViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"BlockchainUsersSegue"]) {
         DSBlockchainUsersViewController * blockchainUsersViewController = (DSBlockchainUsersViewController*)segue.destinationViewController;
-        blockchainUsersViewController.chainPeerManager = self.chainPeerManager;
+        blockchainUsersViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"ShowPeersSegue"]) {
         DSPeersViewController * peersViewController = (DSPeersViewController*)segue.destinationViewController;
-        peersViewController.chainPeerManager = self.chainPeerManager;
+        peersViewController.chainManager = self.chainManager;
     } else if ([segue.identifier isEqualToString:@"Layer2Segue"]) {
         DSLayer2ViewController * layer2ViewController = (DSLayer2ViewController*)segue.destinationViewController;
-        layer2ViewController.chainPeerManager = self.chainPeerManager;
+        layer2ViewController.chainManager = self.chainManager;
     }
 }
 

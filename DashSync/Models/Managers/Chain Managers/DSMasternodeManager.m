@@ -3,7 +3,25 @@
 //  DashSync
 //
 //  Created by Sam Westrich on 6/7/18.
+//  Copyright (c) 2018 Dash Core Group <contact@dash.org>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
 #import "DSMasternodeManager.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
@@ -12,11 +30,13 @@
 #import "DSChain.h"
 #import "DSPeer.h"
 #import "NSData+Dash.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSTransactionFactory.h"
 #import "NSMutableData+Dash.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSMerkleBlock.h"
+#import "DSChainManager+Protected.h"
+#import "DSPeerManager+Protected.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -74,6 +94,16 @@ inline static int ceil_log2(int x)
     _simplifiedMasternodeList = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     return self;
+}
+
+-(DSPeerManager*)peerManager {
+    return self.chain.chainManager.peerManager;
+}
+
+// MARK: - Masternode List Sync
+
+-(void)getMasternodeList {
+    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
 }
 
 -(void)wipeMasternodeInfo {
@@ -292,13 +322,13 @@ inline static int ceil_log2(int x)
         }];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainPeerManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
-        [peer.delegate peerRelayedIncorrectMasternodeDiffMessage:peer];
+        [self.peerManager peerMisbehaving:peer];
     }
     
 }

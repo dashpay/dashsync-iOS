@@ -70,7 +70,7 @@
 
 -(void)setToDefaultAccount {
     self.account = nil;
-    for (DSWallet * wallet in self.chainPeerManager.chain.wallets) {
+    for (DSWallet * wallet in self.chainManager.chain.wallets) {
         for (DSAccount * account in wallet.accounts) {
             if (account.balance > PROPOSAL_COST) {
                 self.account = account;
@@ -92,7 +92,7 @@
 }
 
 -(NSString*)currentAddress {
-    if ([self.addressTextField.text isValidDashAddressOnChain:self.chainPeerManager.chain]) {
+    if ([self.addressTextField.text isValidDashAddressOnChain:self.chainManager.chain]) {
         return self.addressTextField.text;
     } else {
         return self.account.defaultDerivationPath.receiveAddress;
@@ -105,21 +105,21 @@
 -(IBAction)save:(id)sender; {
     NSString * identifier = self.identifierTextField.text;
     uint64_t amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountTextField.text];
-    DSGovernanceSyncManager * governanceManager = self.chainPeerManager.governanceSyncManager;
+    DSGovernanceSyncManager * governanceManager = self.chainManager.governanceSyncManager;
     NSString * address = [self currentAddress];
     
     __block DSGovernanceObject * proposal = [governanceManager createProposalWithIdentifier:identifier toPaymentAddress:address forAmount:amount fromAccount:self.account startDate:[NSDate date] cycles:1 url:@"dash.org"];
     __block DSTransaction * transaction = [proposal collateralTransactionForAccount:self.account];
     [self.account signTransaction:transaction withPrompt:@"" completion:^(BOOL signedTransaction) {
         if (signedTransaction) {
-        [self.chainPeerManager publishTransaction:transaction completion:^(NSError * _Nullable error) {
+        [self.chainManager.transactionManager publishTransaction:transaction completion:^(NSError * _Nullable error) {
             if (error) {
                 NSLog(@"%@",error);
             } else {
                 [self.account registerTransaction:transaction];
                 [proposal registerCollateralTransaction:transaction];
                 [proposal save];
-                [self.chainPeerManager publishProposal:proposal];
+                [self.chainManager.governanceSyncManager publishProposal:proposal];
                 [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
             }
         }];
@@ -135,7 +135,7 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"ChooseAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
-        chooseAccountSegue.chain = self.chainPeerManager.chain;
+        chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.delegate = self;
     }
 }

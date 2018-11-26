@@ -40,7 +40,7 @@
 
 -(void)setToDefaultAccount {
     self.fundingAccount = nil;
-    for (DSWallet * wallet in self.chainPeerManager.chain.wallets) {
+    for (DSWallet * wallet in self.chainManager.chain.wallets) {
         for (DSAccount * account in wallet.accounts) {
             if (account.balance > 0) {
                 self.fundingAccount = account;
@@ -117,7 +117,7 @@
                 if (blockchainUserRegistrationTransaction) {
                     [self.fundingAccount signTransaction:blockchainUserRegistrationTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction) {
                         if (signedTransaction) {
-                            [self.chainPeerManager publishTransaction:blockchainUserRegistrationTransaction completion:^(NSError * _Nullable error) {
+                            [self.chainManager.transactionManager publishTransaction:blockchainUserRegistrationTransaction completion:^(NSError * _Nullable error) {
                                 if (error) {
                                     [self raiseIssue:@"Error" message:error.localizedDescription];
                                 } else {
@@ -151,11 +151,11 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"BlockchainUserChooseWalletSegue"]) {
         DSWalletChooserViewController * chooseWalletSegue = (DSWalletChooserViewController*)segue.destinationViewController;
-        chooseWalletSegue.chain = self.chainPeerManager.chain;
+        chooseWalletSegue.chain = self.chainManager.chain;
         chooseWalletSegue.delegate = self;
     } else if ([segue.identifier isEqualToString:@"BlockchainUserChooseFundingAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
-        chooseAccountSegue.chain = self.chainPeerManager.chain;
+        chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.delegate = self;
     }
 }

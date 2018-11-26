@@ -12,7 +12,7 @@
 
 @interface DSProposalCreatorViewController : UITableViewController <UITextFieldDelegate,DSAccountChooserDelegate>
 
-@property (nonatomic,strong) DSChainPeerManager * chainPeerManager;
+@property (nonatomic,strong) DSChainManager * chainManager;
 
 @end
 

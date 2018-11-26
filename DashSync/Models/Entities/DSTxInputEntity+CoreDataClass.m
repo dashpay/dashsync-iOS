@@ -31,7 +31,7 @@
 
 @implementation DSTxInputEntity
 
-- (instancetype)setAttributesFromTx:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
+- (instancetype)setAttributesFromTransaction:(DSTransaction *)tx inputIndex:(NSUInteger)index forTransactionEntity:(DSTransactionEntity*)transactionEntity
 {
     UInt256 hash = UINT256_ZERO;
     

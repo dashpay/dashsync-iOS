@@ -39,13 +39,15 @@
 #import <arpa/inet.h>
 #import "DSBloomFilter.h"
 #import "DSGovernanceVote.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSOptionsManager.h"
 #import "DSTransactionFactory.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSDate+Utils.h"
+#import "DSPeerEntity+CoreDataClass.h"
+#import "DSChainManager.h"
 
 #define PEER_LOGGING 1
 
@@ -66,7 +68,12 @@
 
 @interface DSPeer ()
 
-@property (nonatomic, assign) id<DSPeerDelegate> delegate;
+@property (nonatomic, weak) id<DSPeerDelegate> peerDelegate;
+@property (nonatomic, weak) id<DSPeerChainDelegate> peerChainDelegate;
+@property (nonatomic, weak) id<DSPeerTransactionDelegate> transactionDelegate;
+@property (nonatomic, weak) id<DSPeerGovernanceDelegate> governanceDelegate;
+@property (nonatomic, weak) id<DSPeerSporkDelegate> sporkDelegate;
+@property (nonatomic, weak) id<DSPeerMasternodeDelegate> masternodeDelegate;
 @property (nonatomic, strong) dispatch_queue_t delegateQueue;
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
@@ -79,7 +86,7 @@
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
@@ -152,9 +159,15 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
-- (void)setDelegate:(id<DSPeerDelegate>)delegate queue:(dispatch_queue_t)delegateQueue
+- (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue
 {
-    _delegate = delegate;
+    _peerChainDelegate = chainDelegate;
+    _peerDelegate = peerDelegate;
+    _transactionDelegate = transactionDelegate;
+    _governanceDelegate = governanceDelegate;
+    _sporkDelegate = sporkDelegate;
+    _masternodeDelegate = masternodeDelegate;
+    
     _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
 }
 
@@ -209,6 +222,7 @@
     self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
+    self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
 
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
@@ -245,7 +259,7 @@
         
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:)
-                   withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
+                   withObject:[NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE
                                               userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"connect timeout", nil)}]
                    afterDelay:CONNECT_TIMEOUT];
         
@@ -294,7 +308,7 @@
         
         if (self.mempoolCompletion) self.mempoolCompletion(NO);
         self.mempoolCompletion = nil;
-        [self.delegate peer:self disconnectedWithError:error];
+        [self.peerDelegate peer:self disconnectedWithError:error];
     });
 }
 
@@ -303,7 +317,7 @@
     va_list args;
     
     va_start(args, message);
-    [self disconnectWithError:[NSError errorWithDomain:@"DashWallet" code:500
+    [self disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
                                               userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithFormat:message arguments:args]}]];
     va_end(args);
 }
@@ -317,7 +331,7 @@
     _status = DSPeerStatus_Connected;
     
     dispatch_async(self.delegateQueue, ^{
-        if (self->_status == DSPeerStatus_Connected) [self.delegate peerConnected:self];
+        if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peerConnected:self];
     });
 }
 
@@ -720,7 +734,7 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
             NSLog(@"%@:%u Peer ignored request for governance object hashes",self.host, self.port);
-            [self.delegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
+            [self.governanceDelegate peer:self ignoredGovernanceSync:DSGovernanceRequestState_GovernanceObjectHashes];
         }
     });
 }
@@ -889,7 +903,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self relayedPeers:peers];
+        if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peer:self relayedPeers:peers];
     });
 }
 
@@ -934,6 +948,7 @@
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
@@ -975,7 +990,7 @@
             case DSInvType_TxLockRequest:
                 [txHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_DSTx: break;
-            case DSInvType_TxLockVote: break;
+            case DSInvType_TxLockVote: [txLockVoteHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Spork: [sporkHashes addObject:[NSData dataWithUInt256:hash]]; break;
@@ -1029,7 +1044,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.delegate peer:self hasTransaction:h];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h];
             });
         }
         
@@ -1058,14 +1073,18 @@
         self.mempoolCompletion = nil;
     }
     
+    if (txLockVoteHashes.count > 0) {
+        [self.governanceDelegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+    }
+    
     if (governanceObjectHashes.count > 0) {
-        [self.delegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+        [self.governanceDelegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
     }
     if (governanceObjectVoteHashes.count > 0) {
-        [self.delegate peer:self hasGovernanceVoteHashes:governanceObjectVoteHashes];
+        [self.governanceDelegate peer:self hasGovernanceVoteHashes:governanceObjectVoteHashes];
     }
     if (sporkHashes.count > 0) {
-        [self.delegate peer:self hasSporkHashes:sporkHashes];
+        [self.sporkDelegate peer:self hasSporkHashes:sporkHashes];
     }
 }
 
@@ -1083,7 +1102,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self relayedTransaction:tx];
+        [self.transactionDelegate peer:self relayedTransaction:tx];
     });
     
     NSLog(@"%@:%u got tx %@", self.host, self.port, uint256_obj(tx.txHash));
@@ -1099,7 +1118,7 @@
             self.currentBlockTxHashes = nil;
             
             dispatch_sync(self.delegateQueue, ^{ // syncronous dispatch so we don't get too many queued up tx
-                [self.delegate peer:self relayedBlock:block];
+                [self.transactionDelegate peer:self relayedBlock:block];
             });
         }
     }
@@ -1175,7 +1194,7 @@
         }
         
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self relayedBlock:block];
+            [self.transactionDelegate peer:self relayedBlock:block];
         });
     }
 }
@@ -1218,7 +1237,7 @@
             switch (type) {
                 case DSInvType_Tx:
                 case DSInvType_TxLockRequest:
-                    transaction = [self.delegate peer:self requestedTransaction:hash];
+                    transaction = [self.transactionDelegate peer:self requestedTransaction:hash];
                     
                     if (transaction) {
                         [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
@@ -1230,7 +1249,7 @@
                     }
                 case DSInvType_GovernanceObjectVote:
                 {
-                    DSGovernanceVote * vote = [self.delegate peer:self requestedVote:hash];
+                    DSGovernanceVote * vote = [self.governanceDelegate peer:self requestedVote:hash];
                     if (vote) {
                         [self sendMessage:vote.dataMessage type:MSG_GOVOBJVOTE];
                         break;
@@ -1243,7 +1262,7 @@
                 }
                 case DSInvType_GovernanceObject:
                 {
-                    DSGovernanceObject * governanceObject = [self.delegate peer:self requestedGovernanceObject:hash];
+                    DSGovernanceObject * governanceObject = [self.governanceDelegate peer:self requestedGovernanceObject:hash];
                     if (governanceObject) {
                         [self sendMessage:governanceObject.dataMessage type:MSG_GOVOBJ];
                         break;
@@ -1297,7 +1316,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
+        [self.transactionDelegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
     });
 }
 
@@ -1376,7 +1395,7 @@
     }
     else {
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self relayedBlock:block];
+            [self.transactionDelegate peer:self relayedBlock:block];
         });
     }
 }
@@ -1399,7 +1418,7 @@
     
     if (! uint256_is_zero(txHash)) {
         dispatch_async(self.delegateQueue, ^{
-            [self.delegate peer:self rejectedTransaction:txHash withCode:code];
+            [self.transactionDelegate peer:self rejectedTransaction:txHash withCode:code];
         });
     }
 }
@@ -1416,7 +1435,7 @@
     NSLog(@"%@:%u got feefilter with rate %llu per Byte", self.host, self.port, self.feePerByte);
     
     dispatch_async(self.delegateQueue, ^{
-        [self.delegate peer:self setFeePerByte:self.feePerByte];
+        [self.transactionDelegate peer:self setFeePerByte:self.feePerByte];
     });
 }
 
@@ -1425,7 +1444,7 @@
 - (void)acceptSporkMessage:(NSData *)message
 {
     DSSpork * spork = [DSSpork sporkWithMessage:message onChain:self.chain];
-    [self.delegate peer:self relayedSpork:spork];
+    [self.sporkDelegate peer:self relayedSpork:spork];
 }
 
 // MARK: - accept Masternode
@@ -1440,23 +1459,23 @@
         case DSSyncCountInfo_GovernanceObject:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashes) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectHashesCountReceived;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             } else if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectHashesReceived) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjects;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             }
             break;
         case DSSyncCountInfo_GovernanceObjectVote:
             if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashes) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVoteHashesCountReceived;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             } else if (self.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 self.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
-                [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+                [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             }
             break;
         default:
-            [self.delegate peer:self relayedSyncInfo:syncCountInfo count:count];
+            [self.peerChainDelegate peer:self relayedSyncInfo:syncCountInfo count:count];
             break;
     }
     //ignore when count = 0; (for votes)
@@ -1470,7 +1489,7 @@
 
 -(void)acceptMNLISTDIFFMessage:(NSData*)message
 {
-    [self.delegate peer:self relayedMasternodeDiffMessage:message];
+    [self.masternodeDelegate peer:self relayedMasternodeDiffMessage:message];
 }
 
 
@@ -1482,7 +1501,7 @@
 {
     DSGovernanceObject * governanceObject = [DSGovernanceObject governanceObjectFromMessage:message onChain:self.chain];
     if (governanceObject) {
-        [self.delegate peer:self relayedGovernanceObject:governanceObject];
+        [self.governanceDelegate peer:self relayedGovernanceObject:governanceObject];
     }
 }
 
@@ -1490,7 +1509,7 @@
 {
     DSGovernanceVote * governanceVote = [DSGovernanceVote governanceVoteFromMessage:message onChain:self.chain];
     if (governanceVote) {
-        [self.delegate peer:self relayedGovernanceVote:governanceVote];
+        [self.governanceDelegate peer:self relayedGovernanceVote:governanceVote];
     }
 }
 
@@ -1603,6 +1622,31 @@
     return [NSData dataWithUInt256:self.currentBlock.blockHash].shortHexString;
 }
 
+// MARK: - Saving to Disk
+
+-(void)save {
+    [[DSPeerEntity context] performBlock:^{
+        NSArray * peerEntities = [DSPeerEntity objectsMatching:@"address == %@ && port == %@", @(CFSwapInt32BigToHost(self.address.u32[3])),@(self.port)];
+        if ([peerEntities count]) {
+            DSPeerEntity * e = [peerEntities firstObject];
+            
+            @autoreleasepool {
+                e.timestamp = self.timestamp;
+                e.services = self.services;
+                e.misbehavin = self.misbehavin;
+                e.priority = self.priority;
+                e.lowPreferenceTill = self.lowPreferenceTill;
+                e.lastRequestedMasternodeList = self.lastRequestedMasternodeList;
+                e.lastRequestedGovernanceSync = self.lastRequestedGovernanceSync;
+            }
+        } else {
+            @autoreleasepool {
+                [[DSPeerEntity managedObject] setAttributesFromPeer:self]; // add new peers
+            }
+        }
+    }];
+}
+
 // MARK: - NSStreamDelegate
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
@@ -1617,7 +1661,7 @@
                 self.pingStartTime = [NSDate timeIntervalSince1970]; // don't count connect time in ping time
                 [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
-                           withObject:[NSError errorWithDomain:@"DashWallet" code:BITCOIN_TIMEOUT_CODE
+                           withObject:[NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE
                                                       userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"connect timeout", nil)}]
                            afterDelay:CONNECT_TIMEOUT];
             }

@@ -33,7 +33,7 @@
 #import "DSTxInputEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
-#import "DSChainPeerManager.h"
+#import "DSPeerManager.h"
 #import "DSKeySequence.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"

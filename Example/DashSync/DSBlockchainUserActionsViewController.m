@@ -42,7 +42,7 @@
 
 -(IBAction)reset:(id)sender {
     [self.blockchainUser resetTransactionUsingNewIndex:self.blockchainUser.wallet.unusedBlockchainUserIndex completion:^(DSBlockchainUserResetTransaction *blockchainUserResetTransaction) {
-        [self.chainPeerManager publishTransaction:blockchainUserResetTransaction completion:^(NSError * _Nullable error) {
+        [self.chainManager.transactionManager publishTransaction:blockchainUserResetTransaction completion:^(NSError * _Nullable error) {
             if (error) {
                 [self raiseIssue:@"Error" message:error.localizedDescription];
                 
@@ -62,7 +62,7 @@
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"BlockchainUserTopupSegue"]) {
         DSTopupBlockchainUserViewController * topupBlockchainUserViewController = (DSTopupBlockchainUserViewController*)segue.destinationViewController;
-        topupBlockchainUserViewController.chainPeerManager = self.chainPeerManager;
+        topupBlockchainUserViewController.chainManager = self.chainManager;
         topupBlockchainUserViewController.blockchainUser = self.blockchainUser;
     }
 }

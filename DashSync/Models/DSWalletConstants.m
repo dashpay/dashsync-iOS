@@ -8,13 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
-NSString* const DSChainPeerManagerSyncStartedNotification =      @"DSChainPeerManagerSyncStartedNotification";
-NSString* const DSChainPeerManagerSyncFinishedNotification =     @"DSChainPeerManagerSyncFinishedNotification";
-NSString* const DSChainPeerManagerSyncFailedNotification =       @"DSChainPeerManagerSyncFailedNotification";
-NSString* const DSChainPeerManagerTxStatusNotification =         @"DSChainPeerManagerTxStatusNotification";
-NSString* const DSChainPeerManagerNewBlockNotification =         @"DSChainPeerManagerNewBlockNotification";
-NSString* const DSChainPeerManagerPeersDidChangeNotification =      @"DSChainPeerManagerPeersDidChangeNotification";
-NSString* const DSChainPeerManagerConnectedPeersDidChangeNotification =      @"DSChainPeerManagerConnectedPeersDidChangeNotification";
+NSString* const DSTransactionManagerSyncStartedNotification =      @"DSTransactionManagerSyncStartedNotification";
+NSString* const DSTransactionManagerSyncFinishedNotification =     @"DSTransactionManagerSyncFinishedNotification";
+NSString* const DSTransactionManagerSyncFailedNotification =       @"DSTransactionManagerSyncFailedNotification";
+NSString* const DSTransactionManagerTransactionStatusDidChangeNotification =         @"DSTransactionManagerTransactionStatusDidChangeNotification";
+NSString* const DSTransactionManagerTransactionReceivedNotification =         @"DSTransactionManagerTransactionReceivedNotification";
+NSString* const DSChainNewBlockNotification =         @"DSChainNewBlockNotification";
+NSString* const DSPeerManagerPeersDidChangeNotification =      @"DSPeerManagerPeersDidChangeNotification";
+NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeerManagerConnectedPeersDidChangeNotification";
 
 NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
 NSString* const DSChainBlockchainUsersDidChangeNotification =    @"DSChainBlockchainUsersDidChangeNotification";
@@ -38,4 +39,4 @@ NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
-NSString* const DSChainPeerManagerNotificationChainKey =         @"DSChainPeerManagerNotificationChainKey";
+NSString* const DSChainManagerNotificationChainKey =         @"DSChainManagerNotificationChainKey";

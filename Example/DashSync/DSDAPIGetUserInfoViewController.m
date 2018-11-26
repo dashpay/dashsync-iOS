@@ -77,13 +77,13 @@
 
 -(IBAction)search:(id)sender {
     if (self.usernameCell.valueTextField.text && ![self.usernameCell.valueTextField.text isEqualToString:@""]) {
-        [self.chainPeerManager.DAPIPeerManager getUserByUsername:self.usernameCell.valueTextField.text withSuccess:^(NSDictionary *userInfo) {
+        [self.chainManager.DAPIPeerManager getUserByUsername:self.usernameCell.valueTextField.text withSuccess:^(NSDictionary *userInfo) {
             NSLog(@"%@",userInfo);
         } failure:^(NSError *error) {
             NSLog(@"%@",error);
         }];
     } else if (self.regTxIdCell.valueTextField.text && ![self.regTxIdCell.valueTextField.text isEqualToString:@""]) {
-        [self.chainPeerManager.DAPIPeerManager getUserByUsername:self.regTxIdCell.valueTextField.text withSuccess:^(NSDictionary *userInfo) {
+        [self.chainManager.DAPIPeerManager getUserByUsername:self.regTxIdCell.valueTextField.text withSuccess:^(NSDictionary *userInfo) {
             NSLog(@"%@",userInfo);
         } failure:^(NSError *error) {
             NSLog(@"%@",error);
