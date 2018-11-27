@@ -769,7 +769,7 @@ replacementString:(NSString *)string
             setKeychainInt(0, PIN_FAIL_COUNT_KEY, NO);
             setKeychainInt(0, PIN_FAIL_HEIGHT_KEY, NO);
             
-            [[DSChainsManager sharedInstance] resetSpendingLimits];
+            [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
             [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             if (completion) completion(YES,NO);
