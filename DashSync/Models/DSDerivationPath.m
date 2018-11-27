@@ -577,9 +577,9 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         }
         if (self.child != nil) {
             if ([self.child unsignedIntValue] & BIP32_HARD) {
-                [mutableString appendFormat:@"/%lu'",[self.child unsignedIntegerValue] - BIP32_HARD];
+                [mutableString appendFormat:@"/%lu'",[self.child unsignedLongValue] - BIP32_HARD];
             } else {
-                [mutableString appendFormat:@"/%lu",[self.child unsignedIntegerValue]];
+                [mutableString appendFormat:@"/%lu",[self.child unsignedLongValue]];
             }
         } else {
             [mutableString appendFormat:@"/?'"];

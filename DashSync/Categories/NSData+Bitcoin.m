@@ -94,7 +94,7 @@ BOOL hasKeychainData(NSString *key, NSError **error)
     NSLog(@"SecItemCopyMatching error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
-    return nil;
+    return NO;
 }
 
 NSData *getKeychainData(NSString *key, NSError **error)

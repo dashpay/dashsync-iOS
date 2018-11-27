@@ -46,7 +46,7 @@
     
     if (length - off < 1) return nil;
     NSNumber * messageSignatureSizeLength = nil;
-    uint64_t messageSignatureSize = [message varIntAtOffset:off length:&messageSignatureSizeLength];
+    NSUInteger messageSignatureSize = (NSUInteger)[message varIntAtOffset:off length:&messageSignatureSizeLength];
     off += messageSignatureSizeLength.unsignedIntegerValue;
     if (length - off < messageSignatureSize) return nil;
     self.payloadSignature = [message subdataWithRange:NSMakeRange(off, messageSignatureSize)];

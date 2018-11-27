@@ -33,6 +33,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSChain.h"
 
+#define SHAPESHIFT_ENABLED 0
+
 @interface DSPaymentRequest()
 
 @property(nonatomic,strong) DSChain * chain;
@@ -97,10 +99,13 @@
         if ([s isValidDashAddressOnChain:self.chain] || [s isValidDashPrivateKeyOnChain:self.chain] || [s isValidDashBIP38Key]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"dash://%@", s]];
             self.scheme = @"dash";
-        } else if ([s isValidBitcoinAddressOnChain:self.chain] || [s isValidBitcoinPrivateKeyOnChain:self.chain]) {
+        }
+#if SHAPESHIFT_ENABLED
+        else if ([s isValidBitcoinAddressOnChain:self.chain] || [s isValidBitcoinPrivateKeyOnChain:self.chain]) {
             url = [NSURL URLWithString:[NSString stringWithFormat:@"bitcoin://%@", s]];
             self.scheme = @"bitcoin";
         }
+#endif
     }
     else if (! url.host && url.resourceSpecifier) {
         url = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@", url.scheme, url.resourceSpecifier]];
@@ -249,14 +254,18 @@
             NSLog(@"Not a valid dash request");
         }
         return valid;
-    } else if ([self.scheme isEqualToString:@"bitcoin"]) {
+    }
+#if SHAPESHIFT_ENABLED
+    else if ([self.scheme isEqualToString:@"bitcoin"]) {
         BOOL valid = ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain] || (self.r && [NSURL URLWithString:self.r])) ? YES : NO;
         if (!valid) {
             NSLog(@"Not a valid bitcoin request");
             
         }
         return valid;
-    } else {
+    }
+#endif
+    else {
         return NO;
     }
 }
@@ -268,9 +277,12 @@
     NSMutableData *script = [NSMutableData data];
     if ([self.paymentAddress isValidDashAddressOnChain:self.chain]) {
         [script appendScriptPubKeyForAddress:self.paymentAddress forChain:self.chain];
-    } else if ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain]) {
+    }
+#if SHAPESHIFT_ENABLED
+    else if ([self.paymentAddress isValidBitcoinAddressOnChain:self.chain]) {
         [script appendBitcoinScriptPubKeyForAddress:self.paymentAddress forChain:self.chain];
     }
+#endif
     if (script.length == 0) return nil;
     
     DSPaymentProtocolDetails *details =
