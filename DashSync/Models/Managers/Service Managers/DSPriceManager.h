@@ -44,7 +44,6 @@ typedef void (^ResetCancelHandlerBlock)(void);
 
 @interface DSPriceManager : NSObject
 
-@property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashSignificantFormat; // dash currency formatter that shows significant digits
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable bitcoinFormat; // bitcoin currency formatter

@@ -49,6 +49,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 
 + (instancetype _Nullable)sharedInstance;
 
--(void)resetSpendingLimits;
+-(BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
+
+-(BOOL)resetSpendingLimitsIfAuthenticated;
 
 @end

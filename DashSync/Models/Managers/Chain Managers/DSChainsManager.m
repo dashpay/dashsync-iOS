@@ -279,8 +279,9 @@
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
 }
 
-- (void)setSpendingLimit:(uint64_t)spendingLimit
+- (BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit
 {
+    if (![[DSAuthenticationManager sharedInstance] didAuthenticate]) return FALSE;
     uint64_t totalSent = 0;
     for (DSChain * chain in self.chains) {
         for (DSWallet * wallet in chain.wallets) {
@@ -290,11 +291,13 @@
     if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
         // use setDouble since setInteger won't hold a uint64_t
         [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
+        return TRUE;
     }
+    return FALSE;
 }
 
--(void)resetSpendingLimits {
-    
+-(BOOL)resetSpendingLimitsIfAuthenticated {
+    if (![[DSAuthenticationManager sharedInstance] didAuthenticate]) return FALSE;
     uint64_t limit = self.spendingLimit;
     uint64_t totalSent = 0;
     for (DSChain * chain in self.chains) {
@@ -303,7 +306,7 @@
         }
     }
     if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
-    
+    return TRUE;
 }
 
 
