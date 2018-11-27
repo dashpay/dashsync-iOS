@@ -193,7 +193,7 @@ inline static int ceil_log2(int x)
     if (length - offset < 1) return;
     
     NSNumber * merkleHashCountLength;
-    uint64_t merkleHashCount = (NSUInteger)[message varIntAtOffset:offset length:&merkleHashCountLength]*sizeof(UInt256);
+    NSUInteger merkleHashCount = (NSUInteger)[message varIntAtOffset:offset length:&merkleHashCountLength]*sizeof(UInt256);
     offset += [merkleHashCountLength unsignedLongValue];
     
     
@@ -201,7 +201,7 @@ inline static int ceil_log2(int x)
     offset += merkleHashCount;
     
     NSNumber * merkleFlagCountLength;
-    uint64_t merkleFlagCount = [message varIntAtOffset:offset length:&merkleFlagCountLength];
+    NSUInteger merkleFlagCount = (NSUInteger)[message varIntAtOffset:offset length:&merkleFlagCountLength];
     offset += [merkleFlagCountLength unsignedLongValue];
     
     
