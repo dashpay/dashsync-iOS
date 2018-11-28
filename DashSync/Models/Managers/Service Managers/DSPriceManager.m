@@ -59,8 +59,6 @@
 #define DEFAULT_SPENT_LIMIT   DUFFS
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
-#define CURRENCY_CODES_KEY      @"CURRENCY_CODES"
-#define CURRENCY_NAMES_KEY      @"CURRENCY_NAMES"
 #define CURRENCY_PRICES_KEY     @"CURRENCY_PRICES"
 #define POLONIEX_DASH_BTC_PRICE_KEY  @"POLONIEX_DASH_BTC_PRICE"
 #define POLONIEX_DASH_BTC_UPDATE_TIME_KEY  @"POLONIEX_DASH_BTC_UPDATE_TIME"
@@ -160,10 +158,21 @@
     self.localFormat.generatesDecimalNumbers = YES;
     self.localFormat.negativeFormat = self.dashFormat.negativeFormat;
     
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString * path = [bundle pathForResource:@"CurrencyCodes" ofType:@"plist"];
+    NSArray <NSDictionary <NSString *, NSString *> *> *currencyCodesAndNames = [NSArray arrayWithContentsOfFile:path];
+    NSMutableArray <NSString *> *currencyCodes = [NSMutableArray array];
+    NSMutableArray <NSString *> *currencyNames = [NSMutableArray array];
+    for (NSDictionary <NSString *, NSString *> *codeAndName in currencyCodesAndNames) {
+        [currencyCodes addObject:codeAndName[@"code"]];
+        [currencyNames addObject:codeAndName[@"name"]];
+    }
     
-    _currencyCodes = [defs arrayForKey:CURRENCY_CODES_KEY];
-    _currencyNames = [defs arrayForKey:CURRENCY_NAMES_KEY];
+    _currencyCodes = [currencyCodes copy];
+    _currencyNames = [currencyNames copy];
+    
+    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
     _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
@@ -385,7 +394,7 @@
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         NSError *error = nil;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        NSMutableArray *codes = [NSMutableArray array], *names = [NSMutableArray array], *rates =[NSMutableArray array];
+        NSMutableArray *rates =[NSMutableArray array];
         
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
@@ -410,18 +419,16 @@
                 return;
             }
             
-            if ([d[@"code"] isEqual:@"BTC"]) continue;
-            [codes addObject:d[@"code"]];
-            [names addObject:d[@"name"]];
-            [rates addObject:d[@"rate"]];
+            NSString *code = d[@"code"];
+            if ([self.currencyCodes containsObject:code]) {
+                [rates addObject:d[@"rate"]];
+            }
+            
+            // TODO: handle case when their is no price for hardcoded currencyCode
         }
         
-        self->_currencyCodes = codes;
-        self->_currencyNames = names;
         self->_currencyPrices = rates;
         self.localCurrencyCode = self->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
-        [defs setObject:self.currencyCodes forKey:CURRENCY_CODES_KEY];
-        [defs setObject:self.currencyNames forKey:CURRENCY_NAMES_KEY];
         [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
         [defs synchronize];
 #if EXCHANGE_RATES_LOGGING
