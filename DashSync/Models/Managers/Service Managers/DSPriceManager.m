@@ -43,7 +43,7 @@
 #import "NSManagedObject+Sugar.h"
 
 #import "NSString+Dash.h"
-#import "Reachability.h"
+#import "DSReachabilityManager.h"
 #import "DSPeerManager.h"
 #import "DSDerivationPath.h"
 #import "DSAuthenticationManager.h"
@@ -72,7 +72,7 @@
 
 @interface DSPriceManager()
 
-@property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) DSReachabilityManager *reachability;
 @property (nonatomic, strong) NSArray *currencyPrices;
 @property (nonatomic, strong) id protectedObserver;
 
@@ -101,7 +101,7 @@
     if (! (self = [super init])) return nil;
     
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
-    self.reachability = [Reachability reachabilityForInternetConnection];
+    self.reachability = [DSReachabilityManager sharedManager];
     _dashFormat = [NSNumberFormatter new];
     self.dashFormat.lenient = YES;
     self.dashFormat.numberStyle = NSNumberFormatterCurrencyStyle;
@@ -265,7 +265,7 @@
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashExchangeRate) object:nil];
     [self performSelector:@selector(updateDashExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
     
     
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:POLONIEX_TICKER_URL]
@@ -322,7 +322,7 @@
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashCentralExchangeRateFallback) object:nil];
     [self performSelector:@selector(updateDashCentralExchangeRateFallback) withObject:nil afterDelay:TICKER_REFRESH_TIME];
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
     
     
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCENTRAL_TICKER_URL]
@@ -371,7 +371,7 @@
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateBitcoinExchangeRate) object:nil];
     [self performSelector:@selector(updateBitcoinExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
     
     NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOIN_TICKER_URL]
                                          cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
@@ -636,7 +636,7 @@
 
 - (void)updateFeePerKb
 {
-    if (self.reachability.currentReachabilityStatus == NotReachable) return;
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
     
 #if (!!FEE_PER_KB_URL)
     

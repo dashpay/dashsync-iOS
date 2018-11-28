@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Reachability.h"
+#import "DSReachabilityManager.h"
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"
 #import "DSChain.h"
