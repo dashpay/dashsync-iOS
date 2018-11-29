@@ -130,12 +130,11 @@
                 
                 //secure time
                 
-                NSTimeInterval secureTimeSinceReferenceDate = [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
+                NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
                 
                 NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
                 
-                [[NSUserDefaults standardUserDefaults] setDouble:secureTimeSince1970
-                                                          forKey:SECURE_TIME_KEY];
+                [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];
                 
                 completion(!failed,YES,YES,NO);
                 

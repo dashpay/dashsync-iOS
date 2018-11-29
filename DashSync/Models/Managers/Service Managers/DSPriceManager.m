@@ -286,15 +286,10 @@
                                              NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
                                              return;
                                          }
-                                         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
-                                             NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
-                                             NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
-                                                                    matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                                                   date].timeIntervalSince1970;
-                                             
-                                             if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+                                         if ([response isKindOfClass:NSHTTPURLResponse.class]) {
+                                             [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response];
                                          }
+
                                          NSError *error = nil;
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                                          NSArray * asks = [json objectForKey:@"asks"];
@@ -343,17 +338,10 @@
                                              NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
                                              return;
                                          }
-                                         
-                                         if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
-                                             NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                             NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
-                                             NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
-                                                                    matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                                                   date].timeIntervalSince1970;
-                                             
-                                             if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+                                         if ([response isKindOfClass:NSHTTPURLResponse.class]) {
+                                             [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response];
                                          }
-                                         
+
                                          NSError *error = nil;
                                          NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
                                          if (!error) {
@@ -396,13 +384,8 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
         NSMutableArray *rates =[NSMutableArray array];
         
-        if ([response isKindOfClass:[NSHTTPURLResponse class]]) { // store server timestamp
-            NSString *date = [(NSHTTPURLResponse *)response allHeaderFields][@"Date"];
-            NSTimeInterval now = [[[NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil]
-                                   matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject
-                                  date].timeIntervalSince1970;
-            
-            if (now > [DSAuthenticationManager sharedInstance].secureTime) [defs setDouble:now forKey:SECURE_TIME_KEY];
+        if ([response isKindOfClass:NSHTTPURLResponse.class]) {
+            [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response];
         }
         
         if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
