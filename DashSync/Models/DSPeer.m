@@ -50,6 +50,7 @@
 #import "DSChainManager.h"
 
 #define PEER_LOGGING 1
+#define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
 
 #if ! PEER_LOGGING
 #define NSLog(...)
@@ -1125,6 +1126,21 @@
     
 }
 
+// HEADER FORMAT:
+
+// 01 ................................. Header count: 1
+//
+// 02000000 ........................... Block version: 2
+// b6ff0b1b1680a2862a30ca44d346d9e8
+// 910d334beb48ca0c0000000000000000 ... Hash of previous block's header
+// 9d10aa52ee949386ca9385695f04ede2
+// 70dda20810decd12bc9b048aaab31471 ... Merkle root
+// 24d95a54 ........................... Unix time: 1415239972
+// 30c31b18 ........................... Target (bits)
+// fe9f0864 ........................... Nonce
+//
+// 00 ................................. Transaction count (0x00)
+
 - (void)acceptHeadersMessage:(NSData *)message
 {
     NSNumber * lNumber = nil;
@@ -1142,6 +1158,22 @@
         return;
     }
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
+    
+#if LOG_ALL_HEADERS_IN_ACCEPT_HEADERS
+    for (int i =0;i<count;i++) {
+        NSData * headerData = [message subdataWithRange:NSMakeRange(l+ 81*i, 80)];
+        NSLog(@"BLOCK HEADER ----------");
+        NSLog(@"block version %u",[headerData UInt8AtOffset:0]);
+        NSLog(@"previous blockheader hash %@ (%@)",[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].hexString,[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].reverse.hexString);
+        NSLog(@"merkle root %@",[NSData dataWithUInt256:[headerData UInt256AtOffset:36]].hexString);
+        uint32_t timestamp = [headerData UInt32AtOffset:68];
+        NSLog(@"timestamp %x (%u) time is %@",timestamp,timestamp,[NSDate dateWithTimeIntervalSince1970:timestamp]);
+        NSLog(@"target is %x",[headerData UInt32AtOffset:72]);
+        NSLog(@"nonce is %x",[headerData UInt32AtOffset:76]);
+        NSLog(@"transaction count is %u",[headerData UInt8AtOffset:80]);
+        NSLog(@"-----------------------");
+    }
+#endif
     
     if (_relayStartTime != 0) { // keep track of relay peformance
         NSTimeInterval speed = count/([NSDate timeIntervalSince1970] - self.relayStartTime);
@@ -1370,7 +1402,7 @@
 
 - (void)acceptMerkleblockMessage:(NSData *)message
 {
-    // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
+    // Dash nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
     // non-tx message is received we should have all the tx in the merkleblock.
     DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:message onChain:self.chain];

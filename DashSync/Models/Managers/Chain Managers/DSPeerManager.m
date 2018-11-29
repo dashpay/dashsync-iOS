@@ -759,10 +759,12 @@
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
                 // BUG: XXX headers can timeout on slow connections (each message is over 160k)
                 BOOL startingDevnetSync = [self.chain isDevnetAny] && self.chain.lastBlock.height < 5;
-                if (startingDevnetSync || self.chain.lastBlock.timestamp + 7*24*60*60 >= self.chain.earliestWalletCreationTime) {
+                if (startingDevnetSync || self.chain.lastBlock.timestamp + WEEK_TIME_INTERVAL >= self.chain.earliestWalletCreationTime) {
                     [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
                 }
-                else [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+                else {
+                    [peer sendGetheadersMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+                }
             });
         });
     }

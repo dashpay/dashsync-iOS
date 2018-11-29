@@ -106,7 +106,7 @@
     
     
     self.blocksObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewBlockNotification object:nil
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
                                                            
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
