@@ -38,8 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) DSOperationQueue *internalQueue;
 
-+ (instancetype)operationWithOperations:(NSArray<NSOperation *> *)operations;
-- (instancetype)initWithOperations:(NSArray<NSOperation *> *)operations;
++ (instancetype)operationWithOperations:(nullable NSArray<NSOperation *> *)operations;
+- (instancetype)initWithOperations:(nullable NSArray<NSOperation *> *)operations;
 
 - (void)addOperation:(NSOperation *)operation;
 - (void)aggregateError:(NSError *)error;

@@ -42,6 +42,11 @@
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 
+#import "DSOperationQueue.h"
+#import "DSOperation.h"
+#import "DSPriceOperationProvider.h"
+#import "DSCurrencyPriceObject.h"
+
 #import "NSString+Dash.h"
 #import "DSReachabilityManager.h"
 #import "DSPeerManager.h"
@@ -59,24 +64,21 @@
 #define DEFAULT_SPENT_LIMIT   DUFFS
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
-#define CURRENCY_PRICES_KEY     @"CURRENCY_PRICES"
-#define POLONIEX_DASH_BTC_PRICE_KEY  @"POLONIEX_DASH_BTC_PRICE"
-#define POLONIEX_DASH_BTC_UPDATE_TIME_KEY  @"POLONIEX_DASH_BTC_UPDATE_TIME"
-#define DASHCENTRAL_DASH_BTC_PRICE_KEY @"DASHCENTRAL_DASH_BTC_PRICE"
-#define DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY @"DASHCENTRAL_DASH_BTC_UPDATE_TIME"
 
 #define USER_ACCOUNT_KEY    @"https://api.dashwallet.com"
 
 
 @interface DSPriceManager()
 
+@property (nonatomic, strong) DSOperationQueue *operationQueue;
 @property (nonatomic, strong) DSReachabilityManager *reachability;
-@property (nonatomic, strong) NSArray *currencyPrices;
-@property (nonatomic, strong) id protectedObserver;
 
 @property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyDashPrice;
+
+@property (copy, nonatomic) NSArray <DSCurrencyPriceObject *> *prices;
+@property (copy, nonatomic) NSDictionary <NSString *, DSCurrencyPriceObject *> *pricesByCode;
 
 @end
 
@@ -97,6 +99,8 @@
 - (instancetype)init
 {
     if (! (self = [super init])) return nil;
+    
+    self.operationQueue = [[DSOperationQueue alloc] init];
     
     [NSManagedObject setConcurrencyType:NSPrivateQueueConcurrencyType];
     self.reachability = [DSReachabilityManager sharedManager];
@@ -160,20 +164,10 @@
     
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString * path = [bundle pathForResource:@"CurrencyCodes" ofType:@"plist"];
-    NSArray <NSDictionary <NSString *, NSString *> *> *currencyCodesAndNames = [NSArray arrayWithContentsOfFile:path];
-    NSMutableArray <NSString *> *currencyCodes = [NSMutableArray array];
-    NSMutableArray <NSString *> *currencyNames = [NSMutableArray array];
-    for (NSDictionary <NSString *, NSString *> *codeAndName in currencyCodesAndNames) {
-        [currencyCodes addObject:codeAndName[@"code"]];
-        [currencyNames addObject:codeAndName[@"name"]];
-    }
-    
-    _currencyCodes = [currencyCodes copy];
-    _currencyNames = [currencyNames copy];
+    NSString * path = [bundle pathForResource:@"CurrenciesByCode" ofType:@"plist"];
+    _currenciesByCode = [NSDictionary dictionaryWithContentsOfFile:path];
     
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    _currencyPrices = [defs arrayForKey:CURRENCY_PRICES_KEY];
     self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
     [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     
@@ -187,9 +181,7 @@
 
 -(void)startExchangeRateFetching {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self updateBitcoinExchangeRate];
-        [self updateDashExchangeRate];
-        [self updateDashCentralExchangeRateFallback];
+        [self updatePrices];
     });
 }
 
@@ -199,27 +191,33 @@
 - (void)setLocalCurrencyCode:(NSString *)code
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    NSUInteger i = [_currencyCodes indexOfObject:code];
     
-    if (i == NSNotFound) code = DEFAULT_CURRENCY_CODE, i = [_currencyCodes indexOfObject:DEFAULT_CURRENCY_CODE];
+    DSCurrencyPriceObject *priceObject = self.pricesByCode[code];
+    if (!priceObject) {
+        code = DEFAULT_CURRENCY_CODE;
+        priceObject = self.pricesByCode[code];
+    }
+
     _localCurrencyCode = [code copy];
     
-    if (i < _currencyPrices.count && [DSAuthenticationManager sharedInstance].secureTime + 3*24*60*60 > [NSDate timeIntervalSince1970]) {
-        self.localCurrencyBitcoinPrice = _currencyPrices[i]; // don't use exchange rate data more than 72hrs out of date
+    if ([DSAuthenticationManager sharedInstance].secureTime + 3*24*60*60 > [NSDate timeIntervalSince1970]) {
+        self.localCurrencyDashPrice = priceObject.price; // don't use exchange rate data more than 72hrs out of date
     }
-    else self.localCurrencyBitcoinPrice = @(0);
+    else {
+        self.localCurrencyDashPrice = @(0);
+    }
     
     self.localFormat.currencyCode = _localCurrencyCode;
     self.localFormat.maximum =
-    [[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyBitcoinPrice.decimalValue]
+    [[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyDashPrice.decimalValue]
      decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:MAX_MONEY/DUFFS]];
     
     if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
         [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
     }
-    else [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
-    
-    //    if (! _wallet) return;
+    else {
+        [defs setObject:self.localCurrencyCode forKey:LOCAL_CURRENCY_CODE_KEY];
+    }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
@@ -227,204 +225,41 @@
 }
 
 -(NSNumber*)bitcoinDashPrice {
-    if (_bitcoinDashPrice.doubleValue == 0) {
-        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-        
-        double poloniexPrice = [[defs objectForKey:POLONIEX_DASH_BTC_PRICE_KEY] doubleValue];
-        double dashcentralPrice = [[defs objectForKey:DASHCENTRAL_DASH_BTC_PRICE_KEY] doubleValue];
-        if (poloniexPrice > 0) {
-            if (dashcentralPrice > 0) {
-                _bitcoinDashPrice = @((poloniexPrice + dashcentralPrice)/2.0);
-            } else {
-                _bitcoinDashPrice = @(poloniexPrice);
-            }
-        } else if (dashcentralPrice > 0) {
-            _bitcoinDashPrice = @(dashcentralPrice);
-        }
-    }
-    return _bitcoinDashPrice;
+    NSAssert(NO, @"Deprecated and must not be used");
+    return @(0);
 }
 
-- (void)refreshBitcoinDashPrice{
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    double poloniexPrice = [[defs objectForKey:POLONIEX_DASH_BTC_PRICE_KEY] doubleValue];
-    double dashcentralPrice = [[defs objectForKey:DASHCENTRAL_DASH_BTC_PRICE_KEY] doubleValue];
-    NSNumber * newPrice = 0;
-    if (poloniexPrice > 0) {
-        if (dashcentralPrice > 0) {
-            newPrice = @((poloniexPrice + dashcentralPrice)/2.0);
-        } else {
-            newPrice = @(poloniexPrice);
-        }
-    } else if (dashcentralPrice > 0) {
-        newPrice = @(dashcentralPrice);
-    }
+- (void)updatePrices {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updatePrices) object:nil];
+    [self performSelector:@selector(updatePrices) withObject:nil afterDelay:TICKER_REFRESH_TIME];
     
-    //    if (! _wallet ) return;
-    //if ([newPrice doubleValue] == [_bitcoinDashPrice doubleValue]) return;
-    _bitcoinDashPrice = newPrice;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-    });
-}
-
-
-// until there is a public api for dash prices among multiple currencies it's better that we pull Bitcoin prices per currency and convert it to dash
-- (void)updateDashExchangeRate
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashExchangeRate) object:nil];
-    [self performSelector:@selector(updateDashExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
-    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
-    
-    
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:POLONIEX_TICKER_URL]
-                                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
-    
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-                                         if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
-                                             NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
-                                             return;
-                                         }
-                                         if ([response isKindOfClass:NSHTTPURLResponse.class]) {
-                                             [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response];
-                                         }
-
-                                         NSError *error = nil;
-                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                         NSArray * asks = [json objectForKey:@"asks"];
-                                         NSArray * bids = [json objectForKey:@"bids"];
-                                         if ([asks count] && [bids count] && [[asks objectAtIndex:0] count] && [[bids objectAtIndex:0] count]) {
-                                             NSString * lastTradePriceStringAsks = [[asks objectAtIndex:0] objectAtIndex:0];
-                                             NSString * lastTradePriceStringBids = [[bids objectAtIndex:0] objectAtIndex:0];
-                                             if (lastTradePriceStringAsks && lastTradePriceStringBids) {
-                                                 NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-                                                 NSLocale *usa = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
-                                                 numberFormatter.locale = usa;
-                                                 numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
-                                                 NSNumber *lastTradePriceNumberAsks = [numberFormatter numberFromString:lastTradePriceStringAsks];
-                                                 NSNumber *lastTradePriceNumberBids = [numberFormatter numberFromString:lastTradePriceStringBids];
-                                                 NSNumber * lastTradePriceNumber = @((lastTradePriceNumberAsks.floatValue + lastTradePriceNumberBids.floatValue) / 2);
-                                                 NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                                 [defs setObject:lastTradePriceNumber forKey:POLONIEX_DASH_BTC_PRICE_KEY];
-                                                 [defs setObject:[NSDate date] forKey:POLONIEX_DASH_BTC_UPDATE_TIME_KEY];
-                                                 [defs synchronize];
-                                                 [self refreshBitcoinDashPrice];
-                                             }
-                                         }
-#if EXCHANGE_RATES_LOGGING
-                                         NSLog(@"poloniex exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
-                                               [self stringForDashAmount:DUFFS]);
-#endif
-                                     }
-      ] resume];
-    
-}
-
-// until there is a public api for dash prices among multiple currencies it's better that we pull Bitcoin prices per currency and convert it to dash
-- (void)updateDashCentralExchangeRateFallback
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateDashCentralExchangeRateFallback) object:nil];
-    [self performSelector:@selector(updateDashCentralExchangeRateFallback) withObject:nil afterDelay:TICKER_REFRESH_TIME];
-    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
-    
-    
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCENTRAL_TICKER_URL]
-                                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:30.0];
-    
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req
-                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-                                         if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
-                                             NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
-                                             return;
-                                         }
-                                         if ([response isKindOfClass:NSHTTPURLResponse.class]) {
-                                             [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response];
-                                         }
-
-                                         NSError *error = nil;
-                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-                                         if (!error) {
-                                             NSNumber * dash_usd = @([[[json objectForKey:@"exchange_rates"] objectForKey:@"btc_dash"] doubleValue]);
-                                             if (dash_usd && [dash_usd doubleValue] > 0) {
-                                                 NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-                                                 
-                                                 [defs setObject:dash_usd forKey:DASHCENTRAL_DASH_BTC_PRICE_KEY];
-                                                 [defs setObject:[NSDate date] forKey:DASHCENTRAL_DASH_BTC_UPDATE_TIME_KEY];
-                                                 [defs synchronize];
-                                                 [self refreshBitcoinDashPrice];
-#if EXCHANGE_RATES_LOGGING
-                                                 NSLog(@"dash central exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
-                                                       [self stringForDashAmount:DUFFS]);
-#endif
-                                             }
-                                         }
-                                     }
-      ] resume];
-    
-}
-
-- (void)updateBitcoinExchangeRate
-{
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateBitcoinExchangeRate) object:nil];
-    [self performSelector:@selector(updateBitcoinExchangeRate) withObject:nil afterDelay:TICKER_REFRESH_TIME];
-    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) return;
-    
-    NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOIN_TICKER_URL]
-                                         cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
-    
-    [[[NSURLSession sharedSession] dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *connectionError) {
-        if (((((NSHTTPURLResponse*)response).statusCode /100) != 2) || connectionError) {
-            NSLog(@"connectionError %@ (status %ld)", connectionError,(long)((NSHTTPURLResponse*)response).statusCode);
+    __weak typeof(self) weakSelf = self;
+    DSOperation *priceOperation = [DSPriceOperationProvider fetchPrices:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
             return;
         }
         
-        NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-        NSError *error = nil;
-        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        NSMutableArray *rates =[NSMutableArray array];
-        
-        if ([response isKindOfClass:NSHTTPURLResponse.class]) {
-            [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response];
-        }
-        
-        if (error || ! [json isKindOfClass:[NSDictionary class]] || ! [json[@"data"] isKindOfClass:[NSArray class]]) {
-            NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            return;
-        }
-        
-        for (NSDictionary *d in json[@"data"]) {
-            if (! [d isKindOfClass:[NSDictionary class]] || ! [d[@"code"] isKindOfClass:[NSString class]] ||
-                ! [d[@"name"] isKindOfClass:[NSString class]] || ! [d[@"rate"] isKindOfClass:[NSNumber class]]) {
-                NSLog(@"unexpected response from %@:\n%@", req.URL.host,
-                      [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                return;
+        if (prices) {
+            strongSelf.prices = prices;
+            NSMutableDictionary <NSString *, DSCurrencyPriceObject *> *pricesByCode = [NSMutableDictionary dictionary];
+            for (DSCurrencyPriceObject *priceObject in prices) {
+                pricesByCode[priceObject.code] = priceObject;
             }
-            
-            NSString *code = d[@"code"];
-            if ([self.currencyCodes containsObject:code]) {
-                [rates addObject:d[@"rate"]];
-            }
-            
-            // TODO: handle case when their is no price for hardcoded currencyCode
+            strongSelf.pricesByCode = pricesByCode;
+            strongSelf.localCurrencyCode = strongSelf->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
         }
-        
-        self->_currencyPrices = rates;
-        self.localCurrencyCode = self->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
-        [defs setObject:self.currencyPrices forKey:CURRENCY_PRICES_KEY];
-        [defs synchronize];
-#if EXCHANGE_RATES_LOGGING
-        NSLog(@"bitcoin exchange rate updated to %@/%@", [self localCurrencyStringForDashAmount:DUFFS],
-              [self stringForDashAmount:DUFFS]);
-#endif
-    }
-      
-      
-      ] resume];
-    
+    }];
+    [self.operationQueue addOperation:priceOperation];
 }
 
+- (DSCurrencyPriceObject *)priceForCurrencyCode:(NSString *)code {
+    NSParameterAssert(code);
+    if (!code) {
+        return nil;
+    }
+    return self.pricesByCode[code];
+}
 
 // MARK: - string helpers
 
@@ -497,14 +332,6 @@
                                               decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
 }
 
--(NSNumber* _Nonnull)localCurrencyDashPrice {
-    if (_bitcoinDashPrice == nil || _localCurrencyBitcoinPrice == nil) {
-        return _localCurrencyDashPrice;
-    } else {
-        return @(_bitcoinDashPrice.doubleValue * _localCurrencyBitcoinPrice.doubleValue);
-    }
-}
-
 // NOTE: For now these local currency methods assume that a satoshi has a smaller value than the smallest unit of any
 // local currency. They will need to be revisited when that is no longer a safe assumption.
 - (int64_t)amountForLocalCurrencyString:(NSString *)string
@@ -530,7 +357,6 @@
     p /= 10;
     return (local < 0) ? -(amount/p)*p : (amount/p)*p;
 }
-
 
 - (int64_t)amountForBitcoinCurrencyString:(NSString *)string
 {
@@ -604,11 +430,11 @@
         return @0;
     }
     
-    if (self.localCurrencyBitcoinPrice == nil || self.bitcoinDashPrice == nil) {
+    if (self.localCurrencyDashPrice == nil) {
         return nil;
     }
     
-    NSNumber *local = [NSNumber numberWithDouble:self.localCurrencyBitcoinPrice.doubleValue*self.bitcoinDashPrice.doubleValue];
+    NSNumber *local = self.localCurrencyDashPrice;
     
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:local.decimalValue]
                            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]

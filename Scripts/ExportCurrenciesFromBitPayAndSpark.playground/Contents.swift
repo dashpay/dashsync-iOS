@@ -32,13 +32,16 @@ let notInBitPay = currenciesSpark.filter { !currenciesBitPay.contains($0) }
 print("Not in Spark but in BitPay:", notInSpark.count, notInSpark)
 print("Not in BitPay but in Spark:", notInBitPay.count, notInBitPay)
 
-let currenciesToExport = bitPayItems.filter { currenciesSpark.contains($0.code) }
+var currencyNamesByCode: [String: String] = [:]
+for item in bitPayItems {
+    currencyNamesByCode[item.code] = item.name
+}
 
 let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-let url = URL(fileURLWithPath: documentDirectory).appendingPathComponent("CurrencyCodes.plist")
+let url = URL(fileURLWithPath: documentDirectory).appendingPathComponent("CurrenciesByCode.plist")
 let encoder = PropertyListEncoder()
 encoder.outputFormat = .xml
-let data = try encoder.encode(currenciesToExport)
+let data = try encoder.encode(currencyNamesByCode)
 try! data.write(to: url)
 
 print("Exported to: ")

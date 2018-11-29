@@ -42,6 +42,8 @@
 
 typedef void (^ResetCancelHandlerBlock)(void);
 
+@class DSCurrencyPriceObject;
+
 @interface DSPriceManager : NSObject
 
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable dashFormat; // dash currency formatter
@@ -50,31 +52,33 @@ typedef void (^ResetCancelHandlerBlock)(void);
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable unknownFormat; // unknown currency formatter
 @property (nonatomic, readonly) NSNumberFormatter * _Nullable localFormat; // local currency formatter
 @property (nonatomic, copy) NSString * _Nullable localCurrencyCode; // local currency ISO code
-@property (nonatomic, readonly) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
-@property (nonatomic, readonly) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
+@property (nonatomic, readonly) NSNumber * _Nullable bitcoinDashPrice DEPRECATED_ATTRIBUTE; // exchange rate in bitcoin per dash
+@property (nonatomic, readonly) NSNumber * _Nullable localCurrencyBitcoinPrice DEPRECATED_ATTRIBUTE; // exchange rate in local currency units per bitcoin
 @property (nonatomic, readonly) NSNumber * _Nullable localCurrencyDashPrice;
-@property (nonatomic, readonly) NSArray * _Nullable currencyCodes; // list of supported local currency codes
-@property (nonatomic, readonly) NSArray * _Nullable currencyNames; // names for local currency codes
+@property (readonly, copy, nonatomic) NSDictionary <NSString *, NSString *> *currenciesByCode;
+@property (readonly, copy, nonatomic, nullable) NSArray <DSCurrencyPriceObject *> *prices;
 
 + (instancetype _Nullable)sharedInstance;
 
 - (void)startExchangeRateFetching;
 
+- (nullable DSCurrencyPriceObject *)priceForCurrencyCode:(NSString *)code;
+
 - (int64_t)amountForUnknownCurrencyString:(NSString * _Nullable)string;
 - (int64_t)amountForDashString:(NSString * _Nullable)string;
-- (int64_t)amountForBitcoinString:(NSString * _Nullable)string;
+- (int64_t)amountForBitcoinString:(NSString * _Nullable)string DEPRECATED_ATTRIBUTE;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color useSignificantDigits:(BOOL)useSignificantDigits;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color dashSymbolSize:(CGSize)dashSymbolSize;
 - (NSNumber * _Nonnull)numberForAmount:(int64_t)amount;
-- (NSString * _Nonnull)stringForBitcoinAmount:(int64_t)amount;
+- (NSString * _Nonnull)stringForBitcoinAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSString * _Nonnull)stringForDashAmount:(int64_t)amount;
-- (int64_t)amountForBitcoinCurrencyString:(NSString * _Nonnull)string;
+- (int64_t)amountForBitcoinCurrencyString:(NSString * _Nonnull)string DEPRECATED_ATTRIBUTE;
 - (int64_t)amountForLocalCurrencyString:(NSString * _Nonnull)string;
-- (NSString * _Nonnull)bitcoinCurrencyStringForAmount:(int64_t)amount;
+- (NSString * _Nonnull)bitcoinCurrencyStringForAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSString * _Nonnull)localCurrencyStringForDashAmount:(int64_t)amount;
-- (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount;
+- (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSNumber * _Nullable)localCurrencyNumberForDashAmount:(int64_t)amount;
 - (NSNumber* _Nonnull)localCurrencyDashPrice;
 

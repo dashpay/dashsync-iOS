@@ -67,6 +67,8 @@
 
 #import "DSBLSKey.h"
 
+#define SHAPESHIFT_ENABLED 0
+
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;
 

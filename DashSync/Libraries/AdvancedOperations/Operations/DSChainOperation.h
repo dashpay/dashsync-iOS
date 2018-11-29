@@ -34,8 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL finishIfProducedAnyError;
 
-+ (instancetype)operationWithOperations:(NSArray<NSOperation<DSChainableOperationProtocol> *> *)operations;
-- (instancetype)initWithOperations:(NSArray<NSOperation<DSChainableOperationProtocol> *> *)operations;
++ (instancetype)operationWithOperations:(nullable NSArray<NSOperation<DSChainableOperationProtocol> *> *)operations;
+- (instancetype)initWithOperations:(nullable NSArray<NSOperation<DSChainableOperationProtocol> *> *)operations;
 - (void)addOperation:(NSOperation *)operation;
 - (void)operationDidFinish:(NSOperation *)operation withErrors:(NSArray *)errors;
 - (void)aggregateError:(NSError *)error;
