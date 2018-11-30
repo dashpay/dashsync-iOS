@@ -41,10 +41,6 @@
 
 #pragma mark - Subclass
 
-- (NSString *)name {
-    return NSStringFromClass([DSChainCondition class]);
-}
-
 - (NSOperation *)dependencyForOperation:(DSOperation *)operation {
     return self.chainOperation;
 }

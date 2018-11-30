@@ -43,10 +43,6 @@
     return self;
 }
 
-- (NSString *)name {
-    return NSStringFromClass([DSReachabilityCondition class]);
-}
-
 - (NSOperation *)dependencyForOperation:(DSOperation *)operation {
     return nil;
 }

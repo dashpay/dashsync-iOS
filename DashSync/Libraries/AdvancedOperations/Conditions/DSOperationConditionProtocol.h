@@ -29,12 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DSOperationConditionProtocol <NSObject>
 
 /**
- The name of the condition. This is used in userInfo dictionaries of `.ConditionFailed`
- errors as the value of the `OperationConditionKey` key.
- */
-- (NSString *)name;
-
-/**
  Some conditions may have the ability to satisfy the condition if another
  operation is executed first. Use this method to return an operation that
  (for example) asks for permission to perform the operation
