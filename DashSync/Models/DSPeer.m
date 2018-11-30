@@ -224,7 +224,7 @@
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
-
+    
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
@@ -580,7 +580,7 @@
     
     self.sentGetdataTxBlocks = YES;
 #if MESSAGE_LOGGING
-        NSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
+    NSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
 #endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
@@ -1182,40 +1182,47 @@
         _relaySpeed = _relaySpeed*0.9 + speed*0.1;
         _relayStartTime = 0;
     }
-//    for (int i = 0; i < count; i++) {
-//        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
-//        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
-//    }
+    //    for (int i = 0; i < count; i++) {
+    //        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
+    //        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
+    //    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     // Devnets can run slower than usual
-    NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68];
-    if (count >= 2000 || t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
-        UInt256 firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
-        UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
-        NSValue *firstHash = uint256_obj(firstX11);
-        NSValue *lastHash = uint256_obj(lastX11);
+    NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
+    NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
+    if (firstTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) {
+        //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
+        NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
+        [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+        return;
+    }
+    if (count >= 2000 || lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
+        UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
+        UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
+        NSValue *firstHashValue = uint256_obj(firstBlockHash);
+        NSValue *lastHashValue = uint256_obj(lastBlockHash);
         
-        if (t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
-            t = [message UInt32AtOffset:l + 81 + 68];
+        if (lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
+            NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
-            for (off = l; t > 0 && t < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
+            for (off = l; timestamp > 0 && timestamp < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
                 off += 81;
-                t = [message UInt32AtOffset:off + 81 + 68];
+                timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
-            
-            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
-            NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
-            [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
+            lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
+            lastHashValue = uint256_obj(lastBlockHash);
+            NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashValue, firstHashValue]);
+            [self sendGetblocksMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
         }
         else {
             NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
-                  @[lastHash, firstHash]);
-            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
+                  @[lastHashValue, firstHashValue]);
+            [self sendGetheadersMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
         }
     }
     else {
-        [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:t],self.version];
+        [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:lastTimestamp],self.version];
         return;
     }
     for (NSUInteger off = l; off < l + 81*count; off += 81) {

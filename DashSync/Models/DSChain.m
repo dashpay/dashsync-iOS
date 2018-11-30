@@ -1095,9 +1095,13 @@ static dispatch_once_t devnetToken = 0;
     if (! _lastBlock) {
         [DSMerkleBlockEntity.context performBlockAndWait:^{
             NSArray * lastBlocks = [DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity];
-            self->_lastBlock = [[lastBlocks firstObject] merkleBlock];
+            DSMerkleBlock * lastBlock = [[lastBlocks firstObject] merkleBlock];
+            self->_lastBlock = lastBlock;
+            if (lastBlock) {
+                NSLog(@"last block at height %d recovered from db (hash is %@)",lastBlock.height,[NSData dataWithUInt256:lastBlock.blockHash].hexString);
+            }
         }];
-        
+
         if (!_lastBlock) {
             if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
                 NSUInteger genesisHeight = [self isDevnetAny]?1:0;
@@ -1130,6 +1134,9 @@ static dispatch_once_t devnetToken = 0;
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
                                                                        height:self.checkpoints[i].height];
                     }
+                }
+                if (_lastBlock) {
+                    NSLog(@"last block at height %d chosen from checkpoints (hash is %@)",_lastBlock.height,[NSData dataWithUInt256:_lastBlock.blockHash].hexString);
                 }
             }
             
