@@ -19,17 +19,27 @@
 
 #import "DSFetchSparkPricesOperation.h"
 #import "DSFetchSecondFallbackPricesOperation.h"
+#import "DSFetchFirstFallbackPricesOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSPriceOperationProvider
 
 + (DSOperation *)fetchPrices:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
-    return [self secondFallbackOperationWithCompletion:completion];
+    return [self firstFallbackOperationWithCompletion:completion];
 }
 
 + (DSOperation *)sparkOperationWithCompletion:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
     DSOperation *fetchSparkOperation = [[DSFetchSparkPricesOperation alloc] initOperationWithCompletion:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(prices);
+        });
+    }];
+    return fetchSparkOperation;
+}
+
++ (DSOperation *)firstFallbackOperationWithCompletion:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
+    DSOperation *fetchSparkOperation = [[DSFetchFirstFallbackPricesOperation alloc] initOperationWithCompletion:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
         dispatch_async(dispatch_get_main_queue(), ^{
             completion(prices);
         });
