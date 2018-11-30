@@ -241,11 +241,26 @@
         }
         
         if (prices) {
-            strongSelf.prices = prices;
             NSMutableDictionary <NSString *, DSCurrencyPriceObject *> *pricesByCode = [NSMutableDictionary dictionary];
             for (DSCurrencyPriceObject *priceObject in prices) {
                 pricesByCode[priceObject.code] = priceObject;
             }
+            
+            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"code" ascending:YES];
+            NSMutableArray<DSCurrencyPriceObject *> *mutablePrices = [[prices sortedArrayUsingDescriptors:@[ sortDescriptor ]] mutableCopy];
+            // move USD and EUR to the top of the prices list
+            DSCurrencyPriceObject *eurPriceObject = pricesByCode[@"EUR"];
+            if (eurPriceObject) {
+                [mutablePrices removeObject:eurPriceObject];
+                [mutablePrices insertObject:eurPriceObject atIndex:0];
+            }
+            DSCurrencyPriceObject *usdPriceObject = pricesByCode[DEFAULT_CURRENCY_CODE];
+            if (usdPriceObject) {
+                [mutablePrices removeObject:usdPriceObject];
+                [mutablePrices insertObject:usdPriceObject atIndex:0];
+            }
+            
+            strongSelf.prices = mutablePrices;
             strongSelf.pricesByCode = pricesByCode;
             strongSelf.localCurrencyCode = strongSelf->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
         }
