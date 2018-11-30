@@ -17,43 +17,38 @@
 
 #import "DSPriceOperationProvider.h"
 
-#import "DSFetchSparkPricesOperation.h"
-#import "DSFetchSecondFallbackPricesOperation.h"
 #import "DSFetchFirstFallbackPricesOperation.h"
+#import "DSFetchSecondFallbackPricesOperation.h"
+#import "DSFetchSparkPricesOperation.h"
+#import "DSNoSucceededDependenciesCondition.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSPriceOperationProvider
 
-+ (DSOperation *)fetchPrices:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
-    return [self firstFallbackOperationWithCompletion:completion];
-}
-
-+ (DSOperation *)sparkOperationWithCompletion:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
-    DSOperation *fetchSparkOperation = [[DSFetchSparkPricesOperation alloc] initOperationWithCompletion:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
++ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable prices))completion {
+    void (^mainThreadCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable prices) = ^(NSArray<DSCurrencyPriceObject *> *_Nullable prices) {
         dispatch_async(dispatch_get_main_queue(), ^{
             completion(prices);
         });
-    }];
-    return fetchSparkOperation;
-}
+    };
 
-+ (DSOperation *)firstFallbackOperationWithCompletion:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
-    DSOperation *fetchSparkOperation = [[DSFetchFirstFallbackPricesOperation alloc] initOperationWithCompletion:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(prices);
-        });
-    }];
-    return fetchSparkOperation;
-}
+    DSNoSucceededDependenciesCondition *condition = [DSNoSucceededDependenciesCondition new];
 
-+ (DSOperation *)secondFallbackOperationWithCompletion:(void(^)(NSArray<DSCurrencyPriceObject *> * _Nullable prices))completion {
-    DSOperation *fetchSparkOperation = [[DSFetchSecondFallbackPricesOperation alloc] initOperationWithCompletion:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(prices);
-        });
-    }];
-    return fetchSparkOperation;
+    DSOperation *operation1 = [[DSFetchSparkPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+
+    DSOperation *operation2 = [[DSFetchFirstFallbackPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+    [operation2 addCondition:condition];
+    [operation2 addDependency:operation1];
+
+    DSOperation *operation3 = [[DSFetchSecondFallbackPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+    [operation3 addCondition:condition];
+    [operation3 addDependency:operation1];
+    [operation3 addDependency:operation2];
+
+    DSGroupOperation *aggregateOperation = [DSGroupOperation operationWithOperations:@[ operation1, operation2, operation3 ]];
+
+    return aggregateOperation;
 }
 
 @end

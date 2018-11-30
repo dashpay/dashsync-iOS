@@ -139,6 +139,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)operationDidFinish:(NSOperation *)operation withErrors:(nullable NSArray<NSError *> *)errors {
+    if (self.cancelled) {
+        return;
+    }
+
     DSFetchSecondFallbackPricesOperationCache *cache = [DSFetchSecondFallbackPricesOperationCache sharedInstance];
     if (operation == self.chainBitPayOperation) {
         NSArray *currencyCodes = self.parseBitPayOperation.currencyCodes;
@@ -163,6 +167,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)finishedWithErrors:(NSArray<NSError *> *)errors {
+    if (self.cancelled) {
+        return;
+    }
+
     DSFetchSecondFallbackPricesOperationCache *cache = [DSFetchSecondFallbackPricesOperationCache sharedInstance];
     NSArray<NSString *> *currencyCodes = cache.currencyCodes;
     NSArray<NSNumber *> *currencyPrices = cache.currencyPrices;

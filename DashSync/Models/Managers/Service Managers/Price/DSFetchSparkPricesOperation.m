@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)finishedWithErrors:(NSArray<NSError *> *)errors {
+    if (self.cancelled) {
+        return;
+    }
+
     NSArray<DSCurrencyPriceObject *> *prices = self.parseOperation.prices;
     self.fetchCompletion(prices);
 }

@@ -131,6 +131,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)operationDidFinish:(NSOperation *)operation withErrors:(nullable NSArray<NSError *> *)errors {
+    if (self.cancelled) {
+        return;
+    }
+
     DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
     if (operation == self.chainDashBtcCCOperation) {
         NSNumber *dashBtcPrice = self.parseDashBtcCCOperation.dashBtcPrice;
@@ -153,24 +157,28 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)finishedWithErrors:(NSArray<NSError *> *)errors {
+    if (self.cancelled) {
+        return;
+    }
+
     DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
     double dashBtcPrice = cache.dashBtcPrice.doubleValue;
     NSNumber *vesPriceNumber = cache.vesPrice;
     NSDictionary<NSString *, NSNumber *> *pricesByCode = cache.pricesByCode;
-    
+
     if (!pricesByCode || dashBtcPrice < DBL_EPSILON) {
         self.fetchCompletion(nil);
-        
+
         return;
     }
-    
+
     double vesPrice = vesPriceNumber.doubleValue * dashBtcPrice;
-    
+
     NSMutableArray<DSCurrencyPriceObject *> *prices = [NSMutableArray array];
     for (NSString *code in pricesByCode) {
         DSCurrencyPriceObject *priceObject = nil;
         if ([code isEqualToString:@"VES"] && vesPrice > DBL_EPSILON) {
-             priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:@(vesPrice)];
+            priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:@(vesPrice)];
         }
         else {
             double btcPrice = [pricesByCode[code] doubleValue];
@@ -183,7 +191,7 @@ NS_ASSUME_NONNULL_BEGIN
             [prices addObject:priceObject];
         }
     }
-    
+
     self.fetchCompletion([prices copy]);
 }
 
