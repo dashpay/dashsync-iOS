@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *codeAndName;
 
 - (nullable instancetype)initWithCode:(NSString *)code price:(NSNumber *)price;
+- (nullable instancetype)initWithCode:(NSString *)code name:(NSString *)name price:(NSNumber *)price;
 
 @end
 

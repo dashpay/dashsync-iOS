@@ -55,15 +55,14 @@
 #import "NSData+Bitcoin.h"
 #import "NSDate+Utils.h"
 
-#define BITCOIN_TICKER_URL  @"https://bitpay.com/rates"
-#define POLONIEX_TICKER_URL  @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
-#define DASHCENTRAL_TICKER_URL  @"https://www.dashcentral.org/api/v1/public"
 #define TICKER_REFRESH_TIME 60.0
 
 #define DEFAULT_CURRENCY_CODE @"USD"
 #define DEFAULT_SPENT_LIMIT   DUFFS
 
 #define LOCAL_CURRENCY_CODE_KEY @"LOCAL_CURRENCY_CODE"
+
+#define PRICESBYCODE_KEY @"DS_PRICEMANAGER_PRICESBYCODE"
 
 #define USER_ACCOUNT_KEY    @"https://api.dashwallet.com"
 
@@ -167,9 +166,31 @@
     NSString * path = [bundle pathForResource:@"CurrenciesByCode" ofType:@"plist"];
     _currenciesByCode = [NSDictionary dictionaryWithContentsOfFile:path];
     
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    self.localCurrencyCode = ([defs stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
-    [defs stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    
+    NSMutableDictionary <NSString *, NSNumber *> *plainPricesByCode = [defaults objectForKey:PRICESBYCODE_KEY];
+    if (plainPricesByCode) {
+        NSMutableDictionary<NSString *, DSCurrencyPriceObject *> *pricesByCode = [NSMutableDictionary dictionary];
+        NSMutableArray<DSCurrencyPriceObject *> *prices = [NSMutableArray array];
+        for (NSString *code in plainPricesByCode) {
+            NSNumber *price = plainPricesByCode[code];
+            NSString *name = _currenciesByCode[code];
+            DSCurrencyPriceObject *priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code
+                                                                                        name:name
+                                                                                       price:price];
+            if (priceObject) {
+                pricesByCode[code] = priceObject;
+                [prices addObject:priceObject];
+            }
+        }
+        
+        _prices = [[self.class sortedPricesFromPrices:prices pricesByCode:pricesByCode] copy];
+        _pricesByCode = [pricesByCode copy];
+    }
+    
+    self.localCurrencyCode = ([defaults stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
+    [defaults stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     
     return self;
 }
@@ -242,25 +263,15 @@
         
         if (prices) {
             NSMutableDictionary <NSString *, DSCurrencyPriceObject *> *pricesByCode = [NSMutableDictionary dictionary];
+            NSMutableDictionary <NSString *, NSNumber *> *plainPricesByCode = [NSMutableDictionary dictionary];
             for (DSCurrencyPriceObject *priceObject in prices) {
                 pricesByCode[priceObject.code] = priceObject;
+                plainPricesByCode[priceObject.code] = priceObject.price;
             }
             
-            NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"code" ascending:YES];
-            NSMutableArray<DSCurrencyPriceObject *> *mutablePrices = [[prices sortedArrayUsingDescriptors:@[ sortDescriptor ]] mutableCopy];
-            // move USD and EUR to the top of the prices list
-            DSCurrencyPriceObject *eurPriceObject = pricesByCode[@"EUR"];
-            if (eurPriceObject) {
-                [mutablePrices removeObject:eurPriceObject];
-                [mutablePrices insertObject:eurPriceObject atIndex:0];
-            }
-            DSCurrencyPriceObject *usdPriceObject = pricesByCode[DEFAULT_CURRENCY_CODE];
-            if (usdPriceObject) {
-                [mutablePrices removeObject:usdPriceObject];
-                [mutablePrices insertObject:usdPriceObject atIndex:0];
-            }
+            [[NSUserDefaults standardUserDefaults] setObject:plainPricesByCode forKey:PRICESBYCODE_KEY];
             
-            strongSelf.prices = mutablePrices;
+            strongSelf.prices = [strongSelf.class sortedPricesFromPrices:prices pricesByCode:pricesByCode];
             strongSelf.pricesByCode = pricesByCode;
             strongSelf.localCurrencyCode = strongSelf->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
         }
@@ -505,6 +516,25 @@
 #else
     return;
 #endif
+}
+
++ (NSArray<DSCurrencyPriceObject *> *)sortedPricesFromPrices:(NSArray<DSCurrencyPriceObject *> *)prices
+                                                pricesByCode:(NSMutableDictionary <NSString *, DSCurrencyPriceObject *> *)pricesByCode {
+    NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"code" ascending:YES];
+    NSMutableArray<DSCurrencyPriceObject *> *mutablePrices = [[prices sortedArrayUsingDescriptors:@[ sortDescriptor ]] mutableCopy];
+    // move USD and EUR to the top of the prices list
+    DSCurrencyPriceObject *eurPriceObject = pricesByCode[@"EUR"];
+    if (eurPriceObject) {
+        [mutablePrices removeObject:eurPriceObject];
+        [mutablePrices insertObject:eurPriceObject atIndex:0];
+    }
+    DSCurrencyPriceObject *usdPriceObject = pricesByCode[DEFAULT_CURRENCY_CODE];
+    if (usdPriceObject) {
+        [mutablePrices removeObject:usdPriceObject];
+        [mutablePrices insertObject:usdPriceObject atIndex:0];
+    }
+    
+    return [mutablePrices copy];
 }
 
 @end

@@ -34,6 +34,15 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
 
+    return [self initWithCode:code name:name price:price];
+}
+
+- (nullable instancetype)initWithCode:(NSString *)code name:(NSString *)name price:(NSNumber *)price {
+    NSParameterAssert(code);
+    if (!code) {
+        return nil;
+    }
+
     self = [super init];
     if (self) {
         _code = [code copy];
