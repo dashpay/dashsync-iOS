@@ -141,6 +141,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define CHAIN_VOTING_KEYS_KEY  @"CHAIN_VOTING_KEYS_KEY"
 
+#define LOG_PREV_BLOCKS_ON_ORPHAN 0
+
 
 @interface DSChain ()
 
@@ -1223,10 +1225,12 @@ static dispatch_once_t devnetToken = 0;
     BOOL syncDone = NO;
     
     if (! prev) { // block is an orphan
+#if LOG_PREV_BLOCKS_ON_ORPHAN
         NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
-//        for (DSMerkleBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
-//            NSLog(@"printing previous block at height %d : %@",merkleBlock.height,uint256_obj(merkleBlock.blockHash));
-//        }
+        for (DSMerkleBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
+            NSLog(@"printing previous block at height %d : %@",merkleBlock.height,uint256_obj(merkleBlock.blockHash));
+        }
+#endif
         NSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
               blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
         

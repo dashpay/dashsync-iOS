@@ -569,7 +569,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     NSMutableString * mutableString = [NSMutableString stringWithFormat:@"m"];
     if (self.length) {
         for (NSInteger i = 0;i<self.length;i++) {
-            [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i]];
+            if ([self indexAtPosition:i] & BIP32_HARD) {
+                [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i] - BIP32_HARD];
+            } else {
+                [mutableString appendFormat:@"/%lu",(unsigned long)[self indexAtPosition:i]];
+            }
         }
     } else if ([self.depth integerValue]) {
         for (NSInteger i = 0;i<[self.depth integerValue] - 1;i++) {

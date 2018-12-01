@@ -949,7 +949,7 @@
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
-    NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableSet *txLockVoteHashes = [NSMutableSet set];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
@@ -1075,7 +1075,7 @@
     }
     
     if (txLockVoteHashes.count > 0) {
-        [self.governanceDelegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+        [self.transactionDelegate peer:self hasTransactionLockVoteHashes:txLockVoteHashes];
     }
     
     if (governanceObjectHashes.count > 0) {
