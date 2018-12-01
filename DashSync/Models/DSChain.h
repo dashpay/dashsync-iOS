@@ -88,7 +88,7 @@ FOUNDATION_EXPORT NSString* const DSChainBlockchainUsersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainNewBlockNotification;
+FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 @class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter;
 

@@ -195,6 +195,12 @@
     return BIP39_CREATION_TIME;
 }
 
+-(void)wipeWalletInfo {
+    _walletCreationTime = 0;
+    setKeychainData(nil, self.creationTimeUniqueID, NO);
+    setKeychainData(nil, self.creationGuessTimeUniqueID,NO);
+}
+
 -(NSTimeInterval)guessedWalletCreationTime {
     NSData *d = getKeychainData(self.creationGuessTimeUniqueID, nil);
     
@@ -479,6 +485,7 @@
 }
 
 - (void)wipeBlockchainInfo {
+    [self wipeWalletInfo];
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
     }

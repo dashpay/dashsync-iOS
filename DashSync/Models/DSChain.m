@@ -141,6 +141,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define CHAIN_VOTING_KEYS_KEY  @"CHAIN_VOTING_KEYS_KEY"
 
+#define LOG_PREV_BLOCKS_ON_ORPHAN 0
+
 
 @interface DSChain ()
 
@@ -203,8 +205,8 @@ static checkpoint mainnet_checkpoint_array[] = {
         self.checkpoints = checkpoints;
         self.genesisHash = checkpoints[1].checkpointHash;
     }
-//    NSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
-//    NSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
+    //    NSLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
+    //    NSLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.standardPort = port;
     self.standardDapiPort = dapiPort;
     self.devnetIdentifier = identifier;
@@ -952,6 +954,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
+    [wallet wipeBlockchainInfo];
     [self.mWallets removeObject:wallet];
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
@@ -982,11 +985,11 @@ static dispatch_once_t devnetToken = 0;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
     if (!keyChainArray) keyChainArray = [NSMutableArray array];
     if (![keyChainArray containsObject:wallet.uniqueID]) {
-    [keyChainArray addObject:wallet.uniqueID];
-    setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-    });
+        [keyChainArray addObject:wallet.uniqueID];
+        setKeychainArray(keyChainArray, self.chainWalletsKey, NO);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        });
     }
 }
 
@@ -1045,9 +1048,9 @@ static dispatch_once_t devnetToken = 0;
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
             self->_blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
-                                                                                 merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
-                                                                                     target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
-                                                                                      flags:nil height:checkpoint.height];
+                                                                                       merkleRoot:UINT256_ZERO timestamp:checkpoint.timestamp
+                                                                                           target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
+                                                                                            flags:nil height:checkpoint.height];
             self.checkpointsDictionary[@(checkpoint.height)] = uint256_obj(checkpointHash);
         }
         self.delegateQueueChainEntity = [self chainEntity];
@@ -1094,14 +1097,18 @@ static dispatch_once_t devnetToken = 0;
     if (! _lastBlock) {
         [DSMerkleBlockEntity.context performBlockAndWait:^{
             NSArray * lastBlocks = [DSMerkleBlockEntity lastBlocks:1 onChain:self.chainEntity];
-            self->_lastBlock = [[lastBlocks firstObject] merkleBlock];
+            DSMerkleBlock * lastBlock = [[lastBlocks firstObject] merkleBlock];
+            self->_lastBlock = lastBlock;
+            if (lastBlock) {
+                NSLog(@"last block at height %d recovered from db (hash is %@)",lastBlock.height,[NSData dataWithUInt256:lastBlock.blockHash].hexString);
+            }
         }];
-        
+
         if (!_lastBlock) {
             if ([[DSOptionsManager sharedInstance] syncFromGenesis]) {
                 NSUInteger genesisHeight = [self isDevnetAny]?1:0;
                 UInt256 checkpointHash = self.checkpoints[genesisHeight].checkpointHash;
-                    
+                
                 _lastBlock = self.blocks[uint256_obj(checkpointHash)];
                 
             } else if ([[DSOptionsManager sharedInstance] shouldSyncFromHeight]) {
@@ -1129,6 +1136,9 @@ static dispatch_once_t devnetToken = 0;
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
                                                                        height:self.checkpoints[i].height];
                     }
+                }
+                if (_lastBlock) {
+                    NSLog(@"last block at height %d chosen from checkpoints (hash is %@)",_lastBlock.height,[NSData dataWithUInt256:_lastBlock.blockHash].hexString);
                 }
             }
             
@@ -1215,12 +1225,14 @@ static dispatch_once_t devnetToken = 0;
     BOOL syncDone = NO;
     
     if (! prev) { // block is an orphan
-        //        NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
-        //        for (DSMerkleBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
-        //            NSLog(@"printing previous block at height %d : %@",merkleBlock.height,uint256_obj(merkleBlock.blockHash));
-        //        }
-        NSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, height %d", peer.host, peer.port,
-              blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight);
+#if LOG_PREV_BLOCKS_ON_ORPHAN
+        NSSortDescriptor * sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:TRUE];
+        for (DSMerkleBlock * merkleBlock in [[self.blocks allValues] sortedArrayUsingDescriptors:@[sortDescriptor]]) {
+            NSLog(@"printing previous block at height %d : %@",merkleBlock.height,uint256_obj(merkleBlock.blockHash));
+        }
+#endif
+        NSLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
+              blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
         
         [self.chainManager chain:self receivedOrphanBlock:block fromPeer:peer];
         
@@ -1362,7 +1374,12 @@ static dispatch_once_t devnetToken = 0;
         
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
         });
     }
     

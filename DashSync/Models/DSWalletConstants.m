@@ -13,7 +13,7 @@ NSString* const DSTransactionManagerSyncFinishedNotification =     @"DSTransacti
 NSString* const DSTransactionManagerSyncFailedNotification =       @"DSTransactionManagerSyncFailedNotification";
 NSString* const DSTransactionManagerTransactionStatusDidChangeNotification =         @"DSTransactionManagerTransactionStatusDidChangeNotification";
 NSString* const DSTransactionManagerTransactionReceivedNotification =         @"DSTransactionManagerTransactionReceivedNotification";
-NSString* const DSChainNewBlockNotification =         @"DSChainNewBlockNotification";
+NSString* const DSChainNewChainTipBlockNotification =         @"DSChainNewChainTipBlockNotification";
 NSString* const DSPeerManagerPeersDidChangeNotification =      @"DSPeerManagerPeersDidChangeNotification";
 NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeerManagerConnectedPeersDidChangeNotification";
 

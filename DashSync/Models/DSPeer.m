@@ -50,6 +50,7 @@
 #import "DSChainManager.h"
 
 #define PEER_LOGGING 1
+#define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
 
 #if ! PEER_LOGGING
 #define NSLog(...)
@@ -223,7 +224,7 @@
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
-
+    
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
@@ -578,7 +579,7 @@
     
     self.sentGetdataTxBlocks = YES;
 #if MESSAGE_LOGGING
-        NSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
+    NSLog(@"%@:%u sending getdata (transactions and blocks)", self.host, self.port);
 #endif
     [self sendMessage:msg type:MSG_GETDATA];
 }
@@ -947,7 +948,7 @@
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
-    NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableSet *txLockVoteHashes = [NSMutableSet set];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
@@ -1073,7 +1074,7 @@
     }
     
     if (txLockVoteHashes.count > 0) {
-        [self.governanceDelegate peer:self hasGovernanceObjectHashes:governanceObjectHashes];
+        [self.transactionDelegate peer:self hasTransactionLockVoteHashes:txLockVoteHashes];
     }
     
     if (governanceObjectHashes.count > 0) {
@@ -1124,6 +1125,21 @@
     
 }
 
+// HEADER FORMAT:
+
+// 01 ................................. Header count: 1
+//
+// 02000000 ........................... Block version: 2
+// b6ff0b1b1680a2862a30ca44d346d9e8
+// 910d334beb48ca0c0000000000000000 ... Hash of previous block's header
+// 9d10aa52ee949386ca9385695f04ede2
+// 70dda20810decd12bc9b048aaab31471 ... Merkle root
+// 24d95a54 ........................... Unix time: 1415239972
+// 30c31b18 ........................... Target (bits)
+// fe9f0864 ........................... Nonce
+//
+// 00 ................................. Transaction count (0x00)
+
 - (void)acceptHeadersMessage:(NSData *)message
 {
     NSNumber * lNumber = nil;
@@ -1142,6 +1158,22 @@
     }
     NSLog(@"%@:%u got %u headers", self.host, self.port, (int)count);
     
+#if LOG_ALL_HEADERS_IN_ACCEPT_HEADERS
+    for (int i =0;i<count;i++) {
+        NSData * headerData = [message subdataWithRange:NSMakeRange(l+ 81*i, 80)];
+        NSLog(@"BLOCK HEADER ----------");
+        NSLog(@"block version %u",[headerData UInt8AtOffset:0]);
+        NSLog(@"previous blockheader hash %@ (%@)",[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].hexString,[NSData dataWithUInt256:[headerData UInt256AtOffset:4]].reverse.hexString);
+        NSLog(@"merkle root %@",[NSData dataWithUInt256:[headerData UInt256AtOffset:36]].hexString);
+        uint32_t timestamp = [headerData UInt32AtOffset:68];
+        NSLog(@"timestamp %x (%u) time is %@",timestamp,timestamp,[NSDate dateWithTimeIntervalSince1970:timestamp]);
+        NSLog(@"target is %x",[headerData UInt32AtOffset:72]);
+        NSLog(@"nonce is %x",[headerData UInt32AtOffset:76]);
+        NSLog(@"transaction count is %u",[headerData UInt8AtOffset:80]);
+        NSLog(@"-----------------------");
+    }
+#endif
+    
     if (_relayStartTime != 0) { // keep track of relay peformance
         NSTimeInterval speed = count/([NSDate timeIntervalSince1970] - self.relayStartTime);
         
@@ -1149,40 +1181,47 @@
         _relaySpeed = _relaySpeed*0.9 + speed*0.1;
         _relayStartTime = 0;
     }
-//    for (int i = 0; i < count; i++) {
-//        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
-//        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
-//    }
+    //    for (int i = 0; i < count; i++) {
+    //        UInt256 locator = [message subdataWithRange:NSMakeRange(l + 81*i, 80)].x11;
+    //        NSLog(@"%@:%u header: %@", self.host, self.port, uint256_obj(locator));
+    //    }
     // To improve chain download performance, if this message contains 2000 headers then request the next 2000 headers
     // immediately, and switch to requesting blocks when we receive a header newer than earliestKeyTime
     // Devnets can run slower than usual
-    NSTimeInterval t = [message UInt32AtOffset:l + 81*(count - 1) + 68];
-    if (count >= 2000 || t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
-        UInt256 firstX11 = [message subdataWithRange:NSMakeRange(l, 80)].x11;
-        UInt256 lastX11 = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
-        NSValue *firstHash = uint256_obj(firstX11);
-        NSValue *lastHash = uint256_obj(lastX11);
+    NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
+    NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
+    if (firstTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) {
+        //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
+        NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
+        [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
+        return;
+    }
+    if (count >= 2000 || lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
+        UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
+        UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
+        NSValue *firstHashValue = uint256_obj(firstBlockHash);
+        NSValue *lastHashValue = uint256_obj(lastBlockHash);
         
-        if (t >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
-            t = [message UInt32AtOffset:l + 81 + 68];
+        if (lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
+            NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
-            for (off = l; t > 0 && t < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
+            for (off = l; timestamp > 0 && timestamp < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
                 off += 81;
-                t = [message UInt32AtOffset:off + 81 + 68];
+                timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
-            
-            lastHash = uint256_obj([message subdataWithRange:NSMakeRange(off, 80)].x11);
-            NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHash, firstHash]);
-            [self sendGetblocksMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
+            lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
+            lastHashValue = uint256_obj(lastBlockHash);
+            NSLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashValue, firstHashValue]);
+            [self sendGetblocksMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
         }
         else {
             NSLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
-                  @[lastHash, firstHash]);
-            [self sendGetheadersMessageWithLocators:@[lastHash, firstHash] andHashStop:UINT256_ZERO];
+                  @[lastHashValue, firstHashValue]);
+            [self sendGetheadersMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
         }
     }
     else {
-        [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:t],self.version];
+        [self error:@"non-standard headers message, %u is fewer headers than expected, last header time is %@, peer version %d", (int)count,[NSDate dateWithTimeIntervalSince1970:lastTimestamp],self.version];
         return;
     }
     for (NSUInteger off = l; off < l + 81*count; off += 81) {
@@ -1369,7 +1408,7 @@
 
 - (void)acceptMerkleblockMessage:(NSData *)message
 {
-    // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
+    // Dash nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
     // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
     // non-tx message is received we should have all the tx in the merkleblock.
     DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:message onChain:self.chain];
