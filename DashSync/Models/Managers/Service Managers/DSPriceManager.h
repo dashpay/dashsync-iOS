@@ -72,7 +72,7 @@ typedef void (^ResetCancelHandlerBlock)(void);
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color useSignificantDigits:(BOOL)useSignificantDigits;
 - (NSAttributedString * _Nonnull)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor* _Nonnull)color dashSymbolSize:(CGSize)dashSymbolSize;
 - (NSNumber * _Nonnull)numberForAmount:(int64_t)amount;
-- (NSString * _Nonnull)stringForBitcoinAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
+- (NSString * _Nonnull)stringForBitcoinAmount:(int64_t)amount;
 - (NSString * _Nonnull)stringForDashAmount:(int64_t)amount;
 - (int64_t)amountForBitcoinCurrencyString:(NSString * _Nonnull)string DEPRECATED_ATTRIBUTE;
 - (int64_t)amountForLocalCurrencyString:(NSString * _Nonnull)string;
