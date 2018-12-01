@@ -27,7 +27,7 @@
 
 @implementation DSChainCondition
 
-- (instancetype)initWithOpeartion:(NSOperation<DSChainableOperationProtocol> *)operation {
+- (instancetype)initWithOperation:(NSOperation<DSChainableOperationProtocol> *)operation {
     self = [super init];
     if (self) {
         self.chainOperation = operation;
@@ -36,7 +36,7 @@
 }
 
 + (instancetype)chainConditionForOperation:(NSOperation<DSChainableOperationProtocol> *)operation {
-    return [[[self class] alloc] initWithOpeartion:operation];
+    return [[[self class] alloc] initWithOperation:operation];
 }
 
 #pragma mark - Subclass

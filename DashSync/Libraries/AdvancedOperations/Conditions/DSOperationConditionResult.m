@@ -40,14 +40,14 @@
 }
 
 + (DSOperationConditionResult *)satisfiedResult {
-    return [self resultWithSuccees:YES error:nil];
+    return [self resultWithSuccess:YES error:nil];
 }
 
 + (DSOperationConditionResult *)failedResultWithError:(NSError *)error {
-    return [self resultWithSuccees:NO error:error];
+    return [self resultWithSuccess:NO error:error];
 }
 
-+ (DSOperationConditionResult *)resultWithSuccees:(BOOL)success error:(NSError *)error {
++ (DSOperationConditionResult *)resultWithSuccess:(BOOL)success error:(NSError *)error {
     DSOperationConditionResult *newResult = [[DSOperationConditionResult alloc] init];
     newResult.success = success;
     newResult.error = error;

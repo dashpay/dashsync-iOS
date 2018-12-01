@@ -163,7 +163,7 @@
     
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString * path = [bundle pathForResource:@"CurrenciesByCode" ofType:@"plist"];
+    NSString *path = [bundle pathForResource:@"CurrenciesByCode" ofType:@"plist"];
     _currenciesByCode = [NSDictionary dictionaryWithContentsOfFile:path];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -185,7 +185,7 @@
             }
         }
         
-        _prices = [[self.class sortedPricesFromPrices:prices pricesByCode:pricesByCode] copy];
+        _prices = [[self.class sortPrices:prices usingDictionary:pricesByCode] copy];
         _pricesByCode = [pricesByCode copy];
     }
     
@@ -271,7 +271,7 @@
             
             [[NSUserDefaults standardUserDefaults] setObject:plainPricesByCode forKey:PRICESBYCODE_KEY];
             
-            strongSelf.prices = [strongSelf.class sortedPricesFromPrices:prices pricesByCode:pricesByCode];
+            strongSelf.prices = [strongSelf.class sortPrices:prices usingDictionary:pricesByCode];
             strongSelf.pricesByCode = pricesByCode;
             strongSelf.localCurrencyCode = strongSelf->_localCurrencyCode; // update localCurrencyPrice and localFormat.maximum
         }
@@ -518,8 +518,8 @@
 #endif
 }
 
-+ (NSArray<DSCurrencyPriceObject *> *)sortedPricesFromPrices:(NSArray<DSCurrencyPriceObject *> *)prices
-                                                pricesByCode:(NSMutableDictionary <NSString *, DSCurrencyPriceObject *> *)pricesByCode {
++ (NSArray<DSCurrencyPriceObject *> *)sortPrices:(NSArray<DSCurrencyPriceObject *> *)prices
+                                 usingDictionary:(NSMutableDictionary <NSString *, DSCurrencyPriceObject *> *)pricesByCode {
     NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"code" ascending:YES];
     NSMutableArray<DSCurrencyPriceObject *> *mutablePrices = [[prices sortedArrayUsingDescriptors:@[ sortDescriptor ]] mutableCopy];
     // move USD and EUR to the top of the prices list
