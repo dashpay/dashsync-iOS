@@ -17,7 +17,7 @@
 //
 
 #import "DSOperationQueue.h"
-#import "DSBlockObserver.h"
+#import "DSBlockOperationObserver.h"
 #import "DSOperation.h"
 #import "NSOperation+DSOperationKit.h"
 
@@ -56,8 +56,8 @@
         }
 
         __weak typeof(self) weakSelf = self;
-        // Set up a `DSBlockObserver` to invoke the `DSOperationQueueDelegate` method.
-        DSBlockObserver *delegate = [[DSBlockObserver alloc]
+        // Set up a `DSBlockOperationObserver` to invoke the `DSOperationQueueDelegate` method.
+        DSBlockOperationObserver *delegate = [[DSBlockOperationObserver alloc]
             initWithWillStartHandler:nil
             didStartHandler:nil
             produceHandler:^(DSOperation *operation, NSOperation *producedOperation) {

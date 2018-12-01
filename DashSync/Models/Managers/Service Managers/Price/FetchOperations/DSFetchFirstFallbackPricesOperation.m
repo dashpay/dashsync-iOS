@@ -18,7 +18,7 @@
 
 #import "DSFetchFirstFallbackPricesOperation.h"
 
-#import "DSChainOperation.h"
+#import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSDynamicOptions.h"
 #import "DSHTTPGETOperation.h"
@@ -78,9 +78,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSParseDashBtcCCResponseOperation *parseDashBtcCCOperation;
 @property (strong, nonatomic) DSParseDashVesCCResponseOperation *parseDashVesCCOperation;
 @property (strong, nonatomic) DSParseBitcoinAvgResponseOperation *parseBitcoinAvgOperation;
-@property (strong, nonatomic) DSChainOperation *chainDashBtcCCOperation;
-@property (strong, nonatomic) DSChainOperation *chainDashVesCCOperation;
-@property (strong, nonatomic) DSChainOperation *chainBitcoinAvgOperation;
+@property (strong, nonatomic) DSChainedOperation *chainDashBtcCCOperation;
+@property (strong, nonatomic) DSChainedOperation *chainDashVesCCOperation;
+@property (strong, nonatomic) DSChainedOperation *chainBitcoinAvgOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  timeoutInterval:30.0];
             DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
             DSParseDashBtcCCResponseOperation *parseOperation = [[DSParseDashBtcCCResponseOperation alloc] init];
-            DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashBtcCCOperation = parseOperation;
             _chainDashBtcCCOperation = chainOperation;
             [self addOperation:chainOperation];
@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  timeoutInterval:30.0];
             DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
             DSParseDashVesCCResponseOperation *parseOperation = [[DSParseDashVesCCResponseOperation alloc] init];
-            DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashVesCCOperation = parseOperation;
             _chainDashVesCCOperation = chainOperation;
             [self addOperation:chainOperation];
@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  timeoutInterval:30.0];
             DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
             DSParseBitcoinAvgResponseOperation *parseOperation = [[DSParseBitcoinAvgResponseOperation alloc] init];
-            DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseBitcoinAvgOperation = parseOperation;
             _chainBitcoinAvgOperation = chainOperation;
             [self addOperation:chainOperation];

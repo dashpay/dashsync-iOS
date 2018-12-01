@@ -16,23 +16,23 @@
 //  limitations under the License.
 //
 
-#import "DSBlockObserver.h"
+#import "DSBlockOperationObserver.h"
 
-@interface DSBlockObserver ()
+@interface DSBlockOperationObserver ()
 
-@property (nonatomic, copy) DSBlockObserverWillStartHandler willStartHandler;
-@property (nonatomic, copy) DSBlockObserverStartHandler startHandler;
-@property (nonatomic, copy) DSBlockObserverProduceHandler produceHandler;
-@property (nonatomic, copy) DSBlockObserverFinishHandler finishHandler;
+@property (nonatomic, copy) DSBlockOperationObserverWillStartHandler willStartHandler;
+@property (nonatomic, copy) DSBlockOperationObserverStartHandler startHandler;
+@property (nonatomic, copy) DSBlockOperationObserverProduceHandler produceHandler;
+@property (nonatomic, copy) DSBlockOperationObserverFinishHandler finishHandler;
 
 @end
 
-@implementation DSBlockObserver
+@implementation DSBlockOperationObserver
 
-- (instancetype)initWithWillStartHandler:(DSBlockObserverWillStartHandler)willStartHandler
-                         didStartHandler:(DSBlockObserverStartHandler)startHandler
-                          produceHandler:(DSBlockObserverProduceHandler)produceHandler
-                           finishHandler:(DSBlockObserverFinishHandler)finishHandler {
+- (instancetype)initWithWillStartHandler:(DSBlockOperationObserverWillStartHandler)willStartHandler
+                         didStartHandler:(DSBlockOperationObserverStartHandler)startHandler
+                          produceHandler:(DSBlockOperationObserverProduceHandler)produceHandler
+                           finishHandler:(DSBlockOperationObserverFinishHandler)finishHandler {
     self = [super init];
     if (self) {
         self.willStartHandler = willStartHandler;

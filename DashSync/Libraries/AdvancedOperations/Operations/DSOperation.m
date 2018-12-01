@@ -17,8 +17,8 @@
 //
 
 #import "DSOperation.h"
-#import "DSBlockObserver.h"
-#import "DSChainCondition.h"
+#import "DSBlockOperationObserver.h"
+#import "DSChainableCondition.h"
 #import "DSOperationConditionResult.h"
 #import "DSOperationQueue.h"
 
@@ -304,10 +304,10 @@
 
 - (DSOperation<DSChainableOperationProtocol> *)chainWithOperation:(DSOperation<DSChainableOperationProtocol> *)operation {
     [self.chainedOperations addObject:operation];
-    [operation addCondition:[DSChainCondition chainConditionForOperation:self]];
+    [operation addCondition:[DSChainableCondition chainConditionForOperation:self]];
 
     __weak typeof(operation) weakOperation = operation;
-    [self addObserver:[[DSBlockObserver alloc] initWithWillStartHandler:nil didStartHandler:nil produceHandler:nil finishHandler:^(DSOperation *finishedOperation, NSArray<NSError *> *errors) {
+    [self addObserver:[[DSBlockOperationObserver alloc] initWithWillStartHandler:nil didStartHandler:nil produceHandler:nil finishHandler:^(DSOperation *finishedOperation, NSArray<NSError *> *errors) {
               [weakOperation chainedOperation:finishedOperation didFinishWithErrors:errors passingAdditionalData:[finishedOperation additionalDataToPassForChainedOperation]];
           }]];
 

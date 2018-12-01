@@ -16,10 +16,10 @@
 //  limitations under the License.
 //
 
-#import "DSChainOperation.h"
+#import "DSChainedOperation.h"
 #import "DSOperationQueue.h"
 
-@interface DSChainOperation () <DSOperationQueueDelegate>
+@interface DSChainedOperation () <DSOperationQueueDelegate>
 
 @property (nonatomic, strong) DSOperationQueue *internalQueue;
 @property (nonatomic, copy) NSBlockOperation *finishingOperation;
@@ -28,7 +28,7 @@
 
 @end
 
-@implementation DSChainOperation
+@implementation DSChainedOperation
 
 + (instancetype)operationWithOperations:(NSArray<NSOperation<DSChainableOperationProtocol> *> *)operations {
     return [[[self class] alloc] initWithOperations:operations];

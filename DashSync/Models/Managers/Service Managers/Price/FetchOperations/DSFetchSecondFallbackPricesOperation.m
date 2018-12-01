@@ -17,7 +17,7 @@
 
 #import "DSFetchSecondFallbackPricesOperation.h"
 
-#import "DSChainOperation.h"
+#import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSDynamicOptions.h"
 #import "DSHTTPGETOperation.h"
@@ -86,9 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSParseBitPayResponseOperation *parseBitPayOperation;
 @property (strong, nonatomic) DSParsePoloniexResponseOperation *parsePoloniexOperation;
 @property (strong, nonatomic) DSParseDashCentralResponseOperation *parseDashcentralOperation;
-@property (strong, nonatomic) DSChainOperation *chainBitPayOperation;
-@property (strong, nonatomic) DSChainOperation *chainPoloniexOperation;
-@property (strong, nonatomic) DSChainOperation *chainDashcentralOperation;
+@property (strong, nonatomic) DSChainedOperation *chainBitPayOperation;
+@property (strong, nonatomic) DSChainedOperation *chainPoloniexOperation;
+@property (strong, nonatomic) DSChainedOperation *chainDashcentralOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  timeoutInterval:10.0];
             DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
             DSParseBitPayResponseOperation *parseOperation = [[DSParseBitPayResponseOperation alloc] init];
-            DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseBitPayOperation = parseOperation;
             _chainBitPayOperation = chainOperation;
             [self addOperation:chainOperation];
@@ -116,7 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  timeoutInterval:30.0];
             DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
             DSParsePoloniexResponseOperation *parseOperation = [[DSParsePoloniexResponseOperation alloc] init];
-            DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parsePoloniexOperation = parseOperation;
             _chainPoloniexOperation = chainOperation;
             [self addOperation:chainOperation];
@@ -127,7 +127,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                  timeoutInterval:30.0];
             DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
             DSParseDashCentralResponseOperation *parseOperation = [[DSParseDashCentralResponseOperation alloc] init];
-            DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashcentralOperation = parseOperation;
             _chainDashcentralOperation = chainOperation;
             [self addOperation:chainOperation];

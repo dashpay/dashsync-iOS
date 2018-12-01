@@ -17,7 +17,7 @@
 
 #import "DSFetchSparkPricesOperation.h"
 
-#import "DSChainOperation.h"
+#import "DSChainedOperation.h"
 #import "DSHTTPGETOperation.h"
 #import "DSParseSparkResponseOperation.h"
 
@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
                                              timeoutInterval:30.0];
         DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
         DSParseSparkResponseOperation *parseOperation = [[DSParseSparkResponseOperation alloc] init];
-        DSChainOperation *chainOperation = [DSChainOperation operationWithOperations:@[ getOperation, parseOperation ]];
+        DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
 
         _parseOperation = parseOperation;
         _fetchCompletion = [completion copy];

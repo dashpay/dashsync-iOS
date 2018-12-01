@@ -27,10 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
  This class of operation is very useful for abstracting several
  smaller operations into a larger operation.
  
- DSChainOperation is similar to DSGroupOperation but you don't need to establish
+ DSChainedOperation is similar to DSGroupOperation but you don't need to establish
  dependencies between operations and you are not responsible to pass data between them.
  */
-@interface DSChainOperation : DSOperation
+@interface DSChainedOperation : DSOperation
 
 @property (nonatomic, assign) BOOL finishIfProducedAnyError;
 

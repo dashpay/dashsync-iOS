@@ -16,16 +16,16 @@
 //  limitations under the License.
 //
 
-#import "DSChainCondition.h"
+#import "DSChainableCondition.h"
 #import "DSOperationConditionResult.h"
 
-@interface DSChainCondition ()
+@interface DSChainableCondition ()
 
 @property (nonatomic, strong) NSOperation<DSChainableOperationProtocol> *chainOperation;
 
 @end
 
-@implementation DSChainCondition
+@implementation DSChainableCondition
 
 - (instancetype)initWithOperation:(NSOperation<DSChainableOperationProtocol> *)operation {
     self = [super init];

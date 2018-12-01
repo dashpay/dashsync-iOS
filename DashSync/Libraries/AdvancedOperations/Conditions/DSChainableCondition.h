@@ -23,7 +23,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSChainCondition : NSObject <DSOperationConditionProtocol>
+@interface DSChainableCondition : NSObject <DSOperationConditionProtocol>
 
 @property (nonatomic, strong, readonly) NSOperation<DSChainableOperationProtocol> *chainOperation;
 
