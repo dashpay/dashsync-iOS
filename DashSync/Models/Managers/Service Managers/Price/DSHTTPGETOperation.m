@@ -17,7 +17,7 @@
 
 #import "DSHTTPGETOperation.h"
 
-#import "DSAuthenticationManager.h"
+#import "DSAuthenticationManager+Private.h"
 #import "DSNetworkActivityObserver.h"
 #import "DSReachabilityCondition.h"
 
