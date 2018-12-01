@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Reachability.h"
+#import "DSReachabilityManager.h"
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"
 #import "DSChain.h"
@@ -66,6 +66,8 @@
 #import "DSBlockchainUserCloseTransaction.h"
 
 #import "DSBLSKey.h"
+
+#define SHAPESHIFT_ENABLED 0
 
 //! Project version number for dashsync.
 FOUNDATION_EXPORT double DashSyncVersionNumber;

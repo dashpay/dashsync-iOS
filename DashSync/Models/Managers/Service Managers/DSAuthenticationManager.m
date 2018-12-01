@@ -47,6 +47,7 @@ static NSString *sanitizeString(NSString *s)
     return sane;
 }
 
+#define SECURE_TIME_KEY     @"SECURE_TIME"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
@@ -126,6 +127,26 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 - (NSTimeInterval)secureTime
 {
     return [[NSUserDefaults standardUserDefaults] doubleForKey:SECURE_TIME_KEY];
+}
+
+- (void)updateSecureTime:(NSTimeInterval)secureTime {
+    [[NSUserDefaults standardUserDefaults] setDouble:secureTime forKey:SECURE_TIME_KEY];
+}
+
+- (void)updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response {
+    NSString *date = response.allHeaderFields[@"Date"];
+    if (!date) {
+        return;
+    }
+    NSDataDetector *dataDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeDate error:nil];
+    NSTextCheckingResult *lastResult = [dataDetector matchesInString:date options:0 range:NSMakeRange(0, date.length)].lastObject;
+    if (!lastResult) {
+        return;
+    }
+    NSTimeInterval now = [lastResult date].timeIntervalSince1970;
+    if (now > self.secureTime) {
+        [self updateSecureTime:now];
+    }
 }
 
 -(UIViewController *)presentingViewController {

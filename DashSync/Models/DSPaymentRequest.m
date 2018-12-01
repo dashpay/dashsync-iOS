@@ -33,8 +33,6 @@
 #import "NSMutableData+Dash.h"
 #import "DSChain.h"
 
-#define SHAPESHIFT_ENABLED 0
-
 @interface DSPaymentRequest()
 
 @property(nonatomic,strong) DSChain * chain;

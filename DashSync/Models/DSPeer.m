@@ -34,7 +34,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
-#import "Reachability.h"
+#import "DSReachabilityManager.h"
 #import "DSGovernanceObject.h"
 #import <arpa/inet.h>
 #import "DSBloomFilter.h"
@@ -81,7 +81,7 @@
 @property (nonatomic, assign) BOOL sentVerack, gotVerack;
 @property (nonatomic, assign) BOOL sentGetaddr, sentFilter, sentGetdataTxBlocks, sentGetdataMasternode,sentGetdataGovernance, sentMempool, sentGetblocks, sentGetdataGovernanceVotes, sentGovSync;
 @property (nonatomic, assign) BOOL receivedGovSync;
-@property (nonatomic, strong) Reachability *reachability;
+@property (nonatomic, strong) DSReachabilityManager *reachability;
 @property (nonatomic, strong) id reachabilityObserver;
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
@@ -154,7 +154,6 @@
 
 - (void)dealloc
 {
-    [self.reachability stopNotifier];
     if (self.reachabilityObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
@@ -186,30 +185,31 @@
     if (self.status != DSPeerStatus_Disconnected) return;
     _status = DSPeerStatus_Connecting;
     _pingTime = DBL_MAX;
-    if (! self.reachability) self.reachability = [Reachability reachabilityForInternetConnection];
+    if (! self.reachability) self.reachability = [DSReachabilityManager sharedManager];
     
-    if (self.reachability.currentReachabilityStatus == NotReachable) { // delay connect until network is reachable
+    if (self.reachability.networkReachabilityStatus == DSReachabilityStatusNotReachable) { // delay connect until network is reachable
         NSLog(@"%@:%u not reachable, waiting...", self.host, self.port);
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (! self.reachabilityObserver) {
                 self.reachabilityObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:kReachabilityChangedNotification object:nil
+                [[NSNotificationCenter defaultCenter] addObserverForName:DSReachabilityDidChangeNotification object:nil
                                                                    queue:nil usingBlock:^(NSNotification *note) {
-                                                                       if (self.reachabilityObserver && self.reachability.currentReachabilityStatus != NotReachable) {
+                                                                       if (self.reachabilityObserver && self.reachability.networkReachabilityStatus != DSReachabilityStatusNotReachable) {
                                                                            self->_status = DSPeerStatus_Disconnected;
                                                                            [self connect];
                                                                        }
                                                                    }];
                 
-                [self.reachability startNotifier];
+                if (!self.reachability.monitoring) {
+                    [self.reachability startMonitoring];
+                }
             }
         });
         
         return;
     }
     else if (self.reachabilityObserver) {
-        [self.reachability stopNotifier];
         self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;
@@ -284,7 +284,6 @@
     _status = DSPeerStatus_Disconnected;
     
     if (self.reachabilityObserver) {
-        [self.reachability stopNotifier];
         self.reachability = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self.reachabilityObserver];
         self.reachabilityObserver = nil;

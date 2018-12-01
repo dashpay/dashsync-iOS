@@ -26,7 +26,7 @@
 #import "DSChainsManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
-#import "Reachability.h"
+#import "DSReachabilityManager.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"
@@ -42,7 +42,7 @@
 @property (nonatomic,strong) NSMutableArray * knownChains;
 @property (nonatomic,strong) NSMutableArray * knownDevnetChains;
 @property (nonatomic,strong) NSMutableDictionary * devnetGenesisDictionary;
-@property (nonatomic,strong) Reachability *reachability;
+@property (nonatomic,strong) DSReachabilityManager *reachability;
 
 @end
 
@@ -72,7 +72,7 @@
             [self.knownDevnetChains addObject:[DSChain setUpDevnetWithIdentifier:string withCheckpoints:checkpointArray withDefaultPort:DEVNET_STANDARD_PORT withDefaultDapiPort:DEVNET_DAPI_STANDARD_PORT]];
         }
         
-        self.reachability = [Reachability reachabilityForInternetConnection];
+        self.reachability = [DSReachabilityManager sharedManager];
     }
     return self;
 }

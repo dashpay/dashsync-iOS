@@ -26,7 +26,6 @@
 #import <Foundation/Foundation.h>
 
 #define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
-#define SECURE_TIME_KEY     @"SECURE_TIME"
 
 typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
