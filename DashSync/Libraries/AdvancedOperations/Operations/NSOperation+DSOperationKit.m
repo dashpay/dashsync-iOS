@@ -65,13 +65,23 @@
          chaining them together.
          */
         self.completionBlock = ^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
             existing();
-            block(weakSelf);
+            block(strongSelf);
         };
     }
     else {
         self.completionBlock = ^() {
-            block(weakSelf);
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            block(strongSelf);
         };
     }
 }

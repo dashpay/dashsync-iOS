@@ -173,16 +173,21 @@
     // make sure that DSOperationConditionResult will not retain and call on self
     __weak typeof(self) weakSelf = self;
     [DSOperationConditionResult evaluateConditions:self.conditions operation:self completion:^(NSArray *failures) {
-        if (weakSelf.isCancelled) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        if (strongSelf.isCancelled) {
             return;
         }
 
         if (failures.count != 0) {
-            [weakSelf cancelWithErrors:failures];
+            [strongSelf cancelWithErrors:failures];
         }
-        else if (weakSelf.state < DSOperationStateReady) {
+        else if (strongSelf.state < DSOperationStateReady) {
             //We must preceed to have the operation exit the queue
-            weakSelf.state = DSOperationStateReady;
+            strongSelf.state = DSOperationStateReady;
         }
     }];
 }
@@ -308,7 +313,12 @@
 
     __weak typeof(operation) weakOperation = operation;
     [self addObserver:[[DSBlockOperationObserver alloc] initWithWillStartHandler:nil didStartHandler:nil produceHandler:nil finishHandler:^(DSOperation *finishedOperation, NSArray<NSError *> *errors) {
-              [weakOperation chainedOperation:finishedOperation didFinishWithErrors:errors passingAdditionalData:[finishedOperation additionalDataToPassForChainedOperation]];
+              __strong typeof(weakOperation) strongOperation = weakOperation;
+              if (!strongOperation) {
+                  return;
+              }
+
+              [strongOperation chainedOperation:finishedOperation didFinishWithErrors:errors passingAdditionalData:[finishedOperation additionalDataToPassForChainedOperation]];
           }]];
 
     return operation;
