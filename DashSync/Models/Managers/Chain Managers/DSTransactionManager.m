@@ -136,7 +136,7 @@
         
         for (DSPeer *p in peers) {
             if (p.status != DSPeerStatus_Connected) continue;
-            [p sendInvMessageForHashes:txHashes ofType:DSInvType_Tx];
+            [p sendTransactionInvMessagesForTxHashes:txHashes txLockRequestHashes:nil];
             [p sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) return;
                 
@@ -144,7 +144,8 @@
                     if ([self.txRelays[h] containsObject:p] || [self.txRequests[h] containsObject:p]) continue;
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
-                    [p sendGetdataMessageWithTxHashes:@[h] andBlockHashes:nil];
+                    //todo: to get lock requests instead if sent that way
+                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil blockHashes:nil];
                 }
             }];
         }
