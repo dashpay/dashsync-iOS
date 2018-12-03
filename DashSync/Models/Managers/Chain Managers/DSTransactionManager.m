@@ -62,6 +62,7 @@
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.nonFalsePositiveTransactions = [NSMutableSet set];
+    [self recreatePublishedTransactionList];
     return self;
 }
 
@@ -150,6 +151,15 @@
             }];
         }
     });
+}
+
+//This is used when re-entering app, the wallet needs to check all transactions that are in a publishing phase.
+-(void)recreatePublishedTransactionList {
+    for (DSWallet * wallet in self.chain.wallets) {
+        for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
+            [self addTransactionToPublishList:tx]; // also populate the tx publish list
+        }
+    }
 }
 
 
@@ -324,15 +334,6 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 //It makes sense to keep this in this class because it is not a property of the chain, but intead of a effemeral item used in the synchronization of the chain.
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer
 {
-    
-    //TODO: XXXX move this somewhere more suitable, not sure why we are adding transaction to publish list here
-    for (DSWallet * wallet in self.chain.wallets) {
-        for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
-            [self addTransactionToPublishList:tx]; // also populate the tx publish list
-        }
-    }
-    
-    
     self.filterUpdateHeight = self.chain.lastBlockHeight;
     self.transactionsBloomFilterFalsePositiveRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
     
