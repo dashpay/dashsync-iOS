@@ -465,19 +465,13 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         NSLog(@"No transaction found on chain for this transaction");
         return;
     }
-    NSLog(@"a");
-    DSAccount * account = nil;
-    if (syncing) {
-        account = [self.chain accountContainingTransaction:transaction];
-        if (!account) {
-            NSLog(@"No account found for this transaction");
-            return;
-        }
+    DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    if (syncing && !account) {
+        NSLog(@"No account found for this transaction");
+        return;
     }
-    NSLog(@"b");
     if (![account registerTransaction:transaction]) return;
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
-    NSLog(@"c");
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
