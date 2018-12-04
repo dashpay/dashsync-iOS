@@ -1079,7 +1079,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h transactionIsRequestingInstantSendLock:NO];
             });
         }
         
@@ -1094,7 +1094,7 @@
             [hash getValue:&h];
             
             dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h];
+                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h transactionIsRequestingInstantSendLock:YES];
             });
         }
         
@@ -1115,7 +1115,7 @@
                                    andHashStop:UINT256_ZERO];
     }
     
-    if (self.mempoolCompletion && (txHashes.count > 0 || blockHashes.count == 0)) {
+    if (self.mempoolCompletion && ((txHashes.count + txLockRequestHashes.count > 0) || blockHashes.count == 0)) {
         dispatch_async(self.delegateQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self];
         });
@@ -1153,7 +1153,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self relayedTransaction:tx];
+        [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
     });
     
     NSLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
@@ -1311,7 +1311,7 @@
         return;
     }
     
-    NSLog(@"%@:%u got getdata with %u items", self.host, self.port, (int)count);
+    NSLog(@"%@:%u %@ got getdata with %u items", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer)":@"", (int)count);
     
     dispatch_async(self.delegateQueue, ^{
         NSMutableData *notfound = [NSMutableData data];
@@ -1383,7 +1383,7 @@
 - (void)acceptNotfoundMessage:(NSData *)message
 {
     NSNumber * lNumber = nil;
-    NSMutableArray *txHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
+    NSMutableArray *txHashes = [NSMutableArray array], *txLockRequestHashes = [NSMutableArray array], *blockHashes = [NSMutableArray array];
     NSUInteger l, count = (NSUInteger)[message varIntAtOffset:0 length:&lNumber];
     l = lNumber.unsignedIntegerValue;
     
@@ -1399,13 +1399,16 @@
         if ([message UInt32AtOffset:off] == DSInvType_Tx) {
             [txHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
+        else if ([message UInt32AtOffset:off] == DSInvType_TxLockRequest) {
+            [txLockRequestHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
+        }
         else if ([message UInt32AtOffset:off] == DSInvType_Merkleblock) {
             [blockHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
         }
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self notfoundTxHashes:txHashes andBlockHashes:blockHashes];
+        [self.transactionDelegate peer:self relayedNotFoundMessagesWithTransactionHashes:txHashes transactionLockRequestHashes:txLockRequestHashes andBlockHashes:blockHashes];
     });
 }
 

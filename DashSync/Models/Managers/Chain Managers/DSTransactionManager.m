@@ -280,51 +280,55 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: - Mempools Sync
 
+- (void)fetchMempoolFromPeer:(DSPeer*)peer {
+    if (peer.status != DSPeerStatus_Connected) return;
+    
+    if ([self.chain canConstructAFilter] && (peer != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
+        [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
+    }
+    
+    [peer sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
+    [peer sendPingMessageWithPongHandler:^(BOOL success) {
+        if (success) {
+            [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
+                if (success) {
+                    peer.synced = YES;
+                    [self removeUnrelayedTransactions];
+                    [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter]
+                         postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                    });
+                }
+                
+                if (peer == self.peerManager.downloadPeer) {
+                    [self.peerManager syncStopped];
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[NSNotificationCenter defaultCenter]
+                         postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+                    });
+                }
+            }];
+        }
+        else if (peer == self.peerManager.downloadPeer) {
+            [self.peerManager syncStopped];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter]
+                 postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            });
+        }
+    }];
+}
+
 - (void)fetchMempoolFromNetwork
 {
     // this can come from any queue
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about sporks
-    for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, load filters and get mempools from other peers
-        if (p.status != DSPeerStatus_Connected) continue;
-        
-        if ([self.chain canConstructAFilter] && (p != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
-            [p sendFilterloadMessage:[self transactionsBloomFilterForPeer:p].data];
-        }
-        
-        [p sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
-        [p sendPingMessageWithPongHandler:^(BOOL success) {
-            if (success) {
-                [p sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
-                    if (success) {
-                        p.synced = YES;
-                        [self removeUnrelayedTransactions];
-                        [p sendGetaddrMessage]; // request a list of other bitcoin peers
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-                        });
-                    }
-                    
-                    if (p == self.peerManager.downloadPeer) {
-                        [self.peerManager syncStopped];
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [[NSNotificationCenter defaultCenter]
-                             postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-                        });
-                    }
-                }];
-            }
-            else if (p == self.peerManager.downloadPeer) {
-                [self.peerManager syncStopped];
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter]
-                     postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-                });
-            }
-        }];
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Mempools)) return; // make sure we care about mempool
+    for (DSPeer *peer in self.peerManager.connectedPeers) { // after syncing, load filters and get mempools from other peers
+        [self fetchMempoolFromPeer:peer];
     }
 }
 
@@ -400,7 +404,108 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: - DSPeerTransactionsDelegate
 
-- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction
+// MARK: Outgoing Transactions
+
+//The peer is requesting a transaction that it does not know about that we are publishing
+- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
+{
+    NSValue *hash = uint256_obj(txHash);
+    DSTransaction *transaction = self.publishedTx[hash];
+    DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    void (^callback)(NSError *error) = self.publishedCallback[hash];
+    NSError *error = nil;
+    
+    if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
+    [self.txRelays[hash] addObject:peer];
+    [self.nonFalsePositiveTransactions addObject:hash];
+    [self.publishedCallback removeObjectForKey:hash];
+    
+    if (callback && ! [account transactionIsValid:transaction]) {
+        [self.publishedTx removeObjectForKey:hash];
+        error = [NSError errorWithDomain:@"DashSync" code:401
+                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
+    }
+    else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {
+        [[DSTransactionEntity context] performBlock:^{
+            [DSTransactionEntity saveContext]; // persist transactions to core data
+        }];
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
+        if (callback) callback(error);
+    });
+    
+    //    [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
+    //        if (! success) return;
+    //
+    //        if (! [self.txRequests[hash] containsObject:peer]) {
+    //            if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
+    //            [self.txRequests[hash] addObject:peer];
+    //            [peer sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
+    //        }
+    //    }];
+    
+    return transaction;
+}
+
+// MARK: Incoming Transactions
+
+//The peer is informing us that it has an inventory of a transaction we might be interested in, this might also be a transaction we sent out which we are checking has properly been relayed on the network
+- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
+{
+    NSValue *hash = uint256_obj(txHash);
+    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
+    DSTransaction *transaction = self.publishedTx[hash];
+    void (^callback)(NSError *error) = self.publishedCallback[hash];
+    
+    NSLog(@"%@:%d has %@ transaction %@", peer.host, peer.port, transactionIsRequestingInstantSendLock?@"IX":@"TX", hash);
+    if (!transaction) transaction = [self.chain transactionForHash:txHash];
+    if (!transaction) {
+        NSLog(@"No transaction found on chain for this transaction");
+        return;
+    }
+    NSLog(@"a");
+    DSAccount * account = nil;
+    if (syncing) {
+        account = [self.chain accountContainingTransaction:transaction];
+        if (!account) {
+            NSLog(@"No account found for this transaction");
+            return;
+        }
+    }
+    NSLog(@"b");
+    if (![account registerTransaction:transaction]) return;
+    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+    NSLog(@"c");
+    // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
+        if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
+        [self.txRelays[hash] addObject:peer];
+        if (callback) [self.publishedCallback removeObjectForKey:hash];
+        
+        if ([self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
+            [self.chain transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
+            [self.chain transactionForHash:txHash].timestamp == 0) {
+            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
+                           forTxHashes:@[hash]]; // set timestamp when tx is verified
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            if (callback) callback(nil);
+            
+        });
+    }
+    
+    [self.nonFalsePositiveTransactions addObject:hash];
+    [self.txRequests[hash] removeObject:peer];
+}
+
+//The peer has sent us a transaction we are interested in and that we did not send ourselves
+- (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock
 {
     NSValue *hash = uint256_obj(transaction.txHash);
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
@@ -434,9 +539,11 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
+            
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionReceivedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            
             if (callback) callback(nil);
             
         });
@@ -447,94 +554,19 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [self updateTransactionsBloomFilter];
 }
 
-- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
-{
-    // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
-    if (block.totalTransactions == 0 &&
-        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + HOUR_TIME_INTERVAL/2) {
-        return;
-    }
-    
-    NSArray *txHashes = block.txHashes;
-    
-    // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
-    if (peer == self.peerManager.downloadPeer && block.totalTransactions > 0) {
-        NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
-        
-        // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
-        [falsePositives minusSet:self.nonFalsePositiveTransactions]; // wallet tx are not false-positives
-        [self.nonFalsePositiveTransactions removeAllObjects];
-        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*falsePositives.count/1400;
-        
-        // false positive rate sanity check
-        if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
-            NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
-                  peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
-            [self.peerManager.downloadPeer disconnect];
-        }
-        else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
-            [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
-        }
-    }
-    
-    if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
-        if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
-        return;
-    }
-    
-    [self.chain addBlock:block fromPeer:peer];
-}
+// MARK: Transaction Issues
 
-- (void)peer:(DSPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
+- (void)peer:(DSPeer *)peer relayedNotFoundMessagesWithTransactionHashes:(NSArray *)txHashes transactionLockRequestHashes:(NSArray *)transactionLockRequestHashes andBlockHashes:(NSArray *)blockhashes
 {
     for (NSValue *hash in txHashes) {
         [self.txRelays[hash] removeObject:peer];
         [self.txRequests[hash] removeObject:peer];
     }
-}
-
-- (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash
-{
-    NSValue *hash = uint256_obj(txHash);
-    BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
-    DSTransaction *transaction = self.publishedTx[hash];
-    void (^callback)(NSError *error) = self.publishedCallback[hash];
     
-    NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
-    if (!transaction) transaction = [self.chain transactionForHash:txHash];
-    if (!transaction) return;
-    DSAccount * account = nil;
-    if (syncing) {
-        account = [self.chain accountContainingTransaction:transaction];
-        if (!account) return;
+    for (NSValue *hash in transactionLockRequestHashes) {
+        [self.txRelays[hash] removeObject:peer];
+        [self.txRequests[hash] removeObject:peer];
     }
-    if (![account registerTransaction:transaction]) return;
-    if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
-    
-    // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
-        if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-        [self.txRelays[hash] addObject:peer];
-        if (callback) [self.publishedCallback removeObjectForKey:hash];
-        
-        if ([self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
-            [self.chain transactionForHash:txHash].blockHeight == TX_UNCONFIRMED &&
-            [self.chain transactionForHash:txHash].timestamp == 0) {
-            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
-                           forTxHashes:@[hash]]; // set timestamp when tx is verified
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-            if (callback) callback(nil);
-            
-        });
-    }
-    
-    [self.nonFalsePositiveTransactions addObject:hash];
-    [self.txRequests[hash] removeObject:peer];
 }
 
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code
@@ -584,52 +616,53 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     }
 }
 
+// MARK: Instant Send
+
 - (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet *)transactionLockVoteHashes {
     
 }
 
+// MARK: Blocks
 
-- (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
+- (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
-    NSValue *hash = uint256_obj(txHash);
-    DSTransaction *transaction = self.publishedTx[hash];
-    DSAccount * account = [self.chain accountContainingTransaction:transaction];
-    void (^callback)(NSError *error) = self.publishedCallback[hash];
-    NSError *error = nil;
-    
-    if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
-    [self.txRelays[hash] addObject:peer];
-    [self.nonFalsePositiveTransactions addObject:hash];
-    [self.publishedCallback removeObjectForKey:hash];
-    
-    if (callback && ! [account transactionIsValid:transaction]) {
-        [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithDomain:@"DashSync" code:401
-                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
-    }
-    else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {
-        [[DSTransactionEntity context] performBlock:^{
-            [DSTransactionEntity saveContext]; // persist transactions to core data
-        }];
+    // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
+    if (block.totalTransactions == 0 &&
+        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + HOUR_TIME_INTERVAL/2) {
+        return;
     }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
-        if (callback) callback(error);
-    });
+    NSArray *txHashes = block.txHashes;
     
-    //    [peer sendPingMessageWithPongHandler:^(BOOL success) { // check if peer will relay the transaction back
-    //        if (! success) return;
-    //
-    //        if (! [self.txRequests[hash] containsObject:peer]) {
-    //            if (! self.txRequests[hash]) self.txRequests[hash] = [NSMutableSet set];
-    //            [self.txRequests[hash] addObject:peer];
-    //            [peer sendGetdataMessageWithTxHashes:@[hash] andBlockHashes:nil];
-    //        }
-    //    }];
+    // track the observed bloom filter false positive rate using a low pass filter to smooth out variance
+    if (peer == self.peerManager.downloadPeer && block.totalTransactions > 0) {
+        NSMutableSet *falsePositives = [NSMutableSet setWithArray:txHashes];
+        
+        // 1% low pass filter, also weights each block by total transactions, using 1400 tx per block as typical
+        [falsePositives minusSet:self.nonFalsePositiveTransactions]; // wallet tx are not false-positives
+        [self.nonFalsePositiveTransactions removeAllObjects];
+        self.transactionsBloomFilterFalsePositiveRate = self.transactionsBloomFilterFalsePositiveRate*(1.0 - 0.01*block.totalTransactions/1400) + 0.01*falsePositives.count/1400;
+        
+        // false positive rate sanity check
+        if (self.peerManager.downloadPeer.status == DSPeerStatus_Connected && self.transactionsBloomFilterFalsePositiveRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE*10.0) {
+            NSLog(@"%@:%d bloom filter false positive rate %f too high after %d blocks, disconnecting...", peer.host,
+                  peer.port, self.transactionsBloomFilterFalsePositiveRate, self.chain.lastBlockHeight + 1 - self.filterUpdateHeight);
+            [self.peerManager.downloadPeer disconnect];
+        }
+        else if (self.chain.lastBlockHeight + 500 < peer.lastblock && self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*10.0) {
+            [self updateTransactionsBloomFilter]; // rebuild bloom filter when it starts to degrade
+        }
+    }
     
-    return transaction;
+    if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
+        if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+        return;
+    }
+    
+    [self.chain addBlock:block fromPeer:peer];
 }
+
+// MARK: Fees
 
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb
 {

@@ -797,13 +797,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // records the transaction in the account, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(DSTransaction *)transaction
 {
+    NSLog(@"[DSAccount] registering transaction %@", transaction);
     UInt256 txHash = transaction.txHash;
     NSValue *hash = uint256_obj(txHash);
     
     if (uint256_is_zero(txHash)) return NO;
     
     if (![self containsTransaction:transaction]) {
-        
+        //this transaction is not meant for this account
         if (transaction.blockHeight == TX_UNCONFIRMED) {
             if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
             self.allTx[hash] = transaction;
@@ -811,7 +812,10 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         return NO;
     }
     
-    if (self.allTx[hash] != nil) return YES;
+    if (self.allTx[hash] != nil) {
+        NSLog(@"[DSAccount] transaction already registered %@", transaction);
+        return YES;
+    }
     
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
     NSLog(@"[DSAccount] received unseen transaction %@", transaction);

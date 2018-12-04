@@ -357,7 +357,7 @@
 }
 
 - (void)peer:(DSPeer *)peer hasGovernanceObjectHashes:(NSSet*)governanceObjectHashes {
-    
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
     @synchronized(self) {
         if (peer.governanceRequestState != DSGovernanceRequestState_GovernanceObjectHashesReceived) {
             
@@ -441,6 +441,7 @@
 }
 
 - (void)peer:(DSPeer * )peer relayedGovernanceObject:(DSGovernanceObject * )governanceObject {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return; // make sure we care about Governance objects
     @synchronized(self) {
         NSData *governanceObjectHash = [NSData dataWithUInt256:governanceObject.governanceObjectHash];
         DSGovernanceObjectHashEntity * relatedHashEntity = nil;
@@ -473,6 +474,15 @@
     }
 }
 
+-(DSGovernanceObject *)peer:(DSPeer * _Nullable)peer requestedGovernanceObject:(UInt256)governanceObjectHash {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Governance)) return nil; // make sure we care about Governance objects
+    DSGovernanceObject * proposal = [self.publishGovernanceObjects objectForKey:[NSData dataWithUInt256:governanceObjectHash]];
+    if (!proposal) {
+        NSLog(@"Peer requested unknown proposal");
+    }
+    return proposal;
+}
+
 // MARK:- Governance Votes
 
 -(NSUInteger)governanceVotesCount {
@@ -493,6 +503,7 @@
 }
 
 -(void)peer:(DSPeer * _Nullable)peer relayedGovernanceVote:(DSGovernanceVote*)governanceVote {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return; // make sure we care about Governance objects
     DSGovernanceObject * parentGovernanceObject = nil;
     for (DSGovernanceObject * governanceObject in self.governanceObjects) {
         if (uint256_eq(governanceVote.parentHash, governanceObject.governanceObjectHash)) {
@@ -512,6 +523,7 @@
 }
 
 -(DSGovernanceVote *)peer:(DSPeer * _Nullable)peer requestedVote:(UInt256)voteHash {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes)) return nil; // make sure we care about Governance objects
     __block DSGovernanceVote * vote = [self.publishVotes objectForKey:[NSData dataWithUInt256:voteHash]];
     if (!vote) {
         [self.managedObjectContext performBlockAndWait:^{
@@ -526,14 +538,6 @@
         }];
     }
     return vote;
-}
-
--(DSGovernanceObject *)peer:(DSPeer * _Nullable)peer requestedGovernanceObject:(UInt256)governanceObjectHash {
-    DSGovernanceObject * proposal = [self.publishGovernanceObjects objectForKey:[NSData dataWithUInt256:governanceObjectHash]];
-    if (!proposal) {
-        NSLog(@"Peer requested unknown proposal");
-    }
-    return proposal;
 }
 
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
