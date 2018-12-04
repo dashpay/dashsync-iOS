@@ -64,10 +64,15 @@
                 [weakSelf addOperation:producedOperation];
             }
             finishHandler:^(DSOperation *operation, NSArray *errors) {
-                [weakSelf.chainOperationsCache removeObject:operation];
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
 
-                if ([weakSelf.delegate respondsToSelector:@selector(operationQueue:operationDidFinish:withErrors:)]) {
-                    [weakSelf.delegate operationQueue:weakSelf operationDidFinish:operation withErrors:errors];
+                [strongSelf.chainOperationsCache removeObject:operation];
+
+                if ([strongSelf.delegate respondsToSelector:@selector(operationQueue:operationDidFinish:withErrors:)]) {
+                    [strongSelf.delegate operationQueue:strongSelf operationDidFinish:operation withErrors:errors];
                 }
             }];
 
