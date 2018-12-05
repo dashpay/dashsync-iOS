@@ -71,7 +71,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) uint16_t type;
 @property (nonatomic, assign) uint32_t lockTime;
 @property (nonatomic, assign) uint64_t feeUsed;
-@property (nonatomic, assign) uint64_t feeCostPerByte;
+@property (nonatomic, assign) uint64_t roundedFeeCostPerByte;
 @property (nonatomic, readonly) NSData * payloadData;
 @property (nonatomic, readonly) NSData * payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
