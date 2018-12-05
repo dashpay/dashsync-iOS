@@ -18,7 +18,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DSChainableOperationProtocol.h"
 #import "DSOperationConditionProtocol.h"
 #import "DSOperationObserverProtocol.h"
 
@@ -49,7 +48,7 @@ typedef NS_ENUM(NSUInteger, DSOperationState) {
 
 @class DSOperationQueue;
 
-@interface DSOperation : NSOperation <DSChainableOperationProtocol>
+@interface DSOperation : NSOperation
 
 @property (readonly, getter=isCancelled) BOOL cancelled;
 @property (nonatomic, assign) BOOL userInitiated;
@@ -60,8 +59,6 @@ typedef NS_ENUM(NSUInteger, DSOperationState) {
 @property (nonatomic, copy, readonly) NSArray<NSObject<DSOperationConditionProtocol> *> *conditions;
 @property (nonatomic, copy, readonly) NSArray<NSObject<DSOperationObserverProtocol> *> *observers;
 @property (nonatomic, copy, readonly) NSArray<NSError *> *internalErrors;
-
-@property (nonatomic, strong, readonly) NSHashTable<DSOperation<DSChainableOperationProtocol> *> *chainedOperations;
 
 - (void)addObserver:(NSObject<DSOperationObserverProtocol> *)observer;
 - (void)addCondition:(NSObject<DSOperationConditionProtocol> *)condition;
@@ -80,9 +77,6 @@ typedef NS_ENUM(NSUInteger, DSOperationState) {
 
 - (void)execute;
 - (void)produceOperation:(NSOperation *)operation NS_REQUIRES_SUPER;
-
-- (DSOperation<DSChainableOperationProtocol> *)chainWithOperation:(DSOperation<DSChainableOperationProtocol> *)operation;
-+ (void)chainOperations:(NSArray<DSOperation<DSChainableOperationProtocol> *> *)operations;
 
 @end
 

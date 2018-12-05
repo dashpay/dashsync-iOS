@@ -16,6 +16,7 @@
 //
 
 #import "DSOperation.h"
+#import "DSChainableOperationProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,7 +27,7 @@ extern NSString *const DSHTTPGETOperationErrorDomain;
  Chainable operation, always first in the chain
  Has side-effect of updating secure time in `DSAuthenticationManager`
  */
-@interface DSHTTPGETOperation : DSOperation
+@interface DSHTTPGETOperation : DSOperation <DSChainableOperationProtocol>
 
 - (instancetype)initWithRequest:(NSURLRequest *)request;
 

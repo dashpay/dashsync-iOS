@@ -16,6 +16,7 @@
 //
 
 #import "DSOperation.h"
+#import "DSChainableOperationProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +29,7 @@ typedef NS_ENUM(NSUInteger, DSParseResponseOperationErrorCode) {
 /**
  Abstract chainable operation, follows `DSHTTPGETOperation`
  */
-@interface DSParseResponseOperation : DSOperation
+@interface DSParseResponseOperation : DSOperation <DSChainableOperationProtocol>
 
 @property (readonly, strong, nonatomic, nullable) id responseToParse;
 
