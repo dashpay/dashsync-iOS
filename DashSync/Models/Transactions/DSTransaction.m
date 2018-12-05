@@ -586,11 +586,11 @@
     return [self.account feeForTransaction:self];
 }
 
-- (uint64_t)feeCostPerByte
+- (uint64_t)roundedFeeCostPerByte
 {
-    float feeUsed = [self feeUsed];
+    uint64_t feeUsed = [self feeUsed];
     if (feeUsed == UINT64_MAX) return UINT64_MAX;
-    return ceilf(feeUsed/self.size);
+    return lroundf(((float)feeUsed)/self.size);
 }
 
 #pragma mark - Polymorphic data
