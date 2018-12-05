@@ -21,20 +21,7 @@
 #import "DSOperation.h"
 #import "NSOperation+DSOperationKit.h"
 
-@interface DSOperationQueue ()
-
-@property (nonatomic, strong) NSMutableSet *chainOperationsCache;
-
-@end
-
 @implementation DSOperationQueue
-
-- (NSMutableSet *)chainOperationsCache {
-    if (!_chainOperationsCache) {
-        _chainOperationsCache = [NSMutableSet set];
-    }
-    return _chainOperationsCache;
-}
 
 - (void)addOperation:(NSOperation *)operationToAdd {
     if ([self.operations containsObject:operationToAdd]) {
@@ -43,18 +30,6 @@
 
     if ([operationToAdd isKindOfClass:[DSOperation class]]) {
         DSOperation *operation = (DSOperation *)operationToAdd;
-
-        // Chain operation cache is imporatant to be able to add any operation from chain
-        // and whole chain will be added to queue
-        if (operation.chainedOperations.count > 0 && ![self.chainOperationsCache containsObject:operation] && ![self.operations containsObject:operation]) {
-            [self.chainOperationsCache addObject:operation];
-            [[operation.chainedOperations allObjects] enumerateObjectsUsingBlock:^(DSOperation<DSChainableOperationProtocol> *_Nonnull chainOperation, NSUInteger idx, BOOL *_Nonnull stop) {
-                [self addOperation:chainOperation];
-            }];
-
-            return;
-        }
-
         __weak typeof(self) weakSelf = self;
         // Set up a `DSBlockOperationObserver` to invoke the `DSOperationQueueDelegate` method.
         DSBlockOperationObserver *delegate = [[DSBlockOperationObserver alloc]
@@ -68,8 +43,6 @@
                 if (!strongSelf) {
                     return;
                 }
-
-                [strongSelf.chainOperationsCache removeObject:operation];
 
                 if ([strongSelf.delegate respondsToSelector:@selector(operationQueue:operationDidFinish:withErrors:)]) {
                     [strongSelf.delegate operationQueue:strongSelf operationDidFinish:operation withErrors:errors];
@@ -89,15 +62,6 @@
 
         [dependencies enumerateObjectsUsingBlock:^(NSOperation *dependency, NSUInteger idx, BOOL *stop) {
             [operation addDependency:dependency];
-
-            // Chain operation cache is imporatant to be able to add any operation from chain
-            // and whole chain will be added to queue
-            if ([dependency isKindOfClass:[DSOperation class]]) {
-                DSOperation *dependencyOperation = (DSOperation *)dependency;
-                if (dependencyOperation.chainedOperations.count > 0) {
-                    [self.chainOperationsCache addObject:dependencyOperation];
-                }
-            }
 
             [self addOperation:dependency];
         }];

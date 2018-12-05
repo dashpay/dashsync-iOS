@@ -34,8 +34,6 @@
 @property (nonatomic, copy) NSArray<NSObject<DSOperationObserverProtocol> *> *observers;
 @property (nonatomic, copy) NSArray<NSError *> *internalErrors;
 
-@property (nonatomic, strong) NSHashTable<DSOperation<DSChainableOperationProtocol> *> *chainedOperations;
-
 @end
 
 @implementation DSOperation
@@ -65,13 +63,6 @@
     }
 
     return YES;
-}
-
-- (NSHashTable<DSOperation<DSChainableOperationProtocol> *> *)chainedOperations {
-    if (!_chainedOperations) {
-        _chainedOperations = [NSHashTable hashTableWithOptions:NSPointerFunctionsWeakMemory];
-    }
-    return _chainedOperations;
 }
 
 - (DSOperationState)state {
@@ -303,43 +294,6 @@
             [observer operation:self didProduceOperation:operation];
         }
     }
-}
-
-#pragma mark - Chaining
-
-- (DSOperation<DSChainableOperationProtocol> *)chainWithOperation:(DSOperation<DSChainableOperationProtocol> *)operation {
-    [self.chainedOperations addObject:operation];
-    [operation addCondition:[DSChainableCondition chainConditionForOperation:self]];
-
-    __weak typeof(operation) weakOperation = operation;
-    [self addObserver:[[DSBlockOperationObserver alloc] initWithWillStartHandler:nil didStartHandler:nil produceHandler:nil finishHandler:^(DSOperation *finishedOperation, NSArray<NSError *> *errors) {
-              __strong typeof(weakOperation) strongOperation = weakOperation;
-              if (!strongOperation) {
-                  return;
-              }
-
-              [strongOperation chainedOperation:finishedOperation didFinishWithErrors:errors passingAdditionalData:[finishedOperation additionalDataToPassForChainedOperation]];
-          }]];
-
-    return operation;
-}
-
-+ (void)chainOperations:(NSArray<DSOperation<DSChainableOperationProtocol> *> *)operations {
-    [operations enumerateObjectsUsingBlock:^(DSOperation<DSChainableOperationProtocol> *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-        NSInteger nextIndex = ++idx;
-        if (nextIndex < operations.count) {
-            [obj chainWithOperation:operations[nextIndex]];
-        }
-    }];
-}
-
-- (void)chainedOperation:(NSOperation *)operation didFinishWithErrors:(NSArray<NSError *> *)errors passingAdditionalData:(id)data {
-    // Implement in subclass
-}
-
-- (id)additionalDataToPassForChainedOperation {
-    // Implement in subclass
-    return nil;
 }
 
 #pragma mark - Finishing
