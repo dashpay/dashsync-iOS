@@ -10,12 +10,15 @@
 #import "DSAccountChooserViewController.h"
 #import "BRBubbleView.h"
 
+#define MAX_TX_PER_BLOCK 24
+
 @interface DSTransactionFloodingViewController ()
 
 @property (nonatomic,assign) NSUInteger alreadySentCount;
 @property (nonatomic,assign) BOOL choosingDestinationAccount;
 @property (nonatomic, strong) DSAccount * fundingAccount;
 @property (nonatomic, strong) DSAccount * destinationAccount;
+@property (nonatomic, strong) NSMutableArray * addresses;
 
 
 @property (nonatomic, strong) IBOutlet UILabel * fundingAccountIdentifierLabel;
@@ -25,6 +28,8 @@
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem * startFloodingButton;
 
+@property (strong, nonatomic) id blocksObserver;
+
 @end
 
 @implementation DSTransactionFloodingViewController
@@ -33,6 +38,22 @@
     [super viewDidLoad];
     self.alreadySentCount = 0;
     self.startFloodingButton.enabled = FALSE;
+    
+    self.blocksObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self.chainManager chain]]) {
+                                                               if (self.alreadySentCount == MAX_TX_PER_BLOCK) {
+                                                                   self.alreadySentCount = 0;
+                                                                   [self send:self];
+                                                               }
+                                                           }
+                                                       }];
+}
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
 }
 
 -(void)insufficientFundsForTransaction:(DSTransaction *)tx forAmount:(uint64_t)requestedSendAmount {
@@ -172,6 +193,7 @@
                                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                                popOutAfterDelay:2.0]];
                         self.transactionCountTextField.text = [NSString stringWithFormat:@"%ld",[self.transactionCountTextField.text integerValue] - 1];
+                        self.alreadySentCount++;
                         [self send:nil];
                         
                     }
@@ -184,8 +206,11 @@
 }
 
 -(void)send:(id)sender {
-    if ([self.transactionCountTextField.text integerValue] > 0) {
-        DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:[self.destinationAccount.bip44DerivationPath receiveAddressAtOffset:self.alreadySentCount] onChain:self.chainManager.chain];
+    if ([self.transactionCountTextField.text integerValue] > 0 && [self.addresses count]) {
+        if (self.alreadySentCount < MAX_TX_PER_BLOCK) {
+            NSString * address = self.addresses.firstObject;
+            [self.addresses removeObject:address];
+        DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chainManager.chain];
         paymentRequest.amount = 1000;
         DSPaymentProtocolRequest * protocolRequest = paymentRequest.protocolRequest;
         DSTransaction * transaction = [self.fundingAccount transactionForAmounts:protocolRequest.details.outputAmounts toOutputScripts:protocolRequest.details.outputScripts withFee:TRUE isInstant:NO];
@@ -194,12 +219,18 @@
                 [self confirmTransaction:transaction toAddress:self.destinationAccount.receiveAddress forAmount:paymentRequest.amount];
             });
         }
+        }
     } else {
         self.alreadySentCount = 0;
+        self.transactionCountTextField.text = @"0";
     }
 }
 
 -(IBAction)startFlooding:(id)sender {
+    self.addresses = [NSMutableArray array];
+    for (int i = 0;i<[self.transactionCountTextField.text integerValue];i++) {
+        [self.addresses addObject:[self.destinationAccount.bip44DerivationPath receiveAddressAtOffset:i]];
+    }
     [self send:self];
 }
 

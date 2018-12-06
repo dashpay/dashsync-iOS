@@ -468,7 +468,7 @@
         if (! success) return;
         //we are on chainPeerManagerQueue
         NSLog(@"updating filter with newly created wallet addresses");
-        [self.transactionManager clearBloomFilter];
+        [self.transactionManager clearTransactionsBloomFilter];
         
         if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:self.downloadPeer].data];
