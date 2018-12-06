@@ -168,6 +168,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // gets a public key at an index path
 - (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath;
 
+- (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
+
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index;
 

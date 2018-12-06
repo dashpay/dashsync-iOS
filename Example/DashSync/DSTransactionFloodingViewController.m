@@ -12,6 +12,7 @@
 
 @interface DSTransactionFloodingViewController ()
 
+@property (nonatomic,assign) NSUInteger alreadySentCount;
 @property (nonatomic,assign) BOOL choosingDestinationAccount;
 @property (nonatomic, strong) DSAccount * fundingAccount;
 @property (nonatomic, strong) DSAccount * destinationAccount;
@@ -30,7 +31,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    self.alreadySentCount = 0;
     self.startFloodingButton.enabled = FALSE;
 }
 
@@ -184,7 +185,7 @@
 
 -(void)send:(id)sender {
     if ([self.transactionCountTextField.text integerValue] > 0) {
-        DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.destinationAccount.receiveAddress onChain:self.chainManager.chain];
+        DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:[self.destinationAccount.bip44DerivationPath receiveAddressAtOffset:self.alreadySentCount] onChain:self.chainManager.chain];
         paymentRequest.amount = 1000;
         DSPaymentProtocolRequest * protocolRequest = paymentRequest.protocolRequest;
         DSTransaction * transaction = [self.fundingAccount transactionForAmounts:protocolRequest.details.outputAmounts toOutputScripts:protocolRequest.details.outputScripts withFee:TRUE isInstant:NO];
@@ -193,6 +194,8 @@
                 [self confirmTransaction:transaction toAddress:self.destinationAccount.receiveAddress forAmount:paymentRequest.amount];
             });
         }
+    } else {
+        self.alreadySentCount = 0;
     }
 }
 
