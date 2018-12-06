@@ -158,6 +158,10 @@
     return self;
 }
 
+-(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueID,self.accountNumber]; //0 is for type 0
+}
+
 -(void)loadTransactions {
     [self.moc performBlockAndWait:^{
         [DSTransactionEntity setContext:self.moc];
@@ -765,6 +769,61 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
 }
 
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
+- (void)signTransactions:(NSArray<DSTransaction *>*)transactions withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion
+{
+    if (_isViewOnlyAccount) return;
+    
+    int64_t amount = 0;
+    for (DSTransaction * transaction in transactions) {
+        amount += [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
+    }
+    self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+        for (DSTransaction * transaction in transactions) {
+            NSMutableArray * usedDerivationPaths = [NSMutableArray array];
+            for (DSDerivationPath * derivationPath in self.derivationPaths) {
+                NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
+                *internalIndexes = [NSMutableOrderedSet orderedSet];
+                for (NSString *addr in transaction.inputAddresses) {
+                    
+                    if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
+                    NSInteger index = [derivationPath.allChangeAddresses indexOfObject:addr];
+                    if (index != NSNotFound) {
+                        [internalIndexes addObject:@(index)];
+                        continue;
+                    }
+                    index = [derivationPath.allReceiveAddresses indexOfObject:addr];
+                    if (index != NSNotFound) {
+                        [externalIndexes addObject:@(index)];
+                        continue;
+                    }
+                }
+                [usedDerivationPaths addObject:@{@"derivationPath":derivationPath,@"externalIndexes":externalIndexes,@"internalIndexes":internalIndexes}];
+            }
+            
+            @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+                
+                if (! seed) {
+                    if (completion) completion(YES);
+                } else {
+                    NSMutableArray *privkeys = [NSMutableArray array];
+                    for (NSDictionary * dictionary in usedDerivationPaths) {
+                        DSDerivationPath * derivationPath = dictionary[@"derivationPath"];
+                        NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
+                        *internalIndexes = dictionary[@"internalIndexes"];
+                        [privkeys addObjectsFromArray:[derivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[derivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                    }
+                    
+                    BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                    if (completion) completion(signedSuccessfully);
+                }
+                
+            }
+        }
+    });
+}
+
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(DSTransaction *)transaction
 {
@@ -1199,12 +1258,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSString * address = [key addressForChain:self.wallet.chain];
     if (! address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          DSLocalizedString(@"not a valid private key", nil)}]);
+                                                                                        DSLocalizedString(@"not a valid private key", nil)}]);
         return;
     }
     if ([self.wallet containsAddress:address]) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                          DSLocalizedString(@"this private key is already in your wallet", nil)}]);
+                                                                                        DSLocalizedString(@"this private key is already in your wallet", nil)}]);
         return;
     }
     
@@ -1230,7 +1289,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   if (balance == 0) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                        DSLocalizedString(@"this private key is empty", nil)}]);
+                                                                                                                                      DSLocalizedString(@"this private key is empty", nil)}]);
                                                       return;
                                                   }
                                                   
@@ -1239,8 +1298,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                        DSLocalizedString(@"transaction fees would cost more than the funds available on this "
-                                                                                                                                                          "private key (due to tiny \"dust\" deposits)",nil)}]);
+                                                                                                                                      DSLocalizedString(@"transaction fees would cost more than the funds available on this "
+                                                                                                                                                        "private key (due to tiny \"dust\" deposits)",nil)}]);
                                                       return;
                                                   }
                                                   
@@ -1248,7 +1307,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   if (! [tx signWithPrivateKeys:@[privKey]]) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                        DSLocalizedString(@"error signing transaction", nil)}]);
+                                                                                                                                      DSLocalizedString(@"error signing transaction", nil)}]);
                                                       return;
                                                   }
                                                   

@@ -18,6 +18,7 @@
 
 @interface DSAccountChooserViewController : UITableViewController
 
+@property (nonatomic,assign) NSUInteger minAccountBalanceNeeded;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,weak) id<DSAccountChooserDelegate> delegate;
 

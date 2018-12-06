@@ -38,8 +38,8 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
-@property (nonatomic, assign) BOOL usesAuthentication;
-@property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
+@property (nonatomic, readonly) BOOL usesAuthentication;
+@property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic ,readonly) BOOL lockedOut;
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
@@ -53,5 +53,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
 - (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure errorMessage:(NSString*)errorMessage localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount;
 
 -(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel;
+
+-(void)deauthenticate;
 
 @end

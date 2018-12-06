@@ -1035,6 +1035,8 @@
             case DSInvType_MasternodePaymentVote: break;
             case DSInvType_MasternodeVerify: break;
             case DSInvType_MasternodeBroadcast: break;
+            case DSInvType_QuorumFinalCommitment: break;
+            case DSInvType_DummyCommitment: break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");

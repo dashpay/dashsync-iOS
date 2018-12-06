@@ -58,7 +58,7 @@
 
 -(void)setFundingAccount:(DSAccount *)fundingAccount {
     _fundingAccount = fundingAccount;
-    self.fundingAccountIdentifierLabel.text = [NSString stringWithFormat:@"%@-%u",fundingAccount.wallet.uniqueID,fundingAccount.accountNumber];
+    self.fundingAccountIdentifierLabel.text = fundingAccount.uniqueID;
 }
 
 /*
