@@ -193,8 +193,9 @@ static NSString *dateFormat(NSString *template)
     [fetchRequest setFetchBatchSize:12];
     
     // Edit the sort key as appropriate.
+    NSSortDescriptor *heightDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transactionHash.blockHeight" ascending:NO];
     NSSortDescriptor *timeDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transactionHash.timestamp" ascending:NO];
-    NSArray *sortDescriptors = @[timeDescriptor];
+    NSArray *sortDescriptors = @[heightDescriptor,timeDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
@@ -218,10 +219,7 @@ static NSString *dateFormat(NSString *template)
 }
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    dispatch_async(dispatch_get_main_queue(), ^{
         [self.tableView beginUpdates];
-    });
-    
 }
 
 
@@ -233,7 +231,6 @@ static NSString *dateFormat(NSString *template)
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject
        atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)changeType
       newIndexPath:(NSIndexPath *)newIndexPath {
-    dispatch_async(dispatch_get_main_queue(), ^{
     switch (changeType) {
         case NSFetchedResultsChangeInsert:
             [self.tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
@@ -250,14 +247,11 @@ static NSString *dateFormat(NSString *template)
         default:
             break;
     }
-    });
 }
 
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    dispatch_async(dispatch_get_main_queue(), ^{
     [self.tableView endUpdates];
-    });
 }
 
 - (void)setBackgroundForCell:(UITableViewCell *)cell tableView:(UITableView *)tableView indexPath:(NSIndexPath *)path
@@ -281,7 +275,7 @@ static NSString *dateFormat(NSString *template)
     
     NSString *date = self.txDates[uint256_obj(tx.txHash)];
     NSTimeInterval now = [self.chainManager.chain timestampForBlockHeight:TX_UNCONFIRMED];
-    NSTimeInterval year = [NSDate timeIntervalSinceReferenceDate] - 364*24*60*60;
+    NSTimeInterval year = [NSDate timeIntervalSince1970] - 364*24*60*60;
     
     if (date) return date;
     

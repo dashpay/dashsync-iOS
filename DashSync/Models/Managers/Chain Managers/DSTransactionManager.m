@@ -39,6 +39,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
 #import "UIWindow+DSUtils.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 
 @interface DSTransactionManager()
 
@@ -171,12 +172,17 @@
     UInt256 h;
     
     // don't remove transactions until we're connected to maxConnectCount peers
-    if (self.peerManager.connectedPeerCount < self.peerManager.maxConnectCount) return;
-    
-    for (DSPeer *p in self.peerManager.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
-        if (! p.synced) return;
+    if (self.peerManager.connectedPeerCount < self.peerManager.maxConnectCount) {
+        NSLog(@"[DSTransactionManager] not removing unrelayed transactions because connected peercount is only %lu",(unsigned long)self.peerManager.connectedPeerCount);
+        return;
     }
     
+    for (DSPeer *p in self.peerManager.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
+        NSLog(@"[DSTransactionManager] not removing unrelayed transactions because %@ is not synced yet",p.host);
+        if (! p.synced) return;
+    }
+    NSLog(@"[DSTransactionManager] removing unrelayed transactions");
+    BOOL removedTransaction = NO;
     for (DSWallet * wallet in self.chain.wallets) {
         for (DSAccount * account in wallet.accounts) {
             for (DSTransaction *transaction in account.allTransactions) {
@@ -196,9 +202,12 @@
                             rescan = NO;
                             break;
                         }
+                    } else {
+                        NSLog(@"serious issue in transaction %@", transaction);
                     }
                     
                     [account removeTransaction:transaction.txHash];
+                    removedTransaction = YES;
                 }
                 else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
                     // set timestamp 0 to mark as unverified
@@ -207,6 +216,7 @@
             }
         }
     }
+    if (removedTransaction) [DSTransactionHashEntity saveContext];
     
     if (notify) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -281,6 +291,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 // MARK: - Mempools Sync
 
 - (void)fetchMempoolFromPeer:(DSPeer*)peer {
+    NSLog(@"[DSTransactionManager] fetching mempool from peer %@",peer.host);
     if (peer.status != DSPeerStatus_Connected) return;
     
     if ([self.chain canConstructAFilter] && (peer != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
@@ -290,8 +301,10 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [peer sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
+            NSLog(@"[DSTransactionManager] fetching mempool ping success peer %@",peer.host);
             [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
                 if (success) {
+                    NSLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
                     peer.synced = YES;
                     [self removeUnrelayedTransactions];
                     [peer sendGetaddrMessage]; // request a list of other bitcoin peers
@@ -300,6 +313,8 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                         [[NSNotificationCenter defaultCenter]
                          postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                     });
+                } else {
+                    NSLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
                 }
                 
                 if (peer == self.peerManager.downloadPeer) {
@@ -313,12 +328,15 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             }];
         }
         else if (peer == self.peerManager.downloadPeer) {
+            NSLog(@"[DSTransactionManager] fetching mempool ping failure on download peer %@",peer.host);
             [self.peerManager syncStopped];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter]
                  postNotificationName:DSTransactionManagerSyncFinishedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             });
+        } else {
+            NSLog(@"[DSTransactionManager] fetching mempool ping failure on peer %@",peer.host);
         }
     }];
 }

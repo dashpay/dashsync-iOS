@@ -709,9 +709,17 @@
                 [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
             }
             [peer sendPingMessageWithPongHandler:^(BOOL success) {
-                if (! success) return;
+                if (! success) {
+                    NSLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);
+                    return;
+                }
+                NSLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
                 [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:^(BOOL success) {
-                    if (! success) return;
+                    if (! success) {
+                        NSLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
+                        return;
+                    }
+                    NSLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
                     peer.synced = YES;
                     [self.transactionManager removeUnrelayedTransactions];
                     [peer sendGetaddrMessage]; // request a list of other dash peers

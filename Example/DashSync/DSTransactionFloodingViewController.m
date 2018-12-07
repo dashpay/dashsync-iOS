@@ -45,8 +45,12 @@
                                                            
                                                            if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self.chainManager chain]]) {
                                                                if (self.alreadySentCount == MAX_TX_PER_BLOCK) {
-                                                                   self.alreadySentCount = 0;
-                                                                   [self send:self];
+                                                                   
+                                                                   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                                                       self.alreadySentCount = 0;
+                                                                       [self send:self];
+                                                                   });
+                                                                   
                                                                }
                                                            }
                                                        }];
