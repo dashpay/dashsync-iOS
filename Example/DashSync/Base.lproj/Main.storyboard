@@ -498,7 +498,7 @@
                                         <rect key="frame" x="0.0" y="840" width="375" height="120"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="EvF-qw-b55" id="Haf-0o-eUH">
-                                            <rect key="frame" x="0.0" y="0.0" width="349" height="119.66666666666667"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="341" height="119.66666666666667"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Peers" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lll-Xk-E5X">
@@ -650,6 +650,33 @@
                                                 <constraint firstAttribute="trailing" secondItem="nvn-mA-9nN" secondAttribute="trailing" constant="16" id="ye9-HW-6k3"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="Other" id="RNh-C6-jbU">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="onj-60-1Yo">
+                                        <rect key="frame" x="0.0" y="1209" width="375" height="52"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="onj-60-1Yo" id="pQd-TO-s0s">
+                                            <rect key="frame" x="0.0" y="0.0" width="341" height="51.666666666666664"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Actions" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Euk-my-3eF">
+                                                    <rect key="frame" x="16.000000000000004" y="16" width="57.333333333333343" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="Euk-my-3eF" firstAttribute="top" secondItem="pQd-TO-s0s" secondAttribute="top" constant="16" id="Quz-80-3A9"/>
+                                                <constraint firstItem="Euk-my-3eF" firstAttribute="leading" secondItem="pQd-TO-s0s" secondAttribute="leading" constant="16" id="sCm-Ys-oIK"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="wXb-2N-9fL" kind="show" identifier="ActionsSegue" id="OkY-gl-WDs"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -1949,6 +1976,14 @@
             </objects>
             <point key="canvasLocation" x="8398" y="-570"/>
         </scene>
+        <!--ActionsMainInterfaceIdentifier-->
+        <scene sceneID="Gb4-SR-VXP">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Actions" referencedIdentifier="ActionsMainInterfaceIdentifier" id="wXb-2N-9fL" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8Gi-5R-Xfh" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2961" y="696"/>
+        </scene>
         <!--Wallets-->
         <scene sceneID="bh9-NZ-BZQ">
             <objects>
@@ -2767,7 +2802,7 @@
         <!--Choose Account-->
         <scene sceneID="7eC-EH-5QV">
             <objects>
-                <tableViewController id="9e5-RW-aHd" customClass="DSAccountChooserViewController" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="ChooseAccountIdentifier" id="9e5-RW-aHd" customClass="DSAccountChooserViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="142" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="QNp-fo-LYt">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4432,7 +4467,7 @@
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="Unp-kP-fWV"/>
-        <segue reference="6L9-2v-DPb"/>
+        <segue reference="z2O-I6-orM"/>
         <segue reference="2fw-y7-fhL"/>
     </inferredMetricsTieBreakers>
 </document>

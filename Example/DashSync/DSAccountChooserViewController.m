@@ -66,7 +66,7 @@
 -(NSIndexPath*)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     DSWallet * wallet = [self.chain.wallets objectAtIndex:indexPath.section];
     DSAccount * account = [[wallet accounts] objectAtIndex:indexPath.row];
-    if (account.balance > PROPOSAL_COST) {
+    if (account.balance >= self.minAccountBalanceNeeded) {
         self.chooseButton.enabled = TRUE;
         return indexPath;
     }
@@ -78,7 +78,7 @@
     if (self.tableView.indexPathForSelectedRow) {
         DSWallet * wallet = [self.chain.wallets objectAtIndex:self.tableView.indexPathForSelectedRow.section];
         DSAccount * account = [[wallet accounts] objectAtIndex:self.tableView.indexPathForSelectedRow.row];
-        if (account.balance > PROPOSAL_COST) {
+        if (account.balance >= self.minAccountBalanceNeeded) {
             [self.delegate viewController:self didChooseAccount:account];
             [self.navigationController popViewControllerAnimated:TRUE];
         }

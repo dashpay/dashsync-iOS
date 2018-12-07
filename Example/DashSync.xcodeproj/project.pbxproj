@@ -80,6 +80,9 @@
 		FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C5520897B0F00CDBA57 /* DSWalletTableViewCell.m */; };
 		FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */; };
 		FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */; };
+		FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */; };
+		FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */; };
+		FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */; };
 		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
 		FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */; };
 		FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2C520C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m */; };
@@ -253,6 +256,11 @@
 		FB763C612089AF9500CDBA57 /* DSStandaloneAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneAddressesViewController.m; sourceTree = "<group>"; };
 		FB763C632089B0A700CDBA57 /* DSAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB763C642089B0A700CDBA57 /* DSAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressTableViewCell.m; sourceTree = "<group>"; };
+		FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Actions.storyboard; sourceTree = "<group>"; };
+		FB83C2E221B7B7560057A0EF /* DSActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSActionsViewController.h; sourceTree = "<group>"; };
+		FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSActionsViewController.m; sourceTree = "<group>"; };
+		FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionFloodingViewController.h; sourceTree = "<group>"; };
+		FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionFloodingViewController.m; sourceTree = "<group>"; };
 		FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporksViewController.h; sourceTree = "<group>"; };
 		FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSporksViewController.m; sourceTree = "<group>"; };
 		FB90D2B520BD2CFA002B7956 /* DSSporkTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporkTableViewCell.h; sourceTree = "<group>"; };
@@ -438,6 +446,7 @@
 				71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
+				FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -666,6 +675,17 @@
 			name = Wallet;
 			sourceTree = "<group>";
 		};
+		FB83C2E121B7B72F0057A0EF /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				FB83C2E221B7B7560057A0EF /* DSActionsViewController.h */,
+				FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */,
+				FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */,
+				FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */,
+			);
+			name = Actions;
+			sourceTree = "<group>";
+		};
 		FB90D2B120BD2BA5002B7956 /* Sporks */ = {
 			isa = PBXGroup;
 			children = (
@@ -696,6 +716,7 @@
 		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FB83C2E121B7B72F0057A0EF /* Actions */,
 				FBB4E37D214A9EC4008040B7 /* DAPI Calls */,
 				FBB4E3702145B54F008040B7 /* DAPs */,
 				FB995D9721101C1E00AC37D0 /* Peers */,
@@ -819,6 +840,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A3B3EB520F893F4002962FB /* SelectorFormTableViewCell.xib in Resources */,
+				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				2A3B3EB920F893F4002962FB /* SwitcherFormTableViewCell.xib in Resources */,
 				2A3B3EBA20F893F4002962FB /* TextFieldFormTableViewCell.xib in Resources */,
@@ -975,6 +997,7 @@
 				2A3B3EBD20F893F4002962FB /* TextFieldFormTableViewCell.m in Sources */,
 				FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */,
 				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */,
+				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
@@ -985,6 +1008,7 @@
 				FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
+				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,
 				FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */,
 				FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */,

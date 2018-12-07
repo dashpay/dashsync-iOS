@@ -19,6 +19,7 @@
 #import "DSBlockchainUsersViewController.h"
 #import "DSPeersViewController.h"
 #import "DSLayer2ViewController.h"
+#import "DSActionsViewController.h"
 
 @interface DSSyncViewController ()
 
@@ -495,7 +496,12 @@
     } else if ([segue.identifier isEqualToString:@"Layer2Segue"]) {
         DSLayer2ViewController * layer2ViewController = (DSLayer2ViewController*)segue.destinationViewController;
         layer2ViewController.chainManager = self.chainManager;
+    } else if ([segue.identifier isEqualToString:@"ActionsSegue"]) {
+        DSActionsViewController * actionsViewController = (DSActionsViewController*)segue.destinationViewController;
+        actionsViewController.chainManager = self.chainManager;
     }
+    
+    
 }
 
 

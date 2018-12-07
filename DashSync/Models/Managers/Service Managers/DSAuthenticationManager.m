@@ -66,6 +66,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 @property (nonatomic, strong) UIAlertController *pinAlertController;
 @property (nonatomic, strong) UIAlertController *resetAlertController;
 @property (nonatomic, strong) id keyboardObserver,backgroundObserver;
+@property (nonatomic, assign) BOOL usesAuthentication;
+@property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 
 @end
 
@@ -146,6 +148,12 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     NSTimeInterval now = [lastResult date].timeIntervalSince1970;
     if (now > self.secureTime) {
         [self updateSecureTime:now];
+    }
+}
+
+-(void)deauthenticate {
+    if (self.usesAuthentication) {
+        self.didAuthenticate = NO;
     }
 }
 
@@ -404,7 +412,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     if (pin.length == 4) { //already had a pin, replacing it
         [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
-                self.didAuthenticate = FALSE;
+                self.didAuthenticate = NO;
                 UIView *v = [self pinTitleView].superview;
                 CGPoint p = v.center;
                 

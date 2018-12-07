@@ -44,6 +44,8 @@
 
 @property (nonatomic, weak) DSWallet * wallet;
 
+@property (nonatomic, readonly) NSString * uniqueID;
+
 @property (nonatomic, readonly) uint32_t accountNumber;
 
 // current wallet balance excluding transactions known to be invalid
@@ -114,7 +116,7 @@
 - (DSTransaction *)updateTransaction:(DSTransaction* _Nonnull)transaction forAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (void)signTransaction:(DSTransaction * _Nonnull)transaction withPrompt:(NSString * _Nonnull)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
+- (void)signTransaction:(DSTransaction * _Nonnull)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
 - (BOOL)containsTransaction:(DSTransaction * _Nonnull)transaction;

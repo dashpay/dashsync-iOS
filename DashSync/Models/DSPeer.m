@@ -414,7 +414,7 @@
     dispatch_async(self.delegateQueue, ^{
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
     });
-    
+    NSLog(@"[DSPeer] mempool time out %@",self.host);
     [self sendPingMessageWithPongHandler:self.mempoolCompletion];
     self.mempoolCompletion = nil;
 }
@@ -426,13 +426,17 @@
     
     if (completion) {
         if (self.mempoolCompletion) {
+            NSLog(@"aaaa");
             dispatch_async(self.delegateQueue, ^{
+                NSLog(@"bbbb");
                 if (self->_status == DSPeerStatus_Connected) completion(NO);
             });
         }
         else {
             self.mempoolCompletion = completion;
+            NSLog(@"cccc");
             dispatch_async(self.delegateQueue, ^{
+                NSLog(@"dddd");
                 [self performSelector:@selector(mempoolTimeout) withObject:nil afterDelay:MEMPOOL_TIMEOUT];
             });
         }
@@ -1035,6 +1039,8 @@
             case DSInvType_MasternodePaymentVote: break;
             case DSInvType_MasternodeVerify: break;
             case DSInvType_MasternodeBroadcast: break;
+            case DSInvType_QuorumFinalCommitment: break;
+            case DSInvType_DummyCommitment: break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");
@@ -1119,7 +1125,7 @@
         dispatch_async(self.delegateQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self];
         });
-        
+        NSLog(@"[DSPeer] got mempool inv messages %@",self.host);
         [self sendPingMessageWithPongHandler:self.mempoolCompletion];
         self.mempoolCompletion = nil;
     }

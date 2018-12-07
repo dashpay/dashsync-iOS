@@ -488,6 +488,13 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return (addr) ? addr : self.externalAddresses.lastObject;
 }
 
+- (NSString *)receiveAddressAtOffset:(NSUInteger)offset
+{
+    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
+    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO].lastObject;
+    return (addr) ? addr : self.externalAddresses.lastObject;
+}
+
 // returns the first unused internal address
 - (NSString *)changeAddress
 {

@@ -468,7 +468,7 @@
         if (! success) return;
         //we are on chainPeerManagerQueue
         NSLog(@"updating filter with newly created wallet addresses");
-        [self.transactionManager clearBloomFilter];
+        [self.transactionManager clearTransactionsBloomFilter];
         
         if (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight) { // if we're syncing, only update download peer
             [self.downloadPeer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:self.downloadPeer].data];
@@ -709,9 +709,17 @@
                 [peer sendFilterloadMessage:[DSBloomFilter emptyBloomFilterData]];
             }
             [peer sendPingMessageWithPongHandler:^(BOOL success) {
-                if (! success) return;
+                if (! success) {
+                    NSLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);
+                    return;
+                }
+                NSLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
                 [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:^(BOOL success) {
-                    if (! success) return;
+                    if (! success) {
+                        NSLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
+                        return;
+                    }
+                    NSLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
                     peer.synced = YES;
                     [self.transactionManager removeUnrelayedTransactions];
                     [peer sendGetaddrMessage]; // request a list of other dash peers

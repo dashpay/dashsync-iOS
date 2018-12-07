@@ -136,6 +136,7 @@
     if ([segue.identifier isEqualToString:@"ChooseAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
         chooseAccountSegue.chain = self.chainManager.chain;
+        chooseAccountSegue.minAccountBalanceNeeded = PROPOSAL_COST;
         chooseAccountSegue.delegate = self;
     }
 }
