@@ -72,7 +72,7 @@
             }
         } publishedCompletion:^(NSError * _Nonnull error) {
             if (error) {
-
+                
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                              message:error.localizedDescription
@@ -88,8 +88,8 @@
                 [self cancel:nil];
             } else {
                 [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
-                                                                                       center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                                                  popOutAfterDelay:2.0]];
+                                                            center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                                       popOutAfterDelay:2.0]];
             }
         }];
     } else {

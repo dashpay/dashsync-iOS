@@ -294,9 +294,16 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: - Front end
 
--(void)insufficientFundsForTransaction:(DSTransaction *)tx fromAccount:(DSAccount*)account forAmount:(uint64_t)requestedSendAmount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount completion:(void (^)(NSError *error))completion {
+-(void)insufficientFundsForTransaction:(DSTransaction *)tx fromAccount:(DSAccount*)account forAmount:(uint64_t)requestedSendAmount toAddress:(NSString*)address localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion {
     DSPriceManager * manager = [DSPriceManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
+    
+    //todo: find out if this is important
+    //    UIViewController * viewControllerToShowAlert = self;
+//    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UINavigationController class]]) {
+//        UINavigationController * presentedController = (UINavigationController*)self.presentedViewController;
+//        viewControllerToShowAlert = presentedController.topViewController;
+//    }
     
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
@@ -314,7 +321,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                                            actionWithTitle:DSLocalizedString(@"cancel", nil)
                                            style:UIAlertActionStyleCancel
                                            handler:^(UIAlertAction * action) {
-                                               
+
                                            }];
             UIAlertAction* reduceButton = [UIAlertAction
                                            actionWithTitle:[NSString stringWithFormat:@"%@ (%@)",
@@ -322,7 +329,10 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                                                             [manager localCurrencyStringForDashAmount:amount - requestedSendAmount]]
                                            style:UIAlertActionStyleDefault
                                            handler:^(UIAlertAction * action) {
-                                               //                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
+                                               DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chain];
+                                               paymentRequest.amount = requestedSendAmount - amount;
+                                               [self confirmPaymentRequest:paymentRequest fromAccount:account forceInstantSend:tx.isInstant signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
+
                                            }];
             
             
@@ -390,11 +400,11 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     if (! tx) { // tx is nil if there were insufficient wallet funds
         if (authenticationManager.didAuthenticate) {
-            [self insufficientFundsForTransaction:tx fromAccount:account forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount completion:signedCompletion];
+            [self insufficientFundsForTransaction:tx fromAccount:account forAmount:amount toAddress:address localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
         } else {
             [authenticationManager seedWithPrompt:prompt forWallet:account.wallet forAmount:amount forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
                 if (seed) {
-                    [self insufficientFundsForTransaction:tx fromAccount:account forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount completion:signedCompletion];
+                    [self insufficientFundsForTransaction:tx fromAccount:account forAmount:amount toAddress:address localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
                 } else {
                     signedCompletion([NSError errorWithDomain:@"DashSync" code:401
                                                      userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}]);
