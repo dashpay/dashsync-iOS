@@ -57,6 +57,9 @@
 "connect timeout" = "Время ожидания подключения";
 
 /* No comment provided by engineer. */
+"couldn't make payment" = "couldn't make payment";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "Транзакция не подписана";
 
 /* No comment provided by engineer. */
@@ -69,6 +72,9 @@
 "enter old passcode" = "Введите старый пароль";
 
 /* No comment provided by engineer. */
+"error signing dash transaction" = "error signing dash transaction";
+
+/* No comment provided by engineer. */
 "error signing transaction" = "Ошибка подписания транзакции";
 
 /* No comment provided by engineer. */
@@ -76,6 +82,12 @@
 
 /* No comment provided by engineer. */
 "hours" = "часов";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "insufficient funds";
+
+/* No comment provided by engineer. */
+"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
@@ -118,6 +130,9 @@
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "Фраза восстановления не подходит";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "request expired" = "Срок действия запроса истек";

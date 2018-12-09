@@ -27,7 +27,7 @@
 
 #import "BigIntTypes.h"
 
-typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
+typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 typedef void (^SeedRequestBlock)(NSString * _Nullable authprompt, uint64_t amount, _Nullable SeedCompletionBlock seedCompletion);
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;

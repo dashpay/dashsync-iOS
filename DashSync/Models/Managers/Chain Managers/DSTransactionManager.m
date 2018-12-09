@@ -38,7 +38,11 @@
 #import "DSBloomFilter.h"
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
+#import "DSPaymentRequest.h"
+#import "DSPaymentProtocol.h"
 #import "UIWindow+DSUtils.h"
+#import "DSAuthenticationManager.h"
+#import "DSPriceManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 
 @interface DSTransactionManager()
@@ -287,6 +291,168 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [self.txRelays[txHash] removeObject:peer];
 }
 }
+
+// MARK: - Front end
+
+-(void)insufficientFundsForTransaction:(DSTransaction *)tx fromAccount:(DSAccount*)account forAmount:(uint64_t)requestedSendAmount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount completion:(void (^)(NSError *error))completion {
+    DSPriceManager * manager = [DSPriceManager sharedInstance];
+    uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
+    
+    // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
+    // balance, offer to reduce the amount to available funds minus fee
+    if (requestedSendAmount <= account.balance + fuzz && requestedSendAmount > 0) {
+        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.isInstant];
+        
+        if (amount > 0 && amount < requestedSendAmount) {
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:DSLocalizedString(@"insufficient funds for dash network fee", nil)
+                                         message:[NSString stringWithFormat:DSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
+                                                  [manager stringForDashAmount:requestedSendAmount - amount],
+                                                  [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]]
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* cancelButton = [UIAlertAction
+                                           actionWithTitle:DSLocalizedString(@"cancel", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                               
+                                           }];
+            UIAlertAction* reduceButton = [UIAlertAction
+                                           actionWithTitle:[NSString stringWithFormat:@"%@ (%@)",
+                                                            [manager stringForDashAmount:amount - requestedSendAmount],
+                                                            [manager localCurrencyStringForDashAmount:amount - requestedSendAmount]]
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction * action) {
+                                               //                                               [self confirmProtocolRequest:self.request currency:self.scheme associatedShapeshift:self.associatedShapeshift localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount];
+                                           }];
+            
+            
+            [alert addAction:cancelButton];
+            [alert addAction:reduceButton];
+            [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+        }
+        else {
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:DSLocalizedString(@"insufficient funds for dash network fee", nil)
+                                         message:nil
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* okButton = [UIAlertAction
+                                       actionWithTitle:DSLocalizedString(@"ok", nil)
+                                       style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction * action) {
+                                           
+                                       }];
+            
+            
+            [alert addAction:okButton];
+            [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+        }
+    }
+    else {
+        UIAlertController * alert = [UIAlertController
+                                     alertControllerWithTitle:DSLocalizedString(@"insufficient funds", nil)
+                                     message:nil
+                                     preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:DSLocalizedString(@"ok", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       
+                                   }];
+        [alert addAction:okButton];
+        [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+    }
+}
+
+-(void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account forceInstantSend:(BOOL)forceInstantSend signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion {
+    DSPaymentProtocolRequest * protocolRequest = paymentRequest.protocolRequest;
+    DSTransaction * transaction = [account transactionForAmounts:protocolRequest.details.outputAmounts toOutputScripts:protocolRequest.details.outputScripts withFee:TRUE isInstant:forceInstantSend];
+    if (transaction) {
+        uint64_t fee = [account feeForTransaction:transaction];
+        NSString *prompt = [[DSAuthenticationManager sharedInstance] promptForAmount:paymentRequest.amount
+                                                                                 fee:fee
+                                                                             address:paymentRequest.paymentAddress
+                                                                                name:protocolRequest.commonName
+                                                                                memo:protocolRequest.details.memo
+                                                                            isSecure:TRUE//(valid && ! [protoReq.pkiType isEqual:@"none"])
+                                                                        errorMessage:nil
+                                                                       localCurrency:nil
+                                                                 localCurrencyAmount:nil];
+        CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
+            [self confirmTransaction:transaction fromAccount:account toAddress:paymentRequest.paymentAddress withPrompt:prompt forAmount:paymentRequest.amount localCurrency:nil localCurrencyAmount:nil signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
+        });
+    }
+}
+
+- (void)confirmTransaction:(DSTransaction *)tx fromAccount:(DSAccount*)account toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion
+{
+    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
+    __block BOOL previouslyWasAuthenticated = authenticationManager.didAuthenticate;
+    
+    if (! tx) { // tx is nil if there were insufficient wallet funds
+        if (authenticationManager.didAuthenticate) {
+            [self insufficientFundsForTransaction:tx fromAccount:account forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount completion:signedCompletion];
+        } else {
+            [authenticationManager seedWithPrompt:prompt forWallet:account.wallet forAmount:amount forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+                if (seed) {
+                    [self insufficientFundsForTransaction:tx fromAccount:account forAmount:amount localCurrency:localCurrency localCurrencyAmount:localCurrencyAmount completion:signedCompletion];
+                } else {
+                    signedCompletion([NSError errorWithDomain:@"DashSync" code:401
+                                                     userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}]);
+                }
+                if (!previouslyWasAuthenticated) [authenticationManager deauthenticate];
+            }];
+        }
+    } else {
+        
+        [account signTransaction:tx withPrompt:prompt completion:^(BOOL signedTransaction) {
+            if (!signedTransaction) {
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:DSLocalizedString(@"couldn't make payment", nil)
+                                             message:DSLocalizedString(@"error signing dash transaction", nil)
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:DSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                               
+                                           }];
+                [alert addAction:okButton];
+                [[self presentingViewController] presentViewController:alert animated:YES completion:nil];
+                
+            } else {
+                
+                if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
+                
+                if (! tx.isSigned) { // double check
+                    return;
+                }
+                
+                signedCompletion(nil);
+                
+                __block BOOL waiting = YES, sent = NO;
+                
+                [self publishTransaction:tx completion:^(NSError *error) {
+                    if (error) {
+                        if (! waiting && ! sent) {
+
+                            publishedCompletion(error);
+                            
+                        }
+                    }
+                    else if (! sent) { //TODO: show full screen sent dialog with tx info, "you sent b10,000 to bob"
+                        sent = YES;
+                        tx.timestamp = [NSDate timeIntervalSince1970];
+                        [account registerTransaction:tx];
+                        publishedCompletion(nil);
+                        
+                    }
+                    waiting = NO;
+                }];
+            }
+        }];
+    }
+}
+
 
 // MARK: - Mempools Sync
 
