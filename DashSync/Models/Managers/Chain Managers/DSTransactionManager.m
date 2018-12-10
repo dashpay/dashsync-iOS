@@ -151,7 +151,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:nil];
                 }
             }];
         }
@@ -684,7 +684,6 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
-            
         });
     }
     
@@ -806,7 +805,11 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: Instant Send
 
-- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet *)transactionLockVoteHashes {
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSOrderedSet *)transactionLockVoteHashes {
+    
+}
+
+- (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote {
     
 }
 

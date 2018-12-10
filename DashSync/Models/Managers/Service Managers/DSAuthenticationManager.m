@@ -48,6 +48,7 @@ static NSString *sanitizeString(NSString *s)
 }
 
 #define SECURE_TIME_KEY     @"SECURE_TIME"
+#define USES_AUTHENTICATION_KEY     @"USES_AUTHENTICATION"
 #define PIN_KEY             @"pin"
 #define PIN_FAIL_COUNT_KEY  @"pinfailcount"
 #define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
@@ -90,7 +91,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     if (! (self = [super init])) return nil;
     
     self.failedPins = [NSMutableSet set];
-    self.usesAuthentication = YES;
+    self.usesAuthentication = [self shouldUseAuthentication];
     
     self.keyboardObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillChangeFrameNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if ([self pinAlertControllerIsVisible]) {
@@ -154,6 +155,43 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 -(void)deauthenticate {
     if (self.usesAuthentication) {
         self.didAuthenticate = NO;
+    }
+}
+
+-(void)setOneTimeUsesAuthentication:(BOOL)usesAuthentication {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSError * error = nil;
+        if (!hasKeychainData(USES_AUTHENTICATION_KEY, &error)) {
+            setKeychainInt(usesAuthentication, USES_AUTHENTICATION_KEY, NO);
+        } else {
+            BOOL shouldUseAuthentication = getKeychainInt(USES_AUTHENTICATION_KEY, &error);
+            if (!shouldUseAuthentication && usesAuthentication) { //we are switching the app to use authentication in the future
+                setKeychainInt(YES, USES_AUTHENTICATION_KEY, NO);
+                self.usesAuthentication = YES;
+            } else {
+                if (!error) {
+                    self.usesAuthentication = shouldUseAuthentication;
+                } else {
+                    self.usesAuthentication = TRUE; //default
+                }
+            }
+            
+        }
+    });
+}
+
+-(BOOL)shouldUseAuthentication {
+    NSError * error = nil;
+    if (!hasKeychainData(USES_AUTHENTICATION_KEY, &error)) {
+        return TRUE; //default true;
+    } else {
+        BOOL shouldUseAuthentication = getKeychainInt(USES_AUTHENTICATION_KEY, &error);
+        if (!error) {
+            return shouldUseAuthentication;
+        } else {
+            return TRUE; //default
+        }
     }
 }
 
@@ -772,7 +810,7 @@ replacementString:(NSString *)string
         if (!strongSelf) {
             return NO;
         }
-
+        
         NSError * error = nil;
         uint64_t failCount = getKeychainInt(PIN_FAIL_COUNT_KEY, &error);
         

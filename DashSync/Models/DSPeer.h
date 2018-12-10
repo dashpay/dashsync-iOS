@@ -73,6 +73,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 #define MSG_GETHEADERS  @"getheaders"
 #define MSG_TX          @"tx"
 #define MSG_IX          @"ix"
+#define MSG_TXLVOTE     @"txlvote"
 #define MSG_BLOCK       @"block"
 #define MSG_HEADERS     @"headers"
 #define MSG_GETADDR     @"getaddr"
@@ -149,7 +150,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceRequestState) {
 
 typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSGovernanceObject,DSGovernanceVote;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSGovernanceObject,DSGovernanceVote,DSTransactionLockVote;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -180,7 +181,8 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
-- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet*)transactionLockVoteHashes;
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSOrderedSet*)transactionLockVoteHashes;
+- (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 
 @end
@@ -285,7 +287,7 @@ services:(uint64_t)services;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendTransactionInvMessagesForTxHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes blockHashes:(NSArray *)blockHashes;
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes blockHashes:(NSArray *)blockHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;

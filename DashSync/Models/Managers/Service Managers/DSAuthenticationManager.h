@@ -56,4 +56,6 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
 -(void)deauthenticate;
 
+-(void)setOneTimeUsesAuthentication:(BOOL)usesAuthentication;
+
 @end
