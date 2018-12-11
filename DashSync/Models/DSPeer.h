@@ -49,6 +49,7 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_CompactBlock = 20, //!< Defined in BIP152
     DSInvType_QuorumFinalCommitment = 21,
     DSInvType_DummyCommitment = 22, // only valid on testnet/devnet/regtest
+    DSInvType_DummyContribution = 23 // only valid on testnet/devnet/regtest
 };
 
 #define DASH_PEER_TIMEOUT_CODE  1001

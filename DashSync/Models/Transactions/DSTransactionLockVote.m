@@ -10,6 +10,9 @@
 #import "NSData+Bitcoin.h"
 #import "DSSporkManager.h"
 #import "DSChainManager.h"
+#import "DSMasternodeManager.h"
+#import "DSSimplifiedMasternodeEntry.h"
+#import "NSMutableData+Dash.h"
 
 @interface DSTransactionLockVote()
 
@@ -20,6 +23,9 @@
 @property (nonatomic, assign) UInt256 quorumHash;
 @property (nonatomic, assign) UInt256 confirmedHash;
 @property (nonatomic, assign) UInt768 signature;
+@property (nonatomic, assign) UInt256 transactionLockHash;
+@property (nonatomic, assign) BOOL signatureVerified;
+@property (nonatomic, readonly) DSSimplifiedMasternodeEntry * masternode;
 
 @end
 
@@ -41,6 +47,29 @@
     
     self.chain = chain;
     return self;
+}
+
+-(UInt256)calculateTransactionLockHash {
+    //hash calculation
+    NSMutableData * hashImportantData = [NSMutableData data];
+    [hashImportantData appendUInt256:self.transactionHash];
+    [hashImportantData appendUTXO:self.transactionOutpoint];
+    [hashImportantData appendUTXO:self.masternodeOutpoint];
+    [hashImportantData appendUInt256:self.quorumHash];
+    [hashImportantData appendUInt256:self.confirmedHash];
+    return hashImportantData.SHA256_2;
+}
+
+-(UInt256)transactionLockHash {
+    if (uint256_is_zero(_transactionLockHash)) {
+        _transactionLockHash = [self calculateTransactionLockHash];
+    }
+    return _transactionLockHash;
+}
+
+-(DSSimplifiedMasternodeEntry*)masternode {
+    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
+    return [masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(self.masternodeOutpoint.hash)];
 }
 
 //transaction hash (32)
@@ -89,9 +118,17 @@
         off += [signatureLength integerValue];
         if (signatureSize != 96) return nil;
         self.signature = [message UInt768AtOffset:off];
+        self.transactionLockHash = [self transactionLockHash];
     }
     
     return self;
+}
+
+- (BOOL)verifySignature {
+    if (!self.masternode) return NO;
+    
+    self.signatureVerified = [self.masternode verifySignature:self.signature forMessageDigest:self.transactionLockHash];
+    return self.signatureVerified;
 }
 
 @end

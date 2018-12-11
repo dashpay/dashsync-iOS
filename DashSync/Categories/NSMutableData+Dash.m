@@ -174,7 +174,9 @@ CFAllocatorRef SecureAllocator()
     [self appendBytes:&i length:sizeof(i)];
 }
 
-
+-(void)appendUTXO:(DSUTXO)utxo {
+    [self appendData:dsutxo_data(utxo)];
+}
 
 - (void)appendVarInt:(uint64_t)i
 {
