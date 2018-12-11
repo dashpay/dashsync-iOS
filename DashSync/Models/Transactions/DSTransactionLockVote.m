@@ -20,8 +20,8 @@
 @property (nonatomic, assign) UInt256 transactionHash;
 @property (nonatomic, assign) DSUTXO transactionOutpoint;
 @property (nonatomic, assign) DSUTXO masternodeOutpoint;
-@property (nonatomic, assign) UInt256 quorumHash;
-@property (nonatomic, assign) UInt256 confirmedHash;
+@property (nonatomic, assign) UInt256 masternodeProviderTransactionHash;
+@property (nonatomic, assign) UInt256 quorumModifierHash;
 @property (nonatomic, assign) UInt768 signature;
 @property (nonatomic, assign) UInt256 transactionLockHash;
 @property (nonatomic, assign) BOOL signatureVerified;
@@ -55,8 +55,8 @@
     [hashImportantData appendUInt256:self.transactionHash];
     [hashImportantData appendUTXO:self.transactionOutpoint];
     [hashImportantData appendUTXO:self.masternodeOutpoint];
-    [hashImportantData appendUInt256:self.quorumHash];
-    [hashImportantData appendUInt256:self.confirmedHash];
+    [hashImportantData appendUInt256:self.quorumModifierHash];
+    [hashImportantData appendUInt256:self.masternodeProviderTransactionHash];
     return hashImportantData.SHA256_2;
 }
 
@@ -69,7 +69,7 @@
 
 -(DSSimplifiedMasternodeEntry*)masternode {
     DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
-    return [masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(self.masternodeOutpoint.hash)];
+    return [masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(self.masternodeProviderTransactionHash)];
 }
 
 //transaction hash (32)
@@ -107,14 +107,16 @@
         off += sizeof(uint32_t);
         self.masternodeOutpoint = masternodeOutpoint;
         
-        self.quorumHash = [message UInt256AtOffset:off]; // quorum hash
+        self.quorumModifierHash = [message UInt256AtOffset:off]; // quorum hash
         off += sizeof(UInt256);
         
-        self.confirmedHash = [message UInt256AtOffset:off]; // confirmedHash hash
+        self.masternodeProviderTransactionHash = [message UInt256AtOffset:off]; // confirmedHash hash
         off += sizeof(UInt256);
+        
+
         
         NSNumber * signatureLength = nil;
-        uint64_t signatureSize = [message varIntAtOffset:off length:&signatureLength]; // confirmedHash hash
+        uint64_t signatureSize = [message varIntAtOffset:off length:&signatureLength]; // signature
         off += [signatureLength integerValue];
         if (signatureSize != 96) return nil;
         self.signature = [message UInt768AtOffset:off];

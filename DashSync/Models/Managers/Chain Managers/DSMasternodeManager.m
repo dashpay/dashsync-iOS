@@ -82,7 +82,6 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
 @property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeListDictionaryByRegistrationTransactionHash;
-@property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeListDictionaryByMasternodeOutpoint;
 
 @end
 
@@ -93,7 +92,6 @@ inline static int ceil_log2(int x)
     if (! (self = [super init])) return nil;
     _chain = chain;
     _simplifiedMasternodeListDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
-    _simplifiedMasternodeListDictionaryByMasternodeOutpoint = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     return self;
 }
@@ -110,7 +108,6 @@ inline static int ceil_log2(int x)
 
 -(void)wipeMasternodeInfo {
     [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash removeAllObjects];
-    [self.simplifiedMasternodeListDictionaryByMasternodeOutpoint removeAllObjects];
     self.baseBlockHash = UINT256_ZERO;
 }
 
@@ -121,8 +118,6 @@ inline static int ceil_log2(int x)
     NSArray * simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity fetchObjects:fetchRequest];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in simplifiedMasternodeEntryEntities) {
         [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
-        
-        [self.simplifiedMasternodeListDictionaryByMasternodeOutpoint setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
     }
 }
 
@@ -362,6 +357,14 @@ inline static int ceil_log2(int x)
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self simplifiedMasternodeEntryForLocation:IPAddress port:port];
         return (!!simplifiedMasternodeEntry);
     }
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash {
+    
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {
+    return [self masternodesForQuorumHash:quorumHash quorumCount:quorumCount forBlockHash:self.baseBlockHash];
 }
 
 @end

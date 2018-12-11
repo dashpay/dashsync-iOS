@@ -866,7 +866,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             for (NSObject * value in self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue]) {
                 if ([value isEqual:IX_INPUT_LOCKED_KEY]) continue;
                 DSTransactionLockVote * lockVote = self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][value];
-                DSSimplifiedMasternodeEntry * masternode = [self.masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(lockVote.masternodeOutpoint.hash)];
+                DSSimplifiedMasternodeEntry * masternode = [self.masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(lockVote.masternodeProviderTransactionHash)];
                 if (!masternode) continue;
                 BOOL verified = [lockVote verifySignature];
                 if (verified) yesVotes++;
@@ -889,9 +889,9 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 - (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote {
     NSValue *transactionHashValue = uint256_obj(transactionLockVote.transactionHash);
     DSUTXO transactionOutput = transactionLockVote.transactionOutpoint;
-    DSUTXO masternodeOutput = transactionLockVote.masternodeOutpoint;
+    UInt256 masternodeProviderTransactionHash = transactionLockVote.masternodeProviderTransactionHash;
     NSValue *transactionOutputValue = dsutxo_obj(transactionOutput);
-    NSValue *masternodeOutputValue = dsutxo_obj(masternodeOutput);
+    NSValue *masternodeProviderTransactionHashValue = uint256_obj(masternodeProviderTransactionHash);
     if (!self.transactionLockVoteDictionary[transactionHashValue]) {
         self.transactionLockVoteDictionary[transactionHashValue] = [NSMutableDictionary dictionary];
     }
@@ -899,7 +899,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] = [NSMutableDictionary dictionary];
     }
     
-    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeOutputValue] = transactionLockVote;
+    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeProviderTransactionHashValue] = transactionLockVote;
     
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }

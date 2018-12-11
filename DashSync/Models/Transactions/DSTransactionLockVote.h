@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 transactionHash;
 @property (nonatomic, readonly) DSUTXO transactionOutpoint;
 @property (nonatomic, readonly) DSUTXO masternodeOutpoint;
+@property (nonatomic, readonly) UInt256 masternodeProviderTransactionHash;
+@property (nonatomic, readonly) UInt256 quorumModifierHash;
 @property (nonatomic, readonly) BOOL signatureVerified;
 
 - (BOOL)verifySignature;
