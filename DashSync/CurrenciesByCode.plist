@@ -294,8 +294,6 @@
 	<string>Uruguayan Peso</string>
 	<key>UZS</key>
 	<string>Uzbekistan Som</string>
-	<key>VEF</key>
-	<string>Venezuelan Bolívar Fuerte</string>
 	<key>VES</key>
 	<string>Venezuelan Bolívar Soberano</string>
 	<key>VND</key>
@@ -306,10 +304,6 @@
 	<string>Samoan Tala</string>
 	<key>XAF</key>
 	<string>CFA Franc BEAC</string>
-	<key>XAG</key>
-	<string>Silver (troy ounce)</string>
-	<key>XAU</key>
-	<string>Gold (troy ounce)</string>
 	<key>XCD</key>
 	<string>East Caribbean Dollar</string>
 	<key>XOF</key>
