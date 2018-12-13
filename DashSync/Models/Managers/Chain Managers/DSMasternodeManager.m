@@ -37,6 +37,7 @@
 #import "DSMerkleBlock.h"
 #import "DSChainManager+Protected.h"
 #import "DSPeerManager+Protected.h"
+#import "DSMutableOrderedDataKeyDictionary.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -359,8 +360,29 @@ inline static int ceil_log2(int x)
     }
 }
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash {
+-(DSMutableOrderedDataKeyDictionary*)calculateScores:(UInt256)modifier {
+    NSMutableDictionary <NSData*,DSSimplifiedMasternodeEntry*>* scores = [NSMutableDictionary dictionary];
     
+    for (NSData * registrationTransactionHash in self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash[registrationTransactionHash];
+        if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
+            continue;
+        }
+        NSMutableData * data = [NSMutableData data];
+        [data appendData:[NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHashHashedWithProviderRegistrationTransactionHash].reverse];
+        [data appendData:[NSData dataWithUInt256:modifier].reverse];
+        UInt256 score = data.SHA256;
+        scores[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
+    }
+    return [[DSMutableOrderedDataKeyDictionary alloc] initWithMutableDictionary:scores keyAscending:YES];
+}
+
+-(NSUInteger)masternodeRank:(UInt256)providerRegistrationTransactionHash quorumHash:(UInt256)quorumHash {
+    DSSimplifiedMasternodeEntry
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash {
+    return nil;
 }
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {

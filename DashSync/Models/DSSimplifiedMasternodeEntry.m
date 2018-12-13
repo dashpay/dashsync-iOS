@@ -11,11 +11,13 @@
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
+#import "DSMutableOrderedDataKeyDictionary.h"
 
 @interface DSSimplifiedMasternodeEntry()
 
 @property(nonatomic,assign) UInt256 providerRegistrationTransactionHash;
 @property(nonatomic,assign) UInt256 confirmedHash;
+@property(nonatomic,assign) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
 @property(nonatomic,assign) UInt256 simplifiedMasternodeEntryHash;
 @property(nonatomic,assign) UInt128 address;
 @property(nonatomic,assign) uint16_t port;
@@ -105,6 +107,27 @@
     self.chain = chain;
     
     return self;
+}
+
+-(void)setConfirmedHash:(UInt256)confirmedHash {
+    _confirmedHash = confirmedHash;
+    if (!uint256_is_zero(self.providerRegistrationTransactionHash)) {
+        [self updateConfirmedHashHashedWithProviderRegistrationTransactionHash];
+    }
+}
+
+-(void)setProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
+    _providerRegistrationTransactionHash = providerRegistrationTransactionHash;
+    if (!uint256_is_zero(self.confirmedHash)) {
+        [self updateConfirmedHashHashedWithProviderRegistrationTransactionHash];
+    }
+}
+
+-(void)updateConfirmedHashHashedWithProviderRegistrationTransactionHash {
+    NSMutableData * combinedData = [NSMutableData data];
+    [combinedData appendData:[NSData dataWithUInt256:self.confirmedHash].reverse];
+    [combinedData appendData:[NSData dataWithUInt256:self.providerRegistrationTransactionHash].reverse];
+    self.confirmedHashHashedWithProviderRegistrationTransactionHash = [NSData dataWithUInt256:combinedData.SHA256].reverse.UInt256;
 }
 
 +(uint32_t)payloadLength {
