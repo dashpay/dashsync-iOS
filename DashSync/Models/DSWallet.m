@@ -280,19 +280,19 @@
 {
     @autoreleasepool {
         if (!authprompt && [DSAuthenticationManager sharedInstance].didAuthenticate) {
-            completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil]);
+            completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil],NO);
             return;
         }
         BOOL touchid = amount?((self.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO):NO;
         
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt andTouchId:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
-                completion(nil);
+                completion(nil,cancelled);
             } else {
                 // BUG: if user manually chooses to enter pin, the Touch ID spending limit is reset, but the tx being authorized
                 // still counts towards the next Touch ID spending limit
                 if (! touchid) setKeychainInt(self.totalSent + amount + [DSChainsManager sharedInstance].spendingLimit, SPEND_LIMIT_KEY, NO);
-                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil]);
+                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil],cancelled);
             }
         }];
         
@@ -326,7 +326,7 @@
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 {
     @autoreleasepool {
-        self.seedRequestBlock(@"Please authorize", 0, ^(NSData * _Nullable seed) {
+        self.seedRequestBlock(@"Please authorize", 0, ^(NSData * _Nullable seed, BOOL cancelled) {
             @autoreleasepool {
                 NSString *privKey = getKeychainString(AUTH_PRIVKEY_KEY, nil);
                 if (! privKey) {

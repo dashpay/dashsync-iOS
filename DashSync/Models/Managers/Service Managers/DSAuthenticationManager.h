@@ -29,7 +29,7 @@
 
 typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
-typedef void (^SeedCompletionBlock)(NSData * _Nullable seed);
+typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
 @class DSWallet,DSChain,DSTransaction;
 

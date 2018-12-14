@@ -749,7 +749,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-        self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+        self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed, BOOL cancelled) {
             if (! seed) {
                 if (completion) completion(YES);
             } else {
@@ -778,7 +778,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     for (DSTransaction * transaction in transactions) {
         amount += [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     }
-    self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed) {
+    self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed, BOOL cancelled) {
         for (DSTransaction * transaction in transactions) {
             NSMutableArray * usedDerivationPaths = [NSMutableArray array];
             for (DSDerivationPath * derivationPath in self.derivationPaths) {

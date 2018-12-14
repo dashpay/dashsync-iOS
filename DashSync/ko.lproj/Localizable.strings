@@ -57,6 +57,9 @@
 "connect timeout" = "접속 시간 초과";
 
 /* No comment provided by engineer. */
+"couldn't make payment" = "couldn't make payment";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "대쉬 거래가 서명되지 않음";
 
 /* No comment provided by engineer. */
@@ -69,6 +72,9 @@
 "enter old passcode" = "이전 암호 입력";
 
 /* No comment provided by engineer. */
+"error signing dash transaction" = "error signing dash transaction";
+
+/* No comment provided by engineer. */
 "error signing transaction" = "거래 서명 중 오류 발생";
 
 /* No comment provided by engineer. */
@@ -76,6 +82,12 @@
 
 /* No comment provided by engineer. */
 "hours" = "시간";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "insufficient funds";
+
+/* No comment provided by engineer. */
+"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
@@ -118,6 +130,9 @@
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "request expired" = "요청 만료";

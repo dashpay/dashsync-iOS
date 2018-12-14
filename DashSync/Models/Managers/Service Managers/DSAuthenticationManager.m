@@ -517,7 +517,7 @@ replacementString:(NSString *)string
         @autoreleasepool {
             NSString * seedPhrase = [wallet seedPhraseIfAuthenticated];
             if (seedPhrase) {
-                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil]);
+                completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:seedPhrase withPassphrase:nil], NO);
             } else {
                 [wallet seedWithPrompt:authprompt forAmount:amount completion:completion];
             }

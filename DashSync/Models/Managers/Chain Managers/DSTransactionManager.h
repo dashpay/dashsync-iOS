@@ -36,7 +36,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFailedNotific
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceivedNotification;
 
-@class DSChain;
+@class DSChain, DSPaymentRequest;
 
 @interface DSTransactionManager : NSObject <DSChainTransactionsDelegate,DSPeerTransactionDelegate>
 
@@ -53,6 +53,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceiv
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer;
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion;
+
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account forceInstantSend:(BOOL)forceInstantSend signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion;
+
+- (void)confirmTransaction:(DSTransaction *)tx fromAccount:(DSAccount*)account toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString * _Nullable)localCurrency localCurrencyAmount:(NSString * _Nullable)localCurrencyAmount signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion;
 
 @end
 
