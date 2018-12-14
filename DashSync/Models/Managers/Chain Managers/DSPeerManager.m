@@ -67,7 +67,7 @@
 
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
 
-#define TESTNET_MAIN_PEER @""//@"18.202.52.170:19999"
+#define TESTNET_MAIN_PEER @"18.202.52.170:19999"
 
 
 #define FIXED_PEERS          @"FixedPeers"

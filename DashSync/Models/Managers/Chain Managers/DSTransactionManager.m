@@ -944,6 +944,10 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [self.chain addBlock:block fromPeer:peer];
 }
 
+- (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {
+    [self.peerManager peerMisbehaving:peer];
+}
+
 // MARK: Fees
 
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb

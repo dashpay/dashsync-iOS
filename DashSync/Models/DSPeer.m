@@ -97,6 +97,7 @@
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic, assign) uint64_t receivedOrphanCount;
 
 @end
 
@@ -218,6 +219,7 @@
         self.reachabilityObserver = nil;
     }
     
+    self.receivedOrphanCount = 0;
     self.msgHeader = [NSMutableData data];
     self.msgPayload = [NSMutableData data];
     self.outputBuffer = [NSMutableData data];
@@ -335,6 +337,13 @@
     dispatch_async(self.delegateQueue, ^{
         if (self->_status == DSPeerStatus_Connected) [self.peerDelegate peerConnected:self];
     });
+}
+
+- (void)receivedOrphanBlock {
+    self.receivedOrphanCount++;
+    if (self.receivedOrphanCount > 9) { //after 10 orphans mark this peer as bad by saying we got a bad block
+        [self.transactionDelegate peer:self relayedTooManyOrphanBlocks:self.receivedOrphanCount];
+    }
 }
 
 // MARK: - send

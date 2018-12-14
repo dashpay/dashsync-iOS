@@ -120,6 +120,13 @@
     [self.chain wipeBlockchainInfo];
     [DSTransactionEntity saveContext];
     
+    if (![self.chain isMainnet]) {
+        [self.chain.chainManager.peerManager removeTrustedPeerHost];
+        [self.chain.chainManager.peerManager clearPeers];
+        [DSPeerEntity deletePeersForChain:chainEntity];
+        [DSPeerEntity saveContext];
+    }
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];

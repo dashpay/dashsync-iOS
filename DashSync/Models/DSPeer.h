@@ -177,6 +177,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 // called when the peer relays either a merkleblock or a block header, headers will have 0 totalTransactions
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block;
+- (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount;
 - (void)peer:(DSPeer *)peer relayedNotFoundMessagesWithTransactionHashes:(NSArray *)txHashes transactionLockRequestHashes:(NSArray *)transactionLockRequestHashes andBlockHashes:(NSArray *)blockhashes;
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash;
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
@@ -281,6 +282,7 @@ services:(uint64_t)services;
 - (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;
+- (void)receivedOrphanBlock;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendFilterloadMessage:(NSData *)filter;
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL success))completion;
