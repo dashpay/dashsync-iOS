@@ -259,6 +259,7 @@
 - (void)addIndex:(NSString*)index {
     if (!self.indexes[index]) {
         self.indexes[index] = [NSMutableDictionary dictionary];
+        [self applyIndex:index];
     }
 }
 
@@ -268,7 +269,7 @@
     for (NSData * data in self) {
         id object = [self objectForKey:data];
         NSValue * value = [object valueForKey:index];
-        value.
+        self.indexes[index][value] = data;
     }
 }
 

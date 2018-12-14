@@ -361,7 +361,7 @@ inline static int ceil_log2(int x)
 }
 
 -(DSMutableOrderedDataKeyDictionary*)calculateScores:(UInt256)modifier {
-    NSMutableDictionary <NSData*,DSSimplifiedMasternodeEntry*>* scores = [NSMutableDictionary dictionary];
+    NSMutableDictionary <NSData*,id>* scores = [NSMutableDictionary dictionary];
     
     for (NSData * registrationTransactionHash in self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash[registrationTransactionHash];
@@ -374,11 +374,13 @@ inline static int ceil_log2(int x)
         UInt256 score = data.SHA256;
         scores[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
     }
-    return [[DSMutableOrderedDataKeyDictionary alloc] initWithMutableDictionary:scores keyAscending:YES];
+    DSMutableOrderedDataKeyDictionary * rankedScores = [[DSMutableOrderedDataKeyDictionary alloc] initWithMutableDictionary:scores keyAscending:YES];
+    [rankedScores addIndex:@"providerRegistrationTransactionHash"];
+    return rankedScores;
 }
 
 -(NSUInteger)masternodeRank:(UInt256)providerRegistrationTransactionHash quorumHash:(UInt256)quorumHash {
-    DSSimplifiedMasternodeEntry
+    return 0;
 }
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash {

@@ -55,6 +55,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "DSChainManager+Protected.h"
 #import "DSBloomFilter.h"
+#import <arpa/inet.h>
 
 #define PEER_LOGGING 1
 
@@ -65,6 +66,8 @@
 #define TESTNET_DNS_SEEDS @[/*@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io",@"testnet-seed.dashdot.io"*/]
 
 #define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
+
+#define TESTNET_MAIN_PEER @""//@"18.202.52.170:19999"
 
 
 #define FIXED_PEERS          @"FixedPeers"
@@ -286,9 +289,24 @@
                 [self sortPeers];
                 return _peers;
             }
-            
             // if DNS peer discovery fails, fall back on a hard coded list of peers (list taken from satoshi client)
             if (_peers.count < PEER_MAX_CONNECTIONS) {
+            if (![self.chain isMainnet] && ![TESTNET_MAIN_PEER isEqualToString:@""]) {
+                NSArray * serviceArray = [TESTNET_MAIN_PEER componentsSeparatedByString:@":"];
+                NSString * address = serviceArray[0];
+                NSString * port = ([serviceArray count] > 1)? serviceArray[1]:nil;
+                UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+                struct in_addr addrV4;
+                if (inet_aton([address UTF8String], &addrV4) != 0) {
+                    uint32_t ip = ntohl(addrV4.s_addr);
+                    ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+                } else {
+                    NSLog(@"invalid address");
+                }
+                [_peers addObject:[[DSPeer alloc] initWithAddress:ipAddress port:port?[port intValue]:self.chain.standardPort onChain:self.chain
+                                                        timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
+                                                         services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
+            } else {
                 UInt128 addr = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
                 
                 NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
@@ -298,9 +316,10 @@
                     // give hard coded peers a timestamp between 7 and 14 days ago
                     addr.u32[3] = CFSwapInt32HostToBig(address.unsignedIntValue);
                     [_peers addObject:[[DSPeer alloc] initWithAddress:addr port:self.chain.standardPort onChain:self.chain
-                                                            timestamp:now - (7*24*60*60 + arc4random_uniform(7*24*60*60))
+                                                            timestamp:now - (WEEK_TIME_INTERVAL + arc4random_uniform(WEEK_TIME_INTERVAL))
                                                              services:SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM]];
                 }
+            }
             }
             
             [self sortPeers];

@@ -1050,6 +1050,7 @@
             case DSInvType_MasternodeBroadcast: break;
             case DSInvType_QuorumFinalCommitment: break;
             case DSInvType_DummyCommitment: break;
+            case DSInvType_DummyContribution: break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");
