@@ -38,7 +38,8 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
 @property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
-@property (nonatomic, readonly) BOOL usesAuthentication;
+@property (nonatomic, readonly) BOOL shouldUseAuthentication; //true if the app should use authentication once it is set up
+@property (nonatomic, readonly) BOOL usesAuthentication; //true if the app uses authentication and it is set up
 @property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic ,readonly) BOOL lockedOut;
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
@@ -48,6 +49,7 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 + (instancetype _Nullable)sharedInstance;
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet* _Nonnull)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
+- (void)setPinIfNeededWithCompletion:(void (^ _Nullable)(BOOL needed, BOOL success))completion; // prompts the user to set his pin if he has never set one before
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 -(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel;
 - (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure errorMessage:(NSString*)errorMessage localCurrency:(NSString *)localCurrency localCurrencyAmount:(NSString *)localCurrencyAmount;
@@ -56,6 +58,6 @@ typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
 -(void)deauthenticate;
 
--(void)setOneTimeUsesAuthentication:(BOOL)usesAuthentication;
+-(void)setOneTimeUsesAuthentication:(BOOL)usesAuthentication; // you can not set this to false after it being true
 
 @end

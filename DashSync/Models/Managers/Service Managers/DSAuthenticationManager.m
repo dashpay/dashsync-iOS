@@ -91,7 +91,13 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     if (! (self = [super init])) return nil;
     
     self.failedPins = [NSMutableSet set];
-    self.usesAuthentication = [self shouldUseAuthentication];
+    NSError * error = nil;
+    BOOL hasSetPin = hasKeychainData(PIN_KEY, &error);
+    if (error) {
+        self.usesAuthentication = TRUE; //just to be safe
+    } else {
+        self.usesAuthentication = [self shouldUseAuthentication] && hasSetPin;
+    }
     
     self.keyboardObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIKeyboardWillChangeFrameNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if ([self pinAlertControllerIsVisible]) {
@@ -405,6 +411,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
         if ([currentPin isEqual:previousPin]) {
             context.pinField.text = nil;
             setKeychainString(previousPin, PIN_KEY, NO);
+            context.usesAuthentication = TRUE;
             [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             [context.pinField resignFirstResponder];
@@ -434,11 +441,26 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     return [self getSubviewForView:self.pinAlertController.view withText:self.pinAlertController.title];
 }
 
+-(void)setPinIfNeededWithCompletion:(void (^)(BOOL needed, BOOL success))completion {
+    NSError *error = nil;
+    BOOL hasPin = hasKeychainData(PIN_KEY, &error); //don't put pin in memory before needed
+    
+    if (error || hasPin) {
+        if (completion) completion(!hasPin, NO);
+        return; // error reading existing pin from keychain
+    }
+    if (!hasPin) {
+        [self setPinWithCompletion:^(BOOL success) {
+            completion(YES,success);
+        }];
+    }
+}
+
 // prompts the user to set or change their wallet pin and returns true if the pin was successfully set
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion
 {
     NSError *error = nil;
-    NSString *pin = getKeychainString(PIN_KEY, &error);
+    BOOL hasPin = hasKeychainData(PIN_KEY, &error); //don't put pin in memory before needed
     
     if (error) {
         if (completion) completion(NO);
@@ -447,7 +469,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     
     [DSEventManager saveEvent:@"wallet_manager:set_pin"];
     
-    if (pin.length == 4) { //already had a pin, replacing it
+    if (hasPin) { //already had a pin, replacing it
+        NSString *pin = getKeychainString(PIN_KEY, &error);
+        if (pin.length == 4) {
         [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (authenticated) {
                 self.didAuthenticate = NO;
@@ -469,6 +493,9 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
                 if (completion) completion(NO);
             }
         }];
+        } else {
+            [self setBrandNewPinWithCompletion:completion];
+        }
     }
     else { //didn't have a pin yet
         [self setBrandNewPinWithCompletion:completion];
