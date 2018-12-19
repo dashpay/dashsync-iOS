@@ -43,7 +43,7 @@ SOCKET_CONNECTION_TIMEOUT = 3
 FIXED_PEERS_COUNT = 4
 
 def PLIST_PATH():
-    return '../DashSync/TestnetFixedPeers.plist' if TESTNET else '../DashWallet/FixedPeers.plist'
+    return '../DashSync/TestnetFixedPeers.plist' if TESTNET else '../DashSync/FixedPeers.plist'
 
 def API_HTTP_URL():
     return 'https://test.dashninja.pl/data/masternodeslistfull-1.json' if TESTNET else 'https://www.dashninja.pl/data/masternodeslistfull-0.json'
@@ -55,7 +55,7 @@ def MASTERNODE_DEFAULT_PORT():
     return 19999 if TESTNET else 9999
 
 def MASTERNODE_MIN_PROTOCOL():
-    return 70212 if TESTNET else 70208
+    return 70213 if TESTNET else 70210
 
 
 # global in-memory database
