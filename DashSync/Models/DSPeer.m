@@ -437,17 +437,17 @@
     
     if (completion) {
         if (self.mempoolCompletion) {
-            NSLog(@"aaaa");
+            //NSLog(@"aaaa");
             dispatch_async(self.delegateQueue, ^{
-                NSLog(@"bbbb");
+                //NSLog(@"bbbb");
                 if (self->_status == DSPeerStatus_Connected) completion(NO);
             });
         }
         else {
             self.mempoolCompletion = completion;
-            NSLog(@"cccc");
+            //NSLog(@"cccc");
             dispatch_async(self.delegateQueue, ^{
-                NSLog(@"dddd");
+                //NSLog(@"dddd");
                 [self performSelector:@selector(mempoolTimeout) withObject:nil afterDelay:MEMPOOL_TIMEOUT];
             });
         }
