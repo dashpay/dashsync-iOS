@@ -1052,7 +1052,7 @@
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Spork: [sporkHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_GovernanceObject: [governanceObjectHashes addObject:[NSData dataWithUInt256:hash]]; break;
-            case DSInvType_GovernanceObjectVote: [governanceObjectVoteHashes addObject:[NSData dataWithUInt256:hash]]; break;
+            case DSInvType_GovernanceObjectVote: break;//[governanceObjectVoteHashes addObject:[NSData dataWithUInt256:hash]]; break;
             case DSInvType_MasternodePing: break;//[masternodePingHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_MasternodePaymentVote: break;
             case DSInvType_MasternodeVerify: break;
