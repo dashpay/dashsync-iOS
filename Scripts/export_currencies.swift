@@ -1,5 +1,6 @@
-import UIKit
-import PlaygroundSupport
+#!/usr/bin/env xcrun --sdk macosx swift
+
+import Foundation
 
 struct BitPayRates: Codable {
     let items: [BitPayRate]
@@ -16,9 +17,11 @@ struct BitPayRate: Codable {
 
 ////////////////////////////////////////////////////////
 
+print("Working...")
+
 let bitpayRatesData = try! Data(contentsOf: URL(string: "https://bitpay.com/rates")!)
 var bitPayRates = try! JSONDecoder().decode(BitPayRates.self, from: bitpayRatesData)
-let skipBitPayCurrencies = ["BTC", "BCH"]
+let skipBitPayCurrencies = ["BTC", "BCH", "XAG", "XAU", "VEF"]
 let bitPayItems = bitPayRates.items.filter { !skipBitPayCurrencies.contains($0.code) }
 var currenciesBitPay = bitPayItems.map { $0.code }
 
@@ -37,8 +40,8 @@ for item in bitPayItems {
     currencyNamesByCode[item.code] = item.name
 }
 
-let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-let url = URL(fileURLWithPath: documentDirectory).appendingPathComponent("CurrenciesByCode.plist")
+let path = FileManager.default.currentDirectoryPath
+let url = URL(fileURLWithPath: path).appendingPathComponent("../DashSync/CurrenciesByCode.plist")
 let encoder = PropertyListEncoder()
 encoder.outputFormat = .xml
 let data = try encoder.encode(currencyNamesByCode)
