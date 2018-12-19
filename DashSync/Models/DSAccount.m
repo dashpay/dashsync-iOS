@@ -346,11 +346,16 @@
 
 - (void)updateBalance
 {
+    
     uint64_t balance = 0, prevBalance = 0, totalSent = 0, totalReceived = 0;
     NSMutableOrderedSet *utxos = [NSMutableOrderedSet orderedSet];
     NSMutableSet *spentOutputs = [NSMutableSet set], *invalidTx = [NSMutableSet set], *pendingTx = [NSMutableSet set];
     NSMutableArray *balanceHistory = [NSMutableArray array];
     uint32_t now = [NSDate timeIntervalSince1970];
+    
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        derivationPath.balance = 0;
+    }
     
     for (DSTransaction *tx in [self.transactions reverseObjectEnumerator]) {
         @autoreleasepool {
@@ -745,7 +750,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 continue;
             }
         }
-        [usedDerivationPaths addObject:@{@"derivationPath":derivationPath,@"externalIndexes":externalIndexes,@"internalIndexes":internalIndexes}];
+        if ([externalIndexes count] || [internalIndexes count]) {
+            [usedDerivationPaths addObject:@{@"derivationPath":derivationPath,@"externalIndexes":externalIndexes,@"internalIndexes":internalIndexes}];
+        }
     }
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately

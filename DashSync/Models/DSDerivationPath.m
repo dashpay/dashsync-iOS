@@ -601,6 +601,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return _stringRepresentation;
 }
 
+-(NSString*)debugDescription {
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@}",[self stringRepresentation]]];
+}
+
 // MARK: - Identifiers
 
 //Derivation paths can be stored based on the wallet and derivation or based solely on the public key
