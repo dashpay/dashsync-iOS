@@ -10,7 +10,7 @@
 #import "DSAccountChooserViewController.h"
 #import "BRBubbleView.h"
 
-#define MAX_TX_PER_BLOCK 24
+#define MAX_TX_PER_BLOCK 20
 
 @interface DSTransactionFloodingViewController ()
 

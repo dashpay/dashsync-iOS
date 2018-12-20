@@ -58,7 +58,9 @@
 #define NSLog(...)
 #endif
 
-#define MESSAGE_LOGGING 0
+#define MESSAGE_LOGGING 1
+#define MESSAGE_CONTENT_LOGGING 1
+#define MESSAGE_IN_DEPTH_TX_LOGGING 1
 
 #define HEADER_LENGTH      24 
 #define MAX_MSG_LENGTH     0x02000000
@@ -363,7 +365,16 @@
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
         if (![type isEqualToString:@"getdata"]) { //we log this somewhere else for better accuracy of what data is being got
-            NSLog(@"%@:%u sending %@", self.host, self.port, type);
+            NSLog(@"%@:%u %@sending %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",type);
+#if MESSAGE_IN_DEPTH_TX_LOGGING
+            if ([type isEqualToString:@"ix"] || [type isEqualToString:@"tx"]) {
+                DSTransaction * transactionBeingSent = [DSTransaction transactionWithMessage:message onChain:self.chain];
+                NSLog(@"%@:%u transaction %@", self.host, self.port, transactionBeingSent.longDescription);
+            }
+#endif
+#if MESSAGE_CONTENT_LOGGING
+            NSLog(@"%@:%u sending data %@", self.host, self.port, message.hexString);
+#endif
         }
 #endif
         
@@ -1217,7 +1228,7 @@
 - (void)acceptTxlvoteMessage:(NSData *)message
 {
     if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
-        [self error:@"returned transaction lock message when DML not enabled: %@", message];
+        NSLog(@"returned transaction lock message when DML not enabled: %@", message);//no error here
         return;
     }
     DSTransactionLockVote *transactionLockVote = [DSTransactionLockVote transactionLockVoteWithMessage:message onChain:self.chain];
@@ -1374,7 +1385,7 @@
         return;
     }
     
-    NSLog(@"%@:%u %@ got getdata with %u items", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer)":@"", (int)count);
+    NSLog(@"%@:%u %@got getdata for %u item%@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer)":@"", (int)count,count==1?@"":@"s");
     
     dispatch_async(self.delegateQueue, ^{
         NSMutableData *notfound = [NSMutableData data];
@@ -1395,6 +1406,7 @@
                         [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
                         break;
                     } else {
+                        NSLog(@"peer %@ requested %@transaction was not found with hash %@ reversed %@",self.host,transaction.isInstant?@"instant ":@"",[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
                         [notfound appendUInt32:type];
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;

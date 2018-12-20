@@ -377,6 +377,10 @@ static dispatch_once_t devnetToken = 0;
     }];
 }
 
+-(NSString*)debugDescription {
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@}",self.name]];
+}
+
 // MARK: - Check Type
 
 -(BOOL)isMainnet {
@@ -961,6 +965,7 @@ static dispatch_once_t devnetToken = 0;
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
     });
 }
+
 -(void)addWallet:(DSWallet*)wallet {
     [self.mWallets addObject:wallet];
 }

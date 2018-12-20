@@ -188,6 +188,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(void)unregisterWallet:(DSWallet*)wallet;
 -(void)addWallet:(DSWallet*)wallet;
 -(void)registerWallet:(DSWallet*)wallet;
+-(void)unregisterAllWallets;
 
 -(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;

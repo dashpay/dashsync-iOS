@@ -619,7 +619,20 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 {
     NSValue *hash = uint256_obj(txHash);
     DSTransaction *transaction = self.publishedTx[hash];
+    BOOL transactionIsPublished = !!transaction;
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    if (transactionIsPublished) {
+        account = [self.chain accountContainingTransaction:transaction];
+        if (!account) {
+            account = [self.chain accountForTransactionHash:txHash transaction:nil wallet:nil];
+        }
+    } else {
+        account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
+    }
+    if (!account) {
+        NSLog(@"No transaction could be found on any account for hash %@",hash);
+        return nil;
+    }
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     NSError *error = nil;
     
@@ -628,12 +641,12 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.publishedCallback removeObjectForKey:hash];
     
-    if (callback && ! [account transactionIsValid:transaction]) {
+    if (callback && ![account transactionIsValid:transaction]) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
     }
-    else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {
+    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
         [[DSTransactionEntity context] performBlock:^{
             [DSTransactionEntity saveContext]; // persist transactions to core data
         }];

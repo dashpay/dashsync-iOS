@@ -31,7 +31,7 @@
 
 @class DSChain,DSAccount,DSWallet,DSTransactionLockVote;
 
-#define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
+#define TX_FEE_PER_B         10ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input

@@ -271,6 +271,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
                     NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
                     
                     while (e.index >= a.count) [a addObject:[NSNull null]];
+                    if (![e.address isValidDashAddressOnChain:self.account.wallet.chain]) {
+                        NSLog(@"address %@ loaded but was not valid on chain %@",e.address,self.account.wallet.chain.name);
+                        continue;
+                    }
                     a[e.index] = e.address;
                     [self->_allAddresses addObject:e.address];
                     if ([e.usedInInputs count] || [e.usedInOutputs count]) {
@@ -413,6 +417,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
                 DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
                 DSAddressEntity *e = [DSAddressEntity managedObject];
                 e.derivationPath = derivationPathEntity;
+                NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
                 e.address = addr;
                 e.index = n;
                 e.internal = internal;

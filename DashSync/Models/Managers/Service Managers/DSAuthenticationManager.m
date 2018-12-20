@@ -164,25 +164,17 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     }
 }
 
--(void)setOneTimeUsesAuthentication:(BOOL)usesAuthentication {
+-(void)setOneTimeShouldUseAuthentication:(BOOL)requestingShouldUseAuthentication {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSError * error = nil;
         if (!hasKeychainData(USES_AUTHENTICATION_KEY, &error)) {
-            setKeychainInt(usesAuthentication, USES_AUTHENTICATION_KEY, NO);
+            setKeychainInt(requestingShouldUseAuthentication, USES_AUTHENTICATION_KEY, NO);
         } else {
             BOOL shouldUseAuthentication = getKeychainInt(USES_AUTHENTICATION_KEY, &error);
-            if (!shouldUseAuthentication && usesAuthentication) { //we are switching the app to use authentication in the future
+            if (!shouldUseAuthentication && requestingShouldUseAuthentication) { //we are switching the app to use authentication in the future
                 setKeychainInt(YES, USES_AUTHENTICATION_KEY, NO);
-                self.usesAuthentication = YES;
-            } else {
-                if (!error) {
-                    self.usesAuthentication = shouldUseAuthentication;
-                } else {
-                    self.usesAuthentication = TRUE; //default
-                }
             }
-            
         }
     });
 }
@@ -500,6 +492,18 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     else { //didn't have a pin yet
         [self setBrandNewPinWithCompletion:completion];
     }
+}
+
+-(void)removePin {
+    //You can only remove pin if there are no wallets
+    if ([[DSChainsManager sharedInstance] hasAWallet]) {
+        NSLog(@"Tried to remove a pin, but wallets exist on device");
+        return;
+    }
+    setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+    setKeychainData(nil, PIN_KEY, NO);
+    setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+    setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
 }
 
 // MARK: - UITextFieldDelegate
