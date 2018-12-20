@@ -31,7 +31,7 @@
 
 @class DSChain,DSAccount,DSWallet,DSTransactionLockVote;
 
-#define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
+#define TX_FEE_PER_B         10ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
@@ -64,6 +64,8 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
 
+@property (nonatomic, readonly) BOOL instantSendReceived;
+
 @property (nonatomic, assign) BOOL isInstant;
 
 @property (nonatomic, assign) UInt256 txHash;
@@ -87,6 +89,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
+@property (nonatomic, readonly) NSArray<DSTransactionLockVote*>* transactionLockVotes;
 @property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
@@ -128,5 +131,9 @@ sequence:(uint32_t)sequence;
 - (uint32_t)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights;
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex;
+
+//instant send
+
+-(void)setInstantSendReceivedWithTransactionLockVotes:(NSDictionary<NSValue*,DSTransactionLockVote*>*)transactionLockVotesDictionary;
 
 @end

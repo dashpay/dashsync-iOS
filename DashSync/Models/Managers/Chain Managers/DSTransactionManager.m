@@ -44,15 +44,23 @@
 #import "DSAuthenticationManager.h"
 #import "DSPriceManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionLockVote.h"
+#import "DSMasternodeManager+Protected.h"
+
+#define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
 @interface DSTransactionManager()
 
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
+@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary;
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
 @property (nonatomic, assign) double transactionsBloomFilterFalsePositiveRate;
+@property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
+@property (nonatomic, readonly) DSPeerManager * peerManager;
+@property (nonatomic, readonly) DSChainManager * chainManager;
 
 @end
 
@@ -71,8 +79,14 @@
     return self;
 }
 
+// MARK: - Managers
+
 -(DSPeerManager*)peerManager {
     return self.chain.chainManager.peerManager;
+}
+
+-(DSMasternodeManager*)masternodeManager {
+    return self.chain.chainManager.masternodeManager;
 }
 
 -(DSChainManager*)chainManager {
@@ -151,7 +165,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:nil];
                 }
             }];
         }
@@ -605,7 +619,20 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 {
     NSValue *hash = uint256_obj(txHash);
     DSTransaction *transaction = self.publishedTx[hash];
+    BOOL transactionIsPublished = !!transaction;
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    if (transactionIsPublished) {
+        account = [self.chain accountContainingTransaction:transaction];
+        if (!account) {
+            account = [self.chain accountForTransactionHash:txHash transaction:nil wallet:nil];
+        }
+    } else {
+        account = [self.chain accountForTransactionHash:txHash transaction:&transaction wallet:nil];
+    }
+    if (!account) {
+        NSLog(@"No transaction could be found on any account for hash %@",hash);
+        return nil;
+    }
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     NSError *error = nil;
     
@@ -614,12 +641,12 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.publishedCallback removeObjectForKey:hash];
     
-    if (callback && ! [account transactionIsValid:transaction]) {
+    if (callback && ![account transactionIsValid:transaction]) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"DashSync" code:401
                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
     }
-    else if (transaction && ! [account transactionForHash:txHash] && [account registerTransaction:transaction]) {
+    else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
         [[DSTransactionEntity context] performBlock:^{
             [DSTransactionEntity saveContext]; // persist transactions to core data
         }];
@@ -684,7 +711,6 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             if (callback) callback(nil);
-            
         });
     }
     
@@ -806,8 +832,89 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 // MARK: Instant Send
 
-- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSSet *)transactionLockVoteHashes {
+-(BOOL)checkAllLocksForTransaction:(DSTransaction*)transaction {
+    NSValue *transactionHashValue = uint256_obj(transaction.txHash);
+    if (!transaction.inputHashes || !transaction.inputHashes.count) return NO;
+    NSMutableDictionary * lockVotes = [NSMutableDictionary dictionary];
+    for (NSValue * transactionOutputValue in transaction.inputHashes) {
+        if (self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY]) {
+            BOOL lockFailed = ![self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] boolValue];
+            if (lockFailed) return NO; //sanity check
+            
+        } else {
+            return NO;
+        }
+        NSMutableDictionary * inputLockVotesDictionary = [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] mutableCopy];
+        [inputLockVotesDictionary removeObjectForKey:IX_INPUT_LOCKED_KEY];
+        
+        lockVotes[transactionOutputValue] = [NSArray arrayWithArray:inputLockVotesDictionary.allValues];
+    }
+    [transaction setInstantSendReceivedWithTransactionLockVotes:lockVotes];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter]
+         postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+    });
+    return YES;
+}
+
+-(void)checkLocksForTransactionHash:(UInt256)transactionHash forInput:(DSUTXO)transactionOutput {
+    //first check to see if transaction is known
+    DSTransaction * transaction = nil;
+    DSWallet * wallet = nil;
+    DSAccount * account = [self.chain accountForTransactionHash:transactionHash transaction:&transaction wallet:&wallet];
+    if (account && transaction) {
+        //transaction and account are known
+        NSValue *transactionHashValue = uint256_obj(transactionHash);
+        NSValue *transactionOutputValue = dsutxo_obj(transactionOutput);
+        if (self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY]) {
+            BOOL lockFailed = ![self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] boolValue];
+            if (lockFailed) return; //sanity check
+            //this input is alredy locked, let's check other inputs to see if they are locked as well
+            [self checkAllLocksForTransaction:transaction];
+            
+        } else if ([self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count] > 6) {
+            //there are over 6 votes already, check to see that the votes are coming from the right masternodes
+            int yesVotes = 0;
+            int noVotes = 0;//these might not be no votes, but they are a no for the masternode (might be an signature error)
+            for (NSObject * value in self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue]) {
+                if ([value isEqual:IX_INPUT_LOCKED_KEY]) continue;
+                DSTransactionLockVote * lockVote = self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][value];
+                DSSimplifiedMasternodeEntry * masternode = [self.masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(lockVote.masternodeProviderTransactionHash)];
+                if (!masternode) continue;
+                BOOL verified = [lockVote verifySignature];
+                if (verified) yesVotes++;
+                if (!verified) noVotes++;
+                if (yesVotes > 5) { // 6 or more
+                    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @YES;
+                    [self checkAllLocksForTransaction:transaction];
+                } else if (noVotes > 4) { // 5 or more
+                    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @NO;
+                }
+            }
+        }
+    }
+}
+
+- (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSOrderedSet *)transactionLockVoteHashes {
     
+}
+
+- (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote {
+    NSValue *transactionHashValue = uint256_obj(transactionLockVote.transactionHash);
+    DSUTXO transactionOutput = transactionLockVote.transactionOutpoint;
+    UInt256 masternodeProviderTransactionHash = transactionLockVote.masternodeProviderTransactionHash;
+    NSValue *transactionOutputValue = dsutxo_obj(transactionOutput);
+    NSValue *masternodeProviderTransactionHashValue = uint256_obj(masternodeProviderTransactionHash);
+    if (!self.transactionLockVoteDictionary[transactionHashValue]) {
+        self.transactionLockVoteDictionary[transactionHashValue] = [NSMutableDictionary dictionary];
+    }
+    if (!self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue]) {
+        self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] = [NSMutableDictionary dictionary];
+    }
+    
+    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeProviderTransactionHashValue] = transactionLockVote;
+    
+    [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }
 
 // MARK: Blocks
@@ -848,6 +955,10 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     }
     
     [self.chain addBlock:block fromPeer:peer];
+}
+
+- (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {
+    [self.peerManager peerMisbehaving:peer];
 }
 
 // MARK: Fees

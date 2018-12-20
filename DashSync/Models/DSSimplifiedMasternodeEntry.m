@@ -10,18 +10,22 @@
 #import "NSMutableData+Dash.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSBLSKey.h"
+#import "DSMutableOrderedDataKeyDictionary.h"
 
 @interface DSSimplifiedMasternodeEntry()
 
 @property(nonatomic,assign) UInt256 providerRegistrationTransactionHash;
 @property(nonatomic,assign) UInt256 confirmedHash;
+@property(nonatomic,assign) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
 @property(nonatomic,assign) UInt256 simplifiedMasternodeEntryHash;
 @property(nonatomic,assign) UInt128 address;
 @property(nonatomic,assign) uint16_t port;
-@property(nonatomic,assign) UInt384 operatorBLSPublicKey;
+@property(nonatomic,assign) UInt384 operatorPublicKey; //this is using BLS
 @property(nonatomic,assign) UInt160 keyIDVoting;
 @property(nonatomic,assign) BOOL isValid;
 @property(nonatomic,strong) DSChain * chain;
+@property(nonatomic,strong) DSBLSKey * operatorPublicBLSKey;
 
 @end
 
@@ -35,7 +39,7 @@
     [hashImportantData appendUInt128:self.address];
     [hashImportantData appendUInt16:CFSwapInt16HostToBig(self.port)];
     
-    [hashImportantData appendUInt384:self.operatorBLSPublicKey];
+    [hashImportantData appendUInt384:self.operatorPublicKey];
     [hashImportantData appendUInt160:self.keyIDVoting];
     [hashImportantData appendUInt8:self.isValid];
     return [hashImportantData copy];
@@ -60,7 +64,7 @@
     simplifiedMasternodeEntry.address = address;
     simplifiedMasternodeEntry.port = port;
     simplifiedMasternodeEntry.keyIDVoting = keyIDVoting;
-    simplifiedMasternodeEntry.operatorBLSPublicKey = operatorBLSPublicKey;
+    simplifiedMasternodeEntry.operatorPublicKey = operatorBLSPublicKey;
     simplifiedMasternodeEntry.isValid = isValid;
     simplifiedMasternodeEntry.simplifiedMasternodeEntryHash = !uint256_is_zero(simplifiedMasternodeEntryHash)?simplifiedMasternodeEntryHash:[simplifiedMasternodeEntry calculateSimplifiedMasternodeEntryHash];
     simplifiedMasternodeEntry.chain = chain;
@@ -88,7 +92,7 @@
     offset += 2;
     
     if (length - offset < 48) return nil;
-    self.operatorBLSPublicKey = [message UInt384AtOffset:offset];
+    self.operatorPublicKey = [message UInt384AtOffset:offset];
     offset += 48;
     
     if (length - offset < 20) return nil;
@@ -105,6 +109,27 @@
     return self;
 }
 
+-(void)setConfirmedHash:(UInt256)confirmedHash {
+    _confirmedHash = confirmedHash;
+    if (!uint256_is_zero(self.providerRegistrationTransactionHash)) {
+        [self updateConfirmedHashHashedWithProviderRegistrationTransactionHash];
+    }
+}
+
+-(void)setProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
+    _providerRegistrationTransactionHash = providerRegistrationTransactionHash;
+    if (!uint256_is_zero(self.confirmedHash)) {
+        [self updateConfirmedHashHashedWithProviderRegistrationTransactionHash];
+    }
+}
+
+-(void)updateConfirmedHashHashedWithProviderRegistrationTransactionHash {
+    NSMutableData * combinedData = [NSMutableData data];
+    [combinedData appendData:[NSData dataWithUInt256:self.confirmedHash].reverse];
+    [combinedData appendData:[NSData dataWithUInt256:self.providerRegistrationTransactionHash].reverse];
+    self.confirmedHashHashedWithProviderRegistrationTransactionHash = [NSData dataWithUInt256:combinedData.SHA256].reverse.UInt256;
+}
+
 +(uint32_t)payloadLength {
     return 151;
 }
@@ -116,6 +141,18 @@
 -(DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryEntity {
     DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash = %@",[NSData dataWithUInt256:self.providerRegistrationTransactionHash]];
     return simplifiedMasternodeEntryEntity;
+}
+
+-(DSBLSKey*)operatorPublicBLSKey {
+    if (!_operatorPublicBLSKey) {
+        _operatorPublicBLSKey = [DSBLSKey blsKeyWithPublicKey:self.operatorPublicKey onChain:self.chain];
+    }
+    return _operatorPublicBLSKey;
+}
+
+-(BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest {
+    DSBLSKey * operatorPublicBLSKey = [self operatorPublicBLSKey];
+    return [operatorPublicBLSKey verify:messageDigest signature:signature];
 }
 
 @end

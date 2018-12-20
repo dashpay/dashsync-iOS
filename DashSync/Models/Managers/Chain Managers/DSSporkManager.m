@@ -92,6 +92,12 @@
     return updateSignatureSpork.value <= self.chain.lastBlockHeight;
 }
 
+-(BOOL)deterministicMasternodeListEnabled {
+    DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork15DeterministicMasternodesEnabled)];
+    if (!dmlSpork) return FALSE;//assume false
+    return dmlSpork.value <= self.chain.lastBlockHeight;
+}
+
 
 
 -(NSDictionary*)sporkDictionary {

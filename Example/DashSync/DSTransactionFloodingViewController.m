@@ -10,7 +10,7 @@
 #import "DSAccountChooserViewController.h"
 #import "BRBubbleView.h"
 
-#define MAX_TX_PER_BLOCK 24
+#define MAX_TX_PER_BLOCK 20
 
 @interface DSTransactionFloodingViewController ()
 
@@ -139,7 +139,7 @@
         if (authenticationManager.didAuthenticate) {
             [self insufficientFundsForTransaction:tx forAmount:amount];
         } else {
-            [authenticationManager seedWithPrompt:@"seed" forWallet:self.fundingAccount.wallet forAmount:amount forceAuthentication:NO completion:^(NSData * _Nullable seed) {
+            [authenticationManager seedWithPrompt:@"seed" forWallet:self.fundingAccount.wallet forAmount:amount forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
                 if (seed) {
                     [self insufficientFundsForTransaction:tx forAmount:amount];
                 } else {

@@ -47,13 +47,13 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define TESTNET_DAPI_STANDARD_PORT 3000
 #define DEVNET_DAPI_STANDARD_PORT 3000
 
-#define PROTOCOL_VERSION_MAINNET   70210
+#define PROTOCOL_VERSION_MAINNET   70213
 #define MIN_PROTOCOL_VERSION_MAINNET  70209
 
-#define PROTOCOL_VERSION_TESTNET   70212
-#define MIN_PROTOCOL_VERSION_TESTNET  70212
+#define PROTOCOL_VERSION_TESTNET   70213
+#define MIN_PROTOCOL_VERSION_TESTNET  70210
 
-#define PROTOCOL_VERSION_DEVNET   70212
+#define PROTOCOL_VERSION_DEVNET   70213
 #define MIN_PROTOCOL_VERSION_DEVNET  70212
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
@@ -188,6 +188,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(void)unregisterWallet:(DSWallet*)wallet;
 -(void)addWallet:(DSWallet*)wallet;
 -(void)registerWallet:(DSWallet*)wallet;
+-(void)unregisterAllWallets;
 
 -(void)unregisterStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;

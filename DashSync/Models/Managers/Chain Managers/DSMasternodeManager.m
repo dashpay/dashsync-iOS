@@ -37,6 +37,7 @@
 #import "DSMerkleBlock.h"
 #import "DSChainManager+Protected.h"
 #import "DSPeerManager+Protected.h"
+#import "DSMutableOrderedDataKeyDictionary.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -81,7 +82,7 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
-@property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeList;
+@property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeListDictionaryByRegistrationTransactionHash;
 
 @end
 
@@ -91,7 +92,7 @@ inline static int ceil_log2(int x)
 {
     if (! (self = [super init])) return nil;
     _chain = chain;
-    _simplifiedMasternodeList = [NSMutableDictionary dictionary];
+    _simplifiedMasternodeListDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     return self;
 }
@@ -107,7 +108,7 @@ inline static int ceil_log2(int x)
 }
 
 -(void)wipeMasternodeInfo {
-    [self.simplifiedMasternodeList removeAllObjects];
+    [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash removeAllObjects];
     self.baseBlockHash = UINT256_ZERO;
 }
 
@@ -117,38 +118,38 @@ inline static int ceil_log2(int x)
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity]];
     NSArray * simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity fetchObjects:fetchRequest];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in simplifiedMasternodeEntryEntities) {
-        [self.simplifiedMasternodeList setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
+        [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
     }
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
-- (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch :(NSData*)simplifiedMasternodeListHashes :(NSData*)flags
+- (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch :(NSData*)simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes :(NSData*)flags
 {
-    if ((*flagIdx)/8 >= flags.length || (*hashIdx + 1)*sizeof(UInt256) > simplifiedMasternodeListHashes.length) return leaf(nil, NO);
+    if ((*flagIdx)/8 >= flags.length || (*hashIdx + 1)*sizeof(UInt256) > simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes.length) return leaf(nil, NO);
     
     BOOL flag = (((const uint8_t *)flags.bytes)[*flagIdx/8] & (1 << (*flagIdx % 8)));
     
     (*flagIdx)++;
     
-    if (! flag || depth == ceil_log2((int)_simplifiedMasternodeList.count)) {
-        UInt256 hash = [simplifiedMasternodeListHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
+    if (! flag || depth == ceil_log2((int)_simplifiedMasternodeListDictionaryByRegistrationTransactionHash.count)) {
+        UInt256 hash = [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
         
         (*hashIdx)++;
         return leaf(uint256_obj(hash), flag);
     }
     
-    id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
-    id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListHashes :flags];
+    id left = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes :flags];
+    id right = [self _walk:hashIdx :flagIdx :depth + 1 :leaf :branch :simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes :flags];
     
     return branch(left, right);
 }
 
 
 //-(void)verify {
-//    NSMutableData * simplifiedMasternodeListHashes = [NSMutableData data];
-//    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in self.simplifiedMasternodeList) {
-//        [simplifiedMasternodeListHashes appendUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
+//    NSMutableData * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableData data];
+//    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash) {
+//        [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes appendUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
 //    }
 //    NSMutableData *d = [NSMutableData data];
 //    UInt256 merkleRoot, t = UINT256_ZERO;
@@ -165,7 +166,7 @@ inline static int ceil_log2(int x)
 //        [d appendBytes:&l length:sizeof(l)];
 //        [d appendBytes:&r length:sizeof(r)];
 //        return uint256_obj(d.SHA256_2);
-//    } :simplifiedMasternodeListHashes :flags];
+//    } :simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes :flags];
 //
 //    [root getValue:&merkleRoot];
 //}
@@ -245,15 +246,15 @@ inline static int ceil_log2(int x)
     }
     
     NSMutableDictionary * addedMasternodes = [addedOrModifiedMasternodes mutableCopy];
-    [addedMasternodes removeObjectsForKeys:self.simplifiedMasternodeList.allKeys];
+    [addedMasternodes removeObjectsForKeys:self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash.allKeys];
     NSMutableSet * modifiedMasternodeKeys = [NSMutableSet setWithArray:[addedOrModifiedMasternodes allKeys]];
-    [modifiedMasternodeKeys intersectSet:[NSSet setWithArray:self.simplifiedMasternodeList.allKeys]];
+    [modifiedMasternodeKeys intersectSet:[NSSet setWithArray:self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash.allKeys]];
     NSMutableDictionary * modifiedMasternodes = [NSMutableDictionary dictionary];
     for (NSData * data in modifiedMasternodeKeys) {
-        [modifiedMasternodes setObject:self.simplifiedMasternodeList[data] forKey:data];
+        [modifiedMasternodes setObject:self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash[data] forKey:data];
     }
     
-    NSMutableDictionary * tentativeMasternodeList = [self.simplifiedMasternodeList mutableCopy];
+    NSMutableDictionary * tentativeMasternodeList = [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash mutableCopy];
     
     [tentativeMasternodeList removeObjectsForKeys:deletedMasternodeHashes];
     [tentativeMasternodeList addEntriesFromDictionary:addedOrModifiedMasternodes];
@@ -265,13 +266,13 @@ inline static int ceil_log2(int x)
         return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
     }];
     
-    NSMutableArray * simplifiedMasternodeListHashes = [NSMutableArray array];
+    NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
     for (NSData * proTxHash in proTxHashes) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [tentativeMasternodeList objectForKey:proTxHash];
-        [simplifiedMasternodeListHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+        [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
     }
     
-    UInt256 merkleRootMNList = [[NSData merkleRootFromHashes:simplifiedMasternodeListHashes] UInt256];
+    UInt256 merkleRootMNList = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
     
     BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRootMNList);
     
@@ -299,7 +300,7 @@ inline static int ceil_log2(int x)
     if (foundCoinbase && validCoinbase && rootMNListValid) {
         //yay this is the correct masternode list verified deterministically
         self.baseBlockHash = blockHash;
-        self.simplifiedMasternodeList = tentativeMasternodeList;
+        self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash = tentativeMasternodeList;
         [self.managedObjectContext performBlockAndWait:^{
             [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
             [DSChainEntity setContext:self.managedObjectContext];
@@ -334,11 +335,11 @@ inline static int ceil_log2(int x)
 }
 
 -(NSUInteger)simplifiedMasternodeEntryCount {
-    return [self.simplifiedMasternodeList count];
+    return [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash count];
 }
 
 -(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
-    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in [self.simplifiedMasternodeList allValues]) {
+    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash allValues]) {
         if (uint128_eq(simplifiedMasternodeEntry.address, IPAddress) && simplifiedMasternodeEntry.port == port) {
             return simplifiedMasternodeEntry;
         }
@@ -347,7 +348,7 @@ inline static int ceil_log2(int x)
 }
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash {
-    return [self.simplifiedMasternodeList objectForKey:providerRegistrationTransactionHash];
+    return [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash objectForKey:providerRegistrationTransactionHash];
 }
 
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port {
@@ -357,6 +358,37 @@ inline static int ceil_log2(int x)
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self simplifiedMasternodeEntryForLocation:IPAddress port:port];
         return (!!simplifiedMasternodeEntry);
     }
+}
+
+-(DSMutableOrderedDataKeyDictionary*)calculateScores:(UInt256)modifier {
+    NSMutableDictionary <NSData*,id>* scores = [NSMutableDictionary dictionary];
+    
+    for (NSData * registrationTransactionHash in self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash[registrationTransactionHash];
+        if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
+            continue;
+        }
+        NSMutableData * data = [NSMutableData data];
+        [data appendData:[NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHashHashedWithProviderRegistrationTransactionHash].reverse];
+        [data appendData:[NSData dataWithUInt256:modifier].reverse];
+        UInt256 score = data.SHA256;
+        scores[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
+    }
+    DSMutableOrderedDataKeyDictionary * rankedScores = [[DSMutableOrderedDataKeyDictionary alloc] initWithMutableDictionary:scores keyAscending:YES];
+    [rankedScores addIndex:@"providerRegistrationTransactionHash"];
+    return rankedScores;
+}
+
+-(NSUInteger)masternodeRank:(UInt256)providerRegistrationTransactionHash quorumHash:(UInt256)quorumHash {
+    return 0;
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash {
+    return nil;
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {
+    return [self masternodesForQuorumHash:quorumHash quorumCount:quorumCount forBlockHash:self.baseBlockHash];
 }
 
 @end

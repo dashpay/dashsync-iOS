@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 
 #import "BigIntTypes.h"
+#import "DSChain.h"
 
 CF_IMPLICIT_BRIDGING_ENABLED
 
@@ -57,6 +58,7 @@ CF_IMPLICIT_BRIDGING_DISABLED
 - (void)appendUInt384:(UInt384)i;
 - (void)appendUInt512:(UInt512)i;
 - (void)appendUInt768:(UInt768)i;
+- (void)appendUTXO:(DSUTXO)utxo;
 - (void)appendVarInt:(uint64_t)i;
 - (void)appendString:(NSString *)s;
 

@@ -101,10 +101,12 @@ typedef union _UInt128 {
 #define uint160_is_zero(u) (((u).u32[0] | (u).u32[1] | (u).u32[2] | (u).u32[3] | (u).u32[4]) == 0)
 #define uint128_is_zero(u) (((u).u64[0] | (u).u64[1]) == 0)
 
+#define uint768_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt768)])
 #define uint512_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt512)])
 #define uint256_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt256)])
 #define uint160_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt160)])
 #define uint128_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt128)])
+
 
 #define uint160_data(u) [NSData dataWithUInt160:u]
 #define uint256_data(u) [NSData dataWithUInt256:u]

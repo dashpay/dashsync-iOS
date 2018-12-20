@@ -83,6 +83,17 @@
     return [[DSBLSKey alloc] initWithExtendedPrivateKeyFromSeed:seed onChain:chain];
 }
 
++ (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain {
+    return [[DSBLSKey alloc] initWithPublicKey:publicKey onChain:chain];
+}
+- (nullable instancetype)initWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain {
+    if (!(self = [super init])) return nil;
+    self.publicKey = publicKey;
+    self.chain = chain;
+    
+    return self;
+}
+
 - (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     
@@ -198,6 +209,18 @@
     }
 }
 
+-(bls::PublicKey)blsPublicKey {
+    if (!uint384_is_zero(self.publicKey)) {
+        bls::PublicKey blsPublicKey = bls::PublicKey::FromBytes(self.publicKey.u8);
+        
+        return blsPublicKey;
+    } else {
+        bls::PrivateKey blsPrivateKey = [self blsPrivateKey];
+        bls::PublicKey blsPublicKey = blsPrivateKey.GetPublicKey();
+        return blsPublicKey;
+    }
+}
+
 // MARK: - Signing
 
 - (UInt768)signData:(NSData *)data {
@@ -216,6 +239,15 @@
     UInt768 signature = UINT768_ZERO;
     blsSignature.Serialize(signature.u8);
     return signature;
+}
+
+// MARK: - Verification
+
+- (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature {
+    bls::PublicKey blsPublicKey = [self blsPublicKey];
+    bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash(blsPublicKey, messageDigest.u8);
+    bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
+    return blsSignature.Verify();
 }
 
 // MARK: - Signature Aggregation
