@@ -820,7 +820,7 @@
 - (void)acceptMessage:(NSData *)message type:(NSString *)type
 {
 #if MESSAGE_LOGGING
-    if (![type isEqualToString:MSG_INV] && ![type isEqualToString:MSG_GOVOBJVOTE]) {
+    if (![type isEqualToString:MSG_INV] && ![type isEqualToString:MSG_GOVOBJVOTE] && ![type isEqualToString:MSG_MERKLEBLOCK]) {
         NSLog(@"%@:%u accept message %@", self.host, self.port, type);
     }
 #endif

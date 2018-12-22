@@ -504,6 +504,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     setKeychainData(nil, PIN_KEY, NO);
     setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
     setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+    self.didAuthenticate = NO;
+    self.usesAuthentication = NO;
 }
 
 // MARK: - UITextFieldDelegate
