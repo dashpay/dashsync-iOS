@@ -21,19 +21,19 @@
 "\n\n     amount %@ (%@)" = "\n\n       importo %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\ntassa di rete +%1$@ (%2$@)";
+"\nnetwork fee +%@ (%@)" = "\ncommissione di rete +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nriprova in %1$d %2$@";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Sei sicuro di voler registrare il nome utente%1$@ su spendere %2$@ e crediti?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+"Are you sure you would like to reset this user?" = "Sei sicuro di voler resettare questo utente?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Sei sicuro di voler ricaricare %1$@ su spese %2$@ e crediti?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "password errata, riprova";
@@ -51,13 +51,10 @@
 "choose passcode for %@" = "scegli codice di accesso per %@";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "Conferma";
 
 /* No comment provided by engineer. */
 "connect timeout" = "connessione interrotta";
-
-/* No comment provided by engineer. */
-"couldn't make payment" = "couldn't make payment";
 
 /* No comment provided by engineer. */
 "dash transaction not signed" = "transazione dash non firmata";
@@ -72,9 +69,6 @@
 "enter old passcode" = "immetti il vecchio codice";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "error signing dash transaction";
-
-/* No comment provided by engineer. */
 "error signing transaction" = "errore firma della transazione";
 
 /* No comment provided by engineer. */
@@ -82,12 +76,6 @@
 
 /* No comment provided by engineer. */
 "hours" = "ore";
-
-/* No comment provided by engineer. */
-"insufficient funds" = "insufficient funds";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
@@ -102,7 +90,7 @@
 "missing certificate" = "certificato mancante";
 
 /* No comment provided by engineer. */
-"no peers found" = "nessun pari trovato";
+"no peers found" = "nessun \"peers\" trovato";
 
 /* No comment provided by engineer. */
 "not a valid private key" = "non una chiave privata valida";
@@ -114,10 +102,10 @@
 "ok" = "ok";
 
 /* No comment provided by engineer. */
-"passcode" = "codice accesso";
+"passcode" = "codice di accesso";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "codice accesso per %@";
+"passcode for %@" = "codice di accesso per %@";
 
 /* No comment provided by engineer. */
 "password" = "password";
@@ -126,19 +114,16 @@
 "password protected key" = "chiave protetta da password";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
+"recovery phrase" = "frase di recupero";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "la frase di recupero non coincide";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "request expired" = "richiesta scaduta";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+"requested network \"%@\" not currently in use" = "rete richiesta \"%@\" non attualmente in uso";
 
 /* No comment provided by engineer. */
 "rescan" = "riscansiona";
@@ -162,7 +147,7 @@
 "this private key is empty" = "questa chiave privata è vuota";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "transazione cancellata, rete sospesa";
+"transaction canceled, network timeout" = "transazione cancellata, per \"timeout\" della rete";
 
 /* No comment provided by engineer. */
 "transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "i costi di transazione costerebbero più dei fondi disponibili su questa chiave privata (a causa dei micro depositi \"dust\")";
@@ -189,4 +174,4 @@
 "wallet disabled" = "portafoglio disabilitato";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe essere non sincronizzato.\nDi solito si rimedia riscansionando la catena di blocchi.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Il tuo portafoglio potrebbe  non essere sincronizzato.\nDi solito si risolve  ri-scansionando la catena di blocchi.";

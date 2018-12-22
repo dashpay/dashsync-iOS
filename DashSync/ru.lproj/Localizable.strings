@@ -27,13 +27,13 @@
 "\ntry again in %d %@" = "\nПопробуйте ещё раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Вы уверены, что хотите зарегистрировать имя пользователя %1$@ и потратить %2$@ на кредиты?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+"Are you sure you would like to reset this user?" = "Вы уверены, что хотите сбросить это имя пользователя?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Вы уверены, что хотите пополнить кошелёк на %1$@ и потратить %2$@ на кредиты?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "Некорректный пароль, попробуйте ещё раз";
@@ -51,28 +51,22 @@
 "choose passcode for %@" = "Придумайте код доступа для %@";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "Подтвердить";
 
 /* No comment provided by engineer. */
 "connect timeout" = "Время ожидания подключения";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "couldn't make payment";
-
-/* No comment provided by engineer. */
 "dash transaction not signed" = "Транзакция не подписана";
 
 /* No comment provided by engineer. */
-"Devnet" = "Devnet";
+"Devnet" = "Сеть разработки";
 
 /* No comment provided by engineer. */
 "double spend" = "Двойное расходование";
 
 /* No comment provided by engineer. */
 "enter old passcode" = "Введите старый пароль";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "error signing dash transaction";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "Ошибка подписания транзакции";
@@ -84,16 +78,10 @@
 "hours" = "часов";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "insufficient funds";
+"Mainnet" = "Основная сеть";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
-
-/* No comment provided by engineer. */
-"Mainnet" = "Mainnet";
-
-/* No comment provided by engineer. */
-"minute" = "минут";
+"minute" = "минута";
 
 /* No comment provided by engineer. */
 "minutes" = "минуты";
@@ -126,19 +114,16 @@
 "password protected key" = "Защищённый паролем ключ";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
+"recovery phrase" = "Фраза восстановления";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "Фраза восстановления не подходит";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
+"request expired" = "Срок действия запроса истёк";
 
 /* No comment provided by engineer. */
-"request expired" = "Срок действия запроса истек";
-
-/* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+"requested network \"%@\" not currently in use" = "запрашиваемая сеть \"%@\" в настоящее время не используется";
 
 /* No comment provided by engineer. */
 "rescan" = "Повторное сканирование";
@@ -153,7 +138,7 @@
 "seconds" = "секунды";
 
 /* No comment provided by engineer. */
-"Testnet" = "Testnet";
+"Testnet" = "Тестовая сеть";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "Этот закрытый ключ уже находится в вашем кошельке";
@@ -189,4 +174,4 @@
 "wallet disabled" = "Кошелёк отключен";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелек рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелёк рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";

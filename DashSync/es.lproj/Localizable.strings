@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-" and " = " y ";
+" and " = " y";
 
 /* No comment provided by engineer. */
 ", " = ", ";
@@ -27,13 +27,13 @@
 "\ntry again in %d %@" = "\ninténtalo de nuevo %1$d %2$@";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "¿Estás seguro de que quieres registrar tu nombre de usuario %1$@ y gastar %2$@ en créditos?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+"Are you sure you would like to reset this user?" = "¿Estás seguro de que quieres restablecer este usuario?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "¿Estás seguro de que quieres recargar %1$@ y gastar %2$@ en créditos?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "contraseña incorrecta, inténtalo de nuevo";
@@ -51,28 +51,22 @@
 "choose passcode for %@" = "seleccionar código de acceso para %@";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"confirm" = "confirmar";
 
 /* No comment provided by engineer. */
 "connect timeout" = "tiempo de conexión excedido";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "couldn't make payment";
-
-/* No comment provided by engineer. */
 "dash transaction not signed" = "transacción de dash no firmada";
 
 /* No comment provided by engineer. */
-"Devnet" = "Devnet";
+"Devnet" = "Red derivada";
 
 /* No comment provided by engineer. */
 "double spend" = "gasto duplicado";
 
 /* No comment provided by engineer. */
 "enter old passcode" = "introduce el Código de acceso antiguo";
-
-/* No comment provided by engineer. */
-"error signing dash transaction" = "error signing dash transaction";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "error en la firma de transacción";
@@ -84,13 +78,7 @@
 "hours" = "horas";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "insufficient funds";
-
-/* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
-
-/* No comment provided by engineer. */
-"Mainnet" = "Mainnet";
+"Mainnet" = "Red principal";
 
 /* No comment provided by engineer. */
 "minute" = "minuto";
@@ -126,19 +114,16 @@
 "password protected key" = "clave protegida por contraseña";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
+"recovery phrase" = "frase de recuperación";
 
 /* No comment provided by engineer. */
 "recovery phrase doesn't match" = "la frase de recuperación no coincide";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
-
-/* No comment provided by engineer. */
 "request expired" = "solicitud expirada";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+"requested network \"%@\" not currently in use" = "red de trabajo solicitada \"%@\" actualmente no está en uso";
 
 /* No comment provided by engineer. */
 "rescan" = "escanear de nuevo";
@@ -153,7 +138,7 @@
 "seconds" = "segundos";
 
 /* No comment provided by engineer. */
-"Testnet" = "Testnet";
+"Testnet" = "red de prueba";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "esta clave privada ya está en su cartera";
