@@ -119,7 +119,7 @@
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion
 {
-    NSLog(@"[DSTransactionManager] publish transaction %@", transaction);
+    NSLog(@"[DSTransactionManager] publish transaction %@ %@", transaction,transaction.toData);
     if ([transaction transactionTypeRequiresInputs] && !transaction.isSigned) {
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];

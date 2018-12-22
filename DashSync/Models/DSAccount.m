@@ -56,6 +56,8 @@
 #import "NSDate+Utils.h"
 #import "DSBIP39Mnemonic.h"
 
+#define LOG_BALANCE_UPDATE 0
+
 #define AUTH_SWEEP_KEY @"AUTH_SWEEP_KEY"
 #define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
 
@@ -176,13 +178,23 @@
             DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:self.accountNumber];
             for (DSTxOutputEntity *e in accountEntity.transactionOutputs) {
                 @autoreleasepool {
-                    
                     DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                     NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
                     
                     if (! transaction || self.allTx[hash] != nil) continue;
                     self.allTx[hash] = transaction;
                     [self.transactions addObject:transaction];
+                
+                DSTxInputEntity * spentInInput = e.spentInInput;
+                if (spentInInput) { //this has been spent, also add the transaction where it is being spent
+                    
+                    DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
+                    NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
+                    
+                    if (! transaction || self.allTx[hash] != nil) continue;
+                    self.allTx[hash] = transaction;
+                    [self.transactions addObject:transaction];
+                }
                 }
             }
         }
@@ -358,6 +370,9 @@
     }
     
     for (DSTransaction *tx in [self.transactions reverseObjectEnumerator]) {
+#if LOG_BALANCE_UPDATE
+        NSLog(@"updating balance after transaction %@",[NSData dataWithUInt256:tx.txHash].reverse.hexString);
+#endif
         @autoreleasepool {
             NSMutableSet *spent = [NSMutableSet set];
             NSSet *inputs;
@@ -456,6 +471,20 @@
             if (balance < prevBalance) totalSent += prevBalance - balance;
             [balanceHistory insertObject:@(balance) atIndex:0];
             prevBalance = balance;
+#if LOG_BALANCE_UPDATE
+            NSLog(@"===UTXOS===");
+            for (NSValue * utxo in utxos) {
+                DSUTXO o;
+                [utxo getValue:&o];
+                NSLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
+            }
+            NSLog(@"===Spent Outputs===");
+            for (NSValue * utxo in spentOutputs) {
+                DSUTXO o;
+                [utxo getValue:&o];
+                NSLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
+            }
+#endif
         }
     }
     
