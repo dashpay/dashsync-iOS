@@ -20,12 +20,12 @@
 #import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSDynamicOptions.h"
-#import "DSHTTPGETOperation.h"
+#import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitPayResponseOperation.h"
+#import "DSParseDashCasaResponseOperation.h"
 #import "DSParseDashCentralResponseOperation.h"
 #import "DSParsePoloniexResponseOperation.h"
-#import "DSParseDashCasaResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:BITPAY_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:10.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParseBitPayResponseOperation *parseOperation = [[DSParseBitPayResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseBitPayOperation = parseOperation;
@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:POLONIEX_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParsePoloniexResponseOperation *parseOperation = [[DSParsePoloniexResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parsePoloniexOperation = parseOperation;
@@ -133,7 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCENTRAL_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParseDashCentralResponseOperation *parseOperation = [[DSParseDashCentralResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashcentralOperation = parseOperation;
@@ -144,7 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCASA_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParseDashCasaResponseOperation *parseOperation = [[DSParseDashCasaResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashCasaOperation = parseOperation;

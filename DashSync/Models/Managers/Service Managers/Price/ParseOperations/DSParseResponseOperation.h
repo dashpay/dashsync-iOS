@@ -15,8 +15,9 @@
 //  limitations under the License.
 //
 
-#import "DSOperation.h"
 #import "DSChainableOperationProtocol.h"
+#import "DSOperation.h"
+#import "DSHTTPOperationResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,11 +28,11 @@ typedef NS_ENUM(NSUInteger, DSParseResponseOperationErrorCode) {
 };
 
 /**
- Abstract chainable operation, follows `DSHTTPGETOperation`
+ Abstract chainable operation, follows `DSHTTPOperation`
  */
 @interface DSParseResponseOperation : DSOperation <DSChainableOperationProtocol>
 
-@property (readonly, strong, nonatomic, nullable) id responseToParse;
+@property (readonly, strong, nonatomic) DSHTTPOperationResult *httpOperationResult;
 
 + (NSError *)invalidResponseErrorWithUserInfo:(nullable NSDictionary<NSErrorUserInfoKey, id> *)userInfo;
 

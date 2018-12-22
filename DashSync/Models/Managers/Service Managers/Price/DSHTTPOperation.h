@@ -15,19 +15,23 @@
 //  limitations under the License.
 //
 
-#import "DSOperation.h"
 #import "DSChainableOperationProtocol.h"
+#import "DSOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const DSHTTPGETOperationErrorDomain;
+extern NSString *const DSHTTPOperationErrorDomain;
 
+
+@class DSHTTPOperationResult;
 
 /**
  Chainable operation, always first in the chain
  Has side-effect of updating secure time in `DSAuthenticationManager`
  */
-@interface DSHTTPGETOperation : DSOperation <DSChainableOperationProtocol>
+@interface DSHTTPOperation : DSOperation <DSChainableOperationProtocol>
+
+@property (readonly, nullable, strong, nonatomic) DSHTTPOperationResult *result;
 
 - (instancetype)initWithRequest:(NSURLRequest *)request;
 
