@@ -1246,7 +1246,7 @@
         [self.transactionDelegate peer:self relayedTransactionLockVote:transactionLockVote];;
     });
     
-    NSLog(@"%@:%u got txlvote %@", self.host, self.port, uint256_obj(transactionLockVote.transactionHash));
+    NSLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
     
 }
 

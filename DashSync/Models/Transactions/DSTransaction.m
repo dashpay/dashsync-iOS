@@ -664,4 +664,13 @@
     self.transactionLockVotesDictionary = transactionLockVotes;
 }
 
+-(NSArray*)transactionLockVotes {
+    NSMutableArray * array = [NSMutableArray array];
+    for (NSValue * key in self.transactionLockVotesDictionary) {
+        NSArray * votesForInput = self.transactionLockVotesDictionary[key];
+        [array addObjectsFromArray:votesForInput];
+    }
+    return array;
+}
+
 @end

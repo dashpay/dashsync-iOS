@@ -69,7 +69,7 @@
 
 -(DSSimplifiedMasternodeEntry*)masternode {
     DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
-    return [masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(self.masternodeProviderTransactionHash)];
+    return [masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(self.masternodeProviderTransactionHash).reverse];
 }
 
 //transaction hash (32)

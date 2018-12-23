@@ -89,6 +89,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
+@property (nonatomic, readonly) NSDictionary<NSValue*,DSTransactionLockVote*>* transactionLockVotesDictionary;
 @property (nonatomic, readonly) NSArray<DSTransactionLockVote*>* transactionLockVotes;
 @property (nonatomic, readonly) Class entityClass;
 
@@ -96,8 +97,6 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, strong) NSMutableArray *hashes, *indexes, *inScripts, *signatures, *sequences;
 @property (nonatomic, strong) NSMutableArray *amounts, *addresses, *outScripts;
-
-@property (nonatomic, strong) NSSet <DSTransactionLockVote*> *lockVotes;
 
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain*)chain;
 + (instancetype)devnetGenesisCoinbaseWithIdentifier:(NSString*)identifier forChain:(DSChain *)chain;
