@@ -1005,7 +1005,16 @@
             return @"GovernanceObjectVote";
         case DSInvType_MasternodeVerify:
             return @"MasternodeVerify";
-            
+        case DSInvType_Error:
+            return @"Error";
+        case DSInvType_CompactBlock:
+            return @"CompactBlock";
+        case DSInvType_DummyCommitment:
+            return @"DummyCommitment";
+        case DSInvType_DummyContribution:
+            return @"DummyContribution";
+        case DSInvType_QuorumFinalCommitment:
+            return @"QuorumFinalCommitment";
         default:
             return @"";
     }
