@@ -275,6 +275,12 @@
                     [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:uniqueID];
                 }
             }
+        } else {
+            for (DSAccount * account in accounts) {
+                for (DSDerivationPath * derivationPath in account.derivationPaths) {
+                    [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
+                }
+            }
         }
     }
     return uniqueID;
