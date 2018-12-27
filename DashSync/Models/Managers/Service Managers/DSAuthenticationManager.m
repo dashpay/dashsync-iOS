@@ -409,6 +409,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             [context.pinField resignFirstResponder];
             [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
+                context.pinAlertController = nil;
                 if (completion) completion(YES);
             }];
             return TRUE;
@@ -671,6 +672,7 @@ replacementString:(NSString *)string
                                         DISPLAY_NAME] message:authprompt alertIfLockout:alertIfLockout completion:^(BOOL authenticated, BOOL cancelled) {
             if (authenticated) {
                 [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
+                    self.pinAlertController = nil;
                     completion(YES,NO);
                 }];
             } else {
@@ -834,6 +836,7 @@ replacementString:(NSString *)string
                                    actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
+                                       self.pinAlertController = nil;
                                        completion(NO,YES);
                                    }];
     [self.pinAlertController addAction:cancelButton];
@@ -850,7 +853,11 @@ replacementString:(NSString *)string
         
         if (error) {
             completion(NO,NO); // error reading failCount from keychain
-            [alert dismissViewControllerAnimated:TRUE completion:nil];
+            [alert dismissViewControllerAnimated:TRUE completion:^{
+                if (weakSelf.pinAlertController == alert) {
+                    weakSelf.pinAlertController = nil;
+                }
+            }];
             return FALSE;
         }
         
@@ -858,7 +865,11 @@ replacementString:(NSString *)string
         
         if (error) {
             completion(NO,NO); // error reading pin from keychain
-            [alert dismissViewControllerAnimated:TRUE completion:nil];
+            [alert dismissViewControllerAnimated:TRUE completion:^{
+                if (weakSelf.pinAlertController == alert) {
+                    weakSelf.pinAlertController = nil;
+                }
+            }];
             return FALSE;
         }
         // count unique attempts before checking success
