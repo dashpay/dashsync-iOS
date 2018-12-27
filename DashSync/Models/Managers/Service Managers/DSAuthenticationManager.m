@@ -404,6 +404,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
             context.pinField.text = nil;
             setKeychainString(previousPin, PIN_KEY, NO);
             context.usesAuthentication = TRUE;
+            context.didAuthenticate = TRUE;
             [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             [context.pinField resignFirstResponder];
