@@ -165,6 +165,7 @@
 }
 
 -(void)loadTransactions {
+    if (_wallet.isTransient) return;
     [self.moc performBlockAndWait:^{
         [DSTransactionEntity setContext:self.moc];
         [DSAccountEntity setContext:self.moc];
@@ -243,8 +244,10 @@
 }
 
 - (void)loadDerivationPaths {
+    if (!_wallet.isTransient) {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         [derivationPath loadAddresses];
+    }
     }
     if (!self.isViewOnlyAccount) {
         if (self.bip44DerivationPath) {
