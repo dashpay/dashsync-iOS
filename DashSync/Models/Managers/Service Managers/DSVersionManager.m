@@ -104,7 +104,7 @@
                 }
                 BOOL failed = NO;
                 
-                DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:[self compatibleSeedCreationTime] forChain:chain storeSeedPhrase:YES];
+                DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:[self compatibleSeedCreationTime] forChain:chain storeSeedPhrase:YES isTransient:NO];
                 NSParameterAssert(wallet);
                 if (!wallet) {
                     failed = YES;
