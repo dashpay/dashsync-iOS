@@ -39,9 +39,17 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    if (![response.allKeys.firstObject isKindOfClass:NSString.class] ||
-        ![response.allValues.firstObject isKindOfClass:NSNumber.class]) {
-
+    BOOL responseIsValid = YES;
+    for (id key in response) {
+        id value = response[key];
+        
+        responseIsValid = [key isKindOfClass:NSString.class] && [value isKindOfClass:NSNumber.class];
+        if (!responseIsValid) {
+            break;
+        }
+    }
+    
+    if (!responseIsValid) {
         [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
 
         return;
