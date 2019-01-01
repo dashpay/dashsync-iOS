@@ -121,7 +121,7 @@
         return nil;
     }
     else {
-        NSLog(@"Unknown script type");
+        DSDLog(@"Unknown script type");
         return nil; // unknown script type
     }
     

@@ -281,7 +281,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 - (NSData *)sign:(UInt256)md
 {
     if (uint256_is_zero(_seckey)) {
-        NSLog(@"%s: can't sign with a public key", __func__);
+        DSDLog(@"%s: can't sign with a public key", __func__);
         return nil;
     }
 
@@ -318,7 +318,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 - (NSData *)compactSign:(UInt256)md
 {
     if (uint256_is_zero(_seckey)) {
-        NSLog(@"%s: can't sign with a public key", __func__);
+        DSDLog(@"%s: can't sign with a public key", __func__);
         return nil;
     }
     

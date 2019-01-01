@@ -65,7 +65,7 @@
     self.blockchainUserRegistrationTransactionVersion = version;
     self.username = username;
     self.pubkeyHash = pubkeyHash;
-    NSLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
+    DSDLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
     return self;
 }
 
@@ -80,7 +80,7 @@
     self.blockchainUserRegistrationTransactionVersion = version;
     self.username = username;
     self.pubkeyHash = pubkeyHash;
-    NSLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
+    DSDLog(@"Creating blockchain user with pubkeyHash %@",uint160_data(pubkeyHash));
     return self;
 }
 
@@ -94,7 +94,7 @@
 }
 
 -(void)signPayloadWithKey:(DSKey*)privateKey {
-    NSLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }
 

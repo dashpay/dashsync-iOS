@@ -443,12 +443,12 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
                 _errorMessage = DSLocalizedString(@"unsupported signature type", nil);
-                NSLog(@"%@", _errorMessage);
+                DSDLog(@"%@", _errorMessage);
             }
             else {
                 _errorMessage = [NSError errorWithDomain:NSOSStatusErrorDomain code:status
                                  userInfo:nil].localizedDescription;
-                NSLog(@"SecKeyRawVerify error: %@", _errorMessage);
+                DSDLog(@"SecKeyRawVerify error: %@", _errorMessage);
             }
             
             r = NO;

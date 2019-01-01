@@ -272,7 +272,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
                     
                     while (e.index >= a.count) [a addObject:[NSNull null]];
                     if (![e.address isValidDashAddressOnChain:self.account.wallet.chain]) {
-                        NSLog(@"address %@ loaded but was not valid on chain %@",e.address,self.account.wallet.chain.name);
+                        DSDLog(@"address %@ loaded but was not valid on chain %@",e.address,self.account.wallet.chain.name);
                         continue;
                     }
                     a[e.index] = e.address;
@@ -408,7 +408,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
             NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
             if (! addr) {
-                NSLog(@"error generating keys");
+                DSDLog(@"error generating keys");
                 return nil;
             }
             

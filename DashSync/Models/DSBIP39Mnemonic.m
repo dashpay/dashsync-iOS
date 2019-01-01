@@ -118,7 +118,7 @@
 
     if ((a.count % 3) != 0 || a.count > 24) {
         #if DEBUG
-        NSLog(@"phrase has wrong number of words");
+        DSDLog(@"phrase has wrong number of words");
         #endif
         return nil;
     }
@@ -129,7 +129,7 @@
 
         if (x == (uint32_t)NSNotFound || y == (uint32_t)NSNotFound) {
 #if DEBUG
-            NSLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)]);
+            DSDLog(@"phrase contained unknown word: %@", a[i*8/11 + (x == (uint32_t)NSNotFound ? 0 : 1)]);
 #endif
             return nil;
         }
@@ -142,7 +142,7 @@
     d.length = a.count*4/3;
 
     if (b != (d.SHA256.u8[0] >> (8 - a.count/3))) {
-        NSLog(@"incorrect phrase, bad checksum");
+        DSDLog(@"incorrect phrase, bad checksum");
         return nil;
     }
 

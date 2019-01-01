@@ -485,12 +485,12 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:FEE_PER_KB_URL]
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:10.0];
     
-    //    NSLog(@"%@", req.URL.absoluteString);
+    //    DSDLog(@"%@", req.URL.absoluteString);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
                                      completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
                                          if (error != nil) {
-                                             NSLog(@"unable to fetch fee-per-kb: %@", error);
+                                             DSDLog(@"unable to fetch fee-per-kb: %@", error);
                                              return;
                                          }
                                          
@@ -498,7 +498,7 @@
                                          
                                          if (error || ! [json isKindOfClass:[NSDictionary class]] ||
                                              ! [json[@"fee_per_kb"] isKindOfClass:[NSNumber class]]) {
-                                             NSLog(@"unexpected response from %@:\n%@", req.URL.host,
+                                             DSDLog(@"unexpected response from %@:\n%@", req.URL.host,
                                                    [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                                              return;
                                          }
@@ -507,7 +507,7 @@
                                          NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
                                          
                                          if (newFee >= MIN_FEE_PER_KB && newFee <= MAX_FEE_PER_KB && newFee != [defs doubleForKey:FEE_PER_KB_KEY]) {
-                                             NSLog(@"setting new fee-per-kb %lld", newFee);
+                                             DSDLog(@"setting new fee-per-kb %lld", newFee);
                                              [defs setDouble:newFee forKey:FEE_PER_KB_KEY]; // use setDouble since setInteger won't hold a uint64_t
                                              _wallet.feePerKb = newFee;
                                          }

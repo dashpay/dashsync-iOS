@@ -88,7 +88,7 @@
     }
     BOOL hasV0BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
     if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
-        NSLog(@"fixing public key");
+        DSDLog(@"fixing public key");
         //upgrade scenario
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:message andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {

@@ -103,7 +103,7 @@
     if (![aFetchedResultsController performFetch:&error]) {
         // Replace this implementation with code to handle the error appropriately.
         // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        DSDLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
     
@@ -135,7 +135,7 @@
       newIndexPath:(NSIndexPath *)newIndexPath {
     if (changeType == NSFetchedResultsChangeInsert) {
         [(DSShapeshiftEntity*)anObject routinelyCheckStatusAtInterval:10];
-        NSLog(@"BLOP %@",anObject);
+        DSDLog(@"BLOP %@",anObject);
     }
 }
 
@@ -150,7 +150,7 @@
 -(void)queryInitialShapeshiftsNeedingInfo {
     for (DSShapeshiftEntity * shapeshift in self.shapeshiftFetchedResultsController.fetchedObjects) {
 //        for (DSTxOutputEntity * output in  shapeshift.transaction.outputs) {
-//            NSLog(@"o %@", output.shapeshiftOutboundAddress);
+//            DSDLog(@"o %@", output.shapeshiftOutboundAddress);
 //        }
         [shapeshift routinelyCheckStatusAtInterval:10];
     }

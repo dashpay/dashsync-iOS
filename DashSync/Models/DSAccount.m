@@ -374,7 +374,7 @@
     
     for (DSTransaction *tx in [self.transactions reverseObjectEnumerator]) {
 #if LOG_BALANCE_UPDATE
-        NSLog(@"updating balance after transaction %@",[NSData dataWithUInt256:tx.txHash].reverse.hexString);
+        DSDLog(@"updating balance after transaction %@",[NSData dataWithUInt256:tx.txHash].reverse.hexString);
 #endif
         @autoreleasepool {
             NSMutableSet *spent = [NSMutableSet set];
@@ -475,17 +475,17 @@
             [balanceHistory insertObject:@(balance) atIndex:0];
             prevBalance = balance;
 #if LOG_BALANCE_UPDATE
-            NSLog(@"===UTXOS===");
+            DSDLog(@"===UTXOS===");
             for (NSValue * utxo in utxos) {
                 DSUTXO o;
                 [utxo getValue:&o];
-                NSLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
+                DSDLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
             }
-            NSLog(@"===Spent Outputs===");
+            DSDLog(@"===Spent Outputs===");
             for (NSValue * utxo in spentOutputs) {
                 DSUTXO o;
                 [utxo getValue:&o];
-                NSLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
+                DSDLog(@"--%@ (%lu)",[NSData dataWithUInt256:o.hash].reverse.hexString,o.n);
             }
 #endif
         }
@@ -696,7 +696,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             
             // check for sufficient total funds before building a smaller transaction
             if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
-                NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
+                DSDLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
                       amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
                 return nil;
             }
@@ -740,7 +740,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     if (balance < amount + feeAmount) { // insufficient funds
-        NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
+        DSDLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;
     }
     
@@ -895,7 +895,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // records the transaction in the account, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(DSTransaction *)transaction
 {
-    NSLog(@"[DSAccount] registering transaction %@", transaction);
+    DSDLog(@"[DSAccount] registering transaction %@", transaction);
     UInt256 txHash = transaction.txHash;
     NSValue *hash = uint256_obj(txHash);
     
@@ -911,12 +911,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     if (self.allTx[hash] != nil) {
-        NSLog(@"[DSAccount] transaction already registered %@", transaction);
+        DSDLog(@"[DSAccount] transaction already registered %@", transaction);
         return YES;
     }
     
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
-    NSLog(@"[DSAccount] received unseen transaction %@", transaction);
+    DSDLog(@"[DSAccount] received unseen transaction %@", transaction);
     if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
@@ -1240,12 +1240,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 //                    }
                 //                }
                 for (DSTransactionHashEntity *e in entities) {
-                    NSLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
+                    DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
                 }
                 NSError * error = nil;
                 [self.moc save:&error];
                 if (error) {
-                    NSLog(@"Issue Saving DB when setting Block Height");
+                    DSDLog(@"Issue Saving DB when setting Block Height");
                 }
             }
         }];
