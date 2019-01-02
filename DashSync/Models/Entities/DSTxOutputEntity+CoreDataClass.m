@@ -53,7 +53,7 @@
             self.account = self.localAddress.derivationPath.account; //this is to make the outputs easily accessible for an account
         }
     } else {
-        NSLog(@"Output had no address");
+        DSDLog(@"Output had no address");
     }
     return self;
 }

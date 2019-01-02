@@ -258,7 +258,7 @@
  their readiness state.
  */
 - (void)execute {
-    NSLog(@"%@ must override `execute`.", NSStringFromClass(self.class));
+    DSDLog(@"%@ must override `execute`.", NSStringFromClass(self.class));
     [self finish];
 }
 

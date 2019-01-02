@@ -204,7 +204,7 @@
     };
     
     if ([[DSChainsManager sharedInstance] mainnetManager].syncProgress >= 1.0) {
-        NSLog(@"background fetch already synced");
+        DSDLog(@"background fetch already synced");
         if (completion) completion(UIBackgroundFetchResultNoData);
         return;
     }
@@ -212,7 +212,7 @@
     // timeout after 25 seconds
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         if (completion) {
-            NSLog(@"background fetch timeout with progress: %f", [[DSChainsManager sharedInstance] mainnetManager].syncProgress);
+            DSDLog(@"background fetch timeout with progress: %f", [[DSChainsManager sharedInstance] mainnetManager].syncProgress);
             completion(([[DSChainsManager sharedInstance] mainnetManager].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
                        UIBackgroundFetchResultFailed);
             cleanup();
@@ -223,14 +223,14 @@
     protectedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           NSLog(@"background fetch protected data available");
+                                                           DSDLog(@"background fetch protected data available");
                                                            [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
                                                        }];
     
     syncFinishedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           NSLog(@"background fetch sync finished");
+                                                           DSDLog(@"background fetch sync finished");
                                                            if (completion) completion(UIBackgroundFetchResultNewData);
                                                            cleanup();
                                                        }];
@@ -238,12 +238,12 @@
     syncFailedObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           NSLog(@"background fetch sync failed");
+                                                           DSDLog(@"background fetch sync failed");
                                                            if (completion) completion(UIBackgroundFetchResultFailed);
                                                            cleanup();
                                                        }];
     
-    NSLog(@"background fetch starting");
+    DSDLog(@"background fetch starting");
     [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
     
     // sync events to the server

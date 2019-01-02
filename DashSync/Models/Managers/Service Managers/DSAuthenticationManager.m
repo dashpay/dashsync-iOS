@@ -499,7 +499,7 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
 -(void)removePin {
     //You can only remove pin if there are no wallets
     if ([[DSChainsManager sharedInstance] hasAWallet]) {
-        NSLog(@"Tried to remove a pin, but wallets exist on device");
+        DSDLog(@"Tried to remove a pin, but wallets exist on device");
         return;
     }
     setKeychainData(nil, SPEND_LIMIT_KEY, NO);
@@ -658,7 +658,7 @@ replacementString:(NSString *)string
             }
         }
         else {
-            NSLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
+            DSDLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
             
             [self authenticateWithPrompt:authprompt
                               andTouchId:NO
@@ -809,7 +809,7 @@ replacementString:(NSString *)string
             completion(NO,NO);
             return; // error reading failHeight from keychain
         }
-        NSLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime);
+        DSDLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime);
         if (self.secureTime < failHeight + pow(6, failCount - 3)*60.0) { // locked out
             if (alertIfLockout) {
                 [self userLockedOut];

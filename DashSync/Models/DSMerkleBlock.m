@@ -125,7 +125,7 @@ inline static int ceil_log2(int x)
     self.chain = chain;
     
 #if LOG_MERKLE_BLOCKS
-    NSLog(@"%d - merkle block %@ has %d transactions",_height,[NSData dataWithUInt256:_blockHash].hexString,_totalTransactions);
+    DSDLog(@"%d - merkle block %@ has %d transactions",_height,[NSData dataWithUInt256:_blockHash].hexString,_totalTransactions);
 #endif
     
     return self;
@@ -244,8 +244,8 @@ inline static int ceil_log2(int x)
 - (BOOL)containsTxHash:(UInt256)txHash
 {
     for (NSUInteger i = 0; i < _hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
-        NSLog(@"transaction Hash %@",[NSData dataWithUInt256:[_hashes hashAtOffset:i]].hexString);
-        NSLog(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
+        DSDLog(@"transaction Hash %@",[NSData dataWithUInt256:[_hashes hashAtOffset:i]].hexString);
+        DSDLog(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
         if (uint256_eq(txHash, [_hashes hashAtOffset:i])) return YES;
     }
     
@@ -272,7 +272,7 @@ inline static int ceil_log2(int x)
     uint32_t darkGravityWaveTarget = [self darkGravityWaveTargetWithPreviousBlocks:previousBlocks];
     int32_t diff = self.target - darkGravityWaveTarget;
     if (abs(diff) > 1) {
-        NSLog(@"weird difficulty for block at height %u (off by %u)",self.height,diff);
+        DSDLog(@"weird difficulty for block at height %u (off by %u)",self.height,diff);
     }
     return (abs(diff) < 2); //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
 }
@@ -300,7 +300,7 @@ inline static int ceil_log2(int x)
         if(blockCount <= DGW_PAST_BLOCKS_MIN) {
             UInt256 currentTarget = setCompact(currentBlock.target);
             //if (self.height == 1070917)
-            //NSLog(@"%d",currentTarget);
+            //DSDLog(@"%d",currentTarget);
             if (blockCount == 1) {
                 sumTargets = uInt256Add(currentTarget,currentTarget);
             } else {

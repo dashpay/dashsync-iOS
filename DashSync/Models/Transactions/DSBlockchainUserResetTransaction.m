@@ -147,7 +147,7 @@
 }
 
 -(void)signPayloadWithKey:(DSKey*)privateKey {
-    NSLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.oldPublicKeyPayloadSignature = [privateKey compactSign:[self payloadHash]];
     self.txHash = self.data.SHA256_2; //once the payload is signed the transaction hash is ready to go.
 }
