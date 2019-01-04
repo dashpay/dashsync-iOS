@@ -37,10 +37,6 @@
 #define EVENT_SERVER_URL                [NSURL URLWithString:@"https://api.dashwallet.com/events"]
 #define SAMPLE_CHANCE                   10
 
-#if ! EVENT_LOGGING
-#define NSLog(...)
-#endif
-
 
 @interface DSEventManager ()
 
@@ -96,7 +92,7 @@
         NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
         if (![defs boolForKey:HAS_DETERMINED_SAMPLE_GROUP]) {
             u_int32_t chosenNumber = arc4random_uniform(100);
-            NSLog(@"DSEventManager chosen number %d < %d", chosenNumber, SAMPLE_CHANCE);
+            DSDLog(@"DSEventManager chosen number %d < %d", chosenNumber, SAMPLE_CHANCE);
             bool isInSample = chosenNumber < SAMPLE_CHANCE;
             [defs setBool:isInSample forKey:IS_IN_SAMPLE_GROUP];
             [defs setBool:YES forKey:HAS_DETERMINED_SAMPLE_GROUP];
@@ -130,7 +126,7 @@
          addObserverForName:obj object:nil queue:self.myQueue
          usingBlock:^(NSNotification *note) {
              [self saveEvent:key];
-             NSLog(@"DSEventManager received notification %@", note.name);
+             DSDLog(@"DSEventManager received notification %@", note.name);
              if ([note.name isEqualToString:UIApplicationDidEnterBackgroundNotification]) {
                  [self _persistToDisk];
                  [self _sendToServer];
@@ -178,10 +174,10 @@
 
 - (BOOL)shouldAskForPermission
 {
-    NSLog(@"---Sampling Metadata---");
-    NSLog(@"User is in sample group: %d", [self isInSampleGroup]);
-    NSLog(@"User is been asked for permission: %d", [self hasAskedForPermission]);
-    NSLog(@"User has approved event collection: %d", [self hasAcquiredPermission]);
+    DSDLog(@"---Sampling Metadata---");
+    DSDLog(@"User is in sample group: %d", [self isInSampleGroup]);
+    DSDLog(@"User is been asked for permission: %d", [self hasAskedForPermission]);
+    DSDLog(@"User has approved event collection: %d", [self hasAcquiredPermission]);
     return [self isInSampleGroup] && ![self hasAskedForPermission];
 }
 
@@ -248,7 +244,7 @@
 #if DEBUG // notify when in debug mode
         [attrs enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
             if (![key isKindOfClass:[NSString class]] || ![obj isKindOfClass:[NSString class]]) {
-                NSLog(@"warning: key or value in attributes dictionary is not of type string, "
+                DSDLog(@"warning: key or value in attributes dictionary is not of type string, "
                       @"will be implicitly converted");
             }
         }];
@@ -262,7 +258,7 @@
         long long currentTimeMillis = (long long)([NSDate date].timeIntervalSince1970 * 1000.0);
         NSArray *tuple = @[self.sessionId, @(currentTimeMillis), evtName, attrs];
         [self._buffer addObject:tuple];
-        //NSLog(@"DSEventManager Saved event %@ with attributes %@", evtName, attrs);
+        //DSDLog(@"DSEventManager Saved event %@ with attributes %@", evtName, attrs);
     }];
 }
 
@@ -301,7 +297,7 @@
         if (![[NSFileManager defaultManager] fileExistsAtPath:dataDir]) {
             if (![[NSFileManager defaultManager] createDirectoryAtPath:dataDir withIntermediateDirectories:NO
                                                             attributes:nil error:&error]) {
-                NSLog(@"Unable to create directory for storing event data: %@", error);
+                DSDLog(@"Unable to create directory for storing event data: %@", error);
                 return;
             }
         }
@@ -317,7 +313,7 @@
         NSOutputStream *os = [[NSOutputStream alloc] initToFileAtPath:fullPath append:NO];
         [os open];
         if (![NSJSONSerialization writeJSONObject:self._buffer toStream:os options:0 error:&error]) {
-            NSLog(@"Unable to write JSON for events file: %@", error);
+            DSDLog(@"Unable to write JSON for events file: %@", error);
         }
         [os close];
         
@@ -336,7 +332,7 @@
 //        NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self _unsentDataDirectory]
 //                                                                             error:&error];
 //        if (error != nil) {
-//            NSLog(@"Unable to read contents of event data directory: %@", error);
+//            DSDLog(@"Unable to read contents of event data directory: %@", error);
 //            return; // bail here as this is likely unrecoverable
 //        }
 //        
@@ -351,7 +347,7 @@
 //                [ins open];
 //                NSArray *inArray = [NSJSONSerialization JSONObjectWithStream:ins options:0 error:&readError];
 //                if (readError != nil) {
-//                    NSLog(@"Unable to read json event file %@: %@", fileName, readError);
+//                    DSDLog(@"Unable to read json event file %@: %@", fileName, readError);
 //                    return; // bail out here as we likely cant recover from this error
 //                }
 //                
@@ -360,7 +356,7 @@
 //                NSError *serializeErr = nil;
 //                NSData *body = [NSJSONSerialization dataWithJSONObject:eventDump options:0 error:&serializeErr];
 //                if (serializeErr != nil) {
-//                    NSLog(@"Unable to jsonify event dump %@", serializeErr);
+//                    DSDLog(@"Unable to jsonify event dump %@", serializeErr);
 //                    return; // bail out as who knows why this will fail
 //                }
 //                
@@ -376,11 +372,11 @@
 //                     ^(NSData *data, NSURLResponse *response, NSError *connectionError) {
 //                         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
 //                         if (httpResponse.statusCode != 201) { // we should expect to receive a 201
-//                             NSLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
+//                             DSDLog(@"Error uploading event data to server: STATUS=%ld, connErr=%@ data=%@",
 //                                   (long)httpResponse.statusCode, connectionError,
 //                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 //                         } else {
-//                             NSLog(@"Successfully sent event data to server %@ => %ld data=%@",
+//                             DSDLog(@"Successfully sent event data to server %@ => %ld data=%@",
 //                                   fileName, (long)httpResponse.statusCode,
 //                                   [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 //                         }
@@ -389,7 +385,7 @@
 //                         [self.myQueue addOperationWithBlock:^{
 //                             NSError *removeErr = nil;
 //                             if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
-//                                 NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
+//                                 DSDLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
 //                             }
 //                         }];
 //                     }];
@@ -407,7 +403,7 @@
         NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:[self _unsentDataDirectory]
                                                                              error:&error];
         if (error != nil) {
-            NSLog(@"Unable to read contents of event data directory: %@", error);
+            DSDLog(@"Unable to read contents of event data directory: %@", error);
             return; // bail here as this is likely unrecoverable
         }
         
@@ -416,7 +412,7 @@
                                   [NSString stringWithFormat:@"/%@", baseName]];
             NSError *removeErr = nil;
             if (![[NSFileManager defaultManager] removeItemAtPath:fileName error:&removeErr]) {
-                NSLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
+                DSDLog(@"Unable to remove events file at path %@: %@", fileName, removeErr);
             }
         }];
     }];

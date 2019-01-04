@@ -60,7 +60,7 @@
                                                         stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = [[args componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding];
-    NSLog(@"%@ POST: %@", req.URL.absoluteString,
+    DSDLog(@"%@ POST: %@", req.URL.absoluteString,
           [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
     
     [[[NSURLSession sharedSession] dataTaskWithRequest:req
@@ -76,7 +76,7 @@
                                          DSUTXO o;
                                          
                                          if (error || ! [json isKindOfClass:[NSArray class]]) {
-                                             NSLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                                             DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                                              completion(nil, nil, nil,
                                                         [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                                        [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),

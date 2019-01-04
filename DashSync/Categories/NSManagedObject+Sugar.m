@@ -139,7 +139,7 @@ static NSUInteger _fetchBatchSize = 100;
     [self.context performBlockAndWait:^{
         @try {
             a = [self.context executeFetchRequest:request error:&error];
-            if (error) NSLog(@"%s: %@", __func__, error);
+            if (error) DSDLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
 #if DEBUG
@@ -162,7 +162,7 @@ static NSUInteger _fetchBatchSize = 100;
     
         @try {
             a = [self.context executeFetchRequest:request error:&error];
-            if (error) NSLog(@"%s: %@", __func__, error);
+            if (error) DSDLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
 #if DEBUG
@@ -211,7 +211,7 @@ static NSUInteger _fetchBatchSize = 100;
     [self.context performBlockAndWait:^{
         @try {
             count = [self.context countForFetchRequest:request error:&error];
-            if (error) NSLog(@"%s: %@", __func__, error);
+            if (error) DSDLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
 #if DEBUG
@@ -290,19 +290,19 @@ static NSUInteger _fetchBatchSize = 100;
         if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
              options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
-            NSLog(@"%s: %@", __func__, error);
+            DSDLog(@"%s: %@", __func__, error);
 #if DEBUG
             abort();
 #else
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing
             if (! [[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]) {
-                NSLog(@"%s: %@", __func__, error);
+                DSDLog(@"%s: %@", __func__, error);
             }
             
             if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
                  options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                            NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
-                NSLog(@"%s: %@", __func__, error);
+                DSDLog(@"%s: %@", __func__, error);
                 abort(); // Forsooth, I am slain!
             }
 #endif
@@ -358,7 +358,7 @@ static NSUInteger _fetchBatchSize = 100;
                 [self.context obtainPermanentIDsForObjects:self.context.registeredObjects.allObjects error:nil];
 
                 if (! [self.context save:&error]) { // persist changes
-                    NSLog(@"%s: %@", __func__, error);
+                    DSDLog(@"%s: %@", __func__, error);
 #if DEBUG
                     abort();
 #endif

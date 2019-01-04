@@ -162,7 +162,7 @@
 
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
-    NSLog(@"chain finished syncing");
+    DSDLog(@"chain finished syncing");
     self.syncStartHeight = 0;
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
@@ -171,7 +171,7 @@
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
-    NSLog(@"peer at address %@ is misbehaving",peer.host);
+    DSDLog(@"peer at address %@ is misbehaving",peer.host);
     [self.peerManager peerMisbehaving:peer];
 }
 
@@ -181,7 +181,7 @@
     
     // call getblocks, unless we already did with the previous block, or we're still downloading the chain
     if (self.chain.lastBlockHeight >= peer.lastblock && ! uint256_eq(self.chain.lastOrphan.blockHash, block.prevBlock)) {
-        NSLog(@"%@:%d calling getblocks", peer.host, peer.port);
+        DSDLog(@"%@:%d calling getblocks", peer.host, peer.port);
         [peer sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
     }
 }
@@ -240,7 +240,7 @@
             if (peer.governanceRequestState == DSGovernanceRequestState_GovernanceObjectVoteHashesReceived) {
                 if (count == 0) {
                     //there were no votes
-                    NSLog(@"no votes on object, going to next object");
+                    DSDLog(@"no votes on object, going to next object");
                     peer.governanceRequestState = DSGovernanceRequestState_GovernanceObjectVotes;
                     [self.governanceSyncManager finishedGovernanceVoteSyncWithPeer:peer];
                 } else {

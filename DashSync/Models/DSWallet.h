@@ -53,6 +53,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSTimeInterval walletCreationTime;
 
+// set to true if this wallet is not stored on disk
+@property (nonatomic, readonly,getter=isTransient) BOOL transient;
+
 // chain for the wallet
 @property (nonatomic, readonly) DSChain * chain;
 
@@ -87,8 +90,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
 
-+ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase;
-+ (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store;
++ (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
++ (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain;
 
@@ -151,8 +154,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
 
-//This removes all blockchain information from the wallet
+//This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfo;
+
+//This removes all wallet based information from the wallet, used when deletion of wallet is wanted
+- (void)wipeWalletInfo;
 
 -(void)unregisterBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
 -(void)addBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;

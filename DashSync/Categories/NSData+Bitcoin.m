@@ -53,7 +53,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         OSStatus status = SecItemAdd((__bridge CFDictionaryRef)item, NULL);
         
         if (status == noErr) return YES;
-        NSLog(@"SecItemAdd error: %@",
+        DSDLog(@"SecItemAdd error: %@",
               [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
         return NO;
     }
@@ -62,7 +62,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
         OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
         
         if (status == noErr) return YES;
-        NSLog(@"SecItemDelete error: %@",
+        DSDLog(@"SecItemDelete error: %@",
               [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
         return NO;
     }
@@ -72,7 +72,7 @@ BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)update);
     
     if (status == noErr) return YES;
-    NSLog(@"SecItemUpdate error: %@",
+    DSDLog(@"SecItemUpdate error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     return NO;
 }
@@ -91,7 +91,7 @@ BOOL hasKeychainData(NSString *key, NSError **error)
     
     if (status == errSecItemNotFound) return NO;
     if (status == noErr) return YES;
-    NSLog(@"SecItemCopyMatching error: %@",
+    DSDLog(@"SecItemCopyMatching error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
     return NO;
@@ -108,7 +108,7 @@ NSData *getKeychainData(NSString *key, NSError **error)
     
     if (status == errSecItemNotFound) return nil;
     if (status == noErr) return CFBridgingRelease(result);
-    NSLog(@"SecItemCopyMatching error: %@",
+    DSDLog(@"SecItemCopyMatching error: %@",
           [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil].localizedDescription);
     if (error) *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
     return nil;

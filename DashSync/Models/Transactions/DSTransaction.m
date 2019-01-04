@@ -64,9 +64,9 @@
     NSMutableData * outputScript = [NSMutableData data];
     [outputScript appendUInt8:OP_RETURN];
     [transaction addOutputScript:outputScript amount:chain.baseReward];
-    //    NSLog(@"we are hashing %@",transaction.toData);
+    //    DSDLog(@"we are hashing %@",transaction.toData);
     transaction.txHash = transaction.toData.SHA256_2;
-    //    NSLog(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
+    //    DSDLog(@"data is %@",[NSData dataWithUInt256:transaction.txHash]);
     return transaction;
 }
 
@@ -407,7 +407,7 @@
     
     //    for (NSData * data in self.signatures) {
     //        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
-    //                           NSLog(@"%@",addr);
+    //                           DSDLog(@"%@",addr);
     //    }
     
     for (NSData *script in self.inScripts) {

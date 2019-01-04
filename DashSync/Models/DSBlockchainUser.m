@@ -130,7 +130,7 @@
         
         DSBlockchainUserResetTransaction * blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithBlockchainUserResetTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousBlockchainUserTransactionHash:self.lastBlockchainUserTransactionHash replacementPublicKeyHash:[privateKey.publicKey hash160] creditFee:1000 onChain:self.wallet.chain];
         [blockchainUserResetTransaction signPayloadWithKey:oldPrivateKey];
-        NSLog(@"%@",blockchainUserResetTransaction.toData);
+        DSDLog(@"%@",blockchainUserResetTransaction.toData);
         completion(blockchainUserResetTransaction);
     }];
 }
