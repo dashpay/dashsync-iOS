@@ -820,6 +820,7 @@
     
     if ([self.downloadPeer isEqual:peer]) { // download peer disconnected
         _connected = NO;
+        [self.chain removeEstimatedBlockHeightOfPeer:peer];
         self.downloadPeer = nil;
         if (self.connectFailures > MAX_CONNECT_FAILURES) self.connectFailures = MAX_CONNECT_FAILURES;
     }
