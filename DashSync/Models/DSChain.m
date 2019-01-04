@@ -60,7 +60,9 @@ static checkpoint testnet_checkpoint_array[] = {
     {        1500, "000002d7a07979a4d6b24efdda0bbf6e3c03a59c22765a0128a5c53b3888aa28", 1423460945, 0x1e03ffffu },
     {        2000, "000006b9af71c8ac510ff912b632ff91a2e05ab92ba4de9f1ec4be424c4ba636", 1462833216, 0x1e0fffffu },
     {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu },
-    {        4001, "00000c047c7aa022871971bf7e2c066bbb5df64de1dd673495451a38e9bf167f", 1544736446, 0x1e0fffffu }
+    {        4001, "00000c047c7aa022871971bf7e2c066bbb5df64de1dd673495451a38e9bf167f", 1544736446, 0x1e0fffffu },
+    {        8000, "0000001618273379c4d96403954480bdf5c522d734f457716db1295d7a3646e0", 1545231876, 0x1d1c3ba6u },
+    {       15000, "00000000172f1946aad9183732d65aaa117d47c2e86c698940bd942dc7ffccc5", 1546203631, 0x1c19907eu }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -152,6 +154,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) DSChainEntity * delegateQueueChainEntity;
 @property (nonatomic, strong) NSString * devnetIdentifier;
 @property (nonatomic, strong) DSAccount * viewingAccount;
+@property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
+@property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
 
 @end
 
@@ -165,6 +169,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.orphans = [NSMutableDictionary dictionary];
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
+    self.estimatedBlockHeights = [NSMutableDictionary dictionary];
     
     self.feePerByte = DEFAULT_FEE_PER_B;
     uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
@@ -955,6 +960,7 @@ static dispatch_once_t devnetToken = 0;
 -(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
     [wallet wipeBlockchainInfo];
+    [wallet wipeWalletInfo];
     [self.mWallets removeObject:wallet];
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];
@@ -1147,7 +1153,7 @@ static dispatch_once_t devnetToken = 0;
         
         
         
-        if (_lastBlock.height > _estimatedBlockHeight) _estimatedBlockHeight = _lastBlock.height;
+        if (_lastBlock.height > self.estimatedBlockHeight) _bestEstimatedBlockHeight = _lastBlock.height;
     }
     
     return _lastBlock;
@@ -1294,7 +1300,7 @@ static dispatch_once_t devnetToken = 0;
         self.lastBlock = block;
         [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
         peer.currentBlockHeight = block.height; //might be download peer instead
-        if (block.height == _estimatedBlockHeight) syncDone = YES;
+        if (block.height == self.estimatedBlockHeight) syncDone = YES;
         onMainChain = TRUE;
     }
     else if (self.blocks[blockHash] != nil) { // we already have the block (or at least the header)
@@ -1360,7 +1366,7 @@ static dispatch_once_t devnetToken = 0;
         }
         
         self.lastBlock = block;
-        if (block.height == _estimatedBlockHeight) syncDone = YES;
+        if (block.height == self.estimatedBlockHeight) syncDone = YES;
     }
     
     //DSDLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
@@ -1371,8 +1377,8 @@ static dispatch_once_t devnetToken = 0;
         [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
     }
     
-    if (block.height > _estimatedBlockHeight) {
-        _estimatedBlockHeight = block.height;
+    if (block.height > self.estimatedBlockHeight) {
+        _bestEstimatedBlockHeight = block.height;
         
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1470,8 +1476,61 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(uint32_t)estimatedBlockHeight {
+    if (_bestEstimatedBlockHeight) return _bestEstimatedBlockHeight;
+    uint32_t maxCount = 0;
+    uint32_t tempBestEstimatedBlockHeight = 0;
+    for (NSNumber * height in self.estimatedBlockHeights) {
+        NSArray * announcers = self.estimatedBlockHeights[height];
+        if (announcers.count > maxCount) {
+            tempBestEstimatedBlockHeight = [height intValue];
+        }
+    }
+    _bestEstimatedBlockHeight = tempBestEstimatedBlockHeight;
+    return _bestEstimatedBlockHeight;
+}
+
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer {
-    _estimatedBlockHeight = estimatedBlockHeight;
+    _bestEstimatedBlockHeight = 0; //lazy loading
+    
+    //remove from other heights
+    for (NSNumber * height in [self.estimatedBlockHeights copy]) {
+        if ([height intValue] == estimatedBlockHeight) continue;
+        NSMutableArray * announcers = self.estimatedBlockHeights[height];
+        if ([announcers containsObject:peer]) {
+            [announcers removeObject:peer];
+        }
+        if (![announcers count]) {
+            if (self.estimatedBlockHeights[height]) {
+                [self.estimatedBlockHeights removeObjectForKey:height];
+            }
+        }
+    }
+    if (![self estimatedBlockHeights][@(estimatedBlockHeight)]) {
+        [self estimatedBlockHeights][@(estimatedBlockHeight)] = [NSMutableArray arrayWithObject:peer];
+    } else {
+        NSMutableArray * peersAnnouncingHeight = [self estimatedBlockHeights][@(estimatedBlockHeight)];
+        if (![peersAnnouncingHeight containsObject:peer]) {
+            [peersAnnouncingHeight addObject:peer];
+        }
+    }
+}
+
+-(void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer {
+    for (NSNumber * height in [self.estimatedBlockHeights copy]) {
+        NSMutableArray * announcers = self.estimatedBlockHeights[height];
+        if ([announcers containsObject:peer]) {
+            [announcers removeObject:peer];
+        }
+        if (![announcers count]) {
+            if (self.estimatedBlockHeights[height]) {
+                [self.estimatedBlockHeights removeObjectForKey:height];
+            }
+        }
+        if ([self.estimatedBlockHeights count]) { //keep best estimate if no other peers reporting on estimate
+            if ([height intValue] == _bestEstimatedBlockHeight) _bestEstimatedBlockHeight = 0;
+        }
+    }
 }
 
 - (DSTransaction *)transactionForHash:(UInt256)txHash {

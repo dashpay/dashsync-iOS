@@ -284,10 +284,10 @@
 
 - (void)disconnectWithError:(NSError *)error
 {
+    if (_status == DSPeerStatus_Disconnected) return;
     DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
-    
-    if (_status == DSPeerStatus_Disconnected) return;
+
     _status = DSPeerStatus_Disconnected;
     
     if (self.reachabilityObserver) {

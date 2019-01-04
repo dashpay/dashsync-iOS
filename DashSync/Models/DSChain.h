@@ -51,7 +51,7 @@ CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32
 #define MIN_PROTOCOL_VERSION_MAINNET  70209
 
 #define PROTOCOL_VERSION_TESTNET   70213
-#define MIN_PROTOCOL_VERSION_TESTNET  70210
+#define MIN_PROTOCOL_VERSION_TESTNET  70213
 
 #define PROTOCOL_VERSION_DEVNET   70213
 #define MIN_PROTOCOL_VERSION_DEVNET  70212
@@ -177,6 +177,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(void)save;
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
+-(void)removeEstimatedBlockHeightOfPeer:(DSPeer*)peer;
 -(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 -(void)saveBlocks;
 -(void)wipeWalletsAndDerivatives;

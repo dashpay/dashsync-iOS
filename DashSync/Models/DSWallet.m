@@ -500,7 +500,6 @@
 }
 
 - (void)wipeBlockchainInfo {
-    [self wipeWalletInfo];
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
     }
