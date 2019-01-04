@@ -60,7 +60,9 @@ static checkpoint testnet_checkpoint_array[] = {
     {        1500, "000002d7a07979a4d6b24efdda0bbf6e3c03a59c22765a0128a5c53b3888aa28", 1423460945, 0x1e03ffffu },
     {        2000, "000006b9af71c8ac510ff912b632ff91a2e05ab92ba4de9f1ec4be424c4ba636", 1462833216, 0x1e0fffffu },
     {        2999, "0000024bc3f4f4cb30d29827c13d921ad77d2c6072e586c7f60d83c2722cdcc5", 1462856598, 0x1e03ffffu },
-    {        4001, "00000c047c7aa022871971bf7e2c066bbb5df64de1dd673495451a38e9bf167f", 1544736446, 0x1e0fffffu }
+    {        4001, "00000c047c7aa022871971bf7e2c066bbb5df64de1dd673495451a38e9bf167f", 1544736446, 0x1e0fffffu },
+    {        8000, "0000001618273379c4d96403954480bdf5c522d734f457716db1295d7a3646e0", 1545231876, 0x1d1c3ba6u },
+    {       15000, "00000000172f1946aad9183732d65aaa117d47c2e86c698940bd942dc7ffccc5", 1546203631, 0x1c19907eu }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -958,6 +960,7 @@ static dispatch_once_t devnetToken = 0;
 -(void)unregisterWallet:(DSWallet*)wallet {
     NSAssert(wallet.chain == self, @"the wallet you are trying to remove is not on this chain");
     [wallet wipeBlockchainInfo];
+    [wallet wipeWalletInfo];
     [self.mWallets removeObject:wallet];
     NSError * error = nil;
     NSMutableArray * keyChainArray = [getKeychainArray(self.chainWalletsKey, &error) mutableCopy];

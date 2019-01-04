@@ -154,8 +154,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
 
-//This removes all blockchain information from the wallet
+//This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfo;
+
+//This removes all wallet based information from the wallet, used when deletion of wallet is wanted
+- (void)wipeWalletInfo;
 
 -(void)unregisterBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
 -(void)addBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
