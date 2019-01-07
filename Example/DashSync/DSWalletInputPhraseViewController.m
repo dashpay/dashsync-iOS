@@ -59,7 +59,7 @@
 - (IBAction)createWallet:(id)sender {
     if ([[DSBIP39Mnemonic sharedInstance] phraseIsValid:self.inputSeedPhraseTextView.text]) {
         NSTimeInterval creationDate = [self.inputSeedPhraseTextView.text isEqualToString:self.randomPassphrase]?[NSDate timeIntervalSince1970]:0;
-        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text setCreationDate:creationDate forChain:self.chain storeSeedPhrase:YES];
+        DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:self.inputSeedPhraseTextView.text setCreationDate:creationDate forChain:self.chain storeSeedPhrase:YES isTransient:NO];
         [self.chain registerWallet:wallet];
         [self.navigationController popViewControllerAnimated:TRUE];
     } else if ([self.inputSeedPhraseTextView.text isValidDashExtendedPublicKeyOnChain:self.chain]) {

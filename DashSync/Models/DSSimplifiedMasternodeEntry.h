@@ -16,6 +16,7 @@
 @property(nonatomic,readonly) UInt256 confirmedHash;
 @property(nonatomic,readonly) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
 @property(nonatomic,readonly) UInt128 address;
+@property(nonatomic,readonly) NSString * host;
 @property(nonatomic,readonly) uint16_t port;
 @property(nonatomic,readonly) UInt384 operatorPublicKey;
 @property(nonatomic,readonly) UInt160 keyIDVoting;

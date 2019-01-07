@@ -25,7 +25,6 @@
 @property (nonatomic, assign) UInt768 signature;
 @property (nonatomic, assign) UInt256 transactionLockHash;
 @property (nonatomic, assign) BOOL signatureVerified;
-@property (nonatomic, readonly) DSSimplifiedMasternodeEntry * masternode;
 
 @end
 
@@ -131,6 +130,17 @@
     
     self.signatureVerified = [self.masternode verifySignature:self.signature forMessageDigest:self.transactionLockHash];
     return self.signatureVerified;
+}
+
+- (BOOL)sentByIntendedQuorum {
+    if (!self.masternode) return NO;
+    return [self.intendedQuorum containsObject:self.masternode];
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)intendedQuorum {
+    if (!self.masternode) return nil;
+    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
+    return [masternodeManager masternodesForQuorumHash:self.quorumModifierHash quorumCount:10];
 }
 
 @end

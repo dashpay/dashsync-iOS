@@ -1214,7 +1214,7 @@
         [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
     });
     
-    DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
+    DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         
@@ -1236,6 +1236,7 @@
 
 - (void)acceptTxlvoteMessage:(NSData *)message
 {
+    DSDLog(@"peer relayed txlvote message: %@", message.hexString);
     if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
         DSDLog(@"returned transaction lock message when DML not enabled: %@", message);//no error here
         return;
@@ -1620,6 +1621,7 @@
 - (void)acceptSporkMessage:(NSData *)message
 {
     DSSpork * spork = [DSSpork sporkWithMessage:message onChain:self.chain];
+    DSDLog(@"received spork %@ with message %@",spork.identifierString,message.hexString);
     [self.sporkDelegate peer:self relayedSpork:spork];
 }
 

@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain;
+@class DSChain,DSSimplifiedMasternodeEntry;
 
 @interface DSTransactionLockVote : NSObject
 
@@ -22,8 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 masternodeProviderTransactionHash;
 @property (nonatomic, readonly) UInt256 quorumModifierHash;
 @property (nonatomic, readonly) BOOL signatureVerified;
+@property (nonatomic, readonly) NSArray<DSSimplifiedMasternodeEntry*>* intendedQuorum;
+@property (nonatomic, readonly) DSSimplifiedMasternodeEntry * masternode;
 
 - (BOOL)verifySignature;
+- (BOOL)sentByIntendedQuorum;
 
 + (instancetype)transactionLockVoteWithMessage:(NSData *)message onChain:(DSChain*)chain;
 

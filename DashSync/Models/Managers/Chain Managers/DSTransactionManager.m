@@ -834,7 +834,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 // MARK: Instant Send
 
 -(BOOL)checkAllLocksForTransaction:(DSTransaction*)transaction {
-    NSLog(@"Checking all locks");
+    DSDLog(@"Checking all locks for transaction %@",uint256_data(transaction.txHash).hexString);
     NSValue *transactionHashValue = uint256_obj(transaction.txHash);
     if (!transaction.inputHashes || !transaction.inputHashes.count) return NO;
     NSMutableDictionary * lockVotes = [NSMutableDictionary dictionary];
@@ -894,9 +894,14 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                     continue;
                 }
                 BOOL verified = [lockVote verifySignature];
-                NSLog(@"signature is %@",verified?@"verified":@"not good");
-                if (verified) yesVotes++;
-                if (!verified) noVotes++;
+                BOOL goodQuorum = [lockVote sentByIntendedQuorum];
+                if (!goodQuorum) {
+                    DSDLog(@"We got a lock vote from the wrong quorum");
+                    DSDLog(@"Masternode %@ not in intended Quorum %@ with quorum modifier hash %@",lockVote.masternode,lockVote.intendedQuorum,[NSData dataWithUInt256:lockVote.quorumModifierHash].hexString);
+                }
+                DSDLog(@"signature is %@",verified?@"verified":@"not good");
+                if (verified && goodQuorum) yesVotes++;
+                else noVotes++;
                 if (yesVotes > 5) { // 6 or more
                     self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @YES;
                     [self checkAllLocksForTransaction:transaction];

@@ -89,7 +89,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
-@property (nonatomic, readonly) NSDictionary<NSValue*,DSTransactionLockVote*>* transactionLockVotesDictionary;
+@property (nonatomic, readonly) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
 @property (nonatomic, readonly) NSArray<DSTransactionLockVote*>* transactionLockVotes;
 @property (nonatomic, readonly) Class entityClass;
 
@@ -133,6 +133,6 @@ sequence:(uint32_t)sequence;
 
 //instant send
 
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSDictionary<NSValue*,DSTransactionLockVote*>*)transactionLockVotesDictionary;
+-(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes;
 
 @end

@@ -213,7 +213,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 @protocol DSPeerMasternodeDelegate<NSObject>
 @required
 
-- (void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
+- (void)peer:(DSPeer * )peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 @end
 

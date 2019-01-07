@@ -45,7 +45,7 @@
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) BOOL instantSendReceived;
-@property (nonatomic, strong) NSDictionary<NSValue*,DSTransactionLockVote*>* transactionLockVotesDictionary;
+@property (nonatomic, strong) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
 
 @end
 
@@ -659,7 +659,7 @@
     return nil;
 }
 
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,DSTransactionLockVote*>*)transactionLockVotes {
+-(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
     self.instantSendReceived = TRUE;
     self.transactionLockVotesDictionary = transactionLockVotes;
 }
