@@ -21,7 +21,7 @@
 #import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
 #import "DSDynamicOptions.h"
-#import "DSHTTPGETOperation.h"
+#import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitcoinAvgResponseOperation.h"
 #import "DSParseDashBtcCCResponseOperation.h"
@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHBTCCC_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParseDashBtcCCResponseOperation *parseOperation = [[DSParseDashBtcCCResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashBtcCCOperation = parseOperation;
@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHVESCC_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParseDashVesCCResponseOperation *parseOperation = [[DSParseDashVesCCResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseDashVesCCOperation = parseOperation;
@@ -117,7 +117,7 @@ NS_ASSUME_NONNULL_BEGIN
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOINAVG_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
-            DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
             DSParseBitcoinAvgResponseOperation *parseOperation = [[DSParseBitcoinAvgResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseBitcoinAvgOperation = parseOperation;

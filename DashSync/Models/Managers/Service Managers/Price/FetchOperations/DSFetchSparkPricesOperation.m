@@ -18,7 +18,7 @@
 #import "DSFetchSparkPricesOperation.h"
 
 #import "DSChainedOperation.h"
-#import "DSHTTPGETOperation.h"
+#import "DSHTTPOperation.h"
 #import "DSParseSparkResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:SPARK_TICKER_URL]
                                                  cachePolicy:NSURLRequestReloadIgnoringCacheData
                                              timeoutInterval:30.0];
-        DSHTTPGETOperation *getOperation = [[DSHTTPGETOperation alloc] initWithRequest:request];
+        DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
         DSParseSparkResponseOperation *parseOperation = [[DSParseSparkResponseOperation alloc] init];
         DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
 

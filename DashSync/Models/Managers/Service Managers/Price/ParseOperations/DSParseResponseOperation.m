@@ -17,7 +17,7 @@
 
 #import "DSParseResponseOperation.h"
 
-#import "DSHTTPGETOperation.h"
+#import "DSHTTPOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,7 +25,7 @@ NSString *const DSParseResponseOperationErrorDomain = @"DSParseResponseOperation
 
 @interface DSParseResponseOperation ()
 
-@property (strong, nonatomic, nullable) id responseToParse;
+@property (strong, nonatomic) DSHTTPOperationResult *httpOperationResult;
 
 @end
 
@@ -41,8 +41,8 @@ NSString *const DSParseResponseOperationErrorDomain = @"DSParseResponseOperation
 #pragma mark DSChainableOperationProtocol
 
 - (void)chainedOperation:(NSOperation *)operation didFinishWithErrors:(nullable NSArray<NSError *> *)errors passingAdditionalData:(nullable id)data {
-    if ([operation isKindOfClass:DSHTTPGETOperation.class]) {
-        self.responseToParse = data;
+    if ([operation isKindOfClass:DSHTTPOperation.class]) {
+        self.httpOperationResult = data;
     }
 }
 

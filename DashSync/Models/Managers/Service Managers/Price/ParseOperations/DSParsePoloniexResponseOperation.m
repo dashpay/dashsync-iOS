@@ -28,17 +28,17 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DSParsePoloniexResponseOperation
 
 - (void)execute {
-    NSParameterAssert(self.responseToParse);
+    NSParameterAssert(self.httpOperationResult.parsedResponse);
 
-    NSDictionary *response = (NSDictionary *)self.responseToParse;
+    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
     if (![response isKindOfClass:NSDictionary.class]) {
         [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
 
         return;
     }
 
-    NSArray *asks = self.responseToParse[@"asks"];
-    NSArray *bids = self.responseToParse[@"bids"];
+    NSArray *asks = response[@"asks"];
+    NSArray *bids = response[@"bids"];
     NSString *lastTradePriceStringAsks = [asks.firstObject firstObject];
     NSString *lastTradePriceStringBids = [bids.firstObject firstObject];
     if (lastTradePriceStringAsks && lastTradePriceStringBids) {
