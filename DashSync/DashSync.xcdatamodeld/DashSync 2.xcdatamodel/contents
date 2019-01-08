@@ -244,15 +244,15 @@
     </entity>
     <entity name="DSTransactionLockVoteEntity" representedClassName="DSTransactionLockVoteEntity" syncable="YES">
         <attribute name="blockHash" attributeType="Binary" syncable="YES"/>
-        <attribute name="fromValidQuorum" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="fromValidQuorum" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="inputHash" attributeType="Binary" syncable="YES"/>
-        <attribute name="inputIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="masternodeOutpointHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="masternodeOutpointIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="masternodeProviderTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="quorumModifierHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="signatureIsValid" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="transactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="inputIndex" attributeType="Integer 32" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="masternodeOutpointHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="masternodeOutpointIndex" attributeType="Integer 32" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="masternodeProviderTransactionHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumModifierHash" attributeType="Binary" syncable="YES"/>
+        <attribute name="signatureIsValid" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="transactionHash" attributeType="Binary" syncable="YES"/>
         <attribute name="transactionLockVoteHash" attributeType="Binary" indexed="YES" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="transactionLockVotes" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="simplifiedMasternodeEntry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="transactionLockVotes" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>

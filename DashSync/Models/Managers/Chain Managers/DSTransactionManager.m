@@ -893,14 +893,12 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                     NSLog(@"No known masternode");
                     continue;
                 }
-                BOOL verified = [lockVote verifySignature];
-                BOOL goodQuorum = [lockVote sentByIntendedQuorum];
-                if (!goodQuorum) {
+                if (!lockVote.quorumVerified) {
                     DSDLog(@"We got a lock vote from the wrong quorum");
                     DSDLog(@"Masternode %@ not in intended Quorum %@ with quorum modifier hash %@",lockVote.masternode,lockVote.intendedQuorum,[NSData dataWithUInt256:lockVote.quorumModifierHash].hexString);
                 }
-                DSDLog(@"signature is %@",verified?@"verified":@"not good");
-                if (verified && goodQuorum) yesVotes++;
+                DSDLog(@"signature is %@",lockVote.signatureVerified?@"verified":@"not good");
+                if (lockVote.signatureVerified && lockVote.quorumVerified) yesVotes++;
                 else noVotes++;
                 if (yesVotes > 5) { // 6 or more
                     self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @YES;
@@ -935,6 +933,9 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     }
     
     self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeProviderTransactionHashValue] = transactionLockVote;
+    
+    [transactionLockVote verifySignature];
+    [transactionLockVote verifySentByIntendedQuorum];
     
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }

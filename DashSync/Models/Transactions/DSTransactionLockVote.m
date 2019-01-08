@@ -143,6 +143,7 @@
     self.quorumVerifiedAtBlockHash = quorumVerifiedAtBlockHash;
     self.signatureVerified = signatureVerified;
     self.quorumVerified = quorumVerified;
+    self.saved = YES; //this is coming already from the persistant store and not from the network
     return self;
 }
 
@@ -153,7 +154,7 @@
     return self.signatureVerified;
 }
 
-- (BOOL)sentByIntendedQuorum {
+- (BOOL)verifySentByIntendedQuorum {
     if (!self.masternode) return NO;
     self.quorumVerified = [self.intendedQuorum containsObject:self.masternode];
     return self.quorumVerified;

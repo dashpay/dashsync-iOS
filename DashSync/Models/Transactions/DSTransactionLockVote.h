@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL saved;
 
 - (BOOL)verifySignature;
-- (BOOL)sentByIntendedQuorum;
+- (BOOL)verifySentByIntendedQuorum;
 
 - (void)save;
 
