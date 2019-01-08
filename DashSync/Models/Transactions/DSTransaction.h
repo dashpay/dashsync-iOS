@@ -64,9 +64,9 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
 
-@property (nonatomic, readonly) BOOL instantSendReceived;
+@property (nonatomic, assign) BOOL instantSendReceived;
 
-@property (nonatomic, assign) BOOL isInstant;
+@property (nonatomic, assign) BOOL desiresInstantSendSending;
 
 @property (nonatomic, assign) UInt256 txHash;
 @property (nonatomic, assign) uint16_t version;

@@ -323,7 +323,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
     if (requestedSendAmount <= account.balance + fuzz && requestedSendAmount > 0) {
-        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.isInstant];
+        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
         
         if (amount > 0 && amount < requestedSendAmount) {
             UIAlertController * alert = [UIAlertController
@@ -346,7 +346,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                                            handler:^(UIAlertAction * action) {
                                                DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chain];
                                                paymentRequest.amount = requestedSendAmount - amount;
-                                               [self confirmPaymentRequest:paymentRequest fromAccount:account forceInstantSend:tx.isInstant signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
+                                               [self confirmPaymentRequest:paymentRequest fromAccount:account forceInstantSend:tx.desiresInstantSendSending signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
 
                                            }];
             

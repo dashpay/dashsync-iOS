@@ -733,7 +733,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.wallet.chain.minOutputAmount) break;
     }
     
-    transaction.isInstant = isInstant;
+    transaction.desiresInstantSendSending = isInstant;
     
     if (!feeAmount) {
         feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output

@@ -61,6 +61,7 @@
         self.transactionHash.blockHeight = tx.blockHeight;
         self.transactionHash.timestamp = tx.timestamp;
         self.associatedShapeshift = tx.associatedShapeshift;
+        self.transactionInputsAllLocked = tx.instantSendReceived;
         
         while (inputs.count < tx.inputHashes.count) {
             [inputs addObject:[DSTxInputEntity managedObject]];
@@ -117,6 +118,7 @@
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
+        tx.instantSendReceived = self.transactionInputsAllLocked;
         
         for (DSTxInputEntity *e in self.inputs) {
             txHash = e.txHash;
