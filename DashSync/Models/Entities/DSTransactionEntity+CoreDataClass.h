@@ -25,7 +25,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity, DSShapeshiftEntity, DSTxInputEntity, DSTxOutputEntity,DSTransaction,DSChain,DSTransactionHashEntity;
+@class DSChainEntity, DSShapeshiftEntity, DSTxInputEntity, DSTxOutputEntity,DSTransaction,DSChain,DSTransactionHashEntity,DSTransactionLockVoteEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

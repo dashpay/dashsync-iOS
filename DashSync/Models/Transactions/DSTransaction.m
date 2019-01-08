@@ -661,12 +661,21 @@
 }
 
 -(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
-    BOOL changedValue = !self.instantSendReceived;
-    self.instantSendReceived = TRUE;
+    BOOL instantSendReceived = YES;
     self.transactionLockVotesDictionary = transactionLockVotes;
-    if (changedValue) {
-        [self save];
+    for (NSValue * key in transactionLockVotes) {
+        NSUInteger inputLockVotes = 0;
+        NSArray * lockVotesForInput =  transactionLockVotes[key];
+        for (DSTransactionLockVote * transactionLockVote in lockVotesForInput) {
+            [transactionLockVote save];
+            if (transactionLockVote.quorumVerified && transactionLockVote.signatureVerified) {
+                inputLockVotes++;
+            }
+        }
+        BOOL inputLocked = inputLockVotes > 5;
+        instantSendReceived &= inputLocked;
     }
+    self.instantSendReceived = instantSendReceived;
 }
 
 -(void)save {

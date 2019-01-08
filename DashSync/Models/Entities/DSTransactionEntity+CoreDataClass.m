@@ -34,6 +34,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionLockVoteEntity+CoreDataClass.h"
 
 @implementation DSTransactionEntity
 
@@ -61,7 +62,6 @@
         self.transactionHash.blockHeight = tx.blockHeight;
         self.transactionHash.timestamp = tx.timestamp;
         self.associatedShapeshift = tx.associatedShapeshift;
-        self.transactionInputsAllLocked = tx.instantSendReceived;
         
         while (inputs.count < tx.inputHashes.count) {
             [inputs addObject:[DSTxInputEntity managedObject]];
@@ -118,7 +118,6 @@
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;
         tx.associatedShapeshift = self.associatedShapeshift;
-        tx.instantSendReceived = self.transactionInputsAllLocked;
         
         for (DSTxInputEntity *e in self.inputs) {
             txHash = e.txHash;
@@ -130,6 +129,16 @@
         for (DSTxOutputEntity *e in self.outputs) {
             [tx addOutputScript:e.script amount:e.value];
         }
+        
+        NSMutableDictionary * lockVotesDictionary = [NSMutableDictionary dictionary];
+        
+        for (DSTransactionLockVoteEntity * lockVoteEntity in self.lockVotes) {
+            DSTransactionLockVote * transactionLockVote = [lockVoteEntity transactionLockVoteForChain:chain];
+            NSValue * inputOutpoint = dsutxo_obj(((DSUTXO) { lockVoteEntity.inputHash.UInt256, lockVoteEntity.inputIndex }));
+            if (!lockVotesDictionary[inputOutpoint]) lockVotesDictionary[inputOutpoint] = [NSMutableArray array];
+            [lockVotesDictionary[inputOutpoint] addObject:transactionLockVote];
+        }
+        [tx setInstantSendReceivedWithTransactionLockVotes:lockVotesDictionary];
     }];
     
     return tx;

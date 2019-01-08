@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, retain) NSSet<DSMerkleBlockEntity *> *blocks;
 @property (nonnull, nonatomic, retain) NSSet<DSDerivationPathEntity *> *derivationPaths;
 @property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntry *> *simplifiedMasternodeEntries;
+@property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntry *> *transactionLockVotes;
 
 @end
 
