@@ -132,7 +132,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define REGISTERED_PEERS_KEY  @"REGISTERED_PEERS_KEY"
 
 #define PROTOCOL_VERSION_LOCATION  @"PROTOCOL_VERSION_LOCATION"
-#define MIN_PROTOCOL_VERSION_LOCATION  @"MIN_PROTOCOL_VERSION_LOCATION"
+#define DEFAULT_MIN_PROTOCOL_VERSION_LOCATION  @"MIN_PROTOCOL_VERSION_LOCATION"
 
 #define SPORK_PUBLIC_KEY_LOCATION  @"SPORK_PUBLIC_KEY_LOCATION"
 #define SPORK_ADDRESS_LOCATION  @"SPORK_ADDRESS_LOCATION"
@@ -175,6 +175,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.feePerByte = DEFAULT_FEE_PER_B;
     uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
     if (feePerByte >= MIN_FEE_PER_B && feePerByte <= MAX_FEE_PER_B) self.feePerByte = feePerByte;
+    
     return self;
 }
 
@@ -502,15 +503,25 @@ static dispatch_once_t devnetToken = 0;
 -(uint32_t)minProtocolVersion {
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return MIN_PROTOCOL_VERSION_MAINNET;
+        {
+            NSError * error = nil;
+            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
+            if (!error && minProtocolVersion) return minProtocolVersion;
+            else return DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
+        }
         case DSChainType_TestNet:
-            return MIN_PROTOCOL_VERSION_TESTNET;
+        {
+            NSError * error = nil;
+            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
+            if (!error && minProtocolVersion) return minProtocolVersion;
+            else return DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
+        }
         case DSChainType_DevNet:
         {
             NSError * error = nil;
-            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MIN_PROTOCOL_VERSION_LOCATION], &error);
+            uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) return minProtocolVersion;
-            else return MIN_PROTOCOL_VERSION_DEVNET;
+            else return DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
         }
         default:
             break;
@@ -520,14 +531,15 @@ static dispatch_once_t devnetToken = 0;
 
 -(void)setMinProtocolVersion:(uint32_t)minProtocolVersion
 {
+    if (minProtocolVersion < MIN_VALID_MIN_PROTOCOL_VERSION || minProtocolVersion > MAX_VALID_MIN_PROTOCOL_VERSION) return;
     switch ([self chainType]) {
         case DSChainType_MainNet:
-            return;
+            setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
         case DSChainType_TestNet:
-            return;
+            setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
         case DSChainType_DevNet:
         {
-            setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,MIN_PROTOCOL_VERSION_LOCATION], NO);
+            setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
         }
         default:
             break;

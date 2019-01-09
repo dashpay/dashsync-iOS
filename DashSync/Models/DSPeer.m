@@ -1214,7 +1214,11 @@
         [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
     });
     
+#if LOG_FULL_TX_MESSAGE
     DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
+#else
+    DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
+#endif
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         

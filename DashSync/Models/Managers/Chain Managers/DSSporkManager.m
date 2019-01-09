@@ -33,10 +33,11 @@
 #import "DSPeerManager+Protected.h"
 #import "DSOptionsManager.h"
 #import "DSChainManager+Protected.h"
+#import "DSMerkleBlock.h"
 
 @interface DSSporkManager()
     
-@property (nonatomic,strong) NSMutableDictionary * sporkDictionary;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*,DSSpork*> * sporkDictionary;
 @property (nonatomic,strong) NSMutableArray * sporkHashesMarkedForRetrieval;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
@@ -142,14 +143,14 @@
     if (currentSpork) {
         //there was already a spork
         if (![currentSpork isEqualToSpork:spork]) {
-            _sporkDictionary[@(spork.identifier)] = spork; //set it to new one
+            [self setSporkValue:spork forKeyIdentifier:spork.identifier]; //set it to new one
             updatedSpork = TRUE;
             [dictionary setObject:currentSpork forKey:@"old"];
         } else {
             return; //nothing more to do
         }
     } else {
-        _sporkDictionary[@(spork.identifier)] = spork;
+        [self setSporkValue:spork forKeyIdentifier:spork.identifier];
     }
     [dictionary setObject:spork forKey:@"new"];
     [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
@@ -164,6 +165,23 @@
     }
 }
 
+-(void)setSporkValue:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
+    if (![_sporkDictionary objectForKey:@(sporkIdentifier)] || ([_sporkDictionary objectForKey:@(sporkIdentifier)] && (_sporkDictionary[@(sporkIdentifier)].value != spork.value))) {
+        switch (sporkIdentifier) {
+            case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
+            {
+                if (self.chain.lastBlock.height >= spork.value && self.chain.minProtocolVersion < 70213) {
+                    [self.chain setMinProtocolVersion:70213];
+                }
+            }
+            break;
+            
+            default:
+            break;
+        }
+    }
+    _sporkDictionary[@(sporkIdentifier)] = spork;
+}
 
 
 -(void)wipeSporkInfo {
