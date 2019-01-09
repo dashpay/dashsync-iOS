@@ -70,6 +70,7 @@
     }];
     _sporkDictionary = sporkDictionary;
     _sporkHashesMarkedForRetrieval = sporkHashesMarkedForRetrieval;
+    [self checkTriggers];
     return self;
 }
 
@@ -167,7 +168,14 @@
     }
 }
 
--(void)setSporkValue:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
+-(void)checkTriggers {
+    for (NSNumber * key in _sporkDictionary) {
+        DSSpork * spork = _sporkDictionary[key];
+        [self checkTriggersForSpork:spork forKeyIdentifier:spork.identifier];
+    }
+}
+
+-(void)checkTriggersForSpork:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
     if (![_sporkDictionary objectForKey:@(sporkIdentifier)] || ([_sporkDictionary objectForKey:@(sporkIdentifier)] && (_sporkDictionary[@(sporkIdentifier)].value != spork.value))) {
         switch (sporkIdentifier) {
             case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
@@ -182,6 +190,10 @@
             break;
         }
     }
+}
+
+-(void)setSporkValue:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
+    [self checkTriggersForSpork:spork forKeyIdentifier:sporkIdentifier];
     _sporkDictionary[@(sporkIdentifier)] = spork;
 }
 
