@@ -21,6 +21,8 @@
 - (instancetype)setAttributesFromTransactionLockVote:(DSTransactionLockVote *)transactionLockVote
 {
     [self.managedObjectContext performBlockAndWait:^{
+        self.transactionHash = uint256_data(transactionLockVote.transactionHash);
+        self.quorumModifierHash = uint256_data(transactionLockVote.quorumModifierHash);
         self.transactionLockVoteHash = uint256_data(transactionLockVote.transactionLockVoteHash);
         self.fromValidQuorum = transactionLockVote.quorumVerified;
         self.signatureIsValid = transactionLockVote.signatureVerified;

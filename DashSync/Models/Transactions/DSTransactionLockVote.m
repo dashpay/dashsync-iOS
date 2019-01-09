@@ -143,6 +143,7 @@
     self.quorumVerifiedAtBlockHash = quorumVerifiedAtBlockHash;
     self.signatureVerified = signatureVerified;
     self.quorumVerified = quorumVerified;
+    self.quorumModifierHash = quorumModifierHash;
     self.saved = YES; //this is coming already from the persistant store and not from the network
     return self;
 }
