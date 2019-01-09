@@ -49,7 +49,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
 
--(NSUInteger)masternodeRank:(UInt256)providerRegistrationTransactionHash quorumHash:(UInt256)quorumHash;
+-(UInt256)masternodeScore:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry quorumHash:(UInt256)quorumHash;
 
 -(void)wipeMasternodeInfo;
 

@@ -12,6 +12,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
+#import <arpa/inet.h>
 
 @interface DSSimplifiedMasternodeEntry()
 
@@ -125,13 +126,25 @@
 
 -(void)updateConfirmedHashHashedWithProviderRegistrationTransactionHash {
     NSMutableData * combinedData = [NSMutableData data];
-    [combinedData appendData:[NSData dataWithUInt256:self.confirmedHash].reverse];
-    [combinedData appendData:[NSData dataWithUInt256:self.providerRegistrationTransactionHash].reverse];
-    self.confirmedHashHashedWithProviderRegistrationTransactionHash = [NSData dataWithUInt256:combinedData.SHA256].reverse.UInt256;
+    NSData * confirmedHashData = [NSData dataWithUInt256:self.confirmedHash];
+    NSData * providerRegistrationTransactionHashData = [NSData dataWithUInt256:self.providerRegistrationTransactionHash];
+    [combinedData appendData:providerRegistrationTransactionHashData];
+    [combinedData appendData:confirmedHashData];
+    NSData * confirmedHashHashedWithProviderRegistrationTransactionHashData = [NSData dataWithUInt256:combinedData.SHA256];
+    self.confirmedHashHashedWithProviderRegistrationTransactionHash = confirmedHashHashedWithProviderRegistrationTransactionHashData.UInt256;
 }
 
 +(uint32_t)payloadLength {
     return 151;
+}
+
+-(NSString*)host {
+    char s[INET6_ADDRSTRLEN];
+    
+    if (_address.u64[0] == 0 && _address.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+        return @(inet_ntop(AF_INET, &_address.u32[3], s, sizeof(s)));
+    }
+    else return @(inet_ntop(AF_INET6, &_address, s, sizeof(s)));
 }
 
 -(NSString*)uniqueID {

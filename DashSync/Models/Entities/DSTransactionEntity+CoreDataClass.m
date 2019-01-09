@@ -34,6 +34,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSTransactionLockVoteEntity+CoreDataClass.h"
 
 @implementation DSTransactionEntity
 
@@ -128,6 +129,16 @@
         for (DSTxOutputEntity *e in self.outputs) {
             [tx addOutputScript:e.script amount:e.value];
         }
+        
+        NSMutableDictionary * lockVotesDictionary = [NSMutableDictionary dictionary];
+        
+        for (DSTransactionLockVoteEntity * lockVoteEntity in self.lockVotes) {
+            DSTransactionLockVote * transactionLockVote = [lockVoteEntity transactionLockVoteForChain:chain];
+            NSValue * inputOutpoint = dsutxo_obj(((DSUTXO) { lockVoteEntity.inputHash.UInt256, lockVoteEntity.inputIndex }));
+            if (!lockVotesDictionary[inputOutpoint]) lockVotesDictionary[inputOutpoint] = [NSMutableArray array];
+            [lockVotesDictionary[inputOutpoint] addObject:transactionLockVote];
+        }
+        [tx setInstantSendReceivedWithTransactionLockVotes:lockVotesDictionary];
     }];
     
     return tx;

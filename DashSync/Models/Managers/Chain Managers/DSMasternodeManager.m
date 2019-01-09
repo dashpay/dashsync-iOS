@@ -172,6 +172,18 @@ inline static int ceil_log2(int x)
 //}
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
+#if LOG_MASTERNODE_DIFF
+    NSUInteger chunkSize = 4096;
+    NSUInteger chunks = ceilf(((float)message.length)/chunkSize);
+    for (int i = 0;i<chunks;) {
+        NSInteger lengthLeft = message.length - i*chunkSize;
+        if (lengthLeft < 0) continue;
+        DSDLog(@"Logging masternode DIFF message chunk %d %@",i,[message subdataWithRange:NSMakeRange(i*chunkSize, MIN(lengthLeft, chunkSize))].hexString);
+        i++;
+    }
+    DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
+#endif
+    
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     
@@ -379,12 +391,43 @@ inline static int ceil_log2(int x)
     return rankedScores;
 }
 
--(NSUInteger)masternodeRank:(UInt256)providerRegistrationTransactionHash quorumHash:(UInt256)quorumHash {
-    return 0;
+-(UInt256)masternodeScore:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry quorumHash:(UInt256)quorumHash {
+    
+    if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
+        return UINT256_ZERO;
+    }
+    NSMutableData * data = [NSMutableData data];
+    [data appendData:[NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHashHashedWithProviderRegistrationTransactionHash]];
+    [data appendData:[NSData dataWithUInt256:quorumHash]];
+    return data.SHA256;
 }
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash {
-    return nil;
+    NSMutableDictionary <NSData*,id>* scoreDictionary = [NSMutableDictionary dictionary];
+    for (NSData * registrationTransactionHash in self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash[registrationTransactionHash];
+        UInt256 score = [self masternodeScore:simplifiedMasternodeEntry quorumHash:quorumHash];
+        if (uint256_is_zero(score)) continue;
+        scoreDictionary[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
+    }
+    NSArray * scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+        return uint256_sup(hash1, hash2)?NSOrderedAscending:NSOrderedDescending;
+    }];
+    NSMutableArray * masternodes = [NSMutableArray array];
+    NSUInteger maxCount = MIN(quorumCount, self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash.count);
+    for (int i = 0; i<maxCount;i++) {
+        NSData * score = [scores objectAtIndex:i];
+        DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
+        if (masternode.isValid) {
+            [masternodes addObject:masternode];
+        } else {
+            maxCount++;
+            if (maxCount > self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash.count) break;
+        }
+    }
+    return masternodes;
 }
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {

@@ -36,5 +36,6 @@
 @dynamic outputs;
 @dynamic transactionHash;
 @dynamic lockTime;
+@dynamic lockVotes;
 
 @end

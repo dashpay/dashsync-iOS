@@ -1005,7 +1005,16 @@
             return @"GovernanceObjectVote";
         case DSInvType_MasternodeVerify:
             return @"MasternodeVerify";
-            
+        case DSInvType_Error:
+            return @"Error";
+        case DSInvType_CompactBlock:
+            return @"CompactBlock";
+        case DSInvType_DummyCommitment:
+            return @"DummyCommitment";
+        case DSInvType_DummyContribution:
+            return @"DummyContribution";
+        case DSInvType_QuorumFinalCommitment:
+            return @"QuorumFinalCommitment";
         default:
             return @"";
     }
@@ -1205,7 +1214,7 @@
         [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
     });
     
-    DSDLog(@"%@:%u got %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash));
+    DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
         
@@ -1227,6 +1236,7 @@
 
 - (void)acceptTxlvoteMessage:(NSData *)message
 {
+    DSDLog(@"peer relayed txlvote message: %@", message.hexString);
     if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
         DSDLog(@"returned transaction lock message when DML not enabled: %@", message);//no error here
         return;
@@ -1246,7 +1256,7 @@
         [self.transactionDelegate peer:self relayedTransactionLockVote:transactionLockVote];;
     });
     
-    DSDLog(@"%@:%u got txlvote %@", self.host, self.port, uint256_obj(transactionLockVote.transactionHash));
+    DSDLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
     
 }
 
@@ -1403,10 +1413,10 @@
                     transaction = [self.transactionDelegate peer:self requestedTransaction:hash];
                     
                     if (transaction) {
-                        [self sendMessage:transaction.data type:transaction.isInstant?MSG_IX:MSG_TX];
+                        [self sendMessage:transaction.data type:transaction.desiresInstantSendSending?MSG_IX:MSG_TX];
                         break;
                     } else {
-                        DSDLog(@"peer %@ requested %@transaction was not found with hash %@ reversed %@",self.host,transaction.isInstant?@"instant ":@"",[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
+                        DSDLog(@"peer %@ requested %@transaction was not found with hash %@ reversed %@",self.host,transaction.desiresInstantSendSending?@"instant ":@"",[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
                         [notfound appendUInt32:type];
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;
@@ -1611,6 +1621,7 @@
 - (void)acceptSporkMessage:(NSData *)message
 {
     DSSpork * spork = [DSSpork sporkWithMessage:message onChain:self.chain];
+    DSDLog(@"received spork %@ with message %@",spork.identifierString,message.hexString);
     [self.sporkDelegate peer:self relayedSpork:spork];
 }
 

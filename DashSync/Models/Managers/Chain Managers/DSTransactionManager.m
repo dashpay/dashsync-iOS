@@ -75,6 +75,7 @@
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.nonFalsePositiveTransactions = [NSMutableSet set];
+    self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
     [self recreatePublishedTransactionList];
     return self;
 }
@@ -322,7 +323,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
     if (requestedSendAmount <= account.balance + fuzz && requestedSendAmount > 0) {
-        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.isInstant];
+        int64_t amount = [account maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
         
         if (amount > 0 && amount < requestedSendAmount) {
             UIAlertController * alert = [UIAlertController
@@ -345,7 +346,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                                            handler:^(UIAlertAction * action) {
                                                DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chain];
                                                paymentRequest.amount = requestedSendAmount - amount;
-                                               [self confirmPaymentRequest:paymentRequest fromAccount:account forceInstantSend:tx.isInstant signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
+                                               [self confirmPaymentRequest:paymentRequest fromAccount:account forceInstantSend:tx.desiresInstantSendSending signedCompletion:signedCompletion publishedCompletion:publishedCompletion];
 
                                            }];
             
@@ -833,21 +834,28 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 // MARK: Instant Send
 
 -(BOOL)checkAllLocksForTransaction:(DSTransaction*)transaction {
+    DSDLog(@"Checking all locks for transaction %@",uint256_data(transaction.txHash).hexString);
     NSValue *transactionHashValue = uint256_obj(transaction.txHash);
     if (!transaction.inputHashes || !transaction.inputHashes.count) return NO;
     NSMutableDictionary * lockVotes = [NSMutableDictionary dictionary];
-    for (NSValue * transactionOutputValue in transaction.inputHashes) {
-        if (self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY]) {
-            BOOL lockFailed = ![self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] boolValue];
+    
+    for (uint32_t inputIndex = 0;inputIndex < [transaction.inputHashes count];inputIndex++) {
+        NSValue * transactionOutputValue = transaction.inputHashes[inputIndex];
+        uint32_t outputIndex = [transaction.inputIndexes[inputIndex] unsignedIntValue];
+        UInt256 outputHash;
+        [transactionOutputValue getValue:&outputHash];
+        NSValue * transactionOutputUTXO = dsutxo_obj(((DSUTXO) { outputHash, outputIndex }));
+        if (self.transactionLockVoteDictionary[transactionHashValue][transactionOutputUTXO][IX_INPUT_LOCKED_KEY]) {
+            BOOL lockFailed = ![self.transactionLockVoteDictionary[transactionHashValue][transactionOutputUTXO][IX_INPUT_LOCKED_KEY] boolValue];
             if (lockFailed) return NO; //sanity check
             
         } else {
             return NO;
         }
-        NSMutableDictionary * inputLockVotesDictionary = [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] mutableCopy];
+        NSMutableDictionary * inputLockVotesDictionary = [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputUTXO] mutableCopy];
         [inputLockVotesDictionary removeObjectForKey:IX_INPUT_LOCKED_KEY];
         
-        lockVotes[transactionOutputValue] = [NSArray arrayWithArray:inputLockVotesDictionary.allValues];
+        lockVotes[transactionOutputUTXO] = [NSArray arrayWithArray:inputLockVotesDictionary.allValues];
     }
     [transaction setInstantSendReceivedWithTransactionLockVotes:lockVotes];
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -872,18 +880,26 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             //this input is alredy locked, let's check other inputs to see if they are locked as well
             [self checkAllLocksForTransaction:transaction];
             
-        } else if ([self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count] > 6) {
+        } else if ([self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count] > 5) {
             //there are over 6 votes already, check to see that the votes are coming from the right masternodes
+            NSLog(@"We have enough lock votes (%lu)",[self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count]);
             int yesVotes = 0;
             int noVotes = 0;//these might not be no votes, but they are a no for the masternode (might be an signature error)
-            for (NSObject * value in self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue]) {
+            for (NSObject * value in [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] copy]) {
                 if ([value isEqual:IX_INPUT_LOCKED_KEY]) continue;
                 DSTransactionLockVote * lockVote = self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][value];
-                DSSimplifiedMasternodeEntry * masternode = [self.masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(lockVote.masternodeProviderTransactionHash)];
-                if (!masternode) continue;
-                BOOL verified = [lockVote verifySignature];
-                if (verified) yesVotes++;
-                if (!verified) noVotes++;
+                DSSimplifiedMasternodeEntry * masternode = [self.masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(lockVote.masternodeProviderTransactionHash).reverse];
+                if (!masternode) {
+                    NSLog(@"No known masternode");
+                    continue;
+                }
+                if (!lockVote.quorumVerified) {
+                    DSDLog(@"We got a lock vote from the wrong quorum");
+                    DSDLog(@"Masternode %@ not in intended Quorum %@ with quorum modifier hash %@",lockVote.masternode,lockVote.intendedQuorum,[NSData dataWithUInt256:lockVote.quorumModifierHash].hexString);
+                }
+                DSDLog(@"signature is %@",lockVote.signatureVerified?@"verified":@"not good");
+                if (lockVote.signatureVerified && lockVote.quorumVerified) yesVotes++;
+                else noVotes++;
                 if (yesVotes > 5) { // 6 or more
                     self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @YES;
                     [self checkAllLocksForTransaction:transaction];
@@ -891,7 +907,11 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                     self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @NO;
                 }
             }
+        } else {
+            NSLog(@"There were only %lu lock votes, waiting for more.",[self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count]);
         }
+    } else {
+        NSLog(@"No account or transaction found for transaction lock!");
     }
 }
 
@@ -913,6 +933,9 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     }
     
     self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeProviderTransactionHashValue] = transactionLockVote;
+    
+    [transactionLockVote verifySignature];
+    [transactionLockVote verifySentByIntendedQuorum];
     
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }

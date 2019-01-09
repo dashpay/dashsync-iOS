@@ -30,7 +30,6 @@
 		2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */; };
 		2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */; };
 		2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */; };
-		2AA2C5ED20E397AE007768B1 /* DSMasternodeBroadcastTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2C5EC20E397AE007768B1 /* DSMasternodeBroadcastTests.m */; };
 		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -159,7 +158,6 @@
 		2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBloomFilterTests.m; sourceTree = "<group>"; };
 		2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentProtocolTests.m; sourceTree = "<group>"; };
 		2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSGovernanceTests.m; sourceTree = "<group>"; };
-		2AA2C5EC20E397AE007768B1 /* DSMasternodeBroadcastTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeBroadcastTests.m; sourceTree = "<group>"; };
 		2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -477,7 +475,6 @@
 				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
 				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
 				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
-				2AA2C5EC20E397AE007768B1 /* DSMasternodeBroadcastTests.m */,
 				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 			);
@@ -1027,7 +1024,6 @@
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
-				2AA2C5ED20E397AE007768B1 /* DSMasternodeBroadcastTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
