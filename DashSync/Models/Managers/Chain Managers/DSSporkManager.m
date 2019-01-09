@@ -35,6 +35,8 @@
 #import "DSChainManager+Protected.h"
 #import "DSMerkleBlock.h"
 
+#define SPORK_15_MIN_PROTOCOL_VERSION 70213
+
 @interface DSSporkManager()
     
 @property (nonatomic,strong) NSMutableDictionary <NSNumber*,DSSpork*> * sporkDictionary;
@@ -170,8 +172,8 @@
         switch (sporkIdentifier) {
             case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
             {
-                if (self.chain.lastBlock.height >= spork.value && self.chain.minProtocolVersion < 70213) {
-                    [self.chain setMinProtocolVersion:70213];
+                if (self.chain.lastBlock.height >= spork.value && self.chain.minProtocolVersion < SPORK_15_MIN_PROTOCOL_VERSION) {
+                    [self.chain setMinProtocolVersion:SPORK_15_MIN_PROTOCOL_VERSION];
                 }
             }
             break;
