@@ -90,7 +90,19 @@
 "insufficient funds for dash network fee" = "insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
+"Internal Error" = "Internal Error";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Invalid Params";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Invalid Request";
+
+/* No comment provided by engineer. */
 "Mainnet" = "Основна мрежа";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Method Not Found";
 
 /* No comment provided by engineer. */
 "minute" = "минута";
@@ -112,6 +124,9 @@
 
 /* No comment provided by engineer. */
 "ok" = "ок";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
 "passcode" = "парола";
@@ -153,6 +168,9 @@
 "seconds" = "секунди";
 
 /* No comment provided by engineer. */
+"Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
 "Testnet" = "Тестова мрежа";
 
 /* No comment provided by engineer. */
@@ -172,6 +190,12 @@
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "неочакван отговор от %@";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Unknown Error";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
 
 /* No comment provided by engineer. */
 "unsupported signature type" = "неподдържан тип подпис";
