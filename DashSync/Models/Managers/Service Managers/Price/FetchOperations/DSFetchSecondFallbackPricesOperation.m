@@ -19,7 +19,6 @@
 
 #import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
-#import "DSDynamicOptions.h"
 #import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitPayResponseOperation.h"
@@ -34,32 +33,20 @@ NS_ASSUME_NONNULL_BEGIN
 #define DASHCENTRAL_TICKER_URL @"https://www.dashcentral.org/api/v1/public"
 #define DASHCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
 
-#define CURRENCY_CODES_KEY @"CURRENCY_CODES"
-#define CURRENCY_PRICES_KEY @"CURRENCY_PRICES"
-#define POLONIEX_DASH_BTC_PRICE_KEY @"POLONIEX_DASH_BTC_PRICE"
-#define DASHCENTRAL_DASH_BTC_PRICE_KEY @"DASHCENTRAL_DASH_BTC_PRICE"
-#define DASHCASA_DASH_PRICE_KEY @"DASHCASA_DASH_PRICE"
-
 #pragma mark - Cache
 
-@interface DSFetchSecondFallbackPricesOperationCache : DSDynamicOptions
+@interface DSFetchSecondFallbackPricesOperationCache : NSObject
 
-@property (nonatomic, copy) NSArray<NSString *> *currencyCodes;
-@property (nonatomic, copy) NSArray<NSNumber *> *currencyPrices;
+@property (nonatomic, copy, nullable) NSArray<NSString *> *currencyCodes;
+@property (nonatomic, copy, nullable) NSArray<NSNumber *> *currencyPrices;
 
-@property (strong, nonatomic) NSNumber *poloniexLastPrice;
-@property (strong, nonatomic) NSNumber *dashcentralLastPrice;
-@property (strong, nonatomic) NSNumber *dashcasaLastPrice;
+@property (strong, nonatomic, nullable) NSNumber *poloniexLastPrice;
+@property (strong, nonatomic, nullable) NSNumber *dashcentralLastPrice;
+@property (strong, nonatomic, nullable) NSNumber *dashcasaLastPrice;
 
 @end
 
 @implementation DSFetchSecondFallbackPricesOperationCache
-
-@dynamic currencyCodes;
-@dynamic currencyPrices;
-@dynamic poloniexLastPrice;
-@dynamic dashcentralLastPrice;
-@dynamic dashcasaLastPrice;
 
 + (instancetype)sharedInstance {
     static DSFetchSecondFallbackPricesOperationCache *_sharedInstance = nil;
@@ -68,19 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
         _sharedInstance = [[self alloc] init];
     });
     return _sharedInstance;
-}
-
-- (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
-    NSDictionary *defaultsKeyByProperty = @{
-        @"currencyCodes" : CURRENCY_CODES_KEY,
-        @"currencyPrices" : CURRENCY_PRICES_KEY,
-        @"poloniexLastPrice" : POLONIEX_DASH_BTC_PRICE_KEY,
-        @"dashcentralLastPrice" : DASHCENTRAL_DASH_BTC_PRICE_KEY,
-        @"dashcasaLastPrice" : DASHCASA_DASH_PRICE_KEY,
-    };
-    NSString *defaultsKey = defaultsKeyByProperty[propertyName];
-    NSParameterAssert(defaultsKey);
-    return defaultsKey ?: propertyName;
 }
 
 @end

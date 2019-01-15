@@ -20,34 +20,29 @@
 
 #import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
-#import "DSDynamicOptions.h"
 #import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitcoinAvgResponseOperation.h"
 #import "DSParseDashBtcCCResponseOperation.h"
-#import "DSParseDashVesCCResponseOperation.h"
+#import "DSParseDashCasaResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 #define DASHBTCCC_TICKER_URL @"https://min-api.cryptocompare.com/data/generateAvg?fsym=DASH&tsym=BTC&e=Binance,Kraken,Poloniex,Bitfinex"
-#define DASHVESCC_TICKER_URL @"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=VES"
 #define BITCOINAVG_TICKER_URL @"https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BTC"
+#define DASHCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
 
 #pragma mark - Cache
 
-@interface DSFetchFirstFallbackPricesOperationCache : DSDynamicOptions
+@interface DSFetchFirstFallbackPricesOperationCache : NSObject
 
 @property (strong, nonatomic, nullable) NSDictionary<NSString *, NSNumber *> *pricesByCode;
 @property (strong, nonatomic, nullable) NSNumber *dashBtcPrice;
-@property (strong, nonatomic, nullable) NSNumber *vesPrice;
+@property (strong, nonatomic, nullable) NSNumber *dashcasaLastPrice;
 
 @end
 
 @implementation DSFetchFirstFallbackPricesOperationCache
-
-@dynamic pricesByCode;
-@dynamic dashBtcPrice;
-@dynamic vesPrice;
 
 + (instancetype)sharedInstance {
     static DSFetchFirstFallbackPricesOperationCache *_sharedInstance = nil;
@@ -58,17 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
     return _sharedInstance;
 }
 
-- (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
-    NSDictionary *defaultsKeyByProperty = @{
-        @"pricesByCode" : @"ds_prices_bitcoinavg_pricesByCode",
-        @"dashBtcPrice" : @"ds_prices_cc_dashBtcPrice",
-        @"vesPrice" : @"ds_prices_cc_vesPrice",
-    };
-    NSString *defaultsKey = defaultsKeyByProperty[propertyName];
-    NSParameterAssert(defaultsKey);
-    return defaultsKey ?: propertyName;
-}
-
 @end
 
 #pragma mark - Operation
@@ -76,11 +60,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSFetchFirstFallbackPricesOperation ()
 
 @property (strong, nonatomic) DSParseDashBtcCCResponseOperation *parseDashBtcCCOperation;
-@property (strong, nonatomic) DSParseDashVesCCResponseOperation *parseDashVesCCOperation;
 @property (strong, nonatomic) DSParseBitcoinAvgResponseOperation *parseBitcoinAvgOperation;
+@property (strong, nonatomic) DSParseDashCasaResponseOperation *parseDashCasaOperation;
 @property (strong, nonatomic) DSChainedOperation *chainDashBtcCCOperation;
-@property (strong, nonatomic) DSChainedOperation *chainDashVesCCOperation;
 @property (strong, nonatomic) DSChainedOperation *chainBitcoinAvgOperation;
+@property (strong, nonatomic) DSChainedOperation *chainDashCasaOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
@@ -103,17 +87,6 @@ NS_ASSUME_NONNULL_BEGIN
             [self addOperation:chainOperation];
         }
         {
-            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHVESCC_TICKER_URL]
-                                                     cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                                 timeoutInterval:30.0];
-            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
-            DSParseDashVesCCResponseOperation *parseOperation = [[DSParseDashVesCCResponseOperation alloc] init];
-            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
-            _parseDashVesCCOperation = parseOperation;
-            _chainDashVesCCOperation = chainOperation;
-            [self addOperation:chainOperation];
-        }
-        {
             NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOINAVG_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
@@ -122,6 +95,17 @@ NS_ASSUME_NONNULL_BEGIN
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
             _parseBitcoinAvgOperation = parseOperation;
             _chainBitcoinAvgOperation = chainOperation;
+            [self addOperation:chainOperation];
+        }
+        {
+            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCASA_TICKER_URL]
+                                                     cachePolicy:NSURLRequestReloadIgnoringCacheData
+                                                 timeoutInterval:30.0];
+            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
+            DSParseDashCasaResponseOperation *parseOperation = [[DSParseDashCasaResponseOperation alloc] init];
+            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
+            _parseDashCasaOperation = parseOperation;
+            _chainDashCasaOperation = chainOperation;
             [self addOperation:chainOperation];
         }
 
@@ -142,16 +126,16 @@ NS_ASSUME_NONNULL_BEGIN
             cache.dashBtcPrice = dashBtcPrice;
         }
     }
-    else if (operation == self.chainDashVesCCOperation) {
-        NSNumber *vesPrice = self.parseDashVesCCOperation.vesPrice;
-        if (vesPrice) {
-            cache.vesPrice = vesPrice;
-        }
-    }
     else if (operation == self.chainBitcoinAvgOperation) {
         NSDictionary<NSString *, NSNumber *> *pricesByCode = self.parseBitcoinAvgOperation.pricesByCode;
         if (pricesByCode) {
             cache.pricesByCode = pricesByCode;
+        }
+    }
+    else if (operation == self.chainDashCasaOperation) {
+        NSNumber *dashcasaLastPrice = self.parseDashCasaOperation.dashrate;
+        if (dashcasaLastPrice) {
+            cache.dashcasaLastPrice = dashcasaLastPrice;
         }
     }
 }
@@ -163,8 +147,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
     double dashBtcPrice = cache.dashBtcPrice.doubleValue;
-    NSNumber *vesPriceNumber = cache.vesPrice;
     NSDictionary<NSString *, NSNumber *> *pricesByCode = cache.pricesByCode;
+    NSNumber *dashcasaLastPrice = cache.dashcasaLastPrice;
 
     if (!pricesByCode || dashBtcPrice < DBL_EPSILON) {
         self.fetchCompletion(nil);
@@ -172,13 +156,11 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    double vesPrice = vesPriceNumber.doubleValue * dashBtcPrice;
-
     NSMutableArray<DSCurrencyPriceObject *> *prices = [NSMutableArray array];
     for (NSString *code in pricesByCode) {
         DSCurrencyPriceObject *priceObject = nil;
-        if ([code isEqualToString:@"VES"] && vesPrice > DBL_EPSILON) {
-            priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:@(vesPrice)];
+        if ([code isEqualToString:@"VES"] && dashcasaLastPrice) {
+            priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:dashcasaLastPrice];
         }
         else {
             double btcPrice = [pricesByCode[code] doubleValue];
