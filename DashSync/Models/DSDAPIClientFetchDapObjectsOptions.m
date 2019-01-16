@@ -15,18 +15,27 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DSDAPIProtocol.h"
+#import "DSDAPIClientFetchDapObjectsOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class HTTPLoaderFactory;
+@implementation DSDAPIClientFetchDapObjectsOptions
 
-@interface DSDAPIClient : NSObject <DSDAPIProtocol>
-
-- (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithWhereQuery:(nullable NSDictionary *)where
+                           orderBy:(nullable NSDictionary *)orderBy
+                             limit:(nullable NSNumber *)limit
+                           startAt:(nullable NSNumber *)startAt
+                        startAfter:(nullable NSNumber *)startAfter {
+    self = [super init];
+    if (self) {
+        _where = [where copy];
+        _orderBy = [orderBy copy];
+        _limit = limit;
+        _startAt = startAt;
+        _startAfter = startAfter;
+    }
+    return self;
+}
 
 @end
 

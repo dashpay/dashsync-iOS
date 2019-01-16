@@ -23,39 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
-#pragma mark -
-
-@implementation DSDAPIClientFetchDapObjectsOptions
-
-- (instancetype)initWithWhereQuery:(nullable NSDictionary *)where
-                           orderBy:(nullable NSDictionary *)orderBy
-                             limit:(nullable NSNumber *)limit
-                           startAt:(nullable NSNumber *)startAt
-                        startAfter:(nullable NSNumber *)startAfter {
-    self = [super init];
-    if (self) {
-        _where = [where copy];
-        _orderBy = [orderBy copy];
-        _limit = limit;
-        _startAt = startAt;
-        _startAfter = startAfter;
-    }
-    return self;
-}
-
-- (NSDictionary *)buildOptions {
-    NSMutableDictionary *mutableOptions = [NSMutableDictionary dictionary];
-    mutableOptions[@"where"] = self.where;
-    mutableOptions[@"orderBy"] = self.orderBy;
-    mutableOptions[@"limit"] = self.limit;
-    mutableOptions[@"startAt"] = self.startAt;
-    mutableOptions[@"startAfter"] = self.startAfter;
-    return [mutableOptions copy];
-}
-
-@end
-
-#pragma mark - Client
 
 @interface DSDAPIClient ()
 
@@ -76,6 +43,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     return self;
 }
 
+#pragma mark - DSDAPIProtocol
 #pragma mark Layer 1
 
 - (void)estimateFeeWithNumberOfBlocksToWait:(NSUInteger)numberOfBlocksToWait
@@ -523,7 +491,12 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     NSParameterAssert(dapId);
     NSParameterAssert(objectsType);
 
-    NSDictionary *optionsDictionary = [options buildOptions] ?: @{};
+    NSMutableDictionary *optionsDictionary = [NSMutableDictionary dictionary];
+    optionsDictionary[@"where"] = options.where;
+    optionsDictionary[@"orderBy"] = options.orderBy;
+    optionsDictionary[@"limit"] = options.limit;
+    optionsDictionary[@"startAt"] = options.startAt;
+    optionsDictionary[@"startAfter"] = options.startAfter;
 
     [self requestWithMetod:@"fetchDapObjects"
                   parameters:@{ @"dapId" : dapId,
