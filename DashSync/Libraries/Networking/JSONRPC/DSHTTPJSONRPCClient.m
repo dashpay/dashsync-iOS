@@ -103,19 +103,19 @@ static NSString *DSJSONRPCLocalizedErrorMessageForCode(NSInteger code) {
 - (void)invokeMethod:(NSString *)method
              success:(void (^)(id responseObject))success
              failure:(void (^)(NSError *error))failure {
-    [self invokeMethod:method withParameters:@[] success:success failure:failure];
+    [self invokeMethod:method withParameters:nil success:success failure:failure];
 }
 
 - (void)invokeMethod:(NSString *)method
-      withParameters:(id)parameters
+      withParameters:(nullable id)parameters
              success:(void (^)(id responseObject))success
              failure:(void (^)(NSError *error))failure {
-    [self invokeMethod:method withParameters:parameters requestId:@(1) success:success failure:failure];
+    [self invokeMethod:method withParameters:parameters requestId:nil success:success failure:failure];
 }
 
 - (void)invokeMethod:(NSString *)method
-      withParameters:(id)parameters
-           requestId:(id)requestId
+      withParameters:(nullable id)parameters
+           requestId:(nullable id)requestId
              success:(void (^)(id responseObject))success
              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(method);

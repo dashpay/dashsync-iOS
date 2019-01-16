@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes one argument: the error describing the network or parsing error that occurred.
  */
 - (void)invokeMethod:(NSString *)method
-      withParameters:(id)parameters
+      withParameters:(nullable id)parameters
              success:(void (^)(id responseObject))success
              failure:(void (^)(NSError *error))failure;
 
@@ -109,8 +109,8 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the request operation finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes one argument: the error describing the network or parsing error that occurred.
  */
 - (void)invokeMethod:(NSString *)method
-      withParameters:(id)parameters
-           requestId:(id)requestId
+      withParameters:(nullable id)parameters
+           requestId:(nullable id)requestId
              success:(void (^)(id responseObject))success
              failure:(void (^)(NSError *error))failure;
 

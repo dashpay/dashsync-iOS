@@ -93,6 +93,9 @@
 "Internal Error" = "Internal Error";
 
 /* No comment provided by engineer. */
+"Invalid DAPI Response" = "Invalid DAPI Response";
+
+/* No comment provided by engineer. */
 "Invalid Params" = "Invalid Params";
 
 /* No comment provided by engineer. */
