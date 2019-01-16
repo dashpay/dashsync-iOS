@@ -30,6 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DSParseSparkResponseOperation
 
 - (void)execute {
+    if (!self.httpOperationResult) {
+        return;
+    }
+
     NSParameterAssert(self.httpOperationResult.parsedResponse);
 
     NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
@@ -42,13 +46,13 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL responseIsValid = YES;
     for (id key in response) {
         id value = response[key];
-        
+
         responseIsValid = [key isKindOfClass:NSString.class] && [value isKindOfClass:NSNumber.class];
         if (!responseIsValid) {
             break;
         }
     }
-    
+
     if (!responseIsValid) {
         [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
 

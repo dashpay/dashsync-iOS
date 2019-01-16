@@ -20,7 +20,6 @@
 
 #import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
-#import "DSDynamicOptions.h"
 #import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitcoinAvgResponseOperation.h"
@@ -32,46 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define DASHBTCCC_TICKER_URL @"https://min-api.cryptocompare.com/data/generateAvg?fsym=DASH&tsym=BTC&e=Binance,Kraken,Poloniex,Bitfinex"
 #define DASHVESCC_TICKER_URL @"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=VES"
 #define BITCOINAVG_TICKER_URL @"https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BTC"
-
-#pragma mark - Cache
-
-@interface DSFetchFirstFallbackPricesOperationCache : DSDynamicOptions
-
-@property (strong, nonatomic, nullable) NSDictionary<NSString *, NSNumber *> *pricesByCode;
-@property (strong, nonatomic, nullable) NSNumber *dashBtcPrice;
-@property (strong, nonatomic, nullable) NSNumber *vesPrice;
-
-@end
-
-@implementation DSFetchFirstFallbackPricesOperationCache
-
-@dynamic pricesByCode;
-@dynamic dashBtcPrice;
-@dynamic vesPrice;
-
-+ (instancetype)sharedInstance {
-    static DSFetchFirstFallbackPricesOperationCache *_sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _sharedInstance = [[self alloc] init];
-    });
-    return _sharedInstance;
-}
-
-- (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
-    NSDictionary *defaultsKeyByProperty = @{
-        @"pricesByCode" : @"ds_prices_bitcoinavg_pricesByCode",
-        @"dashBtcPrice" : @"ds_prices_cc_dashBtcPrice",
-        @"vesPrice" : @"ds_prices_cc_vesPrice",
-    };
-    NSString *defaultsKey = defaultsKeyByProperty[propertyName];
-    NSParameterAssert(defaultsKey);
-    return defaultsKey ?: propertyName;
-}
-
-@end
-
-#pragma mark - Operation
 
 @interface DSFetchFirstFallbackPricesOperation ()
 
@@ -135,24 +94,10 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
-    if (operation == self.chainDashBtcCCOperation) {
-        NSNumber *dashBtcPrice = self.parseDashBtcCCOperation.dashBtcPrice;
-        if (dashBtcPrice) {
-            cache.dashBtcPrice = dashBtcPrice;
-        }
-    }
-    else if (operation == self.chainDashVesCCOperation) {
-        NSNumber *vesPrice = self.parseDashVesCCOperation.vesPrice;
-        if (vesPrice) {
-            cache.vesPrice = vesPrice;
-        }
-    }
-    else if (operation == self.chainBitcoinAvgOperation) {
-        NSDictionary<NSString *, NSNumber *> *pricesByCode = self.parseBitcoinAvgOperation.pricesByCode;
-        if (pricesByCode) {
-            cache.pricesByCode = pricesByCode;
-        }
+    if (errors.count > 0) {
+        [self.chainDashBtcCCOperation cancel];
+        [self.chainDashVesCCOperation cancel];
+        [self.chainBitcoinAvgOperation cancel];
     }
 }
 
@@ -161,10 +106,15 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
-    double dashBtcPrice = cache.dashBtcPrice.doubleValue;
-    NSNumber *vesPriceNumber = cache.vesPrice;
-    NSDictionary<NSString *, NSNumber *> *pricesByCode = cache.pricesByCode;
+    if (errors.count > 0) {
+        self.fetchCompletion(nil);
+
+        return;
+    }
+
+    double dashBtcPrice = self.parseDashBtcCCOperation.dashBtcPrice.doubleValue;
+    NSNumber *vesPriceNumber = self.parseDashVesCCOperation.vesPrice;
+    NSDictionary<NSString *, NSNumber *> *pricesByCode = self.parseBitcoinAvgOperation.pricesByCode;
 
     if (!pricesByCode || dashBtcPrice < DBL_EPSILON) {
         self.fetchCompletion(nil);

@@ -19,7 +19,6 @@
 
 #import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
-#import "DSDynamicOptions.h"
 #import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitPayResponseOperation.h"
@@ -33,59 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define POLONIEX_TICKER_URL @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL @"https://www.dashcentral.org/api/v1/public"
 #define DASHCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
-
-#define CURRENCY_CODES_KEY @"CURRENCY_CODES"
-#define CURRENCY_PRICES_KEY @"CURRENCY_PRICES"
-#define POLONIEX_DASH_BTC_PRICE_KEY @"POLONIEX_DASH_BTC_PRICE"
-#define DASHCENTRAL_DASH_BTC_PRICE_KEY @"DASHCENTRAL_DASH_BTC_PRICE"
-#define DASHCASA_DASH_PRICE_KEY @"DASHCASA_DASH_PRICE"
-
-#pragma mark - Cache
-
-@interface DSFetchSecondFallbackPricesOperationCache : DSDynamicOptions
-
-@property (nonatomic, copy) NSArray<NSString *> *currencyCodes;
-@property (nonatomic, copy) NSArray<NSNumber *> *currencyPrices;
-
-@property (strong, nonatomic) NSNumber *poloniexLastPrice;
-@property (strong, nonatomic) NSNumber *dashcentralLastPrice;
-@property (strong, nonatomic) NSNumber *dashcasaLastPrice;
-
-@end
-
-@implementation DSFetchSecondFallbackPricesOperationCache
-
-@dynamic currencyCodes;
-@dynamic currencyPrices;
-@dynamic poloniexLastPrice;
-@dynamic dashcentralLastPrice;
-@dynamic dashcasaLastPrice;
-
-+ (instancetype)sharedInstance {
-    static DSFetchSecondFallbackPricesOperationCache *_sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _sharedInstance = [[self alloc] init];
-    });
-    return _sharedInstance;
-}
-
-- (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
-    NSDictionary *defaultsKeyByProperty = @{
-        @"currencyCodes" : CURRENCY_CODES_KEY,
-        @"currencyPrices" : CURRENCY_PRICES_KEY,
-        @"poloniexLastPrice" : POLONIEX_DASH_BTC_PRICE_KEY,
-        @"dashcentralLastPrice" : DASHCENTRAL_DASH_BTC_PRICE_KEY,
-        @"dashcasaLastPrice" : DASHCASA_DASH_PRICE_KEY,
-    };
-    NSString *defaultsKey = defaultsKeyByProperty[propertyName];
-    NSParameterAssert(defaultsKey);
-    return defaultsKey ?: propertyName;
-}
-
-@end
-
-#pragma mark - Operation
 
 @interface DSFetchSecondFallbackPricesOperation ()
 
@@ -162,32 +108,10 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSFetchSecondFallbackPricesOperationCache *cache = [DSFetchSecondFallbackPricesOperationCache sharedInstance];
-    if (operation == self.chainBitPayOperation) {
-        NSArray *currencyCodes = self.parseBitPayOperation.currencyCodes;
-        NSArray *currencyPrices = self.parseBitPayOperation.currencyPrices;
-        if (currencyCodes && currencyPrices) {
-            cache.currencyCodes = currencyCodes;
-            cache.currencyPrices = currencyPrices;
-        }
-    }
-    else if (operation == self.chainPoloniexOperation) {
-        NSNumber *poloniexPrice = self.parsePoloniexOperation.lastTradePriceNumber;
-        if (poloniexPrice) {
-            cache.poloniexLastPrice = poloniexPrice;
-        }
-    }
-    else if (operation == self.chainDashcentralOperation) {
-        NSNumber *dashcentralPrice = self.parseDashcentralOperation.btcDashPrice;
-        if (dashcentralPrice) {
-            cache.dashcentralLastPrice = dashcentralPrice;
-        }
-    }
-    else if (operation == self.chainDashCasaOperation) {
-        NSNumber *dashcasaLastPrice = self.parseDashCasaOperation.dashrate;
-        if (dashcasaLastPrice) {
-            cache.dashcasaLastPrice = dashcasaLastPrice;
-        }
+    if (errors.count > 0) {
+        [self.chainDashBtcCCOperation cancel];
+        [self.chainDashVesCCOperation cancel];
+        [self.chainBitcoinAvgOperation cancel];
     }
 }
 
@@ -196,12 +120,17 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSFetchSecondFallbackPricesOperationCache *cache = [DSFetchSecondFallbackPricesOperationCache sharedInstance];
-    NSArray<NSString *> *currencyCodes = cache.currencyCodes;
-    NSArray<NSNumber *> *currencyPrices = cache.currencyPrices;
-    NSNumber *poloniexPriceNumber = cache.poloniexLastPrice;
-    NSNumber *dashcentralPriceNumber = cache.dashcentralLastPrice;
-    NSNumber *dashcasaLastPrice = cache.dashcasaLastPrice;
+    if (errors.count > 0) {
+        self.fetchCompletion(nil);
+
+        return;
+    }
+
+    NSArray *currencyCodes = self.parseBitPayOperation.currencyCodes;
+    NSArray *currencyPrices = self.parseBitPayOperation.currencyPrices;
+    NSNumber *poloniexPriceNumber = self.parsePoloniexOperation.lastTradePriceNumber;
+    NSNumber *dashcentralPriceNumber = self.parseDashcentralOperation.btcDashPrice;
+    NSNumber *dashcasaPrice = self.parseDashCasaOperation.dashrate;
 
     // not enough data to build prices
     if (!currencyCodes ||
@@ -240,8 +169,8 @@ NS_ASSUME_NONNULL_BEGIN
         NSUInteger index = [currencyCodes indexOfObject:code];
         NSNumber *btcPrice = currencyPrices[index];
         NSNumber *price = @(btcPrice.doubleValue * btcDashPrice);
-        if ([code isEqualToString:@"VES"] && dashcasaLastPrice) {
-            price = dashcasaLastPrice;
+        if ([code isEqualToString:@"VES"] && dashcasaPrice) {
+            price = dashcasaPrice;
         }
         DSCurrencyPriceObject *priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:price];
         if (priceObject) {
