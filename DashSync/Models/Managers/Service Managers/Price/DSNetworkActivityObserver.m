@@ -17,8 +17,7 @@
 
 #import "DSNetworkActivityObserver.h"
 
-// since we have AFNetworking dependency will just use their implementation
-#import <AFNetworking/AFNetworkActivityIndicatorManager.h>
+#import "DSNetworkActivityIndicatorManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,15 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark DSOperationObserverProtocol
 
 - (void)operationDidStart:(DSOperation *)operation {
-#if TARGET_OS_IOS
-    [[AFNetworkActivityIndicatorManager sharedManager] incrementActivityCount];
-#endif
+    [DSNetworkActivityIndicatorManager increaseActivityCounter];
 }
 
 - (void)operationDidFinish:(DSOperation *)operation errors:(nullable NSArray<NSError *> *)errors {
-#if TARGET_OS_IOS
-    [[AFNetworkActivityIndicatorManager sharedManager] decrementActivityCount];
-#endif
+    [DSNetworkActivityIndicatorManager decreaseActivityCounter];
 }
 
 @end
