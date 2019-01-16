@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018-2019 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,21 +15,18 @@
 //  limitations under the License.
 //
 
-#ifndef DS_Networking_h
-#define DS_Networking_h
-
-#import "DSNetworkingCoordinator.h"
-#import "HTTPCancellationToken.h"
-#import "HTTPLoader.h"
-#import "HTTPLoaderAuthoriser.h"
-#import "HTTPLoaderDelegate.h"
 #import "HTTPLoaderFactory.h"
-#import "HTTPLoaderManager.h"
-#import "HTTPLoaderOperation.h"
-#import "HTTPRateLimiter.h"
-#import "HTTPRateLimiterMap.h"
-#import "HTTPRequest.h"
-#import "HTTPResponse.h"
 #import "HTTPService.h"
 
-#endif /* DS_Networking_h */
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DSNetworkingCoordinator : NSObject
+
+@property (readonly, strong, nonatomic) HTTPService *httpService;
+@property (readonly, strong, nonatomic) HTTPLoaderFactory *loaderFactory;
+
++ (instancetype)sharedInstance;
+
+@end
+
+NS_ASSUME_NONNULL_END

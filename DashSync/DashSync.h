@@ -19,7 +19,7 @@
 #import "DSTransactionManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
-#import "DSDAPIPeerManager.h"
+#import "DSDAPIClient.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
@@ -66,6 +66,8 @@
 #import "DSBlockchainUserCloseTransaction.h"
 
 #import "DSBLSKey.h"
+
+#import "DSNetworking.h"
 
 #define SHAPESHIFT_ENABLED 0
 

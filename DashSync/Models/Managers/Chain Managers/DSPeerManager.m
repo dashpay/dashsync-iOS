@@ -50,7 +50,7 @@
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
 #import "DSWallet.h"
-#import "DSDAPIPeerManager.h"
+#import "DSDAPIClient.h"
 #import "NSDate+Utils.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSChainManager+Protected.h"
