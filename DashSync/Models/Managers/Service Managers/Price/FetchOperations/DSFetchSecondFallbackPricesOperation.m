@@ -22,8 +22,8 @@
 #import "DSHTTPOperation.h"
 #import "DSOperationQueue.h"
 #import "DSParseBitPayResponseOperation.h"
-#import "DSParseDashCasaResponseOperation.h"
 #import "DSParseDashCentralResponseOperation.h"
+#import "DSParseDashVesCCResponseOperation.h"
 #import "DSParsePoloniexResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -31,18 +31,18 @@ NS_ASSUME_NONNULL_BEGIN
 #define BITPAY_TICKER_URL @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL @"https://www.dashcentral.org/api/v1/public"
-#define DASHCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
+#define DASHVESCC_TICKER_URL @"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=VES"
 
 @interface DSFetchSecondFallbackPricesOperation ()
 
 @property (strong, nonatomic) DSParseBitPayResponseOperation *parseBitPayOperation;
 @property (strong, nonatomic) DSParsePoloniexResponseOperation *parsePoloniexOperation;
 @property (strong, nonatomic) DSParseDashCentralResponseOperation *parseDashcentralOperation;
-@property (strong, nonatomic) DSParseDashCasaResponseOperation *parseDashCasaOperation;
+@property (strong, nonatomic) DSParseDashVesCCResponseOperation *parseDashVesCCOperation;
 @property (strong, nonatomic) DSChainedOperation *chainBitPayOperation;
 @property (strong, nonatomic) DSChainedOperation *chainPoloniexOperation;
 @property (strong, nonatomic) DSChainedOperation *chainDashcentralOperation;
-@property (strong, nonatomic) DSChainedOperation *chainDashCasaOperation;
+@property (strong, nonatomic) DSChainedOperation *chainDashVesCCOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
@@ -87,14 +87,14 @@ NS_ASSUME_NONNULL_BEGIN
             [self addOperation:chainOperation];
         }
         {
-            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCASA_TICKER_URL]
+            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHVESCC_TICKER_URL]
                                                      cachePolicy:NSURLRequestReloadIgnoringCacheData
                                                  timeoutInterval:30.0];
             DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
-            DSParseDashCasaResponseOperation *parseOperation = [[DSParseDashCasaResponseOperation alloc] init];
+            DSParseDashVesCCResponseOperation *parseOperation = [[DSParseDashVesCCResponseOperation alloc] init];
             DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
-            _parseDashCasaOperation = parseOperation;
-            _chainDashCasaOperation = chainOperation;
+            _parseDashVesCCOperation = parseOperation;
+            _chainDashVesCCOperation = chainOperation;
             [self addOperation:chainOperation];
         }
 
@@ -109,9 +109,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (errors.count > 0) {
-        [self.chainDashBtcCCOperation cancel];
+        [self.chainBitPayOperation cancel];
+        [self.chainPoloniexOperation cancel];
+        [self.chainDashcentralOperation cancel];
         [self.chainDashVesCCOperation cancel];
-        [self.chainBitcoinAvgOperation cancel];
     }
 }
 
@@ -130,12 +131,13 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *currencyPrices = self.parseBitPayOperation.currencyPrices;
     NSNumber *poloniexPriceNumber = self.parsePoloniexOperation.lastTradePriceNumber;
     NSNumber *dashcentralPriceNumber = self.parseDashcentralOperation.btcDashPrice;
-    NSNumber *dashcasaPrice = self.parseDashCasaOperation.dashrate;
+    NSNumber *vesPriceNumber = self.parseDashVesCCOperation.vesPrice;
 
     // not enough data to build prices
     if (!currencyCodes ||
         !currencyPrices ||
         !(poloniexPriceNumber || dashcentralPriceNumber) ||
+        !vesPriceNumber ||
         currencyCodes.count != currencyPrices.count) {
 
         self.fetchCompletion(nil);
@@ -145,20 +147,20 @@ NS_ASSUME_NONNULL_BEGIN
 
     double poloniexPrice = poloniexPriceNumber.doubleValue;
     double dashcentralPrice = dashcentralPriceNumber.doubleValue;
-    double btcDashPrice = 0.0;
+    double dashBtcPrice = 0.0;
     if (poloniexPrice > 0.0) {
         if (dashcentralPrice > 0.0) {
-            btcDashPrice = (poloniexPrice + dashcentralPrice) / 2.0;
+            dashBtcPrice = (poloniexPrice + dashcentralPrice) / 2.0;
         }
         else {
-            btcDashPrice = poloniexPrice;
+            dashBtcPrice = poloniexPrice;
         }
     }
     else if (dashcentralPrice > 0.0) {
-        btcDashPrice = dashcentralPrice;
+        dashBtcPrice = dashcentralPrice;
     }
 
-    if (btcDashPrice < DBL_EPSILON) {
+    if (dashBtcPrice < DBL_EPSILON) {
         self.fetchCompletion(nil);
 
         return;
@@ -166,15 +168,21 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSMutableArray<DSCurrencyPriceObject *> *prices = [NSMutableArray array];
     for (NSString *code in currencyCodes) {
-        NSUInteger index = [currencyCodes indexOfObject:code];
-        NSNumber *btcPrice = currencyPrices[index];
-        NSNumber *price = @(btcPrice.doubleValue * btcDashPrice);
-        if ([code isEqualToString:@"VES"] && dashcasaPrice) {
-            price = dashcasaPrice;
+        double price = 0.0;
+        if ([code isEqualToString:@"VES"]) {
+            price = vesPriceNumber.doubleValue * dashBtcPrice;
         }
-        DSCurrencyPriceObject *priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:price];
-        if (priceObject) {
-            [prices addObject:priceObject];
+        else {
+            NSUInteger index = [currencyCodes indexOfObject:code];
+            NSNumber *btcPrice = currencyPrices[index];
+            price = btcPrice.doubleValue * dashBtcPrice;
+        }
+
+        if (price > DBL_EPSILON) {
+            DSCurrencyPriceObject *priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:@(price)];
+            if (priceObject) {
+                [prices addObject:priceObject];
+            }
         }
     }
 
