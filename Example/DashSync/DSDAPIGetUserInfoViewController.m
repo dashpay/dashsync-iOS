@@ -76,19 +76,23 @@
 }
 
 -(IBAction)search:(id)sender {
+    NSString *username = nil;
     if (self.usernameCell.valueTextField.text && ![self.usernameCell.valueTextField.text isEqualToString:@""]) {
-        [self.chainManager.DAPIPeerManager getUserByUsername:self.usernameCell.valueTextField.text withSuccess:^(NSDictionary *userInfo) {
-            NSLog(@"%@",userInfo);
-        } failure:^(NSError *error) {
-            NSLog(@"%@",error);
-        }];
+        username = self.usernameCell.valueTextField.text;
     } else if (self.regTxIdCell.valueTextField.text && ![self.regTxIdCell.valueTextField.text isEqualToString:@""]) {
-        [self.chainManager.DAPIPeerManager getUserByUsername:self.regTxIdCell.valueTextField.text withSuccess:^(NSDictionary *userInfo) {
-            NSLog(@"%@",userInfo);
-        } failure:^(NSError *error) {
-            NSLog(@"%@",error);
-        }];
+        username = self.regTxIdCell.valueTextField.text;
     }
+    
+    if (!username) {
+        return;
+    }
+    
+    [self.chainManager.DAPIClient getUserByName:username success:^(NSDictionary * _Nonnull blockchainUser) {
+        NSLog(@"%@", blockchainUser);
+    } failure:^(NSError * _Nonnull error) {
+        NSLog(@"%@", error);
+    }];
+
 }
 
 @end
