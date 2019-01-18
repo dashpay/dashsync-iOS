@@ -131,6 +131,8 @@ sequence:(uint32_t)sequence;
 
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex;
 
+- (BOOL)hasNonDustOutputInWallet:(DSWallet*)wallet;
+
 //instant send
 
 -(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes;

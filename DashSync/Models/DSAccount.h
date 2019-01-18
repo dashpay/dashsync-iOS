@@ -57,6 +57,9 @@
 // latest 100 transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * _Nonnull recentTransactions;
 
+// latest 100 transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray * _Nonnull recentTransactionsWithInternalOutput;
+
 // all wallet transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * _Nonnull allTransactions;
 

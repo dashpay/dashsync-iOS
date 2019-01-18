@@ -98,6 +98,8 @@
 
 @implementation DSAccount : NSObject
 
+// MARK: - Initiation
+
 +(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
     return [[self alloc] initWithDerivationPaths:derivationPaths];
 }
@@ -160,8 +162,12 @@
     return self;
 }
 
--(NSString*)uniqueID {
-    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueID,self.accountNumber]; //0 is for type 0
+-(void)setWallet:(DSWallet *)wallet {
+    if (!_wallet) {
+        _wallet = wallet;
+        [self loadDerivationPaths];
+        [self loadTransactions];
+    }
 }
 
 -(void)loadTransactions {
@@ -185,17 +191,17 @@
                     if (! transaction || self.allTx[hash] != nil) continue;
                     self.allTx[hash] = transaction;
                     [self.transactions addObject:transaction];
-                
-                DSTxInputEntity * spentInInput = e.spentInInput;
-                if (spentInInput) { //this has been spent, also add the transaction where it is being spent
                     
-                    DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
-                    NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
-                    
-                    if (! transaction || self.allTx[hash] != nil) continue;
-                    self.allTx[hash] = transaction;
-                    [self.transactions addObject:transaction];
-                }
+                    DSTxInputEntity * spentInInput = e.spentInInput;
+                    if (spentInInput) { //this has been spent, also add the transaction where it is being spent
+                        
+                        DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
+                        NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
+                        
+                        if (! transaction || self.allTx[hash] != nil) continue;
+                        self.allTx[hash] = transaction;
+                        [self.transactions addObject:transaction];
+                    }
                 }
             }
         }
@@ -205,6 +211,56 @@
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
 }
+
+- (void)loadDerivationPaths {
+    if (!_wallet.isTransient) {
+        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+            [derivationPath loadAddresses];
+        }
+    }
+    if (!self.isViewOnlyAccount) {
+        if (self.bip44DerivationPath) {
+            self.defaultDerivationPath = self.bip44DerivationPath;
+        } else if (self.bip32DerivationPath) {
+            self.defaultDerivationPath = self.bip32DerivationPath;
+        } else {
+            self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
+        }
+    }
+}
+
+// MARK: - Reinitiation
+
+- (void)wipeBlockchainInfo {
+    [self.transactions removeAllObjects];
+    [self.allTx removeAllObjects];
+    [self updateBalance];
+}
+
+// MARK: - Calculated Attributes
+
+-(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueID,self.accountNumber]; //0 is for type 0
+}
+
+// returns the first unused external address
+- (NSString *)receiveAddress
+{
+    return self.defaultDerivationPath.receiveAddress;
+}
+
+// returns the first unused internal address
+- (NSString *)changeAddress {
+    return self.defaultDerivationPath.changeAddress;
+}
+
+// NSData objects containing serialized UTXOs
+- (NSArray *)unspentOutputs
+{
+    return self.utxos.array;
+}
+
+// MARK: - Derivation Paths
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath {
     if ([self.mDerivationPaths containsObject:derivationPath]) {
@@ -235,32 +291,14 @@
     _defaultDerivationPath = defaultDerivationPath;
 }
 
--(void)setWallet:(DSWallet *)wallet {
-    if (!_wallet) {
-        _wallet = wallet;
-        [self loadDerivationPaths];
-        [self loadTransactions];
-    }
-}
-
-- (void)loadDerivationPaths {
-    if (!_wallet.isTransient) {
+-(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        [derivationPath loadAddresses];
+        if ([derivationPath containsAddress:address]) return derivationPath;
     }
-    }
-    if (!self.isViewOnlyAccount) {
-        if (self.bip44DerivationPath) {
-            self.defaultDerivationPath = self.bip44DerivationPath;
-        } else if (self.bip32DerivationPath) {
-            self.defaultDerivationPath = self.bip32DerivationPath;
-        } else {
-            self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
-        }
-    }
+    return nil;
 }
 
-// MARK: - Combining Derivation Paths
+// MARK: - Addresses from Combined Derivation Paths
 
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
     NSMutableArray * mArray = [NSMutableArray array];
@@ -304,36 +342,6 @@
     return [mSet copy];
 }
 
-- (NSString *)receiveAddress
-{
-    return self.defaultDerivationPath.receiveAddress;
-}
-
-// returns the first unused internal address
-- (NSString *)changeAddress {
-    return self.defaultDerivationPath.changeAddress;
-}
-
-// NSData objects containing serialized UTXOs
-- (NSArray *)unspentOutputs
-{
-    return self.utxos.array;
-}
-
-// last 100 transactions sorted by date, most recent first
-- (NSArray *)recentTransactions
-{
-    //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
-    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
-                                                                  self.transactions.count)];
-}
-
-// all wallet transactions sorted by date, most recent first
-- (NSArray *)allTransactions
-{
-    return self.transactions.array;
-}
-
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
@@ -342,19 +350,42 @@
     return FALSE;
 }
 
--(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        if ([derivationPath containsAddress:address]) return derivationPath;
-    }
-    return nil;
-}
-
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         if ([derivationPath addressIsUsed:address]) return TRUE;
     }
     return FALSE;
+}
+
+// MARK: - Transactions
+
+// last 100 transactions sorted by date, most recent first
+- (NSArray *)recentTransactions
+{
+    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
+                                                                  self.transactions.count)];
+}
+
+// last 100 transactions sorted by date, most recent first
+- (NSArray *)recentTransactionsWithInternalOutput
+{
+    NSMutableArray * recentTransactionArray = [NSMutableArray array];
+    int i = 0;
+    while (recentTransactionArray.count < 100 && i<self.transactions.count) {
+        DSTransaction * transaction = [self.transactions objectAtIndex:i];
+        if ([transaction hasNonDustOutputInWallet:self.wallet]) {
+            [recentTransactionArray addObject:transaction];
+        }
+        i++;
+    }
+    return [NSArray arrayWithArray:recentTransactionArray];
+}
+
+// all wallet transactions sorted by date, most recent first
+- (NSArray *)allTransactions
+{
+    return self.transactions.array;
 }
 
 // MARK: - Balance
@@ -503,13 +534,13 @@
         _balance = balance;
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(balanceNotification) object:nil];
-            [self performSelector:@selector(balanceNotification) withObject:nil afterDelay:0.1];
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(postBalanceDidChangeNotification) object:nil];
+            [self performSelector:@selector(postBalanceDidChangeNotification) withObject:nil afterDelay:0.1];
         });
     }
 }
 
-- (void)balanceNotification
+- (void)postBalanceDidChangeNotification
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
 }
@@ -1252,12 +1283,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     return updated;
-}
-
-- (void)wipeBlockchainInfo {
-    [self.transactions removeAllObjects];
-    [self.allTx removeAllObjects];
-    [self updateBalance];
 }
 
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction

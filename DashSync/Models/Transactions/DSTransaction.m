@@ -38,6 +38,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 #import "DSAccount.h"
+#import "DSWallet.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionLockVote.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -554,7 +555,7 @@
     if (amountTotal == 0) return TX_UNCONFIRMED;
     
     // this could possibly overflow a uint64 for very large input amounts and far in the future block heights,
-    // however we should be okay up to the largest current bitcoin balance in existence for the next 40 years or so,
+    // however we should be okay up to the largest current dash balance in existence for the next 40 years or so,
     // and the worst case is paying a transaction fee when it's not needed
     return (uint32_t)((TX_FREE_MIN_PRIORITY*(uint64_t)self.size + amountsByHeights + amountTotal - 1ULL)/amountTotal);
 }
@@ -594,6 +595,17 @@
     uint64_t feeUsed = [self feeUsed];
     if (feeUsed == UINT64_MAX) return UINT64_MAX;
     return lroundf(((float)feeUsed)/self.size);
+}
+
+- (BOOL)hasNonDustOutputInWallet:(DSWallet*)wallet {
+    for (int i = 0; i<self.outputAddresses.count;i++) {
+        NSString * outputAddress = self.outputAddresses[i];
+        uint64_t outputAmount = [self.outputAmounts[i] longLongValue];
+        if (outputAmount > TX_MIN_OUTPUT_AMOUNT && [wallet containsAddress:outputAddress]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 #pragma mark - Polymorphic data
