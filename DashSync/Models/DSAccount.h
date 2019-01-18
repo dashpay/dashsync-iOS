@@ -57,6 +57,9 @@
 // latest 100 transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * _Nonnull recentTransactions;
 
+// latest 100 transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray * _Nonnull recentTransactionsWithInternalOutput;
+
 // all wallet transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * _Nonnull allTransactions;
 
@@ -151,9 +154,6 @@
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
 - (uint64_t)balanceAfterTransaction:(DSTransaction * _Nonnull)transaction;
 
-// returns the block height after which the transaction is likely to be processed without including a fee
-- (uint32_t)blockHeightUntilFree:(DSTransaction * _Nonnull)transaction;
-
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 
 // This loads the derivation paths addresses once the account is set to a wallet
@@ -163,10 +163,10 @@
 - (void)loadTransactions;
 
 // This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainUserRegistrationTransaction*)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 
 // This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainUserResetTransaction*)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 
 //This removes all transactions from the account
 - (void)wipeBlockchainInfo;

@@ -515,7 +515,7 @@
 
 - (DSBlockchainUserRegistrationTransaction *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSAccount * account in self.accounts) {
-        DSBlockchainUserRegistrationTransaction * transaction = [account registrationTransactionForPublicKeyHash:publicKeyHash];
+        DSBlockchainUserRegistrationTransaction * transaction = [account blockchainUserRegistrationTransactionForPublicKeyHash:publicKeyHash];
         if (transaction) return transaction;
     }
     return nil;
@@ -536,7 +536,7 @@
 
 - (DSBlockchainUserResetTransaction *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSAccount * account in self.accounts) {
-        DSBlockchainUserResetTransaction * transaction = [account resetTransactionForPublicKeyHash:publicKeyHash];
+        DSBlockchainUserResetTransaction * transaction = [account blockchainUserResetTransactionForPublicKeyHash:publicKeyHash];
         if (transaction) return transaction;
     }
     return nil;

@@ -98,6 +98,8 @@
 
 @implementation DSAccount : NSObject
 
+// MARK: - Initiation
+
 +(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
     return [[self alloc] initWithDerivationPaths:derivationPaths];
 }
@@ -160,8 +162,12 @@
     return self;
 }
 
--(NSString*)uniqueID {
-    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueID,self.accountNumber]; //0 is for type 0
+-(void)setWallet:(DSWallet *)wallet {
+    if (!_wallet) {
+        _wallet = wallet;
+        [self loadDerivationPaths];
+        [self loadTransactions];
+    }
 }
 
 -(void)loadTransactions {
@@ -185,17 +191,17 @@
                     if (! transaction || self.allTx[hash] != nil) continue;
                     self.allTx[hash] = transaction;
                     [self.transactions addObject:transaction];
-                
-                DSTxInputEntity * spentInInput = e.spentInInput;
-                if (spentInInput) { //this has been spent, also add the transaction where it is being spent
                     
-                    DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
-                    NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
-                    
-                    if (! transaction || self.allTx[hash] != nil) continue;
-                    self.allTx[hash] = transaction;
-                    [self.transactions addObject:transaction];
-                }
+                    DSTxInputEntity * spentInInput = e.spentInInput;
+                    if (spentInInput) { //this has been spent, also add the transaction where it is being spent
+                        
+                        DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
+                        NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
+                        
+                        if (! transaction || self.allTx[hash] != nil) continue;
+                        self.allTx[hash] = transaction;
+                        [self.transactions addObject:transaction];
+                    }
                 }
             }
         }
@@ -205,6 +211,65 @@
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
 }
+
+- (void)loadDerivationPaths {
+    if (!_wallet.isTransient) {
+        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+            [derivationPath loadAddresses];
+        }
+    }
+    if (!self.isViewOnlyAccount) {
+        if (self.bip44DerivationPath) {
+            self.defaultDerivationPath = self.bip44DerivationPath;
+        } else if (self.bip32DerivationPath) {
+            self.defaultDerivationPath = self.bip32DerivationPath;
+        } else {
+            self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
+        }
+    }
+}
+
+// MARK: - Reinitiation
+
+- (void)wipeBlockchainInfo {
+    [self.transactions removeAllObjects];
+    [self.allTx removeAllObjects];
+    [self updateBalance];
+}
+
+// MARK: - Calculated Attributes
+
+-(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@-0-%u",self.wallet.uniqueID,self.accountNumber]; //0 is for type 0
+}
+
+- (uint32_t)blockHeight
+{
+    static uint32_t height = 0;
+    uint32_t h = self.wallet.chain.lastBlockHeight;
+    
+    if (h > height) height = h;
+    return height;
+}
+
+// returns the first unused external address
+- (NSString *)receiveAddress
+{
+    return self.defaultDerivationPath.receiveAddress;
+}
+
+// returns the first unused internal address
+- (NSString *)changeAddress {
+    return self.defaultDerivationPath.changeAddress;
+}
+
+// NSData objects containing serialized UTXOs
+- (NSArray *)unspentOutputs
+{
+    return self.utxos.array;
+}
+
+// MARK: - Derivation Paths
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath {
     if ([self.mDerivationPaths containsObject:derivationPath]) {
@@ -235,32 +300,14 @@
     _defaultDerivationPath = defaultDerivationPath;
 }
 
--(void)setWallet:(DSWallet *)wallet {
-    if (!_wallet) {
-        _wallet = wallet;
-        [self loadDerivationPaths];
-        [self loadTransactions];
-    }
-}
-
-- (void)loadDerivationPaths {
-    if (!_wallet.isTransient) {
+-(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        [derivationPath loadAddresses];
+        if ([derivationPath containsAddress:address]) return derivationPath;
     }
-    }
-    if (!self.isViewOnlyAccount) {
-        if (self.bip44DerivationPath) {
-            self.defaultDerivationPath = self.bip44DerivationPath;
-        } else if (self.bip32DerivationPath) {
-            self.defaultDerivationPath = self.bip32DerivationPath;
-        } else {
-            self.defaultDerivationPath = [self.derivationPaths objectAtIndex:0];
-        }
-    }
+    return nil;
 }
 
-// MARK: - Combining Derivation Paths
+// MARK: - Addresses from Combined Derivation Paths
 
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
     NSMutableArray * mArray = [NSMutableArray array];
@@ -304,49 +351,12 @@
     return [mSet copy];
 }
 
-- (NSString *)receiveAddress
-{
-    return self.defaultDerivationPath.receiveAddress;
-}
-
-// returns the first unused internal address
-- (NSString *)changeAddress {
-    return self.defaultDerivationPath.changeAddress;
-}
-
-// NSData objects containing serialized UTXOs
-- (NSArray *)unspentOutputs
-{
-    return self.utxos.array;
-}
-
-// last 100 transactions sorted by date, most recent first
-- (NSArray *)recentTransactions
-{
-    //TODO: don't include receive transactions that don't have at least one wallet output >= TX_MIN_OUTPUT_AMOUNT
-    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
-                                                                  self.transactions.count)];
-}
-
-// all wallet transactions sorted by date, most recent first
-- (NSArray *)allTransactions
-{
-    return self.transactions.array;
-}
-
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address {
     for (DSDerivationPath * derivationPath in self.derivationPaths) {
         if ([derivationPath containsAddress:address]) return TRUE;
     }
     return FALSE;
-}
-
--(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        if ([derivationPath containsAddress:address]) return derivationPath;
-    }
-    return nil;
 }
 
 // true if the address was previously used as an input or output in any wallet transaction
@@ -503,18 +513,29 @@
         _balance = balance;
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(balanceNotification) object:nil];
-            [self performSelector:@selector(balanceNotification) withObject:nil afterDelay:0.1];
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(postBalanceDidChangeNotification) object:nil];
+            [self performSelector:@selector(postBalanceDidChangeNotification) withObject:nil afterDelay:0.1];
         });
     }
 }
 
-- (void)balanceNotification
+// historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
+- (uint64_t)balanceAfterTransaction:(DSTransaction *)transaction
+{
+    NSUInteger i = [self.transactions indexOfObject:transaction];
+    
+    return (i < self.balanceHistory.count) ? [self.balanceHistory[i] unsignedLongLongValue] : self.balance;
+}
+
+
+- (void)postBalanceDidChangeNotification
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
 }
 
 // MARK: - Transactions
+
+// MARK: = Helpers
 
 // chain position of first tx output address that appears in chain
 static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *addressChain) {
@@ -527,7 +548,84 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return NSNotFound;
 }
 
-- (DSBlockchainUserRegistrationTransaction*)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+// this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
+// each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
+- (void)sortTransactions
+{
+    BOOL (^isAscending)(id, id);
+    __block __weak BOOL (^_isAscending)(id, id) = isAscending = ^BOOL(DSTransaction *tx1, DSTransaction *tx2) {
+        if (! tx1 || ! tx2) return NO;
+        if (tx1.blockHeight > tx2.blockHeight) return YES;
+        if (tx1.blockHeight < tx2.blockHeight) return NO;
+        
+        NSValue *hash1 = uint256_obj(tx1.txHash), *hash2 = uint256_obj(tx2.txHash);
+        
+        if ([tx1.inputHashes containsObject:hash2]) return YES;
+        if ([tx2.inputHashes containsObject:hash1]) return NO;
+        if ([self.invalidTx containsObject:hash1] && ! [self.invalidTx containsObject:hash2]) return YES;
+        if ([self.pendingTx containsObject:hash1] && ! [self.pendingTx containsObject:hash2]) return YES;
+        
+        for (NSValue *hash in tx1.inputHashes) {
+            if (_isAscending(self.allTx[hash], tx2)) return YES;
+        }
+        
+        return NO;
+    };
+    
+    [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
+        if (isAscending(tx1, tx2)) return NSOrderedAscending;
+        if (isAscending(tx2, tx1)) return NSOrderedDescending;
+        
+        NSUInteger i = transactionAddressIndex(tx1, self.internalAddresses);
+        NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
+        
+        if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, self.externalAddresses);
+        if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
+        return (i > j) ? NSOrderedAscending : NSOrderedDescending;
+    }];
+}
+
+// MARK: = Retrieval
+
+// MARK: == Classical Transaction Retrieval
+
+// returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
+- (DSTransaction *)transactionForHash:(UInt256)txHash
+{
+    return self.allTx[uint256_obj(txHash)];
+}
+
+// last 100 transactions sorted by date, most recent first
+- (NSArray *)recentTransactions
+{
+    return [self.transactions.array subarrayWithRange:NSMakeRange(0, (self.transactions.count > 100) ? 100 :
+                                                                  self.transactions.count)];
+}
+
+// last 100 transactions sorted by date, most recent first
+- (NSArray *)recentTransactionsWithInternalOutput
+{
+    NSMutableArray * recentTransactionArray = [NSMutableArray array];
+    int i = 0;
+    while (recentTransactionArray.count < 100 && i<self.transactions.count) {
+        DSTransaction * transaction = [self.transactions objectAtIndex:i];
+        if ([transaction hasNonDustOutputInWallet:self.wallet]) {
+            [recentTransactionArray addObject:transaction];
+        }
+        i++;
+    }
+    return [NSArray arrayWithArray:recentTransactionArray];
+}
+
+// all wallet transactions sorted by date, most recent first
+- (NSArray *)allTransactions
+{
+    return self.transactions.array;
+}
+
+// MARK: == Blockchain Users Transaction Retrieval
+
+- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSTransaction * transaction in self.transactions) {
         if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
             DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)transaction;
@@ -539,7 +637,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return nil;
 }
 
-- (DSBlockchainUserResetTransaction*)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSTransaction * transaction in self.transactions) {
         if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
             DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
@@ -589,43 +687,38 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return lastSubscriptionTransactionHash;
 }
 
-// this sorts transactions by block height in descending order, and makes a best attempt at ordering transactions within
-// each block, however correct transaction ordering cannot be relied upon for determining wallet balance or UTXO set
-- (void)sortTransactions
+// MARK: = Existence
+
+// true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
+- (BOOL)containsTransaction:(DSTransaction *)transaction
 {
-    BOOL (^isAscending)(id, id);
-    __block __weak BOOL (^_isAscending)(id, id) = isAscending = ^BOOL(DSTransaction *tx1, DSTransaction *tx2) {
-        if (! tx1 || ! tx2) return NO;
-        if (tx1.blockHeight > tx2.blockHeight) return YES;
-        if (tx1.blockHeight < tx2.blockHeight) return NO;
-        
-        NSValue *hash1 = uint256_obj(tx1.txHash), *hash2 = uint256_obj(tx2.txHash);
-        
-        if ([tx1.inputHashes containsObject:hash2]) return YES;
-        if ([tx2.inputHashes containsObject:hash1]) return NO;
-        if ([self.invalidTx containsObject:hash1] && ! [self.invalidTx containsObject:hash2]) return YES;
-        if ([self.pendingTx containsObject:hash1] && ! [self.pendingTx containsObject:hash2]) return YES;
-        
-        for (NSValue *hash in tx1.inputHashes) {
-            if (_isAscending(self.allTx[hash], tx2)) return YES;
-        }
-        
-        return NO;
-    };
+    if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
     
-    [self.transactions sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id tx1, id tx2) {
-        if (isAscending(tx1, tx2)) return NSOrderedAscending;
-        if (isAscending(tx2, tx1)) return NSOrderedDescending;
+    NSInteger i = 0;
+    
+    for (NSValue *txHash in transaction.inputHashes) {
+        DSTransaction *tx = self.allTx[txHash];
+        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
         
-        NSUInteger i = transactionAddressIndex(tx1, self.internalAddresses);
-        NSUInteger j = transactionAddressIndex(tx2, (i == NSNotFound) ? self.externalAddresses : self.internalAddresses);
-        
-        if (i == NSNotFound && j != NSNotFound) i = transactionAddressIndex(tx1, self.externalAddresses);
-        if (i == NSNotFound || j == NSNotFound || i == j) return NSOrderedSame;
-        return (i > j) ? NSOrderedAscending : NSOrderedDescending;
-    }];
+        if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) return YES;
+    }
+    
+    return NO;
 }
 
+-(BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
+    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        if ([derivationPath type] & DSDerivationPathType_IsForFunds)  {
+            NSString * firstAddress = [derivationPath addressAtIndex:0 internal:NO];
+            if ([transaction.outputAddresses containsObject:firstAddress]) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+// MARK: = Creation
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (DSTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
@@ -635,15 +728,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [script appendScriptPubKeyForAddress:address forChain:self.wallet.chain];
     
     return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
-}
-
-- (DSTransaction *)proposalCollateralTransactionWithData:(NSData*)data
-{
-    NSMutableData *script = [NSMutableData data];
-    
-    [script appendProposalInfo:data];
-    
-    return [self transactionForAmounts:@[@(PROPOSAL_COST)] toOutputScripts:@[script] withFee:TRUE];
 }
 
 
@@ -661,6 +745,19 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain];
     return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:shapeshiftAddress];
 }
+
+// MARK: == Proposal Transaction Creation
+
+- (DSTransaction *)proposalCollateralTransactionWithData:(NSData*)data
+{
+    NSMutableData *script = [NSMutableData data];
+    
+    [script appendProposalInfo:data];
+    
+    return [self transactionForAmounts:@[@(PROPOSAL_COST)] toOutputScripts:@[script] withFee:TRUE];
+}
+
+// MARK: = Update
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress
@@ -754,9 +851,110 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     return transaction;
-    
-    
 }
+
+// set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
+// indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
+- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
+{
+    NSMutableArray *hashes = [NSMutableArray array], *updated = [NSMutableArray array];
+    BOOL needsUpdate = NO;
+    NSTimeInterval walletCreationTime = [self.wallet walletCreationTime];
+    for (NSValue *hash in txHashes) {
+        DSTransaction *tx = self.allTx[hash];
+        UInt256 h;
+        
+        if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
+        tx.blockHeight = height;
+        tx.timestamp = timestamp;
+        
+        if ([self containsTransaction:tx]) {
+            [hash getValue:&h];
+            [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
+            [updated addObject:hash];
+            
+            if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && uint256_eq(h, _firstTransactionHash)) {
+                [self.wallet setGuessedWalletCreationTime:tx.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
+            }
+            if ([self.pendingTx containsObject:hash] || [self.invalidTx containsObject:hash]) needsUpdate = YES;
+        }
+        else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
+    }
+    
+    if (hashes.count > 0) {
+        if (needsUpdate) {
+            [self sortTransactions];
+            [self updateBalance];
+        }
+        
+        [self.moc performBlockAndWait:^{
+            @autoreleasepool {
+                NSMutableSet *entities = [NSMutableSet set];
+                
+                for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", hashes]) {
+                    e.blockHeight = height;
+                    e.timestamp = timestamp;
+                    [entities addObject:e];
+                }
+                
+                //                if (height != TX_UNCONFIRMED) {
+                //                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
+                //                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
+                //                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
+                //
+                //                    for (NSManagedObject *e in entities) {
+                //                        [self.moc refreshObject:e mergeChanges:NO];
+                //                    }
+                //                }
+                for (DSTransactionHashEntity *e in entities) {
+                    DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
+                }
+                NSError * error = nil;
+                [self.moc save:&error];
+                if (error) {
+                    DSDLog(@"Issue Saving DB when setting Block Height");
+                }
+            }
+        }];
+    }
+    
+    return updated;
+}
+
+// MARK: = Removal
+
+// removes a transaction from the wallet along with any transactions that depend on its outputs
+- (void)removeTransaction:(UInt256)txHash
+{
+    DSTransaction *transaction = self.allTx[uint256_obj(txHash)];
+    NSMutableSet *hashes = [NSMutableSet set];
+    
+    for (DSTransaction *tx in self.transactions) { // remove dependent transactions
+        if (tx.blockHeight < transaction.blockHeight) break;
+        
+        if (! uint256_eq(txHash, tx.txHash) && [tx.inputHashes containsObject:uint256_obj(txHash)]) {
+            [hashes addObject:uint256_obj(tx.txHash)];
+        }
+    }
+    
+    for (NSValue *hash in hashes) {
+        UInt256 h;
+        
+        [hash getValue:&h];
+        [self removeTransaction:h];
+    }
+    
+    [self.allTx removeObjectForKey:uint256_obj(txHash)];
+    if (transaction) [self.transactions removeObject:transaction];
+    [self updateBalance];
+    
+    [self.moc performBlock:^{ // remove transaction from core data
+        [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
+                                                [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
+    }];
+}
+
+// MARK: = Signing
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
@@ -863,34 +1061,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     });
 }
 
-// true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
-- (BOOL)containsTransaction:(DSTransaction *)transaction
-{
-    if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
-    
-    NSInteger i = 0;
-    
-    for (NSValue *txHash in transaction.inputHashes) {
-        DSTransaction *tx = self.allTx[txHash];
-        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-        
-        if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) return YES;
-    }
-    
-    return NO;
-}
-
--(BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
-        if ([derivationPath type] & DSDerivationPathType_IsForFunds)  {
-            NSString * firstAddress = [derivationPath addressAtIndex:0 internal:NO];
-            if ([transaction.outputAddresses containsObject:firstAddress]) {
-                return TRUE;
-            }
-        }
-    }
-    return FALSE;
-}
+// MARK: = Registration
 
 // records the transaction in the account, or returns false if it isn't associated with the wallet
 - (BOOL)registerTransaction:(DSTransaction *)transaction
@@ -956,42 +1127,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return YES;
 }
 
-// removes a transaction from the wallet along with any transactions that depend on its outputs
-- (void)removeTransaction:(UInt256)txHash
-{
-    DSTransaction *transaction = self.allTx[uint256_obj(txHash)];
-    NSMutableSet *hashes = [NSMutableSet set];
-    
-    for (DSTransaction *tx in self.transactions) { // remove dependent transactions
-        if (tx.blockHeight < transaction.blockHeight) break;
-        
-        if (! uint256_eq(txHash, tx.txHash) && [tx.inputHashes containsObject:uint256_obj(txHash)]) {
-            [hashes addObject:uint256_obj(tx.txHash)];
-        }
-    }
-    
-    for (NSValue *hash in hashes) {
-        UInt256 h;
-        
-        [hash getValue:&h];
-        [self removeTransaction:h];
-    }
-    
-    [self.allTx removeObjectForKey:uint256_obj(txHash)];
-    if (transaction) [self.transactions removeObject:transaction];
-    [self updateBalance];
-    
-    [self.moc performBlock:^{ // remove transaction from core data
-        [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
-                                                [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
-    }];
-}
-
-// returns the transaction with the given hash if it's been registered in the wallet (might also return non-registered)
-- (DSTransaction *)transactionForHash:(UInt256)txHash
-{
-    return self.allTx[uint256_obj(txHash)];
-}
+// MARK: = Transaction State
 
 // true if no previous wallet transactions spend any of the given transaction's inputs, and no input tx is invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction
@@ -1060,6 +1196,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return YES;
 }
 
+// MARK: = Amounts
+
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction
 {
@@ -1093,6 +1231,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return amount;
 }
 
+// MARK: = Fees
+
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeForTransaction:(DSTransaction *)transaction
 {
@@ -1114,47 +1254,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return amount;
 }
 
-// historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
-- (uint64_t)balanceAfterTransaction:(DSTransaction *)transaction
-{
-    NSUInteger i = [self.transactions indexOfObject:transaction];
-    
-    return (i < self.balanceHistory.count) ? [self.balanceHistory[i] unsignedLongLongValue] : self.balance;
-}
-
-// Returns the block height after which the transaction is likely to be processed without including a fee. This is based
-// on the default satoshi client settings, but on the real network it's way off. In testing, a 0.01btc transaction that
-// was expected to take an additional 90 days worth of blocks to confirm was confirmed in under an hour by Eligius pool.
-- (uint32_t)blockHeightUntilFree:(DSTransaction *)transaction
-{
-    // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
-    NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
-    NSUInteger i = 0;
-    
-    for (NSValue *hash in transaction.inputHashes) { // get the amounts and block heights of all the transaction inputs
-        DSTransaction *tx = self.allTx[hash];
-        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-        
-        if (n >= tx.outputAmounts.count) break;
-        [amounts addObject:tx.outputAmounts[n]];
-        [heights addObject:@(tx.blockHeight)];
-    };
-    
-    return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
-}
+// MARK: = Outputs
 
 - (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
 {
     return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend];
-}
-
-- (uint32_t)blockHeight
-{
-    static uint32_t height = 0;
-    uint32_t h = self.wallet.chain.lastBlockHeight;
-    
-    if (h > height) height = h;
-    return height;
 }
 
 - (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend
@@ -1186,79 +1290,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return (amount > fee) ? amount - fee : 0;
 }
 
-// set the block heights and timestamps for the given transactions, use a height of TX_UNCONFIRMED and timestamp of 0 to
-// indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
-- (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
-{
-    NSMutableArray *hashes = [NSMutableArray array], *updated = [NSMutableArray array];
-    BOOL needsUpdate = NO;
-    NSTimeInterval walletCreationTime = [self.wallet walletCreationTime];
-    for (NSValue *hash in txHashes) {
-        DSTransaction *tx = self.allTx[hash];
-        UInt256 h;
-        
-        if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
-        tx.blockHeight = height;
-        tx.timestamp = timestamp;
-        
-        if ([self containsTransaction:tx]) {
-            [hash getValue:&h];
-            [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
-            [updated addObject:hash];
-            
-            if ((walletCreationTime == BIP39_WALLET_UNKNOWN_CREATION_TIME || walletCreationTime == BIP39_CREATION_TIME) && uint256_eq(h, _firstTransactionHash)) {
-                [self.wallet setGuessedWalletCreationTime:tx.timestamp - HOUR_TIME_INTERVAL - (DAY_TIME_INTERVAL/arc4random()%DAY_TIME_INTERVAL)];
-            }
-            if ([self.pendingTx containsObject:hash] || [self.invalidTx containsObject:hash]) needsUpdate = YES;
-        }
-        else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
-    }
-    
-    if (hashes.count > 0) {
-        if (needsUpdate) {
-            [self sortTransactions];
-            [self updateBalance];
-        }
-        
-        [self.moc performBlockAndWait:^{
-            @autoreleasepool {
-                NSMutableSet *entities = [NSMutableSet set];
-                
-                for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", hashes]) {
-                    e.blockHeight = height;
-                    e.timestamp = timestamp;
-                    [entities addObject:e];
-                }
-                
-                //                if (height != TX_UNCONFIRMED) {
-                //                    // BUG: XXX saving the tx.blockHeight and the block it's contained in both need to happen together
-                //                    // as an atomic db operation. If the tx.blockHeight is saved but the block isn't when the app exits,
-                //                    // then a re-org that happens afterward can potentially result in an invalid tx showing as confirmed
-                //
-                //                    for (NSManagedObject *e in entities) {
-                //                        [self.moc refreshObject:e mergeChanges:NO];
-                //                    }
-                //                }
-                for (DSTransactionHashEntity *e in entities) {
-                    DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
-                }
-                NSError * error = nil;
-                [self.moc save:&error];
-                if (error) {
-                    DSDLog(@"Issue Saving DB when setting Block Height");
-                }
-            }
-        }];
-    }
-    
-    return updated;
-}
-
-- (void)wipeBlockchainInfo {
-    [self.transactions removeAllObjects];
-    [self.allTx removeAllObjects];
-    [self updateBalance];
-}
+// MARK: - Private Key Sweeping
 
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
 // that will sweep the balance into the account (doesn't publish the tx)

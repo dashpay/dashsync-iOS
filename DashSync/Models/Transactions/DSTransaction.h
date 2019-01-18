@@ -37,8 +37,6 @@
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
 #define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_B*3*(TX_OUTPUT_SIZE + TX_INPUT_SIZE)) //no txout can be below this amount
 #define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
-#define TX_FREE_MAX_SIZE     1000        // tx must not be larger than this size in bytes without a fee
-#define TX_FREE_MIN_PRIORITY 57600000ULL // tx must not have a priority below this value without a fee
 #define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 #define TX_MAX_LOCK_HEIGHT   500000000   // a lockTime below this value is a block height, otherwise a timestamp
 
@@ -126,10 +124,9 @@ sequence:(uint32_t)sequence;
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/tx_size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages;
 
-// the block height after which the transaction can be confirmed without a fee, or TX_UNCONFIRMED for never
-- (uint32_t)blockHeightUntilFreeForAmounts:(NSArray *)amounts withBlockHeights:(NSArray *)heights;
-
 - (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex;
+
+- (BOOL)hasNonDustOutputInWallet:(DSWallet*)wallet;
 
 //instant send
 
