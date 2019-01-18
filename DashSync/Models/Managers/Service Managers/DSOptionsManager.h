@@ -30,6 +30,7 @@ typedef NS_ENUM(NSUInteger, DSSyncType) {
 @interface DSOptionsManager : DSDynamicOptions
 
 @property (nonatomic,assign) BOOL keepHeaders;
+@property (nonatomic,assign) BOOL smartOutputs;
 @property (nonatomic,assign) BOOL syncFromGenesis;
 @property (nonatomic,assign) BOOL retrievePriceInfo;
 @property (nonatomic,assign) BOOL shouldSyncFromHeight;
