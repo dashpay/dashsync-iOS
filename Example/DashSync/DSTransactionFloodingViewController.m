@@ -67,7 +67,7 @@
     // if user selected an amount equal to or below wallet balance, but the fee will bring the total above the
     // balance, offer to reduce the amount to available funds minus fee
     if (requestedSendAmount <= self.fundingAccount.balance + fuzz && requestedSendAmount > 0) {
-        int64_t amount = [self.fundingAccount maxOutputAmountUsingInstantSend:tx.isInstant];
+        int64_t amount = [self.fundingAccount maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
         
         if (amount > 0 && amount < requestedSendAmount) {
             UIAlertController * alert = [UIAlertController

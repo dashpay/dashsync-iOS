@@ -31,7 +31,6 @@
 #import "DSOptionsManager.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSGovernanceSyncManager+Protected.h"
-#import "DSDAPIPeerManager+Protected.h"
 #import "DSTransactionManager+Protected.h"
 #import "DSBloomFilter.h"
 #import "DSMerkleBlock.h"
@@ -49,7 +48,7 @@
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
-@property (nonatomic, strong) DSDAPIPeerManager * DAPIPeerManager;
+@property (nonatomic, strong) DSDAPIClient * DAPIClient;
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
@@ -66,11 +65,14 @@
     self.chain = chain;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
-    self.DAPIPeerManager = [[DSDAPIPeerManager alloc] initWithChainManager:self];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     
+    NSURL *dapiNodeURL = [NSURL URLWithString:@"http://54.169.131.115:3000"];
+    HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+    self.DAPIClient = [[DSDAPIClient alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
+
     return self;
 }
 

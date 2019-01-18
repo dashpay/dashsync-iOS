@@ -34,14 +34,7 @@
 #pragma mark - Table view data source
 
 -(IBAction)fetch:(id)sender {
-    [self.chainManager.DAPIPeerManager getDAPsWithSuccess:^(NSDictionary *userInfo) {
-            NSLog(@"%@",userInfo);
-        [self.tableView.refreshControl endRefreshing];
-        } failure:^(NSError *error) {
-            NSLog(@"%@",error);
-            [self.tableView.refreshControl endRefreshing];
-        }];
-    
+    // TODO: searchDapContracts was removed from JS dapi-client as outdated
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

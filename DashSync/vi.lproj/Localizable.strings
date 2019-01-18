@@ -90,7 +90,22 @@
 "insufficient funds for dash network fee" = "insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
+"Internal Error" = "Internal Error";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Invalid DAPI Response";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Invalid Params";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Invalid Request";
+
+/* No comment provided by engineer. */
 "Mainnet" = "Mạng chính";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Method Not Found";
 
 /* No comment provided by engineer. */
 "minute" = "phút";
@@ -112,6 +127,9 @@
 
 /* No comment provided by engineer. */
 "ok" = "ok";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
 "passcode" = "mật khẩu";
@@ -153,6 +171,9 @@
 "seconds" = "giây";
 
 /* No comment provided by engineer. */
+"Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
 "Testnet" = "Mạng thử nghiệm";
 
 /* No comment provided by engineer. */
@@ -172,6 +193,12 @@
 
 /* No comment provided by engineer. */
 "unexpected response from %@" = "phản hồi không mong đợi từ %@";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Unknown Error";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
 
 /* No comment provided by engineer. */
 "unsupported signature type" = "kiểu chữ ký không được hỗ trợ";
