@@ -53,6 +53,8 @@
 
 @implementation DSTransaction
 
+// MARK: - Initiation
+
 + (instancetype)transactionWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     return [[self alloc] initWithMessage:message onChain:chain];
@@ -247,6 +249,15 @@
     return [self initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:sequences outputAddresses:addresses outputAmounts:amounts onChain:chain];
 }
 
+// MARK: - Object
+
+- (BOOL)isEqual:(id)object
+{
+    return self == object || ([object isKindOfClass:[DSTransaction class]] && uint256_eq(_txHash, [((DSTransaction*)object) txHash]));
+}
+
+// MARK: - Attributes
+
 -(NSData*)payloadData {
     return nil;
 }
@@ -273,6 +284,27 @@
 {
     return self.inScripts;
 }
+
+- (NSArray *)inputAddresses
+{
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
+    NSInteger i = 0;
+    
+    //    for (NSData * data in self.signatures) {
+    //        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
+    //                           DSDLog(@"%@",addr);
+    //    }
+    
+    for (NSData *script in self.inScripts) {
+        NSString *addr = [NSString addressWithScriptPubKey:script onChain:self.chain];
+        if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i] onChain:self.chain];
+        [addresses addObject:(addr) ? addr : [NSNull null]];
+        i++;
+    }
+    
+    return addresses;
+}
+
 
 - (NSArray *)inputSignatures
 {
@@ -341,10 +373,74 @@
             ! [self.signatures containsObject:[NSNull null]]) ? YES : NO;
 }
 
+-(BOOL)isCoinbaseClassicTransaction {
+    if (([self.hashes count] == 1)) {
+        UInt256 firstInputHash;
+        [self.hashes[0] getValue:&firstInputHash];
+        if (uint256_is_zero(firstInputHash) && [[self.inputIndexes objectAtIndex:0] integerValue] == UINT32_MAX) return TRUE;
+    }
+    return FALSE;
+}
+
+- (NSUInteger)hash
+{
+    if (uint256_is_zero(_txHash)) return super.hash;
+    return *(const NSUInteger *)&_txHash;
+}
+
+// MARK: - Wire Serialization
+
 - (NSData *)toData
 {
     return [self toDataWithSubscriptIndex:NSNotFound];
 }
+
+// Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
+// subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
+- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
+{
+    UInt256 hash = UINT256_ZERO;
+    NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE*self.hashes.count +
+                        TX_OUTPUT_SIZE*self.addresses.count];
+    
+    [d appendUInt16:self.version];
+    [d appendUInt16:self.type];
+    [d appendVarInt:self.hashes.count];
+    
+    
+    for (NSUInteger i = 0; i < self.hashes.count; i++) {
+        [self.hashes[i] getValue:&hash];
+        [d appendBytes:&hash length:sizeof(hash)];
+        [d appendUInt32:[self.indexes[i] unsignedIntValue]];
+        
+        if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
+            [d appendVarInt:[self.signatures[i] length]];
+            [d appendData:self.signatures[i]];
+        }
+        else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
+            //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
+            [d appendVarInt:[self.inScripts[i] length]];
+            [d appendData:self.inScripts[i]];
+        }
+        else [d appendVarInt:0];
+        
+        [d appendUInt32:[self.sequences[i] unsignedIntValue]];
+    }
+    
+    [d appendVarInt:self.amounts.count];
+    
+    for (NSUInteger i = 0; i < self.amounts.count; i++) {
+        [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
+        [d appendVarInt:[self.outScripts[i] length]];
+        [d appendData:self.outScripts[i]];
+    }
+    
+    [d appendUInt32:self.lockTime];
+    if ([self isMemberOfClass:[DSTransaction class]] && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
+    return d;
+}
+
+// MARK: - Construction
 
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script
 {
@@ -402,26 +498,6 @@
     self.inScripts[index] = d;
 }
 
-- (NSArray *)inputAddresses
-{
-    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:self.inScripts.count];
-    NSInteger i = 0;
-    
-    //    for (NSData * data in self.signatures) {
-    //        NSString * addr = [NSString addressWithScriptSig:data onChain:self.chain];
-    //                           DSDLog(@"%@",addr);
-    //    }
-    
-    for (NSData *script in self.inScripts) {
-        NSString *addr = [NSString addressWithScriptPubKey:script onChain:self.chain];
-        if (! addr) addr = [NSString addressWithScriptSig:self.signatures[i] onChain:self.chain];
-        [addresses addObject:(addr) ? addr : [NSNull null]];
-        i++;
-    }
-    
-    return addresses;
-}
-
 - (void)shuffleOutputOrder
 {    
     for (NSUInteger i = 0; i + 1 < self.amounts.count; i++) { // fischer-yates shuffle
@@ -434,50 +510,7 @@
     }
 }
 
-// Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
-// subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
-- (NSData *)toDataWithSubscriptIndex:(NSUInteger)subscriptIndex
-{
-    UInt256 hash = UINT256_ZERO;
-    NSMutableData *d = [NSMutableData dataWithCapacity:10 + TX_INPUT_SIZE*self.hashes.count +
-                        TX_OUTPUT_SIZE*self.addresses.count];
-    
-    [d appendUInt16:self.version];
-    [d appendUInt16:self.type];
-    [d appendVarInt:self.hashes.count];
-    
-    
-    for (NSUInteger i = 0; i < self.hashes.count; i++) {
-        [self.hashes[i] getValue:&hash];
-        [d appendBytes:&hash length:sizeof(hash)];
-        [d appendUInt32:[self.indexes[i] unsignedIntValue]];
-        
-        if (subscriptIndex == NSNotFound && self.signatures[i] != [NSNull null]) {
-            [d appendVarInt:[self.signatures[i] length]];
-            [d appendData:self.signatures[i]];
-        }
-        else if (subscriptIndex == i && self.inScripts[i] != [NSNull null]) {
-            //TODO: to fully match the reference implementation, OP_CODESEPARATOR related checksig logic should go here
-            [d appendVarInt:[self.inScripts[i] length]];
-            [d appendData:self.inScripts[i]];
-        }
-        else [d appendVarInt:0];
-        
-        [d appendUInt32:[self.sequences[i] unsignedIntValue]];
-    }
-    
-    [d appendVarInt:self.amounts.count];
-    
-    for (NSUInteger i = 0; i < self.amounts.count; i++) {
-        [d appendUInt64:[self.amounts[i] unsignedLongLongValue]];
-        [d appendVarInt:[self.outScripts[i] length]];
-        [d appendData:self.outScripts[i]];
-    }
-    
-    [d appendUInt32:self.lockTime];
-    if ([self isMemberOfClass:[DSTransaction class]] && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
-    return d;
-}
+// MARK: - Signing
 
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
 {
@@ -519,6 +552,8 @@
     return YES;
 }
 
+// MARK: - Priority (Deprecated)
+
 // priority = sum(input_amount_in_satoshis*input_age_in_blocks)/size_in_bytes
 - (uint64_t)priorityForAmounts:(NSArray *)amounts withAges:(NSArray *)ages
 {
@@ -533,29 +568,7 @@
     return p/self.size;
 }
 
--(BOOL)isCoinbaseClassicTransaction {
-    if (([self.hashes count] == 1)) {
-        UInt256 firstInputHash;
-        [self.hashes[0] getValue:&firstInputHash];
-        if (uint256_is_zero(firstInputHash) && [[self.inputIndexes objectAtIndex:0] integerValue] == UINT32_MAX) return TRUE;
-    }
-    return FALSE;
-}
-
-- (NSUInteger)hash
-{
-    if (uint256_is_zero(_txHash)) return super.hash;
-    return *(const NSUInteger *)&_txHash;
-}
-
--(Class)entityClass {
-    return [DSTransactionEntity class];
-}
-
-- (BOOL)isEqual:(id)object
-{
-    return self == object || ([object isKindOfClass:[DSTransaction class]] && uint256_eq(_txHash, [((DSTransaction*)object) txHash]));
-}
+// MARK: - Fees
 
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeUsed
@@ -570,6 +583,8 @@
     return lroundf(((float)feeUsed)/self.size);
 }
 
+// MARK: - Info
+
 - (BOOL)hasNonDustOutputInWallet:(DSWallet*)wallet {
     for (int i = 0; i<self.outputAddresses.count;i++) {
         NSString * outputAddress = self.outputAddresses[i];
@@ -581,13 +596,51 @@
     return FALSE;
 }
 
-#pragma mark - Polymorphic data
+// MARK: - Instant Send
+
+-(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
+    BOOL instantSendReceived = !!transactionLockVotes.count;
+    self.transactionLockVotesDictionary = transactionLockVotes;
+    for (NSValue * key in transactionLockVotes) {
+        NSUInteger inputLockVotes = 0;
+        NSArray * lockVotesForInput = transactionLockVotes[key];
+        for (DSTransactionLockVote * transactionLockVote in lockVotesForInput) {
+            if (transactionLockVote.quorumVerified && transactionLockVote.signatureVerified) {
+                [transactionLockVote save]; //only save the good ones
+                inputLockVotes++;
+            } else {
+                DSDLog(@"A transaction lock vote was bad");
+            }
+        }
+        BOOL inputLocked = inputLockVotes > 5;
+        if (!inputLocked) {
+            DSDLog(@"The input could not be locked");
+        }
+        instantSendReceived &= inputLocked;
+    }
+    self.instantSendReceived = instantSendReceived;
+}
+
+-(NSArray*)transactionLockVotes {
+    NSMutableArray * array = [NSMutableArray array];
+    for (NSValue * key in self.transactionLockVotesDictionary) {
+        NSArray * votesForInput = self.transactionLockVotesDictionary[key];
+        [array addObjectsFromArray:votesForInput];
+    }
+    return array;
+}
+
+// MARK: - Polymorphic data
+
+-(Class)entityClass {
+    return [DSTransactionEntity class];
+}
 
 -(BOOL)transactionTypeRequiresInputs {
     return YES;
 }
 
-#pragma mark - Extra shapeshift methods
+// MARK: - Extra shapeshift methods
 
 - (NSString*)shapeshiftOutboundAddress {
     for (NSData * script in self.outputScripts) {
@@ -645,28 +698,7 @@
     return nil;
 }
 
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
-    BOOL instantSendReceived = !!transactionLockVotes.count;
-    self.transactionLockVotesDictionary = transactionLockVotes;
-    for (NSValue * key in transactionLockVotes) {
-        NSUInteger inputLockVotes = 0;
-        NSArray * lockVotesForInput = transactionLockVotes[key];
-        for (DSTransactionLockVote * transactionLockVote in lockVotesForInput) {
-            if (transactionLockVote.quorumVerified && transactionLockVote.signatureVerified) {
-                [transactionLockVote save]; //only save the good ones
-                inputLockVotes++;
-            } else {
-                DSDLog(@"A transaction lock vote was bad");
-            }
-        }
-        BOOL inputLocked = inputLockVotes > 5;
-        if (!inputLocked) {
-            DSDLog(@"The input could not be locked");
-        }
-        instantSendReceived &= inputLocked;
-    }
-    self.instantSendReceived = instantSendReceived;
-}
+// MARK: - Persistence
 
 -(void)save {
     NSManagedObjectContext * context = [DSTransactionEntity context];
@@ -686,15 +718,6 @@
             [transactionEntityClass saveContext];
         }
     }];
-}
-
--(NSArray*)transactionLockVotes {
-    NSMutableArray * array = [NSMutableArray array];
-    for (NSValue * key in self.transactionLockVotesDictionary) {
-        NSArray * votesForInput = self.transactionLockVotesDictionary[key];
-        [array addObjectsFromArray:votesForInput];
-    }
-    return array;
 }
 
 @end
