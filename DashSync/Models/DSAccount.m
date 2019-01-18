@@ -1153,27 +1153,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return (i < self.balanceHistory.count) ? [self.balanceHistory[i] unsignedLongLongValue] : self.balance;
 }
 
-// Returns the block height after which the transaction is likely to be processed without including a fee. This is based
-// on the default satoshi client settings, but on the real network it's way off. In testing, a 0.01btc transaction that
-// was expected to take an additional 90 days worth of blocks to confirm was confirmed in under an hour by Eligius pool.
-- (uint32_t)blockHeightUntilFree:(DSTransaction *)transaction
-{
-    // TODO: calculate estimated time based on the median priority of free transactions in last 144 blocks (24hrs)
-    NSMutableArray *amounts = [NSMutableArray array], *heights = [NSMutableArray array];
-    NSUInteger i = 0;
-    
-    for (NSValue *hash in transaction.inputHashes) { // get the amounts and block heights of all the transaction inputs
-        DSTransaction *tx = self.allTx[hash];
-        uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
-        
-        if (n >= tx.outputAmounts.count) break;
-        [amounts addObject:tx.outputAmounts[n]];
-        [heights addObject:@(tx.blockHeight)];
-    };
-    
-    return [transaction blockHeightUntilFreeForAmounts:amounts withBlockHeights:heights];
-}
-
 - (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
 {
     return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend];

@@ -64,14 +64,6 @@
     
     XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
     
-    NSUInteger height = [tx blockHeightUntilFreeForAmounts:@[@5000000000] withBlockHeights:@[@1]];
-    uint64_t priority = [tx priorityForAmounts:@[@5000000000] withAges:@[@(height - 1)]];
-    
-    NSLog(@"height = %lu", (unsigned long)height);
-    NSLog(@"priority = %llu", priority);
-    
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[DSTransaction priorityForAmounts:withAges:]");
-    
     NSData *d = tx.data;
     
     tx = [DSTransaction transactionWithMessage:d onChain:self.chain];
@@ -92,19 +84,6 @@
     [tx signWithPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
     
     XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
-    
-    height = [tx blockHeightUntilFreeForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
-                                                  @1000000, @1000000, @1000000]
-                               withBlockHeights:@[@1, @2, @3, @4, @5, @6, @7, @8, @9, @10]];
-    priority = [tx priorityForAmounts:@[@1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000, @1000000,
-                                        @1000000, @1000000]
-                             withAges:@[@(height - 1), @(height - 2), @(height - 3), @(height - 4), @(height - 5), @(height - 6),
-                                        @(height - 7), @(height - 8), @(height - 9), @(height - 10)]];
-    
-    NSLog(@"height = %lu", (unsigned long)height);
-    NSLog(@"priority = %llu", priority);
-    
-    XCTAssertTrue(priority >= TX_FREE_MIN_PRIORITY, @"[DSTransaction priorityForAmounts:withAges:]");
     
     d = tx.data;
     tx = [DSTransaction transactionWithMessage:d onChain:self.chain];
