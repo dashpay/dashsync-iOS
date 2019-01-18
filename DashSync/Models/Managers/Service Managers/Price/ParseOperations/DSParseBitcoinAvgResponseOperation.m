@@ -28,6 +28,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DSParseBitcoinAvgResponseOperation
 
 - (void)execute {
+    if (!self.httpOperationResult) {
+        return;
+    }
+
     NSParameterAssert(self.httpOperationResult.parsedResponse);
 
     NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;

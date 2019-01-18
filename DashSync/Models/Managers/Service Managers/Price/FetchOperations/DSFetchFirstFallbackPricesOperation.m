@@ -32,31 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define BITCOINAVG_TICKER_URL @"https://apiv2.bitcoinaverage.com/indices/global/ticker/short?crypto=BTC"
 #define DASHCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
 
-#pragma mark - Cache
-
-@interface DSFetchFirstFallbackPricesOperationCache : NSObject
-
-@property (strong, nonatomic, nullable) NSDictionary<NSString *, NSNumber *> *pricesByCode;
-@property (strong, nonatomic, nullable) NSNumber *dashBtcPrice;
-@property (strong, nonatomic, nullable) NSNumber *dashcasaLastPrice;
-
-@end
-
-@implementation DSFetchFirstFallbackPricesOperationCache
-
-+ (instancetype)sharedInstance {
-    static DSFetchFirstFallbackPricesOperationCache *_sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _sharedInstance = [[self alloc] init];
-    });
-    return _sharedInstance;
-}
-
-@end
-
-#pragma mark - Operation
-
 @interface DSFetchFirstFallbackPricesOperation ()
 
 @property (strong, nonatomic) DSParseDashBtcCCResponseOperation *parseDashBtcCCOperation;
@@ -119,24 +94,10 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
-    if (operation == self.chainDashBtcCCOperation) {
-        NSNumber *dashBtcPrice = self.parseDashBtcCCOperation.dashBtcPrice;
-        if (dashBtcPrice) {
-            cache.dashBtcPrice = dashBtcPrice;
-        }
-    }
-    else if (operation == self.chainBitcoinAvgOperation) {
-        NSDictionary<NSString *, NSNumber *> *pricesByCode = self.parseBitcoinAvgOperation.pricesByCode;
-        if (pricesByCode) {
-            cache.pricesByCode = pricesByCode;
-        }
-    }
-    else if (operation == self.chainDashCasaOperation) {
-        NSNumber *dashcasaLastPrice = self.parseDashCasaOperation.dashrate;
-        if (dashcasaLastPrice) {
-            cache.dashcasaLastPrice = dashcasaLastPrice;
-        }
+    if (errors.count > 0) {
+        [self.chainDashBtcCCOperation cancel];
+        [self.chainBitcoinAvgOperation cancel];
+        [self.chainDashCasaOperation cancel];
     }
 }
 
@@ -145,12 +106,17 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    DSFetchFirstFallbackPricesOperationCache *cache = [DSFetchFirstFallbackPricesOperationCache sharedInstance];
-    double dashBtcPrice = cache.dashBtcPrice.doubleValue;
-    NSDictionary<NSString *, NSNumber *> *pricesByCode = cache.pricesByCode;
-    NSNumber *dashcasaLastPrice = cache.dashcasaLastPrice;
+    if (errors.count > 0) {
+        self.fetchCompletion(nil);
 
-    if (!pricesByCode || dashBtcPrice < DBL_EPSILON) {
+        return;
+    }
+
+    double dashBtcPrice = self.parseDashBtcCCOperation.dashBtcPrice.doubleValue;
+    NSDictionary<NSString *, NSNumber *> *pricesByCode = self.parseBitcoinAvgOperation.pricesByCode;
+    NSNumber *dashcasaPrice = self.parseDashCasaOperation.dashrate;
+
+    if (!pricesByCode || dashBtcPrice < DBL_EPSILON || !dashcasaPrice) {
         self.fetchCompletion(nil);
 
         return;
@@ -158,19 +124,20 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSMutableArray<DSCurrencyPriceObject *> *prices = [NSMutableArray array];
     for (NSString *code in pricesByCode) {
-        DSCurrencyPriceObject *priceObject = nil;
-        if ([code isEqualToString:@"VES"] && dashcasaLastPrice) {
-            priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:dashcasaLastPrice];
+        double price = 0.0;
+        if ([code isEqualToString:@"VES"]) {
+            price = dashcasaPrice.doubleValue;
         }
         else {
             double btcPrice = [pricesByCode[code] doubleValue];
-            double price = btcPrice * dashBtcPrice;
-            if (price > DBL_EPSILON) {
-                priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:@(price)];
-            }
+            price = btcPrice * dashBtcPrice;
         }
-        if (priceObject) {
-            [prices addObject:priceObject];
+
+        if (price > DBL_EPSILON) {
+            DSCurrencyPriceObject *priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:@(price)];
+            if (priceObject) {
+                [prices addObject:priceObject];
+            }
         }
     }
 
