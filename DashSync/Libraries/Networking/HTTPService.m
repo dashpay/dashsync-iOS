@@ -316,6 +316,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    NSAssert(request.URL.host, @"HTTPRequest has invalid URL %@", request.URL);
     if (request.URL.host == nil) {
         return;
     }

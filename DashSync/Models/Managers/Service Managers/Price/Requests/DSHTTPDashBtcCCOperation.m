@@ -15,42 +15,38 @@
 //  limitations under the License.
 //
 
-#import "DSParseDashBtcCCResponseOperation.h"
+#import "DSHTTPDashBtcCCOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParseDashBtcCCResponseOperation ()
+@interface DSHTTPDashBtcCCOperation ()
 
 @property (strong, nonatomic, nullable) NSNumber *dashBtcPrice;
 
 @end
 
-@implementation DSParseDashBtcCCResponseOperation
+@implementation DSHTTPDashBtcCCOperation
 
-- (void)execute {
-    if (!self.httpOperationResult) {
-        return;
-    }
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
+    NSParameterAssert(parsedData);
 
-    NSParameterAssert(self.httpOperationResult.parsedResponse);
-
-    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
+    NSDictionary *response = (NSDictionary *)parsedData;
     if (![response isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
 
     NSDictionary *raw = response[@"RAW"];
     if (![raw isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
 
     NSNumber *dashBtcPrice = raw[@"PRICE"];
     if (![dashBtcPrice isKindOfClass:NSNumber.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }

@@ -142,8 +142,8 @@ typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthentica
     [[NSUserDefaults standardUserDefaults] setDouble:secureTime forKey:SECURE_TIME_KEY];
 }
 
-- (void)updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response {
-    NSString *date = response.allHeaderFields[@"Date"];
+- (void)updateSecureTimeFromResponseIfNeeded:(NSDictionary<NSString *, NSString *> *)responseHeaders {
+    NSString *date = responseHeaders[@"Date"];
     if (!date) {
         return;
     }

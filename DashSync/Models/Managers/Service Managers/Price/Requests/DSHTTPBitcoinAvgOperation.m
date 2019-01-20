@@ -15,28 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DSParseBitcoinAvgResponseOperation.h"
+#import "DSHTTPBitcoinAvgOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParseBitcoinAvgResponseOperation ()
+@interface DSHTTPBitcoinAvgOperation ()
 
 @property (strong, nonatomic, nullable) NSDictionary<NSString *, NSNumber *> *pricesByCode;
 
 @end
 
-@implementation DSParseBitcoinAvgResponseOperation
+@implementation DSHTTPBitcoinAvgOperation
 
-- (void)execute {
-    if (!self.httpOperationResult) {
-        return;
-    }
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
+    NSParameterAssert(parsedData);
 
-    NSParameterAssert(self.httpOperationResult.parsedResponse);
-
-    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
+    NSDictionary *response = (NSDictionary *)parsedData;
     if (![response isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
@@ -56,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (pricesByCode.count == 0) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
@@ -65,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self finish];
 }
+
 @end
 
 NS_ASSUME_NONNULL_END

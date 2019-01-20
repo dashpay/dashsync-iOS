@@ -15,40 +15,36 @@
 //  limitations under the License.
 //
 
-#import "DSParseDashCasaResponseOperation.h"
+#import "DSHTTPDashVesCCOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParseDashCasaResponseOperation ()
+@interface DSHTTPDashVesCCOperation ()
 
-@property (strong, nonatomic, nullable) NSNumber *dashrate;
+@property (strong, nonatomic, nullable) NSNumber *vesPrice;
 
 @end
 
-@implementation DSParseDashCasaResponseOperation
+@implementation DSHTTPDashVesCCOperation
 
-- (void)execute {
-    if (!self.httpOperationResult) {
-        return;
-    }
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
+    NSParameterAssert(parsedData);
 
-    NSParameterAssert(self.httpOperationResult.parsedResponse);
-
-    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
+    NSDictionary *response = (NSDictionary *)parsedData;
     if (![response isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
 
-    NSNumber *dashrate = response[@"dashrate"];
-    if (![dashrate isKindOfClass:NSNumber.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+    NSNumber *vesPrice = response[@"VES"];
+    if (![vesPrice isKindOfClass:NSNumber.class]) {
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
 
-    self.dashrate = dashrate;
+    self.vesPrice = vesPrice;
 
     [self finish];
 }

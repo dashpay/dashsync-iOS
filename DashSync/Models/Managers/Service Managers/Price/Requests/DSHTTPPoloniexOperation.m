@@ -15,28 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DSParsePoloniexResponseOperation.h"
+#import "DSHTTPPoloniexOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParsePoloniexResponseOperation ()
+@interface DSHTTPPoloniexOperation ()
 
 @property (strong, nonatomic, nullable) NSNumber *lastTradePriceNumber;
 
 @end
 
-@implementation DSParsePoloniexResponseOperation
+@implementation DSHTTPPoloniexOperation
 
-- (void)execute {
-    if (!self.httpOperationResult) {
-        return;
-    }
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
+    NSParameterAssert(parsedData);
 
-    NSParameterAssert(self.httpOperationResult.parsedResponse);
-
-    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
+    NSDictionary *response = (NSDictionary *)parsedData;
     if (![response isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
@@ -55,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self finish];
     }
     else {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
     }
 }
 

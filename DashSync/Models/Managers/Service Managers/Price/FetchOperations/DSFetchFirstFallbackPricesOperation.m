@@ -18,13 +18,11 @@
 
 #import "DSFetchFirstFallbackPricesOperation.h"
 
-#import "DSChainedOperation.h"
 #import "DSCurrencyPriceObject.h"
-#import "DSHTTPOperation.h"
+#import "DSHTTPBitcoinAvgOperation.h"
+#import "DSHTTPDashBtcCCOperation.h"
+#import "DSHTTPDashCasaOperation.h"
 #import "DSOperationQueue.h"
-#import "DSParseBitcoinAvgResponseOperation.h"
-#import "DSParseDashBtcCCResponseOperation.h"
-#import "DSParseDashCasaResponseOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,12 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFetchFirstFallbackPricesOperation ()
 
-@property (strong, nonatomic) DSParseDashBtcCCResponseOperation *parseDashBtcCCOperation;
-@property (strong, nonatomic) DSParseBitcoinAvgResponseOperation *parseBitcoinAvgOperation;
-@property (strong, nonatomic) DSParseDashCasaResponseOperation *parseDashCasaOperation;
-@property (strong, nonatomic) DSChainedOperation *chainDashBtcCCOperation;
-@property (strong, nonatomic) DSChainedOperation *chainBitcoinAvgOperation;
-@property (strong, nonatomic) DSChainedOperation *chainDashCasaOperation;
+@property (strong, nonatomic) DSHTTPDashBtcCCOperation *dashBtcCCOperation;
+@property (strong, nonatomic) DSHTTPBitcoinAvgOperation *bitcoinAvgOperation;
+@property (strong, nonatomic) DSHTTPDashCasaOperation *dashCasaOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
@@ -51,37 +46,34 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super initWithOperations:nil];
     if (self) {
         {
-            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHBTCCC_TICKER_URL]
-                                                     cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                                 timeoutInterval:30.0];
-            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
-            DSParseDashBtcCCResponseOperation *parseOperation = [[DSParseDashBtcCCResponseOperation alloc] init];
-            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
-            _parseDashBtcCCOperation = parseOperation;
-            _chainDashBtcCCOperation = chainOperation;
-            [self addOperation:chainOperation];
+            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:DASHBTCCC_TICKER_URL]
+                                                        method:HTTPRequestMethod_GET
+                                                    parameters:nil];
+            request.timeout = 30.0;
+            request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
+            DSHTTPDashBtcCCOperation *operation = [[DSHTTPDashBtcCCOperation alloc] initWithRequest:request];
+            _dashBtcCCOperation = operation;
+            [self addOperation:operation];
         }
         {
-            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:BITCOINAVG_TICKER_URL]
-                                                     cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                                 timeoutInterval:30.0];
-            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
-            DSParseBitcoinAvgResponseOperation *parseOperation = [[DSParseBitcoinAvgResponseOperation alloc] init];
-            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
-            _parseBitcoinAvgOperation = parseOperation;
-            _chainBitcoinAvgOperation = chainOperation;
-            [self addOperation:chainOperation];
+            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:BITCOINAVG_TICKER_URL]
+                                                        method:HTTPRequestMethod_GET
+                                                    parameters:nil];
+            request.timeout = 30.0;
+            request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
+            DSHTTPBitcoinAvgOperation *operation = [[DSHTTPBitcoinAvgOperation alloc] initWithRequest:request];
+            _bitcoinAvgOperation = operation;
+            [self addOperation:operation];
         }
         {
-            NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:DASHCASA_TICKER_URL]
-                                                     cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                                 timeoutInterval:30.0];
-            DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
-            DSParseDashCasaResponseOperation *parseOperation = [[DSParseDashCasaResponseOperation alloc] init];
-            DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
-            _parseDashCasaOperation = parseOperation;
-            _chainDashCasaOperation = chainOperation;
-            [self addOperation:chainOperation];
+            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:DASHCASA_TICKER_URL]
+                                                        method:HTTPRequestMethod_GET
+                                                    parameters:nil];
+            request.timeout = 30.0;
+            request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
+            DSHTTPDashCasaOperation *operation = [[DSHTTPDashCasaOperation alloc] initWithRequest:request];
+            _dashCasaOperation = operation;
+            [self addOperation:operation];
         }
 
         _fetchCompletion = [completion copy];
@@ -95,9 +87,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (errors.count > 0) {
-        [self.chainDashBtcCCOperation cancel];
-        [self.chainBitcoinAvgOperation cancel];
-        [self.chainDashCasaOperation cancel];
+        [self.dashBtcCCOperation cancel];
+        [self.bitcoinAvgOperation cancel];
+        [self.dashCasaOperation cancel];
     }
 }
 
@@ -112,9 +104,9 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    double dashBtcPrice = self.parseDashBtcCCOperation.dashBtcPrice.doubleValue;
-    NSDictionary<NSString *, NSNumber *> *pricesByCode = self.parseBitcoinAvgOperation.pricesByCode;
-    NSNumber *dashcasaPrice = self.parseDashCasaOperation.dashrate;
+    double dashBtcPrice = self.dashBtcCCOperation.dashBtcPrice.doubleValue;
+    NSDictionary<NSString *, NSNumber *> *pricesByCode = self.bitcoinAvgOperation.pricesByCode;
+    NSNumber *dashcasaPrice = self.dashCasaOperation.dashrate;
 
     if (!pricesByCode || dashBtcPrice < DBL_EPSILON || !dashcasaPrice) {
         self.fetchCompletion(nil);

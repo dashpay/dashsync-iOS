@@ -16,14 +16,16 @@
 //
 
 #import "HTTPLoaderFactory.h"
+#import "HTTPLoaderManager.h"
 #import "HTTPService.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSNetworkingCoordinator : NSObject
 
-@property (readonly, strong, nonatomic) HTTPService *httpService;
+@property (readonly, strong, nonatomic) HTTPService *service;
 @property (readonly, strong, nonatomic) HTTPLoaderFactory *loaderFactory;
+@property (readonly, strong, nonatomic) HTTPLoaderManager *loaderManager;
 
 + (instancetype)sharedInstance;
 

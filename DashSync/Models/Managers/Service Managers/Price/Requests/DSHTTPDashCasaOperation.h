@@ -15,15 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DSParseResponseOperation.h"
+#import "DSHTTPOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSCurrencyPriceObject;
+@interface DSHTTPDashCasaOperation : DSHTTPOperation
 
-@interface DSParseSparkResponseOperation : DSParseResponseOperation
-
-@property (readonly, copy, nonatomic, nullable) NSArray<DSCurrencyPriceObject *> *prices;
+@property (readonly, strong, nonatomic, nullable) NSNumber *dashrate;
 
 @end
 

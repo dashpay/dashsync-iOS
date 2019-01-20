@@ -17,9 +17,7 @@
 
 #import "DSFetchSparkPricesOperation.h"
 
-#import "DSChainedOperation.h"
-#import "DSHTTPOperation.h"
-#import "DSParseSparkResponseOperation.h"
+#import "DSHTTPSparkOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFetchSparkPricesOperation ()
 
-@property (strong, nonatomic) DSParseSparkResponseOperation *parseOperation;
+@property (strong, nonatomic) DSHTTPSparkOperation *sparkOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
@@ -38,17 +36,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable))completion {
     self = [super initWithOperations:nil];
     if (self) {
-        NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:SPARK_TICKER_URL]
-                                                 cachePolicy:NSURLRequestReloadIgnoringCacheData
-                                             timeoutInterval:30.0];
-        DSHTTPOperation *getOperation = [[DSHTTPOperation alloc] initWithRequest:request];
-        DSParseSparkResponseOperation *parseOperation = [[DSParseSparkResponseOperation alloc] init];
-        DSChainedOperation *chainOperation = [DSChainedOperation operationWithOperations:@[ getOperation, parseOperation ]];
+        HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:SPARK_TICKER_URL]
+                                                    method:HTTPRequestMethod_GET
+                                                parameters:nil];
+        request.timeout = 30.0;
+        request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
 
-        _parseOperation = parseOperation;
+        DSHTTPSparkOperation *operation = [[DSHTTPSparkOperation alloc] initWithRequest:request];
+        _sparkOperation = operation;
         _fetchCompletion = [completion copy];
 
-        [self addOperation:chainOperation];
+        [self addOperation:operation];
     }
     return self;
 }
@@ -58,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    NSArray<DSCurrencyPriceObject *> *prices = self.parseOperation.prices;
+    NSArray<DSCurrencyPriceObject *> *prices = self.sparkOperation.prices;
     self.fetchCompletion(prices);
 }
 

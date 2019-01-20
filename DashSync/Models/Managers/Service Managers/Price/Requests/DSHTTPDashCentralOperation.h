@@ -15,23 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DSNetworkActivityObserver.h"
-
-#import "DSNetworkActivityIndicatorManager.h"
+#import "DSHTTPOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DSNetworkActivityObserver
+@interface DSHTTPDashCentralOperation : DSHTTPOperation
 
-#pragma mark DSOperationObserverProtocol
-
-- (void)operationDidStart:(DSOperation *)operation {
-    [DSNetworkActivityIndicatorManager increaseActivityCounter];
-}
-
-- (void)operationDidFinish:(DSOperation *)operation errors:(nullable NSArray<NSError *> *)errors {
-    [DSNetworkActivityIndicatorManager decreaseActivityCounter];
-}
+@property (readonly, strong, nonatomic, nullable) NSNumber *btcDashPrice;
 
 @end
 
