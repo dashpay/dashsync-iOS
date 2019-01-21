@@ -34,6 +34,8 @@
 #import "DSOptionsManager.h"
 #import "DSChainManager+Protected.h"
 #import "DSMerkleBlock.h"
+#import "NSData+Bitcoin.h"
+#import "NSDate+Utils.h"
 
 #define SPORK_15_MIN_PROTOCOL_VERSION 70213
 
@@ -43,6 +45,8 @@
 @property (nonatomic,strong) NSMutableArray * sporkHashesMarkedForRetrieval;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic,assign) NSTimeInterval lastRequestedSporks;
+@property (nonatomic,assign) NSTimeInterval lastSyncedSporks;
     
 @end
 
@@ -54,6 +58,8 @@
     _chain = chain;
     __block NSMutableArray * sporkHashesMarkedForRetrieval = [NSMutableArray array];
     __block NSMutableDictionary * sporkDictionary = [NSMutableDictionary dictionary];
+    self.lastRequestedSporks = 0;
+    self.lastSyncedSporks = 0;
     self.managedObjectContext = [NSManagedObject context];
     [self.managedObjectContext performBlockAndWait:^{
         [DSChainEntity setContext:self.managedObjectContext];
@@ -117,6 +123,7 @@
         
         [p sendPingMessageWithPongHandler:^(BOOL success) {
             if (success) {
+                self.lastRequestedSporks = [NSDate timeIntervalSince1970];
                 [p sendGetSporks];
             }
         }];
@@ -140,6 +147,7 @@
         [self.peerManager peerMisbehaving:peer];
         return;
     }
+    self.lastSyncedSporks = [NSDate timeIntervalSince1970];
     DSSpork * currentSpork = self.sporkDictionary[@(spork.identifier)];
     BOOL updatedSpork = FALSE;
     __block NSMutableDictionary * dictionary = [[NSMutableDictionary alloc] init];
@@ -160,11 +168,20 @@
     [dictionary setObject:spork forKey:@"new"];
     [dictionary setObject:self.chain forKey:DSChainManagerNotificationChainKey];
     if (!currentSpork || updatedSpork) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+        [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
-                [[DSSporkEntity managedObject] setAttributesFromSpork:spork]; // add new peers
-                [DSSporkEntity saveContext];
+                [DSSporkHashEntity setContext:self.managedObjectContext];
+                [DSSporkEntity setContext:self.managedObjectContext];
+                DSSporkHashEntity * hashEntity = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChain:spork.chain.chainEntity];
+                if (hashEntity) {
+                    [[DSSporkEntity managedObject] setAttributesFromSpork:spork withSporkHash:hashEntity]; // add new peers
+                    [DSSporkEntity saveContext];
+                } else {
+                    DSDLog(@"Spork was received that wasn't requested");
+                }
             }
+        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:dictionary];
         });
     }
