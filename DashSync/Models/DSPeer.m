@@ -1192,7 +1192,7 @@
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
-        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject]
+        [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
                                    andHashStop:UINT256_ZERO];
     }
     
@@ -1357,8 +1357,8 @@
     if (count >= 2000 || lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
-        NSValue *firstHashValue = uint256_obj(firstBlockHash);
-        NSValue *lastHashValue = uint256_obj(lastBlockHash);
+        NSData *firstHashData = uint256_data(firstBlockHash);
+        NSData *lastHashData = uint256_data(lastBlockHash);
         
         if (lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
@@ -1368,14 +1368,14 @@
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
             lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
-            lastHashValue = uint256_obj(lastBlockHash);
-            DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashValue, firstHashValue]);
-            [self sendGetblocksMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
+            lastHashData = uint256_data(lastBlockHash);
+            DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
         else {
             DSDLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
-                  @[lastHashValue, firstHashValue]);
-            [self sendGetheadersMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
+                  @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            [self sendGetheadersMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
     }
     else {

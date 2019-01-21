@@ -111,6 +111,9 @@ typedef union _UInt128 {
 #define uint160_data(u) [NSData dataWithUInt160:u]
 #define uint256_data(u) [NSData dataWithUInt256:u]
 
+#define uint160_data_from_obj(u) [NSData dataWithUInt160Value:u]
+#define uint256_data_from_obj(u) [NSData dataWithUInt256Value:u]
+
 #define uint160_hex(u) [NSData dataWithUInt160:u].hexString
 #define uint160_reverse_hex(u) [NSData dataWithUInt160:u].reverse.hexString
 #define uint256_hex(u) [NSData dataWithUInt256:u].hexString

@@ -982,8 +982,22 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [NSData dataWithBytes:&n length:sizeof(n)];
 }
 
++ (instancetype)dataWithUInt256Value:(NSValue*)value
+{
+    UInt256 n;
+    [value getValue:&n];
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
 + (instancetype)dataWithUInt160:(UInt160)n
 {
+    return [NSData dataWithBytes:&n length:sizeof(n)];
+}
+
++ (instancetype)dataWithUInt160Value:(NSValue*)value
+{
+    UInt160 n;
+    [value getValue:&n];
     return [NSData dataWithBytes:&n length:sizeof(n)];
 }
 

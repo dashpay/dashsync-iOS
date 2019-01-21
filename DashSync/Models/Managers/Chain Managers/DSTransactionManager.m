@@ -882,7 +882,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             
         } else if ([self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count] > 5) {
             //there are over 6 votes already, check to see that the votes are coming from the right masternodes
-            DSDLog(@"We have enough lock votes (%u)",[self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count]);
+            DSDLog(@"We have enough lock votes (%lu)",[self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count]);
             int yesVotes = 0;
             int noVotes = 0;//these might not be no votes, but they are a no for the masternode (might be an signature error)
             for (NSObject * value in [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] copy]) {
