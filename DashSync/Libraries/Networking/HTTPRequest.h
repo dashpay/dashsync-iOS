@@ -90,6 +90,10 @@ extern NSString *const HTTPRequestErrorDomain;
 + (instancetype)requestWithURL:(NSURL *)URL
                         method:(HTTPRequestMethod)method
                     parameters:(nullable NSDictionary *)parameters;
++ (instancetype)requestWithURL:(NSURL *)URL
+                        method:(HTTPRequestMethod)method
+                   contentType:(HTTPContentType)contentType
+                    parameters:(nullable NSDictionary *)parameters;
 - (instancetype)initWithURL:(NSURL *)URL
                      method:(HTTPRequestMethod)method
                 contentType:(HTTPContentType)contentType
@@ -105,6 +109,7 @@ extern NSString *const HTTPRequestErrorDomain;
 
 - (void)addValue:(NSString *)value forHeader:(NSString *)header;
 - (void)removeHeader:(NSString *)header;
+- (void)setBasicAuthWithUsername:(NSString *)username password:(NSString *)password;
 
 @end
 

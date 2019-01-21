@@ -15,30 +15,26 @@
 //  limitations under the License.
 //
 
-#import "DSParseSparkResponseOperation.h"
+#import "DSHTTPSparkOperation.h"
 
 #import "DSCurrencyPriceObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParseSparkResponseOperation ()
+@interface DSHTTPSparkOperation ()
 
 @property (copy, nonatomic, nullable) NSArray<DSCurrencyPriceObject *> *prices;
 
 @end
 
-@implementation DSParseSparkResponseOperation
+@implementation DSHTTPSparkOperation
 
-- (void)execute {
-    if (!self.httpOperationResult) {
-        return;
-    }
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
+    NSParameterAssert(parsedData);
 
-    NSParameterAssert(self.httpOperationResult.parsedResponse);
-
-    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
+    NSDictionary *response = (NSDictionary *)parsedData;
     if (![response isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
@@ -54,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (!responseIsValid) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }

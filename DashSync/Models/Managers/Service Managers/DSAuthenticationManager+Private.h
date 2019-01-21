@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSAuthenticationManager (Private)
 
 - (void)updateSecureTime:(NSTimeInterval)secureTime;
-- (void)updateSecureTimeFromResponseIfNeeded:(NSHTTPURLResponse *)response;
+- (void)updateSecureTimeFromResponseIfNeeded:(NSDictionary<NSString *, NSString *> *)responseHeaders;
 
 @end
 

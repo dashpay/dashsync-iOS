@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2018-2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,13 +15,24 @@
 //  limitations under the License.
 //
 
-#import "DSParseResponseOperation.h"
+#import "DSOperation.h"
+
+#import "HTTPRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParsePoloniexResponseOperation : DSParseResponseOperation
+extern NSString *const DSHTTPOperationErrorDomain;
 
-@property (readonly, strong, nonatomic, nullable) NSNumber *lastTradePriceNumber;
+typedef NS_ENUM(NSUInteger, DSHTTPOperationErrorCode) {
+    DSHTTPOperationErrorCodeInvalidResponse = 1,
+};
+
+@interface DSHTTPOperation : DSOperation
+
+- (instancetype)initWithRequest:(HTTPRequest *)request;
+
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode;
+- (void)cancelWithInvalidResponse:(id)responseData;
 
 @end
 

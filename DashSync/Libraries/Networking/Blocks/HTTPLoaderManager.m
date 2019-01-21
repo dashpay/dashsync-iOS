@@ -17,6 +17,7 @@
 
 #import "HTTPLoaderManager.h"
 
+#import "DSAuthenticationManager+Private.h"
 #import "HTTPLoaderFactory.h"
 #import "HTTPLoaderOperation.h"
 #import "HTTPRequest.h"
@@ -59,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
             NSError *_Nullable error = nil;
             id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
             NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
+
+            // store server timestamp
+            [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
 
             if (completion) {
                 completion(parsedData, response.responseHeaders, response.statusCode, error ?: response.error);

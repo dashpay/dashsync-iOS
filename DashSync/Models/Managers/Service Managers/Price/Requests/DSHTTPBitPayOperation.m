@@ -15,36 +15,32 @@
 //  limitations under the License.
 //
 
-#import "DSParseBitPayResponseOperation.h"
+#import "DSHTTPBitPayOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParseBitPayResponseOperation ()
+@interface DSHTTPBitPayOperation ()
 
 @property (copy, nonatomic, nullable) NSArray<NSString *> *currencyCodes;
 @property (copy, nonatomic, nullable) NSArray<NSNumber *> *currencyPrices;
 
 @end
 
-@implementation DSParseBitPayResponseOperation
+@implementation DSHTTPBitPayOperation
 
-- (void)execute {
-    if (!self.httpOperationResult) {
-        return;
-    }
+- (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
+    NSParameterAssert(parsedData);
 
-    NSParameterAssert(self.httpOperationResult.parsedResponse);
-
-    NSDictionary *response = (NSDictionary *)self.httpOperationResult.parsedResponse;
+    NSDictionary *response = (NSDictionary *)parsedData;
     if (![response isKindOfClass:NSDictionary.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
 
     NSArray *data = response[@"data"];
     if (![data isKindOfClass:NSArray.class]) {
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }
@@ -54,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
         ![testPrice[@"code"] isKindOfClass:NSString.class] ||
         ![testPrice[@"rate"] isKindOfClass:NSNumber.class]) {
 
-        [self cancelWithError:[self.class invalidResponseErrorWithUserInfo:@{NSDebugDescriptionErrorKey : response}]];
+        [self cancelWithInvalidResponse:response];
 
         return;
     }

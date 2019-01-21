@@ -15,14 +15,13 @@
 //  limitations under the License.
 //
 
-#import "DSParseResponseOperation.h"
+#import "DSHTTPOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSParseBitPayResponseOperation : DSParseResponseOperation
+@interface DSHTTPPoloniexOperation : DSHTTPOperation
 
-@property (readonly, copy, nonatomic, nullable) NSArray<NSString *> *currencyCodes;
-@property (readonly, copy, nonatomic, nullable) NSArray<NSNumber *> *currencyPrices;
+@property (readonly, strong, nonatomic, nullable) NSNumber *lastTradePriceNumber;
 
 @end
 

@@ -15,11 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DSOperationObserverProtocol.h"
+#import "DSHTTPOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSNetworkActivityObserver : NSObject <DSOperationObserverProtocol>
+@interface DSHTTPBitPayOperation : DSHTTPOperation
+
+@property (readonly, copy, nonatomic, nullable) NSArray<NSString *> *currencyCodes;
+@property (readonly, copy, nonatomic, nullable) NSArray<NSNumber *> *currencyPrices;
 
 @end
 

@@ -34,10 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-        HTTPService *httpService = [[HTTPService alloc] initWithConfiguration:configuration];
+        HTTPService *service = [[HTTPService alloc] initWithConfiguration:configuration];
+        HTTPLoaderFactory *loaderFactory = [service createHTTPLoaderFactoryWithAuthorisers:nil];
+        HTTPLoaderManager *loaderManager = [[HTTPLoaderManager alloc] initWithFactory:loaderFactory];
 
-        _httpService = httpService;
-        _loaderFactory = [httpService createHTTPLoaderFactoryWithAuthorisers:nil];
+        _service = service;
+        _loaderFactory = loaderFactory;
+        _loaderManager = loaderManager;
     }
     return self;
 }
