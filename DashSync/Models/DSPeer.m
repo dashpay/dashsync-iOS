@@ -513,14 +513,12 @@
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
     
     [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
     
-    for (NSValue *hash in locators) {
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
+    for (NSData *hashData in locators) {
+        [msg appendUInt256:hashData.UInt256];
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
@@ -531,14 +529,12 @@
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
     
     [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
     
-    for (NSValue *hash in locators) {
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
+    for (NSData *hashData in locators) {
+        [msg appendUInt256:hashData.UInt256];
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
@@ -547,9 +543,9 @@
 #if MESSAGE_LOGGING
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
     [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [locatorHexes addObject:<#(nonnull id)#>]
+        [locatorHexes addObject:((NSData*)obj).reverse.hexString];
     }];
-    DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locators);
+    DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
 #if MESSAGE_CONTENT_LOGGING
         DSDLog(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
 #endif

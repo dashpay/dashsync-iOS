@@ -1117,15 +1117,15 @@ static dispatch_once_t devnetToken = 0;
     DSMerkleBlock *b = self.lastBlock;
     
     while (b && b.height > 0) {
-        [locators addObject:uint256_obj(b.blockHash)];
+        [locators addObject:uint256_data(b.blockHash)];
         if (++start >= 10) step *= 2;
         
         for (int32_t i = 0; b && i < step; i++) {
-            b = self.blocks[uint256_obj(b.prevBlock)];
+            b = self.blocks[uint256_data(b.prevBlock)];
         }
     }
     
-    [locators addObject:uint256_obj([self genesisHash])];
+    [locators addObject:uint256_data([self genesisHash])];
     return locators;
 }
 
