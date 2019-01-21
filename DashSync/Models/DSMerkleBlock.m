@@ -297,6 +297,24 @@ inline static int ceil_log2(int x)
         return self.chain.maxProofOfWork;
     }
     
+    if (self.chain.allowMinDifficultyBlocks) {
+        // recent block is more than 2 hours old
+        if (self.timestamp > (previousBlock.timestamp + 2 * 60 * 60)) {
+            return self.chain.maxProofOfWork;
+        }
+        // recent block is more than 10 minutes old
+        if (self.timestamp > (previousBlock.timestamp + 2.5 * 60 * 4)) {
+            UInt256 previousTarget = setCompact(previousBlock.target);
+            
+            UInt256 newTarget = uInt256MultiplyUInt32(previousTarget, 10);
+            uint32_t compact = getCompact(newTarget);
+            if (compact > self.chain.maxProofOfWork){
+                compact = self.chain.maxProofOfWork;
+            }
+            return compact;
+        }
+    }
+    
     DSMerkleBlock *currentBlock = previousBlock;
     // loop over the past n blocks, where n == PastBlocksMax
     for (blockCount = 1; currentBlock && currentBlock.height > 0 && blockCount<=DGW_PAST_BLOCKS_MAX; blockCount++) {

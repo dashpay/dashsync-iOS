@@ -561,6 +561,20 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(BOOL)allowMinDifficultyBlocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return NO;
+        case DSChainType_TestNet:
+            return YES;
+        case DSChainType_DevNet:
+            return YES;
+        default:
+            return NO;
+            break;
+    }
+}
+
 
 -(NSString*)networkName {
     switch ([self chainType]) {
@@ -1117,17 +1131,26 @@ static dispatch_once_t devnetToken = 0;
     NSMutableArray *locators = [NSMutableArray array];
     int32_t step = 1, start = 0;
     DSMerkleBlock *b = self.lastBlock;
-    
+    uint32_t lastHeight = b.height;
     while (b && b.height > 0) {
         [locators addObject:uint256_data(b.blockHash)];
+        lastHeight = b.height;
         if (++start >= 10) step *= 2;
         
         for (int32_t i = 0; b && i < step; i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
     }
-    
-    [locators addObject:uint256_data([self genesisHash])];
+    DSCheckpoint * lastCheckpoint;
+    //then add the last checkpoint we know about previous to this block
+    for (DSCheckpoint * checkpoint in self.checkpoints) {
+        if (checkpoint.height < lastHeight) {
+            lastCheckpoint = checkpoint;
+        } else {
+            break;
+        }
+    }
+    [locators addObject:uint256_data(lastCheckpoint.checkpointHash)];
     return locators;
 }
 
@@ -1318,7 +1341,7 @@ static dispatch_once_t devnetToken = 0;
     
     // verify block difficulty if block is past last checkpoint
     DSCheckpoint * lastCheckpoint = [self lastCheckpoint];
-    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) && [self isMainnet] &&
+    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
         ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
         uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
         DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
@@ -1327,7 +1350,7 @@ static dispatch_once_t devnetToken = 0;
         return FALSE;
     }
     
-    [self.checkpointsDictionary[@(block.height)] getValue:&checkpoint ];
+    [self.checkpointsDictionary[@(block.height)] getValue:&checkpoint];
     
     // verify block chain checkpoints
     if (! uint256_is_zero(checkpoint) && ! uint256_eq(block.blockHash, checkpoint)) {

@@ -145,6 +145,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) uint32_t minProtocolVersion;
 @property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, readonly) uint32_t maxProofOfWork;
+@property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;
 @property (nonatomic, strong, nullable) NSString * sporkPublicKey;
 @property (nonatomic, strong, nullable) NSString * sporkPrivateKey;
 @property (nonatomic, strong, nullable) NSString * sporkAddress;
