@@ -31,6 +31,8 @@ typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
+extern NSString *const DSAppTerminationRequestNotification;
+
 @class DSWallet,DSChain,DSTransaction;
 
 @interface DSAuthenticationManager : NSObject <UITextFieldDelegate>
