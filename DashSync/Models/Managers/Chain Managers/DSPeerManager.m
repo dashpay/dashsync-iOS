@@ -81,7 +81,7 @@
 
 @property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
-@property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavinCount, maxConnectCount;
+@property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain * chain;
@@ -111,7 +111,7 @@
                                                            [self.chain saveBlocks];
                                                            
                                                            if (self.taskId == UIBackgroundTaskInvalid) {
-                                                               self.misbehavinCount = 0;
+                                                               self.misbehavingCount = 0;
                                                                dispatch_async(self.chainPeerManagerQueue, ^{
                                                                    [self.connectedPeers makeObjectsPerformSelector:@selector(disconnect)];
                                                                });
@@ -342,12 +342,12 @@
 
 - (void)peerMisbehaving:(DSPeer *)peer
 {
-    peer.misbehavin++;
+    peer.misbehaving++;
     [self.peers removeObject:peer];
     [self.misbehavingPeers addObject:peer];
     
-    if (++self.misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
-        self.misbehavinCount = 0;
+    if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
+        self.misbehavingCount = 0;
         [self.misbehavingPeers removeAllObjects];
         [DSPeerEntity deleteAllObjects];
         _peers = nil;
@@ -406,7 +406,7 @@
                 if (p) {
                     e.timestamp = p.timestamp;
                     e.services = p.services;
-                    e.misbehavin = p.misbehavin;
+                    e.misbehavin = p.misbehaving;
                     e.priority = p.priority;
                     e.lowPreferenceTill = p.lowPreferenceTill;
                     e.lastRequestedMasternodeList = p.lastRequestedMasternodeList;
@@ -782,6 +782,8 @@
             
             [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
             
+            [self.chainManager chainWillStartSyncingBlockchain:self.chain];
+            
             dispatch_async(self.chainPeerManagerQueue, ^{
                 // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
                 // BUG: XXX headers can timeout on slow connections (each message is over 160k)
@@ -808,7 +810,7 @@
 {
     DSDLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
-    if ([error.domain isEqual:@"DashWallet"] && error.code != DASH_PEER_TIMEOUT_CODE) {
+    if ([error.domain isEqual:@"DashSync"] && error.code != DASH_PEER_TIMEOUT_CODE) {
         [self peerMisbehaving:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
     else if (error) { // timeout or some non-protocol related network error

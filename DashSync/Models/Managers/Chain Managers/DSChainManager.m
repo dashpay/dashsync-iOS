@@ -162,6 +162,10 @@
     [self.transactionManager chainWasWiped:chain];
 }
 
+-(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
+    [self.sporkManager getSporks]; //get the sporks early on
+}
+
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     DSDLog(@"chain finished syncing");

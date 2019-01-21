@@ -150,7 +150,9 @@
             updatedSpork = TRUE;
             [dictionary setObject:currentSpork forKey:@"old"];
         } else {
-            return; //nothing more to do
+            //lets check triggers anyways in case of an update of trigger code
+            [self checkTriggersForSpork:spork forKeyIdentifier:spork.identifier];
+            return;
         }
     } else {
         [self setSporkValue:spork forKeyIdentifier:spork.identifier];
@@ -176,20 +178,23 @@
 }
 
 -(void)checkTriggersForSpork:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {
+    BOOL changed = FALSE; //some triggers will require a change, others have different requirements
     if (![_sporkDictionary objectForKey:@(sporkIdentifier)] || ([_sporkDictionary objectForKey:@(sporkIdentifier)] && (_sporkDictionary[@(sporkIdentifier)].value != spork.value))) {
-        switch (sporkIdentifier) {
-            case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
-            {
-                if (self.chain.lastBlock.height >= spork.value && self.chain.minProtocolVersion < SPORK_15_MIN_PROTOCOL_VERSION) {
-                    [self.chain setMinProtocolVersion:SPORK_15_MIN_PROTOCOL_VERSION];
-                }
-            }
-            break;
-            
-            default:
-            break;
-        }
+        changed = TRUE;
     }
+    switch (sporkIdentifier) {
+        case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
+        {
+            if (self.chain.estimatedBlockHeight >= spork.value && self.chain.minProtocolVersion < SPORK_15_MIN_PROTOCOL_VERSION) { //use estimated block height here instead
+                [self.chain setMinProtocolVersion:SPORK_15_MIN_PROTOCOL_VERSION];
+            }
+        }
+        break;
+        
+        default:
+        break;
+    }
+    
 }
 
 -(void)setSporkValue:(DSSpork*)spork forKeyIdentifier:(DSSporkIdentifier)sporkIdentifier {

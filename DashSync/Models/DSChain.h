@@ -130,6 +130,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
 @property (nonatomic, readonly,nullable) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
+@property (nonatomic, readonly) uint32_t peerMisbehavingThreshold;
 @property (nonatomic, readonly) NSString * chainWalletsKey;
 @property (nonatomic, readonly) uint64_t baseReward;
 @property (nonatomic, readonly) BOOL canConstructAFilter;
@@ -239,6 +240,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 @required
 
+-(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;

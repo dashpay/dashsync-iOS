@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)decreaseActivityCounter {
     if (self.counter == 0) {
-        NSLog([self class], @"activity counter < 0, something went wrong");
+        DSDLog([self class], @"activity counter < 0, something went wrong");
 
         return;
     }

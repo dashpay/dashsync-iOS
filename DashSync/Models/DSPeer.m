@@ -364,7 +364,7 @@
     
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
-        if (![type isEqualToString:@"getdata"]) { //we log this somewhere else for better accuracy of what data is being got
+        if (![type isEqualToString:MSG_GETDATA] && ![type isEqualToString:MSG_VERSION] && ![type isEqualToString:MSG_GETBLOCKS]) { //we log this somewhere else for better accuracy of what data is being got
             DSDLog(@"%@:%u %@sending %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",type);
 #if MESSAGE_IN_DEPTH_TX_LOGGING
             if ([type isEqualToString:@"ix"] || [type isEqualToString:@"tx"]) {
@@ -414,7 +414,13 @@
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     self.pingStartTime = [NSDate timeIntervalSince1970];
+    
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u %@sending version with protocol version %d", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",self.chain.protocolVersion);
+#endif
+    
     [self sendMessage:msg type:MSG_VERSION];
+    
 }
 
 - (void)sendVerackMessage
@@ -537,6 +543,18 @@
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
     self.sentGetblocks = YES;
+    
+#if MESSAGE_LOGGING
+    NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
+    [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [locatorHexes addObject:<#(nonnull id)#>]
+    }];
+    DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locators);
+#if MESSAGE_CONTENT_LOGGING
+        DSDLog(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
+#endif
+#endif
+    
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -895,12 +913,17 @@
     }
     
     _lastblock = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
-#if MESSAGE_LOGGING
-    DSDLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
-#endif
+
     if (self.version < self.chain.minProtocolVersion) {
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+#endif
         [self error:@"protocol version %u not supported", self.version];
         return;
+    } else {
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+#endif
     }
     
     [self sendVerackMessage];
@@ -1815,7 +1838,7 @@
             @autoreleasepool {
                 e.timestamp = self.timestamp;
                 e.services = self.services;
-                e.misbehavin = self.misbehavin;
+                e.misbehavin = self.misbehaving;
                 e.priority = self.priority;
                 e.lowPreferenceTill = self.lowPreferenceTill;
                 e.lastRequestedMasternodeList = self.lastRequestedMasternodeList;

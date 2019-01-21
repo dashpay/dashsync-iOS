@@ -621,6 +621,23 @@ static dispatch_once_t devnetToken = 0;
     return 50 * DUFFS;
 }
 
+-(uint32_t)peerMisbehavingThreshold {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return 20;
+            break;
+        case DSChainType_TestNet:
+            return 40;
+            break;
+        case DSChainType_DevNet:
+            return 3;
+            break;
+        default:
+            break;
+    }
+    return 20;
+}
+
 -(DSCheckpoint*)lastCheckpoint {
     return [[self checkpoints] lastObject];
 }
@@ -1252,7 +1269,7 @@ static dispatch_once_t devnetToken = 0;
         }
 #endif
         DSDLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
-              blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
+              uint256_reverse_hex(block.blockHash), uint256_reverse_hex(block.prevBlock), block.height, uint256_reverse_hex(self.lastBlock.blockHash), self.lastBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
         
         [self.chainManager chain:self receivedOrphanBlock:block fromPeer:peer];
         [peer receivedOrphanBlock];
