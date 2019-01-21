@@ -226,6 +226,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
+- (uint32_t)heightForBlockHash:(UInt256)blockhash;
+
 @end
 
 @protocol DSChainTransactionsDelegate

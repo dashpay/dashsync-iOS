@@ -543,7 +543,7 @@
 #if MESSAGE_LOGGING
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
     [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [locatorHexes addObject:((NSData*)obj).reverse.hexString];
+        [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,[self.chain heightForBlockHash:((NSData*)obj).UInt256]]];
     }];
     DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
 #if MESSAGE_CONTENT_LOGGING

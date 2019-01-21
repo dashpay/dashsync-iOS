@@ -146,7 +146,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @interface DSChain ()
 
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary;
+@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary,*checkpointsInvertedDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
@@ -1081,6 +1081,7 @@ static dispatch_once_t devnetToken = 0;
         if (self->_blocks.count > 0) return;
         self->_blocks = [NSMutableDictionary dictionary];
         self.checkpointsDictionary = [NSMutableDictionary dictionary];
+        self.checkpointsInvertedDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
@@ -1089,6 +1090,7 @@ static dispatch_once_t devnetToken = 0;
                                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
                                                                                             flags:nil height:checkpoint.height];
             self.checkpointsDictionary[@(checkpoint.height)] = uint256_obj(checkpointHash);
+            self.checkpointsInvertedDictionary[uint256_obj(checkpointHash)] = @(checkpoint.height);
         }
         self.delegateQueueChainEntity = [self chainEntity];
         for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:50 onChain:self.delegateQueueChainEntity]) {
@@ -1121,12 +1123,28 @@ static dispatch_once_t devnetToken = 0;
         if (++start >= 10) step *= 2;
         
         for (int32_t i = 0; b && i < step; i++) {
-            b = self.blocks[uint256_data(b.prevBlock)];
+            b = self.blocks[uint256_obj(b.prevBlock)];
         }
     }
     
     [locators addObject:uint256_data([self genesisHash])];
     return locators;
+}
+
+- (uint32_t)heightForBlockHash:(UInt256)blockhash {
+    if ([self.checkpointsInvertedDictionary objectForKey:uint256_obj(blockhash)]) {
+        return [[self.checkpointsInvertedDictionary objectForKey:uint256_obj(blockhash)] unsignedIntValue];
+    }
+    
+    DSMerkleBlock *b = self.lastBlock;
+    
+    while (b && b.height > 0) {
+        if (uint256_eq(b.blockHash, blockhash)) {
+            return b.height;
+        }
+        b = self.blocks[uint256_obj(b.prevBlock)];
+    }
+    return 0;
 }
 
 - (DSMerkleBlock *)lastBlock
