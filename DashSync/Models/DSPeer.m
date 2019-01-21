@@ -364,7 +364,7 @@
     
     CFRunLoopPerformBlock([self.runLoop getCFRunLoop], kCFRunLoopCommonModes, ^{
 #if MESSAGE_LOGGING
-        if (![type isEqualToString:@"getdata"]) { //we log this somewhere else for better accuracy of what data is being got
+        if (![type isEqualToString:MSG_GETDATA] && ![type isEqualToString:MSG_VERSION] && ![type isEqualToString:MSG_GETBLOCKS]) { //we log this somewhere else for better accuracy of what data is being got
             DSDLog(@"%@:%u %@sending %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",type);
 #if MESSAGE_IN_DEPTH_TX_LOGGING
             if ([type isEqualToString:@"ix"] || [type isEqualToString:@"tx"]) {
@@ -414,7 +414,13 @@
     [msg appendUInt32:0]; // last block received
     [msg appendUInt8:0]; // relay transactions (no for SPV bloom filter mode)
     self.pingStartTime = [NSDate timeIntervalSince1970];
+    
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u %@sending version with protocol version %d", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",self.chain.protocolVersion);
+#endif
+    
     [self sendMessage:msg type:MSG_VERSION];
+    
 }
 
 - (void)sendVerackMessage
@@ -507,14 +513,12 @@
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
     
     [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
     
-    for (NSValue *hash in locators) {
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
+    for (NSData *hashData in locators) {
+        [msg appendUInt256:hashData.UInt256];
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
@@ -525,18 +529,28 @@
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop
 {
     NSMutableData *msg = [NSMutableData data];
-    UInt256 h;
     
     [msg appendUInt32:self.chain.protocolVersion];
     [msg appendVarInt:locators.count];
     
-    for (NSValue *hash in locators) {
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
+    for (NSData *hashData in locators) {
+        [msg appendUInt256:hashData.UInt256];
     }
     
     [msg appendBytes:&hashStop length:sizeof(hashStop)];
     self.sentGetblocks = YES;
+    
+#if MESSAGE_LOGGING
+    NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
+    [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,[self.chain heightForBlockHash:((NSData*)obj).UInt256]]];
+    }];
+    DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
+#if MESSAGE_CONTENT_LOGGING
+        DSDLog(@"%@:%u sending data %@", self.host, self.port, msg.hexString);
+#endif
+#endif
+    
     [self sendMessage:msg type:MSG_GETBLOCKS];
 }
 
@@ -895,12 +909,17 @@
     }
     
     _lastblock = [message UInt32AtOffset:80 + l.unsignedIntegerValue];
-#if MESSAGE_LOGGING
-    DSDLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
-#endif
+
     if (self.version < self.chain.minProtocolVersion) {
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u protocol version %u not supported, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+#endif
         [self error:@"protocol version %u not supported", self.version];
         return;
+    } else {
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u got version %u, useragent:\"%@\"", self.host, self.port, self.version, self.useragent);
+#endif
     }
     
     [self sendVerackMessage];
@@ -1173,7 +1192,7 @@
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
     if (blockHashes.count >= 500 && ! self.needsFilterUpdate) {
-        [self sendGetblocksMessageWithLocators:@[blockHashes.lastObject, blockHashes.firstObject]
+        [self sendGetblocksMessageWithLocators:@[uint256_data_from_obj(blockHashes.lastObject), uint256_data_from_obj(blockHashes.firstObject)]
                                    andHashStop:UINT256_ZERO];
     }
     
@@ -1338,8 +1357,8 @@
     if (count >= 2000 || lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
-        NSValue *firstHashValue = uint256_obj(firstBlockHash);
-        NSValue *lastHashValue = uint256_obj(lastBlockHash);
+        NSData *firstHashData = uint256_data(firstBlockHash);
+        NSData *lastHashData = uint256_data(lastBlockHash);
         
         if (lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
@@ -1349,14 +1368,14 @@
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }
             lastBlockHash = [message subdataWithRange:NSMakeRange(off, 80)].x11;
-            lastHashValue = uint256_obj(lastBlockHash);
-            DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashValue, firstHashValue]);
-            [self sendGetblocksMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
+            lastHashData = uint256_data(lastBlockHash);
+            DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            [self sendGetblocksMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
         else {
             DSDLog(@"%@:%u calling getheaders with locators: %@", self.host, self.port,
-                  @[lastHashValue, firstHashValue]);
-            [self sendGetheadersMessageWithLocators:@[lastHashValue, firstHashValue] andHashStop:UINT256_ZERO];
+                  @[lastHashData.reverse.hexString, firstHashData.reverse.hexString]);
+            [self sendGetheadersMessageWithLocators:@[lastHashData, firstHashData] andHashStop:UINT256_ZERO];
         }
     }
     else {
@@ -1815,7 +1834,7 @@
             @autoreleasepool {
                 e.timestamp = self.timestamp;
                 e.services = self.services;
-                e.misbehavin = self.misbehavin;
+                e.misbehavin = self.misbehaving;
                 e.priority = self.priority;
                 e.lowPreferenceTill = self.lowPreferenceTill;
                 e.lastRequestedMasternodeList = self.lastRequestedMasternodeList;

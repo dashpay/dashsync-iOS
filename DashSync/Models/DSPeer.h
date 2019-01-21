@@ -259,7 +259,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, readonly) NSTimeInterval pingTime;
 @property (nonatomic, readonly) NSTimeInterval relaySpeed; // headers or block->totalTx per second being relayed
 @property (nonatomic, assign) NSTimeInterval timestamp; // timestamp reported by peer (since 1970)
-@property (nonatomic, assign) int16_t misbehavin;
+@property (nonatomic, assign) int16_t misbehaving;
 @property (nonatomic, assign) uint32_t priority;
 @property (nonatomic, assign) NSTimeInterval lowPreferenceTill;
 @property (nonatomic, assign) NSTimeInterval lastRequestedMasternodeList;

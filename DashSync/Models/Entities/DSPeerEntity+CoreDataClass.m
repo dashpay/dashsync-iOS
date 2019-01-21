@@ -42,7 +42,7 @@
         self.port = peer.port;
         self.timestamp = peer.timestamp;
         self.services = peer.services;
-        self.misbehavin = peer.misbehavin;
+        self.misbehavin = peer.misbehaving;
         self.priority = peer.priority;
         self.lowPreferenceTill = peer.lowPreferenceTill;
         self.lastRequestedMasternodeList = peer.lastRequestedMasternodeList;
@@ -61,7 +61,7 @@
         UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
         DSChain * chain = [self.chain chain];
         peer = [[DSPeer alloc] initWithAddress:address port:self.port onChain:chain timestamp:self.timestamp services:self.services];
-        peer.misbehavin = self.misbehavin;
+        peer.misbehaving = self.misbehavin;
         peer.priority = self.priority;
         peer.lowPreferenceTill = self.lowPreferenceTill;
         peer.lastRequestedMasternodeList = self.lastRequestedMasternodeList;

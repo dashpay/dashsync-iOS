@@ -16,7 +16,7 @@
 
 @implementation DSSporkEntity
 
-- (void)setAttributesFromSpork:(DSSpork *)spork
+- (void)setAttributesFromSpork:(DSSpork *)spork withSporkHash:(DSSporkHashEntity*)sporkHash
 {
     [self.managedObjectContext performBlockAndWait:^{
         [DSChainEntity setContext:self.managedObjectContext];
@@ -25,7 +25,12 @@
         self.signature = spork.signature;
         self.timeSigned = spork.timeSigned;
         self.value = spork.value;
-        self.sporkHash = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChain:spork.chain.chainEntity];
+        if (sporkHash) {
+            self.sporkHash = sporkHash;
+        } else {
+            self.sporkHash = [DSSporkHashEntity sporkHashEntityWithHash:[NSData dataWithUInt256:spork.sporkHash] onChain:spork.chain.chainEntity];
+        }
+        
         NSAssert(self.sporkHash, @"There should be a spork hash");
     }];
 }

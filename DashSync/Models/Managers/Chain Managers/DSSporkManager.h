@@ -32,7 +32,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 @class DSPeer,DSChain;
 
 @interface DSSporkManager : NSObject <DSPeerSporkDelegate>
-    
+
+@property (nonatomic,readonly) NSTimeInterval lastRequestedSporks; //this is the time after a successful spork sync, this is not persisted between sessions
+@property (nonatomic,readonly) NSTimeInterval lastSyncedSporks; //this is the time after a successful spork sync, this is not persisted between sessions
 @property (nonatomic,readonly) BOOL instantSendActive;
 @property (nonatomic,readonly) BOOL instantSendAutoLocks;
 @property (nonatomic,readonly) BOOL deterministicMasternodeListEnabled;

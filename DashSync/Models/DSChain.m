@@ -146,7 +146,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @interface DSChain ()
 
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
-@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary;
+@property (nonatomic, strong) NSMutableDictionary *blocks, *orphans,*checkpointsDictionary,*checkpointsInvertedDictionary;
 @property (nonatomic, strong) NSArray<DSCheckpoint*> * checkpoints;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, copy) NSString * networkName;
@@ -561,6 +561,20 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(BOOL)allowMinDifficultyBlocks {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return NO;
+        case DSChainType_TestNet:
+            return YES;
+        case DSChainType_DevNet:
+            return YES;
+        default:
+            return NO;
+            break;
+    }
+}
+
 
 -(NSString*)networkName {
     switch ([self chainType]) {
@@ -619,6 +633,23 @@ static dispatch_once_t devnetToken = 0;
 -(uint64_t)baseReward {
     if ([self chainType] == DSChainType_MainNet) return 5 * DUFFS;
     return 50 * DUFFS;
+}
+
+-(uint32_t)peerMisbehavingThreshold {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return 20;
+            break;
+        case DSChainType_TestNet:
+            return 40;
+            break;
+        case DSChainType_DevNet:
+            return 3;
+            break;
+        default:
+            break;
+    }
+    return 20;
 }
 
 -(DSCheckpoint*)lastCheckpoint {
@@ -1064,6 +1095,7 @@ static dispatch_once_t devnetToken = 0;
         if (self->_blocks.count > 0) return;
         self->_blocks = [NSMutableDictionary dictionary];
         self.checkpointsDictionary = [NSMutableDictionary dictionary];
+        self.checkpointsInvertedDictionary = [NSMutableDictionary dictionary];
         for (DSCheckpoint * checkpoint in self.checkpoints) { // add checkpoints to the block collection
             UInt256 checkpointHash = checkpoint.checkpointHash;
             
@@ -1072,6 +1104,7 @@ static dispatch_once_t devnetToken = 0;
                                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
                                                                                             flags:nil height:checkpoint.height];
             self.checkpointsDictionary[@(checkpoint.height)] = uint256_obj(checkpointHash);
+            self.checkpointsInvertedDictionary[uint256_obj(checkpointHash)] = @(checkpoint.height);
         }
         self.delegateQueueChainEntity = [self chainEntity];
         for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:50 onChain:self.delegateQueueChainEntity]) {
@@ -1098,18 +1131,43 @@ static dispatch_once_t devnetToken = 0;
     NSMutableArray *locators = [NSMutableArray array];
     int32_t step = 1, start = 0;
     DSMerkleBlock *b = self.lastBlock;
-    
+    uint32_t lastHeight = b.height;
     while (b && b.height > 0) {
-        [locators addObject:uint256_obj(b.blockHash)];
+        [locators addObject:uint256_data(b.blockHash)];
+        lastHeight = b.height;
         if (++start >= 10) step *= 2;
         
         for (int32_t i = 0; b && i < step; i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
     }
-    
-    [locators addObject:uint256_obj([self genesisHash])];
+    DSCheckpoint * lastCheckpoint;
+    //then add the last checkpoint we know about previous to this block
+    for (DSCheckpoint * checkpoint in self.checkpoints) {
+        if (checkpoint.height < lastHeight) {
+            lastCheckpoint = checkpoint;
+        } else {
+            break;
+        }
+    }
+    [locators addObject:uint256_data(lastCheckpoint.checkpointHash)];
     return locators;
+}
+
+- (uint32_t)heightForBlockHash:(UInt256)blockhash {
+    if ([self.checkpointsInvertedDictionary objectForKey:uint256_obj(blockhash)]) {
+        return [[self.checkpointsInvertedDictionary objectForKey:uint256_obj(blockhash)] unsignedIntValue];
+    }
+    
+    DSMerkleBlock *b = self.lastBlock;
+    
+    while (b && b.height > 0) {
+        if (uint256_eq(b.blockHash, blockhash)) {
+            return b.height;
+        }
+        b = self.blocks[uint256_obj(b.prevBlock)];
+    }
+    return 0;
 }
 
 - (DSMerkleBlock *)lastBlock
@@ -1252,7 +1310,7 @@ static dispatch_once_t devnetToken = 0;
         }
 #endif
         DSDLog(@"%@:%d relayed orphan block %@, previous %@, height %d, last block is %@, lastBlockHeight %d, time %@", peer.host, peer.port,
-              blockHash, prevBlock, block.height, uint256_obj(self.lastBlock.blockHash), self.lastBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
+              uint256_reverse_hex(block.blockHash), uint256_reverse_hex(block.prevBlock), block.height, uint256_reverse_hex(self.lastBlock.blockHash), self.lastBlockHeight,[NSDate dateWithTimeIntervalSince1970:block.timestamp]);
         
         [self.chainManager chain:self receivedOrphanBlock:block fromPeer:peer];
         [peer receivedOrphanBlock];
@@ -1283,7 +1341,7 @@ static dispatch_once_t devnetToken = 0;
     
     // verify block difficulty if block is past last checkpoint
     DSCheckpoint * lastCheckpoint = [self lastCheckpoint];
-    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) && [self isMainnet] &&
+    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
         ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
         uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
         DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
@@ -1292,7 +1350,7 @@ static dispatch_once_t devnetToken = 0;
         return FALSE;
     }
     
-    [self.checkpointsDictionary[@(block.height)] getValue:&checkpoint ];
+    [self.checkpointsDictionary[@(block.height)] getValue:&checkpoint];
     
     // verify block chain checkpoints
     if (! uint256_is_zero(checkpoint) && ! uint256_eq(block.blockHash, checkpoint)) {

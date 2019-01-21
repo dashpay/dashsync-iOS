@@ -162,12 +162,20 @@
     [self.transactionManager chainWasWiped:chain];
 }
 
+-(void)chainWillStartSyncingBlockchain:(DSChain*)chain {
+    if (self.sporkManager.lastSyncedSporks < [NSDate timeIntervalSince1970] - 60 * 10) { //wait 10 minutes between requests
+        [self.sporkManager getSporks]; //get the sporks early on
+    }
+}
+
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer*)peer onMainChain:(BOOL)onMainChain {
     if (onMainChain && peer && (peer == self.peerManager.downloadPeer)) self.lastChainRelayTime = [NSDate timeIntervalSince1970];
     DSDLog(@"chain finished syncing");
     self.syncStartHeight = 0;
     [self.transactionManager fetchMempoolFromNetwork];
-    [self.sporkManager getSporks];
+    if (self.sporkManager.lastRequestedSporks < [NSDate timeIntervalSince1970] - 60 * 1) { //only request here if it took longer than 1 minute to get the chain
+        [self.sporkManager getSporks]; //get the sporks early on
+    }
     [self.governanceSyncManager startGovernanceSync];
     [self.masternodeManager getMasternodeList];
 }

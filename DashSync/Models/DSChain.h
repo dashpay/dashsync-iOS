@@ -130,6 +130,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly,nullable) DSMerkleBlock *lastOrphan;
 @property (nonatomic, readonly,nullable) DSChainEntity *chainEntity;
 @property (nonatomic, readonly) uint32_t magicNumber;
+@property (nonatomic, readonly) uint32_t peerMisbehavingThreshold;
 @property (nonatomic, readonly) NSString * chainWalletsKey;
 @property (nonatomic, readonly) uint64_t baseReward;
 @property (nonatomic, readonly) BOOL canConstructAFilter;
@@ -144,6 +145,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) uint32_t minProtocolVersion;
 @property (nonatomic, assign) uint32_t protocolVersion;
 @property (nonatomic, readonly) uint32_t maxProofOfWork;
+@property (nonatomic, readonly) BOOL allowMinDifficultyBlocks;
 @property (nonatomic, strong, nullable) NSString * sporkPublicKey;
 @property (nonatomic, strong, nullable) NSString * sporkPrivateKey;
 @property (nonatomic, strong, nullable) NSString * sporkAddress;
@@ -225,6 +227,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
+- (uint32_t)heightForBlockHash:(UInt256)blockhash;
+
 @end
 
 @protocol DSChainTransactionsDelegate
@@ -239,6 +243,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 @required
 
+-(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;

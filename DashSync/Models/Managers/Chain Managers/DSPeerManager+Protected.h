@@ -37,7 +37,7 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 
 @interface DSPeerManager (Protected)
 
-@property (nonatomic, readonly) NSUInteger connectFailures, misbehavinCount, maxConnectCount;
+@property (nonatomic, readonly) NSUInteger connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, readonly) NSSet *connectedPeers;
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
 
