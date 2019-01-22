@@ -31,7 +31,7 @@ typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
-extern NSString *const DSAppTerminationRequestNotification;
+extern NSString *const DSApplicationTerminationRequestNotification;
 
 @class DSWallet,DSChain,DSTransaction;
 

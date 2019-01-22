@@ -59,7 +59,7 @@ static NSString *sanitizeString(NSString *s)
 
 typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthenticationManager * context);
 
-NSString *const DSAppTerminationRequestNotification = @"DSAppTerminationRequestNotification";
+NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTerminationRequestNotification";
 
 @interface DSAuthenticationManager()
 
@@ -897,7 +897,7 @@ replacementString:(NSString *)string
                 [[DSVersionManager sharedInstance] clearKeychainWalletData];
                 
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSAppTerminationRequestNotification object:nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
                 });
                 if (completion) completion(NO,NO);
                 return FALSE;
