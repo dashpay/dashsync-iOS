@@ -235,12 +235,10 @@
     
     if (d.length == sizeof(NSTimeInterval)) {
         NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
-        if (potentialWalletCreationTime != BIP39_CREATION_TIME) {
-            if (potentialWalletCreationTime < BIP39_CREATION_TIME) { //it was from reference date for sure
-                NSTimeInterval realWalletCreationTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:potentialWalletCreationTime] timeIntervalSince1970];
-                _walletCreationTime = realWalletCreationTime;
-                setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
-            }
+        if (potentialWalletCreationTime < BIP39_CREATION_TIME) { //it was from reference date for sure
+            NSTimeInterval realWalletCreationTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:potentialWalletCreationTime] timeIntervalSince1970];
+            _walletCreationTime = realWalletCreationTime;
+            setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
         }
     }
 }
