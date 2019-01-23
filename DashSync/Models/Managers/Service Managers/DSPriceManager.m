@@ -189,8 +189,9 @@
         _pricesByCode = [pricesByCode copy];
     }
     
-    self.localCurrencyCode = ([defaults stringForKey:LOCAL_CURRENCY_CODE_KEY]) ?
-    [defaults stringForKey:LOCAL_CURRENCY_CODE_KEY] : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+    NSString * potentialLocalCurrencyCode = [defaults stringForKey:LOCAL_CURRENCY_CODE_KEY];
+    
+    self.localCurrencyCode = (potentialLocalCurrencyCode) ? potentialLocalCurrencyCode : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
     
     return self;
 }
@@ -221,7 +222,7 @@
 
     _localCurrencyCode = [code copy];
     
-    if ([DSAuthenticationManager sharedInstance].secureTime + 3*24*60*60 > [NSDate timeIntervalSince1970]) {
+    if ([DSAuthenticationManager sharedInstance].secureTime + 3*DAY_TIME_INTERVAL > [NSDate timeIntervalSince1970]) {
         self.localCurrencyDashPrice = priceObject.price; // don't use exchange rate data more than 72hrs out of date
     }
     else {
