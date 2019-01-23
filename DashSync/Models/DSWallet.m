@@ -47,6 +47,7 @@
 #define WALLET_MNEMONIC_KEY        @"WALLET_MNEMONIC_KEY"
 #define WALLET_MASTER_PUBLIC_KEY        @"WALLET_MASTER_PUBLIC_KEY"
 #define WALLET_BLOCKCHAIN_USERS_KEY  @"WALLET_BLOCKCHAIN_USERS_KEY"
+#define VERIFIED_WALLET_CREATION_TIME_KEY @"VERIFIED_WALLET_CREATION_TIME"
 
 @interface DSWallet()
 
@@ -174,6 +175,10 @@
     return [NSString stringWithFormat:@"%@_%@",WALLET_CREATION_GUESS_TIME_KEY,uniqueID];
 }
 
++(NSString*)didVerifyCreationTimeUniqueIDForUniqueID:(NSString*)uniqueID {
+    return [NSString stringWithFormat:@"%@_%@",VERIFIED_WALLET_CREATION_TIME_KEY,uniqueID];
+}
+
 -(NSString*)creationTimeUniqueID {
     return [DSWallet creationTimeUniqueIDForUniqueID:self.uniqueID];
 }
@@ -182,9 +187,14 @@
     return [DSWallet creationGuessTimeUniqueIDForUniqueID:self.uniqueID];
 }
 
+-(NSString*)didVerifyCreationTimeUniqueID {
+    return [DSWallet creationTimeUniqueIDForUniqueID:self.uniqueID];
+}
+
 // MARK: - Wallet Creation Time
 
 -(NSTimeInterval)walletCreationTime {
+    [self verifyWalletCreationTime];
     if (_walletCreationTime) return _walletCreationTime;
     NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
     
@@ -217,6 +227,30 @@
     if (_walletCreationTime) return;
     if (!setKeychainData([NSData dataWithBytes:&guessedWalletCreationTime length:sizeof(guessedWalletCreationTime)], [self creationGuessTimeUniqueID], NO)) {
         NSAssert(FALSE, @"error setting wallet guessed creation time");
+    }
+}
+
+-(void)migrateWalletCreationTime {
+    NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
+    
+    if (d.length == sizeof(NSTimeInterval)) {
+        NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
+        if (potentialWalletCreationTime != BIP39_CREATION_TIME) {
+            if (potentialWalletCreationTime < BIP39_CREATION_TIME) { //it was from reference date for sure
+                NSTimeInterval realWalletCreationTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:potentialWalletCreationTime] timeIntervalSince1970];
+                _walletCreationTime = realWalletCreationTime;
+                setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
+            }
+        }
+    }
+}
+
+-(void)verifyWalletCreationTime {
+    NSError * error = nil;
+    BOOL didVerifyAlready = hasKeychainData(self.didVerifyCreationTimeUniqueID, &error);
+    if (!didVerifyAlready) {
+        [self migrateWalletCreationTime];
+        setKeychainInt(1, self.didVerifyCreationTimeUniqueID, NO);
     }
 }
 
@@ -269,6 +303,9 @@
                 
                 return nil;
             }
+            
+            //in version 2.0.0 wallet creation times were migrated from reference date, since this is now fixed just add this line so verification only happens once
+            setKeychainInt(1, [DSWallet didVerifyCreationTimeUniqueIDForUniqueID:uniqueID], NO);
             
             for (DSAccount * account in accounts) {
                 for (DSDerivationPath * derivationPath in account.derivationPaths) {

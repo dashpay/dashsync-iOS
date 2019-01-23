@@ -150,7 +150,8 @@
     NSData *d = getKeychainData(COMPATIBILITY_CREATION_TIME_KEY, nil);
     
     if (d.length == sizeof(NSTimeInterval)) {
-        return *(const NSTimeInterval *)d.bytes;
+        NSDate * date = [NSDate dateWithTimeIntervalSinceReferenceDate:*(const NSTimeInterval *)d.bytes];
+        return [date timeIntervalSince1970];
     }
     
     return BIP39_CREATION_TIME;
