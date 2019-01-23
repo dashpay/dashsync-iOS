@@ -213,16 +213,12 @@
 - (void)setLocalCurrencyCode:(NSString *)code
 {
     NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
-    
-    DSCurrencyPriceObject *priceObject = self.pricesByCode[code];
-    if (!priceObject) {
-        code = DEFAULT_CURRENCY_CODE;
-        priceObject = self.pricesByCode[code];
-    }
+
 
     _localCurrencyCode = [code copy];
-    
-    if ([DSAuthenticationManager sharedInstance].secureTime + 3*DAY_TIME_INTERVAL > [NSDate timeIntervalSince1970]) {
+
+    if ([self.pricesByCode objectForKey:code] && [DSAuthenticationManager sharedInstance].secureTime + 3*DAY_TIME_INTERVAL > [NSDate timeIntervalSince1970]) {
+        DSCurrencyPriceObject * priceObject = self.pricesByCode[code];
         self.localCurrencyDashPrice = priceObject.price; // don't use exchange rate data more than 72hrs out of date
     }
     else {
