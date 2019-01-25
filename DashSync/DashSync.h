@@ -3,7 +3,7 @@
 //  dashsync
 //
 //  Created by Sam Westrich on 3/4/18.
-//  Copyright © 2018 dashcore. All rights reserved.
+//  Copyright © 2019 dashcore. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //  Copyright © 2015 Michal Zaborowski. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
