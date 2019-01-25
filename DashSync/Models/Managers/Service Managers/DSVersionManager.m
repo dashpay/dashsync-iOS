@@ -14,6 +14,8 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSChainsManager.h"
 #import "NSMutableData+Dash.h"
+#import "DSChainManager.h"
+#import "DSPeerManager.h"
 
 #define COMPATIBILITY_MNEMONIC_KEY        @"mnemonic"
 #define COMPATIBILITY_CREATION_TIME_KEY   @"creationtime"
@@ -135,6 +137,11 @@
                 NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
                 
                 [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];
+                
+                if ([[NSUserDefaults standardUserDefaults] objectForKey:SETTINGS_FIXED_PEER_KEY]) {
+                    [wallet.chain.chainManager.peerManager setTrustedPeerHost:[[NSUserDefaults standardUserDefaults] objectForKey:SETTINGS_FIXED_PEER_KEY]];
+                    [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_FIXED_PEER_KEY];
+                }
                 
                 completion(!failed,YES,YES,NO);
                 

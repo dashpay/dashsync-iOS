@@ -16,6 +16,7 @@ NSString* const DSTransactionManagerTransactionReceivedNotification =         @"
 NSString* const DSChainNewChainTipBlockNotification =         @"DSChainNewChainTipBlockNotification";
 NSString* const DSPeerManagerPeersDidChangeNotification =      @"DSPeerManagerPeersDidChangeNotification";
 NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeerManagerConnectedPeersDidChangeNotification";
+NSString* const DSPeerManagerDownloadPeerDidChangeNotification =      @"DSPeerManagerDownloadPeerDidChangeNotification";
 
 NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
 NSString* const DSChainBlockchainUsersDidChangeNotification =    @"DSChainBlockchainUsersDidChangeNotification";
