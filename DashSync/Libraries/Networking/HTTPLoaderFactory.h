@@ -20,7 +20,7 @@
 //  specific language governing permissions and limitations
 //  under the License.
 //
-//  Copyright © 2019-2019 Dash Core Group. All rights reserved.
+//  Copyright © 2018-2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
