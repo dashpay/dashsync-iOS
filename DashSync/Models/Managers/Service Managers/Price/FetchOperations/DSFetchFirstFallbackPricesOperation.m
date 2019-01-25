@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
             request.timeout = 30.0;
             request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
 
-            DSHTTPDashVesCCOperation *operation = [[DSHTTPDashVesCCOperation alloc] init];
+            DSHTTPDashVesCCOperation *operation = [[DSHTTPDashVesCCOperation alloc] initWithRequest:request];
             _dashVesCCOperation = operation;
             [self addOperation:operation];
         }

@@ -33,6 +33,8 @@ NSString *const DSHTTPOperationErrorDomain = @"DSHTTPOperation.error";
 @implementation DSHTTPOperation
 
 - (instancetype)initWithRequest:(HTTPRequest *)request {
+    NSParameterAssert(request);
+    
     self = [super init];
     if (self) {
         _request = request;

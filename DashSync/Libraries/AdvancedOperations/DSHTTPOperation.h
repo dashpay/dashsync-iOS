@@ -30,6 +30,7 @@ typedef NS_ENUM(NSUInteger, DSHTTPOperationErrorCode) {
 @interface DSHTTPOperation : DSOperation
 
 - (instancetype)initWithRequest:(HTTPRequest *)request;
+- (instancetype)init NS_UNAVAILABLE;
 
 - (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode;
 - (void)cancelWithInvalidResponse:(id)responseData;
