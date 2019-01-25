@@ -803,6 +803,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerDownloadPeerDidChangeNotification
+                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 
@@ -852,8 +854,8 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerConnectedPeersDidChangeNotification
                                                             object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-        //Commented out for now, don't think we need this
-//        [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSPeerManagerDownloadPeerDidChangeNotification
+                                                            object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
 }
 

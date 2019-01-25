@@ -32,6 +32,7 @@
 #import "DSPeer.h"
 
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerDownloadPeerDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;
 
 #define PEER_MAX_CONNECTIONS 3
@@ -53,6 +54,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 @property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
 @property (nonatomic, readonly) NSArray* registeredDevnetPeers;
 @property (nonatomic, readonly) NSArray* registeredDevnetPeerServices;
+@property (nonatomic, readonly) NSString* trustedPeerHost;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
