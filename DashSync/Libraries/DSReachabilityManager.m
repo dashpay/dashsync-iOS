@@ -1,6 +1,6 @@
 //
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Copyright (c) 2015 Michal Zaborowski. All rights reserved.
 // Copyright (c) 2011–2015 Alamofire Software Foundation (http://alamofire.org/)
