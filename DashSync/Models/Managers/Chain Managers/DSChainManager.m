@@ -87,7 +87,7 @@
     if (! self.peerManager.downloadPeer && self.syncStartHeight == 0) return 0.0;
     //if (self.downloadPeer.status != DSPeerStatus_Connected) return 0.05;
     if (self.chain.lastBlockHeight >= self.chain.estimatedBlockHeight) return 1.0;
-    return 0.1 + 0.9*(self.chain.lastBlockHeight - self.syncStartHeight)/(self.chain.estimatedBlockHeight - self.syncStartHeight);
+    return MIN(1.0,MAX(0.0,0.1 + 0.9*(self.chain.lastBlockHeight - self.syncStartHeight)/(self.chain.estimatedBlockHeight - self.syncStartHeight)));
 }
 
 -(void)resetSyncStartHeight {

@@ -57,14 +57,68 @@
     return singleton;
 }
 
+-(void)setDefaultLanguage:(DSBIP39Language)defaultLanguage {
+    self.words = nil;
+    _defaultLanguage = defaultLanguage;
+    [self words];
+}
+
++ (NSArray*)availableLanguages {
+    return @[
+             @(DSBIP39Language_English),
+             @(DSBIP39Language_French),
+             @(DSBIP39Language_Italian),
+             @(DSBIP39Language_Spanish),
+             @(DSBIP39Language_ChineseSimplified),
+             @(DSBIP39Language_Korean),
+             @(DSBIP39Language_Japanese)
+             ];
+}
+
++(NSString*)identifierForLanguage:(DSBIP39Language)language {
+    switch (language) {
+        case DSBIP39Language_English:
+            return @"en";
+            break;
+        case DSBIP39Language_French:
+            return @"fr";
+            break;
+        case DSBIP39Language_Spanish:
+            return @"es";
+            break;
+        case DSBIP39Language_Korean:
+            return @"ko";
+            break;
+        case DSBIP39Language_Japanese:
+            return @"ja";
+            break;
+        case DSBIP39Language_ChineseSimplified:
+            return @"zh-Hans";
+            break;
+        case DSBIP39Language_Italian:
+            return @"it";
+            break;
+        default:
+            return nil;
+            break;
+    }
+}
+
+-(NSString*)languageIdentifier {
+    return [DSBIP39Mnemonic identifierForLanguage:self.defaultLanguage];
+}
+
 - (NSArray *)words
 {
     if (! _words) {
         NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
         NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-        _words = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
+        if (self.defaultLanguage == DSBIP39Language_Default) {
+            _words = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist"]];
+        } else {
+            _words = [NSArray arrayWithContentsOfFile:[bundle pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:[self languageIdentifier]]];
+        }
     }
-    
     return _words;
 }
 
@@ -79,10 +133,8 @@
             [allWords addObjectsFromArray:[NSArray arrayWithContentsOfFile:[bundle
              pathForResource:WORDS ofType:@"plist" inDirectory:nil forLocalization:lang]]];
         }
-
         _allWords = allWords;
     }
-    
     return _allWords;
 }
 
