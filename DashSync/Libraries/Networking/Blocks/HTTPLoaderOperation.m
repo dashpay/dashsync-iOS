@@ -107,6 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.completion) {
         self.completion(YES, NO, response);
     }
+    self.completion = nil;
 }
 
 - (void)httpLoader:(HTTPLoader *)httpLoader didReceiveErrorResponse:(HTTPResponse *)response {
@@ -115,6 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.completion) {
         self.completion(NO, NO, response);
     }
+    self.completion = nil;
 }
 
 - (void)httpLoader:(HTTPLoader *)httpLoader didCancelRequest:(HTTPRequest *)request {
@@ -123,6 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (self.completion) {
         self.completion(NO, YES, nil);
     }
+    self.completion = nil;
 }
 
 @end
