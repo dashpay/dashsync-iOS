@@ -73,7 +73,11 @@
 }
 
 + (DSWallet*)standardWalletWithRandomSeedPhraseForChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
-    return [self standardWalletWithSeedPhrase:[self generateRandomSeed] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store isTransient:isTransient];
+    return [self standardWalletWithRandomSeedPhraseInLanguage:DSBIP39Language_Default forChain:chain storeSeedPhrase:store isTransient:isTransient];
+}
+
++ (DSWallet*)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    return [self standardWalletWithSeedPhrase:[self generateRandomSeedForLanguage:language] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store isTransient:isTransient];
 }
 
 -(instancetype)initWithChain:(DSChain*)chain {
@@ -255,15 +259,23 @@
 // MARK: - Seed
 
 // generates a random seed, saves to keychain and returns the associated seedPhrase
-+ (NSString *)generateRandomSeed
++ (NSString *)generateRandomSeedForLanguage:(DSBIP39Language)language
 {
     NSMutableData *entropy = [NSMutableData secureDataWithLength:SEED_ENTROPY_LENGTH];
     
     if (SecRandomCopyBytes(kSecRandomDefault, entropy.length, entropy.mutableBytes) != 0) return nil;
     
+    if (language != DSBIP39Language_Default) {
+        [[DSBIP39Mnemonic sharedInstance] setDefaultLanguage:language];
+    }
+    
     NSString *phrase = [[DSBIP39Mnemonic sharedInstance] encodePhrase:entropy];
     
     return phrase;
+}
+
++ (NSString *)generateRandomSeed {
+    return [self generateRandomSeedForLanguage:DSBIP39Language_Default];
 }
 
 - (void)seedPhraseAfterAuthentication:(void (^)(NSString * _Nullable))completion
