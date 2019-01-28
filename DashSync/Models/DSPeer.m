@@ -53,6 +53,7 @@
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
+#define LOG_TX_LOCK_VOTES 0
 
 #if ! PEER_LOGGING
 #define DSDLog(...)
@@ -1259,9 +1260,13 @@
 
 - (void)acceptTxlvoteMessage:(NSData *)message
 {
+#if LOG_TX_LOCK_VOTES
     DSDLog(@"peer relayed txlvote message: %@", message.hexString);
+#endif
     if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
+#if LOG_TX_LOCK_VOTES
         DSDLog(@"returned transaction lock message when DML not enabled: %@", message);//no error here
+#endif
         return;
     }
     DSTransactionLockVote *transactionLockVote = [DSTransactionLockVote transactionLockVoteWithMessage:message onChain:self.chain];
@@ -1279,7 +1284,9 @@
         [self.transactionDelegate peer:self relayedTransactionLockVote:transactionLockVote];;
     });
     
+#if LOG_TX_LOCK_VOTES
     DSDLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
+#endif
     
 }
 

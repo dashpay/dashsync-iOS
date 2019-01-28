@@ -224,12 +224,13 @@
                     } else {
                         DSDLog(@"serious issue in transaction %@", transaction);
                     }
-                    
+                    DSDLog(@"removing transaction %@", transaction);
                     [account removeTransaction:transaction.txHash];
                     removedTransaction = YES;
                 }
                 else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
                     // set timestamp 0 to mark as unverified
+                    DSDLog(@"setting transaction as unverified %@", transaction);
                     [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
                 }
             }
