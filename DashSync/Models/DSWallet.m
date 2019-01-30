@@ -201,7 +201,7 @@
     if (d.length == sizeof(NSTimeInterval)) {
         NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
         if (potentialWalletCreationTime != BIP39_CREATION_TIME) {
-            _walletCreationTime = potentialWalletCreationTime;
+            _walletCreationTime = MAX(potentialWalletCreationTime,BIP39_CREATION_TIME); //just to be safe
             return _walletCreationTime;
         }
     }
@@ -236,8 +236,11 @@
     if (d.length == sizeof(NSTimeInterval)) {
         NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
         if (potentialWalletCreationTime < BIP39_CREATION_TIME) { //it was from reference date for sure
-            NSTimeInterval realWalletCreationTime = [[NSDate dateWithTimeIntervalSinceReferenceDate:potentialWalletCreationTime] timeIntervalSince1970];
-            _walletCreationTime = realWalletCreationTime;
+            NSDate * realWalletCreationDate = [NSDate dateWithTimeIntervalSinceReferenceDate:potentialWalletCreationTime];
+            NSTimeInterval realWalletCreationTime = [realWalletCreationDate timeIntervalSince1970];
+            NSAssert(realWalletCreationTime > BIP39_CREATION_TIME, @"realWalletCreationTime should be older that wallet creation time");
+            _walletCreationTime = MAX(realWalletCreationTime,BIP39_CREATION_TIME); //safeguard
+            DSDLog(@"real wallet creation set to %@",realWalletCreationDate);
             setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
         }
     }
