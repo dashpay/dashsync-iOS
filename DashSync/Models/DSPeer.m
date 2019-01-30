@@ -96,7 +96,7 @@
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
-@property (nonatomic, strong) void (^mempoolCompletion)(BOOL);
+@property (nonatomic, strong) void (^mempoolTransactionCompletion)(BOOL);
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
@@ -313,8 +313,8 @@
             [self.pongHandlers removeObjectAtIndex:0];
         }
         
-        if (self.mempoolCompletion) self.mempoolCompletion(NO);
-        self.mempoolCompletion = nil;
+        if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO);
+        self.mempoolTransactionCompletion = nil;
         [self.peerDelegate peer:self disconnectedWithError:error];
     });
 }
@@ -444,8 +444,8 @@
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
     });
     DSDLog(@"[DSPeer] mempool time out %@",self.host);
-    [self sendPingMessageWithPongHandler:self.mempoolCompletion];
-    self.mempoolCompletion = nil;
+    [self sendPingMessageWithPongHandler:self.mempoolTransactionCompletion];
+    self.mempoolTransactionCompletion = nil;
 }
 
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL))completion
@@ -454,7 +454,7 @@
     self.sentMempool = YES;
     
     if (completion) {
-        if (self.mempoolCompletion) {
+        if (self.mempoolTransactionCompletion) {
             //DSDLog(@"aaaa");
             dispatch_async(self.delegateQueue, ^{
                 //DSDLog(@"bbbb");
@@ -462,7 +462,7 @@
             });
         }
         else {
-            self.mempoolCompletion = completion;
+            self.mempoolTransactionCompletion = completion;
             //DSDLog(@"cccc");
             dispatch_async(self.delegateQueue, ^{
                 //DSDLog(@"dddd");
@@ -557,6 +557,7 @@
 
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType
 {
+    DSDLog(@"%@:%u sending inv message of type %@ hashes count %lu", self.host, self.port, [self nameOfInvMessage:invType],(unsigned long)invHashes.count);
     NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
@@ -1197,13 +1198,13 @@
                                    andHashStop:UINT256_ZERO];
     }
     
-    if (self.mempoolCompletion && ((txHashes.count + txLockRequestHashes.count > 0) || blockHashes.count == 0)) {
+    if (self.mempoolTransactionCompletion && (txHashes.count + txLockRequestHashes.count > 0)) {
         dispatch_async(self.delegateQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self];
         });
-        DSDLog(@"[DSPeer] got mempool inv messages %@",self.host);
-        [self sendPingMessageWithPongHandler:self.mempoolCompletion];
-        self.mempoolCompletion = nil;
+        DSDLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
+        [self sendPingMessageWithPongHandler:self.mempoolTransactionCompletion];
+        self.mempoolTransactionCompletion = nil;
     }
     
     if (governanceObjectHashes.count > 0) {

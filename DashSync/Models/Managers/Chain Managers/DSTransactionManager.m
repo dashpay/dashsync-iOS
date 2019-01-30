@@ -207,8 +207,9 @@
             for (DSTransaction *transaction in account.allTransactions) {
                 if (transaction.blockHeight != TX_UNCONFIRMED) break;
                 hash = uint256_obj(transaction.txHash);
+                DSDLog(@"checking published callback -> %@", self.publishedCallback[hash]?@"OK":@"no callback");
                 if (self.publishedCallback[hash] != NULL) continue;
-                
+                DSDLog(@"transaction relays count %lu, transaction requests count %lu",[self.txRelays[hash] count],[self.txRequests[hash] count]);
                 if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
                     // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
                     if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
@@ -487,6 +488,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     if (peer.status != DSPeerStatus_Connected) return;
     
     if ([self.chain canConstructAFilter] && (peer != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
+        DSDLog(@"[DSTransactionManager] sending filterload message from peer %@",peer.host);
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
     
