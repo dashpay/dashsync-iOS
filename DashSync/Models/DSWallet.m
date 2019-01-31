@@ -48,6 +48,7 @@
 #define WALLET_MASTER_PUBLIC_KEY        @"WALLET_MASTER_PUBLIC_KEY"
 #define WALLET_BLOCKCHAIN_USERS_KEY  @"WALLET_BLOCKCHAIN_USERS_KEY"
 #define VERIFIED_WALLET_CREATION_TIME_KEY @"VERIFIED_WALLET_CREATION_TIME"
+#define REFERENCE_DATE_2001 978307200
 
 @interface DSWallet()
 
@@ -188,7 +189,7 @@
 }
 
 -(NSString*)didVerifyCreationTimeUniqueID {
-    return [DSWallet creationTimeUniqueIDForUniqueID:self.uniqueID];
+    return [DSWallet didVerifyCreationTimeUniqueIDForUniqueID:self.uniqueID];
 }
 
 // MARK: - Wallet Creation Time
@@ -200,8 +201,7 @@
     
     if (d.length == sizeof(NSTimeInterval)) {
         NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
-        if (potentialWalletCreationTime != BIP39_CREATION_TIME) {
-            _walletCreationTime = MAX(potentialWalletCreationTime,BIP39_CREATION_TIME); //just to be safe
+        if (potentialWalletCreationTime > BIP39_CREATION_TIME) {
             return _walletCreationTime;
         }
     }
@@ -238,10 +238,14 @@
         if (potentialWalletCreationTime < BIP39_CREATION_TIME) { //it was from reference date for sure
             NSDate * realWalletCreationDate = [NSDate dateWithTimeIntervalSinceReferenceDate:potentialWalletCreationTime];
             NSTimeInterval realWalletCreationTime = [realWalletCreationDate timeIntervalSince1970];
-            NSAssert(realWalletCreationTime > BIP39_CREATION_TIME, @"realWalletCreationTime should be older that wallet creation time");
-            _walletCreationTime = MAX(realWalletCreationTime,BIP39_CREATION_TIME); //safeguard
-            DSDLog(@"real wallet creation set to %@",realWalletCreationDate);
-            setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
+            if (realWalletCreationTime && (realWalletCreationTime != REFERENCE_DATE_2001)) {
+                _walletCreationTime = MAX(realWalletCreationTime,BIP39_CREATION_TIME); //safeguard
+                DSDLog(@"real wallet creation set to %@",realWalletCreationDate);
+                setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
+            } else if (realWalletCreationTime == REFERENCE_DATE_2001) {
+                realWalletCreationTime = 0;
+                setKeychainData([NSData dataWithBytes:&realWalletCreationTime length:sizeof(realWalletCreationTime)], self.creationTimeUniqueID, NO);
+            }
         }
     }
 }
