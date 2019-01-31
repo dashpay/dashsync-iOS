@@ -53,6 +53,7 @@
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
+#define LOG_TX_LOCK_VOTES 0
 
 #if ! PEER_LOGGING
 #define DSDLog(...)
@@ -95,7 +96,7 @@
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
-@property (nonatomic, strong) void (^mempoolCompletion)(BOOL);
+@property (nonatomic, strong) void (^mempoolTransactionCompletion)(BOOL);
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
@@ -312,8 +313,8 @@
             [self.pongHandlers removeObjectAtIndex:0];
         }
         
-        if (self.mempoolCompletion) self.mempoolCompletion(NO);
-        self.mempoolCompletion = nil;
+        if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO);
+        self.mempoolTransactionCompletion = nil;
         [self.peerDelegate peer:self disconnectedWithError:error];
     });
 }
@@ -443,8 +444,8 @@
         [NSObject cancelPreviousPerformRequestsWithTarget:self];
     });
     DSDLog(@"[DSPeer] mempool time out %@",self.host);
-    [self sendPingMessageWithPongHandler:self.mempoolCompletion];
-    self.mempoolCompletion = nil;
+    [self sendPingMessageWithPongHandler:self.mempoolTransactionCompletion];
+    self.mempoolTransactionCompletion = nil;
 }
 
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL))completion
@@ -453,7 +454,7 @@
     self.sentMempool = YES;
     
     if (completion) {
-        if (self.mempoolCompletion) {
+        if (self.mempoolTransactionCompletion) {
             //DSDLog(@"aaaa");
             dispatch_async(self.delegateQueue, ^{
                 //DSDLog(@"bbbb");
@@ -461,7 +462,7 @@
             });
         }
         else {
-            self.mempoolCompletion = completion;
+            self.mempoolTransactionCompletion = completion;
             //DSDLog(@"cccc");
             dispatch_async(self.delegateQueue, ^{
                 //DSDLog(@"dddd");
@@ -556,6 +557,7 @@
 
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType
 {
+    DSDLog(@"%@:%u sending inv message of type %@ hashes count %lu", self.host, self.port, [self nameOfInvMessage:invType],(unsigned long)invHashes.count);
     NSMutableOrderedSet *hashes = [NSMutableOrderedSet orderedSetWithArray:invHashes];
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
@@ -1196,13 +1198,13 @@
                                    andHashStop:UINT256_ZERO];
     }
     
-    if (self.mempoolCompletion && ((txHashes.count + txLockRequestHashes.count > 0) || blockHashes.count == 0)) {
+    if (self.mempoolTransactionCompletion && (txHashes.count + txLockRequestHashes.count > 0)) {
         dispatch_async(self.delegateQueue, ^{
             [NSObject cancelPreviousPerformRequestsWithTarget:self];
         });
-        DSDLog(@"[DSPeer] got mempool inv messages %@",self.host);
-        [self sendPingMessageWithPongHandler:self.mempoolCompletion];
-        self.mempoolCompletion = nil;
+        DSDLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
+        [self sendPingMessageWithPongHandler:self.mempoolTransactionCompletion];
+        self.mempoolTransactionCompletion = nil;
     }
     
     if (governanceObjectHashes.count > 0) {
@@ -1259,9 +1261,13 @@
 
 - (void)acceptTxlvoteMessage:(NSData *)message
 {
+#if LOG_TX_LOCK_VOTES
     DSDLog(@"peer relayed txlvote message: %@", message.hexString);
+#endif
     if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
+#if LOG_TX_LOCK_VOTES
         DSDLog(@"returned transaction lock message when DML not enabled: %@", message);//no error here
+#endif
         return;
     }
     DSTransactionLockVote *transactionLockVote = [DSTransactionLockVote transactionLockVoteWithMessage:message onChain:self.chain];
@@ -1279,7 +1285,9 @@
         [self.transactionDelegate peer:self relayedTransactionLockVote:transactionLockVote];;
     });
     
+#if LOG_TX_LOCK_VOTES
     DSDLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
+#endif
     
 }
 
