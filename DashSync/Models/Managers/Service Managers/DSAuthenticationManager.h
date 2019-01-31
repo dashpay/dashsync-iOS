@@ -46,6 +46,10 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic ,readonly) BOOL lockedOut;
 @property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
+/**
+ Secure time was updated by HTTP response since app starts
+ */
+@property (nonatomic, readonly) BOOL secureTimeUpdated;
 @property (nonatomic, readonly) NSTimeInterval lockoutWaitTime;
 
 + (instancetype _Nullable)sharedInstance;

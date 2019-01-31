@@ -93,8 +93,9 @@
     if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
         DSDLog(@"fixing public key");
         
-        if (![[NSUserDefaults standardUserDefaults] boolForKey:AUTHENTICATION_TIME_VALUES_MIGRATED]) {
-            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:AUTHENTICATION_TIME_VALUES_MIGRATED];
+        BOOL authTimeMigrated = getKeychainInt(AUTHENTICATION_TIME_VALUES_MIGRATED, nil);
+        if (!authTimeMigrated) {
+            setKeychainInt(1, AUTHENTICATION_TIME_VALUES_MIGRATED, NO);
             
             //update pin unlock time
             
@@ -106,12 +107,14 @@
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             
             //secure time
-            
-            NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
-            
-            NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
-            
-            [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];            
+
+            if (![DSAuthenticationManager sharedInstance].secureTimeUpdated) {
+                NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
+                
+                NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
+                
+                [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];
+            }
         }
         
         //upgrade scenario
