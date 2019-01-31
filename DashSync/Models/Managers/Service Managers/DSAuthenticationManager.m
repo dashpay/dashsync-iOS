@@ -325,6 +325,10 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 -(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
+    [self showResetWalletWithWipeHandler:nil cancelHandler:resetCancelHandlerBlock];
+}
+
+-(void)showResetWalletWithWipeHandler:(ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
     UIAlertController * alertController = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"recovery phrase", nil) message:nil
                                                                        preferredStyle:UIAlertControllerStyleAlert];
     [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
@@ -333,6 +337,19 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         textField.font = [UIFont systemFontOfSize:15.0];
         textField.delegate = self;
     }];
+    
+    if (resetWipeHandlerBlock) {
+        UIAlertAction* wipeButton = [UIAlertAction
+                                     actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction * action) {
+                                         if (resetWipeHandlerBlock) {
+                                             resetWipeHandlerBlock();
+                                         }
+                                     }];
+        [alertController addAction:wipeButton];
+    }
+    
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
@@ -468,27 +485,27 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     if (hasPin) { //already had a pin, replacing it
         NSString *pin = getKeychainString(PIN_KEY, &error);
         if (pin.length == 4) {
-        [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-            if (authenticated) {
-                self.didAuthenticate = NO;
-                UIView *v = [self pinTitleView].superview;
-                CGPoint p = v.center;
-                
-                [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                    v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
-                } completion:^(BOOL finished) {
-                    self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                                     [NSString stringWithFormat:DSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
-                    self.pinAlertController.message = nil;
-                    v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
-                    [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-                                     animations:^{ v.center = p; } completion:nil];
-                }];
-                [self setBrandNewPinWithCompletion:completion];
-            } else {
-                if (completion) completion(NO);
-            }
-        }];
+            [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                if (authenticated) {
+                    self.didAuthenticate = NO;
+                    UIView *v = [self pinTitleView].superview;
+                    CGPoint p = v.center;
+                    
+                    [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                        v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
+                    } completion:^(BOOL finished) {
+                        self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                                         [NSString stringWithFormat:DSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+                        self.pinAlertController.message = nil;
+                        v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
+                        [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
+                                         animations:^{ v.center = p; } completion:nil];
+                    }];
+                    [self setBrandNewPinWithCompletion:completion];
+                } else {
+                    if (completion) completion(NO);
+                }
+            }];
         } else {
             [self setBrandNewPinWithCompletion:completion];
         }

@@ -209,7 +209,7 @@
                 hash = uint256_obj(transaction.txHash);
                 DSDLog(@"checking published callback -> %@", self.publishedCallback[hash]?@"OK":@"no callback");
                 if (self.publishedCallback[hash] != NULL) continue;
-                DSDLog(@"transaction relays count %lu, transaction requests count %lu",[self.txRelays[hash] count],[self.txRequests[hash] count]);
+                DSDLog(@"transaction relays count %u, transaction requests count %lu",[self.txRelays[hash] count],[self.txRequests[hash] count]);
                 if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
                     // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
                     if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
