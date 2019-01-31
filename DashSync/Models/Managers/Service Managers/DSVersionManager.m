@@ -95,8 +95,6 @@
         
         BOOL authTimeMigrated = getKeychainInt(AUTHENTICATION_TIME_VALUES_MIGRATED, nil);
         if (!authTimeMigrated) {
-            setKeychainInt(1, AUTHENTICATION_TIME_VALUES_MIGRATED, NO);
-            
             //update pin unlock time
             
             NSTimeInterval pinUnlockTimeSinceReferenceDate = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
@@ -115,6 +113,8 @@
                 
                 [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];
             }
+            
+            setKeychainInt(1, AUTHENTICATION_TIME_VALUES_MIGRATED, NO);
         }
         
         //upgrade scenario
