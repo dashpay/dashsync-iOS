@@ -76,6 +76,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 @property (nonatomic, strong) id keyboardObserver,backgroundObserver;
 @property (nonatomic, assign) BOOL usesAuthentication;
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
+@property (nonatomic, assign) BOOL secureTimeUpdated;
 
 @end
 
@@ -162,6 +163,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSTimeInterval now = [lastResult date].timeIntervalSince1970;
     if (now > self.secureTime) {
         [self updateSecureTime:now];
+        self.secureTimeUpdated = YES;
     }
 }
 

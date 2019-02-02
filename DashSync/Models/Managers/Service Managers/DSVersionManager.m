@@ -20,6 +20,7 @@
 #define COMPATIBILITY_MNEMONIC_KEY        @"mnemonic"
 #define COMPATIBILITY_CREATION_TIME_KEY   @"creationtime"
 
+#define AUTHENTICATION_TIME_VALUES_MIGRATED @"AUTHENTICATION_TIME_VALUES_MIGRATED_V2"
 
 @implementation DSVersionManager
 
@@ -85,6 +86,31 @@
     BOOL hasV0BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
     if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
         DSDLog(@"fixing public key");
+        
+        BOOL authTimeMigrated = getKeychainInt(AUTHENTICATION_TIME_VALUES_MIGRATED, nil);
+        if (!authTimeMigrated) {
+            //update pin unlock time
+            
+            NSTimeInterval pinUnlockTimeSinceReferenceDate = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
+            
+            NSTimeInterval pinUnlockTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:pinUnlockTimeSinceReferenceDate] timeIntervalSince1970];
+            
+            [[NSUserDefaults standardUserDefaults] setDouble:pinUnlockTimeSince1970
+                                                      forKey:PIN_UNLOCK_TIME_KEY];
+            
+            //secure time
+
+            if (![DSAuthenticationManager sharedInstance].secureTimeUpdated) {
+                NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
+                
+                NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
+                
+                [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];
+            }
+            
+            setKeychainInt(1, AUTHENTICATION_TIME_VALUES_MIGRATED, NO);
+        }
+        
         //upgrade scenario
         [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:message andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
@@ -114,23 +140,6 @@
                     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //old keys
                     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //old keys
                 }
-                
-                //update pin unlock time
-                
-                NSTimeInterval pinUnlockTimeSinceReferenceDate = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
-                
-                NSTimeInterval pinUnlockTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:pinUnlockTimeSinceReferenceDate] timeIntervalSince1970];
-                
-                [[NSUserDefaults standardUserDefaults] setDouble:pinUnlockTimeSince1970
-                                                          forKey:PIN_UNLOCK_TIME_KEY];
-                
-                //secure time
-                
-                NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
-                
-                NSTimeInterval secureTimeSince1970 = [[NSDate dateWithTimeIntervalSinceReferenceDate:secureTimeSinceReferenceDate] timeIntervalSince1970];
-                
-                [[DSAuthenticationManager sharedInstance] updateSecureTime:secureTimeSince1970];
                 
                 if ([[NSUserDefaults standardUserDefaults] objectForKey:SETTINGS_FIXED_PEER_KEY]) {
                     [wallet.chain.chainManager.peerManager setTrustedPeerHost:[[NSUserDefaults standardUserDefaults] objectForKey:SETTINGS_FIXED_PEER_KEY]];

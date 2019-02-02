@@ -50,6 +50,8 @@ NSString *const DSHTTPOperationErrorDomain = @"DSHTTPOperation.error";
         if (!strongSelf) {
             return;
         }
+        
+        strongSelf.loaderOperation = nil;
 
         if (error) {
             [strongSelf cancelWithError:error];

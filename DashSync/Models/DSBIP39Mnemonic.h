@@ -34,11 +34,26 @@
 #define BIP39_CREATION_TIME 1427587200.0
 #define BIP39_WALLET_UNKNOWN_CREATION_TIME 0
 
+typedef NS_ENUM(NSUInteger, DSBIP39Language) {
+    DSBIP39Language_Default,
+    DSBIP39Language_English,
+    DSBIP39Language_French,
+    DSBIP39Language_Spanish,
+    DSBIP39Language_Italian,
+    DSBIP39Language_Japanese,
+    DSBIP39Language_Korean,
+    DSBIP39Language_ChineseSimplified,
+};
+
 @interface DSBIP39Mnemonic : NSObject<DSMnemonic>
 
 @property (nonatomic, readonly) NSArray *words;
+@property (nonatomic, assign) DSBIP39Language defaultLanguage;
 
 + (instancetype _Nullable)sharedInstance;
+
++ (NSArray*)availableLanguages;
++ (NSString*)identifierForLanguage:(DSBIP39Language)language;
 
 - (NSString *)encodePhrase:(NSData *)data;
 - (NSData *)decodePhrase:(NSString *)phrase; // phrase must be normalized

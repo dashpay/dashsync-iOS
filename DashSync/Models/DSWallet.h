@@ -24,7 +24,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DSBlockchainUser.h"
-
+#import "DSBIP39Mnemonic.h"
 #import "BigIntTypes.h"
 
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
@@ -92,6 +92,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 + (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString* _Nonnull)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
++ (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain;
 
@@ -145,6 +146,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 //generate a random Mnemonic seed
 + (NSString *)generateRandomSeed;
+
+//generate a random Mnemonic seed in a specified language
++ (NSString *)generateRandomSeedForLanguage:(DSBIP39Language)language;
 
 //get the MNEMONIC KEY prefixed unique ID
 + (NSString*)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
