@@ -58,9 +58,9 @@ static NSString *sanitizeString(NSString *s)
 #define LOCK    @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
-#define SPEED_UP_WAIT_TIME 1
+#define SPEED_UP_WAIT_TIME (DEBUG?1:0)
 
-#define MAX_FAIL_COUNT 4
+#define MAX_FAIL_COUNT (DEBUG?4:8)
 
 typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthenticationManager * context);
 
