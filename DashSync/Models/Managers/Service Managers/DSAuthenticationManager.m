@@ -38,6 +38,7 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 #import "NSDate+Utils.h"
 #import "UIWindow+DSUtils.h"
+#import "DashSync.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -58,6 +59,8 @@ static NSString *sanitizeString(NSString *s)
 #define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
 #define SPEED_UP_WAIT_TIME 1
+
+#define MAX_FAIL_COUNT 4
 
 typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthenticationManager * context);
 
@@ -346,7 +349,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     
     if (resetWipeHandlerBlock) {
         UIAlertAction* wipeButton = [UIAlertAction
-                                     actionWithTitle:NSLocalizedString(@"wipe", nil)
+                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
                                      style:UIAlertActionStyleDestructive
                                      handler:^(UIAlertAction * action) {
                                          if (resetWipeHandlerBlock) {
@@ -768,17 +771,17 @@ replacementString:(NSString *)string
         return;
     }
     NSString * message = nil;
-    if (failCount < 8) {
-    NSTimeInterval wait = [self lockoutWaitTime];
-    NSString *unit = DSLocalizedString(@"minutes", nil);
-    
-    if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-    if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
-    
-    if (wait >= 60.0) {
-        wait /= 60.0;
-        unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
-    }
+    if (failCount < MAX_FAIL_COUNT) {
+        NSTimeInterval wait = [self lockoutWaitTime];
+        NSString *unit = DSLocalizedString(@"minutes", nil);
+        
+        if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
+        if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
+        
+        if (wait >= 60.0) {
+            wait /= 60.0;
+            unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
+        }
         message = [NSString stringWithFormat:DSLocalizedString(@"\ntry again in %d %@", nil),
                    (int)wait, unit];
     } else {
@@ -794,7 +797,7 @@ replacementString:(NSString *)string
                                   handler:^(UIAlertAction * action) {
                                       [self showResetWalletWithCancelHandler:nil];
                                   }];
-    if (failCount < 8) {
+    if (failCount < MAX_FAIL_COUNT) {
         UIAlertAction* okButton = [UIAlertAction
                                    actionWithTitle:DSLocalizedString(@"ok", nil)
                                    style:UIAlertActionStyleCancel
@@ -803,23 +806,25 @@ replacementString:(NSString *)string
                                    }];
         [alertController addAction:resetButton];
         [alertController addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-    
+        
     } else {
         UIAlertAction* wipeButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"wipe", nil)
-                                   style:UIAlertActionStyleDestructive
-                                   handler:^(UIAlertAction * action) {
-                                                       [[DSVersionManager sharedInstance] clearKeychainWalletData];
-                                       
-                                                       [self removePin];
-                                       
-                                                       dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                                                           [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
-                                                       });
-                                   }];
+                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction * action) {
+                                         [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
+                                         [[DashSync sharedSyncController] stopSyncAllChains];
+                                         for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
+                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
+                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
+                                             [chain unregisterAllWallets];
+                                         }
+                                         [self removePin];
+                                     }];
         [alertController addAction:wipeButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
         [alertController addAction:resetButton];
-
+        
     }
     if ([self pinAlertControllerIsVisible]) {
         [_pinField resignFirstResponder];
@@ -865,7 +870,7 @@ replacementString:(NSString *)string
     //// Logic explanation
     
     //  If we have failed 3 or more times
-    if (failCount >= 8) {
+    if (failCount >= MAX_FAIL_COUNT) {
         [self userLockedOut];
         if (completion) completion(NO,NO);
         return;
@@ -887,6 +892,7 @@ replacementString:(NSString *)string
         DSDLog(@"locked out for %f more seconds",lockoutTimeLeft);
         if (lockoutTimeLeft > 0) { // locked out
             if (alertIfLockout) {
+                self.pinAlertController = nil;
                 [self userLockedOut];
             }
             completion(NO,NO);
@@ -894,7 +900,7 @@ replacementString:(NSString *)string
         } else {
             //no longer locked out, give the user a try
             message = [(failCount >= 7 ? DSLocalizedString(@"\n1 attempt remaining\n", nil) :
-                        [NSString stringWithFormat:DSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
+                        [NSString stringWithFormat:DSLocalizedString(@"\n%d attempts remaining\n", nil), MAX_FAIL_COUNT - failCount])
                        stringByAppendingString:(message) ? message : @""];
         }
     }
@@ -973,6 +979,7 @@ replacementString:(NSString *)string
             if (failCount >= 3) {
                 [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
                     if (alertIfLockout) {
+                        strongSelf.pinAlertController = nil;
                         [context userLockedOut]; // wallet disabled
                     }
                     completion(NO,NO);

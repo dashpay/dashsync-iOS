@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\nnetwork fee +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\ntry again in %1$d %2$@";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "wallet disabled";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";

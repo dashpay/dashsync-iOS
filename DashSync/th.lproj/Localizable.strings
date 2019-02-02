@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nลองเข้าอีกครั้ง %1$d%2$@";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ปิดใช้งาน wallet";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "wallet ของคุณ อาจไม่ได้รับการซิงค์ ซึ่งมักจะสามารถแก้ไขได้โดยการสแกน blockchain ใหม่";

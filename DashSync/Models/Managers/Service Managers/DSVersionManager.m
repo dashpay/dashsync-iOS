@@ -45,15 +45,6 @@
     return YES;
 }
 
-- (BOOL)clearKeychainWalletData {
-    BOOL failed = NO;
-    for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
-        [chain unregisterAllWallets];
-    }
-    failed = failed | [self clearKeychainWalletOldData];
-    return failed;
-}
-
 - (BOOL)clearKeychainWalletOldData {
     BOOL failed = NO;
     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //new keys

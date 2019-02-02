@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n%1$d %2$@ içinde tekrar deneyin";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "cüzdan devre dışı";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";
