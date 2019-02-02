@@ -202,6 +202,7 @@
     if (d.length == sizeof(NSTimeInterval)) {
         NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
         if (potentialWalletCreationTime > BIP39_CREATION_TIME) {
+            _walletCreationTime = potentialWalletCreationTime;
             return _walletCreationTime;
         }
     }
@@ -214,6 +215,7 @@
     _walletCreationTime = 0;
     setKeychainData(nil, self.creationTimeUniqueID, NO);
     setKeychainData(nil, self.creationGuessTimeUniqueID,NO);
+    setKeychainData(nil, self.didVerifyCreationTimeUniqueID,NO);
 }
 
 -(NSTimeInterval)guessedWalletCreationTime {

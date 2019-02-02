@@ -45,19 +45,22 @@
     return YES;
 }
 
-- (void)clearKeychainWalletData {
+- (BOOL)clearKeychainWalletData {
     BOOL failed = NO;
-    for (DSWallet * wallet in [self allWallets]) {
-        for (DSAccount * account in wallet.accounts) {
-            for (DSDerivationPath * derivationPath in account.derivationPaths) {
-                failed = failed | !setKeychainData(nil, [derivationPath walletBasedExtendedPublicKeyLocationString], NO);
-            }
-        }
+    for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
+        [chain unregisterAllWallets];
     }
+    failed = failed | [self clearKeychainWalletOldData];
+    return failed;
+}
+
+- (BOOL)clearKeychainWalletOldData {
+    BOOL failed = NO;
     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V1, NO); //new keys
     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V1, NO); //new keys
     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP44_V0, NO); //old keys
     failed = failed | !setKeychainData(nil, EXTENDED_0_PUBKEY_KEY_BIP32_V0, NO); //old keys
+    return failed;
 }
 
 -(NSArray<DSWallet*>*)allWallets {
