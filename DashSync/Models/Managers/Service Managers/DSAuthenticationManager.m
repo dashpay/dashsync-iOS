@@ -812,6 +812,7 @@ replacementString:(NSString *)string
                                      actionWithTitle:DSLocalizedString(@"wipe", nil)
                                      style:UIAlertActionStyleDestructive
                                      handler:^(UIAlertAction * action) {
+                                         [self.failedPins removeAllObjects];
                                          [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
                                          [[DashSync sharedSyncController] stopSyncAllChains];
                                          for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
