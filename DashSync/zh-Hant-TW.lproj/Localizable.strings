@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\n網絡費用 +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\n在 %1$d %2$@ 後重試";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "錢包被禁用";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的錢包可能不同步。\n這通常可以通過重新掃描區塊鏈來修復。";

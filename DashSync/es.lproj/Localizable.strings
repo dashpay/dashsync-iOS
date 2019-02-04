@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\ninténtalo de nuevo %1$d %2$@";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "cartera inhabilitada";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Su cartera puede estar desincronizada.\nCon frecuencia se puede solucionar escaneando de nuevo la cadena de bloques.";

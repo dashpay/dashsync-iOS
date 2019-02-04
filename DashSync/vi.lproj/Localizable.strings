@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nthử lại %1$d %2$@";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ví bị tắt";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ví của bạn có thể bị mất đồng bộ.\nĐiều này có thể được xử lý bằng cách quét lại blockchain.";

@@ -38,6 +38,7 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 #import "NSDate+Utils.h"
 #import "UIWindow+DSUtils.h"
+#import "DashSync.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -56,6 +57,10 @@ static NSString *sanitizeString(NSString *s)
 #define DOT     @"\xE2\x97\x8F" // black circle (utf-8)
 #define LOCK    @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
+
+#define SPEED_UP_WAIT_TIME (DEBUG?1:0)
+
+#define MAX_FAIL_COUNT (DEBUG?4:8)
 
 typedef BOOL (^PinVerificationBlock)(NSString * _Nonnull currentPin,DSAuthenticationManager * context);
 
@@ -322,11 +327,19 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     if (error) {
         return NSIntegerMax;
     }
+#if DEBUG && SPEED_UP_WAIT_TIME
+    NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0/100000.0 - self.secureTime;
+#else
     NSTimeInterval wait = failHeight + pow(6, failCount - 3)*60.0 - self.secureTime;
+#endif
     return wait;
 }
 
 -(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
+    [self showResetWalletWithWipeHandler:nil cancelHandler:resetCancelHandlerBlock];
+}
+
+-(void)showResetWalletWithWipeHandler:(ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
     UIAlertController * alertController = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"recovery phrase", nil) message:nil
                                                                        preferredStyle:UIAlertControllerStyleAlert];
     [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
@@ -335,6 +348,19 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         textField.font = [UIFont systemFontOfSize:15.0];
         textField.delegate = self;
     }];
+    
+    if (resetWipeHandlerBlock) {
+        UIAlertAction* wipeButton = [UIAlertAction
+                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction * action) {
+                                         if (resetWipeHandlerBlock) {
+                                             resetWipeHandlerBlock();
+                                         }
+                                     }];
+        [alertController addAction:wipeButton];
+    }
+    
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:DSLocalizedString(@"cancel", nil)
                                    style:UIAlertActionStyleCancel
@@ -470,27 +496,27 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     if (hasPin) { //already had a pin, replacing it
         NSString *pin = getKeychainString(PIN_KEY, &error);
         if (pin.length == 4) {
-        [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
-            if (authenticated) {
-                self.didAuthenticate = NO;
-                UIView *v = [self pinTitleView].superview;
-                CGPoint p = v.center;
-                
-                [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                    v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
-                } completion:^(BOOL finished) {
-                    self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
-                                                     [NSString stringWithFormat:DSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
-                    self.pinAlertController.message = nil;
-                    v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
-                    [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
-                                     animations:^{ v.center = p; } completion:nil];
-                }];
-                [self setBrandNewPinWithCompletion:completion];
-            } else {
-                if (completion) completion(NO);
-            }
-        }];
+            [self authenticatePinWithTitle:DSLocalizedString(@"enter old passcode", nil) message:nil alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+                if (authenticated) {
+                    self.didAuthenticate = NO;
+                    UIView *v = [self pinTitleView].superview;
+                    CGPoint p = v.center;
+                    
+                    [UIView animateWithDuration:0.1 delay:0.1 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                        v.center = CGPointMake(p.x - v.bounds.size.width, p.y);
+                    } completion:^(BOOL finished) {
+                        self.pinAlertController.title = [NSString stringWithFormat:CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\t" CIRCLE @"\n%@",
+                                                         [NSString stringWithFormat:DSLocalizedString(@"choose passcode for %@", nil), DISPLAY_NAME]];
+                        self.pinAlertController.message = nil;
+                        v.center = CGPointMake(p.x + v.bounds.size.width*2, p.y);
+                        [UIView animateWithDuration:0.3 delay:0.0 usingSpringWithDamping:0.8 initialSpringVelocity:0 options:0
+                                         animations:^{ v.center = p; } completion:nil];
+                    }];
+                    [self setBrandNewPinWithCompletion:completion];
+                } else {
+                    if (completion) completion(NO);
+                }
+            }];
         } else {
             [self setBrandNewPinWithCompletion:completion];
         }
@@ -551,25 +577,41 @@ replacementString:(NSString *)string
             NSString *phrase = [[DSBIP39Mnemonic sharedInstance] cleanupPhrase:textField.text];
             
             if (! [phrase isEqual:textField.text]) textField.text = phrase;
-            NSData * oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
+            DSChain * chain = [[DSChainsManager sharedInstance] mainnetManager].chain;
+            if (chain.wallets.count > 1) {
+                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
+                }];
+                return TRUE; //todo find a way to handle when there are more that one wallet
+            }
+            
+            NSData * oldData = nil;
+            if (chain.wallets.count) {
+                DSWallet * wallet = [chain.wallets objectAtIndex:0];
+                oldData = [[wallet accountWithNumber:0] bip44DerivationPath].extendedPublicKey;
+            }
+            
+            if (!oldData) {
+                oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, nil);
+            }
+            
+            if (!oldData) {
+                oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
+            }
+            
             NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
                                                                                    normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:[DSChain mainnet] storeSeedPhrase:NO isTransient:YES];
-            DSAccount * account = [wallet accountWithNumber:0];
-            DSDerivationPath * derivationPath = [account bip44DerivationPath];
-            NSData * extendedPublicKey = derivationPath.extendedPublicKey;
-            if (extendedPublicKey && ![extendedPublicKey isEqual:oldData]) {
+            DSWallet * transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:[DSChain mainnet] storeSeedPhrase:NO isTransient:YES];
+            DSAccount * transientAccount = [transientWallet accountWithNumber:0];
+            DSDerivationPath * transientDerivationPath = [transientAccount bip44DerivationPath];
+            NSData * transientExtendedPublicKey = transientDerivationPath.extendedPublicKey;
+            
+            if (transientExtendedPublicKey && ![transientExtendedPublicKey isEqual:oldData] && ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]) {
                 self.resetAlertController.title = DSLocalizedString(@"recovery phrase doesn't match", nil);
                 [self.resetAlertController performSelector:@selector(setTitle:)
                                                 withObject:DSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            } else if (extendedPublicKey && ![[derivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:extendedPublicKey]) {
-                self.resetAlertController.title = DSLocalizedString(@"recovery phrase doesn't match", nil);
-                [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:DSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            }
-            else {
+            } else {
                 if (oldData) {
-                    [[DSVersionManager sharedInstance] clearKeychainWalletData];
+                    [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
                 }
                 setKeychainData(nil, SPEND_LIMIT_KEY, NO);
                 setKeychainData(nil, PIN_KEY, NO);
@@ -730,20 +772,26 @@ replacementString:(NSString *)string
     if (error) {
         return;
     }
-    NSTimeInterval wait = [self lockoutWaitTime];
-    NSString *unit = DSLocalizedString(@"minutes", nil);
-    
-    if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-    if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
-    
-    if (wait >= 60.0) {
-        wait /= 60.0;
-        unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
+    NSString * message = nil;
+    if (failCount < MAX_FAIL_COUNT) {
+        NSTimeInterval wait = [self lockoutWaitTime];
+        NSString *unit = DSLocalizedString(@"minutes", nil);
+        
+        if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
+        if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
+        
+        if (wait >= 60.0) {
+            wait /= 60.0;
+            unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
+        }
+        message = [NSString stringWithFormat:DSLocalizedString(@"\ntry again in %d %@", nil),
+                   (int)wait, unit];
+    } else {
+        message = DSLocalizedString(@"\nno attempts remaining", nil);
     }
     UIAlertController * alertController = [UIAlertController
                                            alertControllerWithTitle:DSLocalizedString(@"wallet disabled", nil)
-                                           message:[NSString stringWithFormat:DSLocalizedString(@"\ntry again in %d %@", nil),
-                                                    (int)wait, unit]
+                                           message:message
                                            preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* resetButton = [UIAlertAction
                                   actionWithTitle:DSLocalizedString(@"reset", nil)
@@ -751,15 +799,36 @@ replacementString:(NSString *)string
                                   handler:^(UIAlertAction * action) {
                                       [self showResetWalletWithCancelHandler:nil];
                                   }];
-    UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:DSLocalizedString(@"ok", nil)
-                               style:UIAlertActionStyleCancel
-                               handler:^(UIAlertAction * action) {
-                                   
-                               }];
-    [alertController addAction:resetButton];
-    [alertController addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
-    
+    if (failCount < MAX_FAIL_COUNT) {
+        UIAlertAction* okButton = [UIAlertAction
+                                   actionWithTitle:DSLocalizedString(@"ok", nil)
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       
+                                   }];
+        [alertController addAction:resetButton];
+        [alertController addAction:okButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+        
+    } else {
+        UIAlertAction* wipeButton = [UIAlertAction
+                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
+                                     style:UIAlertActionStyleDestructive
+                                     handler:^(UIAlertAction * action) {
+                                         [self.failedPins removeAllObjects];
+                                         [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
+                                         [[DashSync sharedSyncController] stopSyncAllChains];
+                                         for (DSChain * chain in [[DSChainsManager sharedInstance] chains]) {
+                                             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
+                                             [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
+                                             [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
+                                             [chain unregisterAllWallets];
+                                         }
+                                         [self removePin];
+                                     }];
+        [alertController addAction:wipeButton]; //ok button should be on the right side as per Apple guidelines, as reset is the less desireable option
+        [alertController addAction:resetButton];
+        
+    }
     if ([self pinAlertControllerIsVisible]) {
         [_pinField resignFirstResponder];
         [self.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
@@ -804,7 +873,11 @@ replacementString:(NSString *)string
     //// Logic explanation
     
     //  If we have failed 3 or more times
-    if (failCount >= 3) {
+    if (failCount >= MAX_FAIL_COUNT) {
+        [self userLockedOut];
+        if (completion) completion(NO,NO);
+        return;
+    } else if (failCount >= 3) {
         
         // When was the last time we failed?
         uint64_t failHeight = getKeychainInt(PIN_FAIL_HEIGHT_KEY, &error);
@@ -813,9 +886,16 @@ replacementString:(NSString *)string
             completion(NO,NO);
             return; // error reading failHeight from keychain
         }
-        DSDLog(@"locked out for %f more seconds",failHeight + pow(6, failCount - 3)*60.0 - self.secureTime);
-        if (self.secureTime < failHeight + pow(6, failCount - 3)*60.0) { // locked out
+        
+#if DEBUG && SPEED_UP_WAIT_TIME
+        CGFloat lockoutTimeLeft = failHeight + pow(6, failCount - 3)*60.0/100000.0 - self.secureTime;
+#else
+        CGFloat lockoutTimeLeft = failHeight + pow(6, failCount - 3)*60.0 - self.secureTime;
+#endif
+        DSDLog(@"locked out for %f more seconds",lockoutTimeLeft);
+        if (lockoutTimeLeft > 0) { // locked out
             if (alertIfLockout) {
+                self.pinAlertController = nil;
                 [self userLockedOut];
             }
             completion(NO,NO);
@@ -823,7 +903,7 @@ replacementString:(NSString *)string
         } else {
             //no longer locked out, give the user a try
             message = [(failCount >= 7 ? DSLocalizedString(@"\n1 attempt remaining\n", nil) :
-                        [NSString stringWithFormat:DSLocalizedString(@"\n%d attempts remaining\n", nil), 8 - failCount])
+                        [NSString stringWithFormat:DSLocalizedString(@"\n%d attempts remaining\n", nil), MAX_FAIL_COUNT - failCount])
                        stringByAppendingString:(message) ? message : @""];
         }
     }
@@ -895,16 +975,6 @@ replacementString:(NSString *)string
         if (! [context.failedPins containsObject:currentPin]) {
             [context.failedPins addObject:currentPin];
             
-            if (failCount >= 8) { // wipe wallet after 8 failed pin attempts and 24+ hours of lockout
-                [[DSVersionManager sharedInstance] clearKeychainWalletData];
-                
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC/10), dispatch_get_main_queue(), ^{
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
-                });
-                if (completion) completion(NO,NO);
-                return FALSE;
-            }
-            
             if (strongSelf.secureTime > getKeychainInt(PIN_FAIL_HEIGHT_KEY, nil)) {
                 setKeychainInt(strongSelf.secureTime, PIN_FAIL_HEIGHT_KEY, NO);
             }
@@ -912,6 +982,7 @@ replacementString:(NSString *)string
             if (failCount >= 3) {
                 [context.pinAlertController dismissViewControllerAnimated:TRUE completion:^{
                     if (alertIfLockout) {
+                        strongSelf.pinAlertController = nil;
                         [context userLockedOut]; // wallet disabled
                     }
                     completion(NO,NO);

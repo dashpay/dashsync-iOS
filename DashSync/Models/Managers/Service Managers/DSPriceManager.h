@@ -40,8 +40,6 @@
 
 #define FEE_PER_KB_URL       0 //not supported @"https://api.breadwallet.com/fee-per-kb"
 
-typedef void (^ResetCancelHandlerBlock)(void);
-
 @class DSCurrencyPriceObject;
 
 @interface DSPriceManager : NSObject

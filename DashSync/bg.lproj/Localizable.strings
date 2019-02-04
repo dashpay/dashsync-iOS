@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\nмрежова такса +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nопитайте отново след %1$d %2$@";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "изключен портфейл";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Твоят портфейл вероятно не е синхронизиран.\nТова обикновено се фиксира след сканиране на блок веригата.";

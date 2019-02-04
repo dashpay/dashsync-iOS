@@ -24,6 +24,9 @@
 "\nnetwork fee +%@ (%@)" = "\nКомиссия сети: +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nno attempts remaining" = "\nno attempts remaining";
+
+/* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nПопробуйте ещё раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
@@ -214,6 +217,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "Кошелёк отключен";
+
+/* No comment provided by engineer. */
+"wipe" = "wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелёк рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";
