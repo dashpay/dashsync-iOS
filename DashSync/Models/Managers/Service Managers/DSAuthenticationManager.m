@@ -39,6 +39,8 @@
 #import "NSDate+Utils.h"
 #import "UIWindow+DSUtils.h"
 #import "DashSync.h"
+#import "DSPeer.h"
+#import "DSMerkleBlock.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -58,7 +60,7 @@ static NSString *sanitizeString(NSString *s)
 #define LOCK    @"\xF0\x9F\x94\x92" // unicode lock symbol U+1F512 (utf-8)
 #define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
-#if DEBUG
+#if DEBUG && 0
 
 #define SPEED_UP_WAIT_TIME 1
 #define MAX_FAIL_COUNT 4
@@ -168,10 +170,19 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     if (!lastResult) {
         return;
     }
-    NSTimeInterval now = [lastResult date].timeIntervalSince1970;
-    if (now > self.secureTime) {
-        [self updateSecureTime:now];
+    NSTimeInterval serverTime = [lastResult date].timeIntervalSince1970;
+    if (serverTime > self.secureTime) {
+        [self updateSecureTime:serverTime];
         self.secureTimeUpdated = YES;
+    } else {
+        //rare case
+        NSTimeInterval lastCheckpointTime = [[DSChainsManager sharedInstance] mainnetManager].chain.checkpoints.lastObject.timestamp;
+        NSTimeInterval lastBlockTime = [[DSChainsManager sharedInstance] mainnetManager].chain.lastBlock.timestamp; //this will either be 0 or a real timestamp, both are fine for next check
+        if (serverTime > lastCheckpointTime && serverTime > lastBlockTime) {
+            //there was definitely an issue with serverTime at some point.
+            [self updateSecureTime:serverTime];
+            self.secureTimeUpdated = YES;
+        }
     }
 }
 
