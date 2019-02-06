@@ -9,6 +9,6 @@ podfile: Example/Podfile
 before_install:
 - brew install cmake # for compiling BLS
 - gem install cocoapods # Since Travis is not always on latest version
-- pod install --project-directory=Example
+- travis_wait 45 pod install --repo-update --project-directory=Example
 script:
-- set -o pipefail && xcodebuild test -enableCodeCoverage YES -workspace Example/DashSync.xcworkspace -scheme DashSync-Example -sdk iphonesimulator9.3 ONLY_ACTIVE_ARCH=NO | xcpretty
+- set -o pipefail && xcodebuild test -enableCodeCoverage YES -workspace Example/DashSync.xcworkspace -scheme DashSync-Example -destination 'platform=iOS Simulator,name=iPhone 8' ONLY_ACTIVE_ARCH=NO | xcpretty
