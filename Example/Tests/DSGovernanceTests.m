@@ -77,7 +77,8 @@
         for (NSString * address in addressArray) {
             NSString * url = [NSString stringWithFormat:@"https://www.dashcentral.org/p/%@",name];
             
-            DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:DSGovernanceObjectType_Proposal parentHash:UINT256_ZERO revision:1 timestamp:0 signature:nil collateralHash:UINT256_ZERO governanceObjectHash:UINT256_ZERO identifier:name amount:7900000000 startEpoch:1539779982 endEpoch:1544930942 paymentAddress:address url:url onChain:nil];
+            DSChain *chain = nil;
+            DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:DSGovernanceObjectType_Proposal parentHash:UINT256_ZERO revision:1 timestamp:0 signature:nil collateralHash:UINT256_ZERO governanceObjectHash:UINT256_ZERO identifier:name amount:7900000000 startEpoch:1539779982 endEpoch:1544930942 paymentAddress:address url:url onChain:chain];
             NSLog(@"%@",[NSData dataWithUInt256:[governanceObject.proposalInfo SHA256_2]]);
             UInt256 checkHash = [governanceObject.proposalInfo SHA256_2];
             if (uint256_eq(checkHash, hash))  {
