@@ -68,6 +68,11 @@ typedef union _UInt128 {
     uint64_t u64[128/64];
 } UInt128;
 
+typedef struct _DSUTXO {
+    UInt256 hash;
+    unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
+} DSUTXO;
+
 #define uint768_eq(a, b)\
 ((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3] &&\
 (a).u64[4] == (b).u64[4] && (a).u64[5] == (b).u64[5] && (a).u64[6] == (b).u64[6] && (a).u64[7] == (b).u64[7] &&\
@@ -126,6 +131,12 @@ typedef union _UInt128 {
 #define UINT256_MAX ((UInt256) { .u64 = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF } })
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
+
+#define dsutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
+#define dsutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\
+o.hash.u32[0], o.hash.u32[1], o.hash.u32[2], o.hash.u32[3],\
+o.hash.u32[4], o.hash.u32[5], o.hash.u32[6], o.hash.u32[7],\
+CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32_t)]
 
 
 #endif /* BigIntTypes_h */

@@ -28,17 +28,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef struct _DSUTXO {
-    UInt256 hash;
-    unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
-} DSUTXO;
-
-#define dsutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
-#define dsutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\
-o.hash.u32[0], o.hash.u32[1], o.hash.u32[2], o.hash.u32[3],\
-o.hash.u32[4], o.hash.u32[5], o.hash.u32[6], o.hash.u32[7],\
-CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32_t)]
-
 #define MAINNET_STANDARD_PORT 9999
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 12999
