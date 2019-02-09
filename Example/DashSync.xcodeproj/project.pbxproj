@@ -110,6 +110,10 @@
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
+		FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */; };
+		FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */; };
+		FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */; };
+		FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E94220F0DFA0013F619 /* DSWalletChooserTableViewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -313,6 +317,13 @@
 		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
 		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
+		FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Masternodes.storyboard; sourceTree = "<group>"; };
+		FBEB7E8D220EEA7B0013F619 /* DSRegisterMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterMasternodeViewController.h; sourceTree = "<group>"; };
+		FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterMasternodeViewController.m; sourceTree = "<group>"; };
+		FBEB7E90220F0DE50013F619 /* DSAccountChooserTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAccountChooserTableViewCell.h; sourceTree = "<group>"; };
+		FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAccountChooserTableViewCell.m; sourceTree = "<group>"; };
+		FBEB7E93220F0DFA0013F619 /* DSWalletChooserTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletChooserTableViewCell.h; sourceTree = "<group>"; };
+		FBEB7E94220F0DFA0013F619 /* DSWalletChooserTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletChooserTableViewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -445,6 +456,7 @@
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
 				FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */,
+				FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -545,6 +557,8 @@
 				FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */,
 				FB23895C20D36EF600921B89 /* DSClaimMasternodeViewController.h */,
 				FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */,
+				FBEB7E8D220EEA7B0013F619 /* DSRegisterMasternodeViewController.h */,
+				FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -635,6 +649,10 @@
 				FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */,
 				FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */,
 				FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */,
+				FBEB7E90220F0DE50013F619 /* DSAccountChooserTableViewCell.h */,
+				FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */,
+				FBEB7E93220F0DFA0013F619 /* DSWalletChooserTableViewCell.h */,
+				FBEB7E94220F0DFA0013F619 /* DSWalletChooserTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -844,6 +862,7 @@
 				71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */,
 				6003F5A9195388D20070C39A /* Images.xcassets in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,
+				FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */,
 				FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -959,6 +978,7 @@
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */,
 				2A3B3EB720F893F4002962FB /* SwitcherFormCellModel.m in Sources */,
+				FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */,
 				FB0F15A821049505000272E6 /* DSTransactionAmountTableViewCell.m in Sources */,
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
@@ -966,6 +986,7 @@
 				FBB4E386215057AA008040B7 /* DSAddDAPViewController.m in Sources */,
 				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
 				FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */,
+				FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
@@ -1006,6 +1027,7 @@
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
+				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,
 				FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */,
 				FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */,

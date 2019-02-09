@@ -13,6 +13,7 @@
 #import "DSBLSKey.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import <arpa/inet.h>
+#import "DSWallet.h"
 
 @interface DSSimplifiedMasternodeEntry()
 

@@ -30,6 +30,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListValidationErrorNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
 
+#define MASTERNODE_COST 10000000000
+
 @class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSMasternodePing;
 
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
@@ -38,6 +40,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
 
 @property (nonatomic,readonly) UInt256 baseBlockHash;
+
 
 -(instancetype)initWithChain:(DSChain*)chain;
 

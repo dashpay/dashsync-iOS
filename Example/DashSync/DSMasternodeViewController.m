@@ -11,12 +11,12 @@
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
 #import "DSClaimMasternodeViewController.h"
+#import "DSRegisterMasternodeViewController.h"
 
 @interface DSMasternodeViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSString * searchString;
-@property (strong, nonatomic) IBOutlet UIBarButtonItem *claimButton;
-- (IBAction)claimSelectedMasternode:(id)sender;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *registerButton;
 
 @end
 
@@ -24,7 +24,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.claimButton.enabled = FALSE;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -143,18 +142,8 @@
     return [sectionInfo numberOfObjects];
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:indexPath.section];
-    if ([[sectionInfo name] integerValue]) {
-        self.claimButton.title = @"Edit";
-    } else {
-        self.claimButton.title = @"Claim";
-    }
-    [self.claimButton setEnabled:TRUE];
-}
-
 -(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [self.claimButton setEnabled:FALSE];
+    [self.registerButton setEnabled:FALSE];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -187,12 +176,6 @@
     [self.tableView reloadData];
 }
 
-- (IBAction)claimSelectedMasternode:(id)sender {
-    if (self.tableView.indexPathForSelectedRow) {
-        [self performSegueWithIdentifier:@"ClaimMasternodeSegue" sender:sender];
-    }
-}
-
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
         NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
@@ -200,6 +183,9 @@
         DSClaimMasternodeViewController * claimMasternodeViewController = (DSClaimMasternodeViewController*)segue.destinationViewController;
         claimMasternodeViewController.masternode = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
         claimMasternodeViewController.chain = self.chain;
+    } else if ([segue.identifier isEqualToString:@"RegisterMasternodeSegue"]) {
+        DSRegisterMasternodeViewController * registerMasternodeViewController = (DSRegisterMasternodeViewController*)segue.destinationViewController;
+        registerMasternodeViewController.chain = self.chain;
     }
 }
 @end

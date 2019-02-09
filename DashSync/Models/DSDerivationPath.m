@@ -169,27 +169,49 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
-    if (chain.chainType == DSChainType_MainNet) {
-        NSUInteger indexes[] = {44 | BIP32_HARD, 5 | BIP32_HARD, accountNumber | BIP32_HARD};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
-    } else {
-        NSUInteger indexes[] = {44 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD};
-        return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
-    }
+    NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {44 | BIP32_HARD, coinType | BIP32_HARD, accountNumber | BIP32_HARD};
+    return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
 
 + (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet {
-    if (wallet.chain.chainType == DSChainType_MainNet) {
-        NSUInteger indexes[] = {5 | BIP32_HARD, 5 | BIP32_HARD, 11 | BIP32_HARD};
-        DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
-        derivationPath.wallet = wallet;
-        return derivationPath;
-    } else {
-        NSUInteger indexes[] = {5 | BIP32_HARD, 1 | BIP32_HARD, 11 | BIP32_HARD};
-        DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlochainUsers onChain:wallet.chain];
-        derivationPath.wallet = wallet;
-        return derivationPath;
-    }
+    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 11 | BIP32_HARD};
+    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainUsers onChain:wallet.chain];
+    derivationPath.wallet = wallet;
+    return derivationPath;
+}
+
++ (instancetype _Nonnull)providerFundsDerivationPathForWallet:(DSWallet*)wallet {
+    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 0 | BIP32_HARD};
+    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:wallet.chain];
+    derivationPath.wallet = wallet;
+    return derivationPath;
+}
+
++ (instancetype _Nonnull)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet {
+    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 1 | BIP32_HARD};
+    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderVotingKeys onChain:wallet.chain];
+    derivationPath.wallet = wallet;
+    return derivationPath;
+}
+
++ (instancetype _Nonnull)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet {
+    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 2 | BIP32_HARD};
+    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderOwnerKeys onChain:wallet.chain];
+    derivationPath.wallet = wallet;
+    return derivationPath;
+}
+
++ (instancetype _Nonnull)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
+    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 3 | BIP32_HARD};
+    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:wallet.chain];
+    derivationPath.wallet = wallet;
+    return derivationPath;
 }
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
