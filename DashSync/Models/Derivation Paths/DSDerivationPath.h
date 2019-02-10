@@ -101,6 +101,12 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // currently the derivationPath is synced to this block height
 @property (nonatomic, assign) uint32_t syncBlockHeight;
 
+// all previously generated addresses
+@property (nonatomic, readonly) NSSet * allAddresses;
+
+// all previously used addresses
+@property (nonatomic, readonly) NSSet * usedAddresses;
+
 
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;

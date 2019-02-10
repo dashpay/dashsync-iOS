@@ -202,7 +202,10 @@
 -(void)updateInputsHash {
     NSMutableData * data = [NSMutableData data];
     for (NSUInteger i =0; i<self.inputHashes.count;i++) {
-        [data appendData:self.inputHashes[i]];
+        UInt256 hash = UINT256_ZERO;
+        NSValue * inputHash = self.inputHashes[i];
+        [inputHash getValue:&hash];
+        [data appendUInt256:hash];
         [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
     }
     self.inputsHash = [data SHA256];
