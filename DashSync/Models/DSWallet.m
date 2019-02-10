@@ -56,7 +56,10 @@
 @property (nonatomic, strong) NSMutableDictionary * mAccounts;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, assign) NSTimeInterval walletCreationTime;
-@property (nonatomic, assign) NSTimeInterval guessedWalletCreationTime;
+@property (nonatomic, assign) NSTimeInterval lGuessedWalletCreationTime;
+@property (nonatomic, assign) BOOL checkedWalletCreationTime;
+@property (nonatomic, assign) BOOL checkedGuessedWalletCreationTime;
+@property (nonatomic, assign) BOOL checkedVerifyWalletCreationTime;
 @property (nonatomic, strong) NSMutableDictionary<NSString *,NSNumber *> * mBlockchainUsers;
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
@@ -87,6 +90,9 @@
     self.mAccounts = [NSMutableDictionary dictionary];
     self.chain = chain;
     self.mBlockchainUsers = [NSMutableDictionary dictionary];
+    self.checkedWalletCreationTime = NO;
+    self.checkedGuessedWalletCreationTime = NO;
+    self.checkedVerifyWalletCreationTime = NO;
     return self;
 }
 
@@ -201,15 +207,20 @@
 -(NSTimeInterval)walletCreationTime {
     [self verifyWalletCreationTime];
     if (_walletCreationTime) return _walletCreationTime;
-    NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
     
-    if (d.length == sizeof(NSTimeInterval)) {
-        NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
-        if (potentialWalletCreationTime > BIP39_CREATION_TIME) {
-            _walletCreationTime = potentialWalletCreationTime;
-            return _walletCreationTime;
+    if (!self.checkedWalletCreationTime) {
+        NSData *d = getKeychainData(self.creationTimeUniqueID, nil);
+        
+        if (d.length == sizeof(NSTimeInterval)) {
+            NSTimeInterval potentialWalletCreationTime = *(const NSTimeInterval *)d.bytes;
+            if (potentialWalletCreationTime > BIP39_CREATION_TIME) {
+                _walletCreationTime = potentialWalletCreationTime;
+                return _walletCreationTime;
+            }
         }
+        self.checkedWalletCreationTime = TRUE;
     }
+
     if ([DSEnvironment sharedInstance].watchOnly) return BIP39_WALLET_UNKNOWN_CREATION_TIME; //0
     if ([self guessedWalletCreationTime]) return [self guessedWalletCreationTime];
     return BIP39_CREATION_TIME;
@@ -223,9 +234,16 @@
 }
 
 -(NSTimeInterval)guessedWalletCreationTime {
-    NSData *d = getKeychainData(self.creationGuessTimeUniqueID, nil);
-    
-    if (d.length == sizeof(NSTimeInterval)) return *(const NSTimeInterval *)d.bytes;
+    if (_lGuessedWalletCreationTime) return _lGuessedWalletCreationTime;
+    if (!self.checkedGuessedWalletCreationTime) {
+        NSData *d = getKeychainData(self.creationGuessTimeUniqueID, nil);
+        
+        if (d.length == sizeof(NSTimeInterval)) {
+            _lGuessedWalletCreationTime = *(const NSTimeInterval *)d.bytes;
+            return _lGuessedWalletCreationTime;
+        }
+        self.checkedGuessedWalletCreationTime = YES;
+    }
     return BIP39_WALLET_UNKNOWN_CREATION_TIME; //0
 }
 
@@ -234,6 +252,7 @@
     if (!setKeychainData([NSData dataWithBytes:&guessedWalletCreationTime length:sizeof(guessedWalletCreationTime)], [self creationGuessTimeUniqueID], NO)) {
         NSAssert(FALSE, @"error setting wallet guessed creation time");
     }
+    _lGuessedWalletCreationTime = guessedWalletCreationTime;
 }
 
 -(void)migrateWalletCreationTime {
@@ -257,11 +276,14 @@
 }
 
 -(void)verifyWalletCreationTime {
-    NSError * error = nil;
-    BOOL didVerifyAlready = hasKeychainData(self.didVerifyCreationTimeUniqueID, &error);
-    if (!didVerifyAlready) {
-        [self migrateWalletCreationTime];
-        setKeychainInt(1, self.didVerifyCreationTimeUniqueID, NO);
+    if (!self.checkedVerifyWalletCreationTime) {
+        NSError * error = nil;
+        BOOL didVerifyAlready = hasKeychainData(self.didVerifyCreationTimeUniqueID, &error);
+        if (!didVerifyAlready) {
+            [self migrateWalletCreationTime];
+            setKeychainInt(1, self.didVerifyCreationTimeUniqueID, NO);
+        }
+        self.checkedVerifyWalletCreationTime = YES;
     }
 }
 
