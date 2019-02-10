@@ -1,0 +1,14 @@
+# references:
+# * https://www.objc.io/issues/6-build-tools/travis-ci/
+# * https://github.com/supermarin/xcpretty#usage
+
+osx_image: xcode10.1
+language: objective-c
+cache: cocoapods
+podfile: Example/Podfile
+before_install:
+- brew install cmake # for compiling BLS
+- gem install cocoapods # Since Travis is not always on latest version
+- travis_wait 45 pod install --repo-update --project-directory=Example
+script:
+- set -o pipefail && xcodebuild test -enableCodeCoverage YES -workspace Example/DashSync.xcworkspace -scheme DashSync-Example -destination 'platform=iOS Simulator,name=iPhone 8' ONLY_ACTIVE_ARCH=NO | xcpretty
