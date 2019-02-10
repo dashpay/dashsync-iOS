@@ -293,6 +293,8 @@ inline static int ceil_log2(int x)
         lastBlock = peer.chain.recentBlocks[uint256_obj(lastBlock.prevBlock)];
     }
     
+    if (!lastBlock) return;
+    
     //we need to check that the coinbase is in the transaction hashes we got back
     UInt256 coinbaseHash = coinbaseTransaction.txHash;
     BOOL foundCoinbase = FALSE;
