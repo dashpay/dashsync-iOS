@@ -94,6 +94,14 @@
     return self;
 }
 
++ (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
+    return [[DSBLSKey alloc] initWithExtendedPublicKeyData:extendedPublicKey onChain:chain];
+}
+- (nullable instancetype)initWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
+    bls::ExtendedPublicKey extendedPublicBLSKey = bls::ExtendedPublicKey::FromBytes((const uint8_t *)extendedPublicKey.bytes);
+    return [self initWithExtendedBLSPublicKey:extendedPublicBLSKey onChain:chain];
+}
+
 - (nullable instancetype)initWithExtendedPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     
@@ -130,7 +138,7 @@
     return self;
 }
 
-- (nullable instancetype)initWithExtendedPublicKey:(bls::ExtendedPublicKey)blsExtendedPublicKey onChain:(DSChain*)chain {
+- (nullable instancetype)initWithExtendedBLSPublicKey:(bls::ExtendedPublicKey)blsExtendedPublicKey onChain:(DSChain*)chain {
     if (!self || !(self = [super init])) return nil;
     
     uint8_t blsExtendedPublicKeyBytes[bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
@@ -164,20 +172,18 @@
 
 // MARK: - Derivation
 
--(DSBLSKey*)deriveToPath:(DSDerivationPath*)derivationPath {
+-(DSBLSKey*)deriveToPath:(NSIndexPath*)derivationPath {
     bls::ExtendedPrivateKey blsExtendedPrivateKey = bls::ExtendedPrivateKey::FromBytes((const uint8_t *)self.extendedPrivateKeyData.bytes);
     bls::ExtendedPrivateKey derivedExtendedPrivateKey = [DSBLSKey derive:blsExtendedPrivateKey indexes:derivationPath];
     return [[DSBLSKey alloc] initWithExtendedPrivateKey:derivedExtendedPrivateKey onChain:self.chain];
 }
 
--(DSBLSKey*)publicDeriveToPath:(DSDerivationPath*)derivationPath {
+-(DSBLSKey*)publicDeriveToPath:(NSIndexPath*)derivationPath {
     if (!self.extendedPublicKeyData.length && !self.extendedPrivateKeyData.length) return nil;
     bls::ExtendedPublicKey blsExtendedPublicKey = [self blsExtendedPublicKey];
 
-        
-        bls::ExtendedPublicKey derivedExtendedPublicKey = [DSBLSKey publicDerive:blsExtendedPublicKey indexes:derivationPath];
-        return [[DSBLSKey alloc] initWithExtendedPublicKey:derivedExtendedPublicKey onChain:self.chain];
-    
+    bls::ExtendedPublicKey derivedExtendedPublicKey = [DSBLSKey publicDerive:blsExtendedPublicKey indexes:derivationPath];
+    return [[DSBLSKey alloc] initWithExtendedBLSPublicKey:derivedExtendedPublicKey onChain:self.chain];
 }
 
 -(bls::ExtendedPublicKey)blsExtendedPublicKey {

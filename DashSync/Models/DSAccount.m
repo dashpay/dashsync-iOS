@@ -743,7 +743,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress {
     DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain];
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:shapeshiftAddress];
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:shapeshiftAddress shuffleOutputOrder:YES];
 }
 
 // MARK: == Proposal Transaction Creation
@@ -760,9 +760,13 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Update
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant {
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:nil shuffleOutputOrder:YES];
+}
+
+// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress shuffleOutputOrder:(BOOL)shuffleOutputOrder
 {
-    
     uint64_t amount = 0, balance = 0, feeAmount = 0, feeAmountWithoutChange = 0;
     DSTransaction *tx;
     NSUInteger i = 0, cpfpSize = 0;
@@ -847,7 +851,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     if (balance - (amount + feeAmount) >= self.wallet.chain.minOutputAmount) {
         [transaction addOutputAddress:self.changeAddress amount:balance - (amount + feeAmount)];
-        [transaction shuffleOutputOrder];
+        if (shuffleOutputOrder) {
+            [transaction shuffleOutputOrder];
+        }
     }
     
     return transaction;

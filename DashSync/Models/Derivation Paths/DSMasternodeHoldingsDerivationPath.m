@@ -22,7 +22,7 @@
     
 }
 
--(NSUInteger)unusedIndex {
+-(uint32_t)unusedIndex {
     return 0;
 }
 

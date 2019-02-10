@@ -147,30 +147,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return derivationPath;
 }
 
-+ (instancetype _Nonnull)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 1 | BIP32_HARD};
-    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderVotingKeys onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
-}
-
-+ (instancetype _Nonnull)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 2 | BIP32_HARD};
-    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderOwnerKeys onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
-}
-
-+ (instancetype _Nonnull)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 3 | BIP32_HARD};
-    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
-}
-
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
     return [[self alloc] initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain];
@@ -579,17 +555,24 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 - (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath
 {
-    if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
-    
-    UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
-    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-    
-    for (NSInteger i = 0;i<[self length] - 1;i++) {
-        uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-        CKDpub(&pubKey, &chain, derivation);
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
+        
+        UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
+        DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
+        
+        for (NSInteger i = 0;i<[self length] - 1;i++) {
+            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+            CKDpub(&pubKey, &chain, derivation);
+        }
+        
+        return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        DSBLSKey * extendedPublicKey = [DSBLSKey blsKeyWithExtendedPublicKeyData:self.extendedPublicKey onChain:self.chain];
+        DSBLSKey * extendedPublicKeyAtIndexPath = [extendedPublicKey publicDeriveToPath:indexPath];
+        return [NSData dataWithUInt384:extendedPublicKeyAtIndexPath.publicKey];
     }
-    
-    return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    return nil;
 }
 
 - (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed

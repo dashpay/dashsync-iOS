@@ -109,9 +109,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
 + (instancetype)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
-+ (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet;
-+ (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet;
-+ (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
@@ -145,8 +142,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 // gets a public key at an index path
 - (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath;
-
-- (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
 
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index;

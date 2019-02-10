@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange;
 
+- (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
 
 @end
 

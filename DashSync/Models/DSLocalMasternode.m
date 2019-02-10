@@ -12,7 +12,7 @@
 #import "DSAccount.h"
 #import "DSMasternodeManager.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
-
+#import "DSAuthenticationKeysDerivationPath.h"
 
 @interface DSLocalMasternode()
 
@@ -52,17 +52,22 @@
             return;
         }
         DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self.fundsWallet];
-        DSDerivationPath * providerOwnerKeysDerivationPath = [DSDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
-        DSDerivationPath * providerOperatorKeysDerivationPath = [DSDerivationPath providerOwnerKeysDerivationPathForWallet:self.operatorKeysWallet];
-        DSDerivationPath * providerVotingKeysDerivationPath = [DSDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+        DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
+        DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.operatorKeysWallet];
+        DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
         
-        NSString * receiveAddress = [providerFundsDerivationPath receiveAddress];
+        NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
         
-        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] init];
-        [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
-        NSMutableData * opReturnScript = [NSMutableData data];
-        [opReturnScript appendUInt8:OP_RETURN];
-        [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO toShapeshiftAddress:nil];
+        DSKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+        UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
+        UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
+        
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:[NSData data] onChain:fundingAccount.wallet.chain];
+        [providerRegistrationTransaction signPayloadWithKey:ownerKey];
+        NSMutableData *script = [NSMutableData data];
+        
+        [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
+        [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO toShapeshiftAddress:nil shuffleOutputOrder:NO];
         
         completion(providerRegistrationTransaction);
     }];
