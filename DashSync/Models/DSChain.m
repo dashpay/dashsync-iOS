@@ -52,6 +52,7 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
+#import "DSFundsDerivationPath.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -820,7 +821,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath
 {
-    if (![self.viewingAccount.derivationPaths containsObject:derivationPath]) {
+    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]] && ![self.viewingAccount.derivationPaths containsObject:(DSFundsDerivationPath*)derivationPath]) {
         [self addStandaloneDerivationPath:derivationPath];
     }
     NSError * error = nil;

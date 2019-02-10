@@ -109,8 +109,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
 + (instancetype)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
-
-+ (instancetype)providerFundsDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;

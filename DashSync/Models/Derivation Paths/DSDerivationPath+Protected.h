@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL addressesLoaded;
 @property (nonatomic, strong) NSManagedObjectContext * moc;
 @property (nonatomic, strong) NSMutableSet *mAllAddresses, *mUsedAddresses;
+@property (nonatomic, weak) DSWallet * wallet;
 
 @end
 

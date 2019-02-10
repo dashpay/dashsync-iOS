@@ -34,7 +34,7 @@
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nonatomic, readonly) NSArray<DSDerivationPath *> * derivationPaths;
+@property (nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
 
 @property (nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 

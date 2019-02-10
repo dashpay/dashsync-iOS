@@ -112,9 +112,10 @@ typedef struct _DSUTXO {
 #define uint160_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt160)])
 #define uint128_obj(u) ([NSValue value:(u).u8 withObjCType:@encode(UInt128)])
 
-
+#define uint128_data(u) [NSData dataWithUInt128:u]
 #define uint160_data(u) [NSData dataWithUInt160:u]
 #define uint256_data(u) [NSData dataWithUInt256:u]
+#define uint384_data(u) [NSData dataWithUInt384:u]
 
 #define uint160_data_from_obj(u) [NSData dataWithUInt160Value:u]
 #define uint256_data_from_obj(u) [NSData dataWithUInt256Value:u]
@@ -131,6 +132,7 @@ typedef struct _DSUTXO {
 #define UINT256_MAX ((UInt256) { .u64 = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF } })
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
+#define DSUTXO_ZERO ((DSUTXO) { .hash = UINT256_ZERO , .n = 0 })
 
 #define dsutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
 #define dsutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\

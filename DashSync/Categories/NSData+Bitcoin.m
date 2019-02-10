@@ -1181,6 +1181,13 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt768 *)(self.bytes);
 }
 
+-(DSUTXO)transactionOutpoint
+{
+    if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
+    return *(DSUTXO *)(self.bytes);
+}
+
+
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber **)length
 {
     uint8_t h = [self UInt8AtOffset:offset];

@@ -126,11 +126,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 @property (nonatomic, weak) DSAccount * account;
 @property (nonatomic, strong) NSData * extendedPublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, weak) DSWallet * wallet;
 @property (nonatomic, strong) NSNumber * depth;
 @property (nonatomic, assign) NSNumber * child;
 @property (nonatomic, strong) NSString * standaloneExtendedPublicKeyUniqueID;
 @property (nonatomic, strong) NSString * stringRepresentation;
+@property (nonatomic, weak) DSWallet * wallet;
 
 @end
 
@@ -143,14 +143,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
     NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 11 | BIP32_HARD};
     DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainUsers onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
-}
-
-+ (instancetype _Nonnull)providerFundsDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 0 | BIP32_HARD};
-    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:wallet.chain];
     derivationPath.wallet = wallet;
     return derivationPath;
 }
@@ -369,6 +361,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 -(NSSet*)usedAddresses {
     return [self.mUsedAddresses copy];
+}
+
+-(void)loadAddresses {
+    
 }
 
 // MARK: - Blockchain User

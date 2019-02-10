@@ -11,7 +11,8 @@
 #import "DSWallet.h"
 #import "DSAccount.h"
 #import "DSMasternodeManager.h"
-#import "DSDerivationPath.h"
+#import "DSMasternodeHoldingsDerivationPath.h"
+
 
 @interface DSLocalMasternode()
 
@@ -50,8 +51,12 @@
             completion(nil);
             return;
         }
-        DSDerivationPath * providerFundsDerivationPath = [DSDerivationPath providerFundsDerivationPathForWallet:self.fundsWallet];
-        DSKey * privateKey = [providerFundsDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+        DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self.fundsWallet];
+        DSDerivationPath * providerOwnerKeysDerivationPath = [DSDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
+        DSDerivationPath * providerOperatorKeysDerivationPath = [DSDerivationPath providerOwnerKeysDerivationPathForWallet:self.operatorKeysWallet];
+        DSDerivationPath * providerVotingKeysDerivationPath = [DSDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+        
+        NSString * receiveAddress = [providerFundsDerivationPath receiveAddress];
         
         DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] init];
         [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
@@ -59,7 +64,7 @@
         [opReturnScript appendUInt8:OP_RETURN];
         [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO toShapeshiftAddress:nil];
         
-        completion(blockchainUserRegistrationTransaction);
+        completion(providerRegistrationTransaction);
     }];
 }
 
