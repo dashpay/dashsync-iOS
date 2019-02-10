@@ -345,8 +345,11 @@
                     if (isBitcoinInstead) {
                         cell.amountLabel.text = [walletManager stringForBitcoinAmount:[self.outputAmount[indexPath.row] longLongValue]];
                         cell.amountLabel.textColor = [UIColor colorWithRed:0.0 green:0.75 blue:0.0 alpha:1.0];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                         cell.fiatAmountLabel.text = [NSString stringWithFormat:@"(%@)",
                                                      [walletManager localCurrencyStringForBitcoinAmount:[self.outputAmount[indexPath.row]
+#pragma clang diagnostic pop
                                                                                                          longLongValue]]];
                     } else {
                         cell.amountLabel.attributedText = [walletManager attributedStringForDashAmount:[self.outputAmount[indexPath.row] longLongValue] withTintColor:cell.amountLabel.textColor dashSymbolSize:CGSizeMake(9, 9)];
