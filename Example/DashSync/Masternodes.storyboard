@@ -336,7 +336,7 @@
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Register" id="q3T-yk-kuH">
                             <connections>
-                                <action selector="save" destination="yz3-wC-DLz" id="Xzt-dL-Tv6"/>
+                                <action selector="registerMasternode:" destination="yz3-wC-DLz" id="BM5-aI-qlg"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>

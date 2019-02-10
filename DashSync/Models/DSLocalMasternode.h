@@ -10,8 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSWallet;
-@class DSProviderRegistrationTransaction;
+@class DSWallet,DSAccount, DSProviderRegistrationTransaction;
 
 @interface DSLocalMasternode : NSObject
 
@@ -26,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 
 -(instancetype)initWithIPAddress:(UInt128)IPAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet;
+
+-(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
 
 @end
 

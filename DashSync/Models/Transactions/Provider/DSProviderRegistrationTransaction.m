@@ -199,4 +199,13 @@
     return [DSProviderRegistrationTransactionEntity class];
 }
 
+-(void)updateInputsHash {
+    NSMutableData * data = [NSMutableData data];
+    for (NSUInteger i =0; i<self.inputHashes.count;i++) {
+        [data appendData:self.inputHashes[i]];
+        [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
+    }
+    self.inputsHash = [data SHA256];
+}
+
 @end

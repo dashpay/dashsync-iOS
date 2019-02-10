@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 
 #import "DSBIP39Mnemonic.h"
-#import "DSDerivationPath.h"
+#import "DSFundsDerivationPath.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSBIP39Tests : XCTestCase
@@ -320,7 +320,7 @@
         if ([m phraseIsValid:passphrase]) {
             [possibleWords addObject:word];
             NSData * data = [m deriveKeyFromPhrase:passphrase withPassphrase:nil];
-            DSDerivationPath * derivationPath = [DSDerivationPath bip44DerivationPathOnChain:[DSChain mainnet] forAccountNumber:0];
+            DSFundsDerivationPath * derivationPath = [DSFundsDerivationPath bip44DerivationPathOnChain:[DSChain mainnet] forAccountNumber:0];
             [derivationPath generateExtendedPublicKeyFromSeed:data storeUnderWalletUniqueId:nil];
             NSUInteger indexArr[] = {0,0};
             NSString * firstAddress = [derivationPath addressAtIndexPath:[NSIndexPath indexPathWithIndexes:indexArr length:2]];

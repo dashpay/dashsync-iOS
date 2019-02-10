@@ -30,7 +30,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSDerivationPath (Protected)
+@interface DSDerivationPath ()
 
 @property (nonatomic, assign) BOOL addressesLoaded;
 @property (nonatomic, strong) NSManagedObjectContext * moc;

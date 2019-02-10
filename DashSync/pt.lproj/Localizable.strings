@@ -30,6 +30,9 @@
 "\ntry again in %d %@" = "\ntente novamente em %1$d %2$@";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "Are you sure you would like to register the username %@ and spend %@ on credits?" = "Tem certeza de que gostaria de registrar o nome de usuário %1$@ e gastar %2$@ em créditos?";
 
 /* No comment provided by engineer. */

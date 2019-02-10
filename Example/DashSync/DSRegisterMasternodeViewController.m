@@ -10,6 +10,8 @@
 #import "DSKeyValueTableViewCell.h"
 #import "DSAccountChooserTableViewCell.h"
 #import "DSWalletChooserTableViewCell.h"
+#import "DSProviderRegistrationTransaction.h"
+#include <arpa/inet.h>
 
 @interface DSRegisterMasternodeViewController ()
 
@@ -63,7 +65,47 @@
 }
 
 -(IBAction)registerMasternode:(id)sender {
-    DSLocalMasternode * masternode = [[DSLocalMasternode alloc] init];
+    NSString * ipAddressString = self.ipAddressTableViewCell.valueTextField.text;
+    NSString * portString = self.portTableViewCell.valueTextField.text;
+    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+    struct in_addr addrV4;
+    if (inet_aton([ipAddressString UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+        DSDLog(@"%08x", ip);
+    }
+    uint16_t port = [portString intValue];
+    DSLocalMasternode * masternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inWallet:self.wallet];
+    [masternode registrationTransactionFundedByAccount:self.account completion:^(DSProviderRegistrationTransaction * _Nonnull providerRegistrationTransaction) {
+        if (providerRegistrationTransaction) {
+            [self.account signTransaction:providerRegistrationTransaction withPrompt:@"Would you like to register this masternode?" completion:^(BOOL signedTransaction) {
+                if (signedTransaction) {
+                    [self.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction completion:^(NSError * _Nullable error) {
+                        if (error) {
+                            [self raiseIssue:@"Error" message:error.localizedDescription];
+                        } else {
+                            //[masternode registerInWallet];
+                            [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                        }
+                    }];
+                } else {
+                    [self raiseIssue:@"Error" message:@"Transaction was not signed."];
+                }
+            }];
+        } else {
+            [self raiseIssue:@"Error" message:@"Unable to create ProviderRegistrationTransaction."];
+        }
+    }];
+}
+
+-(void)raiseIssue:(NSString*)issue message:(NSString*)message {
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:issue message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }]];
+    [self presentViewController:alert animated:TRUE completion:^{
+        
+    }];
 }
 
 -(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount*)account {

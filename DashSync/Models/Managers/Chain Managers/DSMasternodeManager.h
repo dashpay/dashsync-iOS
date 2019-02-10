@@ -30,7 +30,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListValidationErrorNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
 
-#define MASTERNODE_COST 10000000000
+#define MASTERNODE_COST 100000000000
 
 @class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSMasternodePing;
 

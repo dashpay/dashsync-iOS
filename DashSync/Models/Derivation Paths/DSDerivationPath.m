@@ -130,7 +130,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 @property (nonatomic, assign) NSNumber * child;
 @property (nonatomic, strong) NSString * standaloneExtendedPublicKeyUniqueID;
 @property (nonatomic, strong) NSString * stringRepresentation;
-@property (nonatomic, weak) DSWallet * wallet;
 
 @end
 
@@ -453,13 +452,27 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     for (NSInteger i = 0;i<self.length;i++) {
         [mutableString appendFormat:@"_%lu",(unsigned long)[self indexAtPosition:i]];
     }
-    return [NSString stringWithFormat:@"%@%@",[DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID],mutableString];
+    return [NSString stringWithFormat:@"%@%@%@",[DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID],self.signingAlgorithm==DSDerivationPathSigningAlgorith_BLS?@"_BLS_":@"",mutableString];
 }
 
 -(NSString*)walletBasedExtendedPublicKeyLocationString {
     if (_walletBasedExtendedPublicKeyLocationString) return _walletBasedExtendedPublicKeyLocationString;
     _walletBasedExtendedPublicKeyLocationString = [self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:self.wallet.uniqueID];
     return _walletBasedExtendedPublicKeyLocationString;
+}
+
+// MARK: - Key Generation
+
+- (NSData *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
+{
+    if (! seed) return nil;
+    if (![self length]) return nil; //there needs to be at least 1 length
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [self generateExtendedECDSAPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        return [self generateExtendedBLSPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId];
+    }
+    return nil;
 }
 
 // MARK: - ECDSA Key Generation
@@ -490,7 +503,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 // master public key format is: 4 byte parent fingerprint || 32 byte chain code || 33 byte compressed public key
-- (NSData *)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
+- (NSData *)generateExtendedECDSAPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString*)walletUniqueId
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length

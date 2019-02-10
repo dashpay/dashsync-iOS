@@ -30,6 +30,9 @@
 "\ntry again in %d %@" = "\nthử lại %1$d %2$@";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "Are you sure you would like to register the username %@ and spend %@ on credits?" = "Bạn có chắc là bạn muốn đăng ký tên người dùng 1%1$@ và tiêu 2%2$@ trên tín dụng?";
 
 /* No comment provided by engineer. */

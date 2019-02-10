@@ -123,7 +123,7 @@
     
     DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[[NSDate date] timeIntervalSince1970] forChain:self.chain storeSeedPhrase:NO isTransient:YES];
     DSAccount *account = [wallet accountWithNumber:0];
-    DSDerivationPath *derivationPath = account.bip32DerivationPath;
+    DSFundsDerivationPath *derivationPath = account.bip32DerivationPath;
     
     NSData *seed = seedString.hexToData;
     NSString *pk = [derivationPath privateKey:2 | BIP32_HARD internal:YES fromSeed:seed];
