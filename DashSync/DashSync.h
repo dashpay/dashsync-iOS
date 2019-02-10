@@ -52,6 +52,7 @@
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSLocalMasternode.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSPaymentRequest.h"

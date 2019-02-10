@@ -63,6 +63,7 @@
 }
 
 -(IBAction)registerMasternode:(id)sender {
+    DSLocalMasternode * masternode = [[DSLocalMasternode alloc] init];
 }
 
 -(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount*)account {

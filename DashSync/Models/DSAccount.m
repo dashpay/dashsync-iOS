@@ -23,7 +23,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSDerivationPath.h"
+#import "DSFundsDerivationPath.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSKey.h"
@@ -62,12 +62,12 @@
 #define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
 
 
-@class DSDerivationPath,DSAccount;
+@class DSFundsDerivationPath,DSAccount;
 
 @interface DSAccount()
 
 // BIP 43 derivation paths
-@property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mDerivationPaths;
+@property (nonatomic, strong) NSMutableArray<DSFundsDerivationPath *> * mDerivationPaths;
 
 @property (nonatomic, strong) NSArray *balanceHistory;
 
@@ -85,9 +85,9 @@
 // the total amount received to the account (excluding change)
 @property (nonatomic, readonly) uint64_t totalReceived;
 
-@property (nonatomic, strong) DSDerivationPath * bip44DerivationPath;
+@property (nonatomic, strong) DSFundsDerivationPath * bip44DerivationPath;
 
-@property (nonatomic, strong) DSDerivationPath * bip32DerivationPath;
+@property (nonatomic, strong) DSFundsDerivationPath * bip32DerivationPath;
 
 @property (nonatomic, assign) BOOL isViewOnlyAccount;
 
@@ -100,15 +100,15 @@
 
 // MARK: - Initiation
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
     return [[self alloc] initWithDerivationPaths:derivationPaths];
 }
 
--(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+-(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
     if (![self.mDerivationPaths count])
         _accountNumber = (uint32_t)[[derivationPaths firstObject] indexAtPosition:[[derivationPaths firstObject] length] - 1] & ~(BIP32_HARD);
     for (int i = 0;i<[derivationPaths count];i++) {
-        DSDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
+        DSFundsDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
         if (derivationPath.reference == DSDerivationPathReference_BIP32) {
             if (self.bip32DerivationPath) {
                 NSAssert(TRUE,@"There should only be one BIP 32 derivation path");
@@ -121,10 +121,10 @@
             self.bip44DerivationPath = derivationPath;
         }
         for (int j = i + 1;j<[derivationPaths count];j++) {
-            DSDerivationPath * derivationPath2 = [derivationPaths objectAtIndex:j];
+            DSFundsDerivationPath * derivationPath2 = [derivationPaths objectAtIndex:j];
             NSAssert(![derivationPath isDerivationPathEqual:derivationPath2],@"Derivation paths should all be different");
         }
-        for (DSDerivationPath * derivationPath3 in self.mDerivationPaths) {
+        for (DSFundsDerivationPath * derivationPath3 in self.mDerivationPaths) {
             NSAssert(![derivationPath isDerivationPathEqual:derivationPath3],@"Added derivation paths should be different from existing ones on account");
         }
         if ([self.mDerivationPaths count] || i != 0) {
@@ -133,12 +133,12 @@
     }
 }
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+-(instancetype)initWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
     if (! (self = [super init])) return nil;
     NSAssert([derivationPaths count], @"derivationPaths can not be empty");
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.mDerivationPaths = [derivationPaths mutableCopy];
-    for (DSDerivationPath * derivationPath in derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in derivationPaths) {
         derivationPath.account = self;
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
@@ -148,10 +148,10 @@
     return self;
 }
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
+-(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
     if (! (self = [super init])) return nil;
     self.mDerivationPaths = [derivationPaths mutableCopy];
-    for (DSDerivationPath * derivationPath in derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in derivationPaths) {
         derivationPath.account = self;
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
@@ -214,7 +214,7 @@
 
 - (void)loadDerivationPaths {
     if (!_wallet.isTransient) {
-        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
             [derivationPath loadAddresses];
         }
     }
@@ -271,20 +271,20 @@
 
 // MARK: - Derivation Paths
 
--(void)removeDerivationPath:(DSDerivationPath*)derivationPath {
+-(void)removeDerivationPath:(DSFundsDerivationPath*)derivationPath {
     if ([self.mDerivationPaths containsObject:derivationPath]) {
         [self.mDerivationPaths removeObject:derivationPath];
     }
 }
 
--(void)addDerivationPath:(DSDerivationPath*)derivationPath {
+-(void)addDerivationPath:(DSFundsDerivationPath*)derivationPath {
     if (!_isViewOnlyAccount) {
         [self verifyAndAssignAddedDerivationPaths:@[derivationPath]];
     }
     [self.mDerivationPaths addObject:derivationPath];
 }
 
--(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
+-(void)addDerivationPathsFromArray:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
     if (!_isViewOnlyAccount) {
         [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     }
@@ -295,13 +295,13 @@
     return [self.mDerivationPaths copy];
 }
 
--(void)setDefaultDerivationPath:(DSDerivationPath *)defaultDerivationPath {
+-(void)setDefaultDerivationPath:(DSFundsDerivationPath *)defaultDerivationPath {
     NSAssert([self.mDerivationPaths containsObject:defaultDerivationPath], @"The derivationPath is not in the account");
     _defaultDerivationPath = defaultDerivationPath;
 }
 
--(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+-(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         if ([derivationPath containsAddress:address]) return derivationPath;
     }
     return nil;
@@ -311,7 +311,7 @@
 
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
     NSMutableArray * mArray = [NSMutableArray array];
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         [mArray addObjectsFromArray:[derivationPath registerAddressesWithGapLimit:gapLimit internal:internal]];
     }
     return [mArray copy];
@@ -320,7 +320,7 @@
 // all previously generated external addresses
 -(NSArray *)externalAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[derivationPath allReceiveAddresses]];
     }
     return [mSet allObjects];
@@ -329,7 +329,7 @@
 // all previously generated internal addresses
 -(NSArray *)internalAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[derivationPath allChangeAddresses]];
     }
     return [mSet allObjects];
@@ -337,7 +337,7 @@
 
 -(NSSet *)allAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[[derivationPath allAddresses] allObjects]];
     }
     return [mSet copy];
@@ -345,7 +345,7 @@
 
 -(NSSet *)usedAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         [mSet addObjectsFromArray:[[derivationPath usedAddresses] allObjects]];
     }
     return [mSet copy];
@@ -353,7 +353,7 @@
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         if ([derivationPath containsAddress:address]) return TRUE;
     }
     return FALSE;
@@ -361,7 +361,7 @@
 
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         if ([derivationPath addressIsUsed:address]) return TRUE;
     }
     return FALSE;
@@ -378,7 +378,7 @@
     NSMutableArray *balanceHistory = [NSMutableArray array];
     uint32_t now = [NSDate timeIntervalSince1970];
     
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         derivationPath.balance = 0;
     }
     
@@ -449,7 +449,7 @@
             //TODO: don't add coin generation outputs < 100 blocks deep
             //NOTE: balance/UTXOs will then need to be recalculated when last block changes
             for (NSString *address in tx.outputAddresses) { // add outputs to UTXO set
-                for (DSDerivationPath * derivationPath in self.derivationPaths) {
+                for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
                     if ([derivationPath containsAddress:address]) {
                         derivationPath.balance += [tx.outputAmounts[n] unsignedLongLongValue];
                         [utxos addObject:dsutxo_obj(((DSUTXO) { tx.txHash, n }))];
@@ -472,7 +472,7 @@
                 transaction = self.allTx[uint256_obj(o.hash)];
                 [utxos removeObject:output];
                 balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
-                for (DSDerivationPath * derivationPath in self.derivationPaths) {
+                for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
                     if ([derivationPath containsAddress:transaction.outputAddresses[o.n]]) {
                         derivationPath.balance -= [transaction.outputAmounts[o.n] unsignedLongLongValue];
                         break;
@@ -707,7 +707,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 -(BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         if ([derivationPath type] & DSDerivationPathType_IsForFunds)  {
             NSString * firstAddress = [derivationPath addressAtIndex:0 internal:NO];
             if ([transaction.outputAddresses containsObject:firstAddress]) {
@@ -963,7 +963,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     int64_t amount = [self amountSentByTransaction:transaction] - [self amountReceivedFromTransaction:transaction];
     
     NSMutableArray * usedDerivationPaths = [NSMutableArray array];
-    for (DSDerivationPath * derivationPath in self.derivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
         NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
         *internalIndexes = [NSMutableOrderedSet orderedSet];
         for (NSString *addr in transaction.inputAddresses) {
@@ -992,11 +992,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             } else {
                 NSMutableArray *privkeys = [NSMutableArray array];
                 for (NSDictionary * dictionary in usedDerivationPaths) {
-                    DSDerivationPath * derivationPath = dictionary[@"derivationPath"];
+                    DSFundsDerivationPath * derivationPath = dictionary[@"derivationPath"];
                     NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
                     *internalIndexes = dictionary[@"internalIndexes"];
-                    [privkeys addObjectsFromArray:[derivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                    [privkeys addObjectsFromArray:[derivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                    [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                    [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
                 }
                 
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
@@ -1018,7 +1018,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     self.wallet.seedRequestBlock(authprompt, (amount > 0) ? amount : 0,^void (NSData * _Nullable seed, BOOL cancelled) {
         for (DSTransaction * transaction in transactions) {
             NSMutableArray * usedDerivationPaths = [NSMutableArray array];
-            for (DSDerivationPath * derivationPath in self.derivationPaths) {
+            for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
                 NSMutableOrderedSet *externalIndexes = [NSMutableOrderedSet orderedSet],
                 *internalIndexes = [NSMutableOrderedSet orderedSet];
                 for (NSString *addr in transaction.inputAddresses) {
@@ -1045,11 +1045,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 } else {
                     NSMutableArray *privkeys = [NSMutableArray array];
                     for (NSDictionary * dictionary in usedDerivationPaths) {
-                        DSDerivationPath * derivationPath = dictionary[@"derivationPath"];
+                        DSFundsDerivationPath * derivationPath = dictionary[@"derivationPath"];
                         NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
                         *internalIndexes = dictionary[@"internalIndexes"];
-                        [privkeys addObjectsFromArray:[derivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[derivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
                     }
                     
                     BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
@@ -1092,14 +1092,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
     for (NSString * address in transaction.inputAddresses) {
-        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
             if ([derivationPath containsAddress:address]) {
                 [derivationPath registerTransactionAddress:address];
             }
         }
     }
     for (NSString * address in transaction.outputAddresses) {
-        for (DSDerivationPath * derivationPath in self.derivationPaths) {
+        for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
             if ([derivationPath containsAddress:address]) {
                 [derivationPath registerTransactionAddress:address];
             }

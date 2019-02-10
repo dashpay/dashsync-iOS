@@ -95,7 +95,6 @@
         
         completion(blockchainUserRegistrationTransaction);
     }];
-    
 }
 
 -(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion {

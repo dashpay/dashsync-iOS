@@ -35,7 +35,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath;
+@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode;
 
 @interface DSWallet : NSObject
 
@@ -172,5 +172,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)seedWithPrompt:(NSString * _Nonnull)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
 
 -(void)copyForChain:(DSChain* _Nonnull)chain completion:(void (^ _Nonnull)(DSWallet * _Nullable copiedWallet))completion;
+
+- (void)registerMasternodeOperator:(DSLocalMasternode * _Nonnull)masternode;
+
+- (void)registerMasternodeOwner:(DSLocalMasternode * _Nonnull)masternode;
+
+- (void)registerMasternodeVoter:(DSLocalMasternode * _Nonnull)masternode;
 
 @end

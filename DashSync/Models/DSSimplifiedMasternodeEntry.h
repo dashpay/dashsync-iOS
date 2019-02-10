@@ -27,10 +27,6 @@
 @property(nonatomic,readonly) NSString * uniqueID;
 @property(nonatomic,readonly,class) uint32_t payloadLength;
 @property(nonatomic,readonly) DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity;
-@property(nonatomic,readonly) DSWallet * operatorKeysWallet; //only if this is contained in the wallet.
-@property(nonatomic,readonly) DSWallet * fundsWallet; //only if this is contained in the wallet.
-@property(nonatomic,readonly) DSWallet * ownerKeysWallet; //only if this is contained in the wallet.
-@property(nonatomic,readonly) DSWallet * votingKeysWallet; //only if this is contained in the wallet.
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;
 

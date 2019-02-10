@@ -22,28 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSDerivationPath.h"
-#import "DSAccount.h"
-#import "DSWallet.h"
-#import "DSKey.h"
-#import "DSAddressEntity+CoreDataClass.h"
-#import "DSChain.h"
-#import "DSTransaction.h"
-#import "DSTransactionEntity+CoreDataClass.h"
-#import "DSTxInputEntity+CoreDataClass.h"
-#import "DSTxOutputEntity+CoreDataClass.h"
-#import "DSDerivationPathEntity+CoreDataClass.h"
-#import "DSPeerManager.h"
-#import "DSKeySequence.h"
-#import "NSData+Bitcoin.h"
-#import "NSMutableData+Dash.h"
-#import "NSManagedObject+Sugar.h"
-#import "DSPriceManager.h"
-#import "NSString+Bitcoin.h"
-#import "NSString+Dash.h"
-#import "NSData+Bitcoin.h"
-#import "DSBlockchainUser.h"
-#import "DSBLSKey.h"
+#import "DSDerivationPath+Protected.h"
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -144,12 +123,8 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 @interface DSDerivationPath()
 
 @property (nonatomic, copy) NSString * walletBasedExtendedPublicKeyLocationString;
-@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
-@property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
 @property (nonatomic, weak) DSAccount * account;
-@property (nonatomic, strong) NSManagedObjectContext * moc;
 @property (nonatomic, strong) NSData * extendedPublicKey;//master public key used to generate wallet addresses
-@property (nonatomic, assign) BOOL addressesLoaded;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, weak) DSWallet * wallet;
 @property (nonatomic, strong) NSNumber * depth;
@@ -163,16 +138,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 
 // MARK: - Derivation Path initialization
-
-+ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
-    NSUInteger indexes[] = {accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
-}
-+ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
-    NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {44 | BIP32_HARD, coinType | BIP32_HARD, accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
-}
 
 + (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet {
     NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
@@ -271,45 +236,12 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     _type = type;
     _signingAlgorithm = signingAlgorithm;
     _derivationPathIsKnown = YES;
-    _addressesLoaded = FALSE;
-    self.allAddresses = [NSMutableSet set];
-    self.usedAddresses = [NSMutableSet set];
-    self.internalAddresses = [NSMutableArray array];
-    self.externalAddresses = [NSMutableArray array];
+    self.addressesLoaded = FALSE;
+    self.mAllAddresses = [NSMutableSet set];
+    self.mUsedAddresses = [NSMutableSet set];
     self.moc = [NSManagedObject context];
     
     return self;
-}
-
--(void)loadAddresses {
-    if (!_addressesLoaded) {
-        [self.moc performBlockAndWait:^{
-            [DSAddressEntity setContext:self.moc];
-            [DSTransactionEntity setContext:self.moc];
-            DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-            self->_syncBlockHeight = derivationPathEntity.syncBlockHeight;
-            for (DSAddressEntity *e in derivationPathEntity.addresses) {
-                @autoreleasepool {
-                    NSMutableArray *a = (e.internal) ? self.internalAddresses : self.externalAddresses;
-                    
-                    while (e.index >= a.count) [a addObject:[NSNull null]];
-                    if (![e.address isValidDashAddressOnChain:self.account.wallet.chain]) {
-                        DSDLog(@"address %@ loaded but was not valid on chain %@",e.address,self.account.wallet.chain.name);
-                        continue;
-                    }
-                    a[e.index] = e.address;
-                    [self->_allAddresses addObject:e.address];
-                    if ([e.usedInInputs count] || [e.usedInOutputs count]) {
-                        [self->_usedAddresses addObject:e.address];
-                    }
-                }
-            }
-        }];
-        _addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:100 internal:YES];
-        [self registerAddressesWithGapLimit:100 internal:NO];
-        
-    }
 }
 
 - (void)dealloc
@@ -388,92 +320,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 // MARK: - Derivation Path Addresses
 
-// Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
-// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
-// following the last used address in the chain. The internal chain is used for change addresses and the external chain
-// for receive addresses.
-- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
-{
-    NSAssert(_addressesLoaded, @"addresses must be loaded before calling this function");
-    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
-    NSUInteger i = a.count;
-    
-    // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
-        i--;
-    }
-    
-    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-    
-    if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-        [self receiveAddress];
-        [self changeAddress];
-    }
-    
-    @synchronized(self) {
-        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
-        i = a.count;
-        
-        unsigned n = (unsigned)i;
-        
-        // keep only the trailing contiguous block of addresses with no transactions
-        while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
-            i--;
-        }
-        
-        if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-        if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-        
-        while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self generatePublicKeyAtIndex:n internal:internal];
-            NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-            
-            if (! addr) {
-                DSDLog(@"error generating keys");
-                return nil;
-            }
-            
-            [self.moc performBlock:^{ // store new address in core data
-                [DSDerivationPathEntity setContext:self.moc];
-                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-                DSAddressEntity *e = [DSAddressEntity managedObject];
-                e.derivationPath = derivationPathEntity;
-                NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
-                e.address = addr;
-                e.index = n;
-                e.internal = internal;
-                e.standalone = NO;
-            }];
-            
-            [_allAddresses addObject:addr];
-            [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
-            [a addObject:addr];
-            n++;
-        }
-        
-        return a;
-    }
-}
-
-- (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange
-{
-    NSMutableArray * addresses = [NSMutableArray array];
-    for (NSUInteger i = exportInternalRange.location;i<exportInternalRange.length + exportInternalRange.location;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:YES];
-        NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-        [addresses addObject:addr];
-    }
-    
-    for (NSUInteger i = exportExternalRange.location;i<exportExternalRange.location + exportExternalRange.length;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:NO];
-        NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-        [addresses addObject:addr];
-    }
-    
-    return [addresses copy];
-}
-
 // gets a public key at an index
 - (NSData*)publicKeyAtIndex:(uint32_t)index
 {
@@ -500,61 +346,29 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
-// gets an address at an index path
-- (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal
-{
-    NSData *pubKey = [self generatePublicKeyAtIndex:index internal:internal];
-    return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-}
-
-// returns the first unused external address
-- (NSString *)receiveAddress
-{
-    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:1 internal:NO].lastObject;
-    return (addr) ? addr : self.externalAddresses.lastObject;
-}
-
-- (NSString *)receiveAddressAtOffset:(NSUInteger)offset
-{
-    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    NSString *addr = [self registerAddressesWithGapLimit:offset + 1 internal:NO].lastObject;
-    return (addr) ? addr : self.externalAddresses.lastObject;
-}
-
-// returns the first unused internal address
-- (NSString *)changeAddress
-{
-    //TODO: limit to 10,000 total addresses and utxos for practical usability with bloom filters
-    return [self registerAddressesWithGapLimit:1 internal:YES].lastObject;
-}
-
-// all previously generated external addresses
-- (NSArray *)allReceiveAddresses
-{
-    return [self.externalAddresses copy];
-}
-
-// all previously generated external addresses
-- (NSArray *)allChangeAddresses
-{
-    return [self.internalAddresses copy];
-}
-
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address
 {
-    return (address && [self.allAddresses containsObject:address]) ? YES : NO;
+    return (address && [self.mAllAddresses containsObject:address]) ? YES : NO;
 }
 
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address
 {
-    return (address && [self.usedAddresses containsObject:address]) ? YES : NO;
+    return (address && [self.mUsedAddresses containsObject:address]) ? YES : NO;
 }
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
-    [_usedAddresses addObject:address];
+    [self.mUsedAddresses addObject:address];
+}
+
+-(NSSet*)allAddresses {
+    return [self.mAllAddresses copy];
+}
+
+
+-(NSSet*)usedAddresses {
+    return [self.mUsedAddresses copy];
 }
 
 // MARK: - Blockchain User
@@ -782,24 +596,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
 }
 
-- (NSData *)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal
-{
-    if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
-    
-    UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
-    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-    
-    CKDpub(&pubKey, &chain, internal ? 1 : 0); // internal or external chain
-    CKDpub(&pubKey, &chain, n); // nth key in chain
-    
-    return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
-}
-
-- (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
-{
-    return seed ? [self privateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
-}
-
 - (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
 {
     if (! seed || ! indexPath) return nil;
@@ -824,12 +620,12 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return [DSKey keyWithSecret:secret compressed:YES];
 }
 
-- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
 {
-    if (! seed || ! n) return nil;
-    if (n.count == 0) return @[];
+    if (! seed || ! indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
     
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:n.count];
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
     UInt512 I;
     
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
@@ -847,16 +643,17 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         CKDpriv(&secret, &chain, derivation);
     }
     
-    CKDpriv(&secret, &chain, internal ? 1 : 0); // internal or external chain
     
-    for (NSNumber *i in n) {
+    for (NSIndexPath *indexPath in indexPaths) {
         NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
-        UInt256 s = secret, c = chain;
         
-        CKDpriv(&s, &c, i.unsignedIntValue); // nth key in chain
+        for (NSInteger i = 0;i<[indexPath length];i++) {
+            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+            CKDpriv(&secret, &chain, derivation);
+        }
         
         [privKey appendBytes:&version length:1];
-        [privKey appendBytes:&s length:sizeof(s)];
+        [privKey appendBytes:&secret length:sizeof(secret)];
         [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
         [a addObject:[NSString base58checkWithData:privKey]];
     }

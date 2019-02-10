@@ -374,8 +374,8 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
-    return @[[DSDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
+-(NSArray<DSFundsDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
+    return @[[DSFundsDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSFundsDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
 }
 
 -(void)save {
@@ -892,7 +892,7 @@ static dispatch_once_t devnetToken = 0;
         [allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
     }
     
-    for (DSDerivationPath * derivationPath in self.standaloneDerivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.standaloneDerivationPaths) {
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];

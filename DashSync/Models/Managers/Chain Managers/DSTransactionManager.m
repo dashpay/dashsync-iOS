@@ -576,7 +576,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
     }
     
-    for (DSDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];

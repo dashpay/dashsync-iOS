@@ -38,7 +38,9 @@
 #import "DSBlockchainUser.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
+#import "DSProviderRegistrationTransaction.h"
 #import "NSDate+Utils.h"
+#import "DSLocalMasternode.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -47,6 +49,11 @@
 #define WALLET_MNEMONIC_KEY        @"WALLET_MNEMONIC_KEY"
 #define WALLET_MASTER_PUBLIC_KEY        @"WALLET_MASTER_PUBLIC_KEY"
 #define WALLET_BLOCKCHAIN_USERS_KEY  @"WALLET_BLOCKCHAIN_USERS_KEY"
+
+#define WALLET_MASTERNODE_VOTERS_KEY @"WALLET_MASTERNODE_VOTERS_KEY"
+#define WALLET_MASTERNODE_OWNERS_KEY @"WALLET_MASTERNODE_OWNERS_KEY"
+#define WALLET_MASTERNODE_OPERATORS_KEY @"WALLET_MASTERNODE_OPERATORS_KEY"
+
 #define VERIFIED_WALLET_CREATION_TIME_KEY @"VERIFIED_WALLET_CREATION_TIME"
 #define REFERENCE_DATE_2001 978307200
 
@@ -58,6 +65,9 @@
 @property (nonatomic, assign) NSTimeInterval walletCreationTime;
 @property (nonatomic, assign) NSTimeInterval guessedWalletCreationTime;
 @property (nonatomic, strong) NSMutableDictionary<NSString *,NSNumber *> * mBlockchainUsers;
+@property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeOperators;
+@property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeOwners;
+@property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeVoters;
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
 
@@ -87,6 +97,9 @@
     self.mAccounts = [NSMutableDictionary dictionary];
     self.chain = chain;
     self.mBlockchainUsers = [NSMutableDictionary dictionary];
+    self.mMasternodeOwners = [NSMutableDictionary dictionary];
+    self.mMasternodeVoters = [NSMutableDictionary dictionary];
+    self.mMasternodeOperators = [NSMutableDictionary dictionary];
     return self;
 }
 
@@ -133,6 +146,17 @@
     return [NSString stringWithFormat:@"%@_%@",WALLET_BLOCKCHAIN_USERS_KEY,[self uniqueID]];
 }
 
+-(NSString*)walletMasternodeVotersKey {
+    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_VOTERS_KEY,[self uniqueID]];
+}
+
+-(NSString*)walletMasternodeOwnersKey {
+    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_OWNERS_KEY,[self uniqueID]];
+}
+
+-(NSString*)walletMasternodeOperatorsKey {
+    return [NSString stringWithFormat:@"%@_%@",WALLET_MASTERNODE_OPERATORS_KEY,[self uniqueID]];
+}
 
 -(NSArray *)accounts {
     return [self.mAccounts allValues];
@@ -659,6 +683,44 @@
 -(DSBlockchainUser*)createBlockchainUserForUsername:(NSString*)username {
     DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithUsername:username atIndex:[self unusedBlockchainUserIndex] inWallet:self];
     return blockchainUser;
+}
+
+// MARK: - Masternodes
+
+- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode
+{
+    if ([self.mMasternodeOperators objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
+        [self.mMasternodeOperators setObject:@(masternode.operatorWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+    }
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletMasternodeOperatorsKey, &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary setObject:@(masternode.operatorWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+    setKeychainDict(keyChainDictionary, self.walletMasternodeOperatorsKey, NO);
+}
+
+- (void)registerMasternodeOwner:(DSLocalMasternode *)masternode
+{
+    if ([self.mMasternodeOwners objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
+        [self.mMasternodeOwners setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+    }
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletMasternodeOwnersKey, &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+    setKeychainDict(keyChainDictionary, self.walletMasternodeOwnersKey, NO);
+}
+
+- (void)registerMasternodeVoter:(DSLocalMasternode *)masternode
+{
+    if ([self.mMasternodeVoters objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
+        [self.mMasternodeVoters setObject:@(masternode.votingWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+    }
+    NSError * error = nil;
+    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletMasternodeVotersKey, &error) mutableCopy];
+    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    [keyChainDictionary setObject:@(masternode.votingWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
+    setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
 }
 
 @end

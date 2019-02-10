@@ -27,20 +27,20 @@
 #import <CoreData/CoreData.h>
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
-#import "DSDerivationPath.h"
+#import "DSFundsDerivationPath.h"
 
-@class DSDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
 @property (nonatomic, readonly) NSArray<DSDerivationPath *> * derivationPaths;
 
-@property (nonatomic, strong) DSDerivationPath * defaultDerivationPath;
+@property (nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
-@property (nonatomic, readonly) DSDerivationPath * bip44DerivationPath;
+@property (nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
 
-@property (nonatomic, readonly) DSDerivationPath * bip32DerivationPath;
+@property (nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
 
 @property (nonatomic, weak) DSWallet * wallet;
 

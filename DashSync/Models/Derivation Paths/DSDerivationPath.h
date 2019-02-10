@@ -31,14 +31,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define SEQUENCE_GAP_LIMIT_EXTERNAL 10
-#define SEQUENCE_GAP_LIMIT_INTERNAL 5
-
-#define EXTENDED_0_PUBKEY_KEY_BIP44_V0   @"masterpubkeyBIP44" //these are old and need to be retired
-#define EXTENDED_0_PUBKEY_KEY_BIP32_V0   @"masterpubkeyBIP32" //these are old and need to be retired
-#define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
-#define EXTENDED_0_PUBKEY_KEY_BIP32_V1   @"extended0pubkeyBIP32"
-
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define BIP32_HARD 0x80000000
@@ -103,24 +95,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // current derivation path balance excluding transactions known to be invalid
 @property (nonatomic, assign) uint64_t balance;
 
-// returns the first unused external address
-@property (nonatomic, readonly, nullable) NSString * receiveAddress;
-
-// returns the first unused internal address
-@property (nonatomic, readonly, nullable) NSString * changeAddress;
-
-// all previously generated external addresses
-@property (nonatomic, readonly) NSArray * allReceiveAddresses;
-
-// all previously generated internal addresses
-@property (nonatomic, readonly) NSArray * allChangeAddresses;
-
-// all previously generated addresses
-@property (nonatomic, readonly) NSSet * allAddresses;
-
-// all previously used addresses
-@property (nonatomic, readonly) NSSet * usedAddresses;
-
 // purpose of the derivation path if BIP 43 based
 @property (nonatomic, readonly) NSUInteger purpose;
 
@@ -134,11 +108,12 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
-+ (instancetype)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
-
-+ (instancetype)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
-
 + (instancetype)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
+
++ (instancetype)providerFundsDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
@@ -181,25 +156,13 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath;
 
-// gets an addess at an index one level down based on bip32
-- (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal;
-
-// Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
-// found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
-// following the last used address in the chain. The internal chain is used for change addresses and the external chain
-// for receive addresses.  These have a hardened purpose scheme depending on the derivation path
-- (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
-
 - (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
-- (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
 - (NSArray *)publicKeysToIndex:(NSUInteger)index;
 - (NSArray *)addressesToIndex:(NSUInteger)index;
 - (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
-- (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
-- (NSArray * _Nullable)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 + (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
@@ -215,7 +178,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
-- (NSArray *)addressesForExportWithInternalRange:(NSRange)exportInternalRange externalCount:(NSRange)exportExternalRange;
+- (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath;
+
+- (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed;
 
 //this loads the derivation path once it is set to an account that has a wallet;
 -(void)loadAddresses;
