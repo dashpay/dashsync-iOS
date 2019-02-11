@@ -520,12 +520,19 @@
     return mArray;
 }
 
-// true if the address is controlled by the wallet
+// true if the address is controlled by the wallet, this can also be for paths that are not accounts (todo)
 - (BOOL)containsAddress:(NSString *)address {
     for (DSAccount * account in self.accounts) {
         if ([account containsAddress:address]) return TRUE;
     }
     return FALSE;
+}
+
+- (DSAccount*)accountForAddress:(NSString *)address {
+    for (DSAccount * account in self.accounts) {
+        if ([account containsAddress:address]) return account;
+    }
+    return nil;
 }
 
 // true if the address was previously used as an input or output in any wallet transaction
@@ -584,6 +591,15 @@
         if (![account transactionIsValid:transaction]) return FALSE;
     }
     return TRUE;
+}
+
+-(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
+    DSAccount * account = [self accountForAddress:address];
+    if (!account) return nil;
+    DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
+    if (!derivationPath) return nil;
+    NSIndexPath * indexPath = [derivationPath indexPathForAddress:address];
+    return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
 }
 
 // MARK: - Seed

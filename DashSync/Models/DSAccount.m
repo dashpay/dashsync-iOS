@@ -217,6 +217,11 @@
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
             [derivationPath loadAddresses];
         }
+    } else {
+        for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
+            [derivationPath registerAddressesWithGapLimit:100 internal:YES];
+            [derivationPath registerAddressesWithGapLimit:100 internal:NO];
+        }
     }
     if (!self.isViewOnlyAccount) {
         if (self.bip44DerivationPath) {

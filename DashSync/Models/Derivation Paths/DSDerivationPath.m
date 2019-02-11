@@ -573,12 +573,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         
         UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
         DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-        
-        for (NSInteger i = 0;i<[self length] - 1;i++) {
+        for (NSInteger i = 0;i<[indexPath length];i++) {
             uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
             CKDpub(&pubKey, &chain, derivation);
         }
-        
         return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
     } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
         DSBLSKey * extendedPublicKey = [DSBLSKey blsKeyWithExtendedPublicKeyData:self.extendedPublicKey onChain:self.chain];

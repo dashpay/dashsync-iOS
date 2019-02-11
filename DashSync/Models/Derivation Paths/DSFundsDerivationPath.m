@@ -76,7 +76,9 @@
 // for receive addresses.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal
 {
-    NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
+    if (!self.account.wallet.isTransient) {
+        NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
+    }
     NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
     NSUInteger i = a.count;
     
@@ -116,17 +118,19 @@
                 return nil;
             }
             
-            [self.moc performBlock:^{ // store new address in core data
-                [DSDerivationPathEntity setContext:self.moc];
-                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-                DSAddressEntity *e = [DSAddressEntity managedObject];
-                e.derivationPath = derivationPathEntity;
-                NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
-                e.address = addr;
-                e.index = n;
-                e.internal = internal;
-                e.standalone = NO;
-            }];
+            if (!self.account.wallet.isTransient) {
+                [self.moc performBlock:^{ // store new address in core data
+                    [DSDerivationPathEntity setContext:self.moc];
+                    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+                    DSAddressEntity *e = [DSAddressEntity managedObject];
+                    e.derivationPath = derivationPathEntity;
+                    NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
+                    e.address = addr;
+                    e.index = n;
+                    e.internal = internal;
+                    e.standalone = NO;
+                }];
+            }
             
             [self.mAllAddresses addObject:addr];
             [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
@@ -216,6 +220,17 @@
         [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
     }
     return [self serializedPrivateKeysAtIndexPaths:mArray fromSeed:seed];
+}
+
+- (NSIndexPath*)indexPathForAddress:(NSString*)address {
+    if ([self.allChangeAddresses containsObject:address]) {
+        NSUInteger indexes[] = {1,[self.allChangeAddresses indexOfObject:address]};
+        return [NSIndexPath indexPathWithIndexes:indexes length:2];
+    } else if ([self.allReceiveAddresses containsObject:address]) {
+        NSUInteger indexes[] = {1,[self.allChangeAddresses indexOfObject:address]};
+        return [NSIndexPath indexPathWithIndexes:indexes length:2];
+    }
+    return nil;
 }
 
 @end

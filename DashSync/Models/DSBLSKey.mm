@@ -120,6 +120,14 @@
     [blsExtendedPrivateKeyData appendBytes:blsExtendedPrivateKeyBytes length:bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE];
     self.extendedPrivateKeyData = blsExtendedPrivateKeyData;
     
+    uint8_t blsExtendedPublicKeyBytes[bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
+    
+    blsExtendedPrivateKey.GetExtendedPublicKey().Serialize(blsExtendedPublicKeyBytes);
+    
+    NSMutableData * blsExtendedPublicKeyData = [NSMutableData secureDataWithCapacity:bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
+    [blsExtendedPublicKeyData appendBytes:blsExtendedPublicKeyBytes length:bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
+    self.extendedPublicKeyData = blsExtendedPublicKeyData;
+    
     UInt256 blsChainCode;
     blsExtendedPrivateKey.GetChainCode().Serialize(blsChainCode.u8);
     self.chainCode = blsChainCode;
@@ -145,7 +153,7 @@
     
     blsExtendedPublicKey.Serialize(blsExtendedPublicKeyBytes);
     NSMutableData * blsExtendedPublicKeyData = [NSMutableData secureDataWithCapacity:bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
-    [blsExtendedPublicKeyData appendBytes:blsExtendedPublicKeyBytes length:bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE];
+    [blsExtendedPublicKeyData appendBytes:blsExtendedPublicKeyBytes length:bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
     self.extendedPublicKeyData = blsExtendedPublicKeyData;
     
     UInt256 blsChainCode;

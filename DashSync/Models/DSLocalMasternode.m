@@ -13,6 +13,8 @@
 #import "DSMasternodeManager.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "NSData+Bitcoin.h"
+#import "NSMutableData+Dash.h"
 #include <arpa/inet.h>
 
 @interface DSLocalMasternode()
@@ -62,7 +64,7 @@
         if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
             [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.ownerKeysWallet.uniqueID];
         }
-        DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.operatorKeysWallet];
+        DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
         if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
             [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.operatorKeysWallet.uniqueID];
         }
@@ -72,12 +74,14 @@
         }
         
         NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
+        NSMutableData * scriptPayout = [NSMutableData data];
+        [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.fundsWallet.chain];
         
         DSKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
         UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
-        
-        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:[NSData data] onChain:fundingAccount.wallet.chain];
+        NSLog(@"%@",providerOperatorKeysDerivationPath.firstUnusedPublicKey.hexString);
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
         
         NSMutableData *script = [NSMutableData data];
         

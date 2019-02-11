@@ -152,16 +152,18 @@
 
 -(NSData*)basePayloadData {
     NSMutableData * data = [NSMutableData data];
-    [data appendUInt16:self.providerRegistrationTransactionVersion];
-    [data appendUInt16:self.providerType];
-    [data appendUInt16:self.providerMode];
-    [data appendUTXO:self.collateralOutpoint];
-    [data appendUInt128:self.ipAddress];
-    [data appendUInt160:self.ownerKeyHash];
-    [data appendUInt384:self.operatorKey];
-    [data appendUInt160:self.votingKeyHash];
-    [data appendUInt16:self.operatorReward];
-    [data appendScriptPushData:self.scriptPayout];
+    [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
+    [data appendUInt16:self.providerType]; //32
+    [data appendUInt16:self.providerMode]; //48
+    [data appendUTXO:self.collateralOutpoint]; //84
+    [data appendUInt128:self.ipAddress]; //212
+    [data appendUInt16:self.port]; //228
+    [data appendUInt160:self.ownerKeyHash]; //388
+    [data appendUInt384:self.operatorKey]; //772
+    [data appendUInt160:self.votingKeyHash]; //788
+    [data appendUInt16:self.operatorReward]; //804
+    [data appendVarInt:self.scriptPayout.length];
+    [data appendData:self.scriptPayout];
     [data appendUInt256:self.inputsHash];
     return data;
 }
