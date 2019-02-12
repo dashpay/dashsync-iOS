@@ -12,6 +12,9 @@
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
+#import "DSMasternodeManager.h"
+
+#define MAX_SIGNATURE_SIZE 75
 
 @interface DSProviderRegistrationTransaction()
 
@@ -98,15 +101,15 @@
 
 
 
--(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
+-(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_ProviderRegistration;
     self.version = SPECIAL_TX_VERSION;
     self.providerRegistrationTransactionVersion = version;
     self.providerType = providerType;
     self.providerMode = providerMode;
-    self.collateralOutpoint = collateralOutpoint;
     self.ipAddress = ipAddress;
+    self.collateralOutpoint = DSUTXO_ZERO;
     self.port = port;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
@@ -146,6 +149,7 @@
 }
 
 -(void)signPayloadWithKey:(DSKey*)privateKey {
+    //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }
@@ -192,9 +196,18 @@
     return data;
 }
 
+- (size_t)maxSizeEstimatedBeforePayloadSigning
+{
+    return [super size] + [self basePayloadData].length + MAX_SIGNATURE_SIZE;
+}
+
 - (size_t)size
 {
-    return [super size] + [self payloadData].length;
+    if (self.payloadSignature) {
+        return [super size] + [self payloadData].length;
+    } else {
+        return [self maxSizeEstimatedBeforePayloadSigning];
+    }
 }
 
 -(Class)entityClass {
@@ -210,7 +223,16 @@
         [data appendUInt256:hash];
         [data appendUInt32:[self.inputIndexes[i] unsignedIntValue]];
     }
-    self.inputsHash = [data SHA256];
+    self.inputsHash = [data SHA256_2];
+}
+
+-(void)hasSetInputsAndOutputs {
+    [self updateInputsHash];
+    if (dsutxo_is_zero(self.collateralOutpoint) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
+        NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
+        self.collateralOutpoint = (DSUTXO) { .hash = UINT256_ZERO, .n = index};
+        self.payloadSignature = [NSData data];
+    }
 }
 
 @end

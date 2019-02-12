@@ -115,6 +115,7 @@ sequence:(uint32_t)sequence;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;
+- (void)hasSetInputsAndOutputs;
 - (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
 
 - (NSString*)shapeshiftOutboundAddress;

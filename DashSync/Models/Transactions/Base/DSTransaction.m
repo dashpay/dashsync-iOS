@@ -640,6 +640,10 @@
     return YES;
 }
 
+-(void)hasSetInputsAndOutputs {
+    //nothing to do here
+}
+
 // MARK: - Extra shapeshift methods
 
 - (NSString*)shapeshiftOutboundAddress {

@@ -134,6 +134,9 @@ typedef struct _DSUTXO {
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 #define DSUTXO_ZERO ((DSUTXO) { .hash = UINT256_ZERO , .n = 0 })
 
+#define dsutxo_eq(a,b) (uint256_eq(a.hash,b.hash) && (a.n == b.n))
+#define dsutxo_is_zero(a) (uint256_is_zero(a.hash) && (a.n == 0))
+
 #define dsutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
 #define dsutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\
 o.hash.u32[0], o.hash.u32[1], o.hash.u32[2], o.hash.u32[3],\

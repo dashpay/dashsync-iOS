@@ -33,6 +33,7 @@
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSProviderRegistrationTransaction.h"
+#include <arpa/inet.h>
 
 @interface DSTransactionTests : XCTestCase
 
@@ -341,7 +342,7 @@
     
     DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     
-    NSData * hexData = [NSData dataFromHexString:@"030001000379efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002000000006b483045022100e01fb99611548c50ee4a78ebff85599ad6cb2d7b731c838cfa9fb7eb193fdc110220301c08b7e7f9f2ea4c8e7863e80df12a07388cd2a7bd0ec8ab12499a4aeacf650121030de5cb8989b6902d98017ab4d42b9244912006b0a1561c1d1ba0e2f3117a39adffffffff79efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002010000006b483045022100eea0036d7dc45b3fa61ae43faf4a1883293b1bff4be7dda390236a727c8a6398022021f1806775276ecf4651fbdb63601d4df6d699416fe50559b0058a4a97437c7901210270b0f0b71472736a397975a84927314261be815d423006d1bcbc00cd693c3d81ffffffff9d925d6cd8e3a408f472e872d1c2849bc664efda8c7f68f1b3a3efde221bc474010000006a473044022078b421e1b07cbc94bbab3c85b785ed528acd0f4efdc1520143b2204e468a7d44022045cf0ed1fb7849b64474c4253dbb863f501bf04da6a0348d7e437f39ed2a36260121024c0b09e261253dc40ed572c2d63d0b6cda89154583d75a5ab5a14fba81d70089ffffffff0200e87648170000001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac8d8ca95a020000001976a91470ed8f5b5cfd4791c15b9d8a7f829cb6a98da18c88ac00000000fd120101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff010101011f4e1d7fe8b4f16bda38d98cb208b6be4c8f3abb4c8b859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe8211196a96067672ba9cb7accd0ae90523ba60aba861500001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac80517ce93959b8941fdcccc5066a4ef8d14aca131f9c8f80258fe06efc6ec674411f2e46670c32e968b4d4a4d6564e452990a9626531f2a225f2eb1d584a07197e6c27eaa98352f21106f6e37a25b7e8e9d1ccf2309322511a9a1702bab777ca30d9"];
+    NSData * hexData = [NSData dataFromHexString:@"030001000379efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002000000006b4830450221008d31ca87f95f976b645b9b1eecfdbbe32173e3c338e05aff70011069be9002da02206c20b6df83ce54e4abe56cece05823baf341ebb8ec88347a7770f8fdd3d1b3930121030de5cb8989b6902d98017ab4d42b9244912006b0a1561c1d1ba0e2f3117a39adffffffff79efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002010000006a47304402200d047e24bf72cc350e6e753309f93781676ed836584addb3540023b2db1d0e3802202fe648482ee79c002655cd9d467c4a94126478d4867ff96e98bfbd6222e7261101210270b0f0b71472736a397975a84927314261be815d423006d1bcbc00cd693c3d81ffffffff9d925d6cd8e3a408f472e872d1c2849bc664efda8c7f68f1b3a3efde221bc474010000006a4730440220793f9c111af2539c92da947b1deae3d15ee3932c1df8dcb8c1beba9ebf7f825f02204cda7b969f0947f1ad20f35737add0f4fc2540f4e38b6dbe56810ac0a22834cd0121024c0b09e261253dc40ed572c2d63d0b6cda89154583d75a5ab5a14fba81d70089ffffffff0200e87648170000001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac438ca95a020000001976a91470ed8f5b5cfd4791c15b9d8a7f829cb6a98da18c88ac00000000d101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff010101011f4e1d7fe8b4f16bda38d98cb208b6be4c8f3abb4c8b859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe8211196a96067672ba9cb7accd0ae90523ba60aba861500001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac14b33f2231f0df567e0dfb12899c893f5d2d05f6dcc7d9c8c27b68a71191c75400"];
     UInt256 txId = *(UInt256 *)@"8f3368ceb332bdb8587fbeb540ad3bbf6f1c6c5a3f85c4e49f5f93351e4979e0".hexToData.reverse.bytes;
     UInt256 inputId = *(UInt256 *)@"d32687ec23f0e91fc1c797b508f8755f488c6e49892adef75be77ce395fe393f".hexToData.reverse.bytes;
     NSString * inputAddress0 = @"yRdHYt6nG1ooGaXK7GEbwVMteLY3m4FbVT";
@@ -383,23 +384,33 @@
     UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
     UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
     
-    
-//    DSKey * payloadKey = [DSKey keyWithPrivateKey:@"cVBJqSygvC7hHQVuarUZQv868NgHUavceAfeqgo32LYiBYYswTv6" onChain:devnetDRA];
-//    NSString * payloadAddress = @"yeAUXizK9bD6iuxaArDsh7XGX3Q75ZgE3Y";
-//    UInt160 pubkeyHash = *(UInt160 *)@"467d271aff54f66134ad7513bb7992a48cecbfc3".hexToData.reverse.bytes;
-//    NSString * checkPayloadAddress = [payloadKey addressForChain:devnetDRA];
-//    XCTAssertEqualObjects(checkPayloadAddress,payloadAddress,@"Payload key does not match input address");
-//
-//    NSString * outputAddress0 = @"yV1D32jV3duqeBGqWtjjevQk7ikHuitzK4";
-//    NSMutableData *script = [NSMutableData data];
-//
-//    NSValue *hash = uint256_obj(inputId);
-//
-//    [script appendScriptPubKeyForAddress:inputAddress forChain:devnetDRA];
-    
     DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
     
     XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData,hexData,@"Provider transaction does not match it's data");
+    
+    NSMutableData * scriptPayout = [NSMutableData data];
+    [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:wallet.chain];
+    
+    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+    struct in_addr addrV4;
+    if (inet_aton([@"1.1.1.1" UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+    }
+    
+    DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] providerRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
+    
+    NSMutableData *script = [NSMutableData data];
+    
+    [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
+    [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO toShapeshiftAddress:nil shuffleOutputOrder:NO];
+    
+    
+    [providerRegistrationTransaction updateInputsHash];
+    
+    [providerRegistrationTransaction signPayloadWithKey:ownerKey];
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
     
 //    DSProviderRegistrationTransaction *blockchainUserRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainUserRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
 //    [blockchainUserRegistrationTransaction signPayloadWithKey:payloadKey];

@@ -177,7 +177,9 @@
                 case DSTransactionType_SubscriptionTopUp:
                     return 3;
                     break;
-                    
+                case DSTransactionType_ProviderRegistration:
+                    return 4;
+                    break;
                 default:
                     return 0;
                     break;
@@ -221,6 +223,8 @@
                         cell.statusLabel.text = @"BU Topup Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSBlockchainUserResetTransaction class]]) {
                         cell.statusLabel.text = @"BU Reset Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+                        cell.statusLabel.text = @"Masternode Registration Transaction";
                     } else {
                         cell.statusLabel.text = @"Classical Transaction";
                     }
@@ -524,6 +528,61 @@
                     }
                         
                 }
+            }else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+                DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)self.transaction;
+                switch (indexPath.row) {
+                    case 0:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"Provider registration version", nil);
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",providerRegistrationTransaction.providerRegistrationTransactionVersion];
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 1:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"owner key hash:", nil);
+                        s = [NSData dataWithUInt160:providerRegistrationTransaction.ownerKeyHash].hexString;
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
+                        return cell;
+                        break;
+                    }
+                    case 2:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"operator key :", nil);
+                        s = [NSData dataWithUInt384:providerRegistrationTransaction.operatorKey].hexString;
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
+                        return cell;
+                        break;
+                    }
+                    case 3:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"voting key hash:", nil);
+                        s = [NSData dataWithUInt160:providerRegistrationTransaction.votingKeyHash].hexString;
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
+                        return cell;
+                        break;
+                    }
+                }
+                
             }
             
         }

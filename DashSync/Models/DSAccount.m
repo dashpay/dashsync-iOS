@@ -861,6 +861,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
     }
     
+    [transaction hasSetInputsAndOutputs];
+    
     return transaction;
 }
 
