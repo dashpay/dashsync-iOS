@@ -227,7 +227,7 @@
         NSUInteger indexes[] = {1,[self.allChangeAddresses indexOfObject:address]};
         return [NSIndexPath indexPathWithIndexes:indexes length:2];
     } else if ([self.allReceiveAddresses containsObject:address]) {
-        NSUInteger indexes[] = {1,[self.allChangeAddresses indexOfObject:address]};
+        NSUInteger indexes[] = {0,[self.allReceiveAddresses indexOfObject:address]};
         return [NSIndexPath indexPathWithIndexes:indexes length:2];
     }
     return nil;
