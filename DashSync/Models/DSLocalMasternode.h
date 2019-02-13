@@ -26,10 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) uint32_t votingWalletIndex;
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 
--(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet;
-
--(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)wallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet;
-
 -(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
 
 @end

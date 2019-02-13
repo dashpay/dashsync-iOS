@@ -13,6 +13,7 @@
         <attribute name="standalone" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
+        <relationship name="usedInLocalMasternodes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="addresses" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
         <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainUserCloseTransactionEntity" representedClassName="DSBlockchainUserCloseTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
@@ -121,13 +122,14 @@
         <relationship name="governanceObject" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectEntity" inverseName="voteHashes" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
         <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
     </entity>
-    <entity name="DSLocalMasternodeEntity" syncable="YES">
+    <entity name="DSLocalMasternodeEntity" representedClassName="DSLocalMasternodeEntity" syncable="YES">
         <attribute name="operatorKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="operatorKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="operatorKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="ownerKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="ownerKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="votingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSAddressEntity" inverseName="usedInLocalMasternodes" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="providerRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSProviderRegistrationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderRegistrationTransactionEntity" syncable="YES"/>
     </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
@@ -304,7 +306,7 @@
     </entity>
     <elements>
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="105"/>
-        <element name="DSAddressEntity" positionX="-2527.6015625" positionY="327.6796875" width="128" height="150"/>
+        <element name="DSAddressEntity" positionX="-2527.6015625" positionY="327.6796875" width="128" height="165"/>
         <element name="DSBlockchainUserCloseTransactionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="105"/>
         <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="90"/>
         <element name="DSBlockchainUserResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="120"/>
@@ -328,6 +330,6 @@
         <element name="DSTransactionLockVoteEntity" positionX="-2295" positionY="-54" width="128" height="255"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="150"/>
+        <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="165"/>
     </elements>
 </model>

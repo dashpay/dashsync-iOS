@@ -8,7 +8,7 @@
 #import "DSTransaction.h"
 #import "BigIntTypes.h"
 
-@class DSKey;
+@class DSKey,DSLocalMasternode;
 
 @interface DSProviderRegistrationTransaction : DSTransaction
 
@@ -26,6 +26,7 @@
 @property (nonatomic,strong) NSData * scriptPayout;
 @property (nonatomic,assign) UInt256 inputsHash;
 @property (nonatomic,strong) NSData * payloadSignature;
+@property (nonatomic,readonly) DSLocalMasternode * localMasternode;
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain;
 

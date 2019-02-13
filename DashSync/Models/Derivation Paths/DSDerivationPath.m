@@ -568,6 +568,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return mpk;
 }
 
+- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index {
+    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+}
+
 - (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath
 {
     if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {

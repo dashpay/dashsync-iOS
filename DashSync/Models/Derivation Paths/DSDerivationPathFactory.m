@@ -10,9 +10,9 @@
 
 @interface DSDerivationPathFactory()
 
-@property(nonatomic,assign) NSMutableDictionary * votingKeysDerivationPathByWallet;
-@property(nonatomic,assign) NSMutableDictionary * ownerKeysDerivationPathByWallet;
-@property(nonatomic,assign) NSMutableDictionary * operatorKeysDerivationPathByWallet;
+@property(nonatomic,strong) NSMutableDictionary * votingKeysDerivationPathByWallet;
+@property(nonatomic,strong) NSMutableDictionary * ownerKeysDerivationPathByWallet;
+@property(nonatomic,strong) NSMutableDictionary * operatorKeysDerivationPathByWallet;
 
 @end
 

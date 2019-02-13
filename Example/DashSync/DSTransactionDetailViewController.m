@@ -13,6 +13,7 @@
 #import "DSTransactionDetailTableViewCell.h"
 #import "DSTransactionIdentifierTableViewCell.h"
 #import "DSTransactionStatusTableViewCell.h"
+#include <arpa/inet.h>
 
 #define TRANSACTION_CELL_HEIGHT 75
 
@@ -178,7 +179,7 @@
                     return 3;
                     break;
                 case DSTransactionType_ProviderRegistration:
-                    return 4;
+                    return 8;
                     break;
                 default:
                     return 0;
@@ -544,6 +545,19 @@
                     }
                     case 1:
                     {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
+                        char s[INET6_ADDRSTRLEN];
+                        NSString * ipAddressString = @(inet_ntop(AF_INET, &providerRegistrationTransaction.ipAddress.u32[3], s, sizeof(s)));
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d",ipAddressString,providerRegistrationTransaction.port];
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 2:
+                    {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
@@ -555,12 +569,24 @@
                         return cell;
                         break;
                     }
-                    case 2:
+                    case 3:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"owner key wallet:", nil);
+                        DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
+                        cell.statusLabel.text = localMasternode.ownerKeysWallet?[NSString stringWithFormat:@"%@:%d",localMasternode.ownerKeysWallet.uniqueID,localMasternode.ownerWalletIndex]:@"Not Owner";
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 4:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"operator key :", nil);
+                        cell.titleLabel.text = NSLocalizedString(@"operator key:", nil);
                         s = [NSData dataWithUInt384:providerRegistrationTransaction.operatorKey].hexString;
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
@@ -568,7 +594,19 @@
                         return cell;
                         break;
                     }
-                    case 3:
+                    case 5:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"operator key wallet:", nil);
+                        DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
+                        cell.statusLabel.text = localMasternode.operatorKeysWallet?[NSString stringWithFormat:@"%@:%d",localMasternode.operatorKeysWallet.uniqueID,localMasternode.operatorWalletIndex]:@"Not Operator";
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 6:
                     {
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -581,6 +619,19 @@
                         return cell;
                         break;
                     }
+                    case 7:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"voting key wallet:", nil);
+                        DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
+                        cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%@:%d",localMasternode.votingKeysWallet.uniqueID,localMasternode.votingWalletIndex]:@"Not Voter";
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                        
                 }
                 
             }

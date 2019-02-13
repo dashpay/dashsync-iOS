@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSAuthenticationKeysDerivationPath;
+@class DSAuthenticationKeysDerivationPath,DSWallet;
 
 @interface DSDerivationPathFactory : NSObject
 

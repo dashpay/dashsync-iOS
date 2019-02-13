@@ -13,6 +13,7 @@
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSMasternodeManager.h"
+#import "DSChainManager.h"
 
 #define MAX_SIGNATURE_SIZE 75
 
@@ -55,7 +56,7 @@
     off += 16;
     
     if (length - off < 2) return nil;
-    self.port = [message UInt16AtOffset:off];
+    self.port = CFSwapInt16HostToBig([message UInt16AtOffset:off]);
     off += 2;
     
     if (length - off < 20) return nil;
@@ -161,7 +162,7 @@
     [data appendUInt16:self.providerMode]; //48
     [data appendUTXO:self.collateralOutpoint]; //84
     [data appendUInt128:self.ipAddress]; //212
-    [data appendUInt16:self.port]; //228
+    [data appendUInt16:CFSwapInt16BigToHost(self.port)]; //228
     [data appendUInt160:self.ownerKeyHash]; //388
     [data appendUInt384:self.operatorKey]; //772
     [data appendUInt160:self.votingKeyHash]; //788
@@ -233,6 +234,10 @@
         self.collateralOutpoint = (DSUTXO) { .hash = UINT256_ZERO, .n = index};
         self.payloadSignature = [NSData data];
     }
+}
+
+-(DSLocalMasternode*)localMasternode {
+    return [self.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:self];
 }
 
 @end

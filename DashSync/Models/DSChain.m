@@ -1706,12 +1706,10 @@ static dispatch_once_t devnetToken = 0;
 -(void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-        DSWallet * ownerWallet = [self hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash];
-        if (ownerWallet) {
-            [ownerWallet registerMasternodeOwner:[DSLocalMasternode]]
+        if ([self hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash] || [self hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash] || [self hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey]) {
+            [self.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
         }
-        if ([self hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash]) return TRUE;
-        if ([self hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey]) return TRUE;
+        
     }
 }
 
@@ -1719,21 +1717,21 @@ static dispatch_once_t devnetToken = 0;
 
 - (DSWallet*)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
     for (DSWallet * wallet in self.wallets) {
-        if ([wallet hasProviderVotingAuthenticationHash:votingAuthenticationHash]) return wallet;
+        if ([wallet containsProviderVotingAuthenticationHash:votingAuthenticationHash]) return wallet;
     }
     return FALSE;
 }
 
 - (DSWallet*)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
     for (DSWallet * wallet in self.wallets) {
-        if ([wallet hasProviderOwningAuthenticationHash:owningAuthenticationHash]) return wallet;
+        if ([wallet containsProviderOwningAuthenticationHash:owningAuthenticationHash]) return wallet;
     }
     return FALSE;
 }
 
 - (DSWallet*)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
     for (DSWallet * wallet in self.wallets) {
-        if ([wallet hasProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey]) return wallet;
+        if ([wallet containsProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey]) return wallet;
     }
     return FALSE;
 }

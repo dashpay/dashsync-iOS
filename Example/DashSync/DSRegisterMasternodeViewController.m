@@ -75,7 +75,7 @@
         DSDLog(@"%08x", ip);
     }
     uint16_t port = [portString intValue];
-    DSLocalMasternode * masternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inWallet:self.wallet];
+    DSLocalMasternode * masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inWallet:self.wallet];
     [masternode registrationTransactionFundedByAccount:self.account completion:^(DSProviderRegistrationTransaction * _Nonnull providerRegistrationTransaction) {
         if (providerRegistrationTransaction) {
             [self.account signTransaction:providerRegistrationTransaction withPrompt:@"Would you like to register this masternode?" completion:^(BOOL signedTransaction) {

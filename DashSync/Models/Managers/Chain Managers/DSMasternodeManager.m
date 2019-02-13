@@ -38,6 +38,8 @@
 #import "DSChainManager+Protected.h"
 #import "DSPeerManager+Protected.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
+#import "DSLocalMasternode+Protected.h"
+#import "DSProviderRegistrationTransaction.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -349,13 +351,6 @@ inline static int ceil_log2(int x)
     
 }
 
--(void)checkForLocalMasternodes:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*> *)masternodeList {
-    for (NSData * hashData in masternodeList) {
-        DSSimplifiedMasternodeEntry * entry = masternodeList[hashData];
-        if (entry.keyIDVoting)
-    }
-}
-
 -(NSUInteger)simplifiedMasternodeEntryCount {
     return [self.simplifiedMasternodeListDictionaryByRegistrationTransactionHash count];
 }
@@ -446,12 +441,41 @@ inline static int ceil_log2(int x)
 
 // MARK: - Masternode List Sync
 
+-(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet {
+    return [self createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
+}
+
+-(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)fundsWallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet {
+    DSLocalMasternode * localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
+    return localMasternode;
+}
+
+-(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+    DSWallet * ownerWallet = [self.chain hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash];
+    DSWallet * votingWallet = [self.chain hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash];
+    DSWallet * operatorWallet = [self.chain hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey];
+    //First check to see if we have a local masternode for this provider registration hash
+    
+    //We do
+    //Update keys
+    
+    //We don't
+    return [self createNewMasternodeWithIPAddress:providerRegistrationTransaction.ipAddress onPort:providerRegistrationTransaction.port inFundsWallet:nil inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
+    
+    
+}
+
 - (NSArray*)localMasternodes {
-    if (self.localMasternodesDictionaryByRegistrationTransactionHash) return self.localMasternodesDictionaryByRegistrationTransactionHash;
-    @synchronized(self) {
-        self.localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
-    }
-    return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
+//    if (self.localMasternodesDictionaryByRegistrationTransactionHash) return self.localMasternodesDictionaryByRegistrationTransactionHash;
+//    @synchronized(self) {
+//        self.localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
+//    }
+//    return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return nil;
+}
+
+-(void)checkForLocalMasternodes:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*> *)masternodeList {
+
 }
 
 @end

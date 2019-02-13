@@ -93,7 +93,6 @@
         [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
         [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO];
         
-        
         [providerRegistrationTransaction updateInputsHash];
         
         //there is no need to sign the payload here.
