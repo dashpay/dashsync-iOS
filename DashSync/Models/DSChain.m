@@ -1690,6 +1690,35 @@ static dispatch_once_t devnetToken = 0;
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
 }
 
+// MARK: - Merging Wallets
+
+- (BOOL)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
+    BOOL found = FALSE;
+    for (DSWallet * wallet in self.wallets) {
+        found |= [wallet hasProviderVotingAuthenticationHash:votingAuthenticationHash];
+        if (found) return TRUE;
+    }
+    return FALSE;
+}
+
+- (BOOL)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
+    BOOL found = FALSE;
+    for (DSWallet * wallet in self.wallets) {
+        found |= [wallet hasProviderOwningAuthenticationHash:owningAuthenticationHash];
+        if (found) return TRUE;
+    }
+    return FALSE;
+}
+
+- (BOOL)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
+    BOOL found = FALSE;
+    for (DSWallet * wallet in self.wallets) {
+        found |= [wallet hasProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey];
+        if (found) return TRUE;
+    }
+    return FALSE;
+}
+
 @end
 
 @implementation DSCheckpoint

@@ -82,7 +82,7 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
-@property (nonatomic,strong) NSMutableDictionary *simplifiedMasternodeListDictionaryByRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByRegistrationTransactionHash;
 
 @end
 
@@ -293,6 +293,8 @@ inline static int ceil_log2(int x)
         lastBlock = peer.chain.recentBlocks[uint256_obj(lastBlock.prevBlock)];
     }
     
+    if (!lastBlock) return;
+    
     //we need to check that the coinbase is in the transaction hashes we got back
     UInt256 coinbaseHash = coinbaseTransaction.txHash;
     BOOL foundCoinbase = FALSE;
@@ -344,6 +346,13 @@ inline static int ceil_log2(int x)
         [self.peerManager peerMisbehaving:peer];
     }
     
+}
+
+-(void)checkForLocalMasternodes:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*> *)masternodeList {
+    for (NSData * hashData in masternodeList) {
+        DSSimplifiedMasternodeEntry * entry = masternodeList[hashData];
+        if (entry.keyIDVoting)
+    }
 }
 
 -(NSUInteger)simplifiedMasternodeEntryCount {

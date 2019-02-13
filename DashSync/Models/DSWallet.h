@@ -181,5 +181,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)registerMasternodeOwner:(DSLocalMasternode * _Nonnull)masternode;
 
 - (void)registerMasternodeVoter:(DSLocalMasternode * _Nonnull)masternode;
+- (BOOL)hasProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
+- (BOOL)hasProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
+- (BOOL)hasProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 
 @end
