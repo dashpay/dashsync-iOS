@@ -661,4 +661,28 @@
     return blockchainUser;
 }
 
+// MARK: - Masternodes (Providers)
+
+- (BOOL)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
+    [DSDerivationPath pro:self];
+}
+
+- (BOOL)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
+    BOOL found = FALSE;
+    for (DSWallet * wallet in self.wallets) {
+        found |= [wallet hasProviderOwningAuthenticationHash:owningAuthenticationHash];
+        if (found) return TRUE;
+    }
+    return FALSE;
+}
+
+- (BOOL)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
+    BOOL found = FALSE;
+    for (DSWallet * wallet in self.wallets) {
+        found |= [wallet hasProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey];
+        if (found) return TRUE;
+    }
+    return FALSE;
+}
+
 @end

@@ -173,4 +173,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 -(void)copyForChain:(DSChain* _Nonnull)chain completion:(void (^ _Nonnull)(DSWallet * _Nullable copiedWallet))completion;
 
+- (BOOL)hasProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
+- (BOOL)hasProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
+- (BOOL)hasProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+
 @end
