@@ -28,7 +28,7 @@
 
 #import "DSTransaction.h"
 #import "DSTransactionFactory.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSString+Dash.h"
 #import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -518,7 +518,7 @@
     *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     for (NSString *pk in privateKeys) {
-        DSKey *key = [DSKey keyWithPrivateKey:pk onChain:self.chain];
+        DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:pk onChain:self.chain];
         
         if (! key) continue;
         [keys addObject:key];

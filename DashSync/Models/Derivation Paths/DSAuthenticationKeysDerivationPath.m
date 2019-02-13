@@ -101,7 +101,7 @@
         
         while (self.mAddresses.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self generatePublicKeyAtIndex:n];
-            NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
             if (! addr) {
                 DSDLog(@"error generating keys");
@@ -138,7 +138,7 @@
     return [self publicKeyAtIndex:[self unusedIndex]];
 }
 
--(DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed {
+-(DSECDSAKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed {
     return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:[self unusedIndex]] fromSeed:seed];
 }
 

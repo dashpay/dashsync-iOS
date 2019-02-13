@@ -7,7 +7,7 @@
 
 #import "DSBlockchainUser.h"
 #import "DSChain.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSDerivationPath.h"
@@ -85,7 +85,7 @@
             return;
         }
         DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
-        DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+        DSECDSAKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
 
         DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithBlockchainUserRegistrationTransactionVersion:1 username:self.username pubkeyHash:[privateKey.publicKey hash160] onChain:self.wallet.chain];
         [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
@@ -123,9 +123,9 @@
             return;
         }
         DSDerivationPath * oldDerivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
-        DSKey * oldPrivateKey = [oldDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
+        DSECDSAKey * oldPrivateKey = [oldDerivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
         DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self.wallet];
-        DSKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
+        DSECDSAKey * privateKey = [derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
         
         DSBlockchainUserResetTransaction * blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithBlockchainUserResetTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousBlockchainUserTransactionHash:self.lastBlockchainUserTransactionHash replacementPublicKeyHash:[privateKey.publicKey hash160] creditFee:1000 onChain:self.wallet.chain];
         [blockchainUserResetTransaction signPayloadWithKey:oldPrivateKey];

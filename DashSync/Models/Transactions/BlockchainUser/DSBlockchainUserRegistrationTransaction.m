@@ -8,7 +8,7 @@
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
@@ -89,11 +89,11 @@
 }
 
 -(BOOL)checkPayloadSignature {
-    DSKey * blockchainUserPublicKey = [DSKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
+    DSECDSAKey * blockchainUserPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
     return uint160_eq([blockchainUserPublicKey hash160], self.pubkeyHash);
 }
 
--(void)signPayloadWithKey:(DSKey*)privateKey {
+-(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
     DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }

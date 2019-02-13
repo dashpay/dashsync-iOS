@@ -1,5 +1,5 @@
 //
-//  DSKey+BIP38.h
+//  DSECDSAKey+BIP38.h
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 4/9/14.
@@ -25,14 +25,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 
 @class DSChain;
 
 // BIP38 is a method for encrypting private keys with a passphrase
 // https://github.com/bitcoin/bips/blob/master/bip-0038.mediawiki
 
-@interface DSKey (BIP38)
+@interface DSECDSAKey (BIP38)
 
 // decrypts a BIP38 key using the given passphrase or retuns nil if passphrase is incorrect
 + (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain* _Nonnull)chain;

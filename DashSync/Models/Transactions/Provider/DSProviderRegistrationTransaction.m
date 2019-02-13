@@ -8,7 +8,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
@@ -145,11 +145,11 @@
 }
 
 -(BOOL)checkPayloadSignature {
-    DSKey * providerOwnerPublicKey = [DSKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
+    DSECDSAKey * providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
     return uint160_eq([providerOwnerPublicKey hash160], self.ownerKeyHash);
 }
 
--(void)signPayloadWithKey:(DSKey*)privateKey {
+-(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];

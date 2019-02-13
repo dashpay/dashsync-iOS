@@ -13,7 +13,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSTransaction.h"
 #import "DSPriceManager.h"
 

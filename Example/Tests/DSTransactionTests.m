@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSChain.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransaction.h"
@@ -57,7 +57,7 @@
 {
     NSMutableData *script = [NSMutableData data];
     UInt256 secret = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    DSKey *k = [DSKey keyWithSecret:secret compressed:YES];
+    DSECDSAKey *k = [DSECDSAKey keyWithSecret:secret compressed:YES];
     NSValue *hash = uint256_obj(UINT256_ZERO);
     
     [script appendScriptPubKeyForAddress:[k addressForChain:self.chain] forChain:self.chain];
@@ -99,7 +99,7 @@
 
 - (void)testBlockchainUserTransactionPayload {
     DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
-    DSKey * key = [DSKey keyWithPrivateKey:@"cTu5paPRRZ1bby6XPR9oLmJ8XsasXm699xVCMGJuEVFu7qaU8uS5" onChain:devnetDRA];
+    DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:@"cTu5paPRRZ1bby6XPR9oLmJ8XsasXm699xVCMGJuEVFu7qaU8uS5" onChain:devnetDRA];
     UInt160 pubkeyHash = *(UInt160 *)@"43bfdea7363e6ea738da5059987c7232b58d2afe".hexToData.bytes;
     
     XCTAssertTrue(uint160_eq(pubkeyHash, key.publicKey.hash160), @"Pubkey Hash does not Pubkey");
@@ -117,7 +117,7 @@
     UInt256 inputId = *(UInt256 *)@"ce5e6919b13d6e58da10f933b6442558ba470b24f488f1449d2adf1e0a892e7d".hexToData.reverse.bytes;
     NSString * inputAddress = @"yaMmAV9Fmx4St7xPH9eHCLcYJZdGYd8vD8";
     NSString * inputPrivateKey = @"cNeRqjZpEEowdxMjiBa7S5uBgqweng19F1EZRFWcqE2XTpDy1Vzt";
-    DSKey * privateKey = [DSKey keyWithPrivateKey:inputPrivateKey onChain:devnetDRA];
+    DSECDSAKey * privateKey = [DSECDSAKey keyWithPrivateKey:inputPrivateKey onChain:devnetDRA];
     NSString * checkInputAddress = [privateKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(checkInputAddress,inputAddress,@"Private key does not match input address");
     NSString * outputAddress0 = @"ygTmsRfjDQ8c8UDny2uU8gafAeFAKP6G1g";
@@ -154,12 +154,12 @@
     UInt256 inputId = *(UInt256 *)@"d32687ec23f0e91fc1c797b508f8755f488c6e49892adef75be77ce395fe393f".hexToData.reverse.bytes;
     NSString * inputAddress = @"yeXaNd6esFX83gNsqVW7y43SVMqtvygcRT";
     NSString * inputPrivateKey = @"cQv3B1Ww5GkTDEAmA4KaZ7buGXsoUKTBmLLc79PVM5J6qLQc4wqj";
-    DSKey * privateKey = [DSKey keyWithPrivateKey:inputPrivateKey onChain:devnetDRA];
+    DSECDSAKey * privateKey = [DSECDSAKey keyWithPrivateKey:inputPrivateKey onChain:devnetDRA];
 
     NSString * checkInputAddress = [privateKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(checkInputAddress,inputAddress,@"Private key does not match input address");
     
-    DSKey * payloadKey = [DSKey keyWithPrivateKey:@"cVBJqSygvC7hHQVuarUZQv868NgHUavceAfeqgo32LYiBYYswTv6" onChain:devnetDRA];
+    DSECDSAKey * payloadKey = [DSECDSAKey keyWithPrivateKey:@"cVBJqSygvC7hHQVuarUZQv868NgHUavceAfeqgo32LYiBYYswTv6" onChain:devnetDRA];
     NSString * payloadAddress = @"yeAUXizK9bD6iuxaArDsh7XGX3Q75ZgE3Y";
     UInt160 pubkeyHash = *(UInt160 *)@"467d271aff54f66134ad7513bb7992a48cecbfc3".hexToData.reverse.bytes;
     NSString * checkPayloadAddress = [payloadKey addressForChain:devnetDRA];
@@ -200,7 +200,7 @@
     UInt256 inputId = *(UInt256 *)@"f6deacdfeb363d22398b913bdcd080adf5f4534716478ad220a10dc43e07add4".hexToData.reverse.bytes;
     NSString * inputAddress = @"yYZqfmQhqMSF1PL7xeNHzQM3q9rktXFPLN";
     NSString * inputPrivateKey = @"cNYPkC4hGoE11ieBr2GgwyUct8zY1HLi5S5K2LLPMewtQGJsbu9H";
-    DSKey * privateKey = [DSKey keyWithPrivateKey:inputPrivateKey onChain:devnetDRA];
+    DSECDSAKey * privateKey = [DSECDSAKey keyWithPrivateKey:inputPrivateKey onChain:devnetDRA];
     
     NSString * checkInputAddress = [privateKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(checkInputAddress,inputAddress,@"Private key does not match input address");
@@ -236,12 +236,12 @@
     UInt256 blockchainUserRegistrationTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
     UInt256 blockchainUserPreviousTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
     
-    DSKey * payloadKey = [DSKey keyWithPrivateKey:@"cVxAzue29NemggDqJyUwMsZ7KJsm4y9ntoW5UeCaTfQdruH2BKQR" onChain:devnetDRA];
+    DSECDSAKey * payloadKey = [DSECDSAKey keyWithPrivateKey:@"cVxAzue29NemggDqJyUwMsZ7KJsm4y9ntoW5UeCaTfQdruH2BKQR" onChain:devnetDRA];
     NSString * payloadAddress = @"yfguWspuwx7ceKthnqqDc8CiZGZGRN7eFp";
     NSString * checkPayloadAddress = [payloadKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(checkPayloadAddress,payloadAddress,@"Payload key does not match input address");
     
-    DSKey * replacementPayloadKey = [DSKey keyWithPrivateKey:@"cPG7GuByFnYkGvkrZqw8chGNfJYmKYnXt6TBjHruaApC42CPwwTE" onChain:devnetDRA];
+    DSECDSAKey * replacementPayloadKey = [DSECDSAKey keyWithPrivateKey:@"cPG7GuByFnYkGvkrZqw8chGNfJYmKYnXt6TBjHruaApC42CPwwTE" onChain:devnetDRA];
     NSString * replacementPayloadAddress = @"yiqFNxn9kbWEKj7B87aEnoyChBL8rMFymt";
     UInt160 replacementPubkeyHash = *(UInt160 *)@"b1ccb3ede55cc3781a00efb954c575baf4abf5f6".hexToData.reverse.bytes;
     NSString * replacementCheckPayloadAddress = [replacementPayloadKey addressForChain:devnetDRA];
@@ -348,9 +348,9 @@
     NSString * inputAddress0 = @"yRdHYt6nG1ooGaXK7GEbwVMteLY3m4FbVT";
     NSString * inputAddress1 = @"yWJqVcT5ot5GEcB8oYkHnnYcFG5pLiVVtd";
     NSString * inputAddress2 = @"ygQ8tG3tboQ7oZEhtDBBYtquTmVyiDe6d5";
-    DSKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
-    DSKey * inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
-    DSKey * inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
+    DSECDSAKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
+    DSECDSAKey * inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
+    DSECDSAKey * inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
     
     NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
     XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
@@ -380,7 +380,7 @@
     
     NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
     
-    DSKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+    DSECDSAKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
     UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
     UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
     

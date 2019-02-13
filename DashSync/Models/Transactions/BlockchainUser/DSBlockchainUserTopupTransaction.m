@@ -8,7 +8,7 @@
 #import "DSBlockchainUserTopupTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSBlockchainUserTopupTransactionEntity+CoreDataClass.h"

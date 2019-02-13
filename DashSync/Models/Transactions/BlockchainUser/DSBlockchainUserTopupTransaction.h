@@ -8,7 +8,7 @@
 #import "DSTransaction.h"
 #import "BigIntTypes.h"
 
-@class DSKey,DSChain;
+@class DSECDSAKey,DSChain;
 
 @interface DSBlockchainUserTopupTransaction : DSTransaction
 

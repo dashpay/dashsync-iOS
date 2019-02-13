@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;
 
 - (NSData*)firstUnusedPublicKey;
-- (DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed;
+- (DSECDSAKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed;
 
 @end
 

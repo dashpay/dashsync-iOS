@@ -12,7 +12,7 @@
 #import "DSPeerManager.h"
 #import "DSChain.h"
 #import "DSBlockchainUser.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSDerivationPath.h"
 #import "DSChainsManager.h"
 #import "DSChainManager.h"

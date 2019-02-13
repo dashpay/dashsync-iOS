@@ -9,7 +9,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
 #import "DSChain.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeManager.h"
@@ -151,7 +151,7 @@
     return _masternode;
 }
 
--(void)signWithKey:(DSKey*)key {
+-(void)signWithKey:(DSECDSAKey*)key {
     self.signature = [key sign:self.governanceVoteHash];
 }
 

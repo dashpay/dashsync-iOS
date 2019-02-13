@@ -35,7 +35,7 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define BIP32_HARD 0x80000000
 
-@class DSTransaction,DSKey,DSAccount,DSDerivationPath;
+@class DSTransaction,DSECDSAKey,DSAccount,DSDerivationPath;
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
     DSDerivationPathType_ClearFunds = 1,
@@ -161,7 +161,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 - (NSArray *)publicKeysToIndex:(NSUInteger)index;
 - (NSArray *)addressesToIndex:(NSUInteger)index;
-- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
+- (DSECDSAKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 + (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;

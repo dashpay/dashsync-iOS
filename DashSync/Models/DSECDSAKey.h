@@ -1,5 +1,5 @@
 //
-//  DSKey.h
+//  DSECDSAKey.h
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 5/22/13.
@@ -55,7 +55,7 @@ int DSSecp256k1PointMul(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 
 @class DSChain;
 
-@interface DSKey : NSObject
+@interface DSECDSAKey : NSObject
 
 @property (nullable, nonatomic, readonly) NSData *publicKey;
 @property (nonatomic, readonly) UInt160 hash160;

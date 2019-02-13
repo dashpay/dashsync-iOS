@@ -8,7 +8,7 @@
 #import "DSDerivationPath.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
 #import "DSTransaction.h"

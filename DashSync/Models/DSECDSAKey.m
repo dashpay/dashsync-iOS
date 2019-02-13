@@ -1,5 +1,5 @@
 //
-//  DSKey.m
+//  DSECDSAKey.m
 //  DashSync
 //
 //  Created by Aaron Voisine for BreadWallet on 5/22/13.
@@ -26,7 +26,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSString+Dash.h"
 #import "NSData+Dash.h"
 #import "NSString+Bitcoin.h"
@@ -99,7 +99,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
             secp256k1_ec_pubkey_serialize(_ctx, (unsigned char *)p, &pLen, &pubkey, SECP256K1_EC_COMPRESSED));
 }
 
-@interface DSKey ()
+@interface DSECDSAKey ()
 
 @property (nonatomic, assign) UInt256 seckey;
 @property (nonatomic, strong) NSData *pubkey;
@@ -107,7 +107,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 @end
 
-@implementation DSKey
+@implementation DSECDSAKey
 
 + (instancetype)keyWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain
 {

@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 
 #import "NSString+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSKey+BIP38.h"
 #import "DSChain.h"
 #import "NSData+Bitcoin.h"
@@ -43,13 +43,13 @@
     XCTAssertTrue([@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" isValidDashPrivateKeyOnChain:self.chain],
                   @"[NSString+Base58 isValidDashPrivateKey]");
     
-    DSKey *key = [DSKey keyWithPrivateKey:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" onChain:self.chain];
+    DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" onChain:self.chain];
     
     NSLog(@"privKey:7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62 = %@", [key addressForChain:self.chain]);
     XCTAssertEqualObjects(@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", [key addressForChain:self.chain], @"[DSKey keyWithPrivateKey:]");
     
     // compressed private key
-    key = [DSKey keyWithPrivateKey:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" onChain:self.chain];
+    key = [DSECDSAKey keyWithPrivateKey:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" onChain:self.chain];
     
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", [key addressForChain:self.chain]);
     XCTAssertEqualObjects(@"XbKPGyV1BpzzxNAggx6Q9a6o7GaBWTLhJS", [key addressForChain:self.chain], @"[DSKey keyWithPrivateKey:]");
@@ -65,10 +65,10 @@
 #if ! SKIP_BIP38
 - (void)testKeyWithBIP38Key
 {
-    DSKey *key;
+    DSECDSAKey *key;
 
     //to do compressed/uncompressed BIP38Key tests
-    key = [DSKey keyWithBIP38Key:@"6PfV898iMrVs3d9gJSw5HTYyGhQRR5xRu5ji4GE6H5QdebT2YgK14Lu1E5"
+    key = [DSECDSAKey keyWithBIP38Key:@"6PfV898iMrVs3d9gJSw5HTYyGhQRR5xRu5ji4GE6H5QdebT2YgK14Lu1E5"
                    andPassphrase:@"TestingOneTwoThree"
            onChain:self.chain];
     NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
@@ -79,7 +79,7 @@
                           @"[DSKey BIP38KeyWithPassphrase:]");
 
     // incorrect password test
-    key = [DSKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar" onChain:self.chain];
+    key = [DSECDSAKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar" onChain:self.chain];
     NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
     XCTAssertNil(key, @"[DSKey keyWithBIP38Key:andPassphrase:]");
 }
@@ -91,7 +91,7 @@
 {
     NSData *sig;
     UInt256 md, sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    DSKey *key = [DSKey keyWithSecret:sec compressed:YES];
+    DSECDSAKey *key = [DSECDSAKey keyWithSecret:sec compressed:YES];
 
     md = [@"Everything should be made as simple as possible, but not simpler."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
@@ -102,7 +102,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"Equations are more important to me, because politics is for the present, but an equation is something for "
           "eternity." dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -112,7 +112,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"Not only is the Universe stranger than we think, it is stranger than we can think."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -122,7 +122,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"How wonderful that we have met with a paradox. Now we have some hope of making progress."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -132,7 +132,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"69ec59eaa1f4f2e36b639716b7c30ca86d9a5375c7b38d8918bd9c0ebc80ba64".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"Computer science is no more about computers than astronomy is about telescopes."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -142,7 +142,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"00000000000000000000000000007246174ab1e92e9149c6e446fe194d072637".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"...if you aren't, at any given time, scandalized by code you wrote five or even three years ago, you're not"
           " learning anywhere near enough" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -152,7 +152,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"000000000000000000000000000000000000000000056916d0f9b31dc9b637f3".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"The question of whether computers can think is like the question of whether submarines can swim."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -168,40 +168,40 @@
 {
     NSData *pubkey, *sig;
     UInt256 md, sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    DSKey *key;
+    DSECDSAKey *key;
 
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key compactSign:md];
-    pubkey = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
+    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
 
     XCTAssertEqualObjects(key.publicKey, pubkey);
 
-    key = [DSKey keyWithSecret:sec compressed:NO];
+    key = [DSECDSAKey keyWithSecret:sec compressed:NO];
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key compactSign:md];
-    pubkey = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
+    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
 
     XCTAssertEqualObjects(key.publicKey, pubkey);
 
     pubkey = @"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData;
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3kq9e842BzkMfbPSbhKVwGZgspDSkz4YfqjdBYQPWDzqd77gPgR1zq4XG7KtAL5DZTcfFFs2iph4urNyXeBkXsEYY".base58ToData;
-    key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+    key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
     XCTAssertEqualObjects(key.publicKey, pubkey);
 
     pubkey = @"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData;
     md = [@"i am a test signed string do de dah" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3qECEYmb6x4X22sH98Aer68SdfrLwtqvb5Ncv7EqKmzbxeYYJ1hU9irP6R5PeCctCPYo5KQiWFgoJ3H5MkuX18gHu".base58ToData;
-    key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+    key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
     XCTAssertEqualObjects(key.publicKey, pubkey);
 
     pubkey = @"gpRv1sNA3XURB6QEtGrx6Q18DZ5cSgUSDQKX4yYypxpW".base58ToData;
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3oHQhxq5eW8dnp7DquTCbA5tECoNx7ubyiubw4kiFm7wXJF916SZVykFzb8rB1K6dEu7mLspBWbBEJyYk79jAosVR".base58ToData;
-    key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+    key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
     XCTAssertEqualObjects(key.publicKey, pubkey);
 }

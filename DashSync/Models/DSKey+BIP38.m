@@ -299,7 +299,7 @@ static NSData *point_mul(NSData *point, UInt256 factor)
     return d;
 }
 
-@implementation DSKey (BIP38)
+@implementation DSECDSAKey (BIP38)
 
 // decrypts a BIP38 key using the given passphrase or retuns nil if passphrase is incorrect
 + (instancetype)keyWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain*)chain
@@ -354,7 +354,7 @@ passphrase:(NSString *)passphrase
     NSData *passpoint = [NSData dataWithBytesNoCopy:(uint8_t *)d.bytes + 16 length:33 freeWhenDone:NO];
     UInt256 factorb = seedb.SHA256_2; // factorb = SHA256(SHA256(seedb))
     NSData *pubKey = point_mul(passpoint, factorb), // pubKey = passpoint*factorb
-           *address = [[[DSKey keyWithPublicKey:pubKey] addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
+           *address = [[[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:chain] dataUsingEncoding:NSUTF8StringEncoding];
     uint16_t prefix = CFSwapInt16HostToBig(BIP38_EC_PREFIX);
     uint8_t flag = BIP38_COMPRESSED_FLAG;
     uint32_t addresshash = (address) ? address.SHA256_2.u32[0] : 0;

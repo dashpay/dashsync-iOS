@@ -8,7 +8,7 @@
 #import "DSTransaction.h"
 #import "BigIntTypes.h"
 
-@class DSKey,DSLocalMasternode;
+@class DSECDSAKey,DSLocalMasternode;
 
 @interface DSProviderRegistrationTransaction : DSTransaction
 
@@ -34,7 +34,7 @@
 
 -(void)updateInputsHash;
 
--(void)signPayloadWithKey:(DSKey* _Nonnull)privateKey;
+-(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;
 
 -(BOOL)checkPayloadSignature;
 

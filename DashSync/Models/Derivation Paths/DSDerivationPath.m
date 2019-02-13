@@ -155,7 +155,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     NSData * extendedPrivateKey = [self deserializedExtendedPrivateKey:serializedExtendedPrivateKey onChain:chain];
     NSUInteger indexes[] = {};
     DSDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes length:0 type:fundsType signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_Unknown onChain:chain];
-    derivationPath.extendedPublicKey = [DSKey keyWithSecret:*(UInt256*)extendedPrivateKey.bytes compressed:YES].publicKey;
+    derivationPath.extendedPublicKey = [DSECDSAKey keyWithSecret:*(UInt256*)extendedPrivateKey.bytes compressed:YES].publicKey;
     [derivationPath standaloneSaveExtendedPublicKeyToKeyChain];
     return derivationPath;
 }
@@ -305,14 +305,14 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 - (NSString *)addressAtIndex:(uint32_t)index
 {
     NSData *pubKey = [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-    return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath
 {
     NSData *pubKey = [self generatePublicKeyAtIndexPath:indexPath];
-    return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
 // true if the address is controlled by the wallet
@@ -360,7 +360,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 {
     NSMutableArray * mArray = [NSMutableArray array];
     for (NSData * pubKey in [self publicKeysToIndex:index]) {
-        NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [mArray addObject:addr];
     }
     return [mArray copy];
@@ -491,7 +491,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     
-    [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
+    [mpk appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
     for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
@@ -499,7 +499,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     
     [mpk appendBytes:&chain length:sizeof(chain)];
-    [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
+    [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKey];
     
     return mpk;
 }
@@ -520,11 +520,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
         CKDpriv(&secret, &chain, derivation);
     }
-    [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
+    [mpk appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1]); // account 0H
     
     [mpk appendBytes:&chain length:sizeof(chain)];
-    [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
+    [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKey];
     
     _extendedPublicKey = mpk;
     if (walletUniqueId) {
@@ -554,11 +554,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         CKDpriv(&secret, &chain, derivation);
     }
     
-    [mpk appendBytes:[DSKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
+    [mpk appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1]); // account 0H
     
     [mpk appendBytes:&chain length:sizeof(chain)];
-    [mpk appendData:[DSKey keyWithSecret:secret compressed:YES].publicKey];
+    [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKey];
     
     _extendedPublicKey = mpk;
     if (walletUniqueId) {
@@ -592,7 +592,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return nil;
 }
 
-- (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
+- (DSECDSAKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
 {
     if (! seed || ! indexPath) return nil;
     if (indexPath.length == 0) return nil;
@@ -613,7 +613,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         CKDpriv(&secret, &chain, derivation);
     }
     
-    return [DSKey keyWithSecret:secret compressed:YES];
+    return [DSECDSAKey keyWithSecret:secret compressed:YES];
 }
 
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
@@ -761,7 +761,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
             uint32_t derivation = (uint32_t)[self indexAtPosition:i];
             CKDpriv(&secret, &chain, derivation);
         }
-        uint32_t fingerprint = [DSKey keyWithSecret:secret compressed:YES].hash160.u32[0];
+        uint32_t fingerprint = [DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32[0];
         CKDpriv(&secret, &chain, (uint32_t)[self indexAtPosition:[self length] - 1]); // account 0H
         
         return serialize([self length], fingerprint, self.account.accountNumber | BIP32_HARD, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.chain isMainnet]);

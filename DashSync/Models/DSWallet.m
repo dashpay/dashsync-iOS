@@ -31,7 +31,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSTransactionEntity+CoreDataProperties.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSData+Bitcoin.h"
 #import "DSEnvironment.h"
 #import "DSChainsManager.h"
@@ -359,7 +359,7 @@
         
         HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), derivedKeyData.bytes, derivedKeyData.length);
         
-        NSData * publicKey = [DSKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKey;
+        NSData * publicKey = [DSECDSAKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKey;
         NSMutableData * uniqueIDData = [[NSData dataWithUInt256:chain.genesisHash] mutableCopy];
         [uniqueIDData appendData:publicKey];
         uniqueID = [NSData dataWithUInt256:[uniqueIDData SHA256]].shortHexString; //one way injective function
@@ -594,7 +594,7 @@
     return TRUE;
 }
 
--(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
+-(DSECDSAKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
     DSAccount * account = [self accountForAddress:address];
     if (!account) return nil;
     DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];

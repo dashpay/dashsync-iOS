@@ -26,7 +26,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
 
@@ -1316,7 +1316,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if ([privKey isValidDashBIP38Key]) {
         [[DSAuthenticationManager sharedInstance] requestKeyPasswordForSweepCompletion:completion userInfo:@{AUTH_SWEEP_KEY:privKey,AUTH_SWEEP_FEE:@(fee)} completion:^(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error), NSDictionary *userInfo, NSString *password) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                DSKey *key = [DSKey keyWithBIP38Key:userInfo[AUTH_SWEEP_KEY] andPassphrase:password onChain:self.wallet.chain];
+                DSECDSAKey *key = [DSECDSAKey keyWithBIP38Key:userInfo[AUTH_SWEEP_KEY] andPassphrase:password onChain:self.wallet.chain];
                 
                 if (! key) {
                     [[DSAuthenticationManager sharedInstance] badKeyPasswordForSweepCompletion:^{
@@ -1338,7 +1338,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         return;
     }
     
-    DSKey *key = [DSKey keyWithPrivateKey:privKey onChain:self.wallet.chain];
+    DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:privKey onChain:self.wallet.chain];
     NSString * address = [key addressForChain:self.wallet.chain];
     if (! address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:

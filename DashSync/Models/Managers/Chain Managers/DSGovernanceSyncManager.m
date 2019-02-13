@@ -37,7 +37,7 @@
 #import "NSData+Dash.h"
 #import "DSOptionsManager.h"
 #import "DSSimplifiedMasternodeEntry.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSPeerManager+Protected.h"
 #import "DSChainsManager.h"
 #import "DSAccount.h"
@@ -573,7 +573,7 @@
 //    NSMutableArray * votesToRelay = [NSMutableArray array];
 //    for (DSSimplifiedMasternodeEntry * masternodeEntry in registeredMasternodes) {
 //        NSData * votingKey = [self.chain votingKeyForMasternode:masternodeEntry];
-//        DSKey * key = [DSKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
+//        DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:votingKey.base58String onChain:self.chain];
 //        UInt256 proposalHash = governanceObject.governanceObjectHash;
 //        DSUTXO masternodeUTXO = masternodeEntry.utxo;
 //        NSTimeInterval now = floor([[NSDate date] timeIntervalSince1970]);

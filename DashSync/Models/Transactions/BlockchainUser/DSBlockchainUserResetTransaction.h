@@ -8,7 +8,7 @@
 #import "DSTransaction.h"
 #import "BigIntTypes.h"
 
-@class DSKey;
+@class DSECDSAKey;
 
 @interface DSBlockchainUserResetTransaction : DSTransaction
 
@@ -28,7 +28,7 @@
 
 -(instancetype)initWithBlockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKeyHash:(UInt160)replacementPublicKeyHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain;
 
--(void)signPayloadWithKey:(DSKey* _Nonnull)privateKey;
+-(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;
 
 -(BOOL)checkPayloadSignatureIsSignedByPublicKeyWithHash:(UInt160)oldPublicKeyHash;
 

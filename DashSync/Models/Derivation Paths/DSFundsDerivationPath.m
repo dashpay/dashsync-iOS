@@ -111,7 +111,7 @@
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self generatePublicKeyAtIndex:n internal:internal];
-            NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
             if (! addr) {
                 DSDLog(@"error generating keys");
@@ -147,13 +147,13 @@
     NSMutableArray * addresses = [NSMutableArray array];
     for (NSUInteger i = exportInternalRange.location;i<exportInternalRange.length + exportInternalRange.location;i++) {
         NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:YES];
-        NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
     
     for (NSUInteger i = exportExternalRange.location;i<exportExternalRange.location + exportExternalRange.length;i++) {
         NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:NO];
-        NSString *addr = [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+        NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
     
@@ -164,7 +164,7 @@
 - (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal
 {
     NSData *pubKey = [self generatePublicKeyAtIndex:index internal:internal];
-    return [[DSKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
 // returns the first unused external address

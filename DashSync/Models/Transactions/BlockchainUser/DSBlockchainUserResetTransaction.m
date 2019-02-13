@@ -8,7 +8,7 @@
 #import "DSBlockchainUserResetTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSBlockchainUserResetTransactionEntity+CoreDataClass.h"
@@ -142,11 +142,11 @@
 }
 
 -(BOOL)checkPayloadSignatureIsSignedByPublicKeyWithHash:(UInt160)oldPublicKeyHash {
-    DSKey * blockchainUserPublicKey = [DSKey keyRecoveredFromCompactSig:self.oldPublicKeyPayloadSignature andMessageDigest:[self payloadHash]];
+    DSECDSAKey * blockchainUserPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.oldPublicKeyPayloadSignature andMessageDigest:[self payloadHash]];
     return uint160_eq([blockchainUserPublicKey hash160], oldPublicKeyHash);
 }
 
--(void)signPayloadWithKey:(DSKey*)privateKey {
+-(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
     DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.oldPublicKeyPayloadSignature = [privateKey compactSign:[self payloadHash]];
     self.txHash = self.data.SHA256_2; //once the payload is signed the transaction hash is ready to go.
