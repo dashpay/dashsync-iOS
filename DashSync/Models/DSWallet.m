@@ -760,27 +760,21 @@
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     [keyChainDictionary setObject:@(masternode.votingWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
     setKeychainDict(keyChainDictionary, self.walletMasternodeVotersKey, NO);
-
-- (BOOL)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
-    [DSDerivationPath pro:self];
 }
 
-- (BOOL)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
-    BOOL found = FALSE;
-    for (DSWallet * wallet in self.wallets) {
-        found |= [wallet hasProviderOwningAuthenticationHash:owningAuthenticationHash];
-        if (found) return TRUE;
-    }
-    return FALSE;
+- (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash {
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self];
+    return [derivationPath containsAddress:[[NSData dataWithUInt160:votingAuthenticationHash] addressFromHash160DataForChain:self.chain]];
 }
 
-- (BOOL)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
-    BOOL found = FALSE;
-    for (DSWallet * wallet in self.wallets) {
-        found |= [wallet hasProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey];
-        if (found) return TRUE;
-    }
-    return FALSE;
+- (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash {
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self];
+    return [derivationPath containsAddress:[[NSData dataWithUInt160:owningAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+}
+
+- (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey {
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self];
+    return [derivationPath containsAddress:[[NSData dataWithUInt160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160]] addressFromHash160DataForChain:self.chain]];
 }
 
 @end

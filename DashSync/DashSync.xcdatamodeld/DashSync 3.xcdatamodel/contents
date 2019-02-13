@@ -121,6 +121,15 @@
         <relationship name="governanceObject" maxCount="1" deletionRule="Nullify" destinationEntity="DSGovernanceObjectEntity" inverseName="voteHashes" inverseEntity="DSGovernanceObjectEntity" syncable="YES"/>
         <relationship name="governanceVote" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSGovernanceVoteEntity" inverseName="governanceVoteHash" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
     </entity>
+    <entity name="DSLocalMasternodeEntity" syncable="YES">
+        <attribute name="operatorKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="operatorKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="ownerKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="votingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="providerRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSProviderRegistrationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderRegistrationTransactionEntity" syncable="YES"/>
+    </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="flags" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -165,6 +174,7 @@
         <attribute name="providerType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
         <attribute name="votingKeyHash" attributeType="Binary" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSLocalMasternodeEntity" inverseName="providerRegistrationTransaction" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
@@ -307,6 +317,7 @@
         <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
+        <element name="DSProviderRegistrationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="225"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="60"/>
@@ -317,6 +328,6 @@
         <element name="DSTransactionLockVoteEntity" positionX="-2295" positionY="-54" width="128" height="255"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSProviderRegistrationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="210"/>
+        <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="150"/>
     </elements>
 </model>

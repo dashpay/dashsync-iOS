@@ -285,7 +285,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }];
 }
 
-// MARK: - Derivation Path Addresses
+// MARK: - Derivation Path Public Keys
 
 // gets a public key at an index
 - (NSData*)publicKeyAtIndex:(uint32_t)index
@@ -298,6 +298,8 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 {
     return [self generatePublicKeyAtIndexPath:indexPath];
 }
+
+// MARK: - Derivation Path Addresses
 
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index

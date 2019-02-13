@@ -45,6 +45,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSArray * blockchainUserAddresses;
 
+//This is unique among all wallets and all chains
 @property (nonatomic, readonly) NSString * uniqueID;
 
 @property (nonatomic, readonly) NSString * mnemonicUniqueID;
@@ -181,8 +182,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)registerMasternodeOwner:(DSLocalMasternode * _Nonnull)masternode;
 
 - (void)registerMasternodeVoter:(DSLocalMasternode * _Nonnull)masternode;
-- (BOOL)hasProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
-- (BOOL)hasProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
-- (BOOL)hasProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+- (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
+- (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
+- (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 
 @end

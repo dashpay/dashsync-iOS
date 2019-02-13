@@ -83,6 +83,7 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *localMasternodesDictionaryByRegistrationTransactionHash;
 
 @end
 
@@ -441,6 +442,16 @@ inline static int ceil_log2(int x)
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {
     return [self masternodesForQuorumHash:quorumHash quorumCount:quorumCount forBlockHash:self.baseBlockHash];
+}
+
+// MARK: - Masternode List Sync
+
+- (NSArray*)localMasternodes {
+    if (self.localMasternodesDictionaryByRegistrationTransactionHash) return self.localMasternodesDictionaryByRegistrationTransactionHash;
+    @synchronized(self) {
+        self.localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
+    }
+    return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
 @end

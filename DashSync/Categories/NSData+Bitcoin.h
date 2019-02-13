@@ -143,6 +143,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
                                    const void * nonce12, const void * data, size_t dataLen,
                                    const void * ad, size_t adLen);
 
+@class DSChain;
+
 @interface NSData (Bitcoin)
 
 + (instancetype)dataWithUInt768:(UInt768)n;
@@ -194,7 +196,9 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (NSString *)shortHexString;
 - (NSString *)hexString;
     
-+(NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
++ (NSData * _Nullable)merkleRootFromHashes:(NSArray*)hashes;
+
+- (NSString*)addressFromHash160DataForChain:(DSChain*)chain;
 
 @end
 

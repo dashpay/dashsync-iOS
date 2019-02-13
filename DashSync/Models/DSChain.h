@@ -218,11 +218,15 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
-- (BOOL)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash;
+- (DSWallet*)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash;
 
-- (BOOL)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash;
+- (DSWallet*)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash;
 
-- (BOOL)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey;
+- (DSWallet*)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey;
+
+- (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
+
+- (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 
 @end
 

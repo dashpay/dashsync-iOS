@@ -53,6 +53,7 @@
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
 #import "DSFundsDerivationPath.h"
+#import "DSProviderRegistrationTransaction.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -1690,31 +1691,49 @@ static dispatch_once_t devnetToken = 0;
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
 }
 
+//Does the chain mat
+-(BOOL)transactionHasLocalReferences:(DSTransaction*)transaction {
+    if ([self accountContainingTransaction:transaction]) return TRUE;
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        if ([self hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash]) return TRUE;
+        if ([self hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash]) return TRUE;
+        if ([self hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey]) return TRUE;
+    }
+    return FALSE;
+}
+
+-(void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction {
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        DSWallet * ownerWallet = [self hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash];
+        if (ownerWallet) {
+            [ownerWallet registerMasternodeOwner:[DSLocalMasternode]]
+        }
+        if ([self hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash]) return TRUE;
+        if ([self hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey]) return TRUE;
+    }
+}
+
 // MARK: - Merging Wallets
 
-- (BOOL)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
-    BOOL found = FALSE;
+- (DSWallet*)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
     for (DSWallet * wallet in self.wallets) {
-        found |= [wallet hasProviderVotingAuthenticationHash:votingAuthenticationHash];
-        if (found) return TRUE;
+        if ([wallet hasProviderVotingAuthenticationHash:votingAuthenticationHash]) return wallet;
     }
     return FALSE;
 }
 
-- (BOOL)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
-    BOOL found = FALSE;
+- (DSWallet*)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
     for (DSWallet * wallet in self.wallets) {
-        found |= [wallet hasProviderOwningAuthenticationHash:owningAuthenticationHash];
-        if (found) return TRUE;
+        if ([wallet hasProviderOwningAuthenticationHash:owningAuthenticationHash]) return wallet;
     }
     return FALSE;
 }
 
-- (BOOL)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
-    BOOL found = FALSE;
+- (DSWallet*)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
     for (DSWallet * wallet in self.wallets) {
-        found |= [wallet hasProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey];
-        if (found) return TRUE;
+        if ([wallet hasProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey]) return wallet;
     }
     return FALSE;
 }
