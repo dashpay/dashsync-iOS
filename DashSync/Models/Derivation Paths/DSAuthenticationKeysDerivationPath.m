@@ -6,31 +6,18 @@
 //
 
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSDerivationPathFactory.h"
 
 @implementation DSAuthenticationKeysDerivationPath
 
-+ (instancetype _Nonnull)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 1 | BIP32_HARD};
-    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderVotingKeys onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
++ (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet {
+    return [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet];
 }
-
-+ (instancetype _Nonnull)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 2 | BIP32_HARD};
-    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderOwnerKeys onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
++ (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet {
+     return [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:wallet];
 }
-
-+ (instancetype _Nonnull)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 3 | BIP32_HARD};
-    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
++ (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
+    return [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
 }
 
 -(uint32_t)unusedIndex {

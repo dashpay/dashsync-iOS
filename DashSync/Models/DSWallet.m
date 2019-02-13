@@ -41,6 +41,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "NSDate+Utils.h"
 #import "DSLocalMasternode.h"
+#import "DSAuthenticationKeysDerivationPath.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
