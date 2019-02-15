@@ -28,6 +28,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import "DSKey.h"
 
 typedef struct {
     uint8_t p[33];
@@ -55,10 +56,8 @@ int DSSecp256k1PointMul(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 
 @class DSChain;
 
-@interface DSECDSAKey : NSObject
+@interface DSECDSAKey : DSKey
 
-@property (nullable, nonatomic, readonly) NSData *publicKey;
-@property (nonatomic, readonly) UInt160 hash160;
 @property (nonatomic, readonly, nullable) const UInt256 *secretKey;
 
 + (nullable instancetype)keyWithPrivateKey:(nonnull NSString *)privateKey onChain:(DSChain*)chain;
@@ -75,7 +74,6 @@ int DSSecp256k1PointMul(DSECPoint * _Nonnull p, const UInt256 * _Nonnull i);
 - (BOOL)verify:(UInt256)md signature:(nonnull NSData *)sig;
 
 - (NSString *)privateKeyStringForChain:(DSChain*)chain;
-- (NSString *)addressForChain:(DSChain*)chain;
 // Pieter Wuille's compact signature encoding used for bitcoin message signing
 // to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey
 - (nullable NSData *)compactSign:(UInt256)md;

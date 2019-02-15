@@ -41,7 +41,8 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "NSDate+Utils.h"
 #import "DSLocalMasternode.h"
-#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSAuthenticationKeysDerivationPath+Protected.h"
+#import "DSDerivationPathFactory.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -359,7 +360,7 @@
         
         HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), derivedKeyData.bytes, derivedKeyData.length);
         
-        NSData * publicKey = [DSECDSAKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKey;
+        NSData * publicKey = [DSECDSAKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKeyData;
         NSMutableData * uniqueIDData = [[NSData dataWithUInt256:chain.genesisHash] mutableCopy];
         [uniqueIDData appendData:publicKey];
         uniqueID = [NSData dataWithUInt256:[uniqueIDData SHA256]].shortHexString; //one way injective function
@@ -378,12 +379,24 @@
                     [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:uniqueID];
                 }
             }
+            DSAuthenticationKeysDerivationPath * providerOwnerKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:chain];
+            [providerOwnerKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:uniqueID];
+            DSAuthenticationKeysDerivationPath * providerOperatorKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:chain];
+            [providerOperatorKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:uniqueID];
+            DSAuthenticationKeysDerivationPath * providerVotingKeysDericationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:chain];
+            [providerVotingKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:uniqueID];
         } else {
             for (DSAccount * account in accounts) {
                 for (DSDerivationPath * derivationPath in account.derivationPaths) {
                     [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
                 }
             }
+            DSAuthenticationKeysDerivationPath * providerOwnerKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:chain];
+            [providerOwnerKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
+            DSAuthenticationKeysDerivationPath * providerOperatorKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:chain];
+            [providerOperatorKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
+            DSAuthenticationKeysDerivationPath * providerVotingKeysDericationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:chain];
+            [providerVotingKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
         }
     }
     return uniqueID;

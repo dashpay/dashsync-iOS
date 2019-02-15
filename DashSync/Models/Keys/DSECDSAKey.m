@@ -188,7 +188,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     
     self.pubkey = publicKey;
     self.compressed = (self.pubkey.length == 33) ? YES : NO;
-    return (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKey.bytes, self.publicKey.length)) ? self : nil;
+    return (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKeyData.bytes, self.publicKeyData.length)) ? self : nil;
 }
 
 - (instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md
@@ -234,7 +234,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return [NSString base58checkWithData:d];
 }
 
-- (NSData *)publicKey
+- (NSData *)publicKeyData
 {
     if (self.pubkey.length == 0 && ! uint256_is_zero(_seckey)) {
         NSMutableData *d = [NSMutableData secureDataWithLength:self.compressed ? 33 : 65];
@@ -251,31 +251,9 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return self.pubkey;
 }
 
-- (UInt160)hash160
-{
-    return self.publicKey.hash160;
-}
-
 - (const UInt256 *)secretKey
 {
     return &_seckey;
-}
-
-- (NSString *)addressForChain:(DSChain*)chain
-{
-    NSMutableData *d = [NSMutableData secureDataWithCapacity:160/8 + 1];
-    uint8_t version;
-    UInt160 hash160 = self.hash160;
-
-    if ([chain isMainnet]) {
-        version = DASH_PUBKEY_ADDRESS;
-    } else {
-        version = DASH_PUBKEY_ADDRESS_TEST;
-    }
-    
-    [d appendBytes:&version length:1];
-    [d appendBytes:&hash160 length:sizeof(hash160)];
-    return [NSString base58checkWithData:d];
 }
 
 - (NSData *)sign:(UInt256)md
@@ -304,7 +282,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     secp256k1_ecdsa_signature s;
     BOOL r = NO;
     
-    if (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKey.bytes, self.publicKey.length) &&
+    if (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKeyData.bytes, self.publicKeyData.length) &&
         secp256k1_ecdsa_signature_parse_der(_ctx, &s, sig.bytes, sig.length) &&
         secp256k1_ecdsa_verify(_ctx, &s, md.u8, &pk) == 1) { // success is 1, all other values are fail
         r = YES;

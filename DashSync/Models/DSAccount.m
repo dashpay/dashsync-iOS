@@ -1378,7 +1378,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   }
                                                   
                                                   // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                                                  if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKey.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+                                                  if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
                                                   
                                                   if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:

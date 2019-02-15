@@ -7,12 +7,13 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import "DSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain,DSDerivationPath;
 
-@interface DSBLSKey : NSObject
+@interface DSBLSKey : DSKey
 
 @property (nonatomic,readonly) uint32_t publicKeyFingerprint;
 @property (nonatomic,readonly) UInt256 chainCode;

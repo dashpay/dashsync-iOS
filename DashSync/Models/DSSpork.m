@@ -83,7 +83,7 @@
     DSECDSAKey * messagePublicKey = [DSECDSAKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
     DSECDSAKey * sporkPublicKey = [DSECDSAKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
     
-    return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
+    return [sporkPublicKey.publicKeyData isEqualToData:messagePublicKey.publicKeyData];
 }
     
 -(BOOL)checkSignature:(NSData*)signature {
@@ -102,7 +102,7 @@
     if (self.chain.sporkPublicKey) return self.chain.sporkPublicKey;
     if (self.chain.sporkPrivateKey) {
         DSECDSAKey * sporkPrivateKey = [DSECDSAKey keyWithPrivateKey:self.chain.sporkPrivateKey onChain:self.chain];
-        return sporkPrivateKey.publicKey.hexString;
+        return sporkPrivateKey.publicKeyData.hexString;
     }
     return nil;
 }

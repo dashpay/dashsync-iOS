@@ -541,7 +541,7 @@
         [sig appendScriptPushData:s];
         
         if (elem.count >= 2 && [elem[elem.count - 2] intValue] == OP_EQUALVERIFY) { // pay-to-pubkey-hash scriptSig
-            [sig appendScriptPushData:[keys[keyIdx] publicKey]];
+            [sig appendScriptPushData:[keys[keyIdx] publicKeyData]];
         }
         
         self.signatures[i] = sig;

@@ -6,7 +6,7 @@
 //
 
 #import "DSDerivationPathFactory.h"
-#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSAuthenticationKeysDerivationPath+Protected.h"
 
 @interface DSDerivationPathFactory()
 
@@ -37,10 +37,9 @@
     });
     @synchronized(self) {
         if (![self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-            NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 1 | BIP32_HARD};
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderVotingKeys onChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
+            [derivationPath loadAddresses];
             [self.votingKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
@@ -54,10 +53,9 @@
     });
     @synchronized(self) {
         if (![self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-            NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 2 | BIP32_HARD};
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderOwnerKeys onChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
+            [derivationPath loadAddresses];
             [self.ownerKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
@@ -71,10 +69,9 @@
     });
     @synchronized(self) {
         if (![self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-            NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 3 | BIP32_HARD};
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:wallet.chain];
+            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
+            [derivationPath loadAddresses];
             [self.operatorKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }

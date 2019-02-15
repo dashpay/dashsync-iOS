@@ -178,6 +178,10 @@
     return blsPublicKey.GetFingerprint();
 }
 
+-(NSData*)publicKeyData {
+    return [NSData dataWithUInt384:self.publicKey];
+}
+
 // MARK: - Derivation
 
 -(DSBLSKey*)deriveToPath:(NSIndexPath*)derivationPath {

@@ -26,6 +26,24 @@
     return [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
 }
 
++ (instancetype)providerVotingKeysDerivationPathForChain:(DSChain*)chain {
+    NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 1 | BIP32_HARD};
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderVotingKeys onChain:chain];
+}
+
++ (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain*)chain {
+    NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 2 | BIP32_HARD};
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderOwnerKeys onChain:chain];
+}
+
++ (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain*)chain {
+    NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
+    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 3 | BIP32_HARD, 3 | BIP32_HARD};
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
+}
+
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                            type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
     
@@ -37,31 +55,33 @@
 }
 
 -(void)loadAddresses {
-    if (!self.addressesLoaded) {
-        [self.moc performBlockAndWait:^{
-            [DSAddressEntity setContext:self.moc];
-            [DSTransactionEntity setContext:self.moc];
-            DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
-            self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
-            for (DSAddressEntity *e in derivationPathEntity.addresses) {
-                @autoreleasepool {
-                    NSMutableArray *a = self.mAddresses;
-                    
-                    while (e.index >= a.count) [a addObject:[NSNull null]];
-                    if (![e.address isValidDashAddressOnChain:self.wallet.chain]) {
-                        DSDLog(@"address %@ loaded but was not valid on chain %@",e.address,self.wallet.chain.name);
-                        continue;
-                    }
-                    a[e.index] = e.address;
-                    [self.mAllAddresses addObject:e.address];
-                    if ([e.usedInInputs count] || [e.usedInOutputs count]) {
-                        [self.mUsedAddresses addObject:e.address];
+    @synchronized (self) {
+        if (!self.addressesLoaded) {
+            [self.moc performBlockAndWait:^{
+                [DSAddressEntity setContext:self.moc];
+                [DSTransactionEntity setContext:self.moc];
+                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+                self.syncBlockHeight = derivationPathEntity.syncBlockHeight;
+                for (DSAddressEntity *e in derivationPathEntity.addresses) {
+                    @autoreleasepool {
+                        NSMutableArray *a = self.mAddresses;
+                        
+                        while (e.index >= a.count) [a addObject:[NSNull null]];
+                        if (![e.address isValidDashAddressOnChain:self.wallet.chain]) {
+                            DSDLog(@"address %@ loaded but was not valid on chain %@",e.address,self.wallet.chain.name);
+                            continue;
+                        }
+                        a[e.index] = e.address;
+                        [self.mAllAddresses addObject:e.address];
+                        if ([e.usedInInputs count] || [e.usedInOutputs count]) {
+                            [self.mUsedAddresses addObject:e.address];
+                        }
                     }
                 }
-            }
-        }];
-        self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:10];
+            }];
+            self.addressesLoaded = TRUE;
+            [self registerAddressesWithGapLimit:10];
+        }
     }
 }
 
@@ -101,7 +121,12 @@
         
         while (self.mAddresses.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self generatePublicKeyAtIndex:n];
-            NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSString *addr = nil;
+            if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+                addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+                addr = [[DSBLSKey blsKeyWithPublicKey:pubKey.UInt384 onChain:self.chain] addressForChain:self.chain];
+            }
             
             if (! addr) {
                 DSDLog(@"error generating keys");

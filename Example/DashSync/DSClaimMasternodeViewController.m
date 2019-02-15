@@ -45,7 +45,7 @@
 - (IBAction)save:(id)sender {
     if ([self.inputTextView.text isValidDashPrivateKeyOnChain:self.chain]) {
         DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:self.inputTextView.text onChain:self.chain];
-        UInt160 publicKeyHash = [key.publicKey hash160];
+        UInt160 publicKeyHash = [key hash160];
         if (uint160_eq(publicKeyHash, self.masternode.keyIDVoting)) {
             [self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
             [self.navigationController popViewControllerAnimated:TRUE];
