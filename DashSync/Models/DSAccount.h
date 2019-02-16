@@ -94,6 +94,9 @@
 
 - (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend;
 
+// true if AutoLocks enabled and can be used with provided amount
+- (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount;
+
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 

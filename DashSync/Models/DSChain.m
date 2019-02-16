@@ -1658,8 +1658,7 @@ static dispatch_once_t devnetToken = 0;
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
     if (isInstant) {
-        DSSporkManager * sporkManager = [self chainManager].sporkManager;
-        if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= 4) {
+        if ([self canUseAutoLocksWithInputCount:inputCount]) {
             return standardFee;
         } else {
             return TX_FEE_PER_INPUT*inputCount;
@@ -1682,6 +1681,18 @@ static dispatch_once_t devnetToken = 0;
     uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerByte + MIN_FEE_PER_B - 1)/MIN_FEE_PER_B;
     
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
+}
+
+- (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount
+{
+    const NSInteger AutoLocksMaximumInputCount = 4;
+    DSSporkManager * sporkManager = [self chainManager].sporkManager;
+    if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= AutoLocksMaximumInputCount) {
+        return YES;
+    }
+    else {
+        return NO;
+    }
 }
 
 - (BOOL)isEqual:(id)obj

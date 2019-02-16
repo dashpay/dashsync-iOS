@@ -229,6 +229,11 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
+/**
+ Check if Autolocks DIP is enabled and transaction can be Autolocked with `inputCount` provided
+ */
+- (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount;
+
 @end
 
 @protocol DSChainTransactionsDelegate
