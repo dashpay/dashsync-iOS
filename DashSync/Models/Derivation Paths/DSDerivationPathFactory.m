@@ -7,12 +7,14 @@
 
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath+Protected.h"
+#import "DSMasternodeHoldingsDerivationPath+Protected.h"
 
 @interface DSDerivationPathFactory()
 
 @property(nonatomic,strong) NSMutableDictionary * votingKeysDerivationPathByWallet;
 @property(nonatomic,strong) NSMutableDictionary * ownerKeysDerivationPathByWallet;
 @property(nonatomic,strong) NSMutableDictionary * operatorKeysDerivationPathByWallet;
+@property(nonatomic,strong) NSMutableDictionary * providerFundsDerivationPathByWallet;
 
 @end
 
@@ -76,6 +78,22 @@
         }
     }
     return [self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
+}
+
+- (DSMasternodeHoldingsDerivationPath*)providerFundsDerivationPathForWallet:(DSWallet*)wallet {
+    static dispatch_once_t providerFundsDerivationPathByWalletToken = 0;
+    dispatch_once(&providerFundsDerivationPathByWalletToken, ^{
+        self.providerFundsDerivationPathByWallet = [NSMutableDictionary dictionary];
+    });
+    @synchronized(self) {
+        if (![self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+            DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
+            derivationPath.wallet = wallet;
+            [derivationPath loadAddresses];
+            [self.providerFundsDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+        }
+    }
+    return [self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
 

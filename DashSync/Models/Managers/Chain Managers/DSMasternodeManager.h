@@ -38,6 +38,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
+@property (nonatomic,readonly) NSUInteger localMasternodesCount;
 
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 

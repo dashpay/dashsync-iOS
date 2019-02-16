@@ -36,12 +36,12 @@
     return [self initWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet
                     inVotingWallet:wallet];
 }
--(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)wallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet {
+-(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)fundsWallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet {
     if (!(self = [super init])) return nil;
-    self.operatorKeysWallet = wallet;
-    self.fundsWallet = wallet;
-    self.ownerKeysWallet = wallet;
-    self.votingKeysWallet = wallet;
+    self.operatorKeysWallet = operatorWallet;
+    self.fundsWallet = fundsWallet;
+    self.ownerKeysWallet = ownerWallet;
+    self.votingKeysWallet = votingWallet;
     self.ipAddress = ipAddress;
     self.port = port;
     return self;

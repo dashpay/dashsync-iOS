@@ -116,6 +116,14 @@
                 
             }
         }
+        else if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]] && [((DSProviderRegistrationTransaction*)transaction).masternodeHoldingWallet containsHoldingAddress:address]) {
+            if (self.sent == 0 || self.received + MASTERNODE_COST + fee == self.sent) {
+                [text addObject:address];
+                [detail addObject:NSLocalizedString(@"masternode holding address", nil)];
+                [amount addObject:@(amt)];
+                [currencyIsBitcoinInstead addObject:@FALSE];
+            }
+        }
         else if ([account containsAddress:address]) {
             if (self.sent == 0 || self.received == self.sent) {
                 [text addObject:address];
@@ -576,7 +584,7 @@
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"owner key wallet:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.ownerKeysWallet?[NSString stringWithFormat:@"%@:%d",localMasternode.ownerKeysWallet.uniqueID,localMasternode.ownerWalletIndex]:@"Not Owner";
+                        cell.statusLabel.text = localMasternode.ownerKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.ownerKeysWallet.uniqueID,localMasternode.ownerWalletIndex]:@"Not Owner";
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
@@ -601,7 +609,7 @@
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"operator key wallet:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.operatorKeysWallet?[NSString stringWithFormat:@"%@:%d",localMasternode.operatorKeysWallet.uniqueID,localMasternode.operatorWalletIndex]:@"Not Operator";
+                        cell.statusLabel.text = localMasternode.operatorKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.operatorKeysWallet.uniqueID,localMasternode.operatorWalletIndex]:@"Not Operator";
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
@@ -626,7 +634,7 @@
                         cell.selectionStyle = UITableViewCellSelectionStyleNone;
                         cell.titleLabel.text = NSLocalizedString(@"voting key wallet:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
-                        cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%@:%d",localMasternode.votingKeysWallet.uniqueID,localMasternode.votingWalletIndex]:@"Not Voter";
+                        cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.votingKeysWallet.uniqueID,localMasternode.votingWalletIndex]:@"Not Voter";
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;

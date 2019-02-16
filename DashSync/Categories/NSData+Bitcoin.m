@@ -1368,6 +1368,7 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     }
     [d appendBytes:&v length:1];
     [d appendData:self];
+    [d appendBytes:d.SHA256_2.u32 length:4];
     return [d base58String];
 }
 

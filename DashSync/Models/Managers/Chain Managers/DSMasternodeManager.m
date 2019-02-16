@@ -451,9 +451,9 @@ inline static int ceil_log2(int x)
 }
 
 -(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
-    DSWallet * ownerWallet = [self.chain hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash];
-    DSWallet * votingWallet = [self.chain hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash];
-    DSWallet * operatorWallet = [self.chain hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey];
+    DSWallet * ownerWallet = [self.chain walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash];
+    DSWallet * votingWallet = [self.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash];
+    DSWallet * operatorWallet = [self.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey];
     //First check to see if we have a local masternode for this provider registration hash
     
     //We do
@@ -463,6 +463,10 @@ inline static int ceil_log2(int x)
     return [self createNewMasternodeWithIPAddress:providerRegistrationTransaction.ipAddress onPort:providerRegistrationTransaction.port inFundsWallet:nil inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
     
     
+}
+
+-(NSUInteger)localMasternodesCount {
+    return [self.localMasternodesDictionaryByRegistrationTransactionHash count];
 }
 
 - (NSArray*)localMasternodes {

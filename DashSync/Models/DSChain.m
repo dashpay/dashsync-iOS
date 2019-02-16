@@ -1696,9 +1696,9 @@ static dispatch_once_t devnetToken = 0;
     if ([self accountContainingTransaction:transaction]) return TRUE;
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-        if ([self hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash]) return TRUE;
-        if ([self hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash]) return TRUE;
-        if ([self hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey]) return TRUE;
+        if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash]) return TRUE;
+        if ([self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash]) return TRUE;
+        if ([self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey]) return TRUE;
     }
     return FALSE;
 }
@@ -1706,7 +1706,7 @@ static dispatch_once_t devnetToken = 0;
 -(void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-        if ([self hasProviderOwningAuthenticationHashInWallets:providerRegistrationTransaction.ownerKeyHash] || [self hasProviderVotingAuthenticationHashInWallets:providerRegistrationTransaction.votingKeyHash] || [self hasProviderOperatorAuthenticationKeyInWallets:providerRegistrationTransaction.operatorKey]) {
+        if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash] || [self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash] || [self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey]) {
             [self.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
         }
         
@@ -1715,25 +1715,34 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Merging Wallets
 
-- (DSWallet*)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash {
+- (DSWallet*)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash {
     for (DSWallet * wallet in self.wallets) {
         if ([wallet containsProviderVotingAuthenticationHash:votingAuthenticationHash]) return wallet;
     }
-    return FALSE;
+    return nil;
 }
 
-- (DSWallet*)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash {
+- (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash {
     for (DSWallet * wallet in self.wallets) {
         if ([wallet containsProviderOwningAuthenticationHash:owningAuthenticationHash]) return wallet;
     }
-    return FALSE;
+    return nil;
 }
 
-- (DSWallet*)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey {
+- (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey {
     for (DSWallet * wallet in self.wallets) {
         if ([wallet containsProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey]) return wallet;
     }
-    return FALSE;
+    return nil;
+}
+
+- (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction {
+    for (DSWallet * wallet in self.wallets) {
+        for (NSString * outputAddresses in transaction.outputAddresses) {
+            if ([wallet containsHoldingAddress:outputAddresses]) return wallet;
+        }
+    }
+    return nil;
 }
 
 @end

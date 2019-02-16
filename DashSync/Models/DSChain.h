@@ -82,7 +82,7 @@ FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotificatio
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction;
 
 @protocol DSChainDelegate;
 
@@ -218,11 +218,13 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
-- (DSWallet*)hasProviderVotingAuthenticationHashInWallets:(UInt160)votingAuthenticationHash;
+- (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 
-- (DSWallet*)hasProviderOwningAuthenticationHashInWallets:(UInt160)owningAuthenticationHash;
+- (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash;
 
-- (DSWallet*)hasProviderOperatorAuthenticationKeyInWallets:(UInt384)providerOperatorAuthenticationKey;
+- (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+
+- (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction;
 
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 

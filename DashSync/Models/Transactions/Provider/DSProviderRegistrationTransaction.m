@@ -240,4 +240,9 @@
     return [self.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:self];
 }
 
+-(DSWallet*)masternodeHoldingWallet {
+    return [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:self];
+}
+
+
 @end

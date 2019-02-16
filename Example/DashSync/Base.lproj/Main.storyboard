@@ -449,8 +449,8 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Broadcasts" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I9a-nb-Kn7">
-                                                    <rect key="frame" x="16" y="46" width="86" height="25"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Local" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I9a-nb-Kn7">
+                                                    <rect key="frame" x="15.999999999999996" y="46" width="40.666666666666657" height="25"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="25" id="SRG-aA-3Sa"/>
                                                     </constraints>
@@ -458,8 +458,8 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Verified" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vGM-xf-9BC">
-                                                    <rect key="frame" x="15.999999999999996" y="81" width="58.666666666666657" height="25"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last updated" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vGM-xf-9BC">
+                                                    <rect key="frame" x="16.000000000000007" y="81" width="100.66666666666669" height="25"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="25" id="W4s-BK-4bn"/>
                                                     </constraints>
@@ -694,8 +694,9 @@
                         <outlet property="dbSizeLabel" destination="enN-S4-Ij7" id="W5f-i8-SqM"/>
                         <outlet property="downloadPeerLabel" destination="N9S-QL-BR4" id="0dc-qZ-oAO"/>
                         <outlet property="lastBlockHeightLabel" destination="0QU-HA-eSB" id="qz8-U2-Xom"/>
-                        <outlet property="masternodeBroadcastsCountLabel" destination="KF5-XA-d8i" id="2ve-4O-WLH"/>
+                        <outlet property="localMasternodesCountLabel" destination="KF5-XA-d8i" id="XVA-dh-2Pb"/>
                         <outlet property="masternodeCountLabel" destination="QkP-lI-ShA" id="abx-Gs-a9x"/>
+                        <outlet property="masternodeListUpdatedLabel" destination="e4a-eI-Ssw" id="bjQ-rQ-50J"/>
                         <outlet property="peerCountLabel" destination="V2o-cq-31B" id="RwI-Af-uoB"/>
                         <outlet property="progressView" destination="BjK-YS-joe" id="lgb-rW-P4u"/>
                         <outlet property="pulseView" destination="bv4-vl-znP" id="N75-S4-dyo"/>
@@ -706,7 +707,6 @@
                         <outlet property="standaloneAddressesCountLabel" destination="4KO-sd-KS3" id="PwU-cD-ufq"/>
                         <outlet property="standaloneDerivationPathsCountLabel" destination="0XI-BL-obI" id="uWC-Y0-VEQ"/>
                         <outlet property="transactionCountBalanceLabel" destination="CVg-04-xDI" id="30P-TI-8Ql"/>
-                        <outlet property="verifiedMasternodeCountLabel" destination="e4a-eI-Ssw" id="w7F-Ur-tfJ"/>
                         <outlet property="walletCountLabel" destination="cvp-Aq-uVZ" id="gbg-mM-b8W"/>
                     </connections>
                 </tableViewController>
