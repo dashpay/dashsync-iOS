@@ -75,8 +75,9 @@
     
     // Edit the sort key as appropriate.
     NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"claimed" ascending:NO];
-    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
-    NSArray *sortDescriptors = @[claimSortDescriptor,heightSortDescriptor];
+    NSSortDescriptor *addressSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
+    NSSortDescriptor *portSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"port" ascending:YES];
+    NSArray *sortDescriptors = @[claimSortDescriptor,addressSortDescriptor,portSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
@@ -156,12 +157,11 @@
 
 
 -(void)configureCell:(DSMasternodeTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-        DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        char s[INET6_ADDRSTRLEN];
-        uint32_t ipAddress = simplifiedMasternodeEntryEntity.address;
-        cell.ipAddressLabel.text = [NSString stringWithFormat:@"%s",inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
-        //cell.protocolLabel.text = [NSString stringWithFormat:@"%u",masternodeBroadcastEntity.protocolVersion];
-        cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
+    DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    char s[INET6_ADDRSTRLEN];
+    uint32_t ipAddress = simplifiedMasternodeEntryEntity.address;
+    cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port];
+    cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {

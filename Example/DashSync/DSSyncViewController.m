@@ -499,8 +499,6 @@
         DSActionsViewController * actionsViewController = (DSActionsViewController*)segue.destinationViewController;
         actionsViewController.chainManager = self.chainManager;
     }
-    
-    
 }
 
 

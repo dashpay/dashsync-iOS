@@ -318,6 +318,7 @@ static checkpoint mainnet_checkpoint_array[] = {
             DSChainEntity * chainEntity = [_mainnet chainEntity];
             _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
     }
     
@@ -337,6 +338,7 @@ static checkpoint mainnet_checkpoint_array[] = {
             DSChainEntity * chainEntity = [_testnet chainEntity];
             _testnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
     }
     
@@ -359,14 +361,25 @@ static dispatch_once_t devnetToken = 0;
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
     DSChain * devnetChain = nil;
+    __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
             devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
+            inSetUp = TRUE;
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];
         }
     }
+    if (inSetUp) {
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [devnetChain chainEntity];
+            devnetChain.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+        }];
+    }
+    
     return devnetChain;
 }
 
@@ -384,6 +397,7 @@ static dispatch_once_t devnetToken = 0;
     [[DSChainEntity context] performBlockAndWait:^{
         self.chainEntity.totalMasternodeCount = self.totalMasternodeCount;
         self.chainEntity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        self.chainEntity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
         [DSChainEntity saveContext];
     }];
 }
