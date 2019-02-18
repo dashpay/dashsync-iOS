@@ -785,7 +785,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         tx = self.allTx[uint256_obj(o.hash)];
         if (! tx) continue;
         //for example the tx block height is 25, can only send after the chain block height is 31 for previous confirmations needed of 6
-        if (isInstant && (tx.blockHeight >= (self.blockHeight - IX_PREVIOUS_CONFIRMATIONS_NEEDED))) continue;
+        if (isInstant && (tx.blockHeight >= (self.blockHeight - self.wallet.chain.ixPreviousConfirmationsNeeded))) continue;
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         
         if (transaction.size + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
@@ -1294,7 +1294,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount
 {
-    const uint64_t confirmationCount = IX_PREVIOUS_CONFIRMATIONS_NEEDED;
+    const uint64_t confirmationCount = self.wallet.chain.ixPreviousConfirmationsNeeded;
     
     DSUTXO o;
     DSTransaction *tx;
