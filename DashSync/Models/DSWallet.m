@@ -50,13 +50,14 @@
 #define VERIFIED_WALLET_CREATION_TIME_KEY @"VERIFIED_WALLET_CREATION_TIME"
 #define REFERENCE_DATE_2001 978307200
 
-@interface DSWallet()
+@interface DSWallet() {
+    NSTimeInterval _lGuessedWalletCreationTime;
+}
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSMutableDictionary * mAccounts;
 @property (nonatomic, copy) NSString * uniqueID;
 @property (nonatomic, assign) NSTimeInterval walletCreationTime;
-@property (nonatomic, assign) NSTimeInterval lGuessedWalletCreationTime;
 @property (nonatomic, assign) BOOL checkedWalletCreationTime;
 @property (nonatomic, assign) BOOL checkedGuessedWalletCreationTime;
 @property (nonatomic, assign) BOOL checkedVerifyWalletCreationTime;
