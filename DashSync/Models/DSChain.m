@@ -185,23 +185,38 @@ static checkpoint mainnet_checkpoint_array[] = {
     return self;
 }
 
-- (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort ixPreviousConfirmationsNeeded:(uint64_t)ixPreviousConfirmationsNeeded
+- (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints
 {
     if (! (self = [self init])) return nil;
     _chainType = type;
+    switch (type) {
+        case DSChainType_MainNet: {
+            self.standardPort = MAINNET_STANDARD_PORT;
+            self.standardDapiPort = MAINNET_DAPI_STANDARD_PORT;
+            self.ixPreviousConfirmationsNeeded = MAINNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
+            break;
+        }
+        case DSChainType_TestNet: {
+            self.standardDapiPort = TESTNET_STANDARD_PORT;
+            self.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
+            self.ixPreviousConfirmationsNeeded = TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
+            break;
+        }
+        case DSChainType_DevNet: {
+            NSAssert(NO, @"DevNet should be configured with initAsDevnetWithIdentifier:checkpoints:port:dapiPort:ixPreviousConfirmationsNeeded:");
+            break;
+        }
+    }
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
-    self.standardPort = port;
-    self.standardDapiPort = dapiPort;
     self.mainThreadChainEntity = [self chainEntity];
-    self.ixPreviousConfirmationsNeeded = ixPreviousConfirmationsNeeded;
     [self retrieveWallets];
     [self retrieveStandaloneDerivationPaths];
     return self;
 }
 
 
--(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort ixPreviousConfirmationsNeeded:(uint64_t)ixPreviousConfirmationsNeeded
 {
     //for devnet the genesis checkpoint is really the second block
     if (! (self = [self init])) return nil;
@@ -219,6 +234,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.standardPort = port;
     self.standardDapiPort = dapiPort;
+    self.ixPreviousConfirmationsNeeded = ixPreviousConfirmationsNeeded;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
     [self retrieveWallets];
@@ -311,7 +327,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     static dispatch_once_t mainnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
-        _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT dapiPort:MAINNET_DAPI_STANDARD_PORT ixPreviousConfirmationsNeeded:MAINNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED];
+        _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))]];
         
         inSetUp = TRUE;
         //DSDLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
@@ -332,7 +348,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     static dispatch_once_t testnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&testnetToken, ^{
-        _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT dapiPort:TESTNET_DAPI_STANDARD_PORT ixPreviousConfirmationsNeeded:TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED];
+        _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))]];
         inSetUp = TRUE;
     });
     if (inSetUp) {
@@ -364,7 +380,7 @@ static dispatch_once_t devnetToken = 0;
     DSChain * devnetChain = nil;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort ixPreviousConfirmationsNeeded:TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];
