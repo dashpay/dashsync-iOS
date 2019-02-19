@@ -18,9 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *operatorKeysWalletUniqueId;
 @property (nullable, nonatomic, copy) NSString *ownerKeysWalletUniqueId;
 @property (nullable, nonatomic, copy) NSString *votingKeysWalletUniqueId;
-@property (nullable, nonatomic, copy) NSNumber *operatorKeysIndex;
-@property (nullable, nonatomic, copy) NSNumber *ownerKeysIndex;
-@property (nullable, nonatomic, copy) NSNumber *votingKeysIndex;
+@property (nullable, nonatomic, copy) NSString *holdingKeysWalletUniqueId;
+@property (assign, nonatomic) uint32_t operatorKeysIndex;
+@property (assign, nonatomic) uint32_t ownerKeysIndex;
+@property (assign, nonatomic) uint32_t votingKeysIndex;
+@property (assign, nonatomic) uint32_t holdingKeysIndex;
 @property (nullable, nonatomic, retain) DSProviderRegistrationTransactionEntity *providerRegistrationTransaction;
 
 @end

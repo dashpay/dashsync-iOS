@@ -21,5 +21,7 @@
 @dynamic ownerKeysIndex;
 @dynamic votingKeysIndex;
 @dynamic providerRegistrationTransaction;
+@dynamic holdingKeysIndex;
+@dynamic holdingKeysWalletUniqueId;
 
 @end

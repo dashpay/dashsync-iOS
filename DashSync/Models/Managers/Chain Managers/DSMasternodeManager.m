@@ -25,6 +25,7 @@
 
 #import "DSMasternodeManager.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
+#import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
@@ -39,6 +40,7 @@
 #import "DSPeerManager+Protected.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSLocalMasternode+Protected.h"
+#import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSProviderRegistrationTransaction.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
@@ -85,7 +87,7 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
-@property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *localMasternodesDictionaryByRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 
 @end
 
@@ -99,6 +101,7 @@ inline static int ceil_log2(int x)
     self.managedObjectContext = [NSManagedObject context];
     self.baseBlockHash = chain.masternodeBaseBlockHash;
     [self loadSimplifiedMasternodeEntries:NSUIntegerMax];
+    [self loadLocalMasternodes];
     DSDLog(@"Setting base block hash to %@",[NSData dataWithUInt256:self.baseBlockHash].hexString);
     return self;
 }
@@ -127,6 +130,15 @@ inline static int ceil_log2(int x)
     NSArray * simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity fetchObjects:fetchRequest];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in simplifiedMasternodeEntryEntities) {
         [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.reverse];
+    }
+}
+
+-(void)loadLocalMasternodes {
+    NSFetchRequest * fetchRequest = [[DSLocalMasternodeEntity fetchRequest] copy];
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"providerRegistrationTransaction.transactionHash.chain == %@",self.chain.chainEntity]];
+    NSArray * localMasternodeEntities = [DSLocalMasternodeEntity fetchObjects:fetchRequest];
+    for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
+        [localMasternodeEntity loadLocalMasternode]; // lazy loaded into the list
     }
 }
 
@@ -456,18 +468,28 @@ inline static int ceil_log2(int x)
 }
 
 -(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
-    DSWallet * ownerWallet = [self.chain walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash];
-    DSWallet * votingWallet = [self.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash];
-    DSWallet * operatorWallet = [self.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey];
+
     //First check to see if we have a local masternode for this provider registration hash
     
-    //We do
-    //Update keys
-    
-    //We don't
-    return [self createNewMasternodeWithIPAddress:providerRegistrationTransaction.ipAddress onPort:providerRegistrationTransaction.port inFundsWallet:nil inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
-    
-    
+    @synchronized (self) {
+        DSLocalMasternode * localMasternode = self.localMasternodesDictionaryByRegistrationTransactionHash[uint256_data(providerRegistrationTransaction.txHash)];
+        
+        if (localMasternode) {
+            //We do
+            //todo Update keys
+            return localMasternode;
+        }
+        DSWallet * ownerWallet = [self.chain walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash];
+        DSWallet * votingWallet = [self.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash];
+        DSWallet * operatorWallet = [self.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey];
+        DSWallet * holdingWallet = [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction];
+        //We don't
+        localMasternode = [self createNewMasternodeWithIPAddress:providerRegistrationTransaction.ipAddress onPort:providerRegistrationTransaction.port inFundsWallet:holdingWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
+        
+        [self.localMasternodesDictionaryByRegistrationTransactionHash setObject:localMasternode forKey:uint256_data(providerRegistrationTransaction.txHash)];
+        [localMasternode save];
+        return localMasternode;
+    }
 }
 
 -(NSUInteger)localMasternodesCount {

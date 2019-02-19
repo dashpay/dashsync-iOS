@@ -9,11 +9,15 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSProviderRegistrationTransactionEntity;
+@class DSProviderRegistrationTransactionEntity,DSLocalMasternode;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSLocalMasternodeEntity : NSManagedObject
+
+- (DSLocalMasternode* _Nullable)loadLocalMasternode;
+
+-(void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode;
 
 @end
 

@@ -24,9 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) uint32_t ownerWalletIndex;
 @property(nonatomic,readonly) DSWallet * votingKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t votingWalletIndex;
+@property(nonatomic,readonly) DSWallet * holdingKeysWallet; //only if this is contained in the wallet.
+@property(nonatomic,readonly) uint32_t holdingWalletIndex;
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 
 -(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
+
+-(void)save;
 
 @end
 

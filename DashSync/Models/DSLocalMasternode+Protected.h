@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)wallet fundsWalletIndex:(NSUInteger)fundsWalletIndex inOperatorWallet:(DSWallet*)operatorWallet operatorWalletIndex:(NSUInteger)operatorWalletIndex inOwnerWallet:(DSWallet*)ownerWallet ownerWalletIndex:(NSUInteger)ownerWalletIndex inVotingWallet:(DSWallet*)votingWallet votingWalletIndex:(NSUInteger)votingWalletIndex;
 
+-(instancetype)initWithProviderTransactionRegistration:(DSProviderRegistrationTransaction*)providerRegistrationTransaction;
+
 @end
 
 NS_ASSUME_NONNULL_END

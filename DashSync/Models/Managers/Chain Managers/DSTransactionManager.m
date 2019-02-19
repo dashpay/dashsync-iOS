@@ -735,10 +735,12 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
     if (!account) {
         if (![self.chain transactionHasLocalReferences:transaction]) return;
-        [self.chain triggerUpdatesForLocalReferences:transaction];
     } else {
         if (![account registerTransaction:transaction]) return;
     }
+    
+    [self.chain triggerUpdatesForLocalReferences:transaction];
+    
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
     

@@ -13,8 +13,12 @@
 #import "DSMasternodeManager.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSLocalMasternodeEntity+CoreDataProperties.h"
+#import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
 #include <arpa/inet.h>
 
 @interface DSLocalMasternode()
@@ -44,6 +48,21 @@
     self.votingKeysWallet = votingWallet;
     self.ipAddress = ipAddress;
     self.port = port;
+    return self;
+}
+
+-(instancetype)initWithProviderTransactionRegistration:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+    if (!(self = [super init])) return nil;
+    DSWallet * ownerWallet = [providerRegistrationTransaction.chain walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash];
+    DSWallet * votingWallet = [providerRegistrationTransaction.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash];
+    DSWallet * operatorWallet = [providerRegistrationTransaction.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey];
+    DSWallet * holdingWallet = [providerRegistrationTransaction.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction];
+    self.operatorKeysWallet = operatorWallet;
+    self.fundsWallet = holdingWallet;
+    self.ownerKeysWallet = ownerWallet;
+    self.votingKeysWallet = votingWallet;
+    self.ipAddress = providerRegistrationTransaction.ipAddress;
+    self.port = providerRegistrationTransaction.port;
     return self;
 }
 
@@ -98,6 +117,28 @@
         //there is no need to sign the payload here.
         
         completion(providerRegistrationTransaction);
+    }];
+}
+
+// MARK: - Persistence
+
+-(void)save {
+    NSManagedObjectContext * context = [DSTransactionEntity context];
+    [context performBlockAndWait:^{ // add the transaction to core data
+        [DSChainEntity setContext:context];
+        [DSLocalMasternodeEntity setContext:context];
+        [DSProviderRegistrationTransactionEntity setContext:context];
+        if ([DSLocalMasternodeEntity
+             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
+            
+            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+            [localMasternode setAttributesFromLocalMasternode:self];
+            [DSLocalMasternodeEntity saveContext];
+        } else {
+            DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+            [transactionEntity setAttributesFromTransaction:self];
+            [transactionEntityClass saveContext];
+        }
     }];
 }
 
