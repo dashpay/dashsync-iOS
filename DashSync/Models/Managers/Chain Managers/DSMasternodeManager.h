@@ -45,6 +45,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(instancetype)initWithChain:(DSChain*)chain;
 
+-(void)setUp;
+
 //-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;

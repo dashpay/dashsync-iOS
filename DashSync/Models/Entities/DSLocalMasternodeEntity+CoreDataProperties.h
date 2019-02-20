@@ -2,7 +2,7 @@
 //  DSLocalMasternodeEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 2/14/19.
+//  Created by Sam Westrich on 2/20/19.
 //
 //
 
@@ -10,6 +10,8 @@
 
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class DSAddressEntity;
 
 @interface DSLocalMasternodeEntity (CoreDataProperties)
 
@@ -23,7 +25,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) uint32_t ownerKeysIndex;
 @property (assign, nonatomic) uint32_t votingKeysIndex;
 @property (assign, nonatomic) uint32_t holdingKeysIndex;
+@property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSProviderRegistrationTransactionEntity *providerRegistrationTransaction;
+
+@end
+
+@interface DSLocalMasternodeEntity (CoreDataGeneratedAccessors)
+
+- (void)addAddressesObject:(DSAddressEntity *)value;
+- (void)removeAddressesObject:(DSAddressEntity *)value;
+- (void)addAddresses:(NSSet<DSAddressEntity *> *)values;
+- (void)removeAddresses:(NSSet<DSAddressEntity *> *)values;
 
 @end
 

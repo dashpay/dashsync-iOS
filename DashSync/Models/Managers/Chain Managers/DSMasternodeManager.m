@@ -98,12 +98,16 @@ inline static int ceil_log2(int x)
     if (! (self = [super init])) return nil;
     _chain = chain;
     _simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [NSMutableDictionary dictionary];
+    _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     self.baseBlockHash = chain.masternodeBaseBlockHash;
-    [self loadSimplifiedMasternodeEntries:NSUIntegerMax];
-    [self loadLocalMasternodes];
     DSDLog(@"Setting base block hash to %@",[NSData dataWithUInt256:self.baseBlockHash].hexString);
     return self;
+}
+
+-(void)setUp {
+    [self loadSimplifiedMasternodeEntries:NSUIntegerMax];
+    [self loadLocalMasternodes];
 }
 
 -(DSPeerManager*)peerManager {
@@ -130,15 +134,6 @@ inline static int ceil_log2(int x)
     NSArray * simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity fetchObjects:fetchRequest];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in simplifiedMasternodeEntryEntities) {
         [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.reverse];
-    }
-}
-
--(void)loadLocalMasternodes {
-    NSFetchRequest * fetchRequest = [[DSLocalMasternodeEntity fetchRequest] copy];
-    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"providerRegistrationTransaction.transactionHash.chain == %@",self.chain.chainEntity]];
-    NSArray * localMasternodeEntities = [DSLocalMasternodeEntity fetchObjects:fetchRequest];
-    for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
-        [localMasternodeEntity loadLocalMasternode]; // lazy loaded into the list
     }
 }
 
@@ -456,7 +451,16 @@ inline static int ceil_log2(int x)
     return [self masternodesForQuorumHash:quorumHash quorumCount:quorumCount forBlockHash:self.baseBlockHash];
 }
 
-// MARK: - Masternode List Sync
+// MARK: - Local Masternodes
+
+-(void)loadLocalMasternodes {
+    NSFetchRequest * fetchRequest = [[DSLocalMasternodeEntity fetchRequest] copy];
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"providerRegistrationTransaction.transactionHash.chain == %@",self.chain.chainEntity]];
+    NSArray * localMasternodeEntities = [DSLocalMasternodeEntity fetchObjects:fetchRequest];
+    for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
+        [localMasternodeEntity loadLocalMasternode]; // lazy loaded into the list
+    }
+}
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet {
     return [self createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
@@ -479,12 +483,8 @@ inline static int ceil_log2(int x)
             //todo Update keys
             return localMasternode;
         }
-        DSWallet * ownerWallet = [self.chain walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash];
-        DSWallet * votingWallet = [self.chain walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash];
-        DSWallet * operatorWallet = [self.chain walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey];
-        DSWallet * holdingWallet = [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction];
         //We don't
-        localMasternode = [self createNewMasternodeWithIPAddress:providerRegistrationTransaction.ipAddress onPort:providerRegistrationTransaction.port inFundsWallet:holdingWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
+        localMasternode = [[DSLocalMasternode alloc] initWithProviderTransactionRegistration:providerRegistrationTransaction];
         
         [self.localMasternodesDictionaryByRegistrationTransactionHash setObject:localMasternode forKey:uint256_data(providerRegistrationTransaction.txHash)];
         [localMasternode save];

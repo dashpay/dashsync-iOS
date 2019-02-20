@@ -65,7 +65,8 @@ static checkpoint testnet_checkpoint_array[] = {
     {        4002, "00000534b6b0a7ba8746a412384c9c9bbd492e03e2babd2878f0723981f03978", 1544736464, 0x1e0fffffu },
     {        8000, "0000001618273379c4d96403954480bdf5c522d734f457716db1295d7a3646e0", 1545231876, 0x1d1c3ba6u },
     {       15000, "00000000172f1946aad9183732d65aaa117d47c2e86c698940bd942dc7ffccc5", 1546203631, 0x1c19907eu },
-    {       19500, "000000000735c41ba5948fbe6c791d5e28b02e3eff5ea4ac7fecf6d07c488edf", 1546803426, 0x1c0daf28u } //important for testInstantSendReceiveTransaction
+    {       19500, "000000000735c41ba5948fbe6c791d5e28b02e3eff5ea4ac7fecf6d07c488edf", 1546803426, 0x1c0daf28u }, //important for testInstantSendReceiveTransaction
+    {       28000, "000000000204f318ee830af7416def9e45cef5507401fcc27a9627cbc28bb689", 1547961658, 0x1c0cd81bu }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -301,6 +302,11 @@ static checkpoint mainnet_checkpoint_array[] = {
         chainEntity = [DSChainEntity chainEntityForType:self.chainType devnetIdentifier:self.devnetIdentifier checkpoints:self.checkpoints];
     }];
     return chainEntity;
+}
+
+-(DSChainManager*)chainManager {
+    if (_chainManager) return _chainManager;
+    return [[DSChainsManager sharedInstance] chainManagerForChain:self];
 }
 
 +(DSChain*)mainnet {

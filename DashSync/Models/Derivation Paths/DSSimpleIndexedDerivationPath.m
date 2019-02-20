@@ -59,7 +59,7 @@
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
 {
     
-    NSMutableArray * rArray = [self.mOrderedAddresses copy];
+    NSMutableArray * rArray = [self.mOrderedAddresses mutableCopy];
     
     if (!self.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");

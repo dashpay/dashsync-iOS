@@ -2,7 +2,7 @@
 //  DSLocalMasternodeEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 2/14/19.
+//  Created by Sam Westrich on 2/20/19.
 //
 //
 
@@ -14,14 +14,15 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSLocalMasternodeEntity"];
 }
 
-@dynamic operatorKeysWalletUniqueId;
-@dynamic ownerKeysWalletUniqueId;
-@dynamic votingKeysWalletUniqueId;
 @dynamic operatorKeysIndex;
+@dynamic operatorKeysWalletUniqueId;
 @dynamic ownerKeysIndex;
+@dynamic ownerKeysWalletUniqueId;
 @dynamic votingKeysIndex;
-@dynamic providerRegistrationTransaction;
+@dynamic votingKeysWalletUniqueId;
 @dynamic holdingKeysIndex;
 @dynamic holdingKeysWalletUniqueId;
+@dynamic addresses;
+@dynamic providerRegistrationTransaction;
 
 @end

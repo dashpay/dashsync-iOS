@@ -2,7 +2,7 @@
 //  DSLocalMasternodeEntity+CoreDataClass.h
 //  DashSync
 //
-//  Created by Sam Westrich on 2/14/19.
+//  Created by Sam Westrich on 2/20/19.
 //
 //
 
@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSLocalMasternode* _Nullable)loadLocalMasternode;
 
--(void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode;
+- (void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode;
 
 @end
 

@@ -34,6 +34,7 @@
 @property(nonatomic,assign) uint32_t votingWalletIndex;
 @property(nonatomic,assign) uint32_t holdingWalletIndex;
 @property(nonatomic,assign) DSLocalMasternodeStatus status;
+@property(nonatomic,strong) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 
 @end
 
@@ -76,6 +77,7 @@
     self.holdingWalletIndex = holdingAddressIndex;
     self.ipAddress = providerRegistrationTransaction.ipAddress;
     self.port = providerRegistrationTransaction.port;
+    self.providerRegistrationTransaction = providerRegistrationTransaction;
     self.status = DSLocalMasternodeStatus_Registered; //because it comes from a transaction already
     return self;
 }
@@ -147,10 +149,12 @@
         [DSProviderRegistrationTransactionEntity setContext:context];
         if ([DSLocalMasternodeEntity
              countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
-            
-            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
-            [localMasternode setAttributesFromLocalMasternode:self];
-            [DSLocalMasternodeEntity saveContext];
+            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+            if (providerRegistrationTransactionEntity) {
+                DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+                [localMasternode setAttributesFromLocalMasternode:self];
+                [DSLocalMasternodeEntity saveContext];
+            }
         } else {
             DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
             [localMasternode setAttributesFromLocalMasternode:self];

@@ -63,8 +63,10 @@
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
+    chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
+    [self.masternodeManager setUp];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
