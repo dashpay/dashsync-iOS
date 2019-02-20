@@ -187,4 +187,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 - (BOOL)containsHoldingAddress:(NSString*)holdingAddress;
 
+- (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
+- (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
+- (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+- (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
+
 @end

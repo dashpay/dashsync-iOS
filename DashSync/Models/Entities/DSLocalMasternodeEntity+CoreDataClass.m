@@ -32,7 +32,6 @@
     self.ownerKeysIndex = localMasternode.ownerWalletIndex;
     self.operatorKeysIndex = localMasternode.operatorWalletIndex;
     self.operatorKeysWalletUniqueId = localMasternode.operatorKeysWallet.uniqueID;
-    
 }
 
 @end

@@ -241,7 +241,7 @@
 }
 
 -(DSWallet*)masternodeHoldingWallet {
-    return [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:self];
+    return [self.chain walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:self foundAtIndex:nil];
 }
 
 
