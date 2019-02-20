@@ -12,6 +12,8 @@
 #import <arpa/inet.h>
 #import "DSClaimMasternodeViewController.h"
 #import "DSRegisterMasternodeViewController.h"
+#import "DSMasternodeDetailViewController.h"
+#import "DSLocalMasternodeEntity+CoreDataClass.h"
 
 @interface DSMasternodeViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -177,14 +179,21 @@
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
+    if ([segue.identifier isEqualToString:@"MasternodeDetailSegue"]) {
+        NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
+        DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        DSMasternodeDetailViewController * masternodeDetailViewController = (DSMasternodeDetailViewController*)segue.destinationViewController;
+        masternodeDetailViewController.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
+        masternodeDetailViewController.localMasternode = simplifiedMasternodeEntryEntity.localMasternode?[simplifiedMasternodeEntryEntity.localMasternode loadLocalMasternode]:nil;
+    } else if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
         NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
         DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         DSClaimMasternodeViewController * claimMasternodeViewController = (DSClaimMasternodeViewController*)segue.destinationViewController;
         claimMasternodeViewController.masternode = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
         claimMasternodeViewController.chain = self.chain;
     } else if ([segue.identifier isEqualToString:@"RegisterMasternodeSegue"]) {
-        DSRegisterMasternodeViewController * registerMasternodeViewController = (DSRegisterMasternodeViewController*)segue.destinationViewController;
+        UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
+        DSRegisterMasternodeViewController * registerMasternodeViewController = (DSRegisterMasternodeViewController*)navigationController.topViewController;
         registerMasternodeViewController.chain = self.chain;
     }
 }

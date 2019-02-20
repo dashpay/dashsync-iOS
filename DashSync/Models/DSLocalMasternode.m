@@ -139,6 +139,64 @@
     }];
 }
 
+-(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString*)payoutAddress completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion {
+    if (self.status != DSLocalMasternodeStatus_Registered) return;
+    char s[INET6_ADDRSTRLEN];
+    NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
+    NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to update this masternode to %@:%d?", nil),ipAddressString,self.port];
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:fundingAccount.wallet forAmount:MASTERNODE_COST forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
+        if (!seed) {
+            completion(nil);
+            return;
+        }
+        DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self.holdingKeysWallet];
+        if (!providerFundsDerivationPath.hasExtendedPublicKey) {
+            [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.holdingKeysWallet.uniqueID];
+        }
+        DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
+        if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
+            [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.ownerKeysWallet.uniqueID];
+        }
+        DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
+        if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
+            [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.operatorKeysWallet.uniqueID];
+        }
+        DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+        if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
+            [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueID];
+        }
+        
+        NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
+        NSMutableData * scriptPayout = [NSMutableData data];
+        [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
+        
+        DSECDSAKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+        UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
+        UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
+        
+        NSMutableData *script = [NSMutableData data];
+        
+        [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
+        [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO];
+        
+        [providerRegistrationTransaction updateInputsHash];
+        
+        //there is no need to sign the payload here.
+        
+        self.status = DSLocalMasternodeStatus_Created;
+        
+        completion(providerRegistrationTransaction);
+    }];
+}
+
+-(NSString*)payoutAddress {
+    if (self.providerRegistrationTransaction) {
+        return [NSString addressWithScriptPubKey:self.providerRegistrationTransaction.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    }
+    return nil;
+}
+
 // MARK: - Persistence
 
 -(void)save {

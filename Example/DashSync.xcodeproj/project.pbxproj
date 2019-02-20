@@ -106,6 +106,8 @@
 		FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E37F214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m */; };
 		FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */; };
 		FBB4E386215057AA008040B7 /* DSAddDAPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E385215057AA008040B7 /* DSAddDAPViewController.m */; };
+		FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */; };
+		FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
@@ -310,6 +312,10 @@
 		FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDAPIGetUserInfoViewController.m; sourceTree = "<group>"; };
 		FBB4E384215057AA008040B7 /* DSAddDAPViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDAPViewController.h; sourceTree = "<group>"; };
 		FBB4E385215057AA008040B7 /* DSAddDAPViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDAPViewController.m; sourceTree = "<group>"; };
+		FBB5D724221DEDE70021764A /* DSMasternodeDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeDetailViewController.h; sourceTree = "<group>"; };
+		FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeDetailViewController.m; sourceTree = "<group>"; };
+		FBB5D727221DF9390021764A /* DSUpdateMasternodeServiceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeServiceViewController.h; sourceTree = "<group>"; };
+		FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeServiceViewController.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -559,6 +565,10 @@
 				FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */,
 				FBEB7E8D220EEA7B0013F619 /* DSRegisterMasternodeViewController.h */,
 				FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */,
+				FBB5D724221DEDE70021764A /* DSMasternodeDetailViewController.h */,
+				FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */,
+				FBB5D727221DF9390021764A /* DSUpdateMasternodeServiceViewController.h */,
+				FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -984,6 +994,7 @@
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
 				2A3B3EB420F893F4002962FB /* SelectorFormCellModel.m in Sources */,
 				FBB4E386215057AA008040B7 /* DSAddDAPViewController.m in Sources */,
+				FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */,
 				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
 				FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */,
 				FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */,
@@ -1025,6 +1036,7 @@
 				2A3B3EBB20F893F4002962FB /* NumberTextFieldFormCellModel.m in Sources */,
 				FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
+				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,

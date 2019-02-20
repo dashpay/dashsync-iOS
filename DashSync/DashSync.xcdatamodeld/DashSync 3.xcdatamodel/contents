@@ -181,6 +181,12 @@
         <attribute name="votingKeyHash" attributeType="Binary" syncable="YES"/>
         <relationship name="localMasternode" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSLocalMasternodeEntity" inverseName="providerRegistrationTransaction" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
+    <entity name="DSProviderUpdateServiceTransactionEntity" representedClassName="DSProviderUpdateServiceTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="ipAddress" attributeType="Binary" syncable="YES"/>
+        <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
+        <attribute name="port" attributeType="Integer 16" defaultValueString="9999" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
+    </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="expiresAt" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
@@ -334,5 +340,6 @@
         <element name="DSTransactionLockVoteEntity" positionX="-2295" positionY="-54" width="128" height="255"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
+        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
     </elements>
 </model>

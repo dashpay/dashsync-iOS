@@ -30,10 +30,13 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) uint32_t votingWalletIndex;
 @property(nonatomic,readonly) DSWallet * holdingKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t holdingWalletIndex;
+@property(nonatomic,readonly) NSString* payoutAddress;
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 @property(nonatomic,readonly) DSLocalMasternodeStatus status;
 
 -(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
+
+-(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString*)payoutAddress completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
 
 -(void)save;
 

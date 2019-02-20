@@ -15,8 +15,6 @@
 #import "DSMasternodeManager.h"
 #import "DSChainManager.h"
 
-#define MAX_SIGNATURE_SIZE 75
-
 @interface DSProviderRegistrationTransaction()
 
 @end
