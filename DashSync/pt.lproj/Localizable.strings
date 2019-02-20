@@ -42,6 +42,9 @@
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "Tem certeza de que gostaria de recarregar %1$@ e gastar %2$@ em créditos?";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "senha incorreta, tente novamente";
 
 /* No comment provided by engineer. */

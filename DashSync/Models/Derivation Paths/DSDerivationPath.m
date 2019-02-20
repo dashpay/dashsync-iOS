@@ -477,6 +477,17 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return nil;
 }
 
+- (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed {
+    if (! seed) return nil;
+    if (![self length]) return nil; //there needs to be at least 1 length
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [self privateECDSAKeyAtIndexPath:indexPath fromSeed:seed];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        return [self privateBLSKeyAtIndexPath:indexPath fromSeed:seed];
+    }
+    return nil;
+}
+
 // MARK: - ECDSA Key Generation
 
 //this is for upgrade purposes only
@@ -592,7 +603,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return nil;
 }
 
-- (DSECDSAKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
+- (DSECDSAKey *)privateECDSAKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
 {
     if (! seed || ! indexPath) return nil;
     if (indexPath.length == 0) return nil;
@@ -673,6 +684,17 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     
     return _extendedPublicKey;
+}
+
+- (DSBLSKey *)privateBLSKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
+{
+    if (! seed) return nil;
+    if (![self length]) return nil; //there needs to be at least 1 length
+    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed onChain:self.chain];
+    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:self];
+    DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
+    
+    return privateKey;
 }
 
 // MARK: - Authentication Key Generation

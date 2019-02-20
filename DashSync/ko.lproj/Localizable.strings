@@ -42,6 +42,9 @@
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "충전에 %1$@을, 크레딧에 %2$@을 사용하시겠습니까?";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
 
 /* No comment provided by engineer. */

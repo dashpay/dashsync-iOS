@@ -140,7 +140,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sgc-kT-Z7o" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6787" y="-421"/>
+            <point key="canvasLocation" x="6533" y="-110"/>
         </scene>
         <!--Masternode Detail View Controller-->
         <scene sceneID="HZl-fN-jah">
@@ -368,7 +368,7 @@
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="vsp-6q-w9b" kind="show" id="rt7-YV-OUb"/>
+                                            <segue destination="Cbv-YW-lG0" kind="presentation" identifier="UpdateMasternodeServiceSegue" id="rt7-YV-OUb"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="IWL-hR-vWk" style="IBUITableViewCellStyleDefault" id="MAX-fc-X73">
@@ -612,10 +612,10 @@
             </objects>
             <point key="canvasLocation" x="1989.8550724637682" y="-453.34821428571428"/>
         </scene>
-        <!--Register Masternode-->
+        <!--Update Masternode-->
         <scene sceneID="jyD-WT-p53">
             <objects>
-                <tableViewController id="vsp-6q-w9b" userLabel="Register Masternode" customClass="DSRegisterMasternodeViewController" sceneMemberID="viewController">
+                <tableViewController id="vsp-6q-w9b" userLabel="Update Masternode" customClass="DSUpdateMasternodeServiceViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="1lo-2h-Lad">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -691,40 +691,8 @@
                                     <outlet property="valueTextField" destination="ls0-yk-j5S" id="ASd-v6-mPh"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" reuseIdentifier="MasternodeWalletCellIdentifier" id="fBP-Ow-Ej0" userLabel="WalletCell" customClass="DSWalletChooserTableViewCell">
-                                <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="fBP-Ow-Ej0" id="S6U-Qm-zK5">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Wallet" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6FY-6L-RK9">
-                                            <rect key="frame" x="16" y="12" width="47.5" height="21"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Xi-pc-KMG">
-                                            <rect key="frame" x="357" y="12" width="41" height="21"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <nil key="textColor"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="3Xi-pc-KMG" firstAttribute="baseline" secondItem="6FY-6L-RK9" secondAttribute="baseline" id="8Lt-aC-1UD"/>
-                                        <constraint firstItem="3Xi-pc-KMG" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6FY-6L-RK9" secondAttribute="trailing" constant="10" id="U7c-Ki-gyY"/>
-                                        <constraint firstAttribute="trailing" secondItem="3Xi-pc-KMG" secondAttribute="trailing" constant="16" id="hcz-FF-SXi"/>
-                                        <constraint firstItem="6FY-6L-RK9" firstAttribute="leading" secondItem="S6U-Qm-zK5" secondAttribute="leading" constant="16" id="i1B-QP-Pjr"/>
-                                        <constraint firstItem="6FY-6L-RK9" firstAttribute="top" secondItem="S6U-Qm-zK5" secondAttribute="top" constant="12.000000000000028" id="x1M-bd-rNL"/>
-                                    </constraints>
-                                </tableViewCellContentView>
-                                <connections>
-                                    <outlet property="walletLabel" destination="3Xi-pc-KMG" id="OWP-Ou-ICL"/>
-                                </connections>
-                            </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" reuseIdentifier="MasternodeFundingAccountCellIdentifier" id="3Jj-nq-2Q2" userLabel="AccountCell" customClass="DSAccountChooserTableViewCell">
-                                <rect key="frame" x="0.0" y="187.5" width="414" height="44"/>
+                                <rect key="frame" x="0.0" y="143.5" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="3Jj-nq-2Q2" id="vbt-xm-55Q">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -753,6 +721,7 @@
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="accountLabel" destination="UQI-KD-y8S" id="kQn-W0-uKu"/>
+                                    <segue destination="2yM-Qg-k68" kind="show" identifier="ChooseUpdateFundingAccountSegue" id="w3M-R1-KP0"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -765,19 +734,40 @@
                     <navigationItem key="navigationItem" title="Update" id="TCF-tI-LDL">
                         <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="1Fq-Z5-cru">
                             <connections>
-                                <action selector="cancel" destination="vsp-6q-w9b" id="WSp-Ou-Yix"/>
+                                <action selector="cancel" destination="vsp-6q-w9b" id="jc3-EL-gkh"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Register" id="2HQ-MD-oJP">
+                        <barButtonItem key="rightBarButtonItem" title="Update" id="2HQ-MD-oJP">
                             <connections>
-                                <action selector="registerMasternode:" destination="vsp-6q-w9b" id="mUO-nZ-lb2"/>
+                                <action selector="updateMasternode:" destination="vsp-6q-w9b" id="vIw-fp-VFD"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MCy-gj-8eu" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6193" y="-53"/>
+            <point key="canvasLocation" x="5803" y="257"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="Ydh-ju-73j">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="Cbv-YW-lG0" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="bal-SQ-EKp">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="vsp-6q-w9b" kind="relationship" relationship="rootViewController" id="PaR-V5-BK6"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mf6-e6-qLQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5041" y="353"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="w3M-R1-KP0"/>
+    </inferredMetricsTieBreakers>
 </document>

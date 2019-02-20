@@ -51,4 +51,14 @@
     return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:[self unusedIndex]] fromSeed:seed];
 }
 
+- (DSECDSAKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
+    NSUInteger index = [self indexOfAddress:address];
+    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
+}
+
+- (DSECDSAKey*)privateKeyForHash160:(UInt160)hash160 fromSeed:(NSData*)seed {
+    NSString * address = [[NSData dataWithUInt160:hash160] addressFromHash160DataForChain:self.chain];
+    return [self privateKeyForAddress:address fromSeed:seed];
+}
+
 @end

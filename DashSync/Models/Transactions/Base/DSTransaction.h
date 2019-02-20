@@ -48,7 +48,7 @@
 #define TXIN_SEQUENCE UINT32_MAX
 #define SIGHASH_ALL   0x00000001u
 
-#define MAX_SIGNATURE_SIZE 75
+#define MAX_ECDSA_SIGNATURE_SIZE 75
 
 typedef union _UInt256 UInt256;
 

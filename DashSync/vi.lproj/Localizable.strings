@@ -42,6 +42,9 @@
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "Bạn có chắc bạn muốn nạp 1%1$@ và tiêu 2%2$@ trên tín dụng?";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "sai mật khẩu, hãy thử lại";
 
 /* No comment provided by engineer. */

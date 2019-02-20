@@ -42,6 +42,9 @@
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "%1$@ を補充し、クレジットカードに %2$@ を課金してもよろしいですか？";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "不正なパスワード、もう一度ご入力ください。";
 
 /* No comment provided by engineer. */

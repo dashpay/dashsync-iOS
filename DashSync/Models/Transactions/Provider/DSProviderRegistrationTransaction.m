@@ -197,7 +197,7 @@
 
 - (size_t)maxSizeEstimatedBeforePayloadSigning
 {
-    return [super size] + [self basePayloadData].length + MAX_SIGNATURE_SIZE;
+    return [super size] + [self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE;
 }
 
 - (size_t)size

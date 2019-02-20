@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSProviderRegistrationTransaction;
+@class DSBLSKey, DSProviderRegistrationTransaction;
 
 @interface DSProviderUpdateServiceTransaction : DSTransaction
 
@@ -28,6 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts providerUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash ipAddress:(UInt128)ipAddress port:(uint16_t)port scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain;
 
 -(instancetype)initWithProviderUpdateServiceTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash ipAddress:(UInt128)ipAddress port:(uint16_t)port scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain;
+
+-(void)updateInputsHash;
+
+-(void)signPayloadWithKey:(DSBLSKey* _Nonnull)privateKey;
+
+-(BOOL)checkPayloadSignature;
 
 
 @end

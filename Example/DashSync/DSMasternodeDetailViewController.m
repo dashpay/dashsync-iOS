@@ -39,7 +39,7 @@
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"UpdateServiceMasternodeSegue"]) {
+    if ([segue.identifier isEqualToString:@"UpdateMasternodeServiceSegue"]) {
         UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
         DSUpdateMasternodeServiceViewController * updateMasternodeServiceViewController = (DSUpdateMasternodeServiceViewController*)navigationController.topViewController;
         updateMasternodeServiceViewController.localMasternode = self.localMasternode;

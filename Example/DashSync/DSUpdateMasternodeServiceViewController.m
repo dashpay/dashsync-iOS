@@ -73,11 +73,11 @@
         DSDLog(@"%08x", ip);
     }
     uint16_t port = [portString intValue];
-    [self.localMasternode registrationTransactionFundedByAccount:self.account completion:^(DSProviderRegistrationTransaction * _Nonnull providerRegistrationTransaction) {
+    [self.localMasternode updateTransactionFundedByAccount:self.account toIPAddress:ipAddress port:port payoutAddress:nil completion:^(DSProviderRegistrationTransaction * _Nonnull providerRegistrationTransaction) {
         if (providerRegistrationTransaction) {
-            [self.account signTransaction:providerRegistrationTransaction withPrompt:@"Would you like to register this masternode?" completion:^(BOOL signedTransaction) {
+            [self.account signTransaction:providerRegistrationTransaction withPrompt:@"Would you like to update this masternode?" completion:^(BOOL signedTransaction) {
                 if (signedTransaction) {
-                    [self.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction completion:^(NSError * _Nullable error) {
+                    [self.localMasternode.providerRegistrationTransaction.chain.chainManager.transactionManager publishTransaction:providerRegistrationTransaction completion:^(NSError * _Nullable error) {
                         if (error) {
                             [self raiseIssue:@"Error" message:error.localizedDescription];
                         } else {
@@ -110,21 +110,12 @@
     self.accountChooserTableViewCell.accountLabel.text = [NSString stringWithFormat:@"%@-%u",self.account.wallet.uniqueID,self.account.accountNumber];
 }
 
--(void)viewController:(UIViewController *)controller didChooseWallet:(DSWallet *)wallet {
-    self.wallet = wallet;
-    self.walletChooserTableViewCell.walletLabel.text = [NSString stringWithFormat:@"%@",self.wallet.uniqueID];
-}
-
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"ChooseFundingAccountSegue"]) {
+    if ([segue.identifier isEqualToString:@"ChooseUpdateFundingAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
-        chooseAccountSegue.chain = self.chain;
-        chooseAccountSegue.minAccountBalanceNeeded = MASTERNODE_COST;
+        chooseAccountSegue.chain = self.localMasternode.providerRegistrationTransaction.chain;
+        chooseAccountSegue.minAccountBalanceNeeded = 1000;
         chooseAccountSegue.delegate = self;
-    } else if ([segue.identifier isEqualToString:@"ChooseWalletSegue"]) {
-        DSWalletChooserViewController * chooseWalletSegue = (DSWalletChooserViewController*)segue.destinationViewController;
-        chooseWalletSegue.chain = self.chain;
-        chooseWalletSegue.delegate = self;
     }
 }
 

@@ -42,6 +42,9 @@
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "คุณแน่ใจหรือไม่ว่าต้องการเติมเงิน%1$@และใช้จ่าย%2$@ ในเครดิต?";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "bad password, try again" = "รหัสไม่ถูกต้อง, ลองอีกครั้ง";
 
 /* No comment provided by engineer. */

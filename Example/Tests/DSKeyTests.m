@@ -14,6 +14,7 @@
 #import "DSChain.h"
 #import "NSData+Bitcoin.h"
 #import "DSBLSKey.h"
+#import "DSKey.h"
 
 @interface DSKeyTests : XCTestCase
 
@@ -173,37 +174,37 @@
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key compactSign:md];
-    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
+    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKeyData;
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     key = [DSECDSAKey keyWithSecret:sec compressed:NO];
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key compactSign:md];
-    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
+    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKeyData;
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     pubkey = @"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData;
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3kq9e842BzkMfbPSbhKVwGZgspDSkz4YfqjdBYQPWDzqd77gPgR1zq4XG7KtAL5DZTcfFFs2iph4urNyXeBkXsEYY".base58ToData;
     key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     pubkey = @"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData;
     md = [@"i am a test signed string do de dah" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3qECEYmb6x4X22sH98Aer68SdfrLwtqvb5Ncv7EqKmzbxeYYJ1hU9irP6R5PeCctCPYo5KQiWFgoJ3H5MkuX18gHu".base58ToData;
     key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     pubkey = @"gpRv1sNA3XURB6QEtGrx6Q18DZ5cSgUSDQKX4yYypxpW".base58ToData;
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3oHQhxq5eW8dnp7DquTCbA5tECoNx7ubyiubw4kiFm7wXJF916SZVykFzb8rB1K6dEu7mLspBWbBEJyYk79jAosVR".base58ToData;
     key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 }
 
 // MARK: - test BLS Sign

@@ -8,7 +8,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "DSECDSAKey.h"
+#import "DSBLSKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
@@ -17,6 +17,7 @@
 #import "DSChainManager.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSTransactionManager.h"
+#import "DSLocalMasternode.h"
 
 @interface DSProviderUpdateServiceTransaction()
 
@@ -114,14 +115,12 @@
 }
 
 -(BOOL)checkPayloadSignature {
-    DSECDSAKey * providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
-    return uint160_eq([providerOwnerPublicKey hash160], self.providerRegistrationTransaction.ownerKeyHash);
+    DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:self.providerRegistrationTransaction.operatorKey onChain:self.chain];
+    return [blsKey verify:[self payloadHash] signature:[self payloadSignature].UInt768];
 }
 
--(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
-    //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
-    self.payloadSignature = [privateKey compactSign:[self payloadHash]];
+-(void)signPayloadWithKey:(DSBLSKey*)privateKey {
+    self.payloadSignature = [NSData dataWithUInt768:[privateKey signDigest:[self payloadHash]]];
 }
 
 -(NSData*)basePayloadData {
@@ -162,7 +161,7 @@
 
 - (size_t)maxSizeEstimatedBeforePayloadSigning
 {
-    return [super size] + [self basePayloadData].length + MAX_SIGNATURE_SIZE;
+    return [super size] + [self basePayloadData].length + 96;
 }
 
 - (size_t)size
@@ -192,7 +191,6 @@
 
 -(void)hasSetInputsAndOutputs {
     [self updateInputsHash];
-    self.payloadSignature = [NSData data];
 }
 
 @end
