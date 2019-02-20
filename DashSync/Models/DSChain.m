@@ -861,39 +861,39 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Voting Keys
 
--(NSData*)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry {
-    NSError * error = nil;
-    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    NSData * votingKey = [keyChainDictionary objectForKey:masternodeEntry.uniqueID];
-    return votingKey;
-}
-
--(NSArray*)registeredMasternodes {
-    NSError * error = nil;
-    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self];
-    NSMutableArray * registeredMasternodes = [NSMutableArray array];
-    for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
-        DSSimplifiedMasternodeEntry * masternode = [chainManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
-        [registeredMasternodes addObject:masternode];
-    }
-    return [registeredMasternodes copy];
-}
-
--(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry {
-    NSError * error = nil;
-    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
-    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary setObject:votingKey forKey:[NSData dataWithUInt256:masternodeEntry.providerRegistrationTransactionHash]];
-    setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
-    NSManagedObjectContext * context = [DSSimplifiedMasternodeEntryEntity context];
-    [context performBlockAndWait:^{
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
-        DSSimplifiedMasternodeEntryEntity * masternodeEntryEntity = masternodeEntry.simplifiedMasternodeEntryEntity;
-        masternodeEntryEntity.claimed = TRUE;
-        [DSSimplifiedMasternodeEntryEntity saveContext];
-    }];
-}
+//-(NSData*)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry {
+//    NSError * error = nil;
+//    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
+//    NSData * votingKey = [keyChainDictionary objectForKey:masternodeEntry.uniqueID];
+//    return votingKey;
+//}
+//
+//-(NSArray*)registeredMasternodes {
+//    NSError * error = nil;
+//    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
+//    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self];
+//    NSMutableArray * registeredMasternodes = [NSMutableArray array];
+//    for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
+//        DSSimplifiedMasternodeEntry * masternode = [chainManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
+//        [registeredMasternodes addObject:masternode];
+//    }
+//    return [registeredMasternodes copy];
+//}
+//
+//-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry {
+//    NSError * error = nil;
+//    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
+//    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+//    [keyChainDictionary setObject:votingKey forKey:[NSData dataWithUInt256:masternodeEntry.providerRegistrationTransactionHash]];
+//    setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
+//    NSManagedObjectContext * context = [DSSimplifiedMasternodeEntryEntity context];
+//    [context performBlockAndWait:^{
+//        [DSSimplifiedMasternodeEntryEntity setContext:context];
+//        DSSimplifiedMasternodeEntryEntity * masternodeEntryEntity = masternodeEntry.simplifiedMasternodeEntryEntity;
+//        masternodeEntryEntity.claimed = TRUE;
+//        [DSSimplifiedMasternodeEntryEntity saveContext];
+//    }];
+//}
 
 // MARK: - Probabilistic Filters
 

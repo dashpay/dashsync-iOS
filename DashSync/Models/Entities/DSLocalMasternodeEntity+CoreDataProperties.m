@@ -24,5 +24,6 @@
 @dynamic holdingKeysWalletUniqueId;
 @dynamic addresses;
 @dynamic providerRegistrationTransaction;
+@dynamic simplifiedMasternodeEntry;
 
 @end

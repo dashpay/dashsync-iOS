@@ -190,8 +190,6 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 -(void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 
--(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry;
-
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
@@ -207,9 +205,11 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
 
--(NSData* _Nullable)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry;
+//-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry;
 
--(NSArray*)registeredMasternodes;
+//-(NSData* _Nullable)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry;
+//
+//-(NSArray*)registeredMasternodes;
 
 //This removes all blockchain information from the chain's wallets and derivation paths
 - (void)wipeBlockchainInfo;

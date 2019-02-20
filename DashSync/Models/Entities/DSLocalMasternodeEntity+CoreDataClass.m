@@ -9,6 +9,7 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
@@ -40,6 +41,7 @@
     self.holdingKeysIndex = localMasternode.holdingWalletIndex;
     DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.providerRegistrationTransaction = providerRegistrationTransactionEntity;
+    self.simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
 }
 
 @end

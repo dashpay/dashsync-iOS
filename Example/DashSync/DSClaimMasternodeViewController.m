@@ -47,7 +47,7 @@
         DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:self.inputTextView.text onChain:self.chain];
         UInt160 publicKeyHash = [key hash160];
         if (uint160_eq(publicKeyHash, self.masternode.keyIDVoting)) {
-            [self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
+            //[self.chain registerVotingKey:self.inputTextView.text.base58ToData forMasternodeEntry:self.masternode];
             [self.navigationController popViewControllerAnimated:TRUE];
         } else {
             UIAlertController * alertController = [UIAlertController alertControllerWithTitle:@"Mismatched Key" message:@"This private key is valid but does not correspond to this masternode" preferredStyle:UIAlertControllerStyleAlert];

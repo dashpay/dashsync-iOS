@@ -8,6 +8,7 @@
 
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSChain.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Bitcoin.h"
@@ -22,6 +23,8 @@
     self.operatorBLSPublicKey = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
+    DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    self.localMasternode = localMasternode;
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChain:(DSChainEntity*)chainEntity {
@@ -38,6 +41,8 @@
     } else {
         self.chain = chainEntity;
     }
+    DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    self.localMasternode = localMasternode;
 }
 
 + (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity*)chainEntity {

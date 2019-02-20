@@ -333,6 +333,7 @@ inline static int ceil_log2(int x)
         [self.managedObjectContext performBlockAndWait:^{
             [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
             [DSChainEntity setContext:self.managedObjectContext];
+            [DSLocalMasternodeEntity setContext:self.managedObjectContext];
             DSChainEntity * chainEntity = self.chain.chainEntity;
             if (deletedMasternodeHashes.count) {
                 [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:deletedMasternodeHashes onChain:chainEntity];

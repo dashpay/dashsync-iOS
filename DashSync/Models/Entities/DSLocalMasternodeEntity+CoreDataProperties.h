@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSAddressEntity;
+@class DSAddressEntity, DSSimplifiedMasternodeEntryEntity;
 
 @interface DSLocalMasternodeEntity (CoreDataProperties)
 
@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) uint32_t holdingKeysIndex;
 @property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSProviderRegistrationTransactionEntity *providerRegistrationTransaction;
+@property (nullable, nonatomic, retain) DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntry;
 
 @end
 
