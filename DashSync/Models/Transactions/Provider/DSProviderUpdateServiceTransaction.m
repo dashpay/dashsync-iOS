@@ -63,13 +63,9 @@
     self.inputsHash = [message UInt256AtOffset:off];
     off += 32;
     
-    if (length - off < 1) return nil;
-    NSNumber * messageSignatureSizeLength = nil;
-    NSUInteger messageSignatureSize = (NSUInteger)[message varIntAtOffset:off length:&messageSignatureSizeLength];
-    off += messageSignatureSizeLength.unsignedIntegerValue;
-    if (length - off < messageSignatureSize) return nil;
-    self.payloadSignature = [message subdataWithRange:NSMakeRange(off, messageSignatureSize)];
-    off+= messageSignatureSize;
+    if (length - off < 96) return nil;
+    self.payloadSignature = [message subdataWithRange:NSMakeRange(off, 96)];
+    off+= 96;
     self.payloadOffset = off;
     
     //todo verify inputs hash

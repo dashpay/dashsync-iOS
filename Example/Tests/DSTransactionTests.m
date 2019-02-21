@@ -438,24 +438,14 @@
     
     DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     
-    NSData * hexData = [NSData dataFromHexString:@"030002000151f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7010000006b483045022100fd9eed7c539394bd5e0e9c490298e372afc030cb62d8a6d1d02d87817ee6090102204d07cc1feda91dc918a2c61f37a91db32dfa280949e1f49ff1e7ccc2e308848301210261dc0b26e9a64808928a3d020565f5daa31ff0e01904254ce0a19e8ce449918affffffff01db85a95a020000001976a9142044e419a66b4e1bc7b4594e4722a85d469134bf88ac00000000b5010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d700000000000000000000ffff342440944e1f002ef5cb8f99816474b9620eb266c4e7ed768586f6a4d90a71f0b3ffaaefd5427a032f2b13a84d205d007448b91a89bf7f4d3bcd3d03e6c565688639a88319c33d1d9614c7b5550c9ac4e25ab96790bbe60f2da966ecb65858dce351490d9665ac4d91272cf8526a3a6ca18595bd04a786c3d50e96a69e16ea7fc397dff053009c"];
-    UInt256 txId = *(UInt256 *)@"8f3368ceb332bdb8587fbeb540ad3bbf6f1c6c5a3f85c4e49f5f93351e4979e0".hexToData.reverse.bytes;
-    UInt256 inputId = *(UInt256 *)@"d32687ec23f0e91fc1c797b508f8755f488c6e49892adef75be77ce395fe393f".hexToData.reverse.bytes;
-    NSString * inputAddress0 = @"yRdHYt6nG1ooGaXK7GEbwVMteLY3m4FbVT";
-    NSString * inputAddress1 = @"yWJqVcT5ot5GEcB8oYkHnnYcFG5pLiVVtd";
-    NSString * inputAddress2 = @"ygQ8tG3tboQ7oZEhtDBBYtquTmVyiDe6d5";
+    NSData * hexData = [NSData dataFromHexString:@"030002000151f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7010000006a4730440220164c918260a4acaa85e6543bc623b796bee51ad265c75939e4b51db6ce4ec7910220651142939a1f32374633b9d0fdd9ca1a7b93c64bd1b7d6774c627b9a56caa14501210261dc0b26e9a64808928a3d020565f5daa31ff0e01904254ce0a19e8ce449918affffffff01cd8aa95a020000001976a9142044e419a66b4e1bc7b4594e4722a85d469134bf88ac00000000b5010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d700000000000000000000ffff342440944e1f002ef5cb8f99816474b9620eb266c4e7ed768586f6a4d90a71f0b3ffaaefd5427a032f2b13a84d205d007448b91a89bf7f4d3bcd3d03e6c565688639a88319c33d1d9614c7b5550c9ac4e25ab96790bbe60f2da966ecb65858dce351490d9665ac4d91272cf8526a3a6ca18595bd04a786c3d50e96a69e16ea7fc397dff053009c"];
+    UInt256 txId = *(UInt256 *)@"3c5c84b3b5eed84f3fcdf3f015b7cf63853e4cbc439cbb0526e6fd1478aa23cf".hexToData.reverse.bytes;
+    UInt256 inputId = *(UInt256 *)@"51f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7".hexToData.reverse.bytes;
+    NSString * inputAddress0 = @"yWcZ7ePLX3yLkC3Aj9KaZvxRQkkZC6VPL8";
     DSECDSAKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
-    DSECDSAKey * inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
-    DSECDSAKey * inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
     
     NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
     XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
-    
-    NSString * checkInputAddress1 = [inputPrivateKey1 addressForChain:chain];
-    XCTAssertEqualObjects(checkInputAddress1,inputAddress1,@"Private key does not match input address");
-    
-    NSString * checkInputAddress2 = [inputPrivateKey2 addressForChain:chain];
-    XCTAssertEqualObjects(checkInputAddress2,inputAddress2,@"Private key does not match input address");
     
     DSProviderUpdateServiceTransaction *providerUpdateServiceTransactionFromMessage = [[DSProviderUpdateServiceTransaction alloc] initWithMessage:hexData onChain:chain];
     
