@@ -158,18 +158,10 @@
     return data;
 }
 
-- (size_t)maxSizeEstimatedBeforePayloadSigning
-{
-    return [super size] + [self basePayloadData].length + 96;
-}
-
 - (size_t)size
 {
-    if (self.payloadSignature) {
-        return [super size] + [self payloadData].length;
-    } else {
-        return [self maxSizeEstimatedBeforePayloadSigning];
-    }
+    if (! uint256_is_zero(self.txHash)) return self.data.length;
+    return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + 96);
 }
 
 -(Class)entityClass {

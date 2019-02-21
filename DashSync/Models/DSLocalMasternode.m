@@ -152,7 +152,7 @@
         }
         NSData * scriptPayout;
         if (payoutAddress == nil) {
-            scriptPayout = self.providerRegistrationTransaction.scriptPayout;
+            scriptPayout = [NSData data];
         } else {
             NSMutableData * mScriptPayout = [NSMutableData data];
             [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:self.holdingKeysWallet.chain];

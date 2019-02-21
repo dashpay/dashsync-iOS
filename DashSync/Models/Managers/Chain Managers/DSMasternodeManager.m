@@ -122,6 +122,7 @@ inline static int ceil_log2(int x)
 
 -(void)wipeMasternodeInfo {
     [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
+    [self.localMasternodesDictionaryByRegistrationTransactionHash removeAllObjects];
     self.baseBlockHash = UINT256_ZERO;
 }
 

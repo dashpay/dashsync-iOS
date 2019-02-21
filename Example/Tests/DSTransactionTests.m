@@ -438,7 +438,7 @@
     
     DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     
-    NSData * hexData = [NSData dataFromHexString:@"030002000151f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7010000006b483045022100befc679e66b1468952b9413e1ac1365edc885908e588a0e30a17645a143fc03f022011448b0373ee004e9e8163da5ec99ed49f6b2db65450a7fa19627f1f6f169c2101210261dc0b26e9a64808928a3d020565f5daa31ff0e01904254ce0a19e8ce449918affffffff01b58aa95a020000001976a9142a319b4c4b033e4dc7ef5fd43762e66e40bc309588ac00000000cf010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d700000000000000000000ffff010101021f4e1976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac2ef5cb8f99816474b9620eb266c4e7ed768586f6a4d90a71f0b3ffaaefd5427a609690af49e7c5356952fe158f3cfa187be74c0eff7647c40c5d1d3b9c07a4cdf9bcb109d9975dce5539edf869d869b507012da8117c76cb2b9b83d8fa648a0943fd4332b1e1a3b7dc8b1b826a55c3d306a16ee9f82bb67e984bc7dd24a1fe72df"];
+    NSData * hexData = [NSData dataFromHexString:@"030002000151f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7010000006b483045022100fd9eed7c539394bd5e0e9c490298e372afc030cb62d8a6d1d02d87817ee6090102204d07cc1feda91dc918a2c61f37a91db32dfa280949e1f49ff1e7ccc2e308848301210261dc0b26e9a64808928a3d020565f5daa31ff0e01904254ce0a19e8ce449918affffffff01db85a95a020000001976a9142044e419a66b4e1bc7b4594e4722a85d469134bf88ac00000000b5010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d700000000000000000000ffff342440944e1f002ef5cb8f99816474b9620eb266c4e7ed768586f6a4d90a71f0b3ffaaefd5427a032f2b13a84d205d007448b91a89bf7f4d3bcd3d03e6c565688639a88319c33d1d9614c7b5550c9ac4e25ab96790bbe60f2da966ecb65858dce351490d9665ac4d91272cf8526a3a6ca18595bd04a786c3d50e96a69e16ea7fc397dff053009c"];
     UInt256 txId = *(UInt256 *)@"8f3368ceb332bdb8587fbeb540ad3bbf6f1c6c5a3f85c4e49f5f93351e4979e0".hexToData.reverse.bytes;
     UInt256 inputId = *(UInt256 *)@"d32687ec23f0e91fc1c797b508f8755f488c6e49892adef75be77ce395fe393f".hexToData.reverse.bytes;
     NSString * inputAddress0 = @"yRdHYt6nG1ooGaXK7GEbwVMteLY3m4FbVT";
@@ -463,26 +463,26 @@
     
 //    NSMutableData * scriptPayout = [NSMutableData data];
 //    [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:wallet.chain];
-//    
+//
 //    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
 //    struct in_addr addrV4;
 //    if (inet_aton([@"1.1.1.2" UTF8String], &addrV4) != 0) {
 //        uint32_t ip = ntohl(addrV4.s_addr);
 //        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
 //    }
-//    
+//
 //    DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] providerRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
-//    
+//
 //    NSMutableData *script = [NSMutableData data];
-//    
+//
 //    [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
 //    [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO toShapeshiftAddress:nil shuffleOutputOrder:NO];
-//    
-//    
+//
+//
 //    [providerRegistrationTransaction updateInputsHash];
-//    
+//
 //    [providerRegistrationTransaction signPayloadWithKey:ownerKey];
-//    
+//
 //    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
 }
 
