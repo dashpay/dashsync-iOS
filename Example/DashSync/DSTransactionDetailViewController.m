@@ -172,7 +172,7 @@
 {
     // Return the number of rows in the section.
     switch (section) {
-        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?6:5):4;
+        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?7:6):5;
         case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
         case 3: {
@@ -188,6 +188,9 @@
                     break;
                 case DSTransactionType_ProviderRegistration:
                     return 8;
+                    break;
+                case DSTransactionType_ProviderUpdateService:
+                    return 3;
                     break;
                 default:
                     return 0;
@@ -234,6 +237,8 @@
                         cell.statusLabel.text = @"BU Reset Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
                         cell.statusLabel.text = @"Masternode Registration Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
+                        cell.statusLabel.text = @"Masternode Update Service Transaction";
                     } else {
                         cell.statusLabel.text = @"Classical Transaction";
                     }
@@ -304,6 +309,22 @@
                     return cell;
                 }
                 case 5:
+                {
+                    DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                    [self setBackgroundForCell:cell indexPath:indexPath];
+                    cell.titleLabel.text = NSLocalizedString(@"size:", nil);
+                    uint64_t roundedFeeCostPerByte = self.transaction.roundedFeeCostPerByte;
+                    if (roundedFeeCostPerByte != UINT64_MAX) { //otherwise it's being received and can't know.
+                        cell.statusLabel.text = roundedFeeCostPerByte == 1?NSLocalizedString(@"1 duff/byte",nil):[NSString stringWithFormat:NSLocalizedString(@"%d duffs/byte",nil), roundedFeeCostPerByte];
+                    } else {
+                        cell.statusLabel.text = nil;
+                    }
+                    cell.moreInfoLabel.text = [@(self.transaction.size) stringValue];
+                    
+                    return cell;
+                }
+                case 6:
                 {
                     DSTransactionAmountTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier"];
                     [self setBackgroundForCell:cell indexPath:indexPath];
@@ -537,7 +558,7 @@
                     }
                         
                 }
-            }else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+            } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)self.transaction;
                 switch (indexPath.row) {
                     case 0:
@@ -641,6 +662,49 @@
                     }
                         
                 }
+            } else if ([self.transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
+                    DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)self.transaction;
+                    switch (indexPath.row) {
+                        case 0:
+                        {
+                            DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                            [self setBackgroundForCell:cell indexPath:indexPath];
+                            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                            cell.titleLabel.text = NSLocalizedString(@"Provider update service version", nil);
+                            cell.statusLabel.text = [NSString stringWithFormat:@"%d",providerUpdateServiceTransaction.providerUpdateServiceTransactionVersion];
+                            cell.moreInfoLabel.text = nil;
+                            return cell;
+                            break;
+                        }
+                        case 1:
+                        {
+                            DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                            [self setBackgroundForCell:cell indexPath:indexPath];
+                            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                            cell.titleLabel.text = NSLocalizedString(@"IP Address/Port", nil);
+                            char s[INET6_ADDRSTRLEN];
+                            NSString * ipAddressString = @(inet_ntop(AF_INET, &providerUpdateServiceTransaction.ipAddress.u32[3], s, sizeof(s)));
+                            cell.statusLabel.text = [NSString stringWithFormat:@"%@:%d",ipAddressString,providerUpdateServiceTransaction.port];
+                            cell.moreInfoLabel.text = nil;
+                            return cell;
+                            break;
+                        }
+                        case 2:
+                        {
+                            DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                            [self setBackgroundForCell:cell indexPath:indexPath];
+                            cell.titleLabel.text = NSLocalizedString(@"provider registration hash:", nil);
+                            s = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash].hexString;
+                            cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                         [s substringFromIndex:s.length/2]];
+                            cell.identifierLabel.copyableText = s;
+                            return cell;
+                            break;
+                        }
+                        
+                            
+                    }
                 
             }
             

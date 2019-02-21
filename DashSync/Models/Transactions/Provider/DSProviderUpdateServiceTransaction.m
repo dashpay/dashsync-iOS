@@ -145,7 +145,6 @@
 -(NSData*)payloadData {
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
-    [data appendUInt8:self.payloadSignature.length];
     [data appendData:self.payloadSignature];
     return data;
 }

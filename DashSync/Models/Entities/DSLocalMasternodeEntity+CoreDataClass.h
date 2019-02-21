@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSProviderRegistrationTransactionEntity,DSLocalMasternode;
+@class DSProviderRegistrationTransactionEntity,DSLocalMasternode,DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSLocalMasternode* _Nullable)loadLocalMasternode;
 
 - (void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode;
+
++ (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

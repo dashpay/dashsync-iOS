@@ -41,7 +41,15 @@
     self.holdingKeysIndex = localMasternode.holdingWalletIndex;
     DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.providerRegistrationTransaction = providerRegistrationTransactionEntity;
-    self.simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
+    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
+    self.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity;
+}
+
++ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
+    NSArray * localMasternodeEntities = [self objectsMatching:@"(providerRegistrationTransaction.transactionHash.chain == %@)",chainEntity];
+    for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
+        [chainEntity.managedObjectContext deleteObject:localMasternodeEntity];
+    }
 }
 
 @end
