@@ -108,6 +108,7 @@
 		FBB4E386215057AA008040B7 /* DSAddDAPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB4E385215057AA008040B7 /* DSAddDAPViewController.m */; };
 		FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */; };
 		FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */; };
+		FBB5D73C221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
@@ -316,6 +317,8 @@
 		FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeDetailViewController.m; sourceTree = "<group>"; };
 		FBB5D727221DF9390021764A /* DSUpdateMasternodeServiceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeServiceViewController.h; sourceTree = "<group>"; };
 		FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeServiceViewController.m; sourceTree = "<group>"; };
+		FBB5D73A221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRegistrarViewController.h; sourceTree = "<group>"; };
+		FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRegistrarViewController.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -569,6 +572,8 @@
 				FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */,
 				FBB5D727221DF9390021764A /* DSUpdateMasternodeServiceViewController.h */,
 				FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */,
+				FBB5D73A221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.h */,
+				FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -993,6 +998,7 @@
 				FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */,
 				FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */,
 				2A3B3EB420F893F4002962FB /* SelectorFormCellModel.m in Sources */,
+				FBB5D73C221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m in Sources */,
 				FBB4E386215057AA008040B7 /* DSAddDAPViewController.m in Sources */,
 				FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */,
 				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,

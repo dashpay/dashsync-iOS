@@ -8,6 +8,7 @@
 #import "DSLocalMasternode.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSAuthenticationManager.h"
 #import "DSWallet.h"
 #import "DSAccount.h"
@@ -120,7 +121,7 @@
         NSMutableData * scriptPayout = [NSMutableData data];
         [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
         
-        DSECDSAKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+        DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
         UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
         DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
@@ -174,6 +175,41 @@
         //there is no need to sign the payload here.
         
         completion(providerUpdateServiceTransaction);
+    }];
+}
+
+-(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction))completion {
+    if (self.status != DSLocalMasternodeStatus_Registered) return;
+    NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to update this masternode to pay to %@?", nil),payoutAddress];
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:fundingAccount.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
+        if (!seed) {
+            completion(nil);
+            return;
+        }
+        NSData * scriptPayout;
+        if (payoutAddress == nil) {
+            scriptPayout = [NSData data];
+        } else {
+            NSMutableData * mScriptPayout = [NSMutableData data];
+            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:self.holdingKeysWallet.chain];
+            scriptPayout = mScriptPayout;
+        }
+        
+        DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
+        
+        NSAssert(self.providerRegistrationTransaction,@"There must be a providerRegistrationTransaction linked here");
+        DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
+        
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithProviderUpdateRegistrarTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash mode:0 operatorKey:operatorKey votingKeyHash:votingKeyHash scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
+        
+        
+        [fundingAccount updateTransaction:providerUpdateRegistrarTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:NO];
+        
+        [providerUpdateRegistrarTransaction signPayloadWithKey:ownerKey];
+        
+        //there is no need to sign the payload here.
+        
+        completion(providerUpdateRegistrarTransaction);
     }];
 }
 

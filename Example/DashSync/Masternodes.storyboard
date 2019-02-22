@@ -195,7 +195,7 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uVq-Lh-bHC">
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uVq-Lh-bHC" customClass="BRCopyLabel">
                                                     <rect key="frame" x="357" y="12" width="41" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -390,6 +390,9 @@
                                                 </label>
                                             </subviews>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="WP2-5z-I3E" kind="presentation" identifier="UpdateMasternodeRegistrarSegue" id="LIx-I9-5Ha"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -749,7 +752,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MCy-gj-8eu" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="5803" y="257"/>
+            <point key="canvasLocation" x="5772" y="380"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="Ydh-ju-73j">
@@ -769,8 +772,127 @@
             </objects>
             <point key="canvasLocation" x="5041" y="353"/>
         </scene>
+        <!--Update Masternode-->
+        <scene sceneID="11o-8d-pyp">
+            <objects>
+                <tableViewController id="9J8-u5-bjV" userLabel="Update Masternode" customClass="DSUpdateMasternodeRegistrarViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="XUr-qb-pEH">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="MasternodePayoutAddressCellIdentifier" id="e5t-6q-TEN" userLabel="PayoutAddressCell" customClass="DSKeyValueTableViewCell">
+                                <rect key="frame" x="0.0" y="55.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="e5t-6q-TEN" id="6ho-6S-dwh">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Payout Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ya6-tj-772">
+                                            <rect key="frame" x="16" y="12" width="119.5" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="rFL-15-RQ0">
+                                            <rect key="frame" x="228" y="7" width="170" height="30"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="900" constant="170" id="miR-Uo-e8z"/>
+                                            </constraints>
+                                            <nil key="textColor"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="ASCIICapableNumberPad" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                        </textField>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="ya6-tj-772" firstAttribute="top" secondItem="6ho-6S-dwh" secondAttribute="top" constant="12.000000000000028" id="Bkl-bV-bbX"/>
+                                        <constraint firstItem="ya6-tj-772" firstAttribute="leading" secondItem="6ho-6S-dwh" secondAttribute="leading" constant="16" id="NQY-aM-rSD"/>
+                                        <constraint firstItem="rFL-15-RQ0" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ya6-tj-772" secondAttribute="trailing" constant="10" id="S3a-ZT-90s"/>
+                                        <constraint firstAttribute="trailing" secondItem="rFL-15-RQ0" secondAttribute="trailing" constant="16" id="eb1-y6-CWH"/>
+                                        <constraint firstItem="rFL-15-RQ0" firstAttribute="top" secondItem="6ho-6S-dwh" secondAttribute="top" constant="7" id="gvz-4V-bSW"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="valueTextField" destination="rFL-15-RQ0" id="1iO-64-zyq"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" reuseIdentifier="MasternodeFundingAccountCellIdentifier" id="gtt-rN-QCs" userLabel="AccountCell" customClass="DSAccountChooserTableViewCell">
+                                <rect key="frame" x="0.0" y="99.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="gtt-rN-QCs" id="U3f-BT-uDI">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Funding Account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ksM-GP-6EF">
+                                            <rect key="frame" x="16" y="12" width="129.5" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fmI-1l-Rvx">
+                                            <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="fmI-1l-Rvx" firstAttribute="baseline" secondItem="ksM-GP-6EF" secondAttribute="baseline" id="0Rc-cQ-R3G"/>
+                                        <constraint firstItem="ksM-GP-6EF" firstAttribute="top" secondItem="U3f-BT-uDI" secondAttribute="top" constant="12.000000000000028" id="5ze-ij-9Aw"/>
+                                        <constraint firstItem="fmI-1l-Rvx" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ksM-GP-6EF" secondAttribute="trailing" constant="10" id="9KO-yr-p0z"/>
+                                        <constraint firstAttribute="trailing" secondItem="fmI-1l-Rvx" secondAttribute="trailing" constant="16" id="eOY-Hg-C6S"/>
+                                        <constraint firstItem="ksM-GP-6EF" firstAttribute="leading" secondItem="U3f-BT-uDI" secondAttribute="leading" constant="16" id="mMF-rT-eFZ"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="accountLabel" destination="fmI-1l-Rvx" id="6Ny-2A-tJD"/>
+                                    <segue destination="2yM-Qg-k68" kind="show" identifier="ChooseUpdateRegistrarFundingAccountSegue" id="LPI-ke-J9z"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="9J8-u5-bjV" id="mbh-3c-wOk"/>
+                            <outlet property="delegate" destination="9J8-u5-bjV" id="w8y-f9-IvW"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Update" id="tbw-ky-gB8">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="LSn-Mw-AJt">
+                            <connections>
+                                <action selector="cancel" destination="9J8-u5-bjV" id="SEU-fd-gJz"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Update" id="9dF-8c-5te">
+                            <connections>
+                                <action selector="updateMasternode:" destination="9J8-u5-bjV" id="h86-hj-yAV"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1fO-mg-mKe" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4235" y="465"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="WRQ-2M-cDt">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="WP2-5z-I3E" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="M3S-R8-lAD">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="9J8-u5-bjV" kind="relationship" relationship="rootViewController" id="gil-CN-tt9"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BkX-UT-pet" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6608.6956521739139" y="551.78571428571422"/>
+        </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="w3M-R1-KP0"/>
+        <segue reference="LPI-ke-J9z"/>
     </inferredMetricsTieBreakers>
 </document>

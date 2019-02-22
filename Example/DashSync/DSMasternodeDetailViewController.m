@@ -43,6 +43,10 @@
         UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
         DSUpdateMasternodeServiceViewController * updateMasternodeServiceViewController = (DSUpdateMasternodeServiceViewController*)navigationController.topViewController;
         updateMasternodeServiceViewController.localMasternode = self.localMasternode;
+    } else if ([segue.identifier isEqualToString:@"UpdateMasternodeRegistrarSegue"]) {
+        UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
+        DSUpdateMasternodeServiceViewController * updateMasternodeServiceViewController = (DSUpdateMasternodeServiceViewController*)navigationController.topViewController;
+        updateMasternodeServiceViewController.localMasternode = self.localMasternode;
     }
 }
 
