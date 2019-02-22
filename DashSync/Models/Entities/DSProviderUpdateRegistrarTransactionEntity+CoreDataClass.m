@@ -24,6 +24,7 @@
         self.scriptPayout = providerUpdateRegistrarTransaction.scriptPayout;
         self.payloadSignature = providerUpdateRegistrarTransaction.payloadSignature;
         self.votingKeyHash = [NSData dataWithUInt160:providerUpdateRegistrarTransaction.votingKeyHash];
+        self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
     }];
     
     return self;
@@ -40,6 +41,7 @@
         transaction.scriptPayout = self.scriptPayout;
         transaction.payloadSignature = self.payloadSignature;
         transaction.votingKeyHash = self.votingKeyHash.UInt160;
+        transaction.providerRegistrationTransactionHash = self.providerRegistrationTransactionHash.UInt256;
     }];
     
     return transaction;

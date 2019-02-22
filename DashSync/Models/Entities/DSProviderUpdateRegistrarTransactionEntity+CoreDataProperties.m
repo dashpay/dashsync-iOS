@@ -19,5 +19,6 @@
 @dynamic providerMode;
 @dynamic scriptPayout;
 @dynamic votingKeyHash;
+@dynamic providerRegistrationTransactionHash;
 
 @end

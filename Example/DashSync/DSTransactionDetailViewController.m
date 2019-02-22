@@ -192,6 +192,9 @@
                 case DSTransactionType_ProviderUpdateService:
                     return 3;
                     break;
+                case DSTransactionType_ProviderUpdateRegistrar:
+                    return 3;
+                    break;
                 default:
                     return 0;
                     break;
@@ -239,6 +242,8 @@
                         cell.statusLabel.text = @"Masternode Registration Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
                         cell.statusLabel.text = @"Masternode Update Service Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+                        cell.statusLabel.text = @"Masternode Update Registrar Transaction";
                     } else {
                         cell.statusLabel.text = @"Classical Transaction";
                     }
@@ -705,6 +710,48 @@
                         
                             
                     }
+                
+            } else if ([self.transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+                DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)self.transaction;
+                switch (indexPath.row) {
+                    case 0:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"Provider update service version", nil);
+                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",providerUpdateRegistrarTransaction.providerUpdateRegistrarTransactionVersion];
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 1:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"Payout Address", nil);
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@",[NSString addressWithScriptPubKey:providerUpdateRegistrarTransaction.scriptPayout onChain:providerUpdateRegistrarTransaction.chain]];
+                        
+                        return cell;
+                        break;
+                    }
+                    case 2:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"provider registration hash:", nil);
+                        s = [NSData dataWithUInt256:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash].hexString;
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+                                                     [s substringFromIndex:s.length/2]];
+                        cell.identifierLabel.copyableText = s;
+                        return cell;
+                        break;
+                    }
+                        
+                        
+                }
                 
             }
             

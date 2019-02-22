@@ -23,6 +23,7 @@
         self.port = providerUpdateServiceTransaction.port;
         self.scriptPayout = providerUpdateServiceTransaction.scriptPayout;
         self.payloadSignature = providerUpdateServiceTransaction.payloadSignature;
+        self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
     }];
     
     return self;
@@ -34,6 +35,7 @@
     transaction.type = DSTransactionType_ProviderUpdateService;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.providerUpdateServiceTransactionVersion = self.specialTransactionVersion;
+        transaction.providerRegistrationTransactionHash = self.providerRegistrationTransactionHash.UInt256;
         transaction.ipAddress = self.ipAddress.UInt128;
         transaction.port = self.port;
         transaction.scriptPayout = self.scriptPayout;

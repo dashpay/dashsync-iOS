@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *payloadSignature;
 @property (assign,nonatomic) uint16_t port;
 @property (nullable, nonatomic, retain) NSData *scriptPayout;
+@property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 
 @end
 

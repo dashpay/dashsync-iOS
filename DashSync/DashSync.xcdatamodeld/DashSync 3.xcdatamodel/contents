@@ -185,6 +185,7 @@
         <attribute name="operatorKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
         <attribute name="providerMode" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
         <attribute name="votingKeyHash" attributeType="Binary" syncable="YES"/>
     </entity>
@@ -192,6 +193,7 @@
         <attribute name="ipAddress" attributeType="Binary" syncable="YES"/>
         <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
         <attribute name="port" attributeType="Integer 16" defaultValueString="9999" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
@@ -347,7 +349,7 @@
         <element name="DSTransactionLockVoteEntity" positionX="-2295" positionY="-54" width="128" height="255"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
-        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="120"/>
+        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="120"/>
+        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="135"/>
     </elements>
 </model>

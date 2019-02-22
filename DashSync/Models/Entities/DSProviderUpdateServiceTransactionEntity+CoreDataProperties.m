@@ -18,5 +18,6 @@
 @dynamic payloadSignature;
 @dynamic port;
 @dynamic scriptPayout;
+@dynamic providerRegistrationTransactionHash;
 
 @end
