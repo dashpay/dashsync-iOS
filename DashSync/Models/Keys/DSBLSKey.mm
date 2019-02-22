@@ -94,6 +94,23 @@
     return self;
 }
 
++ (nullable instancetype)blsKeyWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain {
+    return [[DSBLSKey alloc] initWithPrivateKey:secretKey onChain:chain];
+}
+
+- (nullable instancetype)initWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain {
+    if (!(self = [super init])) return nil;
+    self.secretKey = secretKey;
+    bls::PrivateKey blsPrivateKey = bls::PrivateKey::FromBytes((const uint8_t *)secretKey.u8);
+    bls::PublicKey blsPublicKey = blsPrivateKey.GetPublicKey();
+    UInt384 publicKey = UINT384_ZERO;
+    blsPublicKey.Serialize(publicKey.u8);
+    self.publicKey = publicKey;
+    self.chain = chain;
+    
+    return self;
+}
+
 + (nullable instancetype)blsKeyWithExtendedPublicKeyData:(NSData*)extendedPublicKey onChain:(DSChain*)chain {
     return [[DSBLSKey alloc] initWithExtendedPublicKeyData:extendedPublicKey onChain:chain];
 }
@@ -182,6 +199,11 @@
     return [NSData dataWithUInt384:self.publicKey];
 }
 
+-(NSString*)secretKeyString {
+    if (uint256_is_zero(self.secretKey)) return @"";
+    return [NSData dataWithUInt256:self.secretKey].hexString;
+}
+
 // MARK: - Derivation
 
 -(DSBLSKey*)deriveToPath:(NSIndexPath*)derivationPath {
@@ -244,7 +266,8 @@
 - (UInt768)signData:(NSData *)data {
     if (uint256_is_zero(self.secretKey) && !self.extendedPrivateKeyData.length) return UINT768_ZERO;
     bls::PrivateKey blsPrivateKey = [self blsPrivateKey];
-    bls::Signature blsSignature = blsPrivateKey.Sign((uint8_t *)data.bytes, data.length);
+    UInt256 hash = [data SHA256_2];
+    bls::InsecureSignature blsSignature = blsPrivateKey.SignInsecurePrehashed(hash.u8);
     UInt768 signature = UINT768_ZERO;
     blsSignature.Serialize(signature.u8);
     return signature;
@@ -253,7 +276,7 @@
 - (UInt768)signDigest:(UInt256)md {
     if (uint256_is_zero(self.secretKey) && !self.extendedPrivateKeyData.length) return UINT768_ZERO;
     bls::PrivateKey blsPrivateKey = [self blsPrivateKey];
-    bls::Signature blsSignature = blsPrivateKey.Sign(md.u8, 32);
+    bls::InsecureSignature blsSignature = blsPrivateKey.SignInsecurePrehashed(md.u8);
     UInt768 signature = UINT768_ZERO;
     blsSignature.Serialize(signature.u8);
     return signature;

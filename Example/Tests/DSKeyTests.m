@@ -269,9 +269,9 @@
     uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
     NSData * seedData2 = [NSData dataWithBytes:seed2 length:6];
     uint8_t message1[3] = {7, 8, 9};
-        uint8_t message2[3] = {1, 2, 3};
-        uint8_t message3[4] = {1, 2, 3, 4};
-        uint8_t message4[2] = {1, 2};
+    uint8_t message2[3] = {1, 2, 3};
+    uint8_t message3[4] = {1, 2, 3, 4};
+    uint8_t message4[2] = {1, 2};
     NSData * messageData1 = [NSData dataWithBytes:message1 length:3];
     NSData * messageData2 = [NSData dataWithBytes:message2 length:3];
     NSData * messageData3 = [NSData dataWithBytes:message3 length:4];
@@ -306,6 +306,19 @@
     UInt768 aggregateSignature2 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature3],[NSData dataWithUInt768:signature4],[NSData dataWithUInt768:signature5]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData2,messageData3,messageData4]];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature2].hexString, @"8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b",@"Testing BLS complex signature aggregation");
+    
+}
+
+-(void)testBLSVerify {
+    uint8_t seed1[5] = {1, 2, 3, 4, 5};
+    NSData * seedData1 = [NSData dataWithBytes:seed1 length:5];
+    uint8_t message1[3] = {7, 8, 9};
+    NSData * messageData1 = [NSData dataWithBytes:message1 length:3];
+    DSBLSKey * keyPair1 = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData1 onChain:[DSChain mainnet]];
+    
+    UInt768 signature1 = [keyPair1 signData:messageData1];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signature1].hexString, @"93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065",@"Testing BLS signing");
     
 }
 

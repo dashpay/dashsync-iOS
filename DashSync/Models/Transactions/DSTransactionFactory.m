@@ -12,6 +12,7 @@
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
 #import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
 #import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
 
@@ -36,6 +37,8 @@
             return [DSBlockchainUserResetTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderRegistration:
             return [DSProviderRegistrationTransaction transactionWithMessage:message onChain:chain];
+        case DSTransactionType_ProviderUpdateService:
+            return [DSProviderUpdateServiceTransaction transactionWithMessage:message onChain:chain];
         default:
             return [DSTransaction transactionWithMessage:message onChain:chain]; //we won't be able to check the payload, but try best to support it.
     }

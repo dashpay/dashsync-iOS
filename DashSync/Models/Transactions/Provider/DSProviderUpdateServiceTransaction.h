@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(BOOL)checkPayloadSignature;
 
+-(BOOL)checkPayloadSignature:(DSBLSKey*)publicKey;
+
 
 @end
 

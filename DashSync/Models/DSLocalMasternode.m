@@ -161,6 +161,7 @@
         
         DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
 
+        NSAssert(self.providerRegistrationTransaction,@"There must be a providerRegistrationTransaction linked here");
         DSBLSKey * operatorKey = (DSBLSKey *)[providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
         
         DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithProviderUpdateServiceTransactionVersion:1 providerTransactionHash:self.providerRegistrationTransaction.txHash ipAddress:ipAddress port:port scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
@@ -181,6 +182,17 @@
         return [NSString addressWithScriptPubKey:self.providerRegistrationTransaction.scriptPayout onChain:self.providerRegistrationTransaction.chain];
     }
     return nil;
+}
+
+-(DSBLSKey*)operatorKeyFromSeed:(NSData*)seed {
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
+    
+    return (DSBLSKey *)[providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
+}
+
+-(NSString* _Nullable)operatorKeyStringFromSeed:(NSData*)seed {
+    DSBLSKey * blsKey = [self operatorKeyFromSeed:seed];
+    return [blsKey secretKeyString];
 }
 
 // MARK: - Persistence

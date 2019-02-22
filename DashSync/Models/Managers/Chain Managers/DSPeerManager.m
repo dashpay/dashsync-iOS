@@ -63,11 +63,11 @@
 #define DSDLog(...)
 #endif
 
-#define TESTNET_DNS_SEEDS @[/*@"testnet-dnsseed.dash.org",@"test.dnsseed.masternode.io",@"testnet-seed.dashdot.io"*/]
+#define TESTNET_DNS_SEEDS @[@"testnet-seed.dashdot.io"]
 
-#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org"]
+#define MAINNET_DNS_SEEDS @[@"dnsseed.dash.org",@"dnsseed.dashdot.io"]
 
-#define TESTNET_MAIN_PEER @"" //@"18.202.52.170:19999"
+#define TESTNET_MAIN_PEER @"52.36.64.148:19999"
 
 
 #define FIXED_PEERS          @"FixedPeers"

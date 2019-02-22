@@ -111,12 +111,16 @@
 }
 
 -(BOOL)checkPayloadSignature {
-    DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:self.providerRegistrationTransaction.operatorKey onChain:self.chain];
-    return [blsKey verify:[self payloadHash] signature:[self payloadSignature].UInt768];
+    NSAssert(self.providerRegistrationTransaction, @"We need a provider registration transaction");
+    return [self checkPayloadSignature:[DSBLSKey blsKeyWithPublicKey:self.providerRegistrationTransaction.operatorKey onChain:self.chain]];
+}
+
+-(BOOL)checkPayloadSignature:(DSBLSKey*)publicKey {
+    return [publicKey verify:[self payloadHash] signature:[self payloadSignature].UInt768];
 }
 
 -(void)signPayloadWithKey:(DSBLSKey*)privateKey {
-    self.payloadSignature = [NSData dataWithUInt768:[privateKey signDigest:[self payloadHash]]];
+    self.payloadSignature = [NSData dataWithUInt768:[privateKey signData:[self payloadDataForHash]]];
 }
 
 -(NSData*)basePayloadData {
@@ -134,7 +138,7 @@
 -(NSData*)payloadDataForHash {
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
-    [data appendUInt8:0];
+    //no need to add 0 here
     return data;
 }
 

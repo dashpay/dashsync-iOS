@@ -187,6 +187,8 @@ inline static int ceil_log2(int x)
 //    [root getValue:&merkleRoot];
 //}
 
+#define LOG_MASTERNODE_DIFF 1
+
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
     NSUInteger chunkSize = 4096;
@@ -213,7 +215,7 @@ inline static int ceil_log2(int x)
     UInt256 blockHash = [message UInt256AtOffset:offset];
     offset += 32;
     
-    DSDLog(@"baseBlockHash %@ blockHash %@",[NSData dataWithUInt256:baseBlockHash].hexString,[NSData dataWithUInt256:blockHash].hexString);
+    DSDLog(@"baseBlockHash %@ (%@) blockHash %@ (%@)",[NSData dataWithUInt256:baseBlockHash].hexString,[NSData dataWithUInt256:baseBlockHash].reverse.hexString,[NSData dataWithUInt256:blockHash].hexString,[NSData dataWithUInt256:blockHash].reverse.hexString);
     
     if (length - offset < 4) return;
     uint32_t totalTransactions = [message UInt32AtOffset:offset];
