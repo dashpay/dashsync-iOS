@@ -136,8 +136,11 @@
 // true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
 
-// true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
+// true if transaction cannot be immediately spent because of a time lock (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
 - (BOOL)transactionIsPending:(DSTransaction * _Nonnull)transaction;
+
+// true if transaction cannot be immediately spent
+- (BOOL)transactionOutputsAreLocked:(DSTransaction * _Nonnull)transaction;
 
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(DSTransaction * _Nonnull)transaction;

@@ -21,6 +21,7 @@
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSECDSAKey.h"
 #include <arpa/inet.h>
 
 @interface DSLocalMasternode()
@@ -226,9 +227,31 @@
     return (DSBLSKey *)[providerOperatorKeysDerivationPath privateKeyForHash160:[[NSData dataWithUInt384:self.providerRegistrationTransaction.operatorKey] hash160] fromSeed:seed];
 }
 
--(NSString* _Nullable)operatorKeyStringFromSeed:(NSData*)seed {
+-(NSString*)operatorKeyStringFromSeed:(NSData*)seed {
     DSBLSKey * blsKey = [self operatorKeyFromSeed:seed];
     return [blsKey secretKeyString];
+}
+
+-(DSECDSAKey*)ownerKeyFromSeed:(NSData*)seed {
+    DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:self.ownerKeysWallet];
+    
+    return (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.ownerKeyHash fromSeed:seed];
+}
+
+-(NSString*)ownerKeyStringFromSeed:(NSData*)seed {
+    DSECDSAKey * ecdsaKey = [self ownerKeyFromSeed:seed];
+    return [ecdsaKey secretKeyString];
+}
+
+-(DSECDSAKey*)votingKeyFromSeed:(NSData*)seed {
+    DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+    
+    return (DSECDSAKey *)[providerVotingKeysDerivationPath privateKeyForHash160:self.providerRegistrationTransaction.votingKeyHash fromSeed:seed];
+}
+
+-(NSString*)votingKeyStringFromSeed:(NSData*)seed {
+    DSECDSAKey * ecdsaKey = [self votingKeyFromSeed:seed];
+    return [ecdsaKey secretKeyString];
 }
 
 // MARK: - Persistence

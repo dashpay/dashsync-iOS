@@ -8,12 +8,15 @@
 #import "DSCoinbaseTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSTransactionFactory.h"
+#import "DSCoinbaseTransactionEntity+CoreDataClass.h"
 
 @implementation DSCoinbaseTransaction
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
+    self.type = DSTransactionType_Coinbase;
     NSUInteger length = message.length;
     uint32_t off = self.payloadOffset;
     if (length - off < 1) return nil;
@@ -60,6 +63,16 @@
     
     
     return data;
+}
+
+- (size_t)size
+{
+    if (! uint256_is_zero(self.txHash)) return self.data.length;
+    return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length];
+}
+
+-(Class)entityClass {
+    return [DSCoinbaseTransactionEntity class];
 }
 
 @end

@@ -30,7 +30,7 @@
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
-    self.type = DSTransactionType_ProviderUpdateService;
+    self.type = DSTransactionType_ProviderUpdateRegistrar;
     NSUInteger length = message.length;
     uint32_t off = self.payloadOffset;
     

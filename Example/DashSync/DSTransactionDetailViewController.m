@@ -77,11 +77,13 @@
     self.sent = [account amountSentByTransaction:transaction];
     self.received = [account amountReceivedFromTransaction:transaction];
     
-    for (NSString *inputAddress in transaction.inputAddresses) {
-        if (![mutableInputAddresses containsObject:inputAddress]) {
-            [mutableInputAddresses addObject:inputAddress];
+    //if (![transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+        for (NSString *inputAddress in transaction.inputAddresses) {
+            if (![mutableInputAddresses containsObject:inputAddress]) {
+                [mutableInputAddresses addObject:inputAddress];
+            }
         }
-    }
+    //}
     
     for (NSString *address in transaction.outputAddresses) {
         NSData * script = transaction.outputScripts[outputAmountIndex];
@@ -165,12 +167,24 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    return ([self.transaction type] == DSTransactionType_Classic)?3:4;
+    switch ([self.transaction type]) {
+        case DSTransactionType_Classic:
+            return 3;
+            break;
+        case DSTransactionType_Coinbase:
+            return 2;
+            break;
+        default:
+            return 4;
+            break;
+    }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
+    NSInteger realSection = section;
+    if ([self.transaction type] == DSTransactionType_Coinbase && section == 1) realSection++;
     switch (section) {
         case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?7:6):5;
         case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
@@ -215,9 +229,10 @@
     NSString *s;
     
     NSInteger indexPathRow = indexPath.row;
-    
+    NSInteger realSection = indexPath.section;
+    if ([self.transaction type] == DSTransactionType_Coinbase && indexPath.section == 1) realSection++;
     // Configure the cell...
-    switch (indexPath.section) {
+    switch (realSection) {
         case 0:
             if (!self.transaction.associatedShapeshift) {
                 if (indexPathRow > 1) indexPathRow += 2; // no assoc
@@ -244,6 +259,8 @@
                         cell.statusLabel.text = @"Masternode Update Service Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                         cell.statusLabel.text = @"Masternode Update Registrar Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
+                        cell.statusLabel.text = @"Coinbase Transaction";
                     } else {
                         cell.statusLabel.text = @"Classical Transaction";
                     }
@@ -294,7 +311,9 @@
                     cell.titleLabel.text = NSLocalizedString(@"status:", nil);
                     cell.moreInfoLabel.text = nil;
                     
-                    if (self.transaction.blockHeight != TX_UNCONFIRMED) {
+                    if ([account transactionOutputsAreLocked:self.transaction]) {
+                        cell.statusLabel.text = NSLocalizedString(@"recently mined (locked)", nil);
+                    } else if (self.transaction.blockHeight != TX_UNCONFIRMED) {
                         cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
                                                  self.transaction.blockHeight, self.txDateString];
                         cell.moreInfoLabel.text = self.txDateString;
@@ -354,7 +373,7 @@
             
         case 1: // drop through
         case 2:
-            if ((self.sent > 0 && indexPath.section == 1) || (self.sent == 0 && indexPath.section == 2)) {
+            if ((self.sent > 0 && realSection == 1) || (self.sent == 0 && realSection == 2)) {
                 DSTransactionDetailTableViewCell * cell;
                 if ([self.outputText[indexPath.row] length] > 0) {
                     cell = [tableView dequeueReusableCellWithIdentifier:@"DetailCellIdentifier" forIndexPath:indexPath];
@@ -764,7 +783,9 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    switch (section) {
+    NSUInteger realSection = section;
+    if ([self.transaction type] == DSTransactionType_Coinbase && section == 1) realSection++;
+    switch (realSection) {
         case 0: return nil;
         case 1: return (self.sent > 0) ? NSLocalizedString(@"to:", nil) : NSLocalizedString(@"from:", nil);
         case 2: return (self.sent > 0) ? NSLocalizedString(@"from:", nil) : NSLocalizedString(@"to:", nil);

@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, readonly) NSData *publicKeyData;
 @property (nonatomic, readonly) UInt160 hash160;
+@property (nonatomic,readonly) NSString * secretKeyString;
 
 - (NSString *)addressForChain:(DSChain*)chain;
 

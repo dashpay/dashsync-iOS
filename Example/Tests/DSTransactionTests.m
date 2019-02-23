@@ -34,6 +34,7 @@
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
 #include <arpa/inet.h>
 
 @interface DSTransactionTests : XCTestCase
@@ -517,6 +518,68 @@
 //    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
 }
 
+
+-(void)testProviderUpdateRegistrarTransaction {
+    DSChain * chain = [DSChain testnet];
+    
+    NSString * seedPhrase = @"enemy check owner stumble unaware debris suffer peanut good fabric bleak outside";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
+    
+    NSData * hexData = [NSData dataFromHexString:@"0300030001e2cfc5ba74b3c26d4d4e4bb010b676092a314d33fb007315ed88eb54ac37173c000000006a47304402202d588c47bf63948d3a7640e83d0aac9e7267ca630faa1dbaeddd4ee1a04f9c350220515c79165a64db6a6e501b149e1d9b5a23b1902b83eec69ff50ff28e8036c2710121029bce432130b30421ddc26b2281fa4f5acad0d3e6fa14f382e9bc031e82fd676dffffffff011f89a95a020000001976a9148bdba067dbb6ec9a74a655f91c8d6ea7c1f2a89688ac00000000e4010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d70000859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe8211196a96067672ba9cb7accd0ae90523ba60aba86151976a914eb3a5c66df4f5a99250af6090192115a04b7414088ac1368c5e52a7e3ab0676cd61d09e1054036d9ea66f61c53c68b89ba310c7d035b411f6e5d8a86d2928ef45ea70bbf1f15b9d69690d3ee3afeec373bfae5745f816ac531239ec7c6c94f2511dd6c12d077df90dc3bbcf76576a2c8ebb3363bb4e9f094"];
+    UInt256 txId = *(UInt256 *)@"bc2056e345f921d161a167f29adec1492496968511cbd60e5139b45dd3d512f8".hexToData.reverse.bytes;
+    
+    DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransactionFromMessage = [[DSProviderUpdateRegistrarTransaction alloc] initWithMessage:hexData onChain:chain];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt256:txId], [NSData dataWithUInt256:providerUpdateRegistrarTransactionFromMessage.txHash]);
+    
+    XCTAssertEqualObjects(providerUpdateRegistrarTransactionFromMessage.toData,hexData,@"Provider update registrar transaction does not match it's data");
+    
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
+    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
+        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+    }
+    
+    UInt256 operatorSecretKey = [NSData dataFromHexString:@"17b47bb0f2a3298ee8f9d07fdafc1e8552869d11cef81e13a2706e2fdbf50dc5"].UInt256;
+    
+    DSBLSKey * privateKey = [DSBLSKey blsKeyWithPrivateKey:operatorSecretKey onChain:chain];
+    
+    UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe82111"].UInt384;
+    
+    UInt384 operatorKey = privateKey.publicKey;
+    
+    XCTAssertTrue(uint384_eq(operatorKey, operatorKeyNeeded),@"operator keys don't match");
+    
+    UInt384 operatorKeyFromDerivation = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
+    
+    XCTAssertEqualObjects([NSData dataWithUInt384:operatorKey], [NSData dataWithUInt384:operatorKeyFromDerivation],@"operator keys don't match");
+    
+    XCTAssertTrue(uint384_eq(operatorKeyFromDerivation, operatorKeyNeeded),@"operator keys don't match");
+    
+    DSBLSKey * operatorBLSKey = [DSBLSKey blsKeyWithPublicKey:operatorKey onChain:chain];
+    
+    UInt256 payloadHash = providerUpdateRegistrarTransactionFromMessage.payloadDataForHash.SHA256_2;
+    
+    UInt768 signatureFromDigest = [privateKey signDigest:payloadHash];
+    
+    UInt768 signatureFromData = [privateKey signData:providerUpdateRegistrarTransactionFromMessage.payloadDataForHash];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], [NSData dataWithUInt768:signatureFromData],@"payload signature doesn't match");
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], providerUpdateRegistrarTransactionFromMessage.payloadSignature,@"payload signature doesn't match");
+    
+    NSData * payloadSignature = providerUpdateRegistrarTransactionFromMessage.payloadSignature;
+    
+    BOOL verified = [privateKey verify:payloadHash signature:signatureFromData];
+    
+    XCTAssertTrue(verified,@"The signature is not signed correctly");
+    
+    XCTAssertTrue([providerUpdateRegistrarTransactionFromMessage checkPayloadSignature:operatorBLSKey],@"The payload is not signed correctly");
+    
+}
 
 
 @end

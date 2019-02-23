@@ -1247,11 +1247,16 @@
 #endif
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-        
-        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+        if ([self.currentBlockTxHashes containsObject:uint256_obj(tx.txHash)]) {
+            [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+        } else {
+            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_data(tx.txHash).hexString,self.currentBlockTxHashes);
+        }
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             DSMerkleBlock *block = self.currentBlock;
+            
+            DSDLog(@"%@:%u clearing current block", self.host, self.port);
             
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
@@ -1260,6 +1265,8 @@
                 [self.transactionDelegate peer:self relayedBlock:block];
             });
         }
+    } else {
+        DSDLog(@"%@:%u no current block", self.host, self.port);
     }
     
 }

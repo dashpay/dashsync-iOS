@@ -55,6 +55,7 @@
 #import "DSKey+BIP38.h"
 #import "NSDate+Utils.h"
 #import "DSBIP39Mnemonic.h"
+#import "DSCoinbaseTransaction.h"
 
 #define LOG_BALANCE_UPDATE 0
 
@@ -443,11 +444,14 @@
                     }
                 }
                 
-                if (pending || [inputs intersectsSet:pendingTx]) {
-                    [pendingTx addObject:uint256_obj(tx.txHash)];
-                    [balanceHistory insertObject:@(balance) atIndex:0];
-                    continue;
-                }
+            }
+            
+            if ([self transactionOutputsAreLocked:tx]) pending = YES;
+            
+            if (pending || [inputs intersectsSet:pendingTx]) {
+                [pendingTx addObject:uint256_obj(tx.txHash)];
+                [balanceHistory insertObject:@(balance) atIndex:0];
+                continue;
             }
             
             //TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
@@ -792,6 +796,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     for (NSValue *output in self.utxos) {
         [output getValue:&o];
         tx = self.allTx[uint256_obj(o.hash)];
+        if ([self transactionOutputsAreLocked:tx]) continue;
         if (! tx) continue;
         //for example the tx block height is 25, can only send after the chain block height is 31 for previous confirmations needed of 6
         if (isInstant && (tx.blockHeight >= (self.blockHeight - IX_PREVIOUS_CONFIRMATIONS_NEEDED))) continue;
@@ -1191,6 +1196,15 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if ([self transactionIsPending:self.allTx[txHash]]) return YES;
     }
     
+    return NO;
+}
+
+//true if this transaction outputs can not be used in inputs
+-(BOOL)transactionOutputsAreLocked:(DSTransaction *)transaction {
+    if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) { //only allow these to be spent after 100 inputs
+        DSCoinbaseTransaction * coinbaseTransaction = (DSCoinbaseTransaction*)transaction;
+        if (coinbaseTransaction.height + 100 > self.wallet.chain.lastBlockHeight) return YES;
+    }
     return NO;
 }
 

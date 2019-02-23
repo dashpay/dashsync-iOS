@@ -734,6 +734,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     transaction.timestamp = [NSDate timeIntervalSince1970];
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
     if (!account) {
+        DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
         if (![self.chain transactionHasLocalReferences:transaction]) return;
     } else {
         if (![account registerTransaction:transaction]) return;

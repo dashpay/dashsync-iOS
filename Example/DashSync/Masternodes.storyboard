@@ -211,20 +211,20 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="fuB-bi-ybq" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="116" width="414" height="44"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="71" id="LFb-J0-gRo" userLabel="InfoCell" customClass="DSTransactionIdentifierTableViewCell">
+                                        <rect key="frame" x="0.0" y="116" width="414" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="fuB-bi-ybq" id="yHP-Af-ypf">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="LFb-J0-gRo" id="AVC-ns-dcT">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="70.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Is Owner" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Efa-cB-vIp">
-                                                    <rect key="frame" x="16" y="12" width="68" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Owner key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LsD-H4-7rw">
+                                                    <rect key="frame" x="16" y="12" width="81.5" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eV4-xI-f3E">
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mfA-4w-dhN" customClass="BRCopyLabel">
                                                     <rect key="frame" x="357" y="12" width="41" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -232,16 +232,19 @@
                                                 </label>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="eV4-xI-f3E" firstAttribute="baseline" secondItem="Efa-cB-vIp" secondAttribute="baseline" id="6Er-ij-sar"/>
-                                                <constraint firstItem="Efa-cB-vIp" firstAttribute="leading" secondItem="yHP-Af-ypf" secondAttribute="leading" constant="16" id="9vc-Bn-wy9"/>
-                                                <constraint firstAttribute="trailing" secondItem="eV4-xI-f3E" secondAttribute="trailing" constant="16" id="fxB-UH-UNZ"/>
-                                                <constraint firstItem="Efa-cB-vIp" firstAttribute="top" secondItem="yHP-Af-ypf" secondAttribute="top" constant="12.000000000000028" id="rg5-Un-eup"/>
-                                                <constraint firstItem="eV4-xI-f3E" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Efa-cB-vIp" secondAttribute="trailing" constant="10" id="x0Z-uw-hEO"/>
+                                                <constraint firstAttribute="trailing" secondItem="mfA-4w-dhN" secondAttribute="trailing" constant="16" id="Djg-WL-wBG"/>
+                                                <constraint firstItem="mfA-4w-dhN" firstAttribute="baseline" secondItem="LsD-H4-7rw" secondAttribute="baseline" id="MrS-0O-evy"/>
+                                                <constraint firstItem="LsD-H4-7rw" firstAttribute="leading" secondItem="AVC-ns-dcT" secondAttribute="leading" constant="16" id="SNd-Xh-7Sm"/>
+                                                <constraint firstItem="LsD-H4-7rw" firstAttribute="top" secondItem="AVC-ns-dcT" secondAttribute="top" constant="12.000000000000028" id="Y2S-SN-hBu"/>
+                                                <constraint firstItem="mfA-4w-dhN" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="LsD-H4-7rw" secondAttribute="trailing" constant="10" id="i0x-bQ-sRp"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="identifierLabel" destination="mfA-4w-dhN" id="TVw-UQ-qlp"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="71" id="J6P-OL-XEJ" userLabel="InfoCell" customClass="DSTransactionIdentifierTableViewCell">
-                                        <rect key="frame" x="0.0" y="160" width="414" height="71"/>
+                                        <rect key="frame" x="0.0" y="187" width="414" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="J6P-OL-XEJ" id="Se8-bA-E4Q">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="70.5"/>
@@ -272,20 +275,20 @@
                                             <outlet property="identifierLabel" destination="cVl-gK-ZYS" id="tY6-1g-ete"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="WRd-Kg-k7M" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="231" width="414" height="44"/>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="71" id="6JB-yr-ZJY" userLabel="InfoCell" customClass="DSTransactionIdentifierTableViewCell">
+                                        <rect key="frame" x="0.0" y="258" width="414" height="71"/>
                                         <autoresizingMask key="autoresizingMask"/>
-                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="WRd-Kg-k7M" id="g0t-JI-eHT">
-                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6JB-yr-ZJY" id="YaJ-MM-aiZ">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="70.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Can Vote" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j9n-bv-fV3">
-                                                    <rect key="frame" x="16" y="12" width="70" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Voting key" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wgj-zf-HP2">
+                                                    <rect key="frame" x="16" y="12" width="80" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KIU-ul-K02">
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EAD-yQ-4uB" customClass="BRCopyLabel">
                                                     <rect key="frame" x="357" y="12" width="41" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
@@ -293,16 +296,19 @@
                                                 </label>
                                             </subviews>
                                             <constraints>
-                                                <constraint firstItem="KIU-ul-K02" firstAttribute="baseline" secondItem="j9n-bv-fV3" secondAttribute="baseline" id="9AK-5x-XWP"/>
-                                                <constraint firstItem="KIU-ul-K02" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="j9n-bv-fV3" secondAttribute="trailing" constant="10" id="Vie-pv-pRg"/>
-                                                <constraint firstItem="j9n-bv-fV3" firstAttribute="leading" secondItem="g0t-JI-eHT" secondAttribute="leading" constant="16" id="YFb-NG-YU4"/>
-                                                <constraint firstItem="j9n-bv-fV3" firstAttribute="top" secondItem="g0t-JI-eHT" secondAttribute="top" constant="12.000000000000028" id="aKB-83-Ink"/>
-                                                <constraint firstAttribute="trailing" secondItem="KIU-ul-K02" secondAttribute="trailing" constant="16" id="zT6-i3-LUS"/>
+                                                <constraint firstItem="EAD-yQ-4uB" firstAttribute="baseline" secondItem="wgj-zf-HP2" secondAttribute="baseline" id="4hq-uL-2pa"/>
+                                                <constraint firstItem="wgj-zf-HP2" firstAttribute="leading" secondItem="YaJ-MM-aiZ" secondAttribute="leading" constant="16" id="7UO-fN-BGL"/>
+                                                <constraint firstItem="EAD-yQ-4uB" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="wgj-zf-HP2" secondAttribute="trailing" constant="10" id="KyB-iU-4uo"/>
+                                                <constraint firstItem="wgj-zf-HP2" firstAttribute="top" secondItem="YaJ-MM-aiZ" secondAttribute="top" constant="12.000000000000028" id="ijF-nT-7Qb"/>
+                                                <constraint firstAttribute="trailing" secondItem="EAD-yQ-4uB" secondAttribute="trailing" constant="16" id="uCy-Bx-6ZH"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="identifierLabel" destination="EAD-yQ-4uB" id="vbD-TP-YHG"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="DMn-oN-poH" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
-                                        <rect key="frame" x="0.0" y="275" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="329" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="DMn-oN-poH" id="jTb-vc-DTA">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -335,7 +341,7 @@
                             <tableViewSection headerTitle="Actions" id="5i2-Kc-maX">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="uZ0-Fu-cl7" style="IBUITableViewCellStyleDefault" id="8Nv-1a-4yT">
-                                        <rect key="frame" x="0.0" y="347" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="401" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="8Nv-1a-4yT" id="Gks-D5-dI7">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -355,7 +361,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="lHD-CQ-07Y" style="IBUITableViewCellStyleDefault" id="I6O-bz-ldU">
-                                        <rect key="frame" x="0.0" y="391" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="445" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="I6O-bz-ldU" id="9Cs-wI-RzI">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -375,7 +381,7 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="IWL-hR-vWk" style="IBUITableViewCellStyleDefault" id="MAX-fc-X73">
-                                        <rect key="frame" x="0.0" y="435" width="414" height="44"/>
+                                        <rect key="frame" x="0.0" y="489" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="MAX-fc-X73" id="nRB-uW-b7G">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -403,12 +409,12 @@
                         </connections>
                     </tableView>
                     <connections>
-                        <outlet property="canVoteLabel" destination="KIU-ul-K02" id="cOB-oB-rm2"/>
                         <outlet property="fundsInHoldingLabel" destination="oXB-rw-c4u" id="pGS-rK-JGa"/>
-                        <outlet property="isOwnerLabel" destination="eV4-xI-f3E" id="B0r-fk-7ec"/>
                         <outlet property="locationLabel" destination="5HH-wZ-1AC" id="rVi-mA-r3L"/>
                         <outlet property="operatorKeyLabel" destination="cVl-gK-ZYS" id="Tqm-0J-v6W"/>
+                        <outlet property="ownerKeyLabel" destination="mfA-4w-dhN" id="8sZ-5d-qhJ"/>
                         <outlet property="payToAddress" destination="uVq-Lh-bHC" id="TOj-co-tz7"/>
+                        <outlet property="votingKeyLabel" destination="EAD-yQ-4uB" id="L31-nE-zes"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4Ky-iR-bIw" userLabel="First Responder" sceneMemberID="firstResponder"/>

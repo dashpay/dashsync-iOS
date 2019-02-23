@@ -14,9 +14,9 @@
 
 @interface DSMasternodeDetailViewController ()
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
-@property (strong, nonatomic) IBOutlet UILabel *isOwnerLabel;
 @property (strong, nonatomic) IBOutlet UILabel *operatorKeyLabel;
-@property (strong, nonatomic) IBOutlet UILabel *canVoteLabel;
+@property (strong, nonatomic) IBOutlet UILabel *ownerKeyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *votingKeyLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundsInHoldingLabel;
 @property (strong, nonatomic) IBOutlet UILabel *payToAddress;
 
@@ -31,9 +31,9 @@
     uint32_t ipAddress = self.simplifiedMasternodeEntry.address.u32[3];
     
     self.locationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),self.simplifiedMasternodeEntry.port];
-    self.isOwnerLabel.text = self.localMasternode.ownerKeysWallet?@"YES":@"NO";
+    self.ownerKeyLabel.text = self.localMasternode.ownerKeysWallet?@"SHOW":@"NO";
     self.operatorKeyLabel.text = self.localMasternode.operatorKeysWallet?@"SHOW":@"NO";
-    self.canVoteLabel.text = self.localMasternode.votingKeysWallet?@"YES":@"NO";
+    self.votingKeyLabel.text = self.localMasternode.votingKeysWallet?@"SHOW":@"NO";
     self.fundsInHoldingLabel.text = self.localMasternode.holdingKeysWallet?@"YES":@"NO";
     self.payToAddress.text = self.localMasternode.payoutAddress?self.localMasternode.payoutAddress:@"Unknown";
 }
@@ -55,11 +55,29 @@
         case 0:
         {
             switch (indexPath.row) {
+                case 2:
+                    if (self.localMasternode.ownerKeysWallet) {
+                        [self.localMasternode.ownerKeysWallet seedWithPrompt:@"Show owner key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
+                            if (seed) {
+                                self.ownerKeyLabel.text = [self.localMasternode ownerKeyStringFromSeed:seed];
+                            }
+                        }];
+                    }
+                    break;
                 case 3:
                     if (self.localMasternode.operatorKeysWallet) {
                         [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Show operator key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
                                 self.operatorKeyLabel.text = [self.localMasternode operatorKeyStringFromSeed:seed];
+                            }
+                        }];
+                    }
+                    break;
+                case 4:
+                    if (self.localMasternode.operatorKeysWallet) {
+                        [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Show voting key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
+                            if (seed) {
+                                self.operatorKeyLabel.text = [self.localMasternode votingKeyStringFromSeed:seed];
                             }
                         }];
                     }

@@ -169,6 +169,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(BOOL)isDevnetAny;
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
 
+-(void)setUp;
+
 -(void)save;
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;

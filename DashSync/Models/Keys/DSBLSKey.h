@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) NSData * extendedPrivateKeyData;
 @property (nonatomic,readonly) NSData * extendedPublicKeyData;
 @property (nonatomic,readonly) UInt256 secretKey;
-@property (nonatomic,readonly) NSString * secretKeyString;
 @property (nonatomic,readonly) UInt384 publicKey;
 
 + (nullable instancetype)blsKeyWithPrivateKeyFromSeed:(NSData *)seed onChain:(DSChain*)chain;

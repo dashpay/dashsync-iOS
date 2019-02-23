@@ -193,9 +193,13 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.standardPort = port;
     self.standardDapiPort = dapiPort;
     self.mainThreadChainEntity = [self chainEntity];
+
+    return self;
+}
+
+-(void)setUp {
     [self retrieveWallets];
     [self retrieveStandaloneDerivationPaths];
-    return self;
 }
 
 
@@ -320,6 +324,7 @@ static checkpoint mainnet_checkpoint_array[] = {
         //DSDLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
     if (inSetUp) {
+        [_mainnet setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_mainnet chainEntity];
             _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
@@ -340,6 +345,7 @@ static checkpoint mainnet_checkpoint_array[] = {
         inSetUp = TRUE;
     });
     if (inSetUp) {
+        [_testnet setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_testnet chainEntity];
             _testnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
@@ -378,6 +384,7 @@ static dispatch_once_t devnetToken = 0;
         }
     }
     if (inSetUp) {
+        [devnetChain setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [devnetChain chainEntity];
             devnetChain.totalMasternodeCount = chainEntity.totalMasternodeCount;

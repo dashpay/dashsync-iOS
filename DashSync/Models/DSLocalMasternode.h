@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSWallet,DSAccount, DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSBLSKey;
+@class DSWallet,DSAccount, DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSBLSKey,DSECDSAKey;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
     DSLocalMasternodeStatus_New = 0,
@@ -44,7 +44,15 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 
 -(DSBLSKey* _Nullable)operatorKeyFromSeed:(NSData*)seed;
 
--(NSString* _Nullable)operatorKeyStringFromSeed:(NSData*)seed;
+-(NSString*)operatorKeyStringFromSeed:(NSData*)seed;
+
+-(DSECDSAKey* _Nullable)ownerKeyFromSeed:(NSData*)seed ;
+
+-(NSString*)ownerKeyStringFromSeed:(NSData*)seed;
+
+-(DSECDSAKey* _Nullable)votingKeyFromSeed:(NSData*)seed;
+
+-(NSString*)votingKeyStringFromSeed:(NSData*)seed;
 
 @end
 

@@ -56,6 +56,10 @@
         <relationship name="transactionLockVotes" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransactionLockVoteEntity" inverseName="chain" inverseEntity="DSTransactionLockVoteEntity" syncable="YES"/>
         <relationship name="votes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceVoteHashEntity" inverseName="chain" inverseEntity="DSGovernanceVoteHashEntity" syncable="YES"/>
     </entity>
+    <entity name="DSCoinbaseTransactionEntity" representedClassName="DSCoinbaseTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="height" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="merkleRootMNList" optional="YES" attributeType="Binary" syncable="YES"/>
+    </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
         <attribute name="derivationPath" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="publicKeyIdentifier" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
@@ -339,6 +343,8 @@
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
         <element name="DSProviderRegistrationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
+        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="135"/>
+        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="120"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="225"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="60"/>
@@ -349,7 +355,6 @@
         <element name="DSTransactionLockVoteEntity" positionX="-2295" positionY="-54" width="128" height="255"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="120"/>
-        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="135"/>
+        <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
     </elements>
 </model>
