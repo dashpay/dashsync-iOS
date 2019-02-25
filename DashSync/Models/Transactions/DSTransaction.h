@@ -40,8 +40,6 @@
 #define TX_UNCONFIRMED       INT32_MAX   // block height indicating transaction is unconfirmed
 #define TX_MAX_LOCK_HEIGHT   500000000   // a lockTime below this value is a block height, otherwise a timestamp
 
-#define IX_PREVIOUS_CONFIRMATIONS_NEEDED       6   // number of previous confirmations needed in ix inputs
-
 #define TX_VERSION    0x00000001u
 #define SPECIAL_TX_VERSION    0x00000003u
 #define TX_LOCKTIME   0x00000000u
@@ -79,6 +77,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) NSTimeInterval timestamp; // time interval since 1970
 @property (nonatomic, readonly) size_t size; // size in bytes if signed, or estimated size assuming compact pubkey sigs
 @property (nonatomic, readonly) uint64_t standardFee;
+@property (nonatomic, readonly) uint64_t standardInstantFee;
 @property (nonatomic, readonly) BOOL isSigned; // checks if all signatures exist, but does not verify them
 @property (nonatomic, readonly, getter = toData) NSData *data;
 

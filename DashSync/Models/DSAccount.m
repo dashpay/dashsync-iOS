@@ -785,7 +785,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         tx = self.allTx[uint256_obj(o.hash)];
         if (! tx) continue;
         //for example the tx block height is 25, can only send after the chain block height is 31 for previous confirmations needed of 6
-        if (isInstant && (tx.blockHeight >= (self.blockHeight - IX_PREVIOUS_CONFIRMATIONS_NEEDED))) continue;
+        if (isInstant && (tx.blockHeight >= (self.blockHeight - self.wallet.chain.ixPreviousConfirmationsNeeded))) continue;
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         
         if (transaction.size + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
@@ -1288,6 +1288,38 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
     fee = [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
     return (amount > fee) ? amount - fee : 0;
+}
+
+// MARK: = Autolocks
+
+- (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount
+{
+    const uint64_t confirmationCount = self.wallet.chain.ixPreviousConfirmationsNeeded;
+    
+    DSUTXO o;
+    DSTransaction *tx;
+    NSUInteger inputCount = 0;
+    uint64_t amount = 0;
+    
+    for (NSValue *output in self.utxos) {
+        [output getValue:&o];
+        tx = self.allTx[uint256_obj(o.hash)];
+        if (o.n >= tx.outputAmounts.count) continue;
+        if (confirmationCount && (tx.blockHeight >= (self.blockHeight - confirmationCount))) continue;
+        inputCount++;
+        amount += [tx.outputAmounts[o.n] unsignedLongLongValue];
+        
+        if (amount >= requiredAmount) {
+            break;
+        }
+    }
+    
+    if (amount < requiredAmount) {
+        return NO;
+    }
+    
+    DSChain *chain = self.wallet.chain;
+    return [chain canUseAutoLocksWithInputCount:inputCount];
 }
 
 // MARK: - Private Key Sweeping
