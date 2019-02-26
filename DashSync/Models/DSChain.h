@@ -143,6 +143,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, readonly) uint32_t blockchainUsersCount;
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
+@property (nonatomic, readonly) uint64_t ixPreviousConfirmationsNeeded;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;
@@ -232,6 +233,10 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 
 - (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
+/**
+ Check if Autolocks DIP is enabled and transaction can be Autolocked with `inputCount` provided
+ */
+- (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount;
 
 @end
 

@@ -147,6 +147,9 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define LOG_PREV_BLOCKS_ON_ORPHAN 0
 
+// number of previous confirmations needed in ix inputs
+#define MAINNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED 6
+#define TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED 2
 
 @interface DSChain ()
 
@@ -162,6 +165,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) DSAccount * viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
+@property (nonatomic, assign) uint64_t ixPreviousConfirmationsNeeded;
 
 @end
 
@@ -184,14 +188,30 @@ static checkpoint mainnet_checkpoint_array[] = {
     return self;
 }
 
-- (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort
+- (instancetype)initWithType:(DSChainType)type checkpoints:(NSArray*)checkpoints
 {
     if (! (self = [self init])) return nil;
     _chainType = type;
+    switch (type) {
+        case DSChainType_MainNet: {
+            self.standardPort = MAINNET_STANDARD_PORT;
+            self.standardDapiPort = MAINNET_DAPI_STANDARD_PORT;
+            self.ixPreviousConfirmationsNeeded = MAINNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
+            break;
+        }
+        case DSChainType_TestNet: {
+            self.standardDapiPort = TESTNET_STANDARD_PORT;
+            self.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
+            self.ixPreviousConfirmationsNeeded = TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
+            break;
+        }
+        case DSChainType_DevNet: {
+            NSAssert(NO, @"DevNet should be configured with initAsDevnetWithIdentifier:checkpoints:port:dapiPort:ixPreviousConfirmationsNeeded:");
+            break;
+        }
+    }
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
-    self.standardPort = port;
-    self.standardDapiPort = dapiPort;
     self.mainThreadChainEntity = [self chainEntity];
 
     return self;
@@ -203,7 +223,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 }
 
 
--(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiPort:(uint32_t)dapiPort ixPreviousConfirmationsNeeded:(uint64_t)ixPreviousConfirmationsNeeded
 {
     //for devnet the genesis checkpoint is really the second block
     if (! (self = [self init])) return nil;
@@ -221,6 +241,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
     self.standardPort = port;
     self.standardDapiPort = dapiPort;
+    self.ixPreviousConfirmationsNeeded = ixPreviousConfirmationsNeeded;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
     [self retrieveWallets];
@@ -318,7 +339,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     static dispatch_once_t mainnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&mainnetToken, ^{
-        _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))] port:MAINNET_STANDARD_PORT dapiPort:MAINNET_DAPI_STANDARD_PORT];
+        _mainnet = [[DSChain alloc] initWithType:DSChainType_MainNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:mainnet_checkpoint_array count:(sizeof(mainnet_checkpoint_array)/sizeof(*mainnet_checkpoint_array))]];
         
         inSetUp = TRUE;
         //DSDLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
@@ -341,7 +362,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     static dispatch_once_t testnetToken = 0;
     __block BOOL inSetUp = FALSE;
     dispatch_once(&testnetToken, ^{
-        _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))] port:TESTNET_STANDARD_PORT dapiPort:TESTNET_DAPI_STANDARD_PORT];
+        _testnet = [[DSChain alloc] initWithType:DSChainType_TestNet checkpoints:[DSChain createCheckpointsArrayFromCheckpoints:testnet_checkpoint_array count:(sizeof(testnet_checkpoint_array)/sizeof(*testnet_checkpoint_array))]];
         inSetUp = TRUE;
     });
     if (inSetUp) {
@@ -376,7 +397,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort ixPreviousConfirmationsNeeded:TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
             inSetUp = TRUE;
         } else {
@@ -1687,8 +1708,7 @@ static dispatch_once_t devnetToken = 0;
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
     if (isInstant) {
-        DSSporkManager * sporkManager = [self chainManager].sporkManager;
-        if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= 4) {
+        if ([self canUseAutoLocksWithInputCount:inputCount]) {
             return standardFee;
         } else {
             return TX_FEE_PER_INPUT*inputCount;
@@ -1711,6 +1731,18 @@ static dispatch_once_t devnetToken = 0;
     uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerByte + MIN_FEE_PER_B - 1)/MIN_FEE_PER_B;
     
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
+}
+
+- (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount
+{
+    const NSInteger AutoLocksMaximumInputCount = 4;
+    DSSporkManager * sporkManager = [self chainManager].sporkManager;
+    if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= AutoLocksMaximumInputCount) {
+        return YES;
+    }
+    else {
+        return NO;
+    }
 }
 
 - (BOOL)isEqual:(id)obj
