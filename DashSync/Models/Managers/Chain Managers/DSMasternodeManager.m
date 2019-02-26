@@ -375,6 +375,16 @@ inline static int ceil_log2(int x)
             [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
             //no need to remove local masternodes
             self.baseBlockHash = UINT256_ZERO;
+            
+            NSManagedObjectContext * context = [NSManagedObject context];
+            [context performBlockAndWait:^{
+                [DSChainEntity setContext:context];
+                [DSSimplifiedMasternodeEntryEntity setContext:context];
+                DSChainEntity * chainEntity = peer.chain.chainEntity;
+                [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+                [DSSimplifiedMasternodeEntryEntity saveContext];
+            }];
+            
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         } else {
             
