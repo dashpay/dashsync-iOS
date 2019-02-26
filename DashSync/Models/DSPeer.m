@@ -178,6 +178,10 @@
     _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
 }
 
+- (NSString *)location {
+    return [NSString stringWithFormat:@"%@:%d",self.host,self.port];
+}
+
 - (NSString *)host
 {
     char s[INET6_ADDRSTRLEN];

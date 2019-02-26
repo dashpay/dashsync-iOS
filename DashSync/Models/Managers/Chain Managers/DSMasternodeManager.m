@@ -79,6 +79,9 @@ inline static int ceil_log2(int x)
 }
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
+#define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
+#define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
+#define MAX_FAULTY_DML_PEERS 5
 
 
 @interface DSMasternodeManager()
@@ -359,10 +362,31 @@ inline static int ceil_log2(int x)
             [DSSimplifiedMasternodeEntryEntity saveContext];
         }];
         
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
     } else {
+        NSArray * faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        
+        if (faultyPeers.count == MAX_FAULTY_DML_PEERS) {
+            //we will redownload the full list on next connection
+            [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
+            //no need to remove local masternodes
+            self.baseBlockHash = UINT256_ZERO;
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        } else {
+            
+            if (!faultyPeers) {
+                faultyPeers = @[peer.location];
+            } else {
+                if (![faultyPeers containsObject:peer.location]) {
+                    faultyPeers = [faultyPeers arrayByAddingObject:peer.location];
+                }
+            }
+            [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
