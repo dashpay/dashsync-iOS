@@ -38,6 +38,9 @@
 @property(nonatomic,assign) uint32_t holdingWalletIndex;
 @property(nonatomic,assign) DSLocalMasternodeStatus status;
 @property(nonatomic,strong) DSProviderRegistrationTransaction * providerRegistrationTransaction;
+@property(nonatomic,strong) NSMutableArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
+@property(nonatomic,strong) NSMutableArray <DSProviderUpdateServiceTransaction*>* providerUpdateServiceTransactions;
+@property(nonatomic,strong) DSProviderRevocationTransaction * providerRevocationTransaction;
 
 @end
 
@@ -57,6 +60,8 @@
     self.votingKeysWallet = votingWallet;
     self.ipAddress = ipAddress;
     self.port = port;
+    self.providerUpdateRegistrarTransactions = [NSMutableArray array];
+    self.providerUpdateServiceTransactions = [NSMutableArray array];
     return self;
 }
 
@@ -81,6 +86,8 @@
     self.ipAddress = providerRegistrationTransaction.ipAddress;
     self.port = providerRegistrationTransaction.port;
     self.providerRegistrationTransaction = providerRegistrationTransaction;
+    self.providerUpdateRegistrarTransactions = [NSMutableArray array];
+    self.providerUpdateServiceTransactions = [NSMutableArray array];
     self.status = DSLocalMasternodeStatus_Registered; //because it comes from a transaction already
     return self;
 }
@@ -215,6 +222,9 @@
 }
 
 -(NSString*)payoutAddress {
+    if ([self.providerUpdateRegistrarTransactions count]) {
+        return [NSString addressWithScriptPubKey:[self.providerUpdateRegistrarTransactions lastObject].scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    }
     if (self.providerRegistrationTransaction) {
         return [NSString addressWithScriptPubKey:self.providerRegistrationTransaction.scriptPayout onChain:self.providerRegistrationTransaction.chain];
     }
@@ -252,6 +262,19 @@
 -(NSString*)votingKeyStringFromSeed:(NSData*)seed {
     DSECDSAKey * ecdsaKey = [self votingKeyFromSeed:seed];
     return [ecdsaKey secretKeyString];
+}
+
+// MARK: - Update from Transaction
+
+
+-(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction {
+    [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
+}
+
+-(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction {
+    [_providerUpdateServiceTransactions addObject:providerUpdateServiceTransaction];
+    self.ipAddress = providerUpdateServiceTransaction.ipAddress;
+    self.port = providerUpdateServiceTransaction.port;
 }
 
 // MARK: - Persistence

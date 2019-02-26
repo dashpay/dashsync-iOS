@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSWallet,DSAccount, DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSBLSKey,DSECDSAKey;
+@class DSWallet,DSAccount, DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderRevocationTransaction,DSBLSKey,DSECDSAKey;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
     DSLocalMasternodeStatus_New = 0,
@@ -32,6 +32,9 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) uint32_t holdingWalletIndex;
 @property(nonatomic,readonly) NSString* payoutAddress;
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
+@property(nonatomic,readonly) NSArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
+@property(nonatomic,readonly) NSArray <DSProviderUpdateServiceTransaction*>* providerUpdateServiceTransactions;
+@property(nonatomic,readonly) DSProviderRevocationTransaction * providerRevocationTransaction;
 @property(nonatomic,readonly) DSLocalMasternodeStatus status;
 
 -(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
@@ -39,6 +42,10 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 -(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction))completion;
 
 -(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction))completion;
+
+-(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction;
+
+-(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction;
 
 -(void)save;
 

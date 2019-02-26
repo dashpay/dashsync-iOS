@@ -77,7 +77,7 @@
                     if (self.localMasternode.operatorKeysWallet) {
                         [self.localMasternode.operatorKeysWallet seedWithPrompt:@"Show voting key?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
                             if (seed) {
-                                self.operatorKeyLabel.text = [self.localMasternode votingKeyStringFromSeed:seed];
+                                self.votingKeyLabel.text = [self.localMasternode votingKeyStringFromSeed:seed];
                             }
                         }];
                     }

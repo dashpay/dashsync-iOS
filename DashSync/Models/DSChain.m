@@ -54,6 +54,10 @@
 #import "DSChainManager.h"
 #import "DSFundsDerivationPath.h"
 #import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
+#import "DSLocalMasternode.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -1768,7 +1772,14 @@ static dispatch_once_t devnetToken = 0;
         if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil] || [self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil] || [self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil]) {
             [self.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
         }
-        
+    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+        DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
+        [localMasternode updateWithUpdateServiceTransaction:providerUpdateServiceTransaction];
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+        DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
+        [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction];
     }
 }
 

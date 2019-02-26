@@ -496,6 +496,13 @@ inline static int ceil_log2(int x)
     }
 }
 
+-(DSLocalMasternode*)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash {
+    DSLocalMasternode * localMasternode = self.localMasternodesDictionaryByRegistrationTransactionHash[uint256_data(providerRegistrationTransactionHash)];
+    
+    return localMasternode;
+
+}
+
 -(NSUInteger)localMasternodesCount {
     return [self.localMasternodesDictionaryByRegistrationTransactionHash count];
 }
