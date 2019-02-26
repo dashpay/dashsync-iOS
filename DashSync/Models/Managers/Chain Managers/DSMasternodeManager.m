@@ -253,7 +253,7 @@ inline static int ceil_log2(int x)
     
     while (deletedMasternodeCount >= 1) {
         if (length - offset < 32) return;
-        [deletedMasternodeHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]]];
+        [deletedMasternodeHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]].reverse];
         offset += 32;
         deletedMasternodeCount--;
     }
