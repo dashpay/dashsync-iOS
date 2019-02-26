@@ -46,7 +46,7 @@
 }
 
 + (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity*)chainEntity {
-    NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@) && (providerTransactionHash IN %@)",chainEntity,providerTransactionHashes];
+    NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@) && (providerRegistrationTransactionHash IN %@)",chainEntity,providerTransactionHashes];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in hashesToDelete) {
         [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
     }

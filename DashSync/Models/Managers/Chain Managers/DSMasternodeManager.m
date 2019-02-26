@@ -339,7 +339,11 @@ inline static int ceil_log2(int x)
             [DSLocalMasternodeEntity setContext:self.managedObjectContext];
             DSChainEntity * chainEntity = self.chain.chainEntity;
             if (deletedMasternodeHashes.count) {
-                [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:deletedMasternodeHashes onChain:chainEntity];
+                NSMutableArray * nonReversedDeletedMasternodeHashes = [NSMutableArray array];
+                for (NSData * deletedMasternodeHash in deletedMasternodeHashes) {
+                    [nonReversedDeletedMasternodeHashes addObject:deletedMasternodeHash.reverse];
+                }
+                [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:nonReversedDeletedMasternodeHashes onChain:chainEntity];
             }
             for (NSString * addedMasternodeKey in addedMasternodes) {
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [addedMasternodes objectForKey:addedMasternodeKey];
