@@ -204,7 +204,7 @@ static checkpoint mainnet_checkpoint_array[] = {
             break;
         }
         case DSChainType_TestNet: {
-            self.standardDapiPort = TESTNET_STANDARD_PORT;
+            self.standardPort = TESTNET_STANDARD_PORT;
             self.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
             self.ixPreviousConfirmationsNeeded = TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
             break;
