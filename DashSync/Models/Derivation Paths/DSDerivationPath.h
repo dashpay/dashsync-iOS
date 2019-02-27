@@ -35,6 +35,8 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define BIP32_HARD 0x80000000
 
+#define FEATURE_PURPOSE_HARDENED (5 | BIP32_HARD)
+
 @class DSTransaction,DSECDSAKey,DSAccount,DSDerivationPath;
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathType) {

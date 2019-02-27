@@ -84,9 +84,12 @@
 
 + (DSWallet*)standardWalletWithSeedPhrase:(NSString*)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
     DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]];
+    
     NSString * uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
+    [self registerSpecializedDerivationPathsForSeedPhrase:seedPhrase underUniqueId:uniqueId onChain:chain];
     DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccount:account forChain:chain storeSeedPhrase:store isTransient:isTransient];
+    
     return wallet;
 }
 
@@ -124,6 +127,10 @@
     if (store) {
         [chain registerWallet:self];
     }
+    [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:self];
+    [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:self];
+    [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:self];
+    [[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:self];
     if (isTransient) {
         self.transient = TRUE;
     }
@@ -132,6 +139,25 @@
     self.mBlockchainUsers = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
     if (error) return nil;
     return self;
+}
+
+
++(void)registerSpecializedDerivationPathsForSeedPhrase:(NSString*)seedPhrase underUniqueId:(NSString*)walletUniqueId onChain:(DSChain*)chain {
+    @autoreleasepool {
+        seedPhrase = [[DSBIP39Mnemonic sharedInstance] normalizePhrase:seedPhrase];
+        
+        NSData * derivedKeyData = (seedPhrase) ?[[DSBIP39Mnemonic sharedInstance]
+                                                 deriveKeyFromPhrase:seedPhrase withPassphrase:nil]:nil;
+        
+        DSAuthenticationKeysDerivationPath * providerOwnerKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:chain];
+        [providerOwnerKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+        DSAuthenticationKeysDerivationPath * providerOperatorKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:chain];
+        [providerOperatorKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+        DSAuthenticationKeysDerivationPath * providerVotingKeysDericationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:chain];
+        [providerVotingKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+        DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:chain];
+        [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+    }
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
@@ -384,14 +410,6 @@
                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             }
         }
-        DSAuthenticationKeysDerivationPath * providerOwnerKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:chain];
-        [providerOwnerKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
-        DSAuthenticationKeysDerivationPath * providerOperatorKeysDericationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:chain];
-        [providerOperatorKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
-        DSAuthenticationKeysDerivationPath * providerVotingKeysDericationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:chain];
-        [providerVotingKeysDericationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
-        DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:chain];
-        [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
     }
     return uniqueID;
 }

@@ -140,7 +140,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 + (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet {
     NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {5 | BIP32_HARD, coinType | BIP32_HARD, 11 | BIP32_HARD};
+    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 11 | BIP32_HARD};
     DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainUsers onChain:wallet.chain];
     derivationPath.wallet = wallet;
     return derivationPath;
@@ -488,6 +488,42 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return nil;
 }
 
+- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index {
+    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+}
+
+- (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath
+{
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
+        
+        UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
+        DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
+        for (NSInteger i = 0;i<[indexPath length];i++) {
+            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+            CKDpub(&pubKey, &chain, derivation);
+        }
+        return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        DSBLSKey * extendedPublicKey = [DSBLSKey blsKeyWithExtendedPublicKeyData:self.extendedPublicKey onChain:self.chain];
+        DSBLSKey * extendedPublicKeyAtIndexPath = [extendedPublicKey publicDeriveToPath:indexPath];
+        return [NSData dataWithUInt384:extendedPublicKeyAtIndexPath.publicKey];
+    }
+    return nil;
+}
+
+
+- (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed {
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [self serializedECDSAPrivateKeysAtIndexPaths:indexPaths fromSeed:seed];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        return [self serializedBLSPrivateKeysAtIndexPaths:indexPaths fromSeed:seed];
+    }
+    return nil;
+    
+}
+
+
 // MARK: - ECDSA Key Generation
 
 //this is for upgrade purposes only
@@ -545,7 +581,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return mpk;
 }
 
-- (NSData *)generatePublicKeyFromSeed:(NSData *)seed atIndexPath:(NSIndexPath*)indexPath storeUnderWalletUniqueId:(NSString*)walletUniqueId
+- (NSData *)generateECDSAPublicKeyFromSeed:(NSData *)seed atIndexPath:(NSIndexPath*)indexPath storeUnderWalletUniqueId:(NSString*)walletUniqueId
 {
     if (! seed) return nil;
     if (![self length]) return nil; //there needs to be at least 1 length
@@ -571,36 +607,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     [mpk appendBytes:&chain length:sizeof(chain)];
     [mpk appendData:[DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData];
     
-    _extendedPublicKey = mpk;
-    if (walletUniqueId) {
-        setKeychainData(mpk,[self walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:walletUniqueId],NO);
-    }
-    
     return mpk;
-}
-
-- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index {
-    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-}
-
-- (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath
-{
-    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
-        if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;
-        
-        UInt256 chain = *(const UInt256 *)((const uint8_t *)self.extendedPublicKey.bytes + 4);
-        DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)self.extendedPublicKey.bytes + 36);
-        for (NSInteger i = 0;i<[indexPath length];i++) {
-            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
-            CKDpub(&pubKey, &chain, derivation);
-        }
-        return [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
-    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
-        DSBLSKey * extendedPublicKey = [DSBLSKey blsKeyWithExtendedPublicKeyData:self.extendedPublicKey onChain:self.chain];
-        DSBLSKey * extendedPublicKeyAtIndexPath = [extendedPublicKey publicDeriveToPath:indexPath];
-        return [NSData dataWithUInt384:extendedPublicKeyAtIndexPath.publicKey];
-    }
-    return nil;
 }
 
 - (DSECDSAKey *)privateECDSAKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed
@@ -627,7 +634,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return [DSECDSAKey keyWithSecret:secret compressed:YES];
 }
 
-- (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
+- (NSArray *)serializedECDSAPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
 {
     if (! seed || ! indexPaths) return nil;
     if (indexPaths.count == 0) return @[];
@@ -695,6 +702,33 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
     
     return privateKey;
+}
+
+- (NSArray *)serializedBLSPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
+{
+    if (! seed || ! indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
+    
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    uint8_t version;
+    if ([self.chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
+    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed onChain:self.chain];
+    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:self];
+    
+    for (NSIndexPath *indexPath in indexPaths) {
+        NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
+        DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
+        [privKey appendBytes:&version length:1];
+        [privKey appendUInt256:[privateKey secretKey]];
+        [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
+        [a addObject:[NSString base58checkWithData:privKey]];
+    }
+    
+    return a;
 }
 
 // MARK: - Authentication Key Generation

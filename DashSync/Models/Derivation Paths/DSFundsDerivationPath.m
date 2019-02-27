@@ -219,6 +219,7 @@
         NSUInteger indexes[] = {(internal ? 1 : 0),index.unsignedIntValue};
         [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
     }
+    
     return [self serializedPrivateKeysAtIndexPaths:mArray fromSeed:seed];
 }
 

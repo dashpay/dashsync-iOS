@@ -272,7 +272,7 @@
     NSMutableArray * lockVotes = [NSMutableArray array];
     
     //set up wallet
-    [DSWallet standardWalletWithSeedPhrase:@"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch" setCreationDate:0 forChain:chain storeSeedPhrase:YES isTransient:NO];
+    [DSWallet standardWalletWithSeedPhrase:@"pigeon social employ east owner purpose buddy proof soul suit pumpkin punch" setCreationDate:1548241200 forChain:chain storeSeedPhrase:YES isTransient:NO]; //block 30000 creation date, needed to be 
     
     DSPeer * peer = [DSPeer peerWithHost:@"0.0.0.0:19999" onChain:chain];
     
@@ -365,19 +365,19 @@
     
     DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:wallet];
     if (!providerFundsDerivationPath.hasExtendedPublicKey) {
-        [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+        [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
     DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
     if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
-        [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+        [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
     DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
     if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
-        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
     DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:wallet];
     if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
-        [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+        [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
     
     NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
