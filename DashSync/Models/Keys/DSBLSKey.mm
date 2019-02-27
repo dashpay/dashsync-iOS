@@ -273,6 +273,16 @@
     return signature;
 }
 
+- (UInt768)signDataSingleSHA256:(NSData *)data {
+    if (uint256_is_zero(self.secretKey) && !self.extendedPrivateKeyData.length) return UINT768_ZERO;
+    bls::PrivateKey blsPrivateKey = [self blsPrivateKey];
+    UInt256 hash = [data SHA256];
+    bls::InsecureSignature blsSignature = blsPrivateKey.SignInsecurePrehashed(hash.u8);
+    UInt768 signature = UINT768_ZERO;
+    blsSignature.Serialize(signature.u8);
+    return signature;
+}
+
 - (UInt768)signDigest:(UInt256)md {
     if (uint256_is_zero(self.secretKey) && !self.extendedPrivateKeyData.length) return UINT768_ZERO;
     bls::PrivateKey blsPrivateKey = [self blsPrivateKey];

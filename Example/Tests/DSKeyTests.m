@@ -264,6 +264,9 @@
 //}
 
 -(void)testBLSSign {
+    
+    //In dash we use SHA256_2, however these test vectors from the BLS library use a single SHA256
+    
     uint8_t seed1[5] = {1, 2, 3, 4, 5};
     NSData * seedData1 = [NSData dataWithBytes:seed1 length:5];
     uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
@@ -285,13 +288,13 @@
     uint32_t fingerprint2 =keyPair2.publicKeyFingerprint;
     XCTAssertEqual(fingerprint2, 0x289bb56e,@"Testing BLS private child public key fingerprint");
     
-    UInt768 signature1 = [keyPair1 signData:messageData1];
+    UInt768 signature1 = [keyPair1 signDataSingleSHA256:messageData1];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:signature1].hexString, @"93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065",@"Testing BLS signing");
     
     XCTAssertEqualObjects([NSData dataWithUInt256:keyPair1.secretKey].hexString, @"022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e",@"Testing BLS private key");
     
-    UInt768 signature2 = [keyPair2 signData:messageData1];
+    UInt768 signature2 = [keyPair2 signDataSingleSHA256:messageData1];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:signature2].hexString, @"975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e",@"Testing BLS signing");
     
@@ -299,9 +302,9 @@
     
     XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature1].hexString, @"0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658",@"Testing BLS simple signature aggregation");
     
-    UInt768 signature3 = [keyPair1 signData:messageData2];
-    UInt768 signature4 = [keyPair1 signData:messageData3];
-    UInt768 signature5 = [keyPair2 signData:messageData4];
+    UInt768 signature3 = [keyPair1 signDataSingleSHA256:messageData2];
+    UInt768 signature4 = [keyPair1 signDataSingleSHA256:messageData3];
+    UInt768 signature5 = [keyPair2 signDataSingleSHA256:messageData4];
     
     UInt768 aggregateSignature2 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature3],[NSData dataWithUInt768:signature4],[NSData dataWithUInt768:signature5]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData2,messageData3,messageData4]];
     
@@ -318,7 +321,7 @@
     
     UInt768 signature1 = [keyPair1 signData:messageData1];
     
-    XCTAssertEqualObjects([NSData dataWithUInt768:signature1].hexString, @"93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065",@"Testing BLS signing");
+    XCTAssertTrue([keyPair1 verify:[messageData1 SHA256_2] signature:signature1],@"Testing BLS signature verification");
     
 }
 
