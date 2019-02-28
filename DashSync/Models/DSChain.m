@@ -1507,6 +1507,8 @@ static dispatch_once_t devnetToken = 0;
     if (block.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = block.height;
         
+        [self.chainManager chain:self wasExtendedWithBlock:block fromPeer:peer];
+        
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];

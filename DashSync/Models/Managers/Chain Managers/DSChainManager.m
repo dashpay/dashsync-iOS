@@ -198,6 +198,10 @@
     }
 }
 
+-(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer {
+    [self.masternodeManager getMasternodeList];
+}
+
 // MARK: - Count Info
 
 -(void)resetSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
