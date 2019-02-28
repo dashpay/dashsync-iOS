@@ -61,7 +61,7 @@
 }
 
 - (DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
-    NSUInteger index = [self indexOfAddress:address];
+    NSUInteger index = [self indexOfKnownAddress:address];
     return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
 }
 

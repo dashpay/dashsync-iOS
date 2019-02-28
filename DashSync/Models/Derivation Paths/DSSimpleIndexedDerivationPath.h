@@ -13,19 +13,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSimpleIndexedDerivationPath : DSDerivationPath
 
-- (NSUInteger)indexOfAddress:(NSString*)address;
+// returns the index of an address in the derivation path as long as it is within the gap limit
+- (NSUInteger)indexOfKnownAddress:(NSString*)address;
 
 // gets a public key at an index
 - (NSData*)publicKeyDataAtIndex:(uint32_t)index;
 
+// gets public keys to an index as NSData
+- (NSArray *)publicKeyDataArrayToIndex:(NSUInteger)index;
+
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index;
 
-- (NSArray *)publicKeyDataArrayToIndex:(NSUInteger)index;
+// gets addresses to an index
 - (NSArray *)addressesToIndex:(NSUInteger)index;
 
 // gets a private key at an index
 - (DSKey * _Nullable)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed;
+
+// get private keys to an index
+- (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed;
 
 @end
 

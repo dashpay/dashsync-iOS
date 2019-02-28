@@ -135,7 +135,7 @@
     return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
-- (NSUInteger)indexOfAddress:(NSString*)address {
+- (NSUInteger)indexOfKnownAddress:(NSString*)address {
     return [self.mOrderedAddresses indexOfObject:address];
 }
 
