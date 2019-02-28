@@ -804,7 +804,7 @@
 
 - (BOOL)containsHoldingAddress:(NSString*)holdingAddress {
     DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self];
-    return [derivationPath indexOfKnownAddress:holdingAddress];
+    return [derivationPath containsAddress:holdingAddress];
 }
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash {

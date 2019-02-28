@@ -120,7 +120,9 @@ inline static int ceil_log2(int x)
 // MARK: - Masternode List Sync
 
 -(void)getMasternodeList {
-    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
+    if (!uint256_eq(self.baseBlockHash, self.chain.lastBlock.blockHash)) {
+        [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
+    }
 }
 
 -(void)wipeMasternodeInfo {

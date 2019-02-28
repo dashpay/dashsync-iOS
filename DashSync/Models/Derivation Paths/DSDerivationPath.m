@@ -591,7 +591,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
     
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    UInt256 secretRoot = *(UInt256 *)&I, chainRoot = *(UInt256 *)&I.u8[sizeof(UInt256)];
     uint8_t version;
     if ([self.chain isMainnet]) {
         version = DASH_PRIVKEY;
@@ -601,11 +601,14 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
     for (NSInteger i = 0;i<[self length];i++) {
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
-        CKDpriv(&secret, &chain, derivation);
+        CKDpriv(&secretRoot, &chainRoot, derivation);
     }
     
-    
     for (NSIndexPath *indexPath in indexPaths) {
+        
+        UInt256 secret = secretRoot;
+        UInt256 chain = chainRoot;
+        
         NSMutableData *privKey = [NSMutableData secureDataWithCapacity:34];
         
         for (NSInteger i = 0;i<[indexPath length];i++) {

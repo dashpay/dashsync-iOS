@@ -65,8 +65,8 @@
 }
 
 -(IBAction)registerMasternode:(id)sender {
-    NSString * ipAddressString = self.ipAddressTableViewCell.valueTextField.text;
-    NSString * portString = self.portTableViewCell.valueTextField.text;
+    NSString * ipAddressString = [self.ipAddressTableViewCell.valueTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString * portString = [self.portTableViewCell.valueTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
     struct in_addr addrV4;
     if (inet_aton([ipAddressString UTF8String], &addrV4) != 0) {

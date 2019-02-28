@@ -201,7 +201,7 @@
                     return 3;
                     break;
                 case DSTransactionType_ProviderRegistration:
-                    return 8;
+                    return 10;
                     break;
                 case DSTransactionType_ProviderUpdateService:
                     return 3;
@@ -680,6 +680,29 @@
                         cell.titleLabel.text = NSLocalizedString(@"voting key wallet:", nil);
                         DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
                         cell.statusLabel.text = localMasternode.votingKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.votingKeysWallet.uniqueID,localMasternode.votingWalletIndex]:@"Not Voter";
+                        cell.moreInfoLabel.text = nil;
+                        return cell;
+                        break;
+                    }
+                    case 8:
+                    {
+                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"Payout Address", nil);
+                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@",[NSString addressWithScriptPubKey:providerRegistrationTransaction.scriptPayout onChain:providerRegistrationTransaction.chain]];
+                        
+                        return cell;
+                        break;
+                    }
+                    case 9:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        cell.titleLabel.text = NSLocalizedString(@"Holding funds wallet:", nil);
+                        DSLocalMasternode * localMasternode = providerRegistrationTransaction.localMasternode;
+                        cell.statusLabel.text = localMasternode.holdingKeysWallet?[NSString stringWithFormat:@"%@/%d",localMasternode.holdingKeysWallet.uniqueID,localMasternode.holdingWalletIndex]:@"Not Holding";
                         cell.moreInfoLabel.text = nil;
                         return cell;
                         break;
