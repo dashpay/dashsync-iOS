@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) NSString * secretKeyString;
 
 - (NSString *)addressForChain:(DSChain*)chain;
++ (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain;
 
 @end
 

@@ -128,8 +128,59 @@
     return 0;
 }
 
+// gets an addess at an index
+- (NSString *)addressAtIndex:(uint32_t)index
+{
+    NSData *pubKey = [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+}
+
 - (NSUInteger)indexOfAddress:(NSString*)address {
     return [self.mOrderedAddresses indexOfObject:address];
+}
+
+// gets a public key at an index
+- (NSData*)publicKeyAtIndex:(uint32_t)index
+{
+    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+}
+
+- (DSKey *)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed {
+    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
+}
+
+- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index {
+    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+}
+
+- (NSArray *)publicKeysToIndex:(NSUInteger)index
+{
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (int i = 0;i<index;i++) {
+        NSData *pubKey = [self generatePublicKeyAtIndex:i];
+        [mArray addObject:pubKey];
+    }
+    return [mArray copy];
+}
+
+- (NSArray *)addressesToIndex:(NSUInteger)index
+{
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSData * pubKey in [self publicKeysToIndex:index]) {
+        NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
+        [mArray addObject:addr];
+    }
+    return [mArray copy];
+}
+
+- (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed {
+
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (int i = 0;i<index;i++) {
+        DSKey *privateKey = [self privateKeyAtIndex:i fromSeed:seed];
+        [mArray addObject:privateKey];
+    }
+    return [mArray copy];
 }
 
 @end

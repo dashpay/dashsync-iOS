@@ -37,7 +37,7 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
 
 #define FEATURE_PURPOSE_HARDENED (5 | BIP32_HARD)
 
-@class DSTransaction,DSECDSAKey,DSAccount,DSDerivationPath;
+@class DSTransaction,DSKey,DSAccount,DSDerivationPath;
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
     DSDerivationPathType_ClearFunds = 1,
@@ -116,8 +116,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
-+ (instancetype)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet;
-
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
@@ -145,25 +143,22 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // inform the derivation path that the address has been used by a transaction
 - (void)registerTransactionAddress:(NSString *)address;
 
-// gets a public key at an index
-- (NSData*)publicKeyAtIndex:(uint32_t)index;
-
 // gets a public key at an index path
 - (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath;
 
-// gets an addess at an index
-- (NSString *)addressAtIndex:(uint32_t)index;
-
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath;
+
+// gets a private key at an index path
+- (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
 
 - (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
-- (NSArray *)publicKeysToIndex:(NSUInteger)index;
-- (NSArray *)addressesToIndex:(NSUInteger)index;
-- (DSECDSAKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
+
+
+
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 + (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
@@ -179,7 +174,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
-- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index;
 - (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath;
 
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed;

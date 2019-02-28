@@ -35,7 +35,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSECDSAKey;
+@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey;
 
 @interface DSWallet : NSObject
 
@@ -146,7 +146,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 //this is used from the account to help determine best start sync position for future resync
 -(void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
 
--(DSECDSAKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed;
+-(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed;
 
 //generate a random Mnemonic seed
 + (NSString *)generateRandomSeed;

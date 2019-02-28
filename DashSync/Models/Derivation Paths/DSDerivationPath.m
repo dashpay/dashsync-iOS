@@ -138,13 +138,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 // MARK: - Derivation Path initialization
 
-+ (instancetype _Nonnull)blockchainUsersDerivationPathForWallet:(DSWallet*)wallet {
-    NSUInteger coinType = (wallet.chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 11 | BIP32_HARD};
-    DSDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainUsers onChain:wallet.chain];
-    derivationPath.wallet = wallet;
-    return derivationPath;
-}
 
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
@@ -287,12 +280,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 // MARK: - Derivation Path Public Keys
 
-// gets a public key at an index
-- (NSData*)publicKeyAtIndex:(uint32_t)index
-{
-    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-}
-
 // gets a public key at an index path
 - (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -300,13 +287,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 // MARK: - Derivation Path Addresses
-
-// gets an addess at an index
-- (NSString *)addressAtIndex:(uint32_t)index
-{
-    NSData *pubKey = [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-}
 
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath
@@ -345,26 +325,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 // MARK: - Blockchain User
-
-- (NSArray *)publicKeysToIndex:(NSUInteger)index
-{
-    NSMutableArray * mArray = [NSMutableArray array];
-    for (int i = 0;i<index;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:i]];
-        [mArray addObject:pubKey];
-    }
-    return [mArray copy];
-}
-
-- (NSArray *)addressesToIndex:(NSUInteger)index
-{
-    NSMutableArray * mArray = [NSMutableArray array];
-    for (NSData * pubKey in [self publicKeysToIndex:index]) {
-        NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-        [mArray addObject:addr];
-    }
-    return [mArray copy];
-}
 
 // MARK: - Derivation Path Information
 
@@ -486,10 +446,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         return [self privateBLSKeyAtIndexPath:indexPath fromSeed:seed];
     }
     return nil;
-}
-
-- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index {
-    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
 - (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath

@@ -140,7 +140,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sgc-kT-Z7o" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6533" y="-110"/>
+            <point key="canvasLocation" x="6357" y="-858"/>
         </scene>
         <!--Masternode Detail View Controller-->
         <scene sceneID="HZl-fN-jah">
@@ -416,6 +416,26 @@
                                                 </label>
                                             </subviews>
                                         </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="XD7-ji-7BZ" style="IBUITableViewCellStyleDefault" id="Axw-47-xem">
+                                        <rect key="frame" x="0.0" y="577" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Axw-47-xem" id="Cib-e7-CmO">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Reclaim" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="XD7-ji-7BZ">
+                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="vEt-bw-4kK" kind="show" identifier="ReclaimMasternodeSegue" id="pGh-pY-qGh"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -914,8 +934,91 @@
             </objects>
             <point key="canvasLocation" x="6608.6956521739139" y="551.78571428571422"/>
         </scene>
+        <!--Reclaim Masternode-->
+        <scene sceneID="8Og-j5-em0">
+            <objects>
+                <tableViewController id="cja-fu-fM6" userLabel="Reclaim Masternode" customClass="DSReclaimMasternodeViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="YE7-V1-oaX">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" reuseIdentifier="MasternodeReclaimingAccountCellIdentifier" id="Cr4-oN-9SP" userLabel="AccountCell" customClass="DSAccountChooserTableViewCell">
+                                <rect key="frame" x="0.0" y="55.5" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Cr4-oN-9SP" id="stB-Bg-IvJ">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Destination Account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ug2-lW-ywv">
+                                            <rect key="frame" x="16" y="12" width="154.5" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bIh-HP-aib">
+                                            <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="Ug2-lW-ywv" firstAttribute="top" secondItem="stB-Bg-IvJ" secondAttribute="top" constant="12.000000000000028" id="XhH-Xy-ifB"/>
+                                        <constraint firstItem="bIh-HP-aib" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ug2-lW-ywv" secondAttribute="trailing" constant="10" id="i2m-gi-PRL"/>
+                                        <constraint firstItem="bIh-HP-aib" firstAttribute="baseline" secondItem="Ug2-lW-ywv" secondAttribute="baseline" id="izW-GA-7dD"/>
+                                        <constraint firstItem="Ug2-lW-ywv" firstAttribute="leading" secondItem="stB-Bg-IvJ" secondAttribute="leading" constant="16" id="jAU-af-Q1D"/>
+                                        <constraint firstAttribute="trailing" secondItem="bIh-HP-aib" secondAttribute="trailing" constant="16" id="uaG-du-snV"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="accountLabel" destination="bIh-HP-aib" id="u1V-kQ-cfw"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="cja-fu-fM6" id="O56-8V-Ki7"/>
+                            <outlet property="delegate" destination="cja-fu-fM6" id="khC-R7-8xg"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Reclaim" id="6AK-CQ-a6l">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="tiL-ib-1hW">
+                            <connections>
+                                <action selector="cancel" destination="cja-fu-fM6" id="M9Z-y6-PO8"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Reclaim" id="d4M-fM-A61">
+                            <connections>
+                                <action selector="updateMasternode:" destination="cja-fu-fM6" id="MbU-6q-75X"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Go9-Dn-RiK" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7684.057971014493" y="-188.16964285714286"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="heC-CR-ZQC">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="vEt-bw-4kK" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Iwm-Un-msV">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="cja-fu-fM6" kind="relationship" relationship="rootViewController" id="Fxc-eT-YcD"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cbt-K9-pDb" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6773.913043478261" y="-188.16964285714286"/>
+        </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="LPI-ke-J9z"/>
+        <segue reference="w3M-R1-KP0"/>
     </inferredMetricsTieBreakers>
 </document>

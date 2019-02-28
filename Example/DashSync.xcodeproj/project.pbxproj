@@ -59,6 +59,7 @@
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
 		FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */; };
 		FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */; };
+		FB20ABDF2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */; };
 		FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895720D2EC2600921B89 /* DSGovernanceObjectListViewController.m */; };
 		FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895A20D3035D00921B89 /* DSProposalTableViewCell.m */; };
 		FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */; };
@@ -219,6 +220,8 @@
 		FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathController.m; sourceTree = "<group>"; };
 		FB12FEEB20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSStandaloneDerivationPathKeyInputViewController.h; sourceTree = "<group>"; };
 		FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathKeyInputViewController.m; sourceTree = "<group>"; };
+		FB20ABDD2228417C00DD2FF2 /* DSReclaimMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSReclaimMasternodeViewController.h; sourceTree = "<group>"; };
+		FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSReclaimMasternodeViewController.m; sourceTree = "<group>"; };
 		FB23895620D2EC2600921B89 /* DSGovernanceObjectListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSGovernanceObjectListViewController.h; sourceTree = "<group>"; };
 		FB23895720D2EC2600921B89 /* DSGovernanceObjectListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSGovernanceObjectListViewController.m; sourceTree = "<group>"; };
 		FB23895920D3035D00921B89 /* DSProposalTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalTableViewCell.h; sourceTree = "<group>"; };
@@ -579,6 +582,8 @@
 				FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */,
 				FB3FF0AD222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.h */,
 				FB3FF0AE222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m */,
+				FB20ABDD2228417C00DD2FF2 /* DSReclaimMasternodeViewController.h */,
+				FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -982,6 +987,7 @@
 				FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */,
 				6003F59E195388D20070C39A /* DSAppDelegate.m in Sources */,
 				FB5252F620EE159B009A2BF1 /* DSAccountChooserViewController.m in Sources */,
+				FB20ABDF2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m in Sources */,
 				2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */,
 				FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */,
 				2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */,

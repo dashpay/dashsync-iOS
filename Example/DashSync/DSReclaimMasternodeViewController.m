@@ -1,18 +1,18 @@
 //
-//  DSUpdateMasternodeRevocationViewController.m
+//  DSReclaimMasternodeViewController.m
 //  DashSync_Example
 //
-//  Created by Sam Westrich on 2/26/19.
+//  Created by Sam Westrich on 2/28/19.
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 
-#import "DSUpdateMasternodeRevocationViewController.h"
+#import "DSReclaimMasternodeViewController.h"
 
-@interface DSUpdateMasternodeRevocationViewController ()
+@interface DSReclaimMasternodeViewController ()
 
 @end
 
-@implementation DSUpdateMasternodeRevocationViewController
+@implementation DSReclaimMasternodeViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -23,5 +23,8 @@
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
+
+#pragma mark - Table view data source
+
 
 @end

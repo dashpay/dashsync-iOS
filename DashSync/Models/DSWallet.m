@@ -619,7 +619,7 @@
     return TRUE;
 }
 
--(DSECDSAKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
+-(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
     DSAccount * account = [self accountForAddress:address];
     if (!account) return nil;
     DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
@@ -652,7 +652,7 @@
 // MARK: - Blockchain Users
 
 -(NSArray*)blockchainUserAddresses {
-    DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self];
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
     return [derivationPath addressesToIndex:[self unusedBlockchainUserIndex] + 10];
 }
@@ -687,7 +687,7 @@
 }
 
 -(DSBlockchainUserRegistrationTransaction *)registrationTransactionForIndex:(uint32_t)index {
-    DSDerivationPath * derivationPath = [DSDerivationPath blockchainUsersDerivationPathForWallet:self];
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self];
     UInt160 hash160 = [derivationPath publicKeyAtIndex:index].hash160;
     return [self registrationTransactionForPublicKeyHash:hash160];
 }
