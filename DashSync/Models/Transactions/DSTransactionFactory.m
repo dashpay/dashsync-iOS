@@ -20,6 +20,12 @@
 
 @implementation DSTransactionFactory
 
++(DSTransactionType)transactionTypeOfMessage:(NSData*)message {
+    uint16_t version = [message UInt16AtOffset:0];
+    if (version < 3) return DSTransactionType_Classic;
+    return [message UInt16AtOffset:2];
+}
+
 +(DSTransaction*)transactionWithMessage:(NSData*)message onChain:(DSChain*)chain {
     uint16_t version = [message UInt16AtOffset:0];
     if (version < 3) return [DSTransaction transactionWithMessage:message onChain:chain]; //no special transactions yet
@@ -48,6 +54,39 @@
         default:
             return [DSTransaction transactionWithMessage:message onChain:chain]; //we won't be able to check the payload, but try best to support it.
     }
+}
+
++(BOOL)ignoreMessagesOfTransactionType:(DSTransactionType)transactionType {
+    switch (transactionType) {
+        case DSTransactionType_Classic:
+            return FALSE;
+        case DSTransactionType_Coinbase:
+            return FALSE;
+        case DSTransactionType_SubscriptionRegistration:
+            return FALSE;
+        case DSTransactionType_SubscriptionTopUp:
+            return FALSE;
+        case DSTransactionType_SubscriptionCloseAccount:
+            return FALSE;
+        case DSTransactionType_SubscriptionResetKey:
+            return FALSE;
+        case DSTransactionType_ProviderRegistration:
+            return FALSE;
+        case DSTransactionType_ProviderUpdateService:
+            return FALSE;
+        case DSTransactionType_ProviderUpdateRegistrar:
+            return FALSE;
+        case DSTransactionType_ProviderUpdateRevocation:
+            return FALSE;
+        case DSTransactionType_QuorumCommitment:
+            return TRUE;
+        default:
+            return TRUE;
+    }
+}
+
++(BOOL)shouldIgnoreTransactionMessage:(NSData*)message {
+    return [self ignoreMessagesOfTransactionType:[self transactionTypeOfMessage:message]];
 }
 
 @end

@@ -1231,7 +1231,7 @@
 {
     DSTransaction *tx = [DSTransactionFactory transactionWithMessage:message onChain:self.chain];
     
-    if (! tx) {
+    if (! tx && ![DSTransactionFactory shouldIgnoreTransactionMessage:message]) {
         [self error:@"malformed %@ message: %@",isIxTransaction?@"ix":@"tx", message];
         return;
     }
@@ -1240,9 +1240,11 @@
         return;
     }
     
-    dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
-    });
+    if (tx) {
+        dispatch_async(self.delegateQueue, ^{
+            [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
+        });
+    }
     
 #if LOG_FULL_TX_MESSAGE
     DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
@@ -1251,8 +1253,9 @@
 #endif
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-        if ([self.currentBlockTxHashes containsObject:uint256_obj(tx.txHash)]) {
-            [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+        UInt256 txHash = tx?tx.txHash:message.SHA256_2;
+        if ([self.currentBlockTxHashes containsObject:uint256_obj(txHash)]) {
+            [self.currentBlockTxHashes removeObject:uint256_obj(txHash)];
         } else {
             DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_data(tx.txHash).hexString,self.currentBlockTxHashes);
         }
