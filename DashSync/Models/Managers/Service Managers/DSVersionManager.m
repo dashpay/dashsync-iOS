@@ -166,7 +166,7 @@
                 @autoreleasepool {
                     BOOL success = TRUE;
                     for (DSDerivationPath * derivationPath in derivationPaths) {
-                        success &= ![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+                        success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
                     }
                     completion(success,YES,YES,NO);
                 }

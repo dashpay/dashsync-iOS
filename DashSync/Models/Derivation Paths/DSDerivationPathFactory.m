@@ -42,7 +42,9 @@
         if (![self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            [derivationPath loadAddresses];
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
             [self.votingKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
@@ -58,7 +60,9 @@
         if (![self.ownerKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            [derivationPath loadAddresses];
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
             [self.ownerKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
@@ -74,7 +78,9 @@
         if (![self.operatorKeysDerivationPathByWallet objectForKey:wallet.uniqueID]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            [derivationPath loadAddresses];
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
             [self.operatorKeysDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
@@ -90,7 +96,9 @@
         if (![self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID]) {
             DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            [derivationPath loadAddresses];
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
             [self.providerFundsDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
@@ -106,7 +114,9 @@
         if (![self.blockchainUsersDerivationPathByWallet objectForKey:wallet.uniqueID]) {
             DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainUsersKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
-            [derivationPath loadAddresses];
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
             [self.blockchainUsersDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
