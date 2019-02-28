@@ -10,6 +10,8 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSLocalMasternode.h"
 #import "DSUpdateMasternodeServiceViewController.h"
+#import "DSUpdateMasternodeRegistrarViewController.h"
+#import "DSReclaimMasternodeViewController.h"
 #import <arpa/inet.h>
 
 @interface DSMasternodeDetailViewController ()
@@ -45,8 +47,12 @@
         updateMasternodeServiceViewController.localMasternode = self.localMasternode;
     } else if ([segue.identifier isEqualToString:@"UpdateMasternodeRegistrarSegue"]) {
         UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
-        DSUpdateMasternodeServiceViewController * updateMasternodeServiceViewController = (DSUpdateMasternodeServiceViewController*)navigationController.topViewController;
-        updateMasternodeServiceViewController.localMasternode = self.localMasternode;
+        DSUpdateMasternodeRegistrarViewController * updateMasternodeRegistrarViewController = (DSUpdateMasternodeRegistrarViewController*)navigationController.topViewController;
+        updateMasternodeRegistrarViewController.localMasternode = self.localMasternode;
+    } else if ([segue.identifier isEqualToString:@"ReclaimMasternodeSegue"]) {
+        UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
+        DSReclaimMasternodeViewController * reclaimMasternodeViewController = (DSReclaimMasternodeViewController*)navigationController.topViewController;
+        reclaimMasternodeViewController.localMasternode = self.localMasternode;
     }
 }
 

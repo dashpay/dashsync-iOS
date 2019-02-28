@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString*)receiveAddress;
 
+- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

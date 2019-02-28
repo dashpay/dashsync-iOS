@@ -9,6 +9,7 @@
 #import "DSDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
+#import "DSMasternodeManager.h"
 
 @interface DSMasternodeHoldingsDerivationPath()
 
@@ -28,6 +29,30 @@
 
 -(NSString*)receiveAddress {
     return [self addressAtIndex:[self unusedIndex]];
+}
+
+// sign any inputs in the given transaction that can be signed using private keys from the wallet
+- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
+{
+    if ([transaction inputAddresses].count != 1) {
+        completion(NO);
+        return;
+    }
+    
+    uint32_t index = (uint32_t)[self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
+    
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
+        self.wallet.seedRequestBlock(authprompt, MASTERNODE_COST,^void (NSData * _Nullable seed, BOOL cancelled) {
+            if (! seed) {
+                if (completion) completion(YES);
+            } else {
+                DSECDSAKey * key = (DSECDSAKey *)[self privateKeyAtIndex:index fromSeed:seed];
+                
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[key]];
+                if (completion) completion(signedSuccessfully);
+            }
+        });
+    }
 }
 
 @end

@@ -63,7 +63,7 @@
 //    DSTransaction *tx = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
 //                                                   outputAddresses:outputAddresses outputAmounts:outputAmounts];
 //
-//    [tx signWithPrivateKeys:@[k.privateKey]];
+//    [tx signWithSerializedPrivateKeys:@[k.privateKey]];
 //    [w registerTransaction:tx];
 //
 //    XCTAssertEqual(w.balance, DUFFS, @"[DSWallet registerTransaction]");
@@ -73,7 +73,7 @@
 //    [tx addOutputAddress:w.receiveAddress amount:DUFFS];
 //    tx.lockTime = 1000;
 //    tx.blockHeight = TX_UNCONFIRMED;
-//    [tx signWithPrivateKeys:@[k.privateKey]];
+//    [tx signWithSerializedPrivateKeys:@[k.privateKey]];
 //    [w registerTransaction:tx]; // test pending tx with future lockTime
 //
 //    XCTAssertEqual(w.balance, DUFFS, @"[DSWallet registerTransaction]");
@@ -138,13 +138,13 @@
 //    DSTransaction *tx7 = [[DSTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts
 //                                                    outputAddresses:@[@"XvJvi4gShPzadCLUownkEtFRRedrUFw8j6", @"Xs3gc64pedMWPz5gLvmZQQbJi4uYzPUxct"] outputAmounts:@[@100000000, @4900000000]];
 //
-//    [tx1 signWithPrivateKeys:@[k.privateKey]];
-//    [tx2 signWithPrivateKeys:@[k.privateKey]];
-//    [tx3 signWithPrivateKeys:@[k.privateKey]];
-//    [tx4 signWithPrivateKeys:@[k.privateKey]];
-//    [tx5 signWithPrivateKeys:@[k.privateKey]];
-//    [tx6 signWithPrivateKeys:@[k.privateKey]];
-//    [tx7 signWithPrivateKeys:@[k.privateKey]];
+//    [tx1 signWithSerializedPrivateKeys:@[k.privateKey]];
+//    [tx2 signWithSerializedPrivateKeys:@[k.privateKey]];
+//    [tx3 signWithSerializedPrivateKeys:@[k.privateKey]];
+//    [tx4 signWithSerializedPrivateKeys:@[k.privateKey]];
+//    [tx5 signWithSerializedPrivateKeys:@[k.privateKey]];
+//    [tx6 signWithSerializedPrivateKeys:@[k.privateKey]];
+//    [tx7 signWithSerializedPrivateKeys:@[k.privateKey]];
 //
 //    [w registerTransaction:tx1];
 //    [w registerTransaction:tx2];

@@ -348,6 +348,27 @@
             self.outputAmounts, self.outputAddresses, self.outputScripts];
 }
 
+// retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
+- (uint64_t)amountSent
+{
+    uint64_t amount = 0;
+    NSUInteger i = 0;
+    
+    for (NSValue *hashValue in self.inputHashes) {
+        UInt256 hash;
+        [hashValue getValue:&hash];
+        DSTransaction *tx = [self.chain transactionForHash:hash];
+        DSAccount * account = [self.chain accountContainingTransaction:tx];
+        uint32_t n = [self.inputIndexes[i++] unsignedIntValue];
+        
+        if (n < tx.outputAddresses.count && [account containsAddress:tx.outputAddresses[n]]) {
+            amount += [tx.outputAmounts[n] unsignedLongLongValue];
+        }
+    }
+    
+    return amount;
+}
+
 // size in bytes if signed, or estimated size assuming compact pubkey sigs
 - (size_t)size
 {
@@ -512,16 +533,25 @@
 
 // MARK: - Signing
 
-- (BOOL)signWithPrivateKeys:(NSArray *)privateKeys
+- (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys
 {
-    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:privateKeys.count],
-    *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
+    NSMutableArray *keys = [NSMutableArray arrayWithCapacity:privateKeys.count];
     
     for (NSString *pk in privateKeys) {
         DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:pk onChain:self.chain];
         
         if (! key) continue;
         [keys addObject:key];
+    }
+    
+    return [self signWithPrivateKeys:keys];
+}
+
+- (BOOL)signWithPrivateKeys:(NSArray *)keys
+{
+    NSMutableArray *addresses = [NSMutableArray arrayWithCapacity:keys.count];
+    
+    for (DSECDSAKey *key in keys) {
         [addresses addObject:[key addressForChain:self.chain]];
     }
     

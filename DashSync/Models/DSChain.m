@@ -943,7 +943,7 @@ static dispatch_once_t devnetToken = 0;
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
         
         //we should also add the blockchain user public keys to the filter
-        [allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
+        //[allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
     }
     
     for (DSFundsDerivationPath * derivationPath in self.standaloneDerivationPaths) {

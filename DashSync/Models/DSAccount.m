@@ -1017,7 +1017,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
                 }
                 
-                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                BOOL signedSuccessfully = [transaction signWithSerializedPrivateKeys:privkeys];
                 if (completion) completion(signedSuccessfully);
             }
         });
@@ -1070,7 +1070,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                         [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
                     }
                     
-                    BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
+                    BOOL signedSuccessfully = [transaction signWithSerializedPrivateKeys:privkeys];
                     if (completion) completion(signedSuccessfully);
                 }
                 
@@ -1435,7 +1435,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                                                   
                                                   [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
                                                   
-                                                  if (! [tx signWithPrivateKeys:@[privKey]]) {
+                                                  if (! [tx signWithSerializedPrivateKeys:@[privKey]]) {
                                                       completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
                                                                                                                                       DSLocalizedString(@"error signing transaction", nil)}]);
                                                       return;

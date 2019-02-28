@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSWallet,DSAccount, DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderRevocationTransaction,DSBLSKey,DSECDSAKey;
+@class DSWallet,DSAccount, DSTransaction,DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderRevocationTransaction,DSBLSKey,DSECDSAKey;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
     DSLocalMasternodeStatus_New = 0,
@@ -42,6 +42,8 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 -(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction))completion;
 
 -(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction))completion;
+
+-(void)reclaimTransactionToAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSTransaction * reclaimTransaction))completion;
 
 -(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction;
 

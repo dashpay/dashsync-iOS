@@ -468,7 +468,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         return [self serializedBLSPrivateKeysAtIndexPaths:indexPaths fromSeed:seed];
     }
     return nil;
-    
 }
 
 

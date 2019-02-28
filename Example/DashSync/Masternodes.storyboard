@@ -472,7 +472,7 @@
                 <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="ChooseAccountIdentifier" id="2yM-Qg-k68" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9Zo-tI-UB8" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3552.898550724638" y="-344.19642857142856"/>
+            <point key="canvasLocation" x="6220" y="-123"/>
         </scene>
         <!--Register Masternode-->
         <scene sceneID="r2R-kf-ovn">
@@ -973,6 +973,7 @@
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="accountLabel" destination="bIh-HP-aib" id="u1V-kQ-cfw"/>
+                                    <segue destination="2yM-Qg-k68" kind="show" identifier="ChooseReclaimDestinationAccountSegue" id="0PX-VJ-Pb6"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -985,12 +986,12 @@
                     <navigationItem key="navigationItem" title="Reclaim" id="6AK-CQ-a6l">
                         <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="tiL-ib-1hW">
                             <connections>
-                                <action selector="cancel" destination="cja-fu-fM6" id="M9Z-y6-PO8"/>
+                                <action selector="cancel" destination="cja-fu-fM6" id="KCT-cA-ELy"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Reclaim" id="d4M-fM-A61">
                             <connections>
-                                <action selector="updateMasternode:" destination="cja-fu-fM6" id="MbU-6q-75X"/>
+                                <action selector="reclaimMasternode:" destination="cja-fu-fM6" id="oag-Ot-pui"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -1015,10 +1016,10 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cbt-K9-pDb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6773.913043478261" y="-188.16964285714286"/>
+            <point key="canvasLocation" x="6954" y="-403"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="w3M-R1-KP0"/>
+        <segue reference="0PX-VJ-Pb6"/>
     </inferredMetricsTieBreakers>
 </document>

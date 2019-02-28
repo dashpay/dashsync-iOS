@@ -68,9 +68,9 @@
                                                    outputAddresses:@[[k addressForChain:self.chain], [k addressForChain:self.chain]] outputAmounts:@[@100000000, @4900000000]
                                                            onChain:self.chain];
     
-    [tx signWithPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
+    [tx signWithSerializedPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
     
-    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithSerializedPrivateKeys:]");
     
     NSData *d = tx.data;
     
@@ -89,9 +89,9 @@
                                                       @1000000]
                                             onChain:self.chain];
     
-    [tx signWithPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
+    [tx signWithSerializedPrivateKeys:@[[k privateKeyStringForChain:self.chain]]];
     
-    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithPrivateKeys:]");
+    XCTAssertTrue([tx isSigned], @"[DSTransaction signWithSerializedPrivateKeys:]");
     
     d = tx.data;
     tx = [DSTransaction transactionWithMessage:d onChain:self.chain];
@@ -134,7 +134,7 @@
                                                            onChain:devnetDRA];
     tx.version = 2;
     tx.lockTime = 1717;
-    [tx signWithPrivateKeys:@[inputPrivateKey]];
+    [tx signWithSerializedPrivateKeys:@[inputPrivateKey]];
     XCTAssertEqualObjects(tx.data,hexData,@"The transaction data does not match it's expected values");
     XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:tx.txHash],@"The transaction does not match it's desired private key");
 }
@@ -184,7 +184,7 @@
     NSData * payloadData = blockchainUserRegistrationTransaction.payloadData;
     XCTAssertEqualObjects(payloadData,payloadDataToConfirm,@"Payload Data does not match, signing payload does not work");
     
-    [blockchainUserRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey]];
+    [blockchainUserRegistrationTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
     NSData * inputSignature = @"473044022033bafeac5704355c7855a6ad099bd6834cbcf3b052e42ed83945c58aae904aa4022073e747d376a8dcd2b5eb89fef274b01c0194ee9a13963ebbc657963417f0acf3012102393c140e7b53f3117fd038581ae66187c4be33f49e33a4c16ffbf2db1255e985".hexToData;
     XCTAssertEqualObjects(blockchainUserRegistrationTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
 
@@ -220,7 +220,7 @@
     
     DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainUserTopupTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash topupAmount:100000000 topupIndex:0 onChain:devnetDRA];
     
-    [blockchainUserTopupTransaction signWithPrivateKeys:@[inputPrivateKey]];
+    [blockchainUserTopupTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
 
     NSData * inputSignature = @"483045022100a65429d4f2ab2df58cafdaaffe874ef260f610e068e89a4455fbf92261156bb7022015733ae5aef3006fd5781b91f97ca1102edf09e9383ca761e407c619d13db7660121034c1f31446c5971558b9027499c3678483b0deb06af5b5ccd41e1f536af1e34ca".hexToData;
     XCTAssertEqualObjects(blockchainUserTopupTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
@@ -420,7 +420,7 @@
 //    NSData * payloadData = blockchainUserRegistrationTransaction.payloadData;
 //    XCTAssertEqualObjects(payloadData,payloadDataToConfirm,@"Payload Data does not match, signing payload does not work");
 //    
-//    [blockchainUserRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey]];
+//    [blockchainUserRegistrationTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
 //    NSData * inputSignature = @"473044022033bafeac5704355c7855a6ad099bd6834cbcf3b052e42ed83945c58aae904aa4022073e747d376a8dcd2b5eb89fef274b01c0194ee9a13963ebbc657963417f0acf3012102393c140e7b53f3117fd038581ae66187c4be33f49e33a4c16ffbf2db1255e985".hexToData;
 //    XCTAssertEqualObjects(blockchainUserRegistrationTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
 //    

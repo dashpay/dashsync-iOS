@@ -7,10 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "DSAccountChooserViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSLocalMasternode;
+
 @interface DSReclaimMasternodeViewController : UITableViewController
+
+@property (nonatomic,strong) DSLocalMasternode * localMasternode;
 
 @end
 

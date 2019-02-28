@@ -72,6 +72,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, assign) uint32_t lockTime;
 @property (nonatomic, assign) uint64_t feeUsed;
 @property (nonatomic, assign) uint64_t roundedFeeCostPerByte;
+@property (nonatomic, readonly) uint64_t amountSent;
 @property (nonatomic, readonly) NSData * payloadData;
 @property (nonatomic, readonly) NSData * payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
@@ -117,7 +118,8 @@ sequence:(uint32_t)sequence;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;
 - (void)hasSetInputsAndOutputs;
-- (BOOL)signWithPrivateKeys:(NSArray *)privateKeys;
+- (BOOL)signWithSerializedPrivateKeys:(NSArray *)privateKeys;
+- (BOOL)signWithPrivateKeys:(NSArray *)keys;
 
 - (NSString*)shapeshiftOutboundAddress;
 - (NSString*)shapeshiftOutboundAddressForceScript;
