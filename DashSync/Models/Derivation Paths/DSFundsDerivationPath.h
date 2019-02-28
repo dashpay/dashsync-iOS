@@ -41,10 +41,10 @@ NS_ASSUME_NONNULL_BEGIN
 // for receive addresses.  These have a hardened purpose scheme depending on the derivation path
 - (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
-- (NSString * _Nullable)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
+- (NSString * _Nullable)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 - (NSArray * _Nullable)serializedPrivateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed;
 
-- (NSData * _Nullable)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal;
+- (NSData * _Nullable)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal;
 
 // gets an addess at an index one level down based on bip32
 - (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal;

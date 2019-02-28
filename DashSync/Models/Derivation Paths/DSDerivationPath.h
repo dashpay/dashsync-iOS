@@ -143,9 +143,6 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // inform the derivation path that the address has been used by a transaction
 - (void)registerTransactionAddress:(NSString *)address;
 
-// gets a public key at an index path
-- (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath;
-
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath;
 
@@ -174,7 +171,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 + (NSData *)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString onChain:(DSChain*)chain;
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
-- (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath;
+- (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath;
 
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed;
 

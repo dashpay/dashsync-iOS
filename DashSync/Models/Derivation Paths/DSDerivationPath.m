@@ -278,20 +278,12 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }];
 }
 
-// MARK: - Derivation Path Public Keys
-
-// gets a public key at an index path
-- (NSData*)publicKeyAtIndexPath:(NSIndexPath *)indexPath
-{
-    return [self generatePublicKeyAtIndexPath:indexPath];
-}
-
 // MARK: - Derivation Path Addresses
 
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSData *pubKey = [self generatePublicKeyAtIndexPath:indexPath];
+    NSData *pubKey = [self publicKeyDataAtIndexPath:indexPath];
     return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
@@ -448,7 +440,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     return nil;
 }
 
-- (NSData *)generatePublicKeyAtIndexPath:(NSIndexPath*)indexPath
+- (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath
 {
     if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
         if (self.extendedPublicKey.length < 4 + sizeof(UInt256) + sizeof(DSECPoint)) return nil;

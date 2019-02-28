@@ -110,7 +110,7 @@
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self generatePublicKeyAtIndex:n internal:internal];
+            NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
             NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
             if (! addr) {
@@ -146,13 +146,13 @@
 {
     NSMutableArray * addresses = [NSMutableArray array];
     for (NSUInteger i = exportInternalRange.location;i<exportInternalRange.length + exportInternalRange.location;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:YES];
+        NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:YES];
         NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
     
     for (NSUInteger i = exportExternalRange.location;i<exportExternalRange.location + exportExternalRange.length;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndex:(uint32_t)i internal:NO];
+        NSData *pubKey = [self publicKeyDataAtIndex:(uint32_t)i internal:NO];
         NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
         [addresses addObject:addr];
     }
@@ -163,7 +163,7 @@
 // gets an address at an index path
 - (NSString *)addressAtIndex:(uint32_t)index internal:(BOOL)internal
 {
-    NSData *pubKey = [self generatePublicKeyAtIndex:index internal:internal];
+    NSData *pubKey = [self publicKeyDataAtIndex:index internal:internal];
     return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
@@ -201,13 +201,13 @@
     return [self.internalAddresses copy];
 }
 
-- (NSData *)generatePublicKeyAtIndex:(uint32_t)n internal:(BOOL)internal
+- (NSData *)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal
 {
     NSUInteger indexes[] = {(internal ? 1 : 0),n};
-    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndexes:indexes length:2]];
 }
 
-- (NSString *)privateKey:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
+- (NSString *)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [self serializedPrivateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
 }

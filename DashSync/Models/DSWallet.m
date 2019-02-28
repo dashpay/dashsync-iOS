@@ -688,7 +688,7 @@
 
 -(DSBlockchainUserRegistrationTransaction *)registrationTransactionForIndex:(uint32_t)index {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self];
-    UInt160 hash160 = [derivationPath publicKeyAtIndex:index].hash160;
+    UInt160 hash160 = [derivationPath publicKeyDataAtIndex:index].hash160;
     return [self registrationTransactionForPublicKeyHash:hash160];
 }
 

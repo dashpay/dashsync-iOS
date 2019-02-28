@@ -88,7 +88,7 @@
         if (rArray.count >= gapLimit) return [rArray subarrayWithRange:NSMakeRange(0, gapLimit)];
         
         while (rArray.count < gapLimit) { // generate new addresses up to gapLimit
-            NSData *pubKey = [self generatePublicKeyAtIndex:n];
+            NSData *pubKey = [self publicKeyDataAtIndex:n];
             NSString *addr = nil;
             if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
                 addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
@@ -131,7 +131,7 @@
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index
 {
-    NSData *pubKey = [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+    NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
     return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
 }
 
@@ -140,24 +140,20 @@
 }
 
 // gets a public key at an index
-- (NSData*)publicKeyAtIndex:(uint32_t)index
+- (NSData*)publicKeyDataAtIndex:(uint32_t)index
 {
-    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+    return [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
 - (DSKey *)privateKeyAtIndex:(uint32_t)index fromSeed:(NSData *)seed {
     return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index] fromSeed:seed];
 }
 
-- (NSData *)generatePublicKeyAtIndex:(NSUInteger)index {
-    return [self generatePublicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-}
-
-- (NSArray *)publicKeysToIndex:(NSUInteger)index
+- (NSArray *)publicKeyDataArrayToIndex:(NSUInteger)index
 {
     NSMutableArray * mArray = [NSMutableArray array];
     for (int i = 0;i<index;i++) {
-        NSData *pubKey = [self generatePublicKeyAtIndex:i];
+        NSData *pubKey = [self publicKeyDataAtIndex:i];
         [mArray addObject:pubKey];
     }
     return [mArray copy];
@@ -166,7 +162,7 @@
 - (NSArray *)addressesToIndex:(NSUInteger)index
 {
     NSMutableArray * mArray = [NSMutableArray array];
-    for (NSData * pubKey in [self publicKeysToIndex:index]) {
+    for (NSData * pubKey in [self publicKeyDataArrayToIndex:index]) {
         NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
         [mArray addObject:addr];
     }
