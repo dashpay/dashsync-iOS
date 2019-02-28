@@ -255,13 +255,21 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 -(BOOL)hasExtendedPublicKey {
-    return (!!_extendedPublicKey);
+    if (_extendedPublicKey) return YES;
+    if (self.wallet) {
+        return hasKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
+    } else {
+        return hasKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
+    }
+    return NO;
 }
 
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
         if (self.wallet) {
             _extendedPublicKey = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
+        } else {
+            _extendedPublicKey = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
         }
     }
     NSAssert(_extendedPublicKey, @"extended public key not set");
@@ -603,6 +611,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         uint32_t derivation = (uint32_t)[self indexAtPosition:i];
         CKDpriv(&secretRoot, &chainRoot, derivation);
     }
+
     
     for (NSIndexPath *indexPath in indexPaths) {
         

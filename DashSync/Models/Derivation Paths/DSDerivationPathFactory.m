@@ -113,6 +113,37 @@
     return [self.blockchainUsersDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-
+- (NSArray<DSDerivationPath*>*)specializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet*)wallet {
+    NSMutableArray * mArray = [NSMutableArray array];
+    
+    //Masternode Owner
+    DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
+    providerOwnerKeysDerivationPath.wallet = wallet;
+    if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
+        [mArray addObject:providerOwnerKeysDerivationPath];
+    }
+    
+    //Masternode Operator
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
+    providerOperatorKeysDerivationPath.wallet = wallet;
+    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
+        [mArray addObject:providerOperatorKeysDerivationPath];
+    }
+    
+    //Masternode Voting
+    DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
+    providerVotingKeysDerivationPath.wallet = wallet;
+    if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
+        [mArray addObject:providerVotingKeysDerivationPath];
+    }
+    
+    //Masternode Holding
+    DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
+    providerFundsDerivationPath.wallet = wallet;
+    if (!providerFundsDerivationPath.hasExtendedPublicKey) {
+        [mArray addObject:providerFundsDerivationPath];
+    }
+    return [mArray copy];
+}
 
 @end
