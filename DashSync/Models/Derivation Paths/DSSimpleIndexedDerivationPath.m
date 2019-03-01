@@ -66,7 +66,7 @@
     }
     NSUInteger i = rArray.count;
     
-    // keep only the trailing contiguous block of addresses with no transactions
+    // keep only the trailing contiguous block of addresses that aren't used
     while (i > 0 && ! [self.usedAddresses containsObject:rArray[i - 1]]) {
         i--;
     }
@@ -89,12 +89,7 @@
         
         while (rArray.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n];
-            NSString *addr = nil;
-            if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
-                addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-            } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
-                addr = [[DSBLSKey blsKeyWithPublicKey:pubKey.UInt384 onChain:self.chain] addressForChain:self.chain];
-            }
+            NSString *addr = [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
             
             if (! addr) {
                 DSDLog(@"error generating keys");
@@ -124,8 +119,16 @@
     }
 }
 
--(uint32_t)unusedIndex {
-    return 0;
+- (uint32_t)unusedIndex {
+    
+    uint32_t i = (uint32_t)self.mOrderedAddresses.count;
+    
+    // keep only the trailing contiguous block of addresses that aren't used
+    while (i > 0 && ! [self.usedAddresses containsObject:self.mOrderedAddresses[i - 1]]) {
+        i--;
+    }
+    
+    return i;
 }
 
 // gets an addess at an index

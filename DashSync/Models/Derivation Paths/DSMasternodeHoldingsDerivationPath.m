@@ -28,7 +28,8 @@
 }
 
 -(NSString*)receiveAddress {
-    return [self addressAtIndex:[self unusedIndex]];
+    NSString *addr = [self registerAddressesWithGapLimit:1].lastObject;
+    return (addr) ? addr : self.mOrderedAddresses.lastObject;
 }
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet

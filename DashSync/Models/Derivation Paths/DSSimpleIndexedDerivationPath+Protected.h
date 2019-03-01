@@ -13,7 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSMutableArray *mOrderedAddresses;
 
--(uint32_t)unusedIndex;
+- (uint32_t)unusedIndex;
+
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit;
 
 @end
 
