@@ -439,11 +439,9 @@
     
     DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     
-    NSData * hexData = [NSData dataFromHexString:@"030002000151f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7010000006a473044022005abb2ae572d2c4cb844456be8f50c2b059d9930bc1aa875d7946403f1c3825b02202044de1694773749830cc5e942d19f2037d94882b618eaac3a25f86b855d406d01210261dc0b26e9a64808928a3d020565f5daa31ff0e01904254ce0a19e8ce449918affffffff01cd8aa95a020000001976a9142044e419a66b4e1bc7b4594e4722a85d469134bf88ac00000000b5010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d700000000000000000000ffff342440944e1f002ef5cb8f99816474b9620eb266c4e7ed768586f6a4d90a71f0b3ffaaefd5427a14e7cbcfe3888a28c161bf7d4dd0e30273be7e4de0b90991a8010398630a62740b2426297ce3cae717ae9d3aa069267c046660fbce055d5922ae2fadf89a8e6d98f0d9f8db7bebc80743219de4ad7b2f20429b8bcfb428877f62265c5c10f1e6"];
-    UInt256 txId = *(UInt256 *)@"fef8c6f481fd3739f2fd2b67904f8d29fb310dc23c7e536eefb05fcab0803e20".hexToData.reverse.bytes;
-    UInt256 inputId = *(UInt256 *)@"51f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d7".hexToData.reverse.bytes;
-    NSString * inputAddress0 = @"yWcZ7ePLX3yLkC3Aj9KaZvxRQkkZC6VPL8";
-    DSECDSAKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
+    NSData * hexData = [NSData dataFromHexString:@"03000200018f3fe6683e36326669b6e34876fb2a2264e8327e822f6fec304b66f47d61b3e1010000006b48304502210082af6727408f0f2ec16c7da1c42ccf0a026abea6a3a422776272b03c8f4e262a022033b406e556f6de980b2d728e6812b3ae18ee1c863ae573ece1cbdf777ca3e56101210351036c1192eaf763cd8345b44137482ad24b12003f23e9022ce46752edf47e6effffffff0180220e43000000001976a914123cbc06289e768ca7d743c8174b1e6eeb610f1488ac00000000b501003a72099db84b1c1158568eec863bea1b64f90eccee3304209cebe1df5e7539fd00000000000000000000ffff342440944e1f00e6725f799ea20480f06fb105ebe27e7c4845ab84155e4c2adf2d6e5b73a998b1174f9621bbeda5009c5a6487bdf75edcf602b67fe0da15c275cc91777cb25f5fd4bb94e84fd42cb2bb547c83792e57c80d196acd47020e4054895a0640b7861b3729c41dd681d4996090d5750f65c4b649a5cd5b2bdf55c880459821e53d91c9"];
+    NSString * inputAddress0 = @"yhmDZGmiwjCPJrTFFiBFZJw31PhvJFJAwq";
+    DSKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
     
     NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
     XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
@@ -457,11 +455,11 @@
         [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
     }
     
-    UInt256 operatorSecretKey = [NSData dataFromHexString:@"17b47bb0f2a3298ee8f9d07fdafc1e8552869d11cef81e13a2706e2fdbf50dc5"].UInt256;
+    UInt256 operatorSecretKey = [NSData dataFromHexString:@"1708c6585cd2ffde4cddd742670eac14a713ae94b2c00b9b2d25fbf4d654ad12"].UInt256;
     
     DSBLSKey * privateKey = [DSBLSKey blsKeyWithPrivateKey:operatorSecretKey onChain:chain];
     
-    UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe82111"].UInt384;
+    UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"8b782ebfd2f70b976b6aa149cc4437824a823d526380817614906c9f98943a8b7f0856d1552a7045ec47eefcd116894e"].UInt384;
     
     UInt384 operatorKey = privateKey.publicKey;
     

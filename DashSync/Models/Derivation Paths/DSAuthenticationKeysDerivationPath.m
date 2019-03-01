@@ -48,7 +48,7 @@
 
 + (instancetype)blockchainUsersKeysDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 3 | BIP32_HARD};
+    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 0 | BIP32_HARD};
     return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainUsers onChain:chain];
 }
 

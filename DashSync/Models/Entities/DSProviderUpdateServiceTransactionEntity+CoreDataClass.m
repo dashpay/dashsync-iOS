@@ -8,8 +8,14 @@
 
 #import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateServiceTransaction.h"
+#import "DSAddressEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
+#import "DSKey.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSChain.h"
+#import "NSString+Dash.h"
 
 @implementation DSProviderUpdateServiceTransactionEntity
 
@@ -24,6 +30,13 @@
         self.scriptPayout = providerUpdateServiceTransaction.scriptPayout;
         self.payloadSignature = providerUpdateServiceTransaction.payloadSignature;
         self.providerRegistrationTransactionHash = [NSData dataWithUInt256:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
+        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
+        
+        NSArray * payoutAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",payoutAddress,tx.chain.chainEntity];
+        if ([payoutAddressEntities count]) {
+            NSAssert([payoutAddressEntities count] == 1, @"addresses should not be duplicates");
+            [self addAddressesObject:[payoutAddressEntities firstObject]];
+        }
     }];
     
     return self;

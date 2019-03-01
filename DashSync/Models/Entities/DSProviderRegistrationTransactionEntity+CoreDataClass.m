@@ -8,8 +8,14 @@
 
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderRegistrationTransaction.h"
+#import "DSAddressEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
+#import "DSKey.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSChain.h"
+#import "NSString+Dash.h"
 
 @implementation DSProviderRegistrationTransactionEntity
 
@@ -30,6 +36,35 @@
         self.operatorReward = providerRegistrationTransaction.operatorReward;
         self.scriptPayout = providerRegistrationTransaction.scriptPayout;
         self.payloadSignature = providerRegistrationTransaction.payloadSignature;
+        
+        NSString * ownerAddress = [self.ownerKeyHash addressFromHash160DataForChain:tx.chain];
+        NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorKey forChain:tx.chain];
+        NSString * votingAddress = [self.votingKeyHash addressFromHash160DataForChain:tx.chain];
+        NSString * payoutAddress = [NSString addressWithScriptPubKey:self.scriptPayout onChain:tx.chain];
+        
+        NSArray * ownerAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",ownerAddress,tx.chain.chainEntity];
+        if ([ownerAddressEntities count]) {
+            NSAssert([ownerAddressEntities count] == 1, @"addresses should not be duplicates");
+            [self addAddressesObject:[ownerAddressEntities firstObject]];
+        }
+        
+        NSArray * operatorAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",operatorAddress,tx.chain.chainEntity];
+        if ([operatorAddressEntities count]) {
+            NSAssert([operatorAddressEntities count] == 1, @"addresses should not be duplicates");
+            [self addAddressesObject:[operatorAddressEntities firstObject]];
+        }
+        
+        NSArray * votingAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",votingAddress,tx.chain.chainEntity];
+        if ([votingAddressEntities count]) {
+            NSAssert([votingAddressEntities count] == 1, @"addresses should not be duplicates");
+            [self addAddressesObject:[votingAddressEntities firstObject]];
+        }
+        
+        NSArray * payoutAddressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",payoutAddress,tx.chain.chainEntity];
+        if ([payoutAddressEntities count]) {
+            NSAssert([payoutAddressEntities count] == 1, @"addresses should not be duplicates");
+            [self addAddressesObject:[payoutAddressEntities firstObject]];
+        }
     }];
     
     return self;

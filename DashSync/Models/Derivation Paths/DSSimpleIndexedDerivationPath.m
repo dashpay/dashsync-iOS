@@ -39,7 +39,7 @@
                         }
                         self.mOrderedAddresses[e.index] = e.address;
                         [self.mAllAddresses addObject:e.address];
-                        if ([e.usedInInputs count] || [e.usedInOutputs count]) {
+                        if ([e.usedInInputs count] || [e.usedInOutputs count] || [e.usedInSpecialTransactions count]) {
                             [self.mUsedAddresses addObject:e.address];
                         }
                     }

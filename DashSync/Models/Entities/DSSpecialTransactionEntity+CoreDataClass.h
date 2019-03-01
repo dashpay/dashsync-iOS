@@ -2,12 +2,14 @@
 //  DSSpecialTransactionEntity+CoreDataClass.h
 //  DashSync
 //
-//  Created by Sam Westrich on 8/27/18.
+//  Created by Sam Westrich on 3/2/19.
 //
 //
 
 #import <Foundation/Foundation.h>
 #import "DSTransactionEntity+CoreDataClass.h"
+
+@class DSAddressEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
