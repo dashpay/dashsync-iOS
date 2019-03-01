@@ -132,13 +132,7 @@
 - (NSString *)addressAtIndex:(uint32_t)index
 {
     NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
-        return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
-    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
-        return [[DSBLSKey blsKeyWithPublicKey:pubKey.UInt384 onChain:self.chain] addressForChain:self.chain];
-    } else {
-        return @"";
-    }
+    return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
 - (NSUInteger)indexOfKnownAddress:(NSString*)address {
