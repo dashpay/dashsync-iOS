@@ -57,7 +57,7 @@
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
-#import "DSLocalMasternode.h"
+#import "DSLocalMasternode+Protected.h"
 #import "DSKey.h"
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath.h"
@@ -1786,6 +1786,10 @@ static dispatch_once_t devnetToken = 0;
         DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
         DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
         [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction];
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
+        DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash];
+        [localMasternode updateWithUpdateRevocationTransaction:providerUpdateRevocationTransaction];
     }
 }
 

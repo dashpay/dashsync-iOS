@@ -9,6 +9,9 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSProviderUpdateServiceTransactionEntity+CoreDataProperties.h"
+#import "DSProviderUpdateRegistrarTransactionEntity+CoreDataProperties.h"
+#import "DSProviderUpdateRevocationTransactionEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -16,6 +19,9 @@
 #import "DSWallet.h"
 #import "DSMasternodeManager.h"
 #import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
 #import "NSManagedObject+Sugar.h"
 #import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
@@ -27,7 +33,23 @@
     DSChain * chain = providerRegistrationTransactionEntity.transactionHash.chain.chain;
     DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)[self.providerRegistrationTransaction transactionForChain:chain];
     
-    return [chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
+    DSLocalMasternode * localMasternode = [chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
+    
+    for (DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity in self.providerUpdateServiceTransactions) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)[providerUpdateServiceTransactionEntity transactionForChain:chain];
+        [localMasternode updateWithUpdateServiceTransaction:providerUpdateServiceTransaction];
+    }
+    
+    for (DSProviderUpdateRegistrarTransactionEntity * providerUpdateRegistrarTransactionEntity in self.providerUpdateRegistrarTransactions) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)[providerUpdateRegistrarTransactionEntity transactionForChain:chain];
+        [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction];
+    }
+    
+    for (DSProviderUpdateRevocationTransactionEntity * providerUpdateRevocationTransactionEntity in self.providerUpdateRevocationTransactions) {
+        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)[providerUpdateRevocationTransactionEntity transactionForChain:chain];
+        [localMasternode updateWithUpdateRevocationTransaction:providerUpdateRevocationTransaction];
+    }
+    return localMasternode;
 }
 
 -(void)setAttributesFromLocalMasternode:(DSLocalMasternode*)localMasternode {
@@ -43,6 +65,21 @@
     self.providerRegistrationTransaction = providerRegistrationTransactionEntity;
     DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity anyObjectMatching:@"providerRegistrationTransactionHash == %@", uint256_data(localMasternode.providerRegistrationTransaction.txHash)];
     self.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity;
+    
+    for (DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction in localMasternode.providerUpdateServiceTransactions) {
+        DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity = [DSProviderUpdateServiceTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateServiceTransaction.txHash)];
+        [self addProviderUpdateServiceTransactionsObject:providerUpdateServiceTransactionEntity];
+    }
+    
+    for (DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction in localMasternode.providerUpdateRegistrarTransactions) {
+        DSProviderUpdateRegistrarTransactionEntity * providerUpdateRegistrarTransactionEntity = [DSProviderUpdateRegistrarTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRegistrarTransaction.txHash)];
+        [self addProviderUpdateRegistrarTransactionsObject:providerUpdateRegistrarTransactionEntity];
+    }
+    
+    for (DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction in localMasternode.providerUpdateRevocationTransactions) {
+        DSProviderUpdateRevocationTransactionEntity * providerUpdateRevocationTransactionEntity = [DSProviderUpdateRevocationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRevocationTransaction.txHash)];
+        [self addProviderUpdateRevocationTransactionsObject:providerUpdateRevocationTransactionEntity];
+    }
 }
 
 + (void)deleteAllOnChain:(DSChainEntity*)chainEntity {

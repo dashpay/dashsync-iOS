@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSWallet,DSAccount, DSTransaction,DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderRevocationTransaction,DSBLSKey,DSECDSAKey;
+@class DSWallet,DSAccount, DSTransaction,DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderUpdateRevocationTransaction,DSBLSKey,DSECDSAKey;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
     DSLocalMasternodeStatus_New = 0,
@@ -21,7 +21,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @interface DSLocalMasternode : NSObject
 
 @property(nonatomic,readonly) UInt128 ipAddress;
-@property(nonatomic,readonly) uint32_t port;
+@property(nonatomic,readonly) uint16_t port;
 @property(nonatomic,readonly) DSWallet * operatorKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t operatorWalletIndex; //the derivation path index of keys
 @property(nonatomic,readonly) DSWallet * ownerKeysWallet; //only if this is contained in the wallet.
@@ -34,7 +34,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 @property(nonatomic,readonly) NSArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
 @property(nonatomic,readonly) NSArray <DSProviderUpdateServiceTransaction*>* providerUpdateServiceTransactions;
-@property(nonatomic,readonly) DSProviderRevocationTransaction * providerRevocationTransaction;
+@property(nonatomic,readonly) NSArray <DSProviderUpdateRevocationTransaction*>* providerUpdateRevocationTransactions;
 @property(nonatomic,readonly) DSLocalMasternodeStatus status;
 
 -(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
@@ -44,10 +44,6 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 -(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount changeOperator:(UInt384)operatorKey changeVotingKeyHash:(UInt160)votingKeyHash changePayoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction))completion;
 
 -(void)reclaimTransactionToAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSTransaction * reclaimTransaction))completion;
-
--(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction;
-
--(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction;
 
 -(void)save;
 

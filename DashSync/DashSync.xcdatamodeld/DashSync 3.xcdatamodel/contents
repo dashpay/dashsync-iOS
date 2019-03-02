@@ -137,6 +137,9 @@
         <attribute name="votingKeysIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="votingKeysWalletUniqueId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <relationship name="providerRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSProviderRegistrationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderRegistrationTransactionEntity" syncable="YES"/>
+        <relationship name="providerUpdateRegistrarTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSProviderUpdateRegistrarTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateRegistrarTransactionEntity" syncable="YES"/>
+        <relationship name="providerUpdateRevocationTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSProviderUpdateRevocationTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateRevocationTransactionEntity" syncable="YES"/>
+        <relationship name="providerUpdateServiceTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSProviderUpdateServiceTransactionEntity" inverseName="localMasternode" inverseEntity="DSProviderUpdateServiceTransactionEntity" syncable="YES"/>
         <relationship name="simplifiedMasternodeEntry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="localMasternode" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
     </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
@@ -192,11 +195,13 @@
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
         <attribute name="votingKeyHash" attributeType="Binary" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateRegistrarTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
     <entity name="DSProviderUpdateRevocationTransactionEntity" representedClassName="DSProviderUpdateRevocationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="reason" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateRevocationTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
     <entity name="DSProviderUpdateServiceTransactionEntity" representedClassName="DSProviderUpdateServiceTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <attribute name="ipAddress" attributeType="Binary" syncable="YES"/>
@@ -204,6 +209,7 @@
         <attribute name="port" attributeType="Integer 16" defaultValueString="9999" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
+        <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateServiceTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
@@ -347,13 +353,13 @@
         <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
         <element name="DSGovernanceVoteEntity" positionX="-681.9609375" positionY="527.89453125" width="128" height="180"/>
         <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
-        <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="195"/>
+        <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="240"/>
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
         <element name="DSProviderRegistrationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
-        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="135"/>
-        <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="90"/>
-        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="120"/>
+        <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="150"/>
+        <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
+        <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="240"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>

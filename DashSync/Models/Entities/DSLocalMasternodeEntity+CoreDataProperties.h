@@ -2,7 +2,7 @@
 //  DSLocalMasternodeEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 2/20/19.
+//  Created by Sam Westrich on 3/3/19.
 //
 //
 
@@ -10,8 +10,6 @@
 
 
 NS_ASSUME_NONNULL_BEGIN
-
-@class DSAddressEntity, DSSimplifiedMasternodeEntryEntity;
 
 @interface DSLocalMasternodeEntity (CoreDataProperties)
 
@@ -25,18 +23,30 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) uint32_t ownerKeysIndex;
 @property (assign, nonatomic) uint32_t votingKeysIndex;
 @property (assign, nonatomic) uint32_t holdingKeysIndex;
-@property (nullable, nonatomic, retain) NSSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSProviderRegistrationTransactionEntity *providerRegistrationTransaction;
-@property (nullable, nonatomic, retain) DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntry;
+@property (nullable, nonatomic, retain) DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntry;
+@property (nullable, nonatomic, retain) NSSet<DSProviderUpdateRegistrarTransactionEntity *> *providerUpdateRegistrarTransactions;
+@property (nullable, nonatomic, retain) NSSet<DSProviderUpdateServiceTransactionEntity *> *providerUpdateServiceTransactions;
+@property (nullable, nonatomic, retain) NSSet<DSProviderUpdateRevocationTransactionEntity *> *providerUpdateRevocationTransactions;
 
 @end
 
 @interface DSLocalMasternodeEntity (CoreDataGeneratedAccessors)
 
-- (void)addAddressesObject:(DSAddressEntity *)value;
-- (void)removeAddressesObject:(DSAddressEntity *)value;
-- (void)addAddresses:(NSSet<DSAddressEntity *> *)values;
-- (void)removeAddresses:(NSSet<DSAddressEntity *> *)values;
+- (void)addProviderUpdateRegistrarTransactionsObject:(DSProviderUpdateRegistrarTransactionEntity *)value;
+- (void)removeProviderUpdateRegistrarTransactionsObject:(DSProviderUpdateRegistrarTransactionEntity *)value;
+- (void)addProviderUpdateRegistrarTransactions:(NSSet<DSProviderUpdateRegistrarTransactionEntity *> *)values;
+- (void)removeProviderUpdateRegistrarTransactions:(NSSet<DSProviderUpdateRegistrarTransactionEntity *> *)values;
+
+- (void)addProviderUpdateServiceTransactionsObject:(DSProviderUpdateServiceTransactionEntity *)value;
+- (void)removeProviderUpdateServiceTransactionsObject:(DSProviderUpdateServiceTransactionEntity *)value;
+- (void)addProviderUpdateServiceTransactions:(NSSet<DSProviderUpdateServiceTransactionEntity *> *)values;
+- (void)removeProviderUpdateServiceTransactions:(NSSet<DSProviderUpdateServiceTransactionEntity *> *)values;
+
+- (void)addProviderUpdateRevocationTransactionsObject:(DSProviderUpdateRevocationTransactionEntity *)value;
+- (void)removeProviderUpdateRevocationTransactionsObject:(DSProviderUpdateRevocationTransactionEntity *)value;
+- (void)addProviderUpdateRevocationTransactions:(NSSet<DSProviderUpdateRevocationTransactionEntity *> *)values;
+- (void)removeProviderUpdateRevocationTransactions:(NSSet<DSProviderUpdateRevocationTransactionEntity *> *)values;
 
 @end
 

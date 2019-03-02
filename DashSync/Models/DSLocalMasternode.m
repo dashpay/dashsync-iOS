@@ -27,7 +27,7 @@
 @interface DSLocalMasternode()
 
 @property(nonatomic,assign) UInt128 ipAddress;
-@property(nonatomic,assign) uint32_t port;
+@property(nonatomic,assign) uint16_t port;
 @property(nonatomic,strong) DSWallet * operatorKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,strong) DSWallet * holdingKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,strong) DSWallet * ownerKeysWallet; //only if this is contained in the wallet.
@@ -40,7 +40,7 @@
 @property(nonatomic,strong) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 @property(nonatomic,strong) NSMutableArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
 @property(nonatomic,strong) NSMutableArray <DSProviderUpdateServiceTransaction*>* providerUpdateServiceTransactions;
-@property(nonatomic,strong) DSProviderRevocationTransaction * providerRevocationTransaction;
+@property(nonatomic,strong) NSMutableArray <DSProviderUpdateRevocationTransaction*>* providerUpdateRevocationTransactions;
 
 @end
 
@@ -62,6 +62,7 @@
     self.port = port;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
+    self.providerUpdateRevocationTransactions = [NSMutableArray array];
     return self;
 }
 
@@ -88,6 +89,7 @@
     self.providerRegistrationTransaction = providerRegistrationTransaction;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
+    self.providerUpdateRevocationTransactions = [NSMutableArray array];
     self.status = DSLocalMasternodeStatus_Registered; //because it comes from a transaction already
     return self;
 }
@@ -98,6 +100,25 @@
     [self.votingKeysWallet registerMasternodeVoter:self];
 }
 
+-(UInt128)ipAddress {
+    if ([self.providerUpdateServiceTransactions count]) {
+        return [self.providerUpdateServiceTransactions lastObject].ipAddress;
+    }
+    if (self.providerRegistrationTransaction) {
+        return self.providerRegistrationTransaction.ipAddress;
+    }
+    return _ipAddress;
+}
+
+-(uint16_t)port {
+    if ([self.providerUpdateServiceTransactions count]) {
+        return [self.providerUpdateServiceTransactions lastObject].port;
+    }
+    if (self.providerRegistrationTransaction) {
+        return self.providerRegistrationTransaction.port;
+    }
+    return _port;
+}
 
 -(NSString*)payoutAddress {
     if ([self.providerUpdateRegistrarTransactions count]) {
@@ -303,6 +324,10 @@
 
 -(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction {
     [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
+}
+
+-(void)updateWithUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction {
+    [_providerUpdateRevocationTransactions addObject:providerUpdateRevocationTransaction];
 }
 
 -(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction {

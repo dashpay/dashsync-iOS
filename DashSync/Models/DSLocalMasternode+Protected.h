@@ -19,6 +19,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithProviderTransactionRegistration:(DSProviderRegistrationTransaction*)providerRegistrationTransaction;
 
+-(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction;
+
+-(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction;
+
+-(void)updateWithUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction;
+
 @end
 
 NS_ASSUME_NONNULL_END

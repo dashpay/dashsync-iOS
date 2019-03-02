@@ -439,6 +439,97 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="Local Masternode Info" id="5E2-oE-SMi" userLabel="Local Masternode Info">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" rowHeight="66" id="2Rp-bN-VcA" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
+                                        <rect key="frame" x="0.0" y="649" width="414" height="66"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="2Rp-bN-VcA" id="cbh-xR-TIm">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="65.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ProRegTx" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jZG-ha-0ub">
+                                                    <rect key="frame" x="16" y="12" width="74" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3x6-HZ-F6H" customClass="BRCopyLabel">
+                                                    <rect key="frame" x="357" y="32" width="41" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="3x6-HZ-F6H" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="jZG-ha-0ub" secondAttribute="trailing" constant="10" id="2yM-Db-Zor"/>
+                                                <constraint firstItem="jZG-ha-0ub" firstAttribute="leading" secondItem="cbh-xR-TIm" secondAttribute="leading" constant="16" id="lXU-wc-Rur"/>
+                                                <constraint firstItem="3x6-HZ-F6H" firstAttribute="baseline" secondItem="jZG-ha-0ub" secondAttribute="baseline" constant="20" id="ueo-6e-cNE"/>
+                                                <constraint firstItem="jZG-ha-0ub" firstAttribute="top" secondItem="cbh-xR-TIm" secondAttribute="top" constant="12.000000000000028" id="w9i-cs-S5O"/>
+                                                <constraint firstAttribute="trailing" secondItem="3x6-HZ-F6H" secondAttribute="trailing" constant="16" id="zfR-Ix-jiK"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="0zH-so-LhL" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
+                                        <rect key="frame" x="0.0" y="715" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="0zH-so-LhL" id="gIP-rg-Omm">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ProUpRegTx" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OID-5U-RH0">
+                                                    <rect key="frame" x="16" y="12" width="96" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6t7-ID-DWU" customClass="BRCopyLabel">
+                                                    <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="6t7-ID-DWU" secondAttribute="trailing" constant="16" id="01m-PD-jJ4"/>
+                                                <constraint firstItem="6t7-ID-DWU" firstAttribute="baseline" secondItem="OID-5U-RH0" secondAttribute="baseline" id="A8G-Vy-fmT"/>
+                                                <constraint firstItem="OID-5U-RH0" firstAttribute="top" secondItem="gIP-rg-Omm" secondAttribute="top" constant="12.000000000000028" id="Gcu-aV-ya5"/>
+                                                <constraint firstItem="6t7-ID-DWU" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="OID-5U-RH0" secondAttribute="trailing" constant="10" id="YMK-OS-AOO"/>
+                                                <constraint firstItem="OID-5U-RH0" firstAttribute="leading" secondItem="gIP-rg-Omm" secondAttribute="leading" constant="16" id="zGs-KW-CG7"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="r87-nE-s2S" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
+                                        <rect key="frame" x="0.0" y="759" width="414" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="r87-nE-s2S" id="KP6-bm-Bki">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ProUpServTx" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="udn-uy-U6k">
+                                                    <rect key="frame" x="16" y="12" width="100" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="None" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ROe-8Q-spw" customClass="BRCopyLabel">
+                                                    <rect key="frame" x="357" y="12" width="41" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="ROe-8Q-spw" firstAttribute="baseline" secondItem="udn-uy-U6k" secondAttribute="baseline" id="7wu-CN-aHu"/>
+                                                <constraint firstItem="udn-uy-U6k" firstAttribute="top" secondItem="KP6-bm-Bki" secondAttribute="top" constant="12.000000000000028" id="DJL-5Q-av2"/>
+                                                <constraint firstAttribute="trailing" secondItem="ROe-8Q-spw" secondAttribute="trailing" constant="16" id="fgV-jC-DLA"/>
+                                                <constraint firstItem="udn-uy-U6k" firstAttribute="leading" secondItem="KP6-bm-Bki" secondAttribute="leading" constant="16" id="jll-9a-gn5"/>
+                                                <constraint firstItem="ROe-8Q-spw" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="udn-uy-U6k" secondAttribute="trailing" constant="10" id="y2z-Xm-RAa"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="EMc-8p-CGi" id="nBJ-xT-e14"/>
@@ -451,6 +542,9 @@
                         <outlet property="operatorKeyLabel" destination="cVl-gK-ZYS" id="Tqm-0J-v6W"/>
                         <outlet property="ownerKeyLabel" destination="mfA-4w-dhN" id="8sZ-5d-qhJ"/>
                         <outlet property="payToAddress" destination="uVq-Lh-bHC" id="TOj-co-tz7"/>
+                        <outlet property="proRegTxLabel" destination="3x6-HZ-F6H" id="6Qy-nZ-qlQ"/>
+                        <outlet property="proUpRegTxLabel" destination="6t7-ID-DWU" id="eUA-dn-Hhj"/>
+                        <outlet property="proUpServTxLabel" destination="ROe-8Q-spw" id="oc9-lc-xYW"/>
                         <outlet property="votingKeyLabel" destination="EAD-yQ-4uB" id="L31-nE-zes"/>
                     </connections>
                 </tableViewController>

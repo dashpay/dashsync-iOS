@@ -2,14 +2,14 @@
 //  DSLocalMasternodeEntity+CoreDataClass.h
 //  DashSync
 //
-//  Created by Sam Westrich on 2/20/19.
+//  Created by Sam Westrich on 3/3/19.
 //
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSProviderRegistrationTransactionEntity,DSLocalMasternode,DSChainEntity;
+@class DSProviderRegistrationTransactionEntity, DSProviderUpdateRegistrarTransactionEntity, DSProviderUpdateRevocationTransactionEntity, DSProviderUpdateServiceTransactionEntity, DSSimplifiedMasternodeEntryEntity,DSLocalMasternode,DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

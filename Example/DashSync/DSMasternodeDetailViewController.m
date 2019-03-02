@@ -13,6 +13,7 @@
 #import "DSUpdateMasternodeRegistrarViewController.h"
 #import "DSReclaimMasternodeViewController.h"
 #import <arpa/inet.h>
+#import "BRCopyLabel.h"
 
 @interface DSMasternodeDetailViewController ()
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
@@ -21,6 +22,9 @@
 @property (strong, nonatomic) IBOutlet UILabel *votingKeyLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundsInHoldingLabel;
 @property (strong, nonatomic) IBOutlet UILabel *payToAddress;
+@property (strong, nonatomic) IBOutlet BRCopyLabel *proRegTxLabel;
+@property (strong, nonatomic) IBOutlet BRCopyLabel *proUpRegTxLabel;
+@property (strong, nonatomic) IBOutlet BRCopyLabel *proUpServTxLabel;
 
 @end
 
@@ -38,6 +42,9 @@
     self.votingKeyLabel.text = self.localMasternode.votingKeysWallet?@"SHOW":@"NO";
     self.fundsInHoldingLabel.text = self.localMasternode.holdingKeysWallet?@"YES":@"NO";
     self.payToAddress.text = self.localMasternode.payoutAddress?self.localMasternode.payoutAddress:@"Unknown";
+    self.proRegTxLabel.text = uint256_hex(self.localMasternode.providerRegistrationTransaction.txHash);
+    self.proUpRegTxLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.localMasternode.providerUpdateRegistrarTransactions.count];
+    self.proUpServTxLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.localMasternode.providerUpdateServiceTransactions.count];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
