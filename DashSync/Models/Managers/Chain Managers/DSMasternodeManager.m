@@ -287,7 +287,7 @@ inline static int ceil_log2(int x)
     [modifiedMasternodeKeys intersectSet:[NSSet setWithArray:self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys]];
     NSMutableDictionary * modifiedMasternodes = [NSMutableDictionary dictionary];
     for (NSData * data in modifiedMasternodeKeys) {
-        [modifiedMasternodes setObject:self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data] forKey:data];
+        [modifiedMasternodes setObject:addedOrModifiedMasternodes[data] forKey:data];
     }
     
     NSMutableDictionary * tentativeMasternodeList = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy];
@@ -360,7 +360,7 @@ inline static int ceil_log2(int x)
             }
             for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
-                DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash] onChain:chainEntity];
+                DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForProviderRegistrationTransactionHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash] onChain:chainEntity];
                 [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
             }
             chainEntity.baseBlockHash = [NSData dataWithUInt256:blockHash];

@@ -15,11 +15,16 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSKey.h"
+#include <arpa/inet.h>
 
 @implementation DSSimplifiedMasternodeEntryEntity
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    self.address = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
+    char s[INET6_ADDRSTRLEN];
+    uint32_t address32 = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
+    NSString * ipAddressString = @(inet_ntop(AF_INET, &address32, s, sizeof(s)));
+    DSDLog(@"changing address to %@",ipAddressString);
+    self.address = address32;
     self.port = simplifiedMasternodeEntry.port;
     self.keyIDVoting = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
     self.operatorBLSPublicKey = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
@@ -85,6 +90,11 @@
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in hashesToDelete) {
         [chainEntity.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
     }
+}
+
++ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChain:(DSChainEntity*)chainEntity {
+    NSArray * objects = [self objectsMatching:@"(chain == %@) && (providerRegistrationTransactionHash == %@)",chainEntity,providerRegistrationTransactionHash];
+    return [objects firstObject];
 }
 
 + (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity*)chainEntity {
