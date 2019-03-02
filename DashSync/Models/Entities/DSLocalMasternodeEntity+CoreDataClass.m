@@ -37,17 +37,17 @@
     
     for (DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity in self.providerUpdateServiceTransactions) {
         DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)[providerUpdateServiceTransactionEntity transactionForChain:chain];
-        [localMasternode updateWithUpdateServiceTransaction:providerUpdateServiceTransaction];
+        [localMasternode updateWithUpdateServiceTransaction:providerUpdateServiceTransaction save:FALSE];
     }
     
     for (DSProviderUpdateRegistrarTransactionEntity * providerUpdateRegistrarTransactionEntity in self.providerUpdateRegistrarTransactions) {
         DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)[providerUpdateRegistrarTransactionEntity transactionForChain:chain];
-        [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction];
+        [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction save:FALSE];
     }
     
     for (DSProviderUpdateRevocationTransactionEntity * providerUpdateRevocationTransactionEntity in self.providerUpdateRevocationTransactions) {
         DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)[providerUpdateRevocationTransactionEntity transactionForChain:chain];
-        [localMasternode updateWithUpdateRevocationTransaction:providerUpdateRevocationTransaction];
+        [localMasternode updateWithUpdateRevocationTransaction:providerUpdateRevocationTransaction save:FALSE];
     }
     return localMasternode;
 }

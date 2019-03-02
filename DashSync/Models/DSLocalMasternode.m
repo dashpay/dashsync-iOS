@@ -325,21 +325,33 @@
 }
 
 
--(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction {
-    [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
-    [self save];
+-(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction save:(BOOL)save {
+    if (![_providerUpdateRegistrarTransactions containsObject:providerUpdateRegistrarTransaction]) {
+        [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
+        if (save) {
+            [self save];
+        }
+    }
 }
 
--(void)updateWithUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction {
-    [_providerUpdateRevocationTransactions addObject:providerUpdateRevocationTransaction];
-    [self save];
+-(void)updateWithUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction save:(BOOL)save {
+    if (![_providerUpdateRevocationTransactions containsObject:providerUpdateRevocationTransaction]) {
+        [_providerUpdateRevocationTransactions addObject:providerUpdateRevocationTransaction];
+        if (save) {
+            [self save];
+        }
+    }
 }
 
--(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction {
-    [_providerUpdateServiceTransactions addObject:providerUpdateServiceTransaction];
-    self.ipAddress = providerUpdateServiceTransaction.ipAddress;
-    self.port = providerUpdateServiceTransaction.port;
-    [self save];
+-(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction save:(BOOL)save {
+    if (![_providerUpdateServiceTransactions containsObject:providerUpdateServiceTransaction]) {
+        [_providerUpdateServiceTransactions addObject:providerUpdateServiceTransaction];
+        self.ipAddress = providerUpdateServiceTransaction.ipAddress;
+        self.port = providerUpdateServiceTransaction.port;
+        if (save) {
+            [self save];
+        }
+    }
 }
 
 // MARK: - Persistence
