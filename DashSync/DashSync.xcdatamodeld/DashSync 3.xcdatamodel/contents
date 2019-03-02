@@ -14,6 +14,7 @@
         <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="addresses" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="usedInInputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxInputEntity" inverseName="localAddress" inverseEntity="DSTxInputEntity" syncable="YES"/>
         <relationship name="usedInOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="localAddress" inverseEntity="DSTxOutputEntity" syncable="YES"/>
+        <relationship name="usedInSimplifiedMasternodeEntries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="addresses" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
         <relationship name="usedInSpecialTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSpecialTransactionEntity" inverseName="addresses" inverseEntity="DSSpecialTransactionEntity" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainUserCloseTransactionEntity" representedClassName="DSBlockchainUserCloseTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
@@ -227,6 +228,7 @@
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="simplifiedMasternodeEntryHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSAddressEntity" inverseName="usedInSimplifiedMasternodeEntries" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="simplifiedMasternodeEntries" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="governanceVotes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSGovernanceVoteEntity" inverseName="masternode" inverseEntity="DSGovernanceVoteEntity" syncable="YES"/>
         <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="simplifiedMasternodeEntry" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
@@ -333,7 +335,7 @@
     </entity>
     <elements>
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="105"/>
-        <element name="DSAddressEntity" positionX="-2527.6015625" positionY="327.6796875" width="128" height="165"/>
+        <element name="DSAddressEntity" positionX="-2527.6015625" positionY="327.6796875" width="128" height="180"/>
         <element name="DSBlockchainUserCloseTransactionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="105"/>
         <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="90"/>
         <element name="DSBlockchainUserResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="120"/>
@@ -353,7 +355,7 @@
         <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="90"/>
         <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="120"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
-        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="225"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="240"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
         <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
         <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>

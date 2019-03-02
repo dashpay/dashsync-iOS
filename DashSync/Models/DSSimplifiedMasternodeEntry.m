@@ -169,4 +169,12 @@
     return [operatorPublicBLSKey verify:messageDigest signature:signature];
 }
 
+-(NSString*)votingAddress {
+    return [[NSData dataWithUInt160:self.keyIDVoting] addressFromHash160DataForChain:self.chain];
+}
+
+-(NSString*)operatorAddress {
+    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorPublicKey] forChain:self.chain];
+}
+
 @end

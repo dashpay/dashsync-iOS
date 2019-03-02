@@ -238,6 +238,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
  */
 - (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount;
 
+- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
+
 @end
 
 @protocol DSChainTransactionsDelegate

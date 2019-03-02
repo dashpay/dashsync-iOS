@@ -41,6 +41,7 @@
 #import "DSTxOutputEntity+CoreDataClass.h"
 
 #import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSAddressEntity+CoreDataClass.h"
 #import "DSPeerManager.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
@@ -1134,6 +1135,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         Class transactionEntityClass = [transaction entityClass];
         [transactionEntityClass setContext:self.moc];
         [DSTransactionHashEntity setContext:self.moc];
+        [DSAddressEntity setContext:self.moc];
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
             
             DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];

@@ -26,6 +26,7 @@
 #import "DSMasternodeManager.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSAddressEntity+CoreDataProperties.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
@@ -338,10 +339,12 @@ inline static int ceil_log2(int x)
         //yay this is the correct masternode list verified deterministically
         self.baseBlockHash = blockHash;
         self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = tentativeMasternodeList;
+        [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:addedOrModifiedMasternodes.allValues];
         [self.managedObjectContext performBlockAndWait:^{
             [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
             [DSChainEntity setContext:self.managedObjectContext];
             [DSLocalMasternodeEntity setContext:self.managedObjectContext];
+            [DSAddressEntity setContext:self.managedObjectContext];
             DSChainEntity * chainEntity = self.chain.chainEntity;
             if (deletedMasternodeHashes.count) {
                 NSMutableArray * nonReversedDeletedMasternodeHashes = [NSMutableArray array];

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity,DSSimplifiedMasternodeEntry;
+@class DSChainEntity,DSSimplifiedMasternodeEntry,DSAddressEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

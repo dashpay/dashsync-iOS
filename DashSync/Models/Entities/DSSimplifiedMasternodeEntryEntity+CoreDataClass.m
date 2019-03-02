@@ -13,6 +13,8 @@
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSAddressEntity+CoreDataClass.h"
+#import "DSKey.h"
 
 @implementation DSSimplifiedMasternodeEntryEntity
 
@@ -25,6 +27,19 @@
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
     DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     self.localMasternode = localMasternode;
+    
+    NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
+    NSString * votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
+    
+    DSAddressEntity * operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    if (operatorAddressEntity) {
+        [self addAddressesObject:operatorAddressEntity];
+    }
+    
+    DSAddressEntity * votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    if (votingAddressEntity) {
+        [self addAddressesObject:votingAddressEntity];
+    }
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChain:(DSChainEntity*)chainEntity {
@@ -43,6 +58,19 @@
     }
     DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
     self.localMasternode = localMasternode;
+    
+    NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
+    NSString * votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
+    
+    DSAddressEntity * operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    if (operatorAddressEntity) {
+        [self addAddressesObject:operatorAddressEntity];
+    }
+    
+    DSAddressEntity * votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    if (votingAddressEntity) {
+        [self addAddressesObject:votingAddressEntity];
+    }
 }
 
 + (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity*)chainEntity {

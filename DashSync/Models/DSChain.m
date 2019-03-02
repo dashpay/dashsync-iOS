@@ -58,6 +58,10 @@
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSLocalMasternode.h"
+#import "DSKey.h"
+#import "DSDerivationPathFactory.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -1782,6 +1786,23 @@ static dispatch_once_t devnetToken = 0;
         DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
         DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
         [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction];
+    }
+}
+
+- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries {
+    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in simplifiedMasternodeEntries) {
+        NSString * votingAddress = simplifiedMasternodeEntry.votingAddress;
+        NSString * operatorAddress = simplifiedMasternodeEntry.operatorAddress;
+        for (DSWallet * wallet in self.wallets) {
+            DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
+            if ([providerOperatorKeysDerivationPath containsAddress:operatorAddress]) {
+                [providerOperatorKeysDerivationPath registerTransactionAddress:operatorAddress];
+            }
+            DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet];
+            if ([providerVotingKeysDerivationPath containsAddress:votingAddress]) {
+                [providerVotingKeysDerivationPath registerTransactionAddress:votingAddress];
+            }
+        }
     }
 }
 

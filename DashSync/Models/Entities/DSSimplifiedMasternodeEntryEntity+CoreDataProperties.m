@@ -24,5 +24,6 @@
 @dynamic simplifiedMasternodeEntryHash;
 @dynamic chain;
 @dynamic localMasternode;
+@dynamic addresses;
 
 @end
