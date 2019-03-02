@@ -102,6 +102,7 @@
 		FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */; };
 		FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */; };
 		FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */; };
+		FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */; };
 		FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */; };
 		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
 		FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBB4E36B2145B2D0008040B7 /* Layer2.storyboard */; };
@@ -311,6 +312,8 @@
 		FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateRegistrarTableViewCell.m; sourceTree = "<group>"; };
 		FBAA774D222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateServiceTableViewCell.h; sourceTree = "<group>"; };
 		FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateServiceTableViewCell.m; sourceTree = "<group>"; };
+		FBAA7750222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateServiceTransactionsViewController.h; sourceTree = "<group>"; };
+		FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateServiceTransactionsViewController.m; sourceTree = "<group>"; };
 		FBB25BEE20C5CDC60037F5BE /* DSBlockchainExplorerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainExplorerViewController.h; sourceTree = "<group>"; };
 		FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainExplorerViewController.m; sourceTree = "<group>"; };
 		FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlockTableViewCell.h; sourceTree = "<group>"; };
@@ -595,6 +598,8 @@
 				FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */,
 				FBAA7747222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.h */,
 				FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */,
+				FBAA7750222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.h */,
+				FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -1074,6 +1079,7 @@
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
+				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,

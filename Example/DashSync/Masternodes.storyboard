@@ -530,6 +530,9 @@
                                                 <constraint firstItem="ROe-8Q-spw" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="udn-uy-U6k" secondAttribute="trailing" constant="10" id="y2z-Xm-RAa"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="TWd-Zw-pJR" kind="show" identifier="ShowProviderUpdateServiceTransactionsSegue" id="FeW-Bz-qh3"/>
+                                        </connections>
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
@@ -1202,6 +1205,94 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cbt-K9-pDb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="7281" y="-615"/>
+        </scene>
+        <!--Service Transactions-->
+        <scene sceneID="KFR-6E-BMB">
+            <objects>
+                <tableViewController id="TWd-Zw-pJR" userLabel="Service Transactions" customClass="DSProviderUpdateServiceTransactionsViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="126" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="DtI-KH-ztX">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ServiceTransactionCellIdentifier" rowHeight="126" id="oIf-sz-mSN" customClass="DSProviderUpdateServiceTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="414" height="126"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="oIf-sz-mSN" id="cc7-Yf-9M8">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="125.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mpY-8a-CR8">
+                                            <rect key="frame" x="16" y="16" width="70.5" height="20.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8i0-o4-LFa" customClass="BRCopyLabel">
+                                            <rect key="frame" x="335" y="46.5" width="63" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FAP-Fk-IcD" customClass="BRCopyLabel">
+                                            <rect key="frame" x="335" y="77.5" width="63" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Operator Payout:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1wn-tH-3Yu">
+                                            <rect key="frame" x="16" y="46.5" width="130" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Block height:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nfw-MG-Qd7">
+                                            <rect key="frame" x="16" y="77.5" width="100" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Hw-br-icU" customClass="BRCopyLabel">
+                                            <rect key="frame" x="335" y="16" width="63" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="8i0-o4-LFa" firstAttribute="trailing" secondItem="FAP-Fk-IcD" secondAttribute="trailing" id="3Ob-0h-XyY"/>
+                                        <constraint firstAttribute="trailing" secondItem="0Hw-br-icU" secondAttribute="trailing" constant="16" id="8Dz-a8-326"/>
+                                        <constraint firstItem="FAP-Fk-IcD" firstAttribute="firstBaseline" secondItem="Nfw-MG-Qd7" secondAttribute="firstBaseline" id="8l7-Q5-Ahx"/>
+                                        <constraint firstItem="8i0-o4-LFa" firstAttribute="firstBaseline" secondItem="1wn-tH-3Yu" secondAttribute="firstBaseline" id="Epa-km-iSB"/>
+                                        <constraint firstItem="0Hw-br-icU" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mpY-8a-CR8" secondAttribute="trailing" constant="4" id="K8D-kh-UoA"/>
+                                        <constraint firstItem="mpY-8a-CR8" firstAttribute="leading" secondItem="cc7-Yf-9M8" secondAttribute="leading" constant="16" id="O4L-9R-fOo"/>
+                                        <constraint firstItem="mpY-8a-CR8" firstAttribute="top" secondItem="cc7-Yf-9M8" secondAttribute="top" constant="16" id="OPJ-Fb-Ytj"/>
+                                        <constraint firstItem="0Hw-br-icU" firstAttribute="trailing" secondItem="8i0-o4-LFa" secondAttribute="trailing" id="QVx-4Y-ucZ"/>
+                                        <constraint firstItem="Nfw-MG-Qd7" firstAttribute="top" secondItem="1wn-tH-3Yu" secondAttribute="bottom" constant="10" id="TsO-vR-8Yf"/>
+                                        <constraint firstItem="1wn-tH-3Yu" firstAttribute="top" secondItem="mpY-8a-CR8" secondAttribute="bottom" constant="10" id="hrF-vk-jyA"/>
+                                        <constraint firstItem="Nfw-MG-Qd7" firstAttribute="leading" secondItem="1wn-tH-3Yu" secondAttribute="leading" id="jRi-Iy-s3O"/>
+                                        <constraint firstItem="1wn-tH-3Yu" firstAttribute="leading" secondItem="mpY-8a-CR8" secondAttribute="leading" id="lyb-su-jas"/>
+                                        <constraint firstItem="0Hw-br-icU" firstAttribute="firstBaseline" secondItem="mpY-8a-CR8" secondAttribute="firstBaseline" id="nlU-4F-r24"/>
+                                        <constraint firstItem="8i0-o4-LFa" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="1wn-tH-3Yu" secondAttribute="trailing" constant="4" id="xgF-dJ-Fbx"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="blockHeightLabel" destination="FAP-Fk-IcD" id="jzs-Jy-gFz"/>
+                                    <outlet property="locationLabel" destination="0Hw-br-icU" id="SFO-cs-2if"/>
+                                    <outlet property="operatorRewardPayoutAddressLabel" destination="8i0-o4-LFa" id="YCG-pd-HyO"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="TWd-Zw-pJR" id="9Rd-LQ-tmn"/>
+                            <outlet property="delegate" destination="TWd-Zw-pJR" id="oYX-Mk-Xm4"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Service Transactions" id="Rl7-R9-7q0"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="LQE-g4-ApQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="6658" y="-226"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

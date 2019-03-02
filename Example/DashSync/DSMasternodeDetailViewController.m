@@ -13,6 +13,7 @@
 #import "DSUpdateMasternodeRegistrarViewController.h"
 #import "DSReclaimMasternodeViewController.h"
 #import "DSProviderUpdateRegistrarTransactionsViewController.h"
+#import "DSProviderUpdateServiceTransactionsViewController.h"
 #import <arpa/inet.h>
 #import "BRCopyLabel.h"
 
@@ -64,6 +65,9 @@
     } else if ([segue.identifier isEqualToString:@"ShowProviderUpdateRegistrarTransactionsSegue"]) {
         DSProviderUpdateRegistrarTransactionsViewController * providerUpdateRegistrarTransactionsViewController = segue.destinationViewController;
         providerUpdateRegistrarTransactionsViewController.localMasternode = self.localMasternode;
+    } else if ([segue.identifier isEqualToString:@"ShowProviderUpdateServiceTransactionsSegue"]) {
+        DSProviderUpdateServiceTransactionsViewController * providerUpdateServiceTransactionsViewController = segue.destinationViewController;
+        providerUpdateServiceTransactionsViewController.localMasternode = self.localMasternode;
     }
 }
 
