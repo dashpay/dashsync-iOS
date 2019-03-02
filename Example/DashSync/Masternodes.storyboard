@@ -498,6 +498,9 @@
                                                 <constraint firstItem="OID-5U-RH0" firstAttribute="leading" secondItem="gIP-rg-Omm" secondAttribute="leading" constant="16" id="zGs-KW-CG7"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="r5H-nF-n0I" kind="show" identifier="ShowProviderUpdateRegistrarTransactionsSegue" id="aBk-p6-EnQ"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="gray" indentationWidth="10" id="r87-nE-s2S" userLabel="InfoCell" customClass="DSWalletChooserTableViewCell">
                                         <rect key="frame" x="0.0" y="759" width="414" height="44"/>
@@ -559,6 +562,94 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="14f-6d-feq" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3515.9420289855075" y="-415.17857142857139"/>
+        </scene>
+        <!--Registrar Transactions-->
+        <scene sceneID="tIF-yV-u0U">
+            <objects>
+                <tableViewController id="r5H-nF-n0I" customClass="DSProviderUpdateRegistrarTransactionsViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="126" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="CyX-BZ-Gja">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="RegistrarTransactionCellIdentifier" rowHeight="126" id="NEe-j7-1y1" customClass="DSProviderUpdateRegistrarTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="414" height="126"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="NEe-j7-1y1" id="ulR-es-U8d">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="125.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pay to:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="98u-pv-Cxf">
+                                            <rect key="frame" x="16" y="16" width="52" height="20.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="k1l-ZS-Y7M" customClass="BRCopyLabel">
+                                            <rect key="frame" x="335" y="46.5" width="63" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n6G-gz-SeG" customClass="BRCopyLabel">
+                                            <rect key="frame" x="335" y="77.5" width="63" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Operator Key:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F65-OZ-ndq">
+                                            <rect key="frame" x="16" y="46.5" width="106" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Block height:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dAS-M2-Y9x">
+                                            <rect key="frame" x="16" y="77.5" width="100" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Address" textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ggM-Yu-kqP" customClass="BRCopyLabel">
+                                            <rect key="frame" x="335" y="16" width="63" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="k1l-ZS-Y7M" firstAttribute="firstBaseline" secondItem="F65-OZ-ndq" secondAttribute="firstBaseline" id="3RL-oA-9ck"/>
+                                        <constraint firstItem="n6G-gz-SeG" firstAttribute="firstBaseline" secondItem="dAS-M2-Y9x" secondAttribute="firstBaseline" id="3fU-y3-gaQ"/>
+                                        <constraint firstItem="F65-OZ-ndq" firstAttribute="top" secondItem="98u-pv-Cxf" secondAttribute="bottom" constant="10" id="DYZ-jU-9JH"/>
+                                        <constraint firstItem="k1l-ZS-Y7M" firstAttribute="trailing" secondItem="n6G-gz-SeG" secondAttribute="trailing" id="K56-r4-gpt"/>
+                                        <constraint firstItem="F65-OZ-ndq" firstAttribute="leading" secondItem="98u-pv-Cxf" secondAttribute="leading" id="VJM-R0-DZV"/>
+                                        <constraint firstItem="k1l-ZS-Y7M" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="F65-OZ-ndq" secondAttribute="trailing" constant="4" id="Wur-oN-RSH"/>
+                                        <constraint firstItem="dAS-M2-Y9x" firstAttribute="leading" secondItem="F65-OZ-ndq" secondAttribute="leading" id="Wvw-lg-54Y"/>
+                                        <constraint firstItem="ggM-Yu-kqP" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="98u-pv-Cxf" secondAttribute="trailing" constant="4" id="YnF-PY-3cz"/>
+                                        <constraint firstItem="ggM-Yu-kqP" firstAttribute="firstBaseline" secondItem="98u-pv-Cxf" secondAttribute="firstBaseline" id="Yru-sW-Who"/>
+                                        <constraint firstAttribute="trailing" secondItem="ggM-Yu-kqP" secondAttribute="trailing" constant="16" id="bA6-W5-7rh"/>
+                                        <constraint firstItem="ggM-Yu-kqP" firstAttribute="trailing" secondItem="k1l-ZS-Y7M" secondAttribute="trailing" id="ft6-h7-iS9"/>
+                                        <constraint firstItem="98u-pv-Cxf" firstAttribute="top" secondItem="ulR-es-U8d" secondAttribute="top" constant="16" id="gHa-V0-Kpf"/>
+                                        <constraint firstItem="98u-pv-Cxf" firstAttribute="leading" secondItem="ulR-es-U8d" secondAttribute="leading" constant="16" id="qMp-rQ-hP7"/>
+                                        <constraint firstItem="dAS-M2-Y9x" firstAttribute="top" secondItem="F65-OZ-ndq" secondAttribute="bottom" constant="10" id="rc5-tw-ofa"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="blockHeightLabel" destination="n6G-gz-SeG" id="Gol-dN-rns"/>
+                                    <outlet property="operatorKeyLabel" destination="k1l-ZS-Y7M" id="fXA-hl-Yni"/>
+                                    <outlet property="payToAddressLabel" destination="ggM-Yu-kqP" id="5PM-pm-euQ"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="r5H-nF-n0I" id="wZy-f4-9Qv"/>
+                            <outlet property="delegate" destination="r5H-nF-n0I" id="WDr-14-DMM"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Registrar Transactions" id="Xel-qc-RyA"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ZlO-4w-ppi" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7388" y="40"/>
         </scene>
         <!--ChooseAccountIdentifier-->
         <scene sceneID="Sdm-kw-hOR">
@@ -1092,7 +1183,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Go9-Dn-RiK" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="7684.057971014493" y="-188.16964285714286"/>
+            <point key="canvasLocation" x="8012" y="-400"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="heC-CR-ZQC">
@@ -1110,7 +1201,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cbt-K9-pDb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="6954" y="-403"/>
+            <point key="canvasLocation" x="7281" y="-615"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

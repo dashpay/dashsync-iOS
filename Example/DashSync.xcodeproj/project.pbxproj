@@ -99,6 +99,9 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
+		FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */; };
+		FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */; };
+		FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */; };
 		FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */; };
 		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
 		FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBB4E36B2145B2D0008040B7 /* Layer2.storyboard */; };
@@ -302,6 +305,12 @@
 		FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9A107020D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetAddIPAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
+		FBAA7747222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateRegistrarTransactionsViewController.h; sourceTree = "<group>"; };
+		FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateRegistrarTransactionsViewController.m; sourceTree = "<group>"; };
+		FBAA774A222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateRegistrarTableViewCell.h; sourceTree = "<group>"; };
+		FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateRegistrarTableViewCell.m; sourceTree = "<group>"; };
+		FBAA774D222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateServiceTableViewCell.h; sourceTree = "<group>"; };
+		FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateServiceTableViewCell.m; sourceTree = "<group>"; };
 		FBB25BEE20C5CDC60037F5BE /* DSBlockchainExplorerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainExplorerViewController.h; sourceTree = "<group>"; };
 		FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainExplorerViewController.m; sourceTree = "<group>"; };
 		FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlockTableViewCell.h; sourceTree = "<group>"; };
@@ -584,6 +593,8 @@
 				FB3FF0AE222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m */,
 				FB20ABDD2228417C00DD2FF2 /* DSReclaimMasternodeViewController.h */,
 				FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */,
+				FBAA7747222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.h */,
+				FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -678,6 +689,10 @@
 				FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */,
 				FBEB7E93220F0DFA0013F619 /* DSWalletChooserTableViewCell.h */,
 				FBEB7E94220F0DFA0013F619 /* DSWalletChooserTableViewCell.m */,
+				FBAA774A222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.h */,
+				FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */,
+				FBAA774D222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.h */,
+				FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1001,6 +1016,7 @@
 				FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */,
 				FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */,
 				FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */,
+				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
 				FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */,
@@ -1026,6 +1042,7 @@
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
 				FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
+				FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */,
 				FB0F15A2210490C3000272E6 /* DSTransactionDetailTableViewCell.m in Sources */,
 				FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */,
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
@@ -1039,6 +1056,7 @@
 				FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
+				FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */,
 				FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
 				2A3B3EBD20F893F4002962FB /* TextFieldFormTableViewCell.m in Sources */,
