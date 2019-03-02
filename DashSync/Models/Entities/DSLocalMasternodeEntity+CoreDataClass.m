@@ -68,17 +68,23 @@
     
     for (DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction in localMasternode.providerUpdateServiceTransactions) {
         DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity = [DSProviderUpdateServiceTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateServiceTransaction.txHash)];
-        [self addProviderUpdateServiceTransactionsObject:providerUpdateServiceTransactionEntity];
+        if (![self.providerUpdateServiceTransactions containsObject:providerUpdateServiceTransactionEntity]) {
+            [self addProviderUpdateServiceTransactionsObject:providerUpdateServiceTransactionEntity];
+        }
     }
     
     for (DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction in localMasternode.providerUpdateRegistrarTransactions) {
         DSProviderUpdateRegistrarTransactionEntity * providerUpdateRegistrarTransactionEntity = [DSProviderUpdateRegistrarTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRegistrarTransaction.txHash)];
-        [self addProviderUpdateRegistrarTransactionsObject:providerUpdateRegistrarTransactionEntity];
+        if (![self.providerUpdateRegistrarTransactions containsObject:providerUpdateRegistrarTransactionEntity]) {
+            [self addProviderUpdateRegistrarTransactionsObject:providerUpdateRegistrarTransactionEntity];
+        }
     }
     
     for (DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction in localMasternode.providerUpdateRevocationTransactions) {
         DSProviderUpdateRevocationTransactionEntity * providerUpdateRevocationTransactionEntity = [DSProviderUpdateRevocationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(providerUpdateRevocationTransaction.txHash)];
-        [self addProviderUpdateRevocationTransactionsObject:providerUpdateRevocationTransactionEntity];
+        if (![self.providerUpdateRevocationTransactions containsObject:providerUpdateRevocationTransactionEntity]) {
+            [self addProviderUpdateRevocationTransactionsObject:providerUpdateRevocationTransactionEntity];
+        }
     }
 }
 

@@ -20,5 +20,6 @@
 @dynamic scriptPayout;
 @dynamic votingKeyHash;
 @dynamic providerRegistrationTransactionHash;
+@dynamic localMasternode;
 
 @end

@@ -17,5 +17,6 @@
 @dynamic payloadSignature;
 @dynamic reason;
 @dynamic providerRegistrationTransactionHash;
+@dynamic localMasternode;
 
 @end

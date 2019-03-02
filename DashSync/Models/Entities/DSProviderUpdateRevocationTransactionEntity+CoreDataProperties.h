@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *payloadSignature;
 @property (nonatomic, assign) uint16_t reason;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
+@property (nullable, nonatomic, retain) DSLocalMasternodeEntity *localMasternode;
 
 @end
 

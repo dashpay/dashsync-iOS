@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign,nonatomic) uint16_t port;
 @property (nullable, nonatomic, retain) NSData *scriptPayout;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
+@property (nullable, nonatomic, retain) DSLocalMasternodeEntity *localMasternode;
 
 @end
 

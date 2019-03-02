@@ -19,5 +19,6 @@
 @dynamic port;
 @dynamic scriptPayout;
 @dynamic providerRegistrationTransactionHash;
+@dynamic localMasternode;
 
 @end

@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *votingKeyHash;
 @property (nonatomic, assign) uint16_t operatorReward;
 @property (nullable, nonatomic, retain) NSData *scriptPayout;
+@property (nullable, nonatomic, retain) DSLocalMasternodeEntity *localMasternode;
 
 @end
 

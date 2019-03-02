@@ -21,6 +21,9 @@
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSProviderUpdateServiceTransactionEntity+CoreDataProperties.h"
+#import "DSProviderUpdateRegistrarTransactionEntity+CoreDataProperties.h"
+#import "DSProviderUpdateRevocationTransactionEntity+CoreDataProperties.h"
 #import "DSECDSAKey.h"
 #include <arpa/inet.h>
 
@@ -324,16 +327,19 @@
 
 -(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction {
     [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
+    [self save];
 }
 
 -(void)updateWithUpdateRevocationTransaction:(DSProviderUpdateRevocationTransaction*)providerUpdateRevocationTransaction {
     [_providerUpdateRevocationTransactions addObject:providerUpdateRevocationTransaction];
+    [self save];
 }
 
 -(void)updateWithUpdateServiceTransaction:(DSProviderUpdateServiceTransaction*)providerUpdateServiceTransaction {
     [_providerUpdateServiceTransactions addObject:providerUpdateServiceTransaction];
     self.ipAddress = providerUpdateServiceTransaction.ipAddress;
     self.port = providerUpdateServiceTransaction.port;
+    [self save];
 }
 
 // MARK: - Persistence
@@ -344,6 +350,9 @@
         [DSChainEntity setContext:context];
         [DSLocalMasternodeEntity setContext:context];
         [DSProviderRegistrationTransactionEntity setContext:context];
+        [DSProviderUpdateServiceTransactionEntity setContext:context];
+        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
+        [DSProviderUpdateRevocationTransactionEntity setContext:context];
         if ([DSLocalMasternodeEntity
              countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
             DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];

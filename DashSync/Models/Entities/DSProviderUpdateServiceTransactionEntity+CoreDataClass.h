@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "DSSpecialTransactionEntity+CoreDataClass.h"
 
+@class DSLocalMasternodeEntity;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSProviderUpdateServiceTransactionEntity : DSSpecialTransactionEntity

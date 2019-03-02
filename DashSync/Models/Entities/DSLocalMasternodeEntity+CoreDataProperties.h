@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) uint32_t holdingKeysIndex;
 @property (nullable, nonatomic, retain) DSProviderRegistrationTransactionEntity *providerRegistrationTransaction;
 @property (nullable, nonatomic, retain) DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntry;
-@property (nullable, nonatomic, retain) NSSet<DSProviderUpdateRegistrarTransactionEntity *> *providerUpdateRegistrarTransactions;
-@property (nullable, nonatomic, retain) NSSet<DSProviderUpdateServiceTransactionEntity *> *providerUpdateServiceTransactions;
-@property (nullable, nonatomic, retain) NSSet<DSProviderUpdateRevocationTransactionEntity *> *providerUpdateRevocationTransactions;
+@property (nullable, nonatomic, retain) NSOrderedSet<DSProviderUpdateRegistrarTransactionEntity *> *providerUpdateRegistrarTransactions;
+@property (nullable, nonatomic, retain) NSOrderedSet<DSProviderUpdateServiceTransactionEntity *> *providerUpdateServiceTransactions;
+@property (nullable, nonatomic, retain) NSOrderedSet<DSProviderUpdateRevocationTransactionEntity *> *providerUpdateRevocationTransactions;
 
 @end
 

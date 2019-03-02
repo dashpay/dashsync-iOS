@@ -25,5 +25,6 @@
 @dynamic votingKeyHash;
 @dynamic operatorReward;
 @dynamic scriptPayout;
+@dynamic localMasternode;
 
 @end
