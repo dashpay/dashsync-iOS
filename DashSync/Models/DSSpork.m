@@ -11,7 +11,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSChain.h"
 #import "DSSporkManager+Protected.h"
 #import "DSPeerManager.h"
@@ -80,10 +80,10 @@
     [stringMessageData appendString:DASH_MESSAGE_MAGIC];
     [stringMessageData appendString:stringMessage];
     UInt256 messageDigest = stringMessageData.SHA256_2;
-    DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
-    DSKey * sporkPublicKey = [DSKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
+    DSECDSAKey * messagePublicKey = [DSECDSAKey keyRecoveredFromCompactSig:signature andMessageDigest:messageDigest];
+    DSECDSAKey * sporkPublicKey = [DSECDSAKey keyWithPublicKey:[NSData dataFromHexString:[self sporkKey]]];
     
-    return [sporkPublicKey.publicKey isEqualToData:messagePublicKey.publicKey];
+    return [sporkPublicKey.publicKeyData isEqualToData:messagePublicKey.publicKeyData];
 }
     
 -(BOOL)checkSignature:(NSData*)signature {
@@ -91,7 +91,7 @@
     if (self.chain.protocolVersion < 70209) {
         return [self checkSignature70208Method:signature];
     } else {
-        DSKey * messagePublicKey = [DSKey keyRecoveredFromCompactSig:signature andMessageDigest:self.sporkHash];
+        DSECDSAKey * messagePublicKey = [DSECDSAKey keyRecoveredFromCompactSig:signature andMessageDigest:self.sporkHash];
         NSString * sporkAddress = [messagePublicKey addressForChain:self.chain];
         DSSporkManager * sporkManager = self.chain.chainManager.sporkManager;
         return [[self sporkAddress] isEqualToString:sporkAddress] || (![sporkManager sporksUpdatedSignatures] && [self checkSignature70208Method:signature]);
@@ -101,8 +101,8 @@
 -(NSString*)sporkKey {
     if (self.chain.sporkPublicKey) return self.chain.sporkPublicKey;
     if (self.chain.sporkPrivateKey) {
-        DSKey * sporkPrivateKey = [DSKey keyWithPrivateKey:self.chain.sporkPrivateKey onChain:self.chain];
-        return sporkPrivateKey.publicKey.hexString;
+        DSECDSAKey * sporkPrivateKey = [DSECDSAKey keyWithPrivateKey:self.chain.sporkPrivateKey onChain:self.chain];
+        return sporkPrivateKey.publicKeyData.hexString;
     }
     return nil;
 }

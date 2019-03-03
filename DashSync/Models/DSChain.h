@@ -28,17 +28,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef struct _DSUTXO {
-    UInt256 hash;
-    unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
-} DSUTXO;
-
-#define dsutxo_obj(o) [NSValue value:&(o) withObjCType:@encode(DSUTXO)]
-#define dsutxo_data(o) [NSData dataWithBytes:&((struct { uint32_t u[256/32 + 1]; }) {\
-o.hash.u32[0], o.hash.u32[1], o.hash.u32[2], o.hash.u32[3],\
-o.hash.u32[4], o.hash.u32[5], o.hash.u32[6], o.hash.u32[7],\
-CFSwapInt32HostToLittle((uint32_t)o.n) }) length:sizeof(UInt256) + sizeof(uint32_t)]
-
 #define MAINNET_STANDARD_PORT 9999
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 12999
@@ -93,7 +82,7 @@ FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotificatio
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction;
 
 @protocol DSChainDelegate;
 
@@ -153,6 +142,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, readonly) uint32_t blockchainUsersCount;
+@property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 @property (nonatomic, readonly) uint64_t ixPreviousConfirmationsNeeded;
 
 // outputs below this amount are uneconomical due to fees
@@ -180,6 +170,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(BOOL)isDevnetAny;
 -(BOOL)isDevnetWithGenesisHash:(UInt256)genesisHash;
 
+-(void)setUp;
+
 -(void)save;
 
 -(void)setEstimatedBlockHeight:(uint32_t)estimatedBlockHeight fromPeer:(DSPeer*)peer;
@@ -201,8 +193,6 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(void)addStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 -(void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath;
 
--(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry;
-
 // returns the transaction with the given hash if it's been registered in any wallet on the chain (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
@@ -218,9 +208,11 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 // fee that will be added for a transaction of the given size in bytes
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
 
--(NSData* _Nullable)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry;
+//-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry;
 
--(NSArray*)registeredMasternodes;
+//-(NSData* _Nullable)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry;
+//
+//-(NSArray*)registeredMasternodes;
 
 //This removes all blockchain information from the chain's wallets and derivation paths
 - (void)wipeBlockchainInfo;
@@ -230,10 +222,23 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
+- (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
+
+- (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 /**
  Check if Autolocks DIP is enabled and transaction can be Autolocked with `inputCount` provided
  */
 - (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount;
+
+- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
 
 @end
 
@@ -252,6 +257,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(void)chainWillStartSyncingBlockchain:(DSChain*)chain;
 -(void)chainFinishedSyncingTransactionsAndBlocks:(DSChain*)chain fromPeer:(DSPeer* _Nullable)peer onMainChain:(BOOL)onMainChain;
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
+-(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer;
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer;
 
 @end

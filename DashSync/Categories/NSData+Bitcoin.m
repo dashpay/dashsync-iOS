@@ -30,6 +30,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"
+#import "NSString+Dash.h"
 
 BOOL setKeychainData(NSData *data, NSString *key, BOOL authenticated)
 {
@@ -1181,6 +1182,13 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt768 *)(self.bytes);
 }
 
+-(DSUTXO)transactionOutpoint
+{
+    if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
+    return *(DSUTXO *)(self.bytes);
+}
+
+
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber **)length
 {
     uint8_t h = [self UInt8AtOffset:offset];
@@ -1348,6 +1356,21 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [level objectAtIndex:0];
 }
 
+- (NSString*)addressFromHash160DataForChain:(DSChain*)chain {
+    if (self.length != 20) return nil;
+    NSMutableData *d = [NSMutableData data];
+    uint8_t v;
+    
+    if ([chain isMainnet]) {
+        v = DASH_PUBKEY_ADDRESS;
+    } else {
+        v = DASH_PUBKEY_ADDRESS_TEST;
+    }
+    [d appendBytes:&v length:1];
+    [d appendData:self];
+    [d appendBytes:d.SHA256_2.u32 length:4];
+    return [d base58String];
+}
 
 @end
 

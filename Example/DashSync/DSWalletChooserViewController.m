@@ -67,12 +67,9 @@
 
 - (IBAction)choose:(id)sender {
     if (self.tableView.indexPathForSelectedRow) {
-        DSWallet * wallet = [self.chain.wallets objectAtIndex:self.tableView.indexPathForSelectedRow.section];
-        DSWallet * account = [[wallet accounts] objectAtIndex:self.tableView.indexPathForSelectedRow.row];
-        if (account.balance > PROPOSAL_COST) {
-            [self.delegate viewController:self didChooseWallet:account];
-            [self.navigationController popViewControllerAnimated:TRUE];
-        }
+        DSWallet * wallet = [self.chain.wallets objectAtIndex:self.tableView.indexPathForSelectedRow.row];
+        [self.delegate viewController:self didChooseWallet:wallet];
+        [self.navigationController popViewControllerAnimated:TRUE];
     }
 }
 

@@ -47,6 +47,7 @@
     __block NSData * data;
     __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
+    __block UInt256 baseBlockHash;
     [self.managedObjectContext performBlockAndWait:^{
         port = self.standardPort;
         dapiPort = self.standardDapiPort;
@@ -55,6 +56,7 @@
         data = self.checkpoints;
         totalMasternodeCount = self.totalMasternodeCount;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        baseBlockHash = self.baseBlockHash.UInt256;
     }];
     if (type == DSChainType_MainNet) {
         return [DSChain mainnet];

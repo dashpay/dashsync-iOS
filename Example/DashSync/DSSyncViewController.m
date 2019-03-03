@@ -39,8 +39,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *standaloneAddressesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
-@property (strong, nonatomic) IBOutlet UILabel *masternodeBroadcastsCountLabel;
-@property (strong, nonatomic) IBOutlet UILabel *verifiedMasternodeCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *localMasternodesCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *masternodeListUpdatedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
@@ -436,8 +436,7 @@
 
 -(void)updateMasternodeList {
         self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
-        self.masternodeBroadcastsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
-        self.verifiedMasternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
+        self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
 }
 
 -(void)updateWalletCount {
@@ -500,8 +499,6 @@
         DSActionsViewController * actionsViewController = (DSActionsViewController*)segue.destinationViewController;
         actionsViewController.chainManager = self.chainManager;
     }
-    
-    
 }
 
 

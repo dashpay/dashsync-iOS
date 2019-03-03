@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity,DSSimplifiedMasternodeEntry;
+@class DSChainEntity,DSSimplifiedMasternodeEntry,DSAddressEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry onChain:(DSChainEntity* _Nullable)chainEntity;
 + (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity* _Nonnull)chainEntity;
 + (DSSimplifiedMasternodeEntryEntity* _Nullable)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;
++ (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChain:(DSChainEntity*)chainEntity;
 
 - (DSSimplifiedMasternodeEntry* _Nullable)simplifiedMasternodeEntry;
 + (void)deleteAllOnChain:(DSChainEntity*)chainEntity;

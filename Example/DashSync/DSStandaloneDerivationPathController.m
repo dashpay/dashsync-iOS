@@ -89,7 +89,7 @@
     } else if ([segue.identifier isEqualToString:@"ViewStandaloneDerivationPathsAddressesSegue"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
         DSDerivationPathsAddressesViewController * addresses = (DSDerivationPathsAddressesViewController*)segue.destinationViewController;
-        addresses.derivationPath = [self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];
+        addresses.derivationPath = (DSFundsDerivationPath*)[self.chain.standaloneDerivationPaths objectAtIndex:indexPath.row];
     }
 }
 

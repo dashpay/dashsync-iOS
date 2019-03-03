@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface DSMasternodeTableViewCell : UITableViewCell
-@property (strong, nonatomic) IBOutlet UILabel *ipAddressLabel;
+@property (strong, nonatomic) IBOutlet UILabel *masternodeLocationLabel;
 @property (strong, nonatomic) IBOutlet UILabel *protocolLabel;
 @property (strong, nonatomic) IBOutlet UILabel *outputLabel;
 

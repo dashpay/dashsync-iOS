@@ -52,6 +52,16 @@
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "DSChainManager.h"
+#import "DSFundsDerivationPath.h"
+#import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
+#import "DSLocalMasternode+Protected.h"
+#import "DSKey.h"
+#import "DSDerivationPathFactory.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -63,7 +73,8 @@ static checkpoint testnet_checkpoint_array[] = {
     {        4002, "00000534b6b0a7ba8746a412384c9c9bbd492e03e2babd2878f0723981f03978", 1544736464, 0x1e0fffffu },
     {        8000, "0000001618273379c4d96403954480bdf5c522d734f457716db1295d7a3646e0", 1545231876, 0x1d1c3ba6u },
     {       15000, "00000000172f1946aad9183732d65aaa117d47c2e86c698940bd942dc7ffccc5", 1546203631, 0x1c19907eu },
-    {       19500, "000000000735c41ba5948fbe6c791d5e28b02e3eff5ea4ac7fecf6d07c488edf", 1546803426, 0x1c0daf28u } //important for testInstantSendReceiveTransaction
+    {       19500, "000000000735c41ba5948fbe6c791d5e28b02e3eff5ea4ac7fecf6d07c488edf", 1546803426, 0x1c0daf28u }, //important for testInstantSendReceiveTransaction
+    {       28000, "000000000204f318ee830af7416def9e45cef5507401fcc27a9627cbc28bb689", 1547961658, 0x1c0cd81bu }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -197,7 +208,7 @@ static checkpoint mainnet_checkpoint_array[] = {
             break;
         }
         case DSChainType_TestNet: {
-            self.standardDapiPort = TESTNET_STANDARD_PORT;
+            self.standardPort = TESTNET_STANDARD_PORT;
             self.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
             self.ixPreviousConfirmationsNeeded = TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
             break;
@@ -210,9 +221,13 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.checkpoints = checkpoints;
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mainThreadChainEntity = [self chainEntity];
+
+    return self;
+}
+
+-(void)setUp {
     [self retrieveWallets];
     [self retrieveStandaloneDerivationPaths];
-    return self;
 }
 
 
@@ -322,6 +337,11 @@ static checkpoint mainnet_checkpoint_array[] = {
     return chainEntity;
 }
 
+-(DSChainManager*)chainManager {
+    if (_chainManager) return _chainManager;
+    return [[DSChainsManager sharedInstance] chainManagerForChain:self];
+}
+
 +(DSChain*)mainnet {
     static DSChain* _mainnet = nil;
     static dispatch_once_t mainnetToken = 0;
@@ -333,10 +353,12 @@ static checkpoint mainnet_checkpoint_array[] = {
         //DSDLog(@"%@",[NSData dataWithUInt256:_mainnet.checkpoints[0].checkpointHash]);
     });
     if (inSetUp) {
+        [_mainnet setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_mainnet chainEntity];
             _mainnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
             _mainnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            _mainnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
     }
     
@@ -352,10 +374,12 @@ static checkpoint mainnet_checkpoint_array[] = {
         inSetUp = TRUE;
     });
     if (inSetUp) {
+        [_testnet setUp];
         [[DSChainEntity context] performBlockAndWait:^{
             DSChainEntity * chainEntity = [_testnet chainEntity];
             _testnet.totalMasternodeCount = chainEntity.totalMasternodeCount;
             _testnet.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            _testnet.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
         }];
     }
     
@@ -378,14 +402,26 @@ static dispatch_once_t devnetToken = 0;
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
     DSChain * devnetChain = nil;
+    __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
             devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiPort:dapiPort ixPreviousConfirmationsNeeded:TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
+            inSetUp = TRUE;
         } else {
             devnetChain = [_devnetDictionary objectForKey:identifier];
         }
     }
+    if (inSetUp) {
+        [devnetChain setUp];
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [devnetChain chainEntity];
+            devnetChain.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+        }];
+    }
+    
     return devnetChain;
 }
 
@@ -395,14 +431,15 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
-    return @[[DSDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
+-(NSArray<DSFundsDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
+    return @[[DSFundsDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSFundsDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
 }
 
 -(void)save {
     [[DSChainEntity context] performBlockAndWait:^{
         self.chainEntity.totalMasternodeCount = self.totalMasternodeCount;
         self.chainEntity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        self.chainEntity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
         [DSChainEntity saveContext];
     }];
 }
@@ -841,7 +878,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath
 {
-    if (![self.viewingAccount.derivationPaths containsObject:derivationPath]) {
+    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]] && ![self.viewingAccount.derivationPaths containsObject:(DSFundsDerivationPath*)derivationPath]) {
         [self addStandaloneDerivationPath:derivationPath];
     }
     NSError * error = nil;
@@ -860,39 +897,39 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Voting Keys
 
--(NSData*)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry {
-    NSError * error = nil;
-    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    NSData * votingKey = [keyChainDictionary objectForKey:masternodeEntry.uniqueID];
-    return votingKey;
-}
-
--(NSArray*)registeredMasternodes {
-    NSError * error = nil;
-    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
-    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self];
-    NSMutableArray * registeredMasternodes = [NSMutableArray array];
-    for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
-        DSSimplifiedMasternodeEntry * masternode = [chainManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
-        [registeredMasternodes addObject:masternode];
-    }
-    return [registeredMasternodes copy];
-}
-
--(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry {
-    NSError * error = nil;
-    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
-    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary setObject:votingKey forKey:[NSData dataWithUInt256:masternodeEntry.providerRegistrationTransactionHash]];
-    setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
-    NSManagedObjectContext * context = [DSSimplifiedMasternodeEntryEntity context];
-    [context performBlockAndWait:^{
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
-        DSSimplifiedMasternodeEntryEntity * masternodeEntryEntity = masternodeEntry.simplifiedMasternodeEntryEntity;
-        masternodeEntryEntity.claimed = TRUE;
-        [DSSimplifiedMasternodeEntryEntity saveContext];
-    }];
-}
+//-(NSData*)votingKeyForMasternode:(DSSimplifiedMasternodeEntry*)masternodeEntry {
+//    NSError * error = nil;
+//    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
+//    NSData * votingKey = [keyChainDictionary objectForKey:masternodeEntry.uniqueID];
+//    return votingKey;
+//}
+//
+//-(NSArray*)registeredMasternodes {
+//    NSError * error = nil;
+//    NSDictionary * keyChainDictionary = getKeychainDict(self.votingKeysKey, &error);
+//    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self];
+//    NSMutableArray * registeredMasternodes = [NSMutableArray array];
+//    for (NSData * providerRegistrationTransactionHash in keyChainDictionary) {
+//        DSSimplifiedMasternodeEntry * masternode = [chainManager.masternodeManager masternodeHavingProviderRegistrationTransactionHash:providerRegistrationTransactionHash];
+//        [registeredMasternodes addObject:masternode];
+//    }
+//    return [registeredMasternodes copy];
+//}
+//
+//-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry {
+//    NSError * error = nil;
+//    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.votingKeysKey, &error) mutableCopy];
+//    if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+//    [keyChainDictionary setObject:votingKey forKey:[NSData dataWithUInt256:masternodeEntry.providerRegistrationTransactionHash]];
+//    setKeychainDict([keyChainDictionary copy], self.votingKeysKey, YES);
+//    NSManagedObjectContext * context = [DSSimplifiedMasternodeEntryEntity context];
+//    [context performBlockAndWait:^{
+//        [DSSimplifiedMasternodeEntryEntity setContext:context];
+//        DSSimplifiedMasternodeEntryEntity * masternodeEntryEntity = masternodeEntry.simplifiedMasternodeEntryEntity;
+//        masternodeEntryEntity.claimed = TRUE;
+//        [DSSimplifiedMasternodeEntryEntity saveContext];
+//    }];
+//}
 
 // MARK: - Probabilistic Filters
 
@@ -910,10 +947,10 @@ static dispatch_once_t devnetToken = 0;
         [allUTXOs addObjectsFromArray:wallet.unspentOutputs];
         
         //we should also add the blockchain user public keys to the filter
-        [allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
+        //[allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
     }
     
-    for (DSDerivationPath * derivationPath in self.standaloneDerivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.standaloneDerivationPaths) {
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL + 100 internal:NO];
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL + 100 internal:YES];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
@@ -1474,6 +1511,8 @@ static dispatch_once_t devnetToken = 0;
     if (block.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = block.height;
         
+        [self.chainManager chain:self wasExtendedWithBlock:block fromPeer:peer];
+        
         // notify that transaction confirmations may have changed
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainNewChainTipBlockNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
@@ -1719,6 +1758,104 @@ static dispatch_once_t devnetToken = 0;
 - (BOOL)isEqual:(id)obj
 {
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
+}
+
+//Does the chain mat
+-(BOOL)transactionHasLocalReferences:(DSTransaction*)transaction {
+    if ([self accountContainingTransaction:transaction]) return TRUE;
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil]) return TRUE;
+    }
+    return FALSE;
+}
+
+-(void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction {
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil] || [self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil] || [self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil]) {
+            [self.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
+        }
+    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+        DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash];
+        [localMasternode updateWithUpdateServiceTransaction:providerUpdateServiceTransaction save:TRUE];
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+        DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash];
+        [localMasternode updateWithUpdateRegistrarTransaction:providerUpdateRegistrarTransaction save:TRUE];
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
+        DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash];
+        [localMasternode updateWithUpdateRevocationTransaction:providerUpdateRevocationTransaction save:TRUE];
+    }
+}
+
+- (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries {
+    for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in simplifiedMasternodeEntries) {
+        NSString * votingAddress = simplifiedMasternodeEntry.votingAddress;
+        NSString * operatorAddress = simplifiedMasternodeEntry.operatorAddress;
+        for (DSWallet * wallet in self.wallets) {
+            DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
+            if ([providerOperatorKeysDerivationPath containsAddress:operatorAddress]) {
+                [providerOperatorKeysDerivationPath registerTransactionAddress:operatorAddress];
+            }
+            DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet];
+            if ([providerVotingKeysDerivationPath containsAddress:votingAddress]) {
+                [providerVotingKeysDerivationPath registerTransactionAddress:votingAddress];
+            }
+        }
+    }
+}
+
+// MARK: - Merging Wallets
+
+- (DSWallet*)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
+    for (DSWallet * wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfProviderVotingAuthenticationHash:votingAuthenticationHash];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    return nil;
+}
+
+- (DSWallet* _Nullable)walletHavingProviderOwnerAuthenticationHash:(UInt160)owningAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
+    for (DSWallet * wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfProviderOwningAuthenticationHash:owningAuthenticationHash];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    return nil;
+}
+
+- (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t*)rIndex {
+    for (DSWallet * wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfProviderOperatorAuthenticationKey:providerOperatorAuthenticationKey];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    return nil;
+}
+
+- (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t*)rIndex {
+    for (DSWallet * wallet in self.wallets) {
+        for (NSString * outputAddresses in transaction.outputAddresses) {
+            NSUInteger index = [wallet indexOfHoldingAddress:outputAddresses];
+            if (index != NSNotFound) {
+                if (rIndex) *rIndex = (uint32_t)index;
+                return wallet;
+            }
+        }
+    }
+    return nil;
 }
 
 @end

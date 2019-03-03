@@ -9,11 +9,12 @@
 #import <XCTest/XCTest.h>
 
 #import "NSString+Dash.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSKey+BIP38.h"
 #import "DSChain.h"
 #import "NSData+Bitcoin.h"
 #import "DSBLSKey.h"
+#import "DSKey.h"
 
 @interface DSKeyTests : XCTestCase
 
@@ -43,13 +44,13 @@
     XCTAssertTrue([@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" isValidDashPrivateKeyOnChain:self.chain],
                   @"[NSString+Base58 isValidDashPrivateKey]");
     
-    DSKey *key = [DSKey keyWithPrivateKey:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" onChain:self.chain];
+    DSECDSAKey *key = [DSECDSAKey keyWithPrivateKey:@"7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62" onChain:self.chain];
     
     NSLog(@"privKey:7r17Ypj1scza76SPf56Jm9zraxSrv58ThzmxwuDXoauvV84ud62 = %@", [key addressForChain:self.chain]);
     XCTAssertEqualObjects(@"Xj74g7h8pZTzqudPSzVEL7dFxNZY95Emcy", [key addressForChain:self.chain], @"[DSKey keyWithPrivateKey:]");
     
     // compressed private key
-    key = [DSKey keyWithPrivateKey:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" onChain:self.chain];
+    key = [DSECDSAKey keyWithPrivateKey:@"XDHVuTeSrRs77u15134RPtiMrsj9KFDvsx1TwKUJxcgb4oiP6gA6" onChain:self.chain];
     
     NSLog(@"privKey:KyvGbxRUoofdw3TNydWn2Z78dBHSy2odn1d3wXWN2o3SAtccFNJL = %@", [key addressForChain:self.chain]);
     XCTAssertEqualObjects(@"XbKPGyV1BpzzxNAggx6Q9a6o7GaBWTLhJS", [key addressForChain:self.chain], @"[DSKey keyWithPrivateKey:]");
@@ -65,10 +66,10 @@
 #if ! SKIP_BIP38
 - (void)testKeyWithBIP38Key
 {
-    DSKey *key;
+    DSECDSAKey *key;
 
     //to do compressed/uncompressed BIP38Key tests
-    key = [DSKey keyWithBIP38Key:@"6PfV898iMrVs3d9gJSw5HTYyGhQRR5xRu5ji4GE6H5QdebT2YgK14Lu1E5"
+    key = [DSECDSAKey keyWithBIP38Key:@"6PfV898iMrVs3d9gJSw5HTYyGhQRR5xRu5ji4GE6H5QdebT2YgK14Lu1E5"
                    andPassphrase:@"TestingOneTwoThree"
            onChain:self.chain];
     NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
@@ -79,7 +80,7 @@
                           @"[DSKey BIP38KeyWithPassphrase:]");
 
     // incorrect password test
-    key = [DSKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar" onChain:self.chain];
+    key = [DSECDSAKey keyWithBIP38Key:@"6PRW5o9FLp4gJDDVqJQKJFTpMvdsSGJxMYHtHaQBF3ooa8mwD69bapcDQn" andPassphrase:@"foobar" onChain:self.chain];
     NSLog(@"privKey = %@", [key privateKeyStringForChain:self.chain]);
     XCTAssertNil(key, @"[DSKey keyWithBIP38Key:andPassphrase:]");
 }
@@ -91,7 +92,7 @@
 {
     NSData *sig;
     UInt256 md, sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    DSKey *key = [DSKey keyWithSecret:sec compressed:YES];
+    DSECDSAKey *key = [DSECDSAKey keyWithSecret:sec compressed:YES];
 
     md = [@"Everything should be made as simple as possible, but not simpler."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
@@ -102,7 +103,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"Equations are more important to me, because politics is for the present, but an equation is something for "
           "eternity." dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -112,7 +113,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"Not only is the Universe stranger than we think, it is stranger than we can think."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -122,7 +123,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"How wonderful that we have met with a paradox. Now we have some hope of making progress."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -132,7 +133,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"69ec59eaa1f4f2e36b639716b7c30ca86d9a5375c7b38d8918bd9c0ebc80ba64".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"Computer science is no more about computers than astronomy is about telescopes."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -142,7 +143,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"00000000000000000000000000007246174ab1e92e9149c6e446fe194d072637".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"...if you aren't, at any given time, scandalized by code you wrote five or even three years ago, you're not"
           " learning anywhere near enough" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -152,7 +153,7 @@
     XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"000000000000000000000000000000000000000000056916d0f9b31dc9b637f3".hexToData.bytes;
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"The question of whether computers can think is like the question of whether submarines can swim."
           dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key sign:md];
@@ -168,42 +169,42 @@
 {
     NSData *pubkey, *sig;
     UInt256 md, sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
-    DSKey *key;
+    DSECDSAKey *key;
 
-    key = [DSKey keyWithSecret:sec compressed:YES];
+    key = [DSECDSAKey keyWithSecret:sec compressed:YES];
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key compactSign:md];
-    pubkey = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
+    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKeyData;
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
-    key = [DSKey keyWithSecret:sec compressed:NO];
+    key = [DSECDSAKey keyWithSecret:sec compressed:NO];
     md = [@"foo" dataUsingEncoding:NSUTF8StringEncoding].SHA256;
     sig = [key compactSign:md];
-    pubkey = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKey;
+    pubkey = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md].publicKeyData;
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     pubkey = @"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData;
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3kq9e842BzkMfbPSbhKVwGZgspDSkz4YfqjdBYQPWDzqd77gPgR1zq4XG7KtAL5DZTcfFFs2iph4urNyXeBkXsEYY".base58ToData;
-    key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+    key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     pubkey = @"26wZYDdvpmCrYZeUcxgqd1KquN4o6wXwLomBW5SjnwUqG".base58ToData;
     md = [@"i am a test signed string do de dah" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3qECEYmb6x4X22sH98Aer68SdfrLwtqvb5Ncv7EqKmzbxeYYJ1hU9irP6R5PeCctCPYo5KQiWFgoJ3H5MkuX18gHu".base58ToData;
-    key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+    key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 
     pubkey = @"gpRv1sNA3XURB6QEtGrx6Q18DZ5cSgUSDQKX4yYypxpW".base58ToData;
     md = [@"i am a test signed string" dataUsingEncoding:NSUTF8StringEncoding].SHA256_2;
     sig = @"3oHQhxq5eW8dnp7DquTCbA5tECoNx7ubyiubw4kiFm7wXJF916SZVykFzb8rB1K6dEu7mLspBWbBEJyYk79jAosVR".base58ToData;
-    key = [DSKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+    key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
 
-    XCTAssertEqualObjects(key.publicKey, pubkey);
+    XCTAssertEqualObjects(key.publicKeyData, pubkey);
 }
 
 // MARK: - test BLS Sign
@@ -263,14 +264,17 @@
 //}
 
 -(void)testBLSSign {
+    
+    //In dash we use SHA256_2, however these test vectors from the BLS library use a single SHA256
+    
     uint8_t seed1[5] = {1, 2, 3, 4, 5};
     NSData * seedData1 = [NSData dataWithBytes:seed1 length:5];
     uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
     NSData * seedData2 = [NSData dataWithBytes:seed2 length:6];
     uint8_t message1[3] = {7, 8, 9};
-        uint8_t message2[3] = {1, 2, 3};
-        uint8_t message3[4] = {1, 2, 3, 4};
-        uint8_t message4[2] = {1, 2};
+    uint8_t message2[3] = {1, 2, 3};
+    uint8_t message3[4] = {1, 2, 3, 4};
+    uint8_t message4[2] = {1, 2};
     NSData * messageData1 = [NSData dataWithBytes:message1 length:3];
     NSData * messageData2 = [NSData dataWithBytes:message2 length:3];
     NSData * messageData3 = [NSData dataWithBytes:message3 length:4];
@@ -284,13 +288,13 @@
     uint32_t fingerprint2 =keyPair2.publicKeyFingerprint;
     XCTAssertEqual(fingerprint2, 0x289bb56e,@"Testing BLS private child public key fingerprint");
     
-    UInt768 signature1 = [keyPair1 signData:messageData1];
+    UInt768 signature1 = [keyPair1 signDataSingleSHA256:messageData1];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:signature1].hexString, @"93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065",@"Testing BLS signing");
     
     XCTAssertEqualObjects([NSData dataWithUInt256:keyPair1.secretKey].hexString, @"022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e",@"Testing BLS private key");
     
-    UInt768 signature2 = [keyPair2 signData:messageData1];
+    UInt768 signature2 = [keyPair2 signDataSingleSHA256:messageData1];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:signature2].hexString, @"975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e",@"Testing BLS signing");
     
@@ -298,13 +302,26 @@
     
     XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature1].hexString, @"0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658",@"Testing BLS simple signature aggregation");
     
-    UInt768 signature3 = [keyPair1 signData:messageData2];
-    UInt768 signature4 = [keyPair1 signData:messageData3];
-    UInt768 signature5 = [keyPair2 signData:messageData4];
+    UInt768 signature3 = [keyPair1 signDataSingleSHA256:messageData2];
+    UInt768 signature4 = [keyPair1 signDataSingleSHA256:messageData3];
+    UInt768 signature5 = [keyPair2 signDataSingleSHA256:messageData4];
     
     UInt768 aggregateSignature2 = [DSBLSKey aggregateSignatures:@[[NSData dataWithUInt768:signature3],[NSData dataWithUInt768:signature4],[NSData dataWithUInt768:signature5]] withPublicKeys:@[[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair1.publicKey],[NSData dataWithUInt384:keyPair2.publicKey]] withMessages:@[messageData2,messageData3,messageData4]];
     
     XCTAssertEqualObjects([NSData dataWithUInt768:aggregateSignature2].hexString, @"8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b",@"Testing BLS complex signature aggregation");
+    
+}
+
+-(void)testBLSVerify {
+    uint8_t seed1[5] = {1, 2, 3, 4, 5};
+    NSData * seedData1 = [NSData dataWithBytes:seed1 length:5];
+    uint8_t message1[3] = {7, 8, 9};
+    NSData * messageData1 = [NSData dataWithBytes:message1 length:3];
+    DSBLSKey * keyPair1 = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData1 onChain:[DSChain mainnet]];
+    
+    UInt768 signature1 = [keyPair1 signData:messageData1];
+    
+    XCTAssertTrue([keyPair1 verify:[messageData1 SHA256_2] signature:signature1],@"Testing BLS signature verification");
     
 }
 

@@ -33,7 +33,7 @@
 #import "DSPriceManager.h"
 #import "DSChain.h"
 #import "DSDerivationPath.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 
 @implementation NSString (Dash)
 

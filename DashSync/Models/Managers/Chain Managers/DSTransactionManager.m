@@ -576,7 +576,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
     }
     
-    for (DSDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
+    for (DSFundsDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
         [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
         NSArray *addresses = [derivationPath.allReceiveAddresses arrayByAddingObjectsFromArray:derivationPath.allChangeAddresses];
@@ -733,26 +733,37 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     transaction.timestamp = [NSDate timeIntervalSince1970];
     DSAccount * account = [self.chain accountContainingTransaction:transaction];
-    if (syncing && !account) return;
-    if (![account registerTransaction:transaction]) return;
+    if (!account) {
+        DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
+        if (![self.chain transactionHasLocalReferences:transaction]) return;
+    } else {
+        if (![account registerTransaction:transaction]) return;
+    }
+    
+    [self.chain triggerUpdatesForLocalReferences:transaction];
+    
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
-    if ([account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
+    
+    if (account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
         [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
     }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-    if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
+    if (callback || (!syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
         [self.txRelays[hash] addObject:peer];
         if (callback) [self.publishedCallback removeObjectForKey:hash];
         
-        if ([self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
+        if (account && [self.txRelays[hash] count] >= self.peerManager.maxConnectCount &&
             [account transactionForHash:transaction.txHash].blockHeight == TX_UNCONFIRMED &&
             [account transactionForHash:transaction.txHash].timestamp == 0) {
             [account setBlockHeight:TX_UNCONFIRMED andTimestamp:[NSDate timeIntervalSince1970]
                         forTxHashes:@[hash]]; // set timestamp when tx is verified
         }
+        
+        //todo: deal when the transaction received is not in an account
+        
         
         dispatch_async(dispatch_get_main_queue(), ^{
             

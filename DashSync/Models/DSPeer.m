@@ -54,6 +54,7 @@
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
 #define LOG_TX_LOCK_VOTES 0
+#define LOG_FULL_TX_MESSAGE 1
 
 #if ! PEER_LOGGING
 #define DSDLog(...)
@@ -177,6 +178,10 @@
     _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
 }
 
+- (NSString *)location {
+    return [NSString stringWithFormat:@"%@:%d",self.host,self.port];
+}
+
 - (NSString *)host
 {
     char s[INET6_ADDRSTRLEN];
@@ -286,7 +291,11 @@
 - (void)disconnectWithError:(NSError *)error
 {
     if (_status == DSPeerStatus_Disconnected) return;
-    DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
+    if (!error) {
+        DSDLog(@"Disconnected from peer %@ with unknown error",self.host);
+    } else {
+        DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
+    }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
     _status = DSPeerStatus_Disconnected;
@@ -1222,7 +1231,7 @@
 {
     DSTransaction *tx = [DSTransactionFactory transactionWithMessage:message onChain:self.chain];
     
-    if (! tx) {
+    if (! tx && ![DSTransactionFactory shouldIgnoreTransactionMessage:message]) {
         [self error:@"malformed %@ message: %@",isIxTransaction?@"ix":@"tx", message];
         return;
     }
@@ -1231,9 +1240,11 @@
         return;
     }
     
-    dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
-    });
+    if (tx) {
+        dispatch_async(self.delegateQueue, ^{
+            [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
+        });
+    }
     
 #if LOG_FULL_TX_MESSAGE
     DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
@@ -1242,11 +1253,17 @@
 #endif
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-        
-        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+        UInt256 txHash = tx?tx.txHash:message.SHA256_2;
+        if ([self.currentBlockTxHashes containsObject:uint256_obj(txHash)]) {
+            [self.currentBlockTxHashes removeObject:uint256_obj(txHash)];
+        } else {
+            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_data(tx.txHash).hexString,self.currentBlockTxHashes);
+        }
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             DSMerkleBlock *block = self.currentBlock;
+            
+            DSDLog(@"%@:%u clearing current block", self.host, self.port);
             
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
@@ -1255,6 +1272,8 @@
                 [self.transactionDelegate peer:self relayedBlock:block];
             });
         }
+    } else {
+        DSDLog(@"%@:%u no current block", self.host, self.port);
     }
     
 }

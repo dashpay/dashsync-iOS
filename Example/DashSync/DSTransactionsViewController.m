@@ -329,7 +329,12 @@ static NSString *dateFormat(NSString *template)
     cell.remainingFiatAmountLabel.text = (authenticationManager.didAuthenticate) ? [NSString stringWithFormat:@"(%@)", [priceManager localCurrencyStringForDashAmount:balance]] : nil;
     cell.shapeshiftImageView.hidden = !tx.associatedShapeshift;
     
-    if (confirms == 0 && ! [account transactionIsValid:tx]) {
+    if ([account transactionOutputsAreLocked:tx]) {
+        cell.confirmationsLabel.text = NSLocalizedString(@"locked", nil);
+        cell.confirmationsLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
+        cell.amountLabel.textColor = [UIColor yellowColor];
+        cell.remainingAmountLabel.text = cell.remainingFiatAmountLabel.text = nil;
+    } else if (confirms == 0 && ! [account transactionIsValid:tx]) {
         cell.confirmationsLabel.text = NSLocalizedString(@"INVALID", nil);
         cell.confirmationsLabel.backgroundColor = [UIColor redColor];
         cell.remainingAmountLabel.text = cell.remainingFiatAmountLabel.text = nil;

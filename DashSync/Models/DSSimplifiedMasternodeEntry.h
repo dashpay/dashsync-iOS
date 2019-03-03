@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSChain,DSSimplifiedMasternodeEntryEntity;
+@class DSChain,DSSimplifiedMasternodeEntryEntity,DSWallet;
 
 @interface DSSimplifiedMasternodeEntry : NSObject
 
@@ -20,6 +20,8 @@
 @property(nonatomic,readonly) uint16_t port;
 @property(nonatomic,readonly) UInt384 operatorPublicKey;
 @property(nonatomic,readonly) UInt160 keyIDVoting;
+@property(nonatomic,readonly) NSString * votingAddress;
+@property(nonatomic,readonly) NSString * operatorAddress;
 @property(nonatomic,readonly) BOOL isValid;
 @property(nonatomic,readonly) UInt256 simplifiedMasternodeEntryHash;
 @property(nonatomic,readonly) DSChain * chain;

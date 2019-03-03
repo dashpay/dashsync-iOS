@@ -27,20 +27,20 @@
 #import <CoreData/CoreData.h>
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
-#import "DSDerivationPath.h"
+#import "DSFundsDerivationPath.h"
 
-@class DSDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nonatomic, readonly) NSArray<DSDerivationPath *> * derivationPaths;
+@property (nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
 
-@property (nonatomic, strong) DSDerivationPath * defaultDerivationPath;
+@property (nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
-@property (nonatomic, readonly) DSDerivationPath * bip44DerivationPath;
+@property (nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
 
-@property (nonatomic, readonly) DSDerivationPath * bip32DerivationPath;
+@property (nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
 
 @property (nonatomic, weak) DSWallet * wallet;
 
@@ -101,7 +101,7 @@
 - (BOOL)containsAddress:(NSString *)address;
 
 // the high level (hardened) derivation path containing the address
--(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+-(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
 
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address;
@@ -119,7 +119,7 @@
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
 
-- (DSTransaction *)updateTransaction:(DSTransaction* _Nonnull)transaction forAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
+- (DSTransaction *)updateTransaction:(DSTransaction* _Nonnull)transaction forAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction * _Nonnull)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
@@ -139,8 +139,11 @@
 // true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
 
-// true if transaction cannot be immediately spent (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
+// true if transaction cannot be immediately spent because of a time lock (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
 - (BOOL)transactionIsPending:(DSTransaction * _Nonnull)transaction;
+
+// true if transaction cannot be immediately spent
+- (BOOL)transactionOutputsAreLocked:(DSTransaction * _Nonnull)transaction;
 
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
 - (BOOL)transactionIsVerified:(DSTransaction * _Nonnull)transaction;

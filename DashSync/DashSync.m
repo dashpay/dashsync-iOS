@@ -14,6 +14,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
+#import "DSLocalMasternodeEntity+CoreDataClass.h"
 
 @interface DashSync ()
 
@@ -106,7 +107,9 @@
     [context performBlockAndWait:^{
         [DSChainEntity setContext:context];
         [DSSimplifiedMasternodeEntryEntity setContext:context];
+        [DSLocalMasternodeEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
+        [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager resetSyncCountInfo:DSSyncCountInfo_List];

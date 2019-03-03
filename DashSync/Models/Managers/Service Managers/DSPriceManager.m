@@ -29,7 +29,7 @@
 #import "DSWallet.h"
 #import "DSChainsManager.h"
 #import "DSAccount.h"
-#import "DSKey.h"
+#import "DSECDSAKey.h"
 #import "DSChain.h"
 #import "DSKey+BIP38.h"
 #import "DSBIP39Mnemonic.h"

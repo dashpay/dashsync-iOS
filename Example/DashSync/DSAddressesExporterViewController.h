@@ -11,6 +11,6 @@
 
 @interface DSAddressesExporterViewController : UIViewController
 
-@property (nonatomic,strong) DSDerivationPath * derivationPath;
+@property (nonatomic,strong) DSFundsDerivationPath * derivationPath;
 
 @end
