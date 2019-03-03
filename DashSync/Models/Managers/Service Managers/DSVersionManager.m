@@ -16,6 +16,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSChainManager.h"
 #import "DSPeerManager.h"
+#import "DSDerivationPathFactory.h"
 
 #define COMPATIBILITY_MNEMONIC_KEY        @"mnemonic"
 #define COMPATIBILITY_CREATION_TIME_KEY   @"creationtime"
@@ -65,9 +66,8 @@
     return [wallets copy];
 }
 
-
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
 {
     DSAccount * account = [wallet accountWithNumber:0];
     NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
@@ -99,7 +99,7 @@
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             
             //secure time
-
+            
             if (![DSAuthenticationManager sharedInstance].secureTimeUpdated) {
                 NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
                 
@@ -147,13 +147,57 @@
                 }
                 
                 completion(!failed,YES,YES,NO);
-                
             }
         }];
-        
     } else {
         completion(YES,NO,NO,NO);
     }
+}
+
+//there was an issue with extended public keys on version 0.7.6 and before, this fixes that
+- (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        BOOL upgradeNeeded = NO;
+        __block BOOL success = YES;
+        __block BOOL authenticated = NO;
+        __block BOOL cancelledAuth = NO;
+        for (DSWallet * wallet in wallets) {
+            NSArray * derivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
+            if (derivationPaths.count) {
+                //upgrade scenario
+                upgradeNeeded = YES;
+                
+                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[DSAuthenticationManager sharedInstance] seedWithPrompt:message forWallet:wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+                        if (!seed) {
+                            success = NO;
+                            cancelledAuth = YES;
+                            dispatch_semaphore_signal(sem);
+                            return;
+                        }
+                        authenticated = YES;
+                        @autoreleasepool {
+                            
+                            for (DSDerivationPath * derivationPath in derivationPaths) {
+                                success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+                            }
+                            
+                        }
+                        dispatch_semaphore_signal(sem);
+                    }];
+                });
+                dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+                if (!success) break;
+            }
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(success,upgradeNeeded,authenticated,cancelledAuth);
+        });
+    });
+    
 }
 
 - (NSTimeInterval)compatibleSeedCreationTime {

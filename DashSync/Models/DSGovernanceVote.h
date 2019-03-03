@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
 
-@class DSGovernanceObject,DSSimplifiedMasternodeEntry,DSChain,DSKey;
+@class DSGovernanceObject,DSSimplifiedMasternodeEntry,DSChain,DSECDSAKey;
 
 typedef NS_ENUM(uint32_t, DSGovernanceVoteSignal) {
     DSGovernanceVoteSignal_None = 0,
@@ -40,7 +40,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 
 +(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
 -(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData* _Nullable)signature onChain:(DSChain* _Nonnull)chain;
--(void)signWithKey:(DSKey*)key;
+-(void)signWithKey:(DSECDSAKey*)key;
 
 -(NSData*)dataMessage;
 -(BOOL)isValid;

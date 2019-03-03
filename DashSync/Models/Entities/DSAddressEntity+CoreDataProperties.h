@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nonnull, nonatomic, retain) NSSet<DSTxInputEntity *> *usedInInputs;
 @property (nonnull, nonatomic, retain) NSSet<DSTxOutputEntity *> *usedInOutputs;
+@property (nonnull, nonatomic, retain) NSSet<DSSpecialTransactionEntity *> *usedInSpecialTransactions;
+@property (nonnull, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntryEntity *> *usedInSimplifiedMasternodeEntries;
 
 @end
 

@@ -54,6 +54,7 @@
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
 #define LOG_TX_LOCK_VOTES 0
+#define LOG_FULL_TX_MESSAGE 1
 
 #if ! PEER_LOGGING
 #define DSDLog(...)
@@ -177,6 +178,10 @@
     _delegateQueue = (delegateQueue) ? delegateQueue : dispatch_get_main_queue();
 }
 
+- (NSString *)location {
+    return [NSString stringWithFormat:@"%@:%d",self.host,self.port];
+}
+
 - (NSString *)host
 {
     char s[INET6_ADDRSTRLEN];
@@ -286,7 +291,11 @@
 - (void)disconnectWithError:(NSError *)error
 {
     if (_status == DSPeerStatus_Disconnected) return;
-    DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
+    if (!error) {
+        DSDLog(@"Disconnected from peer %@ with unknown error",self.host);
+    } else {
+        DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
+    }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
     _status = DSPeerStatus_Disconnected;
@@ -1222,7 +1231,7 @@
 {
     DSTransaction *tx = [DSTransactionFactory transactionWithMessage:message onChain:self.chain];
     
-    if (! tx) {
+    if (! tx && ![DSTransactionFactory shouldIgnoreTransactionMessage:message]) {
         [self error:@"malformed %@ message: %@",isIxTransaction?@"ix":@"tx", message];
         return;
     }
@@ -1231,9 +1240,11 @@
         return;
     }
     
-    dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
-    });
+    if (tx) {
+        dispatch_async(self.delegateQueue, ^{
+            [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
+        });
+    }
     
 #if LOG_FULL_TX_MESSAGE
     DSDLog(@"%@:%u got %@ %@ %@", self.host, self.port, isIxTransaction?@"ix":@"tx", uint256_obj(tx.txHash),message.hexString);
@@ -1242,11 +1253,17 @@
 #endif
     
     if (self.currentBlock) { // we're collecting tx messages for a merkleblock
-        
-        [self.currentBlockTxHashes removeObject:uint256_obj(tx.txHash)];
+        UInt256 txHash = tx?tx.txHash:message.SHA256_2;
+        if ([self.currentBlockTxHashes containsObject:uint256_obj(txHash)]) {
+            [self.currentBlockTxHashes removeObject:uint256_obj(txHash)];
+        } else {
+            DSDLog(@"%@:%u current block does not contain transaction %@ (contains %@)", self.host, self.port,uint256_data(tx.txHash).hexString,self.currentBlockTxHashes);
+        }
         
         if (self.currentBlockTxHashes.count == 0) { // we received the entire block including all matched tx
             DSMerkleBlock *block = self.currentBlock;
+            
+            DSDLog(@"%@:%u clearing current block", self.host, self.port);
             
             self.currentBlock = nil;
             self.currentBlockTxHashes = nil;
@@ -1255,6 +1272,8 @@
                 [self.transactionDelegate peer:self relayedBlock:block];
             });
         }
+    } else {
+        DSDLog(@"%@:%u no current block", self.host, self.port);
     }
     
 }
@@ -1356,22 +1375,22 @@
     // Devnets can run slower than usual
     NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
-    if (firstTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) {
+    if (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
         DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
         [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
         return;
     }
-    if (count >= 2000 || lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
+    if (count >= 2000 || ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) || [self.chain isDevnetAny]) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         
-        if (lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
+        if ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
-            for (off = l; timestamp > 0 && timestamp < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
+            for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL*2) < self.earliestKeyTime);) {
                 off += 81;
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }

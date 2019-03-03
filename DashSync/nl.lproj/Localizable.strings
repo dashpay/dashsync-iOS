@@ -30,6 +30,12 @@
 "\ntry again in %d %@" = "\nprobeer opnieuw over %1$d %2$@";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "Are you sure you would like to register the username %@ and spend %@ on credits?" = "Weet je zeker dat je je wil registreren onder de gebruikersnaam %1$@ en %2$@ aan krediet wil uitgeven?";
 
 /* No comment provided by engineer. */
@@ -37,6 +43,12 @@
 
 /* No comment provided by engineer. */
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "Weet je zeker dat je %1$@ wil topup'en en %2$@ aan krediet wil uitgeven?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Are you sure you would like to update this masternode to pay to %@?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "onjuist wachtwoord, probeer opnieuw";

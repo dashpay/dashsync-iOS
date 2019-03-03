@@ -11,12 +11,14 @@
 #import <DashSync/DashSync.h>
 #import <arpa/inet.h>
 #import "DSClaimMasternodeViewController.h"
+#import "DSRegisterMasternodeViewController.h"
+#import "DSMasternodeDetailViewController.h"
+#import "DSLocalMasternodeEntity+CoreDataClass.h"
 
 @interface DSMasternodeViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSString * searchString;
-@property (strong, nonatomic) IBOutlet UIBarButtonItem *claimButton;
-- (IBAction)claimSelectedMasternode:(id)sender;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *registerButton;
 
 @end
 
@@ -24,7 +26,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.claimButton.enabled = FALSE;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -75,9 +76,10 @@
     [fetchRequest setFetchBatchSize:20];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"claimed" ascending:NO];
-    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
-    NSArray *sortDescriptors = @[claimSortDescriptor,heightSortDescriptor];
+    NSSortDescriptor *claimSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"localMasternode" ascending:NO];
+    NSSortDescriptor *addressSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"address" ascending:YES];
+    NSSortDescriptor *portSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"port" ascending:YES];
+    NSArray *sortDescriptors = @[claimSortDescriptor,addressSortDescriptor,portSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
     
@@ -86,7 +88,7 @@
     
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:@"claimed" cacheName:nil];
+    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:@"localMasternode" cacheName:nil];
     _fetchedResultsController = aFetchedResultsController;
     aFetchedResultsController.delegate = self;
     NSError *error = nil;
@@ -143,18 +145,8 @@
     return [sectionInfo numberOfObjects];
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:indexPath.section];
-    if ([[sectionInfo name] integerValue]) {
-        self.claimButton.title = @"Edit";
-    } else {
-        self.claimButton.title = @"Claim";
-    }
-    [self.claimButton setEnabled:TRUE];
-}
-
 -(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [self.claimButton setEnabled:FALSE];
+    [self.registerButton setEnabled:FALSE];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -167,12 +159,11 @@
 
 
 -(void)configureCell:(DSMasternodeTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-        DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        char s[INET6_ADDRSTRLEN];
-        uint32_t ipAddress = simplifiedMasternodeEntryEntity.address;
-        cell.ipAddressLabel.text = [NSString stringWithFormat:@"%s",inet_ntop(AF_INET, &ipAddress, s, sizeof(s))];
-        //cell.protocolLabel.text = [NSString stringWithFormat:@"%u",masternodeBroadcastEntity.protocolVersion];
-        cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
+    DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    char s[INET6_ADDRSTRLEN];
+    uint32_t ipAddress = simplifiedMasternodeEntryEntity.address;
+    cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port];
+    cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
@@ -187,19 +178,23 @@
     [self.tableView reloadData];
 }
 
-- (IBAction)claimSelectedMasternode:(id)sender {
-    if (self.tableView.indexPathForSelectedRow) {
-        [self performSegueWithIdentifier:@"ClaimMasternodeSegue" sender:sender];
-    }
-}
-
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
+    if ([segue.identifier isEqualToString:@"MasternodeDetailSegue"]) {
+        NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
+        DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        DSMasternodeDetailViewController * masternodeDetailViewController = (DSMasternodeDetailViewController*)segue.destinationViewController;
+        masternodeDetailViewController.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
+        masternodeDetailViewController.localMasternode = simplifiedMasternodeEntryEntity.localMasternode?[simplifiedMasternodeEntryEntity.localMasternode loadLocalMasternode]:nil;
+    } else if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
         NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
         DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         DSClaimMasternodeViewController * claimMasternodeViewController = (DSClaimMasternodeViewController*)segue.destinationViewController;
         claimMasternodeViewController.masternode = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
         claimMasternodeViewController.chain = self.chain;
+    } else if ([segue.identifier isEqualToString:@"RegisterMasternodeSegue"]) {
+        UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
+        DSRegisterMasternodeViewController * registerMasternodeViewController = (DSRegisterMasternodeViewController*)navigationController.topViewController;
+        registerMasternodeViewController.chain = self.chain;
     }
 }
 @end

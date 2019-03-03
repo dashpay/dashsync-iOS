@@ -12,8 +12,14 @@
 #import "DSPeerManager.h"
 #import "DSChain.h"
 #import "DSBlockchainUser.h"
+
+#import "DSECDSAKey.h"
+#import "DSBLSKey.h"
 #import "DSKey.h"
+
 #import "DSDerivationPath.h"
+#import "DSSimpleIndexedDerivationPath.h"
+
 #import "DSChainsManager.h"
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
@@ -52,6 +58,12 @@
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSLocalMasternode.h"
+
+#import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSPaymentRequest.h"
@@ -64,8 +76,6 @@
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
-
-#import "DSBLSKey.h"
 
 #import "DSNetworking.h"
 

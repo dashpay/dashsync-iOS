@@ -123,10 +123,10 @@
     
     DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[[NSDate date] timeIntervalSince1970] forChain:self.chain storeSeedPhrase:NO isTransient:YES];
     DSAccount *account = [wallet accountWithNumber:0];
-    DSDerivationPath *derivationPath = account.bip32DerivationPath;
+    DSFundsDerivationPath *derivationPath = account.bip32DerivationPath;
     
     NSData *seed = seedString.hexToData;
-    NSString *pk = [derivationPath privateKey:2 | BIP32_HARD internal:YES fromSeed:seed];
+    NSString *pk = [derivationPath privateKeyStringAtIndex:2 | BIP32_HARD internal:YES fromSeed:seed];
     NSData *d = pk.base58checkToData;
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/1/2' prv = %@", [NSString hexWithData:d]);
@@ -136,7 +136,7 @@
                           @"[DSDerivationPath privateKey:internal:fromSeed:]");
     
     // Test for correct zero padding of private keys, a nasty potential bug
-    pk = [derivationPath privateKey:97 internal:NO fromSeed:seed];
+    pk = [derivationPath privateKeyStringAtIndex:97 internal:NO fromSeed:seed];
     d = pk.base58checkToData;
     
     NSLog(@"000102030405060708090a0b0c0d0e0f/0'/0/97 prv = %@", [NSString hexWithData:d]);

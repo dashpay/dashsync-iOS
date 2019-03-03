@@ -18,6 +18,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionType) {
     DSTransactionType_ProviderUpdateRegistrar = 3,
     DSTransactionType_ProviderUpdateRevocation = 4,
     DSTransactionType_Coinbase = 5,
+    DSTransactionType_QuorumCommitment = 6,
     DSTransactionType_SubscriptionRegistration = 8,
     DSTransactionType_SubscriptionTopUp = 9,
     DSTransactionType_SubscriptionResetKey = 10,
@@ -28,5 +29,11 @@ typedef NS_ENUM(NSUInteger, DSTransactionType) {
 @interface DSTransactionFactory : NSObject
 
 +(DSTransaction*)transactionWithMessage:(NSData*)data onChain:(DSChain*)chain;
+
++(DSTransactionType)transactionTypeOfMessage:(NSData*)data;
+
++(BOOL)ignoreMessagesOfTransactionType:(DSTransactionType)transactionType;
+
++(BOOL)shouldIgnoreTransactionMessage:(NSData*)data;
 
 @end

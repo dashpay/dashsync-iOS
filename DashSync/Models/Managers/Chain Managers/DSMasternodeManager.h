@@ -30,20 +30,28 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListDidChangeNotification
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListValidationErrorNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotification;
 
-@class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSMasternodePing;
+#define MASTERNODE_COST 100000000000
+
+@class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSWallet,DSLocalMasternode,DSProviderRegistrationTransaction;
 
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
+@property (nonatomic,readonly) NSUInteger localMasternodesCount;
 
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 
+
 -(instancetype)initWithChain:(DSChain*)chain;
+
+-(void)setUp;
 
 //-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;
+
+-(DSLocalMasternode*)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash;
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash;
 
@@ -54,5 +62,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(void)wipeMasternodeInfo;
 
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
+
+-(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet;
+
+-(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)fundsWallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet;
+
+-(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction;
 
 @end

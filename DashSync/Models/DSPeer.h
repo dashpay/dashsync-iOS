@@ -249,6 +249,7 @@ typedef NS_ENUM(NSUInteger, DSPeerType) {
 @property (nonatomic, readonly) DSPeerType type;
 @property (nonatomic, readonly) NSString *host;
 @property (nonatomic, readonly) UInt128 address;
+@property (nonatomic, readonly) NSString *location;
 @property (nonatomic, readonly) uint16_t port;
 @property (nonatomic, readonly) uint64_t services;
 @property (nonatomic, readonly) uint32_t version;

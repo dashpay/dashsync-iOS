@@ -275,6 +275,14 @@
     return FALSE;
 }
 
+-(NSArray*)allWallets {
+    NSMutableArray * mAllWallets = [NSMutableArray array];
+    for (DSChain * chain in self.knownChains) {
+        if (chain.wallets) [mAllWallets addObjectsFromArray:chain.wallets];
+    }
+    return [mAllWallets copy];
+}
+
 // MARK: - Spending Limits
 
 // amount that can be spent using touch id without pin entry

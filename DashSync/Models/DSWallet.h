@@ -35,7 +35,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath;
+@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey;
 
 @interface DSWallet : NSObject
 
@@ -45,6 +45,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSArray * blockchainUserAddresses;
 
+//This is unique among all wallets and all chains
 @property (nonatomic, readonly) NSString * uniqueID;
 
 @property (nonatomic, readonly) NSString * mnemonicUniqueID;
@@ -99,6 +100,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
 
+- (DSAccount* _Nullable)accountForAddress:(NSString *)address;
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString * _Nonnull)address;
 
@@ -143,6 +146,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 //this is used from the account to help determine best start sync position for future resync
 -(void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
 
+-(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed;
 
 //generate a random Mnemonic seed
 + (NSString *)generateRandomSeed;
@@ -172,5 +176,20 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (void)seedWithPrompt:(NSString * _Nonnull)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
 
 -(void)copyForChain:(DSChain* _Nonnull)chain completion:(void (^ _Nonnull)(DSWallet * _Nullable copiedWallet))completion;
+
+- (void)registerMasternodeOperator:(DSLocalMasternode * _Nonnull)masternode;
+
+- (void)registerMasternodeOwner:(DSLocalMasternode * _Nonnull)masternode;
+
+- (void)registerMasternodeVoter:(DSLocalMasternode * _Nonnull)masternode;
+- (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
+- (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
+- (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+- (BOOL)containsHoldingAddress:(NSString*)holdingAddress;
+
+- (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
+- (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
+- (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+- (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
 
 @end

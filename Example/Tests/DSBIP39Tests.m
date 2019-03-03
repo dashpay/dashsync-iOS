@@ -9,7 +9,7 @@
 #import <XCTest/XCTest.h>
 
 #import "DSBIP39Mnemonic.h"
-#import "DSDerivationPath.h"
+#import "DSFundsDerivationPath.h"
 #import "NSString+Bitcoin.h"
 
 @interface DSBIP39Tests : XCTestCase

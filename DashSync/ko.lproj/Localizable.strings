@@ -30,6 +30,12 @@
 "\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+
+/* No comment provided by engineer. */
 "Are you sure you would like to register the username %@ and spend %@ on credits?" = "사용자 이름을 %1$@로 지정하고 크레딧에 %2$@을 사용하시겠습니까?";
 
 /* No comment provided by engineer. */
@@ -37,6 +43,12 @@
 
 /* No comment provided by engineer. */
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "충전에 %1$@을, 크레딧에 %2$@을 사용하시겠습니까?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Are you sure you would like to update this masternode to pay to %@?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";

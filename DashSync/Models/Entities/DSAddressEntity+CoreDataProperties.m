@@ -37,5 +37,7 @@
 @dynamic derivationPath;
 @dynamic usedInInputs;
 @dynamic usedInOutputs;
+@dynamic usedInSpecialTransactions;
+@dynamic usedInSimplifiedMasternodeEntries;
 
 @end

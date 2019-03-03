@@ -10,6 +10,8 @@
 @class DSWallet;
 @class DSChain;
 
+typedef void (^NeedsUpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade); //success is true is neededUpgrade is true and we upgraded, or we didn't need upgrade
+
 typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL authenticated,BOOL cancelled); //success is true is neededUpgrade is true and we upgraded, or we didn't need upgrade
 
 @interface DSVersionManager : NSObject
@@ -18,7 +20,9 @@ typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL aut
 
 - (BOOL)noOldWallet;
 
-- (void)upgradeExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion;
+- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion;
+
+- (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion;
 
 - (BOOL)clearKeychainWalletOldData;
 

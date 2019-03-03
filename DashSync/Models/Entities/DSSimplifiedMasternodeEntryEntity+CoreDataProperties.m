@@ -23,6 +23,7 @@
 @dynamic isValid;
 @dynamic simplifiedMasternodeEntryHash;
 @dynamic chain;
-@dynamic claimed;
+@dynamic localMasternode;
+@dynamic addresses;
 
 @end

@@ -2,7 +2,7 @@
 //  DSSpecialTransactionEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 8/27/18.
+//  Created by Sam Westrich on 3/2/19.
 //
 //
 
@@ -15,5 +15,6 @@
 }
 
 @dynamic specialTransactionVersion;
+@dynamic addresses;
 
 @end
