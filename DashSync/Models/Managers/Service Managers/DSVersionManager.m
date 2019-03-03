@@ -161,7 +161,7 @@
         BOOL upgradeNeeded = NO;
         __block BOOL success = YES;
         __block BOOL authenticated = NO;
-        __block BOOL cancelled = NO;
+        __block BOOL cancelledAuth = NO;
         for (DSWallet * wallet in wallets) {
             NSArray * derivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
             if (derivationPaths.count) {
@@ -174,7 +174,7 @@
                     [[DSAuthenticationManager sharedInstance] seedWithPrompt:message forWallet:wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
                         if (!seed) {
                             success = NO;
-                            cancelled = YES;
+                            cancelledAuth = YES;
                             dispatch_semaphore_signal(sem);
                             return;
                         }
@@ -194,7 +194,7 @@
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(success,upgradeNeeded,authenticated,cancelled);
+            completion(success,upgradeNeeded,authenticated,cancelledAuth);
         });
     });
     
