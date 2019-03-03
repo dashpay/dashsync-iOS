@@ -149,6 +149,8 @@
                 completion(!failed,YES,YES,NO);
             }
         }];
+    } else {
+        completion(YES,NO,NO,NO);
     }
 }
 
