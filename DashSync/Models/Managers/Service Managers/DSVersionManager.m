@@ -157,27 +157,44 @@
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
 - (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
 {
-    for (DSWallet * wallet in wallets) {
-        NSArray * derivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
-        if (derivationPaths.count) {
-            //upgrade scenario
-            [[DSAuthenticationManager sharedInstance] seedWithPrompt:message forWallet:wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
-                if (!seed) {
-                    completion(NO,YES,NO,cancelled);
-                    return;
-                }
-                @autoreleasepool {
-                    BOOL success = TRUE;
-                    for (DSDerivationPath * derivationPath in derivationPaths) {
-                        success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
-                    }
-                    completion(success,YES,YES,NO);
-                }
-            }];
-        } else {
-            completion(YES,NO,NO,NO);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        BOOL upgradeNeeded = NO;
+        __block BOOL success = YES;
+        __block BOOL authenticated = NO;
+        for (DSWallet * wallet in wallets) {
+            NSArray * derivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
+            if (derivationPaths.count) {
+                //upgrade scenario
+                upgradeNeeded = YES;
+                
+                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                    [[DSAuthenticationManager sharedInstance] seedWithPrompt:message forWallet:wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+                        if (!seed) {
+                            completion(NO,YES,NO,cancelled);
+                            dispatch_semaphore_signal(sem);
+                            return;
+                        }
+                        authenticated = YES;
+                        @autoreleasepool {
+                            
+                            for (DSDerivationPath * derivationPath in derivationPaths) {
+                                success &= !![derivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+                            }
+                            
+                        }
+                        dispatch_semaphore_signal(sem);
+                    }];
+                });
+                dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+            }
         }
-    }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(success,upgradeNeeded,authenticated,NO);
+        });
+    });
+    
 }
 
 - (NSTimeInterval)compatibleSeedCreationTime {
