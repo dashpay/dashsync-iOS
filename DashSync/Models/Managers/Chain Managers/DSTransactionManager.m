@@ -958,9 +958,11 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
-    // ignore block headers that are newer than one week before earliestKeyTime (headers have 0 totalTransactions)
+    DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
-        block.timestamp + WEEK_TIME_INTERVAL/4 > self.chain.earliestWalletCreationTime + HOUR_TIME_INTERVAL/2) {
+        block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime) {
+        DSDLog(@"ignoring block %@",uint256_hex(block.blockHash));
         return;
     }
     
@@ -988,6 +990,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     
     if (! _bloomFilter) { // ignore potentially incomplete blocks when a filter update is pending
         if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
+        DSDLog(@"ignoring block due to filter update %@",uint256_hex(block.blockHash));
         return;
     }
     

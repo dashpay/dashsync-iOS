@@ -36,6 +36,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 @property (nonatomic,strong) DSChainManager * testnetManager;
 @property (nonatomic,strong) NSArray * devnetManagers;
 @property (nonatomic,readonly) BOOL hasAWallet;
+@property (nonatomic,readonly) NSArray * allWallets;
 @property (nonatomic,readonly) NSArray * chains;
 @property (nonatomic,readonly) NSArray * devnetChains;
 @property (nonatomic,readonly) uint64_t spendingLimit;

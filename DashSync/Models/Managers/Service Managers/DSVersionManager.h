@@ -20,7 +20,9 @@ typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL aut
 
 - (BOOL)noOldWallet;
 
-- (void)upgradeExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion;
+- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion;
+
+- (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion;
 
 - (BOOL)clearKeychainWalletOldData;
 

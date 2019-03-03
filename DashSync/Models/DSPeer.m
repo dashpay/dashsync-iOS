@@ -1375,22 +1375,22 @@
     // Devnets can run slower than usual
     NSTimeInterval lastTimestamp = [message UInt32AtOffset:l + 81*(count - 1) + 68];
     NSTimeInterval firstTimestamp = [message UInt32AtOffset:l + 81 + 68];
-    if (firstTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) {
+    if (firstTimestamp + DAY_TIME_INTERVAL*2 >= self.earliestKeyTime) {
         //this is a rare scenario where we called getheaders but the first header returned was actually past the cuttoff, but the previous header was before the cuttoff
         DSDLog(@"%@:%u calling getblocks with locators: %@", self.host, self.port, [self.chain blockLocatorArray]);
         [self sendGetblocksMessageWithLocators:[self.chain blockLocatorArray] andHashStop:UINT256_ZERO];
         return;
     }
-    if (count >= 2000 || lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4 || [self.chain isDevnetAny]) {
+    if (count >= 2000 || ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) || [self.chain isDevnetAny]) {
         UInt256 firstBlockHash = [message subdataWithRange:NSMakeRange(l, 80)].x11;
         UInt256 lastBlockHash = [message subdataWithRange:NSMakeRange(l + 81*(count - 1), 80)].x11;
         NSData *firstHashData = uint256_data(firstBlockHash);
         NSData *lastHashData = uint256_data(lastBlockHash);
         
-        if (lastTimestamp >= self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4) { // request blocks for the remainder of the chain
+        if ((lastTimestamp + DAY_TIME_INTERVAL*2) >= self.earliestKeyTime) { // request blocks for the remainder of the chain
             NSTimeInterval timestamp = [message UInt32AtOffset:l + 81 + 68];
             
-            for (off = l; timestamp > 0 && timestamp < self.earliestKeyTime - (2*HOUR_TIME_INTERVAL + WEEK_TIME_INTERVAL)/4;) {
+            for (off = l; timestamp > 0 && ((timestamp + DAY_TIME_INTERVAL*2) < self.earliestKeyTime);) {
                 off += 81;
                 timestamp = [message UInt32AtOffset:off + 81 + 68];
             }

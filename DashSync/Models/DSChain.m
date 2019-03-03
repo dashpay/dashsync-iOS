@@ -1353,6 +1353,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer
 {
+    DSDLog(@"a block %@",uint256_hex(block.blockHash));
     //All blocks will be added from same delegateQueue
     NSArray *txHashes = block.txHashes;
     
@@ -1423,9 +1424,9 @@ static dispatch_once_t devnetToken = 0;
     BOOL onMainChain = FALSE;
     
     if (uint256_eq(block.prevBlock, self.lastBlock.blockHash)) { // new block extends main chain
-        if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
+        //if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
             DSDLog(@"adding block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
-        }
+        //}
         
         self.blocks[blockHash] = block;
         self.lastBlock = block;
