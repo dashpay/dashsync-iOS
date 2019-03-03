@@ -66,9 +66,8 @@
     return [wallets copy];
 }
 
-
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
 {
     DSAccount * account = [wallet accountWithNumber:0];
     NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
@@ -100,7 +99,7 @@
                                                       forKey:PIN_UNLOCK_TIME_KEY];
             
             //secure time
-
+            
             if (![DSAuthenticationManager sharedInstance].secureTimeUpdated) {
                 NSTimeInterval secureTimeSinceReferenceDate = [DSAuthenticationManager sharedInstance].secureTime;
                 
@@ -148,17 +147,19 @@
                 }
                 
                 completion(!failed,YES,YES,NO);
-                
             }
         }];
-        
-    } else {
-        
+    }
+}
+
+//there was an issue with extended public keys on version 0.7.6 and before, this fixes that
+- (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+{
+    for (DSWallet * wallet in wallets) {
         NSArray * derivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
         if (derivationPaths.count) {
             //upgrade scenario
-            [[DSAuthenticationManager sharedInstance] seedWithPrompt:message
-                                                           forWallet:wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
+            [[DSAuthenticationManager sharedInstance] seedWithPrompt:message forWallet:wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
                 if (!seed) {
                     completion(NO,YES,NO,cancelled);
                     return;
@@ -173,37 +174,6 @@
             }];
         } else {
             completion(YES,NO,NO,NO);
-        }
-    }
-}
-
-//there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)needsUpgradeOfExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain  withCompletion:(_Nullable NeedsUpgradeCompletionBlock)completion
-{
-    DSAccount * account = [wallet accountWithNumber:0];
-    NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
-    NSError * error = nil;
-    BOOL hasV2BIP44Data = keyString ? hasKeychainData(keyString, &error) : NO;
-    if (error) {
-        completion(NO,NO);
-        return;
-    }
-    error = nil;
-    BOOL hasV1BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, &error);
-    if (error) {
-        completion(NO,NO);
-        return;
-    }
-    BOOL hasV0BIP44Data = (hasV2BIP44Data)?NO:hasKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
-    if (!hasV2BIP44Data && (hasV1BIP44Data || hasV0BIP44Data)) {
-        completion(YES,YES);
-    } else {
-        
-        NSArray * derivationPaths = [[DSDerivationPathFactory sharedInstance] specializedDerivationPathsNeedingExtendedPublicKeyForWallet:wallet];
-        if (derivationPaths.count) {
-            completion(YES,YES);
-        } else {
-            completion(YES,NO);
         }
     }
 }
