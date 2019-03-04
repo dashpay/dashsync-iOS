@@ -11,11 +11,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSLocalMasternode ()
 
--(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet;
+-(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint16_t)port inWallet:(DSWallet*)wallet;
 
--(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)wallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet;
+-(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint16_t)port inFundsWallet:(DSWallet*)wallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet;
 
--(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)wallet fundsWalletIndex:(NSUInteger)fundsWalletIndex inOperatorWallet:(DSWallet*)operatorWallet operatorWalletIndex:(NSUInteger)operatorWalletIndex inOwnerWallet:(DSWallet*)ownerWallet ownerWalletIndex:(NSUInteger)ownerWalletIndex inVotingWallet:(DSWallet*)votingWallet votingWalletIndex:(NSUInteger)votingWalletIndex;
+-(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint16_t)port inFundsWallet:(DSWallet* _Nullable)wallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet* _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet* _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet* _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex;
 
 -(instancetype)initWithProviderTransactionRegistration:(DSProviderRegistrationTransaction*)providerRegistrationTransaction;
 

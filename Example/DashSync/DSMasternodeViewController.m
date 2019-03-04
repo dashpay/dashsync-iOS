@@ -49,7 +49,7 @@
             [partPredicates addObject:chainPredicate];
             for (int i = 0; i< MIN(ipArray.count,4); i++) {
                 if ([ipArray[i] isEqualToString:@""]) break;
-                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(i*8),@([ipArray[i] integerValue])];
+                NSPredicate *currentPartPredicate = [NSPredicate predicateWithFormat:@"(((address >> %@) & 255) == %@)", @(24-i*8),@([ipArray[i] integerValue])];
                 [partPredicates addObject:currentPartPredicate];
             }
             
@@ -161,7 +161,7 @@
 -(void)configureCell:(DSMasternodeTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = simplifiedMasternodeEntryEntity.address;
+    uint32_t ipAddress = CFSwapInt32BigToHost(simplifiedMasternodeEntryEntity.address);
     cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port];
     cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
 }

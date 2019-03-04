@@ -67,6 +67,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)fundsWallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet;
 
+-(DSLocalMasternode*)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry  claimedWithOwnerWallet:(DSWallet*)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
+
 -(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction;
 
 @end

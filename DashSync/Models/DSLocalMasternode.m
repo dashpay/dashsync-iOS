@@ -15,15 +15,16 @@
 #import "DSMasternodeManager.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
-#import "DSLocalMasternodeEntity+CoreDataProperties.h"
+#import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
-#import "DSProviderUpdateServiceTransactionEntity+CoreDataProperties.h"
-#import "DSProviderUpdateRegistrarTransactionEntity+CoreDataProperties.h"
-#import "DSProviderUpdateRevocationTransactionEntity+CoreDataProperties.h"
+#import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
+#import "DSProviderUpdateServiceTransactionEntity+CoreDataClass.h"
+#import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
+#import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
+#import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSECDSAKey.h"
 #include <arpa/inet.h>
 
@@ -69,6 +70,24 @@
     return self;
 }
 
+-(instancetype)initWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet* _Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet* _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet* _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet* _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+    if (!(self = [super init])) return nil;
+    self.operatorKeysWallet = operatorWallet;
+    self.holdingKeysWallet = fundsWallet;
+    self.ownerKeysWallet = ownerWallet;
+    self.votingKeysWallet = votingWallet;
+    self.ownerWalletIndex = ownerWalletIndex;
+    self.operatorWalletIndex = operatorWalletIndex;
+    self.votingWalletIndex = votingWalletIndex;
+    self.holdingWalletIndex = fundsWalletIndex;
+    self.ipAddress = ipAddress;
+    self.port = port;
+    self.providerUpdateRegistrarTransactions = [NSMutableArray array];
+    self.providerUpdateServiceTransactions = [NSMutableArray array];
+    self.providerUpdateRevocationTransactions = [NSMutableArray array];
+    return self;
+}
+
 -(instancetype)initWithProviderTransactionRegistration:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
     if (!(self = [super init])) return nil;
     uint32_t ownerAddressIndex;
@@ -101,6 +120,10 @@
     [self.operatorKeysWallet registerMasternodeOperator:self];
     [self.ownerKeysWallet registerMasternodeOwner:self];
     [self.votingKeysWallet registerMasternodeVoter:self];
+}
+
+-(BOOL)noLocalWallet {
+    return !(self.operatorKeysWallet || self.holdingKeysWallet || self.ownerKeysWallet || self.votingKeysWallet);
 }
 
 -(UInt128)ipAddress {
@@ -361,6 +384,7 @@
     [context performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:context];
         [DSLocalMasternodeEntity setContext:context];
+        [DSTransactionHashEntity setContext:context];
         [DSProviderRegistrationTransactionEntity setContext:context];
         [DSProviderUpdateServiceTransactionEntity setContext:context];
         [DSProviderUpdateRegistrarTransactionEntity setContext:context];
@@ -368,11 +392,12 @@
         if ([DSLocalMasternodeEntity
              countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
             DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-            if (providerRegistrationTransactionEntity) {
-                DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
-                [localMasternode setAttributesFromLocalMasternode:self];
-                [DSLocalMasternodeEntity saveContext];
+            if (!providerRegistrationTransactionEntity) {
+                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
             }
+            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+            [localMasternode setAttributesFromLocalMasternode:self];
+            [DSLocalMasternodeEntity saveContext];
         } else {
             DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
             [localMasternode setAttributesFromLocalMasternode:self];
