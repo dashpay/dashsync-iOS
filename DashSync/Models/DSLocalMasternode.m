@@ -260,7 +260,7 @@
             scriptPayout = [NSData data];
         } else {
             NSMutableData * mScriptPayout = [NSMutableData data];
-            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:self.holdingKeysWallet.chain];
+            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
             scriptPayout = mScriptPayout;
         }
         
@@ -295,7 +295,7 @@
             scriptPayout = [NSData data];
         } else {
             NSMutableData * mScriptPayout = [NSMutableData data];
-            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:self.holdingKeysWallet.chain];
+            [mScriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
             scriptPayout = mScriptPayout;
         }
         

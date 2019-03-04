@@ -178,7 +178,7 @@ static NSString *dateFormat(NSString *template)
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@",self.chainManager.chain.chainEntity];
+    return [NSPredicate predicateWithFormat:@"transactionHash.chain = %@ && ((ANY outputs.account != nil) || (ANY inputs.prevOutput.account != nil))",self.chainManager.chain.chainEntity];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
