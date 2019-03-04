@@ -174,6 +174,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
 @property (nonatomic, assign) uint64_t ixPreviousConfirmationsNeeded;
+@property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
+@property (nonatomic, assign) uint32_t cachedProtocolVersion;
 
 @end
 
@@ -561,31 +563,33 @@ static dispatch_once_t devnetToken = 0;
 
 
 -(uint32_t)minProtocolVersion {
+    if (_cachedMinProtocolVersion) return _cachedMinProtocolVersion;
     switch ([self chainType]) {
         case DSChainType_MainNet:
         {
             NSError * error = nil;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
-            if (!error && minProtocolVersion) return minProtocolVersion;
-            else return DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
+            if (!error && minProtocolVersion) _cachedMinProtocolVersion = minProtocolVersion;
+            else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
         }
         case DSChainType_TestNet:
         {
             NSError * error = nil;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
-            if (!error && minProtocolVersion) return minProtocolVersion;
-            else return DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
+            if (!error && minProtocolVersion) _cachedMinProtocolVersion = minProtocolVersion;
+            else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
         }
         case DSChainType_DevNet:
         {
             NSError * error = nil;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
-            if (!error && minProtocolVersion) return minProtocolVersion;
-            else return DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
+            if (!error && minProtocolVersion) _cachedMinProtocolVersion = minProtocolVersion;
+            else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
         }
         default:
             break;
     }
+    return _cachedMinProtocolVersion;
 }
 
 
@@ -604,6 +608,7 @@ static dispatch_once_t devnetToken = 0;
         default:
             break;
     }
+    _cachedMinProtocolVersion = minProtocolVersion;
 }
 
 
@@ -1401,13 +1406,16 @@ static dispatch_once_t devnetToken = 0;
     
     // verify block difficulty if block is past last checkpoint
     DSCheckpoint * lastCheckpoint = [self lastCheckpoint];
-    if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
-        ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
-        uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
-        DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
-              block.height,block.target,foundDifficulty, blockHash);
-        [self.chainManager chain:self badBlockReceivedFromPeer:peer];
-        return FALSE;
+    
+    if (!self.isDevnetAny) {
+        if ((block.height > (lastCheckpoint.height + DGW_PAST_BLOCKS_MAX)) &&
+            ![block verifyDifficultyWithPreviousBlocks:self.blocks]) {
+            uint32_t foundDifficulty = [block darkGravityWaveTargetWithPreviousBlocks:self.blocks];
+            DSDLog(@"%@:%d relayed block with invalid difficulty height %d target %x foundTarget %x, blockHash: %@", peer.host, peer.port,
+                  block.height,block.target,foundDifficulty, blockHash);
+            [self.chainManager chain:self badBlockReceivedFromPeer:peer];
+            return FALSE;
+        }
     }
     
     [self.checkpointsDictionary[@(block.height)] getValue:&checkpoint];
