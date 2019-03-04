@@ -202,7 +202,7 @@
     switch (sporkIdentifier) {
         case DSSporkIdentifier_Spork15DeterministicMasternodesEnabled:
         {
-            if (self.chain.estimatedBlockHeight >= spork.value && self.chain.minProtocolVersion < SPORK_15_MIN_PROTOCOL_VERSION) { //use estimated block height here instead
+            if (!self.chain.isDevnetAny && self.chain.estimatedBlockHeight >= spork.value && self.chain.minProtocolVersion < SPORK_15_MIN_PROTOCOL_VERSION) { //use estimated block height here instead
                 [self.chain setMinProtocolVersion:SPORK_15_MIN_PROTOCOL_VERSION];
             }
         }
