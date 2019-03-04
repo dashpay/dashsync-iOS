@@ -25,6 +25,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *votingKeyLabel;
 @property (strong, nonatomic) IBOutlet UILabel *votingAddressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundsInHoldingLabel;
+@property (strong, nonatomic) IBOutlet UILabel *activeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *payToAddress;
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proRegTxLabel;
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proUpRegTxLabel;
@@ -47,6 +48,7 @@
     self.votingAddressLabel.text = self.simplifiedMasternodeEntry.votingAddress;
     self.votingKeyLabel.text = self.localMasternode.votingKeysWallet?@"SHOW":@"NO";
     self.fundsInHoldingLabel.text = self.localMasternode.holdingKeysWallet?@"YES":@"NO";
+    self.activeLabel.text = self.simplifiedMasternodeEntry.isValid?@"YES":@"NO";
     self.payToAddress.text = self.localMasternode.payoutAddress?self.localMasternode.payoutAddress:@"Unknown";
     self.proRegTxLabel.text = uint256_hex(self.localMasternode.providerRegistrationTransaction.txHash);
     self.proUpRegTxLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.localMasternode.providerUpdateRegistrarTransactions.count];
