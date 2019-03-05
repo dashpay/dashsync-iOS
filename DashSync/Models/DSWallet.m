@@ -671,7 +671,7 @@
     return nil;
 }
 
--(DSBlockchainUserRegistrationTransaction *)registrationTransactionForIndex:(uint32_t)index {
+-(DSBlockchainUserRegistrationTransaction *)blockchainUserRegistrationTransactionForIndex:(uint32_t)index {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self];
     UInt160 hash160 = [derivationPath publicKeyDataAtIndex:index].hash160;
     return [self registrationTransactionForPublicKeyHash:hash160];
@@ -721,7 +721,8 @@
     if (keyChainDictionary) {
         for (NSString * username in keyChainDictionary) {
             uint32_t index = [keyChainDictionary[username] unsignedIntValue];
-            UInt256 registrationTransactionHash = [self registrationTransactionForIndex:index].txHash;
+            UInt256 registrationTransactionHash = [self blockchainUserRegistrationTransactionForIndex:index].txHash;
+            DSDLog(@"Blockchain user with %@",uint256_hex(registrationTransactionHash));
             UInt256 lastBlockchainUserTransactionHash = [self lastBlockchainUserTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
             [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastBlockchainUserTransactionHash:lastBlockchainUserTransactionHash]];
         }

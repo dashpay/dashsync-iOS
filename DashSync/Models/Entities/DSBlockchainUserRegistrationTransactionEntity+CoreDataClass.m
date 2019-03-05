@@ -10,6 +10,11 @@
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
+#import "DSTransaction.h"
+#import "DSChainEntity+CoreDataClass.h"
+#import "DSChain.h"
+#import "DSAddressEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSBlockchainUserRegistrationTransactionEntity
 
@@ -22,6 +27,14 @@
         self.publicKey = [NSData dataWithUInt160:blockchainUserRegistrationTransaction.pubkeyHash];
         self.username = blockchainUserRegistrationTransaction.username;
         self.payloadSignature = blockchainUserRegistrationTransaction.payloadSignature;
+        
+        //for when we switch to BLS -> [DSKey addressWithPublicKeyData:self.publicKey forChain:tx.chain];
+        NSString * publicKeyHash = [self.publicKey addressFromHash160DataForChain:tx.chain];
+        NSArray * addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",publicKeyHash,tx.chain.chainEntity];
+        if ([addressEntities count]) {
+            NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
+            [self addAddressesObject:[addressEntities firstObject]];
+        }
     }];
     
     return self;

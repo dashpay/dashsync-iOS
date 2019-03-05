@@ -209,7 +209,7 @@
 // MARK: == Blockchain Users Transaction Retrieval
 
 - (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction in self.blockchainUserRegistrationTransactions) {
+    for (DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction in [self.blockchainUserRegistrationTransactions allValues]) {
         if (uint160_eq(blockchainUserRegistrationTransaction.pubkeyHash, publicKeyHash)) {
             return blockchainUserRegistrationTransaction;
         }
@@ -218,7 +218,7 @@
 }
 
 - (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in self.blockchainUserResetTransactions) {
+    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in [self.blockchainUserResetTransactions allValues]) {
         if (uint160_eq(blockchainUserResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
             return blockchainUserResetTransaction;
         }
@@ -228,17 +228,17 @@
 
 - (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
     NSMutableArray * subscriptionTransactions = [NSMutableArray array];
-    for (DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction in self.blockchainUserTopupTransactions) {
+    for (DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction in [self.blockchainUserTopupTransactions allValues]) {
         if (uint256_eq(blockchainUserTopupTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
             [subscriptionTransactions addObject:blockchainUserTopupTransaction];
         }
     }
-    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in self.blockchainUserResetTransactions) {
+    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in [self.blockchainUserResetTransactions allValues]) {
         if (uint256_eq(blockchainUserResetTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
             [subscriptionTransactions addObject:blockchainUserResetTransaction];
         }
     }
-    for (DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction in self.blockchainUserCloseTransactions) {
+    for (DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction in [self.blockchainUserCloseTransactions allValues]) {
         if (uint256_eq(blockchainUserCloseTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
             [subscriptionTransactions addObject:blockchainUserCloseTransaction];
         }
