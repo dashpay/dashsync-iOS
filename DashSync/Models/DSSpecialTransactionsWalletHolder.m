@@ -68,7 +68,7 @@
     return self;
 }
 
--(NSArray<NSDictionary*>*)transactionDictionaries {
+-(NSArray<NSMutableDictionary*>*)transactionDictionaries {
     return @[self.providerRegistrationTransactions,self.providerUpdateServiceTransactions,self.providerUpdateRegistrarTransactions,self.providerUpdateRevocationTransactions,self.blockchainUserRegistrationTransactions,self.blockchainUserCloseTransactions,self.blockchainUserResetTransactions,self.blockchainUserTopupTransactions];
 }
 
@@ -109,6 +109,13 @@
     _wallet = wallet;
     [self loadTransactions];
 }
+
+- (void)removeAllTransactions {
+    for (NSMutableDictionary * transactionDictionary in [self transactionDictionaries]) {
+        [transactionDictionary removeAllObjects];
+    }
+}
+
 
 -(void)loadTransactions {
     if (_wallet.isTransient) return;

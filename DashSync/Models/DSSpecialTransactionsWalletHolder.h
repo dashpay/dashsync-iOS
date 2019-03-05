@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSTransaction*)transactionForHash:(UInt256)transactionHash;
 
+- (void)removeAllTransactions;
+
 // This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
 - (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
 

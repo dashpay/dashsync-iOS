@@ -623,12 +623,13 @@
     return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
 }
 
-// MARK: - Seed
+// MARK: - Wiping
 
 - (void)wipeBlockchainInfo {
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
     }
+    [self.specialTransactionsHolder removeAllTransactions];
 }
 
 // MARK: - Blockchain Users
