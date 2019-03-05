@@ -291,7 +291,7 @@ inline static int ceil_log2(int x)
     uint32_t blockCount = 0;
     UInt256 sumTargets = UINT256_ZERO;
     
-    if (uint256_is_zero(_prevBlock) || previousBlock.height == 0 || previousBlock.height < DGW_PAST_BLOCKS_MIN) {
+    if (uint256_is_zero(_prevBlock) || previousBlock.height == 0 || previousBlock.height < DGW_PAST_BLOCKS_MIN + (self.chain.isDevnetAny?1:0)) {
         // This is the first block or the height is < PastBlocksMin
         // Return minimal required work. (1e0ffff0)
         return self.chain.maxProofOfWork;
