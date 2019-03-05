@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,assign) UInt384 operatorKey;
 @property (nonatomic,assign) UInt160 votingKeyHash;
 @property (nonatomic,strong) NSData * scriptPayout;
+@property (nonatomic,readonly) NSString * payoutAddress;
 @property (nonatomic,assign) UInt256 inputsHash;
 @property (nonatomic,strong) NSData * payloadSignature;
 @property (nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;

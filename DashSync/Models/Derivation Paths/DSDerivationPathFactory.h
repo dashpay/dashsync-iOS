@@ -21,7 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (DSMasternodeHoldingsDerivationPath*)providerFundsDerivationPathForWallet:(DSWallet*)wallet;
 - (DSAuthenticationKeysDerivationPath*)blockchainUsersKeysDerivationPathForWallet:(DSWallet*)wallet;
 
-- (NSArray<DSDerivationPath*>*)specializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet*)wallet;
+- (NSArray<DSDerivationPath*>*)loadSpecializedDerivationPathsForWallet:(DSWallet*)wallet;
+- (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet;
+- (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet*)wallet;
 
 @end
 

@@ -57,6 +57,10 @@
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainUserResetTransaction.h"
+#import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserCloseTransaction.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSKey.h"
 #import "DSDerivationPathFactory.h"
@@ -1683,9 +1687,19 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
-- (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction * _Nonnull)transaction {
+- (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction *)transaction {
+    if (!transaction) return nil;
     for (DSWallet * wallet in self.wallets) {
         DSAccount * account = [wallet accountContainingTransaction:transaction];
+        if (account) return account;
+    }
+    return nil;
+}
+
+- (DSAccount* _Nullable)accountContainingAddress:(NSString *)address {
+    if (!address) return nil;
+    for (DSWallet * wallet in self.wallets) {
+        DSAccount * account = [wallet accountForAddress:address];
         if (account) return account;
     }
     return nil;
@@ -1772,11 +1786,41 @@ static dispatch_once_t devnetToken = 0;
 //Does the chain mat
 -(BOOL)transactionHasLocalReferences:(DSTransaction*)transaction {
     if ([self accountContainingTransaction:transaction]) return TRUE;
+    
+    //PROVIDERS
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
         if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil]) return TRUE;
         if ([self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
         if ([self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+        if ([self transactionForHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash]) return TRUE;
+        if ([self accountContainingAddress:providerUpdateServiceTransaction.payoutAddress]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+        if ([self walletHavingProviderVotingAuthenticationHash:providerUpdateRegistrarTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self walletHavingProviderOperatorAuthenticationKey:providerUpdateRegistrarTransaction.operatorKey foundAtIndex:nil]) return TRUE;
+        if ([self transactionForHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash]) return TRUE;
+        if ([self accountContainingAddress:providerUpdateRegistrarTransaction.payoutAddress]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
+        if ([self transactionForHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash]) return TRUE;
+        
+    //BLOCKCHAIN USERS
+    } else if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+        DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
+        if ([self walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction *)transaction;
+        if ([self walletHavingBlockchainUserAuthenticationHash:blockchainUserResetTransaction.replacementPublicKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self transactionForHash:blockchainUserResetTransaction.registrationTransactionHash]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
+        DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction *)transaction;
+        if ([self transactionForHash:blockchainUserCloseTransaction.registrationTransactionHash]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
+        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
+        if ([self transactionForHash:blockchainUserTopupTransaction.registrationTransactionHash]) return TRUE;
     }
     return FALSE;
 }
@@ -1820,6 +1864,17 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // MARK: - Merging Wallets
+
+- (DSWallet*)walletHavingBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
+    for (DSWallet * wallet in self.wallets) {
+        NSUInteger index = [wallet indexOfBlockchainUserAuthenticationHash:blockchainUserAuthenticationHash];
+        if (index != NSNotFound) {
+            if (rIndex) *rIndex = (uint32_t)index;
+            return wallet;
+        }
+    }
+    return nil;
+}
 
 - (DSWallet*)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
     for (DSWallet * wallet in self.wallets) {

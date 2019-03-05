@@ -9,7 +9,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
-#import "NSString+Bitcoin.h"
+#import "NSString+Dash.h"
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
@@ -175,6 +175,10 @@
 {
     if (! uint256_is_zero(self.txHash)) return self.data.length;
     return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE);
+}
+
+-(NSString*)payoutAddress {
+    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
 }
 
 -(Class)entityClass {

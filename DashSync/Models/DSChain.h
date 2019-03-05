@@ -199,6 +199,9 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 // returns an account to which the given transaction is associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction *)transaction;
 
+// returns an account to which the given address is contained in a derivation path
+- (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
+
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
 - (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
 
@@ -229,6 +232,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSWallet* _Nullable)walletHavingProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey foundAtIndex:(uint32_t* _Nullable)rIndex;
 
 - (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
+
+- (DSWallet* _Nullable)walletHavingBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 

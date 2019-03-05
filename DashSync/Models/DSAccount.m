@@ -27,7 +27,6 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSECDSAKey.h"
-#import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
 
 #import "DSTransaction.h"
@@ -79,7 +78,7 @@
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
 
-@property (nonatomic, strong) NSManagedObjectContext * moc;
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 // the total amount spent from the account (excluding change)
 @property (nonatomic, readonly) uint64_t totalSent;
@@ -145,7 +144,7 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.moc = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObject context];
     self.isViewOnlyAccount = FALSE;
     return self;
 }
@@ -158,7 +157,7 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.moc = [NSManagedObject context];
+    self.managedObjectContext = [NSManagedObject context];
     self.isViewOnlyAccount = TRUE;
     
     return self;
@@ -174,12 +173,12 @@
 
 -(void)loadTransactions {
     if (_wallet.isTransient) return;
-    [self.moc performBlockAndWait:^{
-        [DSTransactionEntity setContext:self.moc];
-        [DSAccountEntity setContext:self.moc];
-        [DSTxInputEntity setContext:self.moc];
-        [DSTxOutputEntity setContext:self.moc];
-        [DSDerivationPathEntity setContext:self.moc];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSTransactionEntity setContext:self.managedObjectContext];
+        [DSAccountEntity setContext:self.managedObjectContext];
+        [DSTxInputEntity setContext:self.managedObjectContext];
+        [DSTxOutputEntity setContext:self.managedObjectContext];
+        [DSDerivationPathEntity setContext:self.managedObjectContext];
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity] > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
             [DSTxInputEntity objectsMatching:@"transaction.transactionHash.chain == %@",self.wallet.chain.chainEntity];
@@ -906,7 +905,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self updateBalance];
         }
         
-        [self.moc performBlockAndWait:^{
+        [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
                 NSMutableSet *entities = [NSMutableSet set];
                 
@@ -929,7 +928,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
                 }
                 NSError * error = nil;
-                [self.moc save:&error];
+                [self.managedObjectContext save:&error];
                 if (error) {
                     DSDLog(@"Issue Saving DB when setting Block Height");
                 }
@@ -967,7 +966,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (transaction) [self.transactions removeObject:transaction];
     [self updateBalance];
     
-    [self.moc performBlock:^{ // remove transaction from core data
+    [self.managedObjectContext performBlock:^{ // remove transaction from core data
         [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
                                                 [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
@@ -1130,12 +1129,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
-    [self.moc performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:self.moc];
+    [self.managedObjectContext performBlockAndWait:^{ // add the transaction to core data
+        [DSChainEntity setContext:self.managedObjectContext];
         Class transactionEntityClass = [transaction entityClass];
-        [transactionEntityClass setContext:self.moc];
-        [DSTransactionHashEntity setContext:self.moc];
-        [DSAddressEntity setContext:self.moc];
+        [transactionEntityClass setContext:self.managedObjectContext];
+        [DSTransactionHashEntity setContext:self.managedObjectContext];
+        [DSAddressEntity setContext:self.managedObjectContext];
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
             
             DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];

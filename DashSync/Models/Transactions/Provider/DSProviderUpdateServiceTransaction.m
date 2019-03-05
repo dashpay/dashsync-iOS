@@ -18,6 +18,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSTransactionManager.h"
 #import "DSLocalMasternode.h"
+#import "NSString+Dash.h"
 
 @interface DSProviderUpdateServiceTransaction()
 
@@ -121,6 +122,10 @@
 
 -(void)signPayloadWithKey:(DSBLSKey*)privateKey {
     self.payloadSignature = [NSData dataWithUInt768:[privateKey signData:[self payloadDataForHash]]];
+}
+
+-(NSString*)payoutAddress {
+    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
 }
 
 -(NSData*)basePayloadData {
