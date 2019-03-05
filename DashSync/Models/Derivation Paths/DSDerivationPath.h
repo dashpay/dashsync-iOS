@@ -155,7 +155,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 
-
++ (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 + (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;

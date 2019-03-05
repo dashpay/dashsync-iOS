@@ -481,6 +481,21 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 // MARK: - ECDSA Key Generation
 
+
++ (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed forChain:(DSChain*)chain
+{
+    if (! seed) return nil;
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, lChain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    return serialize(0, 0, 0, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)],[chain isMainnet]);
+}
+
+
 //this is for upgrade purposes only
 - (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed
 {

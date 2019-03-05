@@ -625,19 +625,6 @@
 
 // MARK: - Seed
 
-- (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed
-{
-    if (! seed) return nil;
-    
-    UInt512 I;
-    
-    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
-    
-    UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
-    
-    return serialize(0, 0, 0, chain, [NSData dataWithBytes:&secret length:sizeof(secret)],[self.chain isMainnet]);
-}
-
 - (void)wipeBlockchainInfo {
     for (DSAccount * account in self.accounts) {
         [account wipeBlockchainInfo];
