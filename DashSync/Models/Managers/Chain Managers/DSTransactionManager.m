@@ -958,7 +958,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
-    DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
         block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime) {
