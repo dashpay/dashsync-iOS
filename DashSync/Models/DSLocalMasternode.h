@@ -31,6 +31,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) DSWallet * holdingKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t holdingWalletIndex;
 @property(nonatomic,readonly) NSString* payoutAddress;
+@property(nonatomic,readonly) BOOL noLocalWallet;
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 @property(nonatomic,readonly) NSArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
 @property(nonatomic,readonly) NSArray <DSProviderUpdateServiceTransaction*>* providerUpdateServiceTransactions;

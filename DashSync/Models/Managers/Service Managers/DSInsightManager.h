@@ -6,6 +6,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BigIntTypes.h"
+
+@class DSTransaction,DSChain;
 
 @interface DSInsightManager : NSObject
 
@@ -15,5 +18,9 @@
 - (void)utxosForAddresses:(NSArray * _Nonnull)address
                completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amounts, NSArray * _Nonnull scripts,
                                              NSError * _Null_unspecified error))completion;
+
+-(void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion;
+
+- (void)queryInsight:(NSString *)insightURL forTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion;
 
 @end
