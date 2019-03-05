@@ -544,6 +544,14 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     }
 }
 
+// MARK: - TransactionFetching
+
+- (void)fetchTransactionHavingHash:(UInt256)transactionHash {
+    for (DSPeer *peer in self.peerManager.connectedPeers) {
+        [peer sendGetdataMessageForTxHash:transactionHash];
+    }
+}
+
 // MARK: - Bloom Filters
 
 //This returns the bloom filter for the peer, currently the filter is only tweaked per peer, and we only cache the filter of the download peer.

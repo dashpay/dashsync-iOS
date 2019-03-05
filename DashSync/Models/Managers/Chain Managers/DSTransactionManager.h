@@ -48,6 +48,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceiv
 
 - (void)fetchMempoolFromNetwork;
 
+- (void)fetchTransactionHavingHash:(UInt256)transactionHash;
+
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction
 
 - (DSBloomFilter *)transactionsBloomFilterForPeer:(DSPeer *)peer;

@@ -734,8 +734,9 @@
 
 // MARK: - Persistence
 
--(void)save {
+-(DSTransactionEntity *)save {
     NSManagedObjectContext * context = [DSTransactionEntity context];
+    __block DSTransactionEntity * transactionEntity = nil;
     [context performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:context];
         Class transactionEntityClass = [self entityClass];
@@ -743,15 +744,16 @@
         [DSTransactionHashEntity setContext:context];
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
             
-            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
+            transactionEntity = [transactionEntityClass managedObject];
             [transactionEntity setAttributesFromTransaction:self];
             [transactionEntityClass saveContext];
         } else {
-            DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+            transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
             [transactionEntity setAttributesFromTransaction:self];
             [transactionEntityClass saveContext];
         }
     }];
+    return transactionEntity;
 }
 
 @end

@@ -10,9 +10,13 @@
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSString+Bitcoin.h"
+#import "DSTransactionFactory.h"
 
-#define UNSPENT_URL          @"http://insight.dash.org/insight-api-dash/addrs/utxo"
-#define UNSPENT_FAILOVER_URL @"https://insight.dash.siampm.com/api/addrs/utxo"
+#define ADDRESS_UTXO_PATH @"addrs/utxo"
+#define TX_PATH @"rawtx"
+
+#define INSIGHT_URL          @"https://insight.dash.org/insight-api-dash"
+#define INSIGHT_FAILOVER_URL @"https://insight.dash.show/api"
 
 @implementation DSInsightManager
 
@@ -30,14 +34,14 @@
 
 // MARK: - query unspent outputs
 
-// queries api.breadwallet.com and calls the completion block with unspent outputs for the given addresses
+// queries insight.dash.org and calls the completion block with unspent outputs for the given addresses
 - (void)utxosForAddresses:(NSArray *)addresses
                completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
-    [self utxos:UNSPENT_URL forAddresses:addresses
+    [self utxos:INSIGHT_URL forAddresses:addresses
      completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
          if (error) {
-             [self utxos:UNSPENT_FAILOVER_URL forAddresses:addresses
+             [self utxos:INSIGHT_FAILOVER_URL forAddresses:addresses
               completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *err) {
                   if (err) err = error;
                   completion(utxos, amounts, scripts, err);
@@ -47,10 +51,57 @@
      }];
 }
 
-- (void)utxos:(NSString *)unspentURL forAddresses:(NSArray *)addresses
+-(void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion {
+    [self queryInsight:INSIGHT_URL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *error) {
+         if (error) {
+              [self queryInsight:INSIGHT_FAILOVER_URL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *err) {
+                  if (err) err = error;
+                  completion(transaction, err);
+              }];
+         }
+         else completion(transaction, error);
+     }];
+}
+
+-(void)queryInsight:(NSString *)insightURL forTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion {
+    
+    NSString * path = [[insightURL stringByAppendingPathComponent:TX_PATH] stringByAppendingPathComponent:uint256_hex(transactionHash)];
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]
+                                                       cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
+    req.HTTPMethod = @"GET";
+    DSDLog(@"%@ GET: %@", req.URL.absoluteString,
+           [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding]);
+    
+    [[[NSURLSession sharedSession] dataTaskWithRequest:req
+                                     completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                         if (error) {
+                                             completion(nil, error);
+                                             return;
+                                         }
+                                         
+                                         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+                                         
+                                         if (error) {
+                                             DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                                             completion(nil,
+                                                        [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                                                     [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
+                                                                                                                      req.URL.host]}]);
+                                             return;
+                                         }
+                                         NSString * rawTxString = json[@"rawtx"];
+                                         NSData * rawTx = [rawTxString hexToData];
+                                         DSTransaction * transaction = [DSTransactionFactory transactionWithMessage:rawTx
+                                                                              onChain:chain];
+                                         
+                                         completion(transaction, nil);
+                                     }] resume];
+}
+
+- (void)utxos:(NSString *)insightURL forAddresses:(NSArray *)addresses
    completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:unspentURL]
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[insightURL stringByAppendingPathComponent:ADDRESS_UTXO_PATH]]
                                                        cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:20.0];
     NSMutableArray *args = [NSMutableArray array];
     NSMutableCharacterSet *charset = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];

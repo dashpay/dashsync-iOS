@@ -155,7 +155,7 @@
     
     
     //Masternode Operator
-    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
     providerOperatorKeysDerivationPath.wallet = wallet;
     
     [mArray addObject:providerOperatorKeysDerivationPath];
