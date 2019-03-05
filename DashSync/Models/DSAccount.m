@@ -101,8 +101,8 @@
 
 // MARK: - Initiation
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
-    return [[self alloc] initWithDerivationPaths:derivationPaths];
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context {
+    return [[self alloc] initWithDerivationPaths:derivationPaths inContext:context];
 }
 
 -(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
@@ -134,7 +134,7 @@
     }
 }
 
--(instancetype)initWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
+-(instancetype)initWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context {
     if (! (self = [super init])) return nil;
     NSAssert([derivationPaths count], @"derivationPaths can not be empty");
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
@@ -144,12 +144,12 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = context?context:[NSManagedObject context];
     self.isViewOnlyAccount = FALSE;
     return self;
 }
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
+-(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context  {
     if (! (self = [super init])) return nil;
     self.mDerivationPaths = [derivationPaths mutableCopy];
     for (DSFundsDerivationPath * derivationPath in derivationPaths) {
@@ -157,7 +157,7 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = context?context:[NSManagedObject context];
     self.isViewOnlyAccount = TRUE;
     
     return self;

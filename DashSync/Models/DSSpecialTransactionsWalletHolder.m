@@ -39,16 +39,15 @@
 
 @implementation DSSpecialTransactionsWalletHolder
 
--(instancetype)initWithWallet:(DSWallet*)wallet {
+-(instancetype)initWithWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     if (!(self = [super init])) return nil;
-    self.wallet = wallet;
     
     self.providerRegistrationTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateServiceTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateRegistrarTransactions = [NSMutableDictionary dictionary];
     self.providerUpdateRevocationTransactions = [NSMutableDictionary dictionary];
     self.blockchainUserRegistrationTransactions = [NSMutableDictionary dictionary];
-    self.managedObjectContext = [NSManagedObject context];
+    self.managedObjectContext = managedObjectContext?managedObjectContext:[NSManagedObject context];
     return self;
 }
 
@@ -84,6 +83,8 @@
 }
 
 -(void)setWallet:(DSWallet *)wallet {
+    NSAssert(!_wallet, @"this should only be called during initialization");
+    if (_wallet) return;
     _wallet = wallet;
     [self loadTransactions];
 }
@@ -102,25 +103,25 @@
             [derivationPathEntities addObject:derivationPathEntity];
         }
         NSArray<DSSpecialTransactionEntity *>* specialTransactionEntities = [DSSpecialTransactionEntity objectsMatching:@"(ANY addresses.derivationPath IN %@)",derivationPathEntities];
-            for (DSSpecialTransactionEntity *e in specialTransactionEntities) {
-                @autoreleasepool {
-                    DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
-
-                    if (! transaction) continue;
-                    if ([transaction.entityClass isEqual:[DSProviderRegistrationTransaction class]]) {
-                        [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                    } else if ([transaction.entityClass isEqual:[DSProviderUpdateServiceTransaction class]]) {
-                        [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                    } else if ([transaction.entityClass isEqual:[DSProviderUpdateRegistrarTransaction class]]) {
-                        [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                    } else if ([transaction.entityClass isEqual:[DSProviderUpdateRevocationTransaction class]]) {
-                        [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                    } else if ([transaction.entityClass isEqual:[DSBlockchainUserRegistrationTransaction class]]) {
-                        [self.blockchainUserRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                    }
-
+        for (DSSpecialTransactionEntity *e in specialTransactionEntities) {
+            @autoreleasepool {
+                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+                
+                if (! transaction) continue;
+                if ([transaction.entityClass isEqual:[DSProviderRegistrationTransaction class]]) {
+                    [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+                } else if ([transaction.entityClass isEqual:[DSProviderUpdateServiceTransaction class]]) {
+                    [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+                } else if ([transaction.entityClass isEqual:[DSProviderUpdateRegistrarTransaction class]]) {
+                    [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+                } else if ([transaction.entityClass isEqual:[DSProviderUpdateRevocationTransaction class]]) {
+                    [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+                } else if ([transaction.entityClass isEqual:[DSBlockchainUserRegistrationTransaction class]]) {
+                    [self.blockchainUserRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
                 }
+                
             }
+        }
     }];
 }
 

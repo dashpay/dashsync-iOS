@@ -85,7 +85,7 @@
 @implementation DSWallet
 
 + (DSWallet*)standardWalletWithSeedPhrase:(NSString*)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
-    DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]];
+    DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
     
     NSString * uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
@@ -138,7 +138,7 @@
     
     [[DSDerivationPathFactory sharedInstance] loadSpecializedDerivationPathsForWallet:self];
     
-    self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self];
+    self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.managedObjectContext];
     
     NSError * error = nil;
     self.mBlockchainUsers = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
@@ -166,7 +166,7 @@
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
-    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0]] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
+    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
     return self;
 }
 

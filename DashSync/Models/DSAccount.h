@@ -77,11 +77,11 @@
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
+-(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths;
+-(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 

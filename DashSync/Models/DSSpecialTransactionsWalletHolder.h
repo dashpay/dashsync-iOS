@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) NSArray * allTransactions;
 
--(instancetype)initWithWallet:(DSWallet*)wallet;
+-(instancetype)initWithWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(DSTransaction*)transactionForHash:(UInt256)transactionHash;
 

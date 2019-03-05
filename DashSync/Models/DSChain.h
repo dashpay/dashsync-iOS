@@ -144,6 +144,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) uint32_t blockchainUsersCount;
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 @property (nonatomic, readonly) uint64_t ixPreviousConfirmationsNeeded;
+@property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;

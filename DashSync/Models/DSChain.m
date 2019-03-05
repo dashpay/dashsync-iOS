@@ -66,7 +66,6 @@
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 
-
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
 static checkpoint testnet_checkpoint_array[] = {
@@ -180,6 +179,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) uint64_t ixPreviousConfirmationsNeeded;
 @property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedProtocolVersion;
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
 
@@ -194,6 +194,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.genesisHash = self.checkpoints[0].checkpointHash;
     self.mWallets = [NSMutableArray array];
     self.estimatedBlockHeights = [NSMutableDictionary dictionary];
+    self.managedObjectContext = [NSManagedObject context];
     
     self.feePerByte = DEFAULT_FEE_PER_B;
     uint64_t feePerByte = [[NSUserDefaults standardUserDefaults] doubleForKey:FEE_PER_BYTE_KEY];
@@ -846,7 +847,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(DSAccount*)viewingAccount {
     if (_viewingAccount) return _viewingAccount;
-    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithDerivationPaths:@[]];
+    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithDerivationPaths:@[] inContext:self.managedObjectContext];
     return _viewingAccount;
 }
 
