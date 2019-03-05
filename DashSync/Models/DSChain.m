@@ -259,8 +259,6 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.ixPreviousConfirmationsNeeded = ixPreviousConfirmationsNeeded;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
-    [self retrieveWallets];
-    [self retrieveStandaloneDerivationPaths];
     return self;
 }
 
