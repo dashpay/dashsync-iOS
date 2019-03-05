@@ -199,4 +199,71 @@
     }];
 }
 
+// MARK: == Blockchain Users Transaction Retrieval
+
+- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction in self.blockchainUserRegistrationTransactions) {
+        if (uint160_eq(blockchainUserRegistrationTransaction.pubkeyHash, publicKeyHash)) {
+            return blockchainUserRegistrationTransaction;
+        }
+    }
+    return nil;
+}
+
+- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in self.blockchainUserResetTransactions) {
+        if (uint160_eq(blockchainUserResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
+            return blockchainUserResetTransaction;
+        }
+    }
+    return nil;
+}
+
+- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
+    NSMutableArray * subscriptionTransactions = [NSMutableArray array];
+    for (DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction in self.blockchainUserTopupTransactions) {
+        if (uint256_eq(blockchainUserTopupTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
+            [subscriptionTransactions addObject:blockchainUserTopupTransaction];
+        }
+    }
+    for (DSBlockchainUserResetTransaction * blockchainUserResetTransaction in self.blockchainUserResetTransactions) {
+        if (uint256_eq(blockchainUserResetTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
+            [subscriptionTransactions addObject:blockchainUserResetTransaction];
+        }
+    }
+    for (DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction in self.blockchainUserCloseTransactions) {
+        if (uint256_eq(blockchainUserCloseTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
+            [subscriptionTransactions addObject:blockchainUserCloseTransaction];
+        }
+    }
+    return [subscriptionTransactions copy];
+}
+
+-(UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
+    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self subscriptionTransactionsForRegistrationTransactionHash:blockchainUserRegistrationTransactionHash]];
+    UInt256 lastSubscriptionTransactionHash = blockchainUserRegistrationTransactionHash;
+    while ([subscriptionTransactions count]) {
+        BOOL found = FALSE;
+        for (DSTransaction * transaction in [subscriptionTransactions copy]) {
+            if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+                DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
+                if (uint256_eq(blockchainUserResetTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
+                    lastSubscriptionTransactionHash = blockchainUserResetTransaction.txHash;
+                    found = TRUE;
+                    [subscriptionTransactions removeObject:blockchainUserResetTransaction];
+                }
+            } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
+                DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction*)transaction;
+                if (uint256_eq(blockchainUserCloseTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
+                    lastSubscriptionTransactionHash = blockchainUserCloseTransaction.txHash;
+                    found = TRUE;
+                    [subscriptionTransactions removeObject:blockchainUserCloseTransaction];
+                }
+            }
+        }
+        if (!found) break;
+    }
+    return lastSubscriptionTransactionHash;
+}
+
 @end

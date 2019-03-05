@@ -653,10 +653,8 @@
 }
 
 - (DSBlockchainUserRegistrationTransaction *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSAccount * account in self.accounts) {
-        DSBlockchainUserRegistrationTransaction * transaction = [account blockchainUserRegistrationTransactionForPublicKeyHash:publicKeyHash];
-        if (transaction) return transaction;
-    }
+    DSBlockchainUserRegistrationTransaction * transaction = [_specialTransactionsHolder blockchainUserRegistrationTransactionForPublicKeyHash:publicKeyHash];
+    if (transaction) return transaction;
     return nil;
 }
 
@@ -665,19 +663,17 @@
     UInt256 startLastSubscriptionTransactionHash;
     do {
         startLastSubscriptionTransactionHash = lastSubscriptionTransactionHash;
-        for (DSAccount * account in self.accounts) {
-            lastSubscriptionTransactionHash = [account lastSubscriptionTransactionHashForRegistrationTransactionHash:lastSubscriptionTransactionHash];
-        }
+        
+        lastSubscriptionTransactionHash = [_specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:lastSubscriptionTransactionHash];
+        
     }
     while (!uint256_eq(startLastSubscriptionTransactionHash, lastSubscriptionTransactionHash));
     return lastSubscriptionTransactionHash;
 }
 
 - (DSBlockchainUserResetTransaction *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSAccount * account in self.accounts) {
-        DSBlockchainUserResetTransaction * transaction = [account blockchainUserResetTransactionForPublicKeyHash:publicKeyHash];
-        if (transaction) return transaction;
-    }
+    DSBlockchainUserResetTransaction * transaction = [_specialTransactionsHolder blockchainUserResetTransactionForPublicKeyHash:publicKeyHash];
+    if (transaction) return transaction;
     return nil;
 }
 

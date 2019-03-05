@@ -168,12 +168,6 @@
 // This loads transactions once the account is set to a wallet
 - (void)loadTransactions;
 
-// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
-
-// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
-
 //This removes all transactions from the account
 - (void)wipeBlockchainInfo;
 
@@ -184,9 +178,5 @@
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
              completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
-
-- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
-
-- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash;
 
 @end
