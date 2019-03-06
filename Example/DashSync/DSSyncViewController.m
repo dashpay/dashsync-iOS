@@ -13,7 +13,7 @@
 #import "DSSporksViewController.h"
 #import "DSBlockchainExplorerViewController.h"
 #import "DSMasternodeViewController.h"
-#import "DSStandaloneDerivationPathController.h"
+#import "DSStandaloneDerivationPathViewController.h"
 #import "DSGovernanceObjectListViewController.h"
 #import "DSTransactionsViewController.h"
 #import "DSBlockchainUsersViewController.h"
@@ -468,7 +468,7 @@
         DSWalletViewController * walletViewController = (DSWalletViewController*)segue.destinationViewController;
         walletViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"StandaloneDerivationPathsSegue"]) {
-        DSStandaloneDerivationPathController * standaloneDerivationPathController = (DSStandaloneDerivationPathController*)segue.destinationViewController;
+        DSStandaloneDerivationPathViewController * standaloneDerivationPathController = (DSStandaloneDerivationPathViewController*)segue.destinationViewController;
         standaloneDerivationPathController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"SporksListSegue"]) {
         DSSporksViewController * sporksViewController = (DSSporksViewController*)segue.destinationViewController;

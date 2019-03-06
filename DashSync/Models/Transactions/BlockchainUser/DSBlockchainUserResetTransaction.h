@@ -17,6 +17,7 @@
 @property (nonatomic,assign) UInt256 previousBlockchainUserTransactionHash;
 @property (nonatomic,assign) uint64_t creditFee;
 @property (nonatomic,assign) UInt160 replacementPublicKeyHash; //we will get rid of this and do next line later
+@property (nonatomic,readonly) NSString * replacementAddress;
 //@property (nonatomic,strong) NSData * replacementPublicKey;
 @property (nonatomic,strong) NSData * oldPublicKeyPayloadSignature;
 

@@ -32,6 +32,10 @@
     return (addr) ? addr : self.mOrderedAddresses.lastObject;
 }
 
+-(NSUInteger)defaultGapLimit {
+    return 5;
+}
+
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {
@@ -40,7 +44,7 @@
         return;
     }
     
-    uint32_t index = (uint32_t)[self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
+    uint32_t index = [self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.wallet.seedRequestBlock(authprompt, MASTERNODE_COST,^void (NSData * _Nullable seed, BOOL cancelled) {

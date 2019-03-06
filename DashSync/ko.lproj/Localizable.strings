@@ -66,7 +66,7 @@
 "choose passcode for %@" = "%@를 위한 암호 설정";
 
 /* No comment provided by engineer. */
-"confirm" = "확인";
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "connect timeout" = "접속 시간 초과";

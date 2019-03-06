@@ -35,11 +35,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey;
+@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey,DSSpecialTransactionsWalletHolder;
 
 @interface DSWallet : NSObject
 
 @property (nonatomic, readonly) NSArray * accounts;
+
+@property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
 
 @property (nonatomic, readonly) NSArray * blockchainUsers;
 
@@ -160,13 +162,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 //get the CREATION TIME KEY prefixed unique ID
 + (NSString*)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
-- (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed;
-
 //This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfo;
 
 //This removes all wallet based information from the wallet, used when deletion of wallet is wanted
 - (void)wipeWalletInfo;
+
+//Recreate derivation paths and addresses
+-(void)reloadDerivationPaths;
 
 -(void)unregisterBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
 -(void)addBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
@@ -185,11 +188,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
+- (BOOL)containsBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash;
 - (BOOL)containsHoldingAddress:(NSString*)holdingAddress;
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 - (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
+- (NSUInteger)indexOfBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash;
 
 @end

@@ -179,14 +179,14 @@
 //    DSBIP32Sequence *seq = [DSBIP32Sequence new];
     NSString *seedString = @"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f";
     NSData *seed = seedString.hexToData;
-    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedString setCreationDate:[[NSDate date] timeIntervalSince1970] forChain:self.chain storeSeedPhrase:NO isTransient:YES];
-    NSString *xprv = [wallet serializedPrivateMasterFromSeed:seed];
+
+    NSString *xprv = [DSDerivationPath serializedPrivateMasterFromSeed:seed forChain:self.chain];
 
     NSLog(@"bb22c8551ef39739fa007efc150975fce0187e675d74c804ab32f87fe0b9ad387fe9b044b8053dfb26cf9d7e4857617fa66430c880e7f4c96554b4eed8a0ad2f xpriv = %@", xprv);
 
     XCTAssertEqualObjects(xprv,
                           @"xprv9s21ZrQH143K27s8Yy6TJSKmKUxTBuXJr4RDTjJ5Jqq13d9v2VzYymSoM4VodDK7nrQHTruX6TuBsGuEVXoo91GwZnmBcTaqUhgK7HeysNv",
-                          @"[DSBIP32Sequence serializedPrivateMasterFromSeed:]");
+                          @"[DSBIP32Sequence serializedPrivateMasterFromSeed:forChain:]");
 }
 
 //- (void)testBIP32SequenceSerializedMasterPublicKey

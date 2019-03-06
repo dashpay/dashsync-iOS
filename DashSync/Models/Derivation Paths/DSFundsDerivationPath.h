@@ -9,6 +9,7 @@
 
 #define SEQUENCE_GAP_LIMIT_EXTERNAL 10
 #define SEQUENCE_GAP_LIMIT_INTERNAL 5
+#define SEQUENCE_GAP_LIMIT_INITIAL 100
 
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V0   @"masterpubkeyBIP44" //these are old and need to be retired
 #define EXTENDED_0_PUBKEY_KEY_BIP32_V0   @"masterpubkeyBIP32" //these are old and need to be retired
@@ -30,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray * allChangeAddresses;
+
+// used external addresses
+@property (nonatomic, readonly) NSArray * usedReceiveAddresses;
+
+// used internal addresses
+@property (nonatomic, readonly) NSArray * usedChangeAddresses;
 
 + (instancetype)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 

@@ -66,7 +66,7 @@
 "choose passcode for %@" = "Wählen Sie den Zugangscode für %@";
 
 /* No comment provided by engineer. */
-"confirm" = "Bestätigen";
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "connect timeout" = "Zeitüberschreitung bei Verbindung";

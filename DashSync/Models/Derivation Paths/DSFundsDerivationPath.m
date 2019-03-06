@@ -37,6 +37,14 @@
     return self;
 }
 
+-(void)reloadAddresses {
+    self.internalAddresses = [NSMutableArray array];
+    self.externalAddresses = [NSMutableArray array];
+    [self.mUsedAddresses removeAllObjects];
+    self.addressesLoaded = NO;
+    [self loadAddresses];
+}
+
 -(void)loadAddresses {
     if (!self.addressesLoaded) {
         [self.moc performBlockAndWait:^{
@@ -62,13 +70,26 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:100 internal:YES];
-        [self registerAddressesWithGapLimit:100 internal:NO];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
         
     }
 }
 
 // MARK: - Derivation Path Addresses
+
+- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+    if ([self containsAddress:address]) {
+        if (![self.mUsedAddresses containsObject:address]) {
+            [self.mUsedAddresses addObject:address];
+            if ([self.internalAddresses containsObject:address]) {
+                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
+            } else {
+                [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
+            }
+        }
+    }
+}
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
@@ -79,6 +100,7 @@
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
+    
     NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
     NSUInteger i = a.count;
     
@@ -96,6 +118,7 @@
     }
     
     @synchronized(self) {
+        //It seems weird to repeat this, but it's correct because of the original call receive address and change address
         [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
         i = a.count;
         
@@ -199,6 +222,18 @@
 - (NSArray *)allChangeAddresses
 {
     return [self.internalAddresses copy];
+}
+
+-(NSArray *)usedReceiveAddresses {
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.externalAddresses];
+    [intersection intersectSet:self.mUsedAddresses];
+    return [intersection allObjects];
+}
+
+-(NSArray *)usedChangeAddresses {
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.internalAddresses];
+    [intersection intersectSet:self.mUsedAddresses];
+    return [intersection allObjects];
 }
 
 - (NSData *)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal

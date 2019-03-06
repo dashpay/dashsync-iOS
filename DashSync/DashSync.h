@@ -59,6 +59,7 @@
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSLocalMasternode.h"
+#import "DSSpecialTransactionsWalletHolder.h"
 
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"

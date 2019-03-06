@@ -24,6 +24,7 @@
 
 #import "DSAddressEntity+CoreDataClass.h"
 #import "DSTxOutputEntity+CoreDataClass.h"
+#import "DSChainEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 
@@ -73,6 +74,15 @@
         return [addressEntities firstObject];
     }
     return nil;
+}
+
++ (void)deleteAddressesOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * addressesToDelete = [self objectsMatching:@"(derivationPath.chain == %@)",chainEntity];
+        for (DSAddressEntity * address in addressesToDelete) {
+            [chainEntity.managedObjectContext deleteObject:address];
+        }
+    }];
 }
 
 @end

@@ -54,10 +54,15 @@
 
 
 -(void)configureCell:(DSDerivationPathTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSDerivationPath * derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
+    DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[self.account.derivationPaths objectAtIndex:indexPath.row];
     cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
+    cell.referenceNameLabel.text = derivationPath.referenceName;
+    cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allReceiveAddresses.count];
+    cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedReceiveAddresses.count];
+    cell.knownInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allChangeAddresses.count];
+    cell.usedInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedChangeAddresses.count];
 }
 
 

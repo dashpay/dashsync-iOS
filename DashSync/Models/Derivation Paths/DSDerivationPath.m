@@ -308,7 +308,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
-    [self.mUsedAddresses addObject:address];
+    if ([self containsAddress:address]) {
+        if (![self.mUsedAddresses containsObject:address]) {
+            [self.mUsedAddresses addObject:address];
+        }
+    }
 }
 
 -(NSSet*)allAddresses {
@@ -323,8 +327,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 -(void)loadAddresses {
     
 }
-
-// MARK: - Blockchain User
 
 // MARK: - Derivation Path Information
 
@@ -373,6 +375,35 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     _stringRepresentation = [mutableString copy];
     return _stringRepresentation;
+}
+
+-(NSString*)referenceName {
+    switch (self.reference) {
+        case DSDerivationPathReference_BIP32:
+            return @"BIP 32";
+            break;
+        case DSDerivationPathReference_BIP44:
+            return @"BIP 44";
+            break;
+        case DSDerivationPathReference_ProviderFunds:
+            return @"Provider Holding Funds Keys";
+            break;
+        case DSDerivationPathReference_ProviderOwnerKeys:
+            return @"Provider Owner Keys";
+            break;
+        case DSDerivationPathReference_ProviderOperatorKeys:
+            return @"Provider Operator Keys";
+            break;
+        case DSDerivationPathReference_ProviderVotingKeys:
+            return @"Provider Voting Keys";
+            break;
+        case DSDerivationPathReference_BlockchainUsers:
+            return @"Blockchain Users";
+            break;
+        default:
+            return @"Unknown";
+            break;
+    }
 }
 
 -(NSString*)debugDescription {
@@ -480,6 +511,21 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 
 // MARK: - ECDSA Key Generation
+
+
++ (NSString *)serializedPrivateMasterFromSeed:(NSData *)seed forChain:(DSChain*)chain
+{
+    if (! seed) return nil;
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, lChain = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    return serialize(0, 0, 0, lChain, [NSData dataWithBytes:&secret length:sizeof(secret)],[chain isMainnet]);
+}
+
 
 //this is for upgrade purposes only
 - (NSData *)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData *)seed
