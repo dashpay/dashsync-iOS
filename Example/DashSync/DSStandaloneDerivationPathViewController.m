@@ -1,23 +1,23 @@
 //
-//  DSStandaloneDerivationPathController.m
+//  DSStandaloneDerivationPathViewController.m
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 6/10/18.
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import "DSStandaloneDerivationPathController.h"
+#import "DSStandaloneDerivationPathViewController.h"
 #import "DSStandaloneDerivationPathTableViewCell.h"
 #import "DSStandaloneDerivationPathKeyInputViewController.h"
 #import "DSDerivationPathsAddressesViewController.h"
 
-@interface DSStandaloneDerivationPathController ()
+@interface DSStandaloneDerivationPathViewController ()
 
 @property (strong, nonatomic) id chainStandaloneDerivationPathObserver;
 
 @end
 
-@implementation DSStandaloneDerivationPathController
+@implementation DSStandaloneDerivationPathViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];

@@ -9,6 +9,7 @@
 #import "DSSpecializedDerivationPathsViewController.h"
 #import "DSDerivationPathFactory.h"
 #import "DSDerivationPathTableViewCell.h"
+#import "DSDerivationPath.h"
 
 @interface DSSpecializedDerivationPathsViewController ()
 
@@ -49,6 +50,7 @@
     cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allAddresses.count];
     cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedAddresses.count];
     cell.xPublicKeyLabel.text = derivationPath.extendedPublicKey.hexString;
+    
     return cell;
 }
 

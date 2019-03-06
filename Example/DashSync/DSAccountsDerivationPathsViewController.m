@@ -58,6 +58,9 @@
     cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
+    cell.referenceNameLabel.text = derivationPath.referenceName;
+    cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allAddresses.count];
+    cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedAddresses.count];
 }
 
 

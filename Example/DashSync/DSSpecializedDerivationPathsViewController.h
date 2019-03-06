@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <DashSync/DashSync.h>
+
+@class DSWallet;
 
 NS_ASSUME_NONNULL_BEGIN
 
