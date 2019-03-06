@@ -9,7 +9,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
-#import "NSString+Bitcoin.h"
+#import "NSString+Dash.h"
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSMasternodeManager.h"
@@ -193,6 +193,32 @@
     [data appendData:[self payloadData]];
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
+}
+
+
+-(NSString*)ownerAddress {
+    return [[NSData dataWithUInt160:self.ownerKeyHash] addressFromHash160DataForChain:self.chain];
+}
+
+-(NSString*)operatorAddress {
+    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
+}
+
+-(NSString*)votingAddress {
+    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
+}
+
+-(NSString*)holdingAddress {
+    if (dsutxo_is_zero(self.collateralOutpoint) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
+        NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
+        return [[self outputAddresses] objectAtIndex:index];
+    } else {
+        return nil;
+    }
+}
+
+-(NSString*)payoutAddress {
+    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.chain];
 }
 
 - (size_t)size

@@ -30,9 +30,14 @@
 #import "DSChain.h"
 
 #import "DSTransaction.h"
+#import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
+#import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserCloseTransaction.h"
 
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
@@ -648,6 +653,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) return YES;
     }
     
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        if ([self containsAddress:providerRegistrationTransaction.payoutAddress]) return YES;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+        if ([self containsAddress:providerUpdateServiceTransaction.payoutAddress]) return YES;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+        if ([self containsAddress:providerUpdateRegistrarTransaction.payoutAddress]) return YES;
+    }
+    
     return NO;
 }
 
@@ -1065,19 +1081,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
     [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
-    [self.managedObjectContext performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:self.managedObjectContext];
-        Class transactionEntityClass = [transaction entityClass];
-        [transactionEntityClass setContext:self.managedObjectContext];
-        [DSTransactionHashEntity setContext:self.managedObjectContext];
-        [DSAddressEntity setContext:self.managedObjectContext];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
-            
-            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
-            [transactionEntity setAttributesFromTransaction:transaction];
-            [transactionEntityClass saveContext];
-        }
-    }];
+    [transaction saveInitial];
     
     return YES;
 }

@@ -181,6 +181,14 @@
     return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
 }
 
+-(NSString*)operatorAddress {
+    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
+}
+
+-(NSString*)votingAddress {
+    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
+}
+
 -(Class)entityClass {
     return [DSProviderUpdateRegistrarTransactionEntity class];
 }

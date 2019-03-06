@@ -132,7 +132,9 @@ sequence:(uint32_t)sequence;
 
 - (BOOL)hasNonDustOutputInWallet:(DSWallet*)wallet;
 
--(DSTransactionEntity *)save;
+- (DSTransactionEntity *)save;
+
+- (BOOL)saveInitial; //returns if the save took place
 
 //instant send
 

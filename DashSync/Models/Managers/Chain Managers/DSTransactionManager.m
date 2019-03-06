@@ -748,7 +748,12 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         if (![account registerTransaction:transaction]) return;
     }
     
-    [self.chain triggerUpdatesForLocalReferences:transaction];
+    if ([transaction isMemberOfClass:[DSTransaction class]]) {
+        //it's a special transaction
+        [self.chain registerSpecialTransaction:transaction];
+        
+        [self.chain triggerUpdatesForLocalReferences:transaction];
+    }
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     

@@ -97,7 +97,6 @@
 -(NSArray*)allTransactions {
     NSMutableArray * mArray = [NSMutableArray array];
     for (NSDictionary * transactionDictionary in [self transactionDictionaries]) {
-        
         [mArray addObjectsFromArray:[transactionDictionary allValues]];
     }
     return [mArray copy];
@@ -116,6 +115,29 @@
     }
 }
 
+- (void)registerTransaction:(DSTransaction*)transaction {
+    if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+        [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+        [self.blockchainUserRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSBlockchainUserResetTransaction class]]) {
+        [self.blockchainUserResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSBlockchainUserCloseTransaction class]]) {
+        [self.blockchainUserCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSBlockchainUserTopupTransaction class]]) {
+        [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else {
+        NSAssert(FALSE,@"unknown transaction type being registered");
+        return;
+    }
+    [transaction saveInitial];
+}
 
 -(void)loadTransactions {
     if (_wallet.isTransient) return;

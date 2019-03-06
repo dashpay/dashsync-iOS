@@ -238,6 +238,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 
+- (void)registerSpecialTransaction:(DSTransaction*)transaction;
+
 - (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 /**
  Check if Autolocks DIP is enabled and transaction can be Autolocked with `inputCount` provided
