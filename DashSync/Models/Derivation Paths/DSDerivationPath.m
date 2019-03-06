@@ -328,8 +328,6 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
 }
 
-// MARK: - Blockchain User
-
 // MARK: - Derivation Path Information
 
 -(NSNumber*)depth {
@@ -377,6 +375,35 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     }
     _stringRepresentation = [mutableString copy];
     return _stringRepresentation;
+}
+
+-(NSString*)referenceName {
+    switch (self.reference) {
+        case DSDerivationPathReference_BIP32:
+            return @"BIP 32";
+            break;
+        case DSDerivationPathReference_BIP44:
+            return @"BIP 44";
+            break;
+        case DSDerivationPathReference_ProviderFunds:
+            return @"Provider Holding Funds Keys";
+            break;
+        case DSDerivationPathReference_ProviderOwnerKeys:
+            return @"Provider Owner Keys";
+            break;
+        case DSDerivationPathReference_ProviderOperatorKeys:
+            return @"Provider Operator Keys";
+            break;
+        case DSDerivationPathReference_ProviderVotingKeys:
+            return @"Provider Voting Keys";
+            break;
+        case DSDerivationPathReference_BlockchainUsers:
+            return @"Blockchain Users";
+            break;
+        default:
+            return @"Unknown";
+            break;
+    }
 }
 
 -(NSString*)debugDescription {

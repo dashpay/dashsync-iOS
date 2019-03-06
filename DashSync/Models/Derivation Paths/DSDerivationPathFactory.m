@@ -123,7 +123,7 @@
     return [self.blockchainUsersDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (NSArray<DSDerivationPath*>*)loadSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
+- (NSArray<DSDerivationPath*>*)loadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
     NSMutableArray * mArray = [NSMutableArray array];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:wallet]];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet]];

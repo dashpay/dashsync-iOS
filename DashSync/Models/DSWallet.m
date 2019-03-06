@@ -136,7 +136,7 @@
     
     if (account) [self addAccount:account]; //this must be last, as adding the account queries the wallet unique ID
     
-    [[DSDerivationPathFactory sharedInstance] loadSpecializedDerivationPathsForWallet:self];
+    [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self];
     
     self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.managedObjectContext];
     

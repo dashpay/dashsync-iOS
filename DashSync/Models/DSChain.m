@@ -1822,9 +1822,6 @@ static dispatch_once_t devnetToken = 0;
     
     if (holdingWallet) {
         DSMasternodeHoldingsDerivationPath * holdingDerivationPath = [[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:holdingWallet];
-        if (!providerRegistrationTransaction.holdingAddress) {
-            providerRegistrationTransaction.holdingAddress;
-        }
         [holdingDerivationPath registerTransactionAddress:providerRegistrationTransaction.holdingAddress];
     }
 }

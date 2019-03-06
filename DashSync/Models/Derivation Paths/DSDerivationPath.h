@@ -113,6 +113,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;
 
+// the reference of type of derivation path
+@property (nonatomic, readonly) NSString * referenceName;
+
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
