@@ -57,11 +57,11 @@
 }
 
 - (NSData*)firstUnusedPublicKey {
-    return [self publicKeyDataAtIndex:[self unusedIndex]];
+    return [self publicKeyDataAtIndex:[self firstUnusedIndex]];
 }
 
 - (DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed {
-    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:[self unusedIndex]] fromSeed:seed];
+    return [self privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:[self firstUnusedIndex]] fromSeed:seed];
 }
 
 - (DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
