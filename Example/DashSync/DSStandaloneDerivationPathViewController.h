@@ -1,5 +1,5 @@
 //
-//  DSStandaloneDerivationPathController.h
+//  DSStandaloneDerivationPathViewController.h
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 6/10/18.
@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
 
-@interface DSStandaloneDerivationPathController : UITableViewController
+@interface DSStandaloneDerivationPathViewController : UITableViewController
 
 @property (nonatomic, strong) DSChain * chain;
 

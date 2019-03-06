@@ -72,6 +72,7 @@
     NSMutableData * data = [NSMutableData data];
     [data appendUInt16:self.blockchainUserTopupTransactionVersion];
     [data appendUInt256:self.registrationTransactionHash];
+    NSLog(@"%@",data.hexString);
     return data;
 }
 

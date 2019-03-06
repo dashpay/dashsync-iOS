@@ -701,7 +701,7 @@ replacementString:(NSString *)string
                 }
             }
             if (authprompt && shouldPreprompt) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"confirm", nil)
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
                                                                                message:authprompt
                                                                         preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"cancel", nil)

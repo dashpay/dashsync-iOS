@@ -53,6 +53,21 @@
 
 // MARK: - Derivation Path Addresses
 
+- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+    if (![self.mUsedAddresses containsObject:address]) {
+        [self.mUsedAddresses addObject:address];
+        [self registerAddressesWithDefaultGapLimit];
+    }
+}
+
+-(NSUInteger)defaultGapLimit {
+    return 10;
+}
+
+- (NSArray *)registerAddressesWithDefaultGapLimit {
+    return [self registerAddressesWithGapLimit:[self defaultGapLimit]];
+}
+
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain.
@@ -75,17 +90,7 @@
     if (rArray.count >= gapLimit) return [rArray subarrayWithRange:NSMakeRange(0, gapLimit)];
     
     @synchronized(self) {
-        i = rArray.count;
-        
-        unsigned n = (unsigned)i;
-        
-        // keep only the trailing contiguous block of addresses with no transactions
-        while (i > 0 && ! [self.usedAddresses containsObject:rArray[i - 1]]) {
-            i--;
-        }
-        
-        if (i > 0) [rArray removeObjectsInRange:NSMakeRange(0, i)];
-        if (rArray.count >= gapLimit) return [rArray subarrayWithRange:NSMakeRange(0, gapLimit)];
+        unsigned n = (unsigned)self.mOrderedAddresses.count;
         
         while (rArray.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n];
@@ -119,7 +124,7 @@
     }
 }
 
-- (uint32_t)unusedIndex {
+- (uint32_t)firstUnusedIndex {
     
     uint32_t i = (uint32_t)self.mOrderedAddresses.count;
     
@@ -138,8 +143,8 @@
     return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
-- (NSUInteger)indexOfKnownAddress:(NSString*)address {
-    return [self.mOrderedAddresses indexOfObject:address];
+- (uint32_t)indexOfKnownAddress:(NSString*)address {
+    return (uint32_t)[self.mOrderedAddresses indexOfObject:address];
 }
 
 // gets a public key at an index

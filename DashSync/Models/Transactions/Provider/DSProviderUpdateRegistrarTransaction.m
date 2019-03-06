@@ -9,7 +9,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
-#import "NSString+Bitcoin.h"
+#import "NSString+Dash.h"
 #import "DSTransactionFactory.h"
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSProviderUpdateRegistrarTransactionEntity+CoreDataClass.h"
@@ -116,6 +116,11 @@
     self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
 }
 
+-(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+    if (!_providerRegistrationTransaction) self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+    return _providerRegistrationTransaction;
+}
+
 -(UInt256)payloadHash {
     return [self payloadDataForHash].SHA256_2;
 }
@@ -175,6 +180,18 @@
 {
     if (! uint256_is_zero(self.txHash)) return self.data.length;
     return [super size] + [NSMutableData sizeOfVarInt:self.payloadData.length] + ([self basePayloadData].length + MAX_ECDSA_SIGNATURE_SIZE);
+}
+
+-(NSString*)payoutAddress {
+    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+}
+
+-(NSString*)operatorAddress {
+    return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
+}
+
+-(NSString*)votingAddress {
+    return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
 }
 
 -(Class)entityClass {

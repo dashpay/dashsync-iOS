@@ -17,6 +17,7 @@
 @property (nonatomic,assign) uint16_t blockchainUserRegistrationTransactionVersion;
 @property (nonatomic,copy) NSString * username;
 @property (nonatomic,assign) UInt160 pubkeyHash;
+@property (nonatomic,readonly) NSString * pubkeyAddress;
 @property (nonatomic,strong) NSData * payloadSignature;
 @property (nonatomic,readonly) uint64_t topupAmount;
 

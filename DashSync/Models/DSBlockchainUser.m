@@ -22,6 +22,7 @@
 #import "DSPeerManager.h"
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSDerivationPathFactory.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -41,7 +42,7 @@
 -(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet {
     if (!(self = [super init])) return nil;
     self.username = username;
-    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,username];
+    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,wallet.chain.uniqueID,username];
     self.wallet = wallet;
     self.registrationTransactionHash = UINT256_ZERO;
     self.index = index;
@@ -51,11 +52,23 @@
 -(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastBlockchainUserTransactionHash:(UInt256)lastBlockchainUserTransactionHash {
     if (!(self = [super init])) return nil;
     self.username = username;
-    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,username];
+    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,wallet.chain.uniqueID,username];
     self.wallet = wallet;
     self.registrationTransactionHash = registrationTransactionHash;
     self.lastBlockchainUserTransactionHash = lastBlockchainUserTransactionHash; //except topup and close, including state transitions
     self.index = index;
+    return self;
+}
+
+-(instancetype)initWithBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
+    if (!(self = [super init])) return nil;
+    self.username = blockchainUserRegistrationTransaction.username;
+    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,blockchainUserRegistrationTransaction.chain.uniqueID,self.username];
+    uint32_t index = 0;
+    DSWallet * wallet = [blockchainUserRegistrationTransaction.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:&index];
+    self.wallet = wallet;
+    self.index = index;
+    self.registrationTransactionHash = blockchainUserRegistrationTransaction.txHash;
     return self;
 }
 

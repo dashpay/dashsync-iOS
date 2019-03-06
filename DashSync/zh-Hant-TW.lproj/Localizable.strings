@@ -66,7 +66,7 @@
 "choose passcode for %@" = "選擇 %@ 的驗證碼";
 
 /* No comment provided by engineer. */
-"confirm" = "confirm";
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "connect timeout" = "連接超時";
