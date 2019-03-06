@@ -107,6 +107,11 @@
     self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
 }
 
+-(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+    if (!_providerRegistrationTransaction) self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+    return _providerRegistrationTransaction;
+}
+
 -(UInt256)payloadHash {
     return [self payloadDataForHash].SHA256_2;
 }
@@ -162,6 +167,9 @@
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
 }
+
+
+
 
 - (size_t)size
 {

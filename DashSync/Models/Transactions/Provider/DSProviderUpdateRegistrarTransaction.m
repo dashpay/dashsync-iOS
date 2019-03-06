@@ -116,6 +116,11 @@
     self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
 }
 
+-(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+    if (!_providerRegistrationTransaction) self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+    return _providerRegistrationTransaction;
+}
+
 -(UInt256)payloadHash {
     return [self payloadDataForHash].SHA256_2;
 }
