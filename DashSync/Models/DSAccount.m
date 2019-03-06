@@ -225,8 +225,8 @@
         }
     } else {
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
-            [derivationPath registerAddressesWithGapLimit:100 internal:YES];
-            [derivationPath registerAddressesWithGapLimit:100 internal:NO];
+            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
+            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
         }
     }
     if (!self.isViewOnlyAccount) {

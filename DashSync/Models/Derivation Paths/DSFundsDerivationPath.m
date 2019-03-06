@@ -70,8 +70,8 @@
             }
         }];
         self.addressesLoaded = TRUE;
-        [self registerAddressesWithGapLimit:100 internal:YES];
-        [self registerAddressesWithGapLimit:100 internal:NO];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
+        [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
         
     }
 }
@@ -101,10 +101,28 @@
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
     
+    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
+    NSUInteger i = a.count;
+    
+    // keep only the trailing contiguous block of addresses with no transactions
+    while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
+        i--;
+    }
+    
+    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
+    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+    
+    if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
+        [self receiveAddress];
+        [self changeAddress];
+    }
+    
     @synchronized(self) {
+        //It seems weird to repeat this, but it's correct because of the original call receive address and change address
+        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
+        i = a.count;
         
-        NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
-        NSUInteger i = a.count;
+        unsigned n = (unsigned)i;
         
         // keep only the trailing contiguous block of addresses with no transactions
         while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
@@ -113,13 +131,6 @@
         
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-        
-        if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-            [self receiveAddress];
-            [self changeAddress];
-        }
-        
-        uint32_t n = (internal) ? (uint32_t)self.internalAddresses.count : (uint32_t)self.externalAddresses.count;
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];

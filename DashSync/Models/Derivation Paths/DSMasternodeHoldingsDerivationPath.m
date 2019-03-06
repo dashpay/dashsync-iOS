@@ -44,7 +44,7 @@
         return;
     }
     
-    uint32_t index = (uint32_t)[self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
+    uint32_t index = [self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.wallet.seedRequestBlock(authprompt, MASTERNODE_COST,^void (NSData * _Nullable seed, BOOL cancelled) {
