@@ -37,6 +37,14 @@
     return self;
 }
 
+-(void)reloadAddresses {
+    self.internalAddresses = [NSMutableArray array];
+    self.externalAddresses = [NSMutableArray array];
+    [self.mUsedAddresses removeAllObjects];
+    self.addressesLoaded = NO;
+    [self loadAddresses];
+}
+
 -(void)loadAddresses {
     if (!self.addressesLoaded) {
         [self.moc performBlockAndWait:^{
@@ -92,27 +100,11 @@
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
-    NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
-    NSUInteger i = a.count;
-    
-    // keep only the trailing contiguous block of addresses with no transactions
-    while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
-        i--;
-    }
-    
-    if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
-    if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
-    
-    if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
-        [self receiveAddress];
-        [self changeAddress];
-    }
     
     @synchronized(self) {
-        [a setArray:(internal) ? self.internalAddresses : self.externalAddresses];
-        i = a.count;
         
-        unsigned n = (unsigned)i;
+        NSMutableArray *a = [NSMutableArray arrayWithArray:(internal) ? self.internalAddresses : self.externalAddresses];
+        NSUInteger i = a.count;
         
         // keep only the trailing contiguous block of addresses with no transactions
         while (i > 0 && ! [self.usedAddresses containsObject:a[i - 1]]) {
@@ -121,6 +113,13 @@
         
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
+        
+        if (gapLimit > 1) { // get receiveAddress and changeAddress first to avoid blocking
+            [self receiveAddress];
+            [self changeAddress];
+        }
+        
+        uint32_t n = (internal) ? (uint32_t)self.internalAddresses.count : (uint32_t)self.externalAddresses.count;
         
         while (a.count < gapLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n internal:internal];
@@ -212,6 +211,18 @@
 - (NSArray *)allChangeAddresses
 {
     return [self.internalAddresses copy];
+}
+
+-(NSArray *)usedReceiveAddresses {
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.externalAddresses];
+    [intersection intersectSet:self.mUsedAddresses];
+    return [intersection allObjects];
+}
+
+-(NSArray *)usedChangeAddresses {
+    NSMutableSet *intersection = [NSMutableSet setWithArray:self.internalAddresses];
+    [intersection intersectSet:self.mUsedAddresses];
+    return [intersection allObjects];
 }
 
 - (NSData *)publicKeyDataAtIndex:(uint32_t)n internal:(BOOL)internal

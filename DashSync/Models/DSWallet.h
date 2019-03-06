@@ -168,6 +168,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 //This removes all wallet based information from the wallet, used when deletion of wallet is wanted
 - (void)wipeWalletInfo;
 
+//Recreate derivation paths and addresses
+-(void)reloadDerivationPaths;
+
 -(void)unregisterBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
 -(void)addBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;
 -(void)registerBlockchainUser:(DSBlockchainUser* _Nonnull)blockchainUser;

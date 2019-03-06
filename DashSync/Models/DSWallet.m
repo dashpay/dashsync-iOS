@@ -628,6 +628,21 @@
     return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
 }
 
+-(void)reloadDerivationPaths {
+    for (DSAccount * account in self.accounts) {
+        for (DSDerivationPath * derivationPath in account.derivationPaths) {
+            [derivationPath reloadAddresses];
+        }
+    }
+    for (DSDerivationPath * derivationPath in self.specializedDerivationPaths) {
+        [derivationPath loadAddresses];
+    }
+}
+
+-(NSArray*)specializedDerivationPaths {
+    return [[DSDerivationPathFactory sharedInstance] loadedSpecializedDerivationPathsForWallet:self];
+}
+
 // MARK: - Wiping
 
 - (void)wipeBlockchainInfo {

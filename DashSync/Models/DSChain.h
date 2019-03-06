@@ -180,6 +180,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 -(void)saveBlocks;
 -(void)wipeWalletsAndDerivatives;
+-(void)reloadDerivationPaths;
 -(void)clearOrphans;
 -(void)setLastBlockHeightForRescan;
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;

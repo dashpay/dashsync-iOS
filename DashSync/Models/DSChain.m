@@ -1129,6 +1129,12 @@ static dispatch_once_t devnetToken = 0;
     return [self.mWallets copy];
 }
 
+-(void)reloadDerivationPaths {
+    for (DSWallet * wallet in self.mWallets) {
+        [wallet reloadDerivationPaths];
+    }
+}
+
 // This is a time interval since 1970
 -(NSTimeInterval)earliestWalletCreationTime {
     if (![self.wallets count]) return BIP39_CREATION_TIME;

@@ -31,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray * allChangeAddresses;
 
+// used external addresses
+@property (nonatomic, readonly) NSArray * usedReceiveAddresses;
+
+// used internal addresses
+@property (nonatomic, readonly) NSArray * usedChangeAddresses;
+
 + (instancetype)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
 + (instancetype)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
