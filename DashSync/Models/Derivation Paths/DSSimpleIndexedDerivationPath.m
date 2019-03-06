@@ -51,6 +51,13 @@
     }
 }
 
+-(void)reloadAddresses {
+    [self.mAllAddresses removeAllObjects];
+    [self.mUsedAddresses removeAllObjects];
+    self.addressesLoaded = NO;
+    [self loadAddresses];
+}
+
 // MARK: - Derivation Path Addresses
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {

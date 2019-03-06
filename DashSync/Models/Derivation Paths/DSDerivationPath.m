@@ -328,6 +328,10 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     
 }
 
+-(void)reloadAddresses {
+
+}
+
 // MARK: - Derivation Path Information
 
 -(NSNumber*)depth {
