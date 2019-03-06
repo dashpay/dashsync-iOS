@@ -1791,50 +1791,6 @@ static dispatch_once_t devnetToken = 0;
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
 }
 
-//Does the chain mat
--(BOOL)transactionHasLocalReferences:(DSTransaction*)transaction {
-    if ([self accountContainingTransaction:transaction]) return TRUE;
-    
-    //PROVIDERS
-    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
-        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-        if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil]) return TRUE;
-        if ([self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
-        if ([self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil]) return TRUE;
-        if ([self walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:nil]) return TRUE;
-        if ([self accountContainingAddress:providerRegistrationTransaction.payoutAddress]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
-        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-        if ([self transactionForHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash]) return TRUE;
-        if ([self accountContainingAddress:providerUpdateServiceTransaction.payoutAddress]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
-        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
-        if ([self walletHavingProviderVotingAuthenticationHash:providerUpdateRegistrarTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
-        if ([self walletHavingProviderOperatorAuthenticationKey:providerUpdateRegistrarTransaction.operatorKey foundAtIndex:nil]) return TRUE;
-        if ([self transactionForHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash]) return TRUE;
-        if ([self accountContainingAddress:providerUpdateRegistrarTransaction.payoutAddress]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
-        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
-        if ([self transactionForHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash]) return TRUE;
-        
-    //BLOCKCHAIN USERS
-    } else if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-        DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
-        if ([self walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
-        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction *)transaction;
-        if ([self walletHavingBlockchainUserAuthenticationHash:blockchainUserResetTransaction.replacementPublicKeyHash foundAtIndex:nil]) return TRUE;
-        if ([self transactionForHash:blockchainUserResetTransaction.registrationTransactionHash]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
-        DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction *)transaction;
-        if ([self transactionForHash:blockchainUserCloseTransaction.registrationTransactionHash]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
-        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
-        if ([self transactionForHash:blockchainUserTopupTransaction.registrationTransactionHash]) return TRUE;
-    }
-    return FALSE;
-}
-
 // MARK: - Registering special transactions
 
 -(void)registerProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
@@ -1866,6 +1822,9 @@ static dispatch_once_t devnetToken = 0;
     
     if (holdingWallet) {
         DSMasternodeHoldingsDerivationPath * holdingDerivationPath = [[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:holdingWallet];
+        if (!providerRegistrationTransaction.holdingAddress) {
+            providerRegistrationTransaction.holdingAddress;
+        }
         [holdingDerivationPath registerTransactionAddress:providerRegistrationTransaction.holdingAddress];
     }
 }
@@ -1980,6 +1939,52 @@ static dispatch_once_t devnetToken = 0;
         DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
         [self registerBlockchainUserTopupTransaction:blockchainUserTopupTransaction];
     }
+}
+
+// MARK: - Special Transactions
+
+//Does the chain mat
+-(BOOL)transactionHasLocalReferences:(DSTransaction*)transaction {
+    if ([self accountContainingTransaction:transaction]) return TRUE;
+    
+    //PROVIDERS
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        if ([self walletHavingProviderOwnerAuthenticationHash:providerRegistrationTransaction.ownerKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self walletHavingProviderVotingAuthenticationHash:providerRegistrationTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self walletHavingProviderOperatorAuthenticationKey:providerRegistrationTransaction.operatorKey foundAtIndex:nil]) return TRUE;
+        if ([self walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:providerRegistrationTransaction foundAtIndex:nil]) return TRUE;
+        if ([self accountContainingAddress:providerRegistrationTransaction.payoutAddress]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+        if ([self transactionForHash:providerUpdateServiceTransaction.providerRegistrationTransactionHash]) return TRUE;
+        if ([self accountContainingAddress:providerUpdateServiceTransaction.payoutAddress]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+        if ([self walletHavingProviderVotingAuthenticationHash:providerUpdateRegistrarTransaction.votingKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self walletHavingProviderOperatorAuthenticationKey:providerUpdateRegistrarTransaction.operatorKey foundAtIndex:nil]) return TRUE;
+        if ([self transactionForHash:providerUpdateRegistrarTransaction.providerRegistrationTransactionHash]) return TRUE;
+        if ([self accountContainingAddress:providerUpdateRegistrarTransaction.payoutAddress]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
+        if ([self transactionForHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash]) return TRUE;
+        
+        //BLOCKCHAIN USERS
+    } else if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+        DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
+        if ([self walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction *)transaction;
+        if ([self walletHavingBlockchainUserAuthenticationHash:blockchainUserResetTransaction.replacementPublicKeyHash foundAtIndex:nil]) return TRUE;
+        if ([self transactionForHash:blockchainUserResetTransaction.registrationTransactionHash]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
+        DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction *)transaction;
+        if ([self transactionForHash:blockchainUserCloseTransaction.registrationTransactionHash]) return TRUE;
+    } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
+        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
+        if ([self transactionForHash:blockchainUserTopupTransaction.registrationTransactionHash]) return TRUE;
+    }
+    return FALSE;
 }
 
 -(void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction {

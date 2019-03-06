@@ -34,6 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 // get private keys to an index
 - (NSArray *)privateKeysToIndex:(NSUInteger)index fromSeed:(NSData *)seed;
 
+// update addresses
+- (NSArray *)registerAddressesWithDefaultGapLimit;
+- (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit;
+
 @end
 
 NS_ASSUME_NONNULL_END

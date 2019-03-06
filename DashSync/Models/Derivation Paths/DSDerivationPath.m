@@ -308,7 +308,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 }
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
-    [self.mUsedAddresses addObject:address];
+    if ([self containsAddress:address]) {
+        if (![self.mUsedAddresses containsObject:address]) {
+            [self.mUsedAddresses addObject:address];
+        }
+    }
 }
 
 -(NSSet*)allAddresses {

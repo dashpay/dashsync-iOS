@@ -32,6 +32,10 @@
     return (addr) ? addr : self.mOrderedAddresses.lastObject;
 }
 
+-(NSUInteger)defaultGapLimit {
+    return 5;
+}
+
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {

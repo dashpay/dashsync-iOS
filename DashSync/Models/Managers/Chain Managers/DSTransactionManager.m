@@ -748,7 +748,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         if (![account registerTransaction:transaction]) return;
     }
     
-    if ([transaction isMemberOfClass:[DSTransaction class]]) {
+    if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
         [self.chain registerSpecialTransaction:transaction];
         

@@ -53,6 +53,21 @@
 
 // MARK: - Derivation Path Addresses
 
+- (void)registerTransactionAddress:(NSString * _Nonnull)address {
+    if (![self.mUsedAddresses containsObject:address]) {
+        [self.mUsedAddresses addObject:address];
+        [self registerAddressesWithDefaultGapLimit];
+    }
+}
+
+-(NSUInteger)defaultGapLimit {
+    return 10;
+}
+
+- (NSArray *)registerAddressesWithDefaultGapLimit {
+    return [self registerAddressesWithGapLimit:[self defaultGapLimit]];
+}
+
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain.

@@ -209,7 +209,7 @@
 }
 
 -(NSString*)holdingAddress {
-    if (dsutxo_is_zero(self.collateralOutpoint) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
+    if (uint256_is_zero(self.collateralOutpoint.hash) && [self.outputAmounts containsObject:@(MASTERNODE_COST)]) {
         NSUInteger index = [self.outputAmounts indexOfObject:@(MASTERNODE_COST)];
         return [[self outputAddresses] objectAtIndex:index];
     } else {

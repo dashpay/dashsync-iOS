@@ -1063,23 +1063,15 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self.transactions insertObject:transaction atIndex:0];
     for (NSString * address in transaction.inputAddresses) {
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
-            if ([derivationPath containsAddress:address]) {
-                [derivationPath registerTransactionAddress:address];
-            }
+            [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
     }
     for (NSString * address in transaction.outputAddresses) {
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
-            if ([derivationPath containsAddress:address]) {
-                [derivationPath registerTransactionAddress:address];
-            }
+            [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
     }
     [self updateBalance];
-    
-    // when a wallet address is used in a transaction, generate a new address to replace it
-    [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-    [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
     
     [transaction saveInitial];
     
