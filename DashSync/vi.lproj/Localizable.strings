@@ -66,7 +66,7 @@
 "choose passcode for %@" = "hãy chọn mật khẩu cho %@";
 
 /* No comment provided by engineer. */
-"confirm" = "xác thực";
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "connect timeout" = "hết thời hạn kết nối";

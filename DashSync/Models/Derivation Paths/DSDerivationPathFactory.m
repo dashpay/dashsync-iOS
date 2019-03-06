@@ -123,36 +123,67 @@
     return [self.blockchainUsersDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (NSArray<DSDerivationPath*>*)specializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet*)wallet {
+- (NSArray<DSDerivationPath*>*)loadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
+    NSMutableArray * mArray = [NSMutableArray array];
+    [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:wallet]];
+    [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet]];
+    [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet]];
+    [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:wallet]];
+    if (wallet.chain.isDevnetAny) {
+        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:wallet]];
+    }
+    return mArray;
+}
+
+- (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsNeedingExtendedPublicKeyForWallet:(DSWallet*)wallet {
     NSMutableArray * mArray = [NSMutableArray array];
     
+    for (DSDerivationPath * derivationPath in [self unloadedSpecializedDerivationPathsForWallet:wallet]) {
+        if (![derivationPath hasExtendedPublicKey]) {
+            [mArray addObject:derivationPath];
+        }
+    }
+    return [mArray copy];
+}
+
+- (NSArray<DSDerivationPath*>*)unloadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
+    NSMutableArray * mArray = [NSMutableArray array];
     //Masternode Owner
     DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForChain:wallet.chain];
     providerOwnerKeysDerivationPath.wallet = wallet;
-    if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
-        [mArray addObject:providerOwnerKeysDerivationPath];
-    }
+    [mArray addObject:providerOwnerKeysDerivationPath];
+    
     
     //Masternode Operator
     DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForChain:wallet.chain];
     providerOperatorKeysDerivationPath.wallet = wallet;
-    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
-        [mArray addObject:providerOperatorKeysDerivationPath];
-    }
+    
+    [mArray addObject:providerOperatorKeysDerivationPath];
+    
     
     //Masternode Voting
     DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForChain:wallet.chain];
     providerVotingKeysDerivationPath.wallet = wallet;
-    if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
-        [mArray addObject:providerVotingKeysDerivationPath];
-    }
+    
+    [mArray addObject:providerVotingKeysDerivationPath];
+    
     
     //Masternode Holding
     DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForChain:wallet.chain];
     providerFundsDerivationPath.wallet = wallet;
-    if (!providerFundsDerivationPath.hasExtendedPublicKey) {
-        [mArray addObject:providerFundsDerivationPath];
+    
+    [mArray addObject:providerFundsDerivationPath];
+    
+    
+    if (wallet.chain.isDevnetAny) {
+        //Blockchain Users
+        DSAuthenticationKeysDerivationPath * blockchainUsersDerivationPath = [DSAuthenticationKeysDerivationPath blockchainUsersKeysDerivationPathForChain:wallet.chain];
+        blockchainUsersDerivationPath.wallet = wallet;
+        
+        [mArray addObject:blockchainUsersDerivationPath];
+        
     }
+    
     return [mArray copy];
 }
 

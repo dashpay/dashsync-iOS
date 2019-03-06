@@ -144,6 +144,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) uint32_t blockchainUsersCount;
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 @property (nonatomic, readonly) uint64_t ixPreviousConfirmationsNeeded;
+@property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
 
 // outputs below this amount are uneconomical due to fees
 @property (nonatomic, readonly) uint64_t minOutputAmount;
@@ -179,6 +180,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(BOOL)addBlock:(DSMerkleBlock *)block fromPeer:(DSPeer*)peer;
 -(void)saveBlocks;
 -(void)wipeWalletsAndDerivatives;
+-(void)reloadDerivationPaths;
 -(void)clearOrphans;
 -(void)setLastBlockHeightForRescan;
 -(void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
@@ -198,6 +200,9 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 // returns an account to which the given transaction is associated with (even if it hasn't been registered), no account if the transaction is not associated with the wallet
 - (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction *)transaction;
+
+// returns an account to which the given address is contained in a derivation path
+- (DSAccount* _Nullable)accountContainingAddress:(NSString *)address;
 
 // returns an account to which the given transaction hash is associated with, no account if the transaction hash is not associated with the wallet
 - (DSAccount * _Nullable)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction * _Nullable * _Nullable)transaction wallet:(DSWallet * _Nullable * _Nullable)wallet;
@@ -230,7 +235,11 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
 
+- (DSWallet* _Nullable)walletHavingBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
+
+- (void)registerSpecialTransaction:(DSTransaction*)transaction;
 
 - (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 /**

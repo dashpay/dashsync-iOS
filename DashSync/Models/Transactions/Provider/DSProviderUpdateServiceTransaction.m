@@ -18,6 +18,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSTransactionManager.h"
 #import "DSLocalMasternode.h"
+#import "NSString+Dash.h"
 
 @interface DSProviderUpdateServiceTransaction()
 
@@ -106,6 +107,11 @@
     self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
 }
 
+-(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+    if (!_providerRegistrationTransaction) self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+    return _providerRegistrationTransaction;
+}
+
 -(UInt256)payloadHash {
     return [self payloadDataForHash].SHA256_2;
 }
@@ -121,6 +127,10 @@
 
 -(void)signPayloadWithKey:(DSBLSKey*)privateKey {
     self.payloadSignature = [NSData dataWithUInt768:[privateKey signData:[self payloadDataForHash]]];
+}
+
+-(NSString*)payoutAddress {
+    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
 }
 
 -(NSData*)basePayloadData {
@@ -157,6 +167,9 @@
     if (subscriptIndex != NSNotFound) [data appendUInt32:SIGHASH_ALL];
     return data;
 }
+
+
+
 
 - (size_t)size
 {

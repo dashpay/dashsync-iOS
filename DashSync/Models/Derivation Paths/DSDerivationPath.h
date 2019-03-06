@@ -113,6 +113,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // the reference of type of derivation path
 @property (nonatomic, readonly) DSDerivationPathReference reference;
 
+// the reference of type of derivation path
+@property (nonatomic, readonly) NSString * referenceName;
+
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
@@ -155,7 +158,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 
-
++ (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
 + (NSString * _Nullable)authPrivateKeyFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
@@ -177,6 +180,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 //this loads the derivation path once it is set to an account that has a wallet;
 -(void)loadAddresses;
+
+-(void)reloadAddresses;
 
 -(BOOL)isDerivationPathEqual:(id)object;
 

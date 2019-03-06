@@ -70,7 +70,7 @@
     [fetchRequest setFetchBatchSize:20];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"height" ascending:YES];
+    NSSortDescriptor *heightSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"height" ascending:NO];
     NSArray *sortDescriptors = @[heightSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];

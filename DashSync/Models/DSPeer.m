@@ -630,6 +630,18 @@
 
 }
 
+-(void)sendGetdataMessageForTxHash:(UInt256)txHash {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
+    NSMutableData *msg = [NSMutableData data];
+    [msg appendVarInt:1];
+    [msg appendUInt32:DSInvType_Tx];
+    [msg appendUInt256:txHash];
+#if MESSAGE_LOGGING
+    DSDLog(@"%@:%u sending getdata for transaction %@", self.host, self.port,uint256_hex(txHash));
+#endif
+    [self sendMessage:msg type:MSG_GETDATA];
+}
+
 - (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes blockHashes:(NSArray *)blockHashes
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;

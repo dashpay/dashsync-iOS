@@ -544,6 +544,14 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     }
 }
 
+// MARK: - TransactionFetching
+
+- (void)fetchTransactionHavingHash:(UInt256)transactionHash {
+    for (DSPeer *peer in self.peerManager.connectedPeers) {
+        [peer sendGetdataMessageForTxHash:transactionHash];
+    }
+}
+
 // MARK: - Bloom Filters
 
 //This returns the bloom filter for the peer, currently the filter is only tweaked per peer, and we only cache the filter of the download peer.
@@ -740,7 +748,12 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         if (![account registerTransaction:transaction]) return;
     }
     
-    [self.chain triggerUpdatesForLocalReferences:transaction];
+    if (![transaction isMemberOfClass:[DSTransaction class]]) {
+        //it's a special transaction
+        [self.chain registerSpecialTransaction:transaction];
+        
+        [self.chain triggerUpdatesForLocalReferences:transaction];
+    }
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
     
@@ -958,7 +971,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 
 - (void)peer:(DSPeer *)peer relayedBlock:(DSMerkleBlock *)block
 {
-    DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
+    //DSDLog(@"relayed block %@ total transactions %d %u",uint256_hex(block.blockHash), block.totalTransactions,block.timestamp);
     // ignore block headers that are newer than 2 days before earliestKeyTime (headers have 0 totalTransactions)
     if (block.totalTransactions == 0 &&
         block.timestamp + DAY_TIME_INTERVAL*2 > self.chain.earliestWalletCreationTime) {

@@ -8,12 +8,14 @@
 
 #import <UIKit/UIKit.h>
 #import "DSAccountChooserViewController.h"
+#import "DSWalletChooserViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSUpdateMasternodeRegistrarViewController : UITableViewController <DSAccountChooserDelegate>
+@interface DSUpdateMasternodeRegistrarViewController : UITableViewController <DSAccountChooserDelegate,DSWalletChooserDelegate>
 
 @property (nonatomic,strong) DSLocalMasternode * localMasternode;
+@property (nonatomic,strong) DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry;
 
 @end
 

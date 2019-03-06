@@ -66,7 +66,7 @@
 "choose passcode for %@" = "เลือกรหัสผ่านสำหรับ %@";
 
 /* No comment provided by engineer. */
-"confirm" = "ยืนยัน";
+"Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
 "connect timeout" = "หมดเวลาเชื่อมต่อ";

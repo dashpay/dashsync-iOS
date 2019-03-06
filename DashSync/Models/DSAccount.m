@@ -27,13 +27,17 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSECDSAKey.h"
-#import "DSAddressEntity+CoreDataClass.h"
 #import "DSChain.h"
 
 #import "DSTransaction.h"
+#import "DSProviderRegistrationTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
+#import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateServiceTransaction.h"
 #import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
+#import "DSBlockchainUserTopupTransaction.h"
+#import "DSBlockchainUserCloseTransaction.h"
 
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
@@ -79,7 +83,7 @@
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
 
-@property (nonatomic, strong) NSManagedObjectContext * moc;
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 // the total amount spent from the account (excluding change)
 @property (nonatomic, readonly) uint64_t totalSent;
@@ -102,8 +106,8 @@
 
 // MARK: - Initiation
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
-    return [[self alloc] initWithDerivationPaths:derivationPaths];
++(DSAccount*)accountWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context {
+    return [[self alloc] initWithDerivationPaths:derivationPaths inContext:context];
 }
 
 -(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
@@ -135,7 +139,7 @@
     }
 }
 
--(instancetype)initWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
+-(instancetype)initWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context {
     if (! (self = [super init])) return nil;
     NSAssert([derivationPaths count], @"derivationPaths can not be empty");
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
@@ -145,12 +149,12 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.moc = [NSManagedObject context];
+    self.managedObjectContext = context?context:[NSManagedObject context];
     self.isViewOnlyAccount = FALSE;
     return self;
 }
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
+-(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context  {
     if (! (self = [super init])) return nil;
     self.mDerivationPaths = [derivationPaths mutableCopy];
     for (DSFundsDerivationPath * derivationPath in derivationPaths) {
@@ -158,7 +162,7 @@
     }
     self.transactions = [NSMutableOrderedSet orderedSet];
     self.allTx = [NSMutableDictionary dictionary];
-    self.moc = [NSManagedObject context];
+    self.managedObjectContext = context?context:[NSManagedObject context];
     self.isViewOnlyAccount = TRUE;
     
     return self;
@@ -174,12 +178,12 @@
 
 -(void)loadTransactions {
     if (_wallet.isTransient) return;
-    [self.moc performBlockAndWait:^{
-        [DSTransactionEntity setContext:self.moc];
-        [DSAccountEntity setContext:self.moc];
-        [DSTxInputEntity setContext:self.moc];
-        [DSTxOutputEntity setContext:self.moc];
-        [DSDerivationPathEntity setContext:self.moc];
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSTransactionEntity setContext:self.managedObjectContext];
+        [DSAccountEntity setContext:self.managedObjectContext];
+        [DSTxInputEntity setContext:self.managedObjectContext];
+        [DSTxOutputEntity setContext:self.managedObjectContext];
+        [DSDerivationPathEntity setContext:self.managedObjectContext];
         if ([DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity] > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
             [DSTxInputEntity objectsMatching:@"transaction.transactionHash.chain == %@",self.wallet.chain.chainEntity];
@@ -221,8 +225,8 @@
         }
     } else {
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
-            [derivationPath registerAddressesWithGapLimit:100 internal:YES];
-            [derivationPath registerAddressesWithGapLimit:100 internal:NO];
+            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:YES];
+            [derivationPath registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INITIAL internal:NO];
         }
     }
     if (!self.isViewOnlyAccount) {
@@ -633,70 +637,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return self.transactions.array;
 }
 
-// MARK: == Blockchain Users Transaction Retrieval
-
-- (DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSTransaction * transaction in self.transactions) {
-        if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-            DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)transaction;
-            if (uint160_eq(blockchainUserRegistrationTransaction.pubkeyHash, publicKeyHash)) {
-                return (DSBlockchainUserRegistrationTransaction *)transaction;
-            }
-        }
-    }
-    return nil;
-}
-
-- (DSBlockchainUserResetTransaction*)blockchainUserResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSTransaction * transaction in self.transactions) {
-        if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
-            DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
-            if (uint160_eq(blockchainUserResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
-                return (DSBlockchainUserResetTransaction *)transaction;
-            }
-        }
-    }
-    return nil;
-}
-
-- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
-    NSMutableArray * subscriptionTransactions = [NSMutableArray array];
-    for (DSTransaction * transaction in self.transactions) {
-        if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
-            DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction*)transaction;
-            if (uint256_eq(blockchainUserTopupTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
-                [subscriptionTransactions addObject:transaction];
-            }
-        } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
-            DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
-            if (uint256_eq(blockchainUserResetTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
-                [subscriptionTransactions addObject:transaction];
-            }
-        }
-    }
-    return [subscriptionTransactions copy];
-}
-
--(UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
-    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self subscriptionTransactionsForRegistrationTransactionHash:blockchainUserRegistrationTransactionHash]];
-    UInt256 lastSubscriptionTransactionHash = blockchainUserRegistrationTransactionHash;
-    while ([subscriptionTransactions count]) {
-        BOOL found = FALSE;
-        for (DSTransaction * transaction in subscriptionTransactions) {
-            if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
-                DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
-                if (uint256_eq(blockchainUserResetTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
-                    lastSubscriptionTransactionHash = blockchainUserResetTransaction.txHash;
-                    found = TRUE;
-                    [subscriptionTransactions removeObject:blockchainUserResetTransaction];
-                }
-            }
-        }
-        if (!found) break;
-    }
-    return lastSubscriptionTransactionHash;
-}
-
 // MARK: = Existence
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
@@ -711,6 +651,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
         
         if (n < tx.outputAddresses.count && [self containsAddress:tx.outputAddresses[n]]) return YES;
+    }
+    
+    if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+        if ([self containsAddress:providerRegistrationTransaction.payoutAddress]) return YES;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
+        DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
+        if ([self containsAddress:providerUpdateServiceTransaction.payoutAddress]) return YES;
+    } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
+        if ([self containsAddress:providerUpdateRegistrarTransaction.payoutAddress]) return YES;
     }
     
     return NO;
@@ -906,7 +857,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self updateBalance];
         }
         
-        [self.moc performBlockAndWait:^{
+        [self.managedObjectContext performBlockAndWait:^{
             @autoreleasepool {
                 NSMutableSet *entities = [NSMutableSet set];
                 
@@ -929,7 +880,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
                 }
                 NSError * error = nil;
-                [self.moc save:&error];
+                [self.managedObjectContext save:&error];
                 if (error) {
                     DSDLog(@"Issue Saving DB when setting Block Height");
                 }
@@ -967,7 +918,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     if (transaction) [self.transactions removeObject:transaction];
     [self updateBalance];
     
-    [self.moc performBlock:^{ // remove transaction from core data
+    [self.managedObjectContext performBlock:^{ // remove transaction from core data
         [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
                                                 [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
     }];
@@ -1112,37 +1063,17 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [self.transactions insertObject:transaction atIndex:0];
     for (NSString * address in transaction.inputAddresses) {
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
-            if ([derivationPath containsAddress:address]) {
-                [derivationPath registerTransactionAddress:address];
-            }
+            [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
     }
     for (NSString * address in transaction.outputAddresses) {
         for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
-            if ([derivationPath containsAddress:address]) {
-                [derivationPath registerTransactionAddress:address];
-            }
+            [derivationPath registerTransactionAddress:address]; //only will register if derivation path contains address
         }
     }
     [self updateBalance];
     
-    // when a wallet address is used in a transaction, generate a new address to replace it
-    [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL internal:NO];
-    [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
-    
-    [self.moc performBlockAndWait:^{ // add the transaction to core data
-        [DSChainEntity setContext:self.moc];
-        Class transactionEntityClass = [transaction entityClass];
-        [transactionEntityClass setContext:self.moc];
-        [DSTransactionHashEntity setContext:self.moc];
-        [DSAddressEntity setContext:self.moc];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
-            
-            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
-            [transactionEntity setAttributesFromTransaction:transaction];
-            [transactionEntityClass saveContext];
-        }
-    }];
+    [transaction saveInitial];
     
     return YES;
 }

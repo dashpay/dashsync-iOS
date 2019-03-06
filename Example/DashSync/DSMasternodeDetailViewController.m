@@ -20,9 +20,12 @@
 @interface DSMasternodeDetailViewController ()
 @property (strong, nonatomic) IBOutlet UILabel *locationLabel;
 @property (strong, nonatomic) IBOutlet UILabel *operatorKeyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *operatorPublicKeyLabel;
 @property (strong, nonatomic) IBOutlet UILabel *ownerKeyLabel;
 @property (strong, nonatomic) IBOutlet UILabel *votingKeyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *votingAddressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundsInHoldingLabel;
+@property (strong, nonatomic) IBOutlet UILabel *activeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *payToAddress;
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proRegTxLabel;
 @property (strong, nonatomic) IBOutlet BRCopyLabel *proUpRegTxLabel;
@@ -41,8 +44,11 @@
     self.locationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),self.simplifiedMasternodeEntry.port];
     self.ownerKeyLabel.text = self.localMasternode.ownerKeysWallet?@"SHOW":@"NO";
     self.operatorKeyLabel.text = self.localMasternode.operatorKeysWallet?@"SHOW":@"NO";
+    self.operatorPublicKeyLabel.text = uint384_hex(self.simplifiedMasternodeEntry.operatorPublicKey);
+    self.votingAddressLabel.text = self.simplifiedMasternodeEntry.votingAddress;
     self.votingKeyLabel.text = self.localMasternode.votingKeysWallet?@"SHOW":@"NO";
     self.fundsInHoldingLabel.text = self.localMasternode.holdingKeysWallet?@"YES":@"NO";
+    self.activeLabel.text = self.simplifiedMasternodeEntry.isValid?@"YES":@"NO";
     self.payToAddress.text = self.localMasternode.payoutAddress?self.localMasternode.payoutAddress:@"Unknown";
     self.proRegTxLabel.text = uint256_hex(self.localMasternode.providerRegistrationTransaction.txHash);
     self.proUpRegTxLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.localMasternode.providerUpdateRegistrarTransactions.count];
@@ -58,6 +64,7 @@
         UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
         DSUpdateMasternodeRegistrarViewController * updateMasternodeRegistrarViewController = (DSUpdateMasternodeRegistrarViewController*)navigationController.topViewController;
         updateMasternodeRegistrarViewController.localMasternode = self.localMasternode;
+        updateMasternodeRegistrarViewController.simplifiedMasternodeEntry = self.simplifiedMasternodeEntry;
     } else if ([segue.identifier isEqualToString:@"ReclaimMasternodeSegue"]) {
         UINavigationController * navigationController = (UINavigationController*)segue.destinationViewController;
         DSReclaimMasternodeViewController * reclaimMasternodeViewController = (DSReclaimMasternodeViewController*)navigationController.topViewController;
@@ -110,10 +117,52 @@
             
         }
             break;
-            
+        case 1: {
+            switch (indexPath.row) {
+                case 0: {
+                    if (!self.localMasternode) {
+                        [self claimSimplifiedMasternodeEntry];
+                    }
+                }
+                default:
+                    break;
+            }
+        }
         default:
             break;
     }
+}
+
+-(void)claimSimplifiedMasternodeEntry {
+    [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:[NSData dataWithUInt256: self.simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse.UInt256 onChain:self.simplifiedMasternodeEntry.chain completion:^(DSTransaction *transaction, NSError *error) {
+        if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
+            DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+            DSLocalMasternode * localMasternode = [self.simplifiedMasternodeEntry.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
+        }
+    }];
+    
+    
+//    [self.moc performBlockAndWait:^{ // add the transaction to core data
+//        [DSChainEntity setContext:self.moc];
+//        Class transactionEntityClass = [transaction entityClass];
+//        [transactionEntityClass setContext:self.moc];
+//        [DSTransactionHashEntity setContext:self.moc];
+//        [DSAddressEntity setContext:self.moc];
+//        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(txHash)] == 0) {
+//
+//            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
+//            [transactionEntity setAttributesFromTransaction:transaction];
+//            [transactionEntityClass saveContext];
+//        }
+//    }];
+
+//    uint32_t votingIndex;
+//    DSWallet * votingWallet = [self.simplifiedMasternodeEntry.chain walletHavingProviderVotingAuthenticationHash:self.simplifiedMasternodeEntry.keyIDVoting foundAtIndex:&votingIndex];
+//
+//    uint32_t operatorIndex;
+//    DSWallet * operatorWallet = [self.simplifiedMasternodeEntry.chain walletHavingProviderOperatorAuthenticationKey:self.simplifiedMasternodeEntry.operatorPublicKey foundAtIndex:&operatorIndex];
+//
+    
 }
 
 

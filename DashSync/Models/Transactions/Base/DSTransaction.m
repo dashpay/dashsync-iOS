@@ -47,6 +47,7 @@
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
 
 @end
@@ -94,6 +95,7 @@
     self.signatures = [NSMutableArray array];
     self.sequences = [NSMutableArray array];
     self.chain = chain;
+    self.saved = FALSE;
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     return self;
@@ -201,6 +203,7 @@
     
     if (! (self = [super init])) return nil;
     
+    self.saved = FALSE;
     self.chain = chain;
     _version = chain.transactionVersion;
     self.hashes = [NSMutableArray arrayWithArray:hashes];
@@ -734,8 +737,32 @@
 
 // MARK: - Persistence
 
--(void)save {
+-(DSTransactionEntity *)save {
     NSManagedObjectContext * context = [DSTransactionEntity context];
+    __block DSTransactionEntity * transactionEntity = nil;
+    [context performBlockAndWait:^{ // add the transaction to core data
+        [DSChainEntity setContext:context];
+        Class transactionEntityClass = [self entityClass];
+        [transactionEntityClass setContext:context];
+        [DSTransactionHashEntity setContext:context];
+        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+            
+            transactionEntity = [transactionEntityClass managedObject];
+            [transactionEntity setAttributesFromTransaction:self];
+            [transactionEntityClass saveContext];
+        } else {
+            transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
+            [transactionEntity setAttributesFromTransaction:self];
+            [transactionEntityClass saveContext];
+        }
+    }];
+    return transactionEntity;
+}
+
+-(BOOL)saveInitial {
+    if (self.saved) return nil;
+    NSManagedObjectContext * context = [DSTransactionEntity context];
+    __block BOOL didSave = FALSE;
     [context performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:context];
         Class transactionEntityClass = [self entityClass];
@@ -746,12 +773,11 @@
             DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
             [transactionEntity setAttributesFromTransaction:self];
             [transactionEntityClass saveContext];
-        } else {
-            DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
-            [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            didSave = TRUE;
         }
     }];
+    self.saved = didSave;
+    return didSave;
 }
 
 @end

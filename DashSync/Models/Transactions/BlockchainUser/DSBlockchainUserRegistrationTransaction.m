@@ -136,6 +136,10 @@
     return 0;
 }
 
+-(NSString*)pubkeyAddress {
+    return [[NSData dataWithUInt160:self.pubkeyHash] addressFromHash160DataForChain:self.chain];
+}
+
 - (size_t)size
 {
     return [super size] + [self payloadData].length;
