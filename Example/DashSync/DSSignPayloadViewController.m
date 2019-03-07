@@ -1,0 +1,71 @@
+//
+//  DSSignPayloadViewController.m
+//  DashSync_Example
+//
+//  Created by Sam Westrich on 3/8/19.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
+//
+
+#import "DSSignPayloadViewController.h"
+#import "DSProviderRegistrationTransaction.h"
+#import "NSMutableData+Dash.h"
+#import "NSData+Bitcoin.h"
+#import "NSString+Dash.h"
+#import "DSECDSAKey.h"
+#import "DSAccount.h"
+#import "DSWallet.h"
+
+@interface DSSignPayloadViewController ()
+@property (strong, nonatomic) IBOutlet UITextView *signatureMessageInputTextView;
+@property (strong, nonatomic) IBOutlet UITextView *signatureMessageResultTextView;
+@property (strong, nonatomic) IBOutlet UIButton *signButton;
+
+@end
+
+@implementation DSSignPayloadViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.signatureMessageInputTextView.text = [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.providerRegistrationTransaction.payoutAddress,self.providerRegistrationTransaction.operatorReward,self.providerRegistrationTransaction.ownerAddress,self.providerRegistrationTransaction.votingAddress,[NSData dataWithUInt256: self.providerRegistrationTransaction.payloadHash].hexString];
+    
+    if ([self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress]) {
+        self.signButton.enabled = TRUE;
+    } else {
+        self.signButton.enabled = FALSE;
+    }
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+- (IBAction)sign:(id)sender {
+    
+    DSAccount * account = [self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress];
+    
+    NSString * stringMessage = self.signatureMessageInputTextView.text;
+    NSMutableData * stringMessageData = [NSMutableData data];
+    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
+    [stringMessageData appendString:stringMessage];
+    UInt256 messageDigest = stringMessageData.SHA256_2;
+    
+    
+    DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:self.collateralAddress];
+    
+    NSIndexPath * indexPath = [derivationPath indexPathForAddress:self.collateralAddress];
+    
+    [account.wallet seedWithPrompt:@"Sign?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
+        if (seed && !cancelled) {
+            DSECDSAKey* key = (DSECDSAKey*)[derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
+            NSData * data = [key compactSign:messageDigest];
+            [self.delegate viewController:self didReturnSignature:data];
+        }
+    }];
+}
+
+@end

@@ -126,6 +126,7 @@
 		FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B64222F74B400393301 /* DSWalletDetailViewController.m */; };
 		FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B67222F784E00393301 /* DSSpecializedDerivationPathsViewController.m */; };
 		FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBF31B6B222FD94400393301 /* Wallets.storyboard */; };
+		FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -359,6 +360,8 @@
 		FBF31B66222F784E00393301 /* DSSpecializedDerivationPathsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSpecializedDerivationPathsViewController.h; sourceTree = "<group>"; };
 		FBF31B67222F784E00393301 /* DSSpecializedDerivationPathsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSpecializedDerivationPathsViewController.m; sourceTree = "<group>"; };
 		FBF31B6B222FD94400393301 /* Wallets.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Wallets.storyboard; sourceTree = "<group>"; };
+		FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSignPayloadViewController.h; sourceTree = "<group>"; };
+		FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSignPayloadViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -609,6 +612,8 @@
 				FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */,
 				FBAA7750222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.h */,
 				FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */,
+				FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */,
+				FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -1096,6 +1101,7 @@
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
+				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,

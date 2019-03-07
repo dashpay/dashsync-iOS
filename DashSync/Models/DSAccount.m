@@ -1330,7 +1330,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         return;
     }
     
-    [[DSInsightManager sharedInstance] utxosForAddresses:@[address]
+    [[DSInsightManager sharedInstance] utxosForAddresses:@[address] onChain:self.wallet.chain
                                               completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
                                                   DSTransaction *tx = [[DSTransaction alloc] initOnChain:self.wallet.chain];
                                                   uint64_t balance = 0, feeAmount = 0;

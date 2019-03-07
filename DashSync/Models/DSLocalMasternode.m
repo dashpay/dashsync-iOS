@@ -193,8 +193,11 @@
 
 // MARK: - Generating Transactions
 
+-(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount toAddress:(NSString*)payoutAddress completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion {
+    [self registrationTransactionFundedByAccount:fundingAccount toAddress:payoutAddress withCollateral:DSUTXO_ZERO completion:completion];
+}
 
--(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion {
+-(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount toAddress:(NSString*)payoutAddress withCollateral:(DSUTXO)collateral completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion {
     if (self.status != DSLocalMasternodeStatus_New) return;
     char s[INET6_ADDRSTRLEN];
     NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
@@ -221,19 +224,27 @@
             [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueID];
         }
         
-        NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
-        NSMutableData * scriptPayout = [NSMutableData data];
-        [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
+        NSMutableData *script = [NSMutableData data];
+        
+        [script appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
+        
         
         DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
         UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
         UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
-        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:fundingAccount.wallet.chain];
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
         
-        NSMutableData *script = [NSMutableData data];
-        
-        [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
-        [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO];
+
+        if (dsutxo_is_zero(collateral)) {
+            NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
+            NSMutableData * scriptPayout = [NSMutableData data];
+            [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:self.holdingKeysWallet.chain];
+            
+            [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[scriptPayout] withFee:YES isInstant:NO];
+            
+        } else {
+            [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[] toOutputScripts:@[] withFee:YES isInstant:NO];
+        }
         
         [providerRegistrationTransaction updateInputsHash];
         

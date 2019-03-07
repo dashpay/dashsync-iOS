@@ -100,7 +100,7 @@
 
 
 
--(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
+-(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_ProviderRegistration;
     self.version = SPECIAL_TX_VERSION;
@@ -108,7 +108,7 @@
     self.providerType = providerType;
     self.providerMode = providerMode;
     self.ipAddress = ipAddress;
-    self.collateralOutpoint = DSUTXO_ZERO;
+    self.collateralOutpoint = collateralOutpoint;
     self.port = port;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;

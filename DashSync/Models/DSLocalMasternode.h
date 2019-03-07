@@ -38,7 +38,9 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) NSArray <DSProviderUpdateRevocationTransaction*>* providerUpdateRevocationTransactions;
 @property(nonatomic,readonly) DSLocalMasternodeStatus status;
 
--(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
+-(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount toAddress:(NSString*)address completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
+
+-(void)registrationTransactionFundedByAccount:(DSAccount*)fundingAccount toAddress:(NSString*)address withCollateral:(DSUTXO)collateral completion:(void (^ _Nullable)(DSProviderRegistrationTransaction * providerRegistrationTransaction))completion;
 
 -(void)updateTransactionFundedByAccount:(DSAccount*)fundingAccount toIPAddress:(UInt128)ipAddress port:(uint32_t)port payoutAddress:(NSString* _Nullable)payoutAddress completion:(void (^ _Nullable)(DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction))completion;
 

@@ -18,6 +18,8 @@
 #define INSIGHT_URL          @"https://insight.dash.org/insight-api-dash"
 #define INSIGHT_FAILOVER_URL @"https://insight.dash.show/api"
 
+#define TESTNET_INSIGHT_URL @"https://testnet-insight.dashevo.org/insight-api-dash"
+
 @implementation DSInsightManager
 
 + (instancetype)sharedInstance
@@ -35,13 +37,15 @@
 // MARK: - query unspent outputs
 
 // queries insight.dash.org and calls the completion block with unspent outputs for the given addresses
-- (void)utxosForAddresses:(NSArray *)addresses
+- (void)utxosForAddresses:(NSArray *)addresses onChain:(DSChain*)chain 
                completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
-    [self utxos:INSIGHT_URL forAddresses:addresses
+    NSString * insightURL = [chain isMainnet]?INSIGHT_URL:TESTNET_INSIGHT_URL;
+    [self utxos:insightURL forAddresses:addresses
      completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
          if (error) {
-             [self utxos:INSIGHT_FAILOVER_URL forAddresses:addresses
+             NSString * insightBackupURL = [chain isMainnet]?INSIGHT_FAILOVER_URL:TESTNET_INSIGHT_URL;
+             [self utxos:insightBackupURL forAddresses:addresses
               completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *err) {
                   if (err) err = error;
                   completion(utxos, amounts, scripts, err);
@@ -52,9 +56,11 @@
 }
 
 -(void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion {
-    [self queryInsight:INSIGHT_URL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *error) {
+    NSString * insightURL = [chain isMainnet]?INSIGHT_URL:TESTNET_INSIGHT_URL;
+    [self queryInsight:insightURL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *error) {
          if (error) {
-              [self queryInsight:INSIGHT_FAILOVER_URL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *err) {
+             NSString * insightBackupURL = [chain isMainnet]?INSIGHT_FAILOVER_URL:TESTNET_INSIGHT_URL;
+              [self queryInsight:insightBackupURL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *err) {
                   if (err) err = error;
                   completion(transaction, err);
               }];

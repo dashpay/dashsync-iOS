@@ -9,10 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "DSAccountChooserViewController.h"
 #import "DSWalletChooserViewController.h"
+#import "DSSignPayloadViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSRegisterMasternodeViewController : UITableViewController <DSAccountChooserDelegate,DSWalletChooserDelegate>
+@interface DSRegisterMasternodeViewController : UITableViewController <DSAccountChooserDelegate,DSWalletChooserDelegate,DSSignPayloadDelegate>
 
 @property (nonatomic,strong) DSChain * chain;
 
