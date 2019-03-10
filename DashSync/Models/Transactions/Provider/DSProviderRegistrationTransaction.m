@@ -142,15 +142,13 @@
     return [self payloadDataForHash].SHA256_2;
 }
 
+-(NSString*)payloadCollateralString {
+    return [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.payoutAddress,self.operatorReward,self.ownerAddress,self.votingAddress,[NSData dataWithUInt256: self.payloadHash].hexString];
+}
+
 -(BOOL)checkPayloadSignature {
     DSECDSAKey * providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
     return uint160_eq([providerOwnerPublicKey hash160], self.ownerKeyHash);
-}
-
--(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
-    //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
-    self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }
 
 -(NSData*)basePayloadData {

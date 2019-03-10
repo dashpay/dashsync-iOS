@@ -26,7 +26,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.signatureMessageInputTextView.text = [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.providerRegistrationTransaction.payoutAddress,self.providerRegistrationTransaction.operatorReward,self.providerRegistrationTransaction.ownerAddress,self.providerRegistrationTransaction.votingAddress,[NSData dataWithUInt256: self.providerRegistrationTransaction.payloadHash].hexString];
+    self.signatureMessageInputTextView.text = self.providerRegistrationTransaction.payloadCollateralString;
     
     if ([self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress]) {
         self.signButton.enabled = TRUE;
@@ -48,10 +48,9 @@
     
     DSAccount * account = [self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress];
     
-    NSString * stringMessage = self.signatureMessageInputTextView.text;
     NSMutableData * stringMessageData = [NSMutableData data];
     [stringMessageData appendString:DASH_MESSAGE_MAGIC];
-    [stringMessageData appendString:stringMessage];
+    [stringMessageData appendString:self.providerRegistrationTransaction.payloadCollateralString];
     UInt256 messageDigest = stringMessageData.SHA256_2;
     
     

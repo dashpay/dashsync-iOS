@@ -127,6 +127,7 @@
 		FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B67222F784E00393301 /* DSSpecializedDerivationPathsViewController.m */; };
 		FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBF31B6B222FD94400393301 /* Wallets.storyboard */; };
 		FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */; };
+		FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -362,6 +363,7 @@
 		FBF31B6B222FD94400393301 /* Wallets.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Wallets.storyboard; sourceTree = "<group>"; };
 		FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSignPayloadViewController.h; sourceTree = "<group>"; };
 		FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSignPayloadViewController.m; sourceTree = "<group>"; };
+		FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderTransactionsTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -528,6 +530,7 @@
 				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
+				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1119,6 +1122,7 @@
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
+				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,

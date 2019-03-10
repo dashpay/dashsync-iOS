@@ -129,7 +129,7 @@ inline static int ceil_log2(int x)
 -(void)wipeMasternodeInfo {
     [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
     [self.localMasternodesDictionaryByRegistrationTransactionHash removeAllObjects];
-    self.baseBlockHash = UINT256_ZERO;
+    self.baseBlockHash = self.chain.masternodeBaseBlockHash;
 }
 
 -(void)loadSimplifiedMasternodeEntries:(NSUInteger)count {
@@ -379,7 +379,7 @@ inline static int ceil_log2(int x)
             //we will redownload the full list on next connection
             [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
             //no need to remove local masternodes
-            self.baseBlockHash = UINT256_ZERO;
+            self.baseBlockHash = self.chain.masternodeBaseBlockHash;
             
             NSManagedObjectContext * context = [NSManagedObject context];
             [context performBlockAndWait:^{

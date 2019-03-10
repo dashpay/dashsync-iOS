@@ -61,6 +61,7 @@
 #import "NSDate+Utils.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSCoinbaseTransaction.h"
+#import "DSTransactionFactory.h"
 
 #define LOG_BALANCE_UPDATE 0
 
@@ -752,6 +753,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if (! tx) continue;
         //for example the tx block height is 25, can only send after the chain block height is 31 for previous confirmations needed of 6
         if (isInstant && (tx.blockHeight >= (self.blockHeight - self.wallet.chain.ixPreviousConfirmationsNeeded))) continue;
+        
+        if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+            DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
+            if (dsutxo_eq(providerRegistrationTransaction.collateralOutpoint,o)) continue; //don't spend the collateral
+        }
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         
         if (transaction.size + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large

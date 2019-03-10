@@ -31,6 +31,7 @@
 @property (nonatomic,readonly) NSString * holdingAddress;
 @property (nonatomic,assign) UInt256 inputsHash;
 @property (nonatomic,strong) NSData * payloadSignature;
+@property (nonatomic,readonly) NSString * payloadCollateralString;
 @property (nonatomic,readonly) DSLocalMasternode * localMasternode;
 @property (nonatomic,readonly) DSWallet * masternodeHoldingWallet; //only set if the transaction is sent to a masternode holding address
 
@@ -39,8 +40,6 @@
 -(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain;
 
 -(void)updateInputsHash;
-
--(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;
 
 -(BOOL)checkPayloadSignature;
 
