@@ -166,15 +166,16 @@
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
-    DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
-    addressesExporterViewController.derivationPath = self.derivationPath;
-} else if ([segue.identifier isEqualToString:@"AddressTransactionsSegue"]) {
-    DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
-    DSAddressesTransactionsViewController * addressesTransactionsViewController = (DSAddressesTransactionsViewController*)segue.destinationViewController;
-    addressesTransactionsViewController.title = addressEntity.address;
-    addressesTransactionsViewController.address = addressEntity.address;
-}
+    if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
+        DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
+        addressesExporterViewController.derivationPath = self.derivationPath;
+    } else if ([segue.identifier isEqualToString:@"AddressTransactionsSegue"]) {
+        DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
+        DSAddressesTransactionsViewController * addressesTransactionsViewController = (DSAddressesTransactionsViewController*)segue.destinationViewController;
+        addressesTransactionsViewController.title = addressEntity.address;
+        addressesTransactionsViewController.address = addressEntity.address;
+        addressesTransactionsViewController.wallet = self.derivationPath.wallet;
+    }
 }
 
 

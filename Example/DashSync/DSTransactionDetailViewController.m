@@ -127,12 +127,12 @@
             }
         }
         else if ([account containsAddress:address]) {
-            if (self.sent == 0 || self.received == self.sent) {
+            
                 [text addObject:address];
                 [detail addObject:NSLocalizedString(@"wallet address", nil)];
                 [amount addObject:@(amt)];
                 [currencyIsBitcoinInstead addObject:@FALSE];
-            }
+            
         }
         else if (self.sent > 0) {
             [text addObject:address];

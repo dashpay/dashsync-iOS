@@ -10,11 +10,13 @@
 #import <DashSync/DashSync.h>
 #import "DSTransactionTableViewCell.h"
 #import "BRBubbleView.h"
+#import "BRCopyLabel.h"
 
 @interface DSAddressesTransactionsViewController ()
 
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+@property (strong, nonatomic) IBOutlet BRCopyLabel *privateKeyLabel;
 
 @end
 
@@ -22,11 +24,17 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    [self.wallet seedWithPrompt:@"" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
+        DSKey * key = [self.wallet privateKeyForAddress:self.address fromSeed:seed];
+        if (key) {
+            self.privateKeyLabel.text = [key privateKeyStringForChain:self.wallet.chain];
+        }
+    }];
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+
     // Dispose of any resources that can be recreated.
 }
 

@@ -12,5 +12,6 @@
 @interface DSAddressesTransactionsViewController : UITableViewController <NSFetchedResultsControllerDelegate>
 
 @property(nonatomic,strong) NSString * address;
+@property(nonatomic,strong) DSWallet * wallet;
 
 @end

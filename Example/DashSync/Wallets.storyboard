@@ -742,9 +742,27 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <view key="tableHeaderView" contentMode="scaleToFill" id="yZb-Da-24v">
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="58"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PrivateKey" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="6" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A1P-ii-hwq" customClass="BRCopyLabel">
+                                    <rect key="frame" x="16" y="19" width="343" height="21"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <constraints>
+                                <constraint firstItem="A1P-ii-hwq" firstAttribute="leading" secondItem="yZb-Da-24v" secondAttribute="leading" constant="16" id="s3K-pi-GKi"/>
+                                <constraint firstItem="A1P-ii-hwq" firstAttribute="top" secondItem="yZb-Da-24v" secondAttribute="top" constant="19" id="vQq-eb-gea"/>
+                                <constraint firstAttribute="trailing" secondItem="A1P-ii-hwq" secondAttribute="trailing" constant="16" id="z0u-xS-eox"/>
+                            </constraints>
+                        </view>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransactionCellIdentifier" rowHeight="120" id="bV1-PD-Iif" userLabel="TransactionCell" customClass="DSTransactionTableViewCell">
-                                <rect key="frame" x="0.0" y="28" width="375" height="120"/>
+                                <rect key="frame" x="0.0" y="86" width="375" height="120"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bV1-PD-Iif" id="96v-7V-yiY">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="119.5"/>
@@ -816,10 +834,13 @@
                             <outlet property="delegate" destination="K99-NN-yQV" id="P32-z9-sEt"/>
                         </connections>
                     </tableView>
+                    <connections>
+                        <outlet property="privateKeyLabel" destination="A1P-ii-hwq" id="AFs-Od-1gw"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="alC-Rz-2GF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="9407.2000000000007" y="581.5270935960591"/>
+            <point key="canvasLocation" x="9407.2000000000007" y="580.65967016491754"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="4Du-Ck-JHu">
