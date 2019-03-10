@@ -646,12 +646,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GKV-gn-bdw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3650.7246376811595" y="-553.125"/>
+            <point key="canvasLocation" x="4235" y="-874"/>
         </scene>
         <!--ChooseWalletIdentifier-->
         <scene sceneID="0qJ-FQ-BLS">
             <objects>
-                <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="ChooseWalletIdentifier" id="Wsv-xg-gWk" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseWalletIdentifier" id="Wsv-xg-gWk" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="14f-6d-feq" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3515.9420289855075" y="-415.17857142857139"/>
@@ -747,7 +747,7 @@
         <!--ChooseAccountIdentifier-->
         <scene sceneID="Sdm-kw-hOR">
             <objects>
-                <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="ChooseAccountIdentifier" id="2yM-Qg-k68" sceneMemberID="viewController"/>
+                <viewControllerPlaceholder storyboardName="Helpers" referencedIdentifier="ChooseAccountIdentifier" id="2yM-Qg-k68" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9Zo-tI-UB8" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="6220" y="-123"/>
@@ -1027,7 +1027,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Xhk-gH-4yz" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2900" y="-453.34821428571428"/>
+            <point key="canvasLocation" x="2874" y="-516"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="8hs-T6-Oup">

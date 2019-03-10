@@ -99,6 +99,8 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
+		FBA676322235A7920069EC2F /* BlockchainUsers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */; };
+		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
 		FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */; };
 		FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */; };
 		FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */; };
@@ -311,6 +313,8 @@
 		FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9A107020D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetAddIPAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
+		FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainUsers.storyboard; sourceTree = "<group>"; };
+		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBAA7747222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateRegistrarTransactionsViewController.h; sourceTree = "<group>"; };
 		FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateRegistrarTransactionsViewController.m; sourceTree = "<group>"; };
 		FBAA774A222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateRegistrarTableViewCell.h; sourceTree = "<group>"; };
@@ -498,6 +502,8 @@
 				FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */,
 				FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */,
 				FBF31B6B222FD94400393301 /* Wallets.storyboard */,
+				FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */,
+				FBA676332235A9620069EC2F /* Helpers.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -922,6 +928,7 @@
 			files = (
 				2A3B3EB520F893F4002962FB /* SelectorFormTableViewCell.xib in Resources */,
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
+				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				2A3B3EB920F893F4002962FB /* SwitcherFormTableViewCell.xib in Resources */,
 				2A3B3EBA20F893F4002962FB /* TextFieldFormTableViewCell.xib in Resources */,
@@ -929,6 +936,7 @@
 				6003F5A9195388D20070C39A /* Images.xcassets in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,
 				FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */,
+				FBA676322235A7920069EC2F /* BlockchainUsers.storyboard in Resources */,
 				FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */,
 				FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */,
 			);

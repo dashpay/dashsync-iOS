@@ -153,7 +153,7 @@
         DSWalletChooserViewController * chooseWalletSegue = (DSWalletChooserViewController*)segue.destinationViewController;
         chooseWalletSegue.chain = self.chainManager.chain;
         chooseWalletSegue.delegate = self;
-    } else if ([segue.identifier isEqualToString:@"BlockchainUserChooseFundingAccountSegue"]) {
+    } else if ([segue.identifier isEqualToString:@"BlockchainUserChooseAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
         chooseAccountSegue.chain = self.chainManager.chain;
         chooseAccountSegue.delegate = self;
