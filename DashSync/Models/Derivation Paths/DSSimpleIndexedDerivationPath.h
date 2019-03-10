@@ -14,10 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSSimpleIndexedDerivationPath : DSDerivationPath
 
 // returns the index of an address in the derivation path as long as it is within the gap limit
-- (uint32_t)indexOfKnownAddress:(NSString*)address;
+- (NSUInteger)indexOfKnownAddress:(NSString*)address;
 
 // returns the index of the first unused Address;
-- (uint32_t)firstUnusedIndex;
+- (NSUInteger)firstUnusedIndex;
 
 // gets a public key at an index
 - (NSData*)publicKeyDataAtIndex:(uint32_t)index;
