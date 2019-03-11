@@ -56,7 +56,7 @@
     
     DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:self.collateralAddress];
     
-    NSIndexPath * indexPath = [derivationPath indexPathForAddress:self.collateralAddress];
+    NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.collateralAddress];
     
     [account.wallet seedWithPrompt:@"Sign?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
         if (seed && !cancelled) {

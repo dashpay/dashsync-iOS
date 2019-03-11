@@ -74,6 +74,9 @@
     
     NSData * hexData = [NSData dataFromHexString:@"0300010001ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab58010000006a473044022022e2e028703af41ecfd7947986f7d3b284167b2eb7857be8273e46572f7853cb02202a5461b075b3889e807e4ac257f92e2d509dcc79f55cf4f5fd6c1b839e6c9b54012103d85b25d6886f0b3b8ce1eef63b720b518fad0b8e103eba4e85b6980bfdda2dfdffffffff018e37807e090000001976a9144ee1d4e5d61ac40a13b357ac6e368997079678c888ac00000000fd1201010000000000ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab580000000000000000000000000000ffff010205064e1f3dd03f9ec192b5f275a433bfc90f468ee1a3eb4c157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfad38a30fafe61575db40f05ab0a08d55119b0aad300001976a9144fbc8fb6e11e253d77e5a9c987418e89cf4a63d288ac3477990b757387cb0406168c2720acf55f83603736a314a37d01b135b873a27b411f62320b8b7c46c2ee27c85bb1634e8eddeec448be570b5a0cd1a6e6b788779d38529d114b8309840360be52b1f17865fe161d0dd669e200ac1ceb925ab2aca00f"];
     
+    
+    DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
+    
     NSString * txIdString = @"6193a1ec81af39fc0a3db87de7d3ad907726a4859321c3574425b045dcb42175";
     UInt256 txId = txIdString.hexToData.reverse.UInt256;
     NSValue * inputTransactionHashValue = uint256_obj(@"ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab58".hexToData.UInt256);
@@ -82,75 +85,19 @@
     NSString * collateralAddress = @"yeNVS6tFeQNXJVkjv6nm6gb7PtTERV5dGh";
     NSString * collateralHash = @"58ab8ba7dce591c745f8b78ee49156d13277fff20880855f7cda501705439aca";
     uint32_t collateralIndex = 0;
-    DSUTXO collateral = (DSUTXO) { .hash = collateralHash.hexToData.UInt256, .n = 0};
+    DSUTXO collateral = (DSUTXO) { .hash = collateralHash.hexToData.reverse.UInt256, .n = collateralIndex};
     NSString * payoutAddress = @"yTb47qEBpNmgXvYYsHEN4nh8yJwa5iC4Cs";
     DSECDSAKey * inputPrivateKey0 = (DSECDSAKey *)[wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
     
     NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
     XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
     
-    DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
-    if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
-        [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
-    }
-    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
-    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
-        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
-    }
-    DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:wallet];
-    if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
-        [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
-    }
+    DSAccount * collateralAccount = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:collateralAddress];
     
-    DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
-    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
-    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    DSAccount * inputAccount = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:inputAddress0];
+    DSFundsDerivationPath * inputDerivationPath = [inputAccount derivationPathContainingAddress:inputAddress0];
     
-    NSString * operatorKeyString = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].hexString;
-    
-        NSMutableData * scriptPayout = [NSMutableData data];
-        [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
-    
-        UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
-        struct in_addr addrV4;
-        if (inet_aton([@"1.2.5.6" UTF8String], &addrV4) != 0) {
-            uint32_t ip = ntohl(addrV4.s_addr);
-            ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-        }
-    
-        NSMutableData *inputScript = [NSMutableData data];
-    
-        [inputScript appendScriptPubKeyForAddress:inputAddress0 forChain:chain];
-    
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:ipAddress port:9999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
-    
-    DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.inputHashes,providerRegistrationTransactionFromMessage.inputHashes,@"Provider transaction input hashes are having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.inputIndexes,providerRegistrationTransactionFromMessage.inputIndexes,@"Provider transaction input indexes are having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.inputSequences,providerRegistrationTransactionFromMessage.inputSequences,@"Provider transaction input sequences are having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.outputAddresses,providerRegistrationTransactionFromMessage.outputAddresses,@"Provider transaction output addresses are having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.outputAmounts,providerRegistrationTransactionFromMessage.outputAmounts,@"Provider transaction output amounts are having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.operatorAddress,providerRegistrationTransactionFromMessage.operatorAddress,@"Provider transaction operator Address is having an issue");
-    
-    XCTAssertEqual(providerRegistrationTransaction.operatorReward,providerRegistrationTransactionFromMessage.operatorReward,@"Provider transaction operator Address is having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.ownerAddress,providerRegistrationTransactionFromMessage.ownerAddress,@"Provider transaction owner Address is having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.votingAddress,providerRegistrationTransactionFromMessage.votingAddress,@"Provider transaction voting Address is having an issue");
-    
-    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
-    
-    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData,hexData,@"Provider transaction does not match it's data");
-    
-     XCTAssertEqualObjects(uint256_reverse_hex(providerRegistrationTransactionFromMessage.txHash),txIdString,@"Provider transaction hashes aren't correct");
-    
-    DSAccount * account = [providerRegistrationTransactionFromMessage.chain accountContainingAddress:collateralAddress];
+    DSKey * inputPrivateKey = [inputDerivationPath privateKeyForKnownAddress:inputAddress0 fromSeed:seed];
     
     NSMutableData * stringMessageData = [NSMutableData data];
     [stringMessageData appendString:DASH_MESSAGE_MAGIC];
@@ -162,18 +109,87 @@
     
     NSString * base64Signature = @"H2IyC4t8RsLuJ8hbsWNOjt3uxEi+VwtaDNGm5reId504Up0RS4MJhANgvlKx8Xhl/hYdDdZp4gCsHOuSWrKsoA8=";
     
-    DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:collateralAddress];
+    DSFundsDerivationPath * derivationPath = [collateralAccount derivationPathContainingAddress:collateralAddress];
     
-    NSIndexPath * indexPath = [derivationPath indexPathForAddress:collateralAddress];
+    NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:collateralAddress];
     DSECDSAKey* key = (DSECDSAKey*)[derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
-    NSData * data = [key compactSign:messageDigest];
-    NSString * signature = [data base64EncodedStringWithOptions:0];
+    NSData * signatureData = [key compactSign:messageDigest];
+    NSString * signature = [signatureData base64EncodedStringWithOptions:0];
     
     XCTAssertEqualObjects(signature,base64Signature,@"Signatures don't match up");
     
     
-    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.payloadSignature,data,@"Signatures don't match up");
+    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.payloadSignature,signatureData,@"Signatures don't match up");
+    
+    DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
+    if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
+        [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    }
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
+    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
+        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    }
+    DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:wallet];
+    if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
+        [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    }
+    
+    DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
+    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
 
+    NSMutableData * scriptPayout = [NSMutableData data];
+    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
+    
+    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+    struct in_addr addrV4;
+    if (inet_aton([@"1.2.5.6" UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+    }
+    
+    NSMutableData *inputScript = [NSMutableData data];
+    
+    [inputScript appendScriptPubKeyForAddress:inputAddress0 forChain:chain];
+    
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
+    
+    
+    providerRegistrationTransaction.payloadSignature = signatureData;
+    
+    [providerRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey]];
+    
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.payloadData,providerRegistrationTransactionFromMessage.payloadData,@"Provider payload data doesn't match up");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider payload collateral strings don't match up");
+    
+    XCTAssertEqual(providerRegistrationTransaction.port,providerRegistrationTransactionFromMessage.port,@"Provider transaction port doesn't match up");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.inputHashes,providerRegistrationTransactionFromMessage.inputHashes,@"Provider transaction input hashes are having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.inputIndexes,providerRegistrationTransactionFromMessage.inputIndexes,@"Provider transaction input indexes are having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.inputSequences,providerRegistrationTransactionFromMessage.inputSequences,@"Provider transaction input sequences are having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.outputAddresses,providerRegistrationTransactionFromMessage.outputAddresses,@"Provider transaction output addresses are having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.outputAmounts,providerRegistrationTransactionFromMessage.outputAmounts,@"Provider transaction output amounts are having an issue");
+    
+    XCTAssertEqualObjects(uint384_hex(providerRegistrationTransaction.operatorKey), uint384_hex(providerRegistrationTransactionFromMessage.operatorKey),@"Provider transaction operator key is having an issue");
+    
+    XCTAssertEqual(providerRegistrationTransaction.operatorReward,providerRegistrationTransactionFromMessage.operatorReward,@"Provider transaction operator Address is having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.ownerAddress,providerRegistrationTransactionFromMessage.ownerAddress,@"Provider transaction owner Address is having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.votingAddress,providerRegistrationTransactionFromMessage.votingAddress,@"Provider transaction voting Address is having an issue");
+    
+    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
+    
+    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData,hexData,@"Provider transaction does not match it's data");
+    
+    XCTAssertEqualObjects(uint256_reverse_hex(providerRegistrationTransactionFromMessage.txHash),txIdString,@"Provider transaction hashes aren't correct");
+    
 }
 
 
@@ -214,7 +230,7 @@
     if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
         [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
-    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
     if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
         [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }

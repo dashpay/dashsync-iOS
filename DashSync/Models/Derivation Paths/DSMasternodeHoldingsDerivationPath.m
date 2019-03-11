@@ -44,14 +44,14 @@
         return;
     }
     
-    uint32_t index = [self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
+    NSUInteger index = [self indexOfKnownAddress:[[transaction inputAddresses] firstObject]];
     
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.wallet.seedRequestBlock(authprompt, MASTERNODE_COST,^void (NSData * _Nullable seed, BOOL cancelled) {
             if (! seed) {
                 if (completion) completion(YES);
             } else {
-                DSECDSAKey * key = (DSECDSAKey *)[self privateKeyAtIndex:index fromSeed:seed];
+                DSECDSAKey * key = (DSECDSAKey *)[self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
                 
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[key]];
                 if (completion) completion(signedSuccessfully);

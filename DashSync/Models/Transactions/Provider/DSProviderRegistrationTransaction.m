@@ -134,6 +134,8 @@
     self.votingKeyHash = votingKeyHash;
     self.operatorReward = operatorReward;
     self.scriptPayout = scriptPayout;
+    [self hasSetInputsAndOutputs];
+    
     DSDLog(@"Creating provider (masternode) with ownerKeyHash %@",uint160_data(ownerKeyHash));
     return self;
 }

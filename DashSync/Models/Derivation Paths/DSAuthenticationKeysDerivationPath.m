@@ -57,7 +57,7 @@
 }
 
 - (NSData*)firstUnusedPublicKey {
-    return [self publicKeyDataAtIndex:[self firstUnusedIndex]];
+    return [self publicKeyDataAtIndex:(uint32_t)[self firstUnusedIndex]];
 }
 
 - (DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed {

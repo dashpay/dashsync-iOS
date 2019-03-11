@@ -10,6 +10,7 @@
 #import "DSDerivationPathFactory.h"
 #import "DSDerivationPathTableViewCell.h"
 #import "DSDerivationPath.h"
+#import "DSAuthenticationKeysDerivationPathsAddressesViewController.h"
 
 @interface DSSpecializedDerivationPathsViewController ()
 
@@ -89,14 +90,17 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+     if ([segue.identifier isEqualToString:@"ViewSpecializedAddressesSegue"]) {
+         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+         DSAuthenticationKeysDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSAuthenticationKeysDerivationPathsAddressesViewController*)segue.destinationViewController;
+         derivationPathsAddressesViewController.derivationPath = (DSSimpleIndexedDerivationPath*)[self.derivationPaths objectAtIndex:indexPath.row];
+     }
 }
-*/
+
 
 @end

@@ -288,6 +288,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 
 // MARK: - Derivation Path Addresses
 
+- (NSIndexPath*)indexPathForKnownAddress:(NSString*)address {
+    NSAssert(FALSE, @"This must be implemented in subclasses");
+    return nil;
+}
+
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -470,6 +475,11 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
         return [self generateExtendedBLSPublicKeyFromSeed:seed storeUnderWalletUniqueId:walletUniqueId];
     }
     return nil;
+}
+
+- (DSKey *)privateKeyForKnownAddress:(NSString*)address fromSeed:(NSData *)seed {
+    NSIndexPath * indexPathForAddress = [self indexPathForKnownAddress:address];
+    return [self privateKeyAtIndexPath:indexPathForAddress fromSeed:seed];
 }
 
 - (DSKey *)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed {

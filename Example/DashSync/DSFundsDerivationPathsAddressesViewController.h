@@ -1,5 +1,5 @@
 //
-//  DSDerivationPathsAddressesViewController.h
+//  DSFundsDerivationPathsAddressesViewController.h
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 6/3/18.
@@ -10,7 +10,7 @@
 #import <DashSync/DashSync.h>
 #import <CoreData/CoreData.h>
 
-@interface DSDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate,UISearchBarDelegate>
+@interface DSFundsDerivationPathsAddressesViewController : UITableViewController <NSFetchedResultsControllerDelegate,UISearchBarDelegate>
 
 @property(nonatomic,strong) DSFundsDerivationPath * derivationPath;
 

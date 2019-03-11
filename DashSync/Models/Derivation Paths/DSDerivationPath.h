@@ -149,8 +149,12 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // gets an address at an index path
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath;
 
+- (NSIndexPath*)indexPathOfKnownAddress:(NSString*)address;
+
 // gets a private key at an index path
 - (DSKey * _Nullable)privateKeyAtIndexPath:(NSIndexPath*)indexPath fromSeed:(NSData *)seed;
+
+- (DSKey * _Nullable)privateKeyForKnownAddress:(NSString*)address fromSeed:(NSData *)seed;
 
 - (NSData * _Nullable)deprecatedIncorrectExtendedPublicKeyFromSeed:(NSData * _Nullable)seed;
 

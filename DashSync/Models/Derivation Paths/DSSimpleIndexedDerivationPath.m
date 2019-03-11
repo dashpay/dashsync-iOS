@@ -131,7 +131,7 @@
     }
 }
 
-- (uint32_t)firstUnusedIndex {
+- (NSUInteger)firstUnusedIndex {
     
     uint32_t i = (uint32_t)self.mOrderedAddresses.count;
     
@@ -150,8 +150,12 @@
     return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
-- (uint32_t)indexOfKnownAddress:(NSString*)address {
-    return (uint32_t)[self.mOrderedAddresses indexOfObject:address];
+- (NSIndexPath*)indexPathOfKnownAddress:(NSString*)address {
+    return [NSIndexPath indexPathWithIndex:[self indexOfKnownAddress:address]];
+}
+
+- (NSUInteger)indexOfKnownAddress:(NSString*)address {
+    return [self.mOrderedAddresses indexOfObject:address];
 }
 
 // gets a public key at an index
