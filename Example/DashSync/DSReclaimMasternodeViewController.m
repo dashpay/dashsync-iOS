@@ -15,7 +15,7 @@
 #import "DSMasternodeHoldingsDerivationPath.h"
 #include <arpa/inet.h>
 
-@interface DSReclaimMasternodeViewController ()
+@interface DSReclaimMasternodeViewController () <DSAccountChooserDelegate>
 
 @property (nonatomic,strong) DSAccountChooserTableViewCell * accountChooserTableViewCell;
 @property (nonatomic,strong) DSAccount * account;
