@@ -113,25 +113,25 @@
     
     
     DSUTXO collateral = DSUTXO_ZERO;
+    UInt256 nonReversedCollateralHash = UINT256_ZERO;
     NSString * collateralTransactionHash = self.collateralTransactionTableViewCell.valueTextField.text;
     if (![collateralTransactionHash isEqual:@""]) {
         NSData * collateralTransactionHashData = [collateralTransactionHash hexToData];
         if (collateralTransactionHashData.length != 32) return;
-        collateral.hash = collateralTransactionHashData.UInt256;
+        collateral.hash = collateralTransactionHashData.reverse.UInt256;
+        
+        nonReversedCollateralHash = collateralTransactionHashData.UInt256;
         collateral.n = [self.collateralIndexTableViewCell.textLabel.text integerValue];
         
     }
     
-    DSUTXO reversedCollateral = DSUTXO_ZERO;
-    reversedCollateral.hash = [NSData dataWithUInt256:collateral.hash].reverse.UInt256;
-    reversedCollateral.n = collateral.n;
     
-    [masternode registrationTransactionFundedByAccount:self.account toAddress:payoutAddress withCollateral:reversedCollateral completion:^(DSProviderRegistrationTransaction * _Nonnull providerRegistrationTransaction) {
+    [masternode registrationTransactionFundedByAccount:self.account toAddress:payoutAddress withCollateral:collateral completion:^(DSProviderRegistrationTransaction * _Nonnull providerRegistrationTransaction) {
         if (providerRegistrationTransaction) {
             if (dsutxo_is_zero(collateral)) {
                 [self signTransactionInputs:providerRegistrationTransaction];
             } else {
-                [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:collateral.hash onChain:self.chain completion:^(DSTransaction *transaction, NSError *error) {
+                [[DSInsightManager sharedInstance] queryInsightForTransactionWithHash:nonReversedCollateralHash onChain:self.chain completion:^(DSTransaction *transaction, NSError *error) {
                     NSIndexSet * indexSet = [[transaction outputAmounts] indexesOfObjectsPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                         if ([obj isEqual:@(MASTERNODE_COST)]) return TRUE;
                         return FALSE;
@@ -143,7 +143,9 @@
                             [self performSegueWithIdentifier:@"PayloadSigningSegue" sender:self];
                         });
                     } else {
-                        [self raiseIssue:@"Error" message:@"Incorrect collateral index"];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self raiseIssue:@"Error" message:@"Incorrect collateral index"];
+                        });
                     }
                     
                 }];

@@ -18,6 +18,7 @@
 @property (nonatomic,strong) NSArray * addresses;
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic,strong) NSData * seed;
 
 @end
 
@@ -25,6 +26,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    [self.derivationPath.wallet seedWithPrompt:@"" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
+         self.seed = seed;
+        [self.tableView reloadData];
+    }];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -128,6 +134,7 @@
     cell.addressLabel.text = addressEntity.address;
     cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u",self.derivationPath.stringRepresentation,addressEntity.index];
     cell.publicKeyLabel.text = [self.derivationPath publicKeyDataAtIndex:addressEntity.index].hexString;
+    cell.privateKeyLabel.text = [[self.derivationPath privateKeyAtIndex:addressEntity.index fromSeed:self.seed] privateKeyStringForChain:self.derivationPath.chain];
 }
 
 

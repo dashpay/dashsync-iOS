@@ -756,7 +756,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
             DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
-            if (dsutxo_eq(providerRegistrationTransaction.collateralOutpoint,o)) continue; //don't spend the collateral
+            if (dsutxo_eq(providerRegistrationTransaction.collateralOutpoint,o)) {
+                continue; //don't spend the collateral
+            }
+            DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(providerRegistrationTransaction.collateralOutpoint.hash), providerRegistrationTransaction.collateralOutpoint.n };
+            
+            if (dsutxo_eq(reversedCollateral,o)) {
+                continue; //don't spend the collateral
+            }
         }
         [transaction addInputHash:tx.txHash index:o.n script:tx.outputScripts[o.n]];
         

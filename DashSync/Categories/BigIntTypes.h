@@ -127,6 +127,8 @@ typedef struct _DSUTXO {
 #define uint384_hex(u) [NSData dataWithUInt384:u].hexString
 #define uint384_reverse_hex(u) [NSData dataWithUInt384:u].reverse.hexString
 
+#define uint256_reverse(u)  [NSData dataWithUInt256:u].reverse.UInt256
+
 #define UINT768_ZERO ((UInt768) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT512_ZERO ((UInt512) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT384_ZERO ((UInt384) { .u64 = { 0, 0, 0, 0, 0, 0 } })

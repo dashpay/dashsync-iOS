@@ -22,6 +22,7 @@
 @property (nonatomic,assign) UInt160 ownerKeyHash;
 @property (nonatomic,readonly) NSString * ownerAddress;
 @property (nonatomic,assign) UInt384 operatorKey;
+@property (nonatomic,readonly) NSString * operatorKeyString;
 @property (nonatomic,readonly) NSString * operatorAddress;
 @property (nonatomic,assign) UInt160 votingKeyHash;
 @property (nonatomic,readonly) NSString * votingAddress;
@@ -32,6 +33,8 @@
 @property (nonatomic,assign) UInt256 inputsHash;
 @property (nonatomic,strong) NSData * payloadSignature;
 @property (nonatomic,readonly) NSString * payloadCollateralString;
+@property (nonatomic,readonly) NSString * coreRegistrationCommand;
+@property (nonatomic,readonly) NSString * location;
 @property (nonatomic,readonly) DSLocalMasternode * localMasternode;
 @property (nonatomic,readonly) DSWallet * masternodeHoldingWallet; //only set if the transaction is sent to a masternode holding address
 

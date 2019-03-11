@@ -16,5 +16,6 @@
 @property (strong, nonatomic) IBOutlet UILabel *derivationPathLabel;
 @property (strong, nonatomic) IBOutlet UILabel *addressLabel;
 @property (strong, nonatomic) IBOutlet UILabel *publicKeyLabel;
+@property (strong, nonatomic) IBOutlet UILabel *privateKeyLabel;
 
 @end

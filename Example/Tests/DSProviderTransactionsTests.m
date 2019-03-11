@@ -72,20 +72,31 @@
     
     DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     
-    NSData * hexData = [NSData dataFromHexString:@"0300010001ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab58010000006a473044022022e2e028703af41ecfd7947986f7d3b284167b2eb7857be8273e46572f7853cb02202a5461b075b3889e807e4ac257f92e2d509dcc79f55cf4f5fd6c1b839e6c9b54012103d85b25d6886f0b3b8ce1eef63b720b518fad0b8e103eba4e85b6980bfdda2dfdffffffff018e37807e090000001976a9144ee1d4e5d61ac40a13b357ac6e368997079678c888ac00000000fd1201010000000000ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab580000000000000000000000000000ffff010205064e1f3dd03f9ec192b5f275a433bfc90f468ee1a3eb4c157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfad38a30fafe61575db40f05ab0a08d55119b0aad300001976a9144fbc8fb6e11e253d77e5a9c987418e89cf4a63d288ac3477990b757387cb0406168c2720acf55f83603736a314a37d01b135b873a27b411f62320b8b7c46c2ee27c85bb1634e8eddeec448be570b5a0cd1a6e6b788779d38529d114b8309840360be52b1f17865fe161d0dd669e200ac1ceb925ab2aca00f"];
+    NSData * hexData = [NSData dataFromHexString:@"0300010001ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab58010000006b483045022100fe8fec0b3880bcac29614348887769b0b589908e3f5ec55a6cf478a6652e736502202f30430806a6690524e4dd599ba498e5ff100dea6a872ebb89c2fd651caa71ed012103d85b25d6886f0b3b8ce1eef63b720b518fad0b8e103eba4e85b6980bfdda2dfdffffffff018e37807e090000001976a9144ee1d4e5d61ac40a13b357ac6e368997079678c888ac00000000fd1201010000000000ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab580000000000000000000000000000ffff010205064e1f3dd03f9ec192b5f275a433bfc90f468ee1a3eb4c157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfad38a30fafe61575db40f05ab0a08d55119b0aad300001976a9144fbc8fb6e11e253d77e5a9c987418e89cf4a63d288ac3477990b757387cb0406168c2720acf55f83603736a314a37d01b135b873a27b411fb37e49c1ff2b8057713939a5513e6e711a71cff2e517e6224df724ed750aef1b7f9ad9ec612b4a7250232e1e400da718a9501e1d9a5565526e4b1ff68c028763"];
     
     
     DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
     
-    NSString * txIdString = @"6193a1ec81af39fc0a3db87de7d3ad907726a4859321c3574425b045dcb42175";
-    UInt256 txId = txIdString.hexToData.reverse.UInt256;
+    NSLog(@"%@", providerRegistrationTransactionFromMessage.coreRegistrationCommand);
+    
+//    protx register_prepare
+//    58ab8ba7dce591c745f8b78ee49156d13277fff20880855f7cda501705439aca
+//    0
+//    1.2.5.6:19999
+//    yRxHYGLf9G4UVYdtAoB2iAzR3sxxVaZB6y
+//    97762493aef0bcba1925870abf51dc21f4bc2b8c410c79b7589590e6869a0e04
+//    yfbxyP4ctRJR1rs3A8C3PdXA4Wtcrw7zTi
+//    0
+//    ycBFJGv7V95aSs6XvMewFyp1AMngeRHBwy
+    
+    NSString * txIdString = @"e65f550356250100513aa9c260400562ac8ee1b93ae1cc1214cc9f6830227b51";
     NSValue * inputTransactionHashValue = uint256_obj(@"ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab58".hexToData.UInt256);
     NSString * inputAddress0 = @"yQxPwSSicYgXiU22k4Ysq464VxRtgbnvpJ";
     NSString * outputAddress0 = @"yTWY6DsS4HBGs2JwDtnvVcpykLkbvtjUte";
     NSString * collateralAddress = @"yeNVS6tFeQNXJVkjv6nm6gb7PtTERV5dGh";
     NSString * collateralHash = @"58ab8ba7dce591c745f8b78ee49156d13277fff20880855f7cda501705439aca";
     uint32_t collateralIndex = 0;
-    DSUTXO collateral = (DSUTXO) { .hash = collateralHash.hexToData.reverse.UInt256, .n = collateralIndex};
+    DSUTXO reversedCollateral = (DSUTXO) { .hash = collateralHash.hexToData.reverse.UInt256, .n = collateralIndex};
     NSString * payoutAddress = @"yTb47qEBpNmgXvYYsHEN4nh8yJwa5iC4Cs";
     DSECDSAKey * inputPrivateKey0 = (DSECDSAKey *)[wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
     
@@ -104,10 +115,14 @@
     [stringMessageData appendString:providerRegistrationTransactionFromMessage.payloadCollateralString];
     UInt256 messageDigest = stringMessageData.SHA256_2;
     
-    XCTAssertEqualObjects(@"yTb47qEBpNmgXvYYsHEN4nh8yJwa5iC4Cs|0|yRxHYGLf9G4UVYdtAoB2iAzR3sxxVaZB6y|yfbxyP4ctRJR1rs3A8C3PdXA4Wtcrw7zTi|97762493aef0bcba1925870abf51dc21f4bc2b8c410c79b7589590e6869a0e04",providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider transaction collateral string doesn't match");
+    XCTAssertEqualObjects(uint256_reverse_hex(providerRegistrationTransactionFromMessage.inputsHash), @"7ba273b835b1017da314a3363760835ff5ac20278c160604cb8773750b997734", @"Payload hash calculation has issues");
+    
+    XCTAssertEqualObjects(uint256_reverse_hex(providerRegistrationTransactionFromMessage.payloadHash), @"71e973f79003accd202b9a2ab2613ac6ced601b26684e82f561f6684fef2f102", @"Payload hash calculation has issues");
+    
+    XCTAssertEqualObjects(@"yTb47qEBpNmgXvYYsHEN4nh8yJwa5iC4Cs|0|yRxHYGLf9G4UVYdtAoB2iAzR3sxxVaZB6y|yfbxyP4ctRJR1rs3A8C3PdXA4Wtcrw7zTi|71e973f79003accd202b9a2ab2613ac6ced601b26684e82f561f6684fef2f102",providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider transaction collateral string doesn't match");
     
     
-    NSString * base64Signature = @"H2IyC4t8RsLuJ8hbsWNOjt3uxEi+VwtaDNGm5reId504Up0RS4MJhANgvlKx8Xhl/hYdDdZp4gCsHOuSWrKsoA8=";
+    NSString * base64Signature = @"H7N+ScH/K4BXcTk5pVE+bnEacc/y5RfmIk33JO11Cu8bf5rZ7GErSnJQIy4eQA2nGKlQHh2aVWVSbksf9owCh2M=";
     
     DSFundsDerivationPath * derivationPath = [collateralAccount derivationPathContainingAddress:collateralAddress];
     
@@ -119,7 +134,7 @@
     XCTAssertEqualObjects(signature,base64Signature,@"Signatures don't match up");
     
     
-    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.payloadSignature,signatureData,@"Signatures don't match up");
+    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.payloadSignature, signatureData,@"Signatures don't match up");
     
     DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
     if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
@@ -152,7 +167,7 @@
     
     [inputScript appendScriptPubKeyForAddress:inputAddress0 forChain:chain];
     
-    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
+    DSProviderRegistrationTransaction *providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[inputTransactionHashValue] inputIndexes:@[@1] inputScripts:@[inputScript] inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@40777037710] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:reversedCollateral ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:chain];
     
     
     providerRegistrationTransaction.payloadSignature = signatureData;
@@ -162,7 +177,7 @@
     
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadData,providerRegistrationTransactionFromMessage.payloadData,@"Provider payload data doesn't match up");
     
-    XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider payload collateral strings don't match up");
+        XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider payload collateral strings don't match up");
     
     XCTAssertEqual(providerRegistrationTransaction.port,providerRegistrationTransactionFromMessage.port,@"Provider transaction port doesn't match up");
     

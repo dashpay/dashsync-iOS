@@ -14,6 +14,7 @@
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSMasternodeManager.h"
 #import "DSChainManager.h"
+#include <arpa/inet.h>
 
 @interface DSProviderRegistrationTransaction()
 
@@ -145,7 +146,7 @@
 }
 
 -(NSString*)payloadCollateralString {
-    return [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.payoutAddress,self.operatorReward,self.ownerAddress,self.votingAddress,[NSData dataWithUInt256: self.payloadHash].hexString];
+    return [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.payoutAddress,self.operatorReward,self.ownerAddress,self.votingAddress,uint256_reverse_hex(self.payloadHash)];
 }
 
 -(BOOL)checkPayloadSignature {
@@ -154,6 +155,7 @@
 }
 
 -(NSData*)basePayloadData {
+    //    DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(self.collateralOutpoint.hash), .n = self.collateralOutpoint.n};
     NSMutableData * data = [NSMutableData data];
     [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
     [data appendUInt16:self.providerType]; //32
@@ -174,7 +176,6 @@
 -(NSData*)payloadDataForHash {
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
-    [data appendUInt8:0];
     return data;
 }
 
@@ -204,6 +205,10 @@
     return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
 }
 
+-(NSString*)operatorKeyString {
+    return uint384_hex(self.operatorKey);
+}
+
 -(NSString*)votingAddress {
     return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
 }
@@ -219,6 +224,17 @@
 
 -(NSString*)payoutAddress {
     return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.chain];
+}
+
+-(NSString*)location {
+    char s[INET6_ADDRSTRLEN];
+    NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
+    return [NSString stringWithFormat:@"%@:%hu",ipAddressString,self.port];
+}
+
+-(NSString*)coreRegistrationCommand {
+    return [NSString stringWithFormat:@"protx register_prepare %@ %lu %@ %@ %@ %@ %hu %@", uint256_reverse_hex(self.collateralOutpoint.hash),self.collateralOutpoint.n,self.location,self.ownerAddress
+            ,self.operatorKeyString,self.votingAddress,self.operatorReward,self.payoutAddress];
 }
 
 - (size_t)size

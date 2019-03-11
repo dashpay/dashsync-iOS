@@ -1076,7 +1076,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XSAAA..." textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="6" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uwT-zH-aDG" customClass="BRCopyLabel">
-                                            <rect key="frame" x="16" y="47" width="343" height="20.5"/>
+                                            <rect key="frame" x="16" y="45" width="343" height="20.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1094,7 +1094,13 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XSAAA..." textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4D6-Ou-42x" customClass="BRCopyLabel">
-                                            <rect key="frame" x="16" y="75" width="343" height="20.5"/>
+                                            <rect key="frame" x="16" y="73.5" width="343" height="20.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XSAAA..." textAlignment="natural" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xgq-KI-lq7" customClass="BRCopyLabel">
+                                            <rect key="frame" x="16" y="102" width="69" height="20.5"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -1106,17 +1112,20 @@
                                         <constraint firstItem="uwT-zH-aDG" firstAttribute="leading" secondItem="4D6-Ou-42x" secondAttribute="leading" id="6jX-sC-yvh"/>
                                         <constraint firstAttribute="trailing" secondItem="8HK-5Z-1po" secondAttribute="trailing" constant="16" id="6qG-oY-NVn"/>
                                         <constraint firstItem="4D6-Ou-42x" firstAttribute="leading" secondItem="a7a-rA-rJw" secondAttribute="leading" constant="16" id="AHa-Pd-qt8"/>
-                                        <constraint firstItem="4D6-Ou-42x" firstAttribute="top" secondItem="uwT-zH-aDG" secondAttribute="bottom" constant="7.5" id="TwZ-Uh-Yhh"/>
+                                        <constraint firstItem="4D6-Ou-42x" firstAttribute="top" secondItem="uwT-zH-aDG" secondAttribute="bottom" constant="8" id="TwZ-Uh-Yhh"/>
+                                        <constraint firstItem="xgq-KI-lq7" firstAttribute="top" secondItem="4D6-Ou-42x" secondAttribute="bottom" constant="8" id="W6C-EH-HBt"/>
                                         <constraint firstItem="sHy-qE-6wN" firstAttribute="leading" secondItem="a7a-rA-rJw" secondAttribute="leading" constant="16" id="bPU-Rw-O7c"/>
+                                        <constraint firstItem="xgq-KI-lq7" firstAttribute="leading" secondItem="4D6-Ou-42x" secondAttribute="leading" id="dwH-EY-8iz"/>
                                         <constraint firstAttribute="trailing" secondItem="uwT-zH-aDG" secondAttribute="trailing" constant="16" id="nB2-7Q-JUp"/>
                                         <constraint firstAttribute="trailing" secondItem="4D6-Ou-42x" secondAttribute="trailing" constant="16" id="neX-qI-gRE"/>
                                         <constraint firstItem="8HK-5Z-1po" firstAttribute="top" secondItem="a7a-rA-rJw" secondAttribute="top" constant="16" id="vl1-xh-rar"/>
-                                        <constraint firstItem="uwT-zH-aDG" firstAttribute="top" secondItem="sHy-qE-6wN" secondAttribute="bottom" constant="10" id="ysc-uB-jPj"/>
+                                        <constraint firstItem="uwT-zH-aDG" firstAttribute="top" secondItem="sHy-qE-6wN" secondAttribute="bottom" constant="8" id="ysc-uB-jPj"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="addressLabel" destination="uwT-zH-aDG" id="xo0-cB-RMX"/>
                                     <outlet property="derivationPathLabel" destination="8HK-5Z-1po" id="bG2-iF-cBb"/>
+                                    <outlet property="privateKeyLabel" destination="xgq-KI-lq7" id="0u1-Yg-AES"/>
                                     <outlet property="publicKeyLabel" destination="4D6-Ou-42x" id="rnK-Tt-T2L"/>
                                 </connections>
                             </tableViewCell>
