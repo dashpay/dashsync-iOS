@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
 
-- (NSIndexPath* _Nullable)indexPathForAddress:(NSString*)address;
+- (NSIndexPath* _Nullable)indexPathForKnownAddress:(NSString*)address;
 
 @end
 

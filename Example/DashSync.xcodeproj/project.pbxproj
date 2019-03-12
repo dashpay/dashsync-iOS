@@ -91,7 +91,7 @@
 		FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CB20C3F0D3002B7956 /* DSAccountTableViewCell.m */; };
 		FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */; };
 		FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */; };
-		FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */; };
+		FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2D420C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m */; };
 		FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB995D9921101C4200AC37D0 /* DSPeersViewController.m */; };
 		FB995D9D21101C9600AC37D0 /* DSPeerTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */; };
 		FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106520D7A72D006883E2 /* DSAddressesExporterViewController.m */; };
@@ -99,6 +99,10 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
+		FBA676322235A7920069EC2F /* BlockchainUsers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */; };
+		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
+		FBA676362235AD090069EC2F /* Governance.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676352235AD090069EC2F /* Governance.storyboard */; };
+		FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA676382235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m */; };
 		FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */; };
 		FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */; };
 		FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */; };
@@ -126,6 +130,8 @@
 		FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B64222F74B400393301 /* DSWalletDetailViewController.m */; };
 		FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B67222F784E00393301 /* DSSpecializedDerivationPathsViewController.m */; };
 		FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBF31B6B222FD94400393301 /* Wallets.storyboard */; };
+		FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */; };
+		FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -293,8 +299,8 @@
 		FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAccountsDerivationPathsViewController.m; sourceTree = "<group>"; };
 		FB90D2D020C3F76E002B7956 /* DSDerivationPathTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDerivationPathTableViewCell.h; sourceTree = "<group>"; };
 		FB90D2D120C3F76E002B7956 /* DSDerivationPathTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathTableViewCell.m; sourceTree = "<group>"; };
-		FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
-		FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
+		FB90D2D320C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSFundsDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
+		FB90D2D420C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSFundsDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
 		FB995D9821101C4200AC37D0 /* DSPeersViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSPeersViewController.h; sourceTree = "<group>"; };
 		FB995D9921101C4200AC37D0 /* DSPeersViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPeersViewController.m; sourceTree = "<group>"; };
 		FB995D9B21101C9600AC37D0 /* DSPeerTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSPeerTableViewCell.h; sourceTree = "<group>"; };
@@ -309,6 +315,11 @@
 		FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9A107020D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetAddIPAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
+		FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainUsers.storyboard; sourceTree = "<group>"; };
+		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
+		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
+		FBA676372235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAuthenticationKeysDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
+		FBA676382235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAuthenticationKeysDerivationPathsAddressesViewController.m; sourceTree = "<group>"; };
 		FBAA7747222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateRegistrarTransactionsViewController.h; sourceTree = "<group>"; };
 		FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateRegistrarTransactionsViewController.m; sourceTree = "<group>"; };
 		FBAA774A222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateRegistrarTableViewCell.h; sourceTree = "<group>"; };
@@ -359,6 +370,9 @@
 		FBF31B66222F784E00393301 /* DSSpecializedDerivationPathsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSpecializedDerivationPathsViewController.h; sourceTree = "<group>"; };
 		FBF31B67222F784E00393301 /* DSSpecializedDerivationPathsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSpecializedDerivationPathsViewController.m; sourceTree = "<group>"; };
 		FBF31B6B222FD94400393301 /* Wallets.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Wallets.storyboard; sourceTree = "<group>"; };
+		FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSignPayloadViewController.h; sourceTree = "<group>"; };
+		FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSignPayloadViewController.m; sourceTree = "<group>"; };
+		FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderTransactionsTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -493,6 +507,9 @@
 				FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */,
 				FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */,
 				FBF31B6B222FD94400393301 /* Wallets.storyboard */,
+				FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */,
+				FBA676332235A9620069EC2F /* Helpers.storyboard */,
+				FBA676352235AD090069EC2F /* Governance.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -525,6 +542,7 @@
 				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
+				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -609,6 +627,8 @@
 				FBAA7748222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m */,
 				FBAA7750222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.h */,
 				FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */,
+				FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */,
+				FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -724,8 +744,8 @@
 				FB6DC63220AE082400E35EED /* DSWalletInputPhraseViewController.m */,
 				FB90D2CD20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.h */,
 				FB90D2CE20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m */,
-				FB90D2D320C40DD3002B7956 /* DSDerivationPathsAddressesViewController.h */,
-				FB90D2D420C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m */,
+				FB90D2D320C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.h */,
+				FB90D2D420C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m */,
 				FB12FEE820CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.h */,
 				FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m */,
 				FB12FEEB20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.h */,
@@ -744,6 +764,8 @@
 				FBF31B64222F74B400393301 /* DSWalletDetailViewController.m */,
 				FBF31B66222F784E00393301 /* DSSpecializedDerivationPathsViewController.h */,
 				FBF31B67222F784E00393301 /* DSSpecializedDerivationPathsViewController.m */,
+				FBA676372235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.h */,
+				FBA676382235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m */,
 			);
 			name = Wallet;
 			sourceTree = "<group>";
@@ -912,8 +934,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBA676362235AD090069EC2F /* Governance.storyboard in Resources */,
 				2A3B3EB520F893F4002962FB /* SelectorFormTableViewCell.xib in Resources */,
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
+				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				2A3B3EB920F893F4002962FB /* SwitcherFormTableViewCell.xib in Resources */,
 				2A3B3EBA20F893F4002962FB /* TextFieldFormTableViewCell.xib in Resources */,
@@ -921,6 +945,7 @@
 				6003F5A9195388D20070C39A /* Images.xcassets in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,
 				FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */,
+				FBA676322235A7920069EC2F /* BlockchainUsers.storyboard in Resources */,
 				FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */,
 				FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */,
 			);
@@ -1080,7 +1105,7 @@
 				FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
 				2A3B3EBD20F893F4002962FB /* TextFieldFormTableViewCell.m in Sources */,
-				FB90D2D520C40DD3002B7956 /* DSDerivationPathsAddressesViewController.m in Sources */,
+				FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */,
 				FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */,
 				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
@@ -1095,7 +1120,9 @@
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
+				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
+				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,
@@ -1113,6 +1140,7 @@
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
+				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,

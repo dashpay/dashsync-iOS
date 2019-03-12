@@ -258,7 +258,7 @@
     return [self serializedPrivateKeysAtIndexPaths:mArray fromSeed:seed];
 }
 
-- (NSIndexPath*)indexPathForAddress:(NSString*)address {
+- (NSIndexPath*)indexPathForKnownAddress:(NSString*)address {
     if ([self.allChangeAddresses containsObject:address]) {
         NSUInteger indexes[] = {1,[self.allChangeAddresses indexOfObject:address]};
         return [NSIndexPath indexPathWithIndexes:indexes length:2];

@@ -624,7 +624,7 @@
     if (!account) return nil;
     DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
     if (!derivationPath) return nil;
-    NSIndexPath * indexPath = [derivationPath indexPathForAddress:address];
+    NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:address];
     return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
 }
 

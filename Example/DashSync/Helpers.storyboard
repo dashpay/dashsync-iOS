@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Choose Wallet-->
+        <scene sceneID="c0z-F8-9lb">
+            <objects>
+                <tableViewController storyboardIdentifier="ChooseWalletIdentifier" title="Choose Wallet" id="bBb-DN-pNJ" customClass="DSWalletChooserViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="7cs-2g-cLV">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="WalletCellIdentifier" rowHeight="208" id="Lfv-6D-BCr" userLabel="WalletCell" customClass="DSWalletTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="208"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Lfv-6D-BCr" id="zou-L6-udq">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="207.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Wallet" textAlignment="justified" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LMK-qB-xWC">
+                                            <rect key="frame" x="16" y="24" width="343" height="118"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Seed" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="92U-kq-mGH">
+                                            <rect key="frame" x="16" y="0.0" width="40" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="DIP 44 Account 0 XPUB" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pFr-Dh-i6j">
+                                            <rect key="frame" x="16" y="138" width="184" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="XPUB" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="6" translatesAutoresizingMaskIntoConstraints="NO" id="Ug1-0Y-4Ox">
+                                            <rect key="frame" x="16" y="167" width="343" height="41"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="al5-o6-L85">
+                                            <rect key="frame" x="13" y="29" width="346" height="101"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <state key="normal" title="Show"/>
+                                            <connections>
+                                                <action selector="showPassphrase:" destination="Lfv-6D-BCr" eventType="touchUpInside" id="tVi-Tr-OW0"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="passphraseLabel" destination="LMK-qB-xWC" id="VEU-Jj-XWy"/>
+                                    <outlet property="showPassphraseButton" destination="al5-o6-L85" id="yKw-nf-TUE"/>
+                                    <outlet property="xPublicKeyLabel" destination="Ug1-0Y-4Ox" id="H6a-RZ-8Y5"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="bBb-DN-pNJ" id="OrH-TM-jgX"/>
+                            <outlet property="delegate" destination="bBb-DN-pNJ" id="Mme-tR-628"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Choose Wallet" id="5Vu-WH-kMQ">
+                        <barButtonItem key="rightBarButtonItem" title="Choose" id="aGp-aA-UTQ">
+                            <connections>
+                                <action selector="choose:" destination="bBb-DN-pNJ" id="9TP-kA-cG7"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="chooseButton" destination="aGp-aA-UTQ" id="IUK-an-sZp"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TAE-FU-cSm" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1204" y="-516"/>
+        </scene>
+        <!--Choose Account-->
+        <scene sceneID="Q1j-hj-fs1">
+            <objects>
+                <tableViewController storyboardIdentifier="ChooseAccountIdentifier" id="65B-9x-IXZ" customClass="DSAccountChooserViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="142" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="2zb-Ws-85B">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="blue" indentationWidth="10" reuseIdentifier="AccountCellIdentifier" rowHeight="142" id="z00-5U-AAx" customClass="DSAccountTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="142"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="z00-5U-AAx" id="lv1-VQ-Zx0">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="141.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qh9-4C-FSI">
+                                            <rect key="frame" x="319" y="25" width="11" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Balance" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uSD-AL-rFD">
+                                            <rect key="frame" x="25" y="61" width="61" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Account Number" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2K1-pM-PSY">
+                                            <rect key="frame" x="25" y="25" width="130" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hhF-oN-yUe">
+                                            <rect key="frame" x="319" y="60" width="11" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="qh9-4C-FSI" secondAttribute="trailing" constant="45" id="3wr-F3-zHa"/>
+                                        <constraint firstItem="2K1-pM-PSY" firstAttribute="top" secondItem="lv1-VQ-Zx0" secondAttribute="top" constant="25" id="Dgu-tO-1TB"/>
+                                        <constraint firstItem="qh9-4C-FSI" firstAttribute="top" secondItem="lv1-VQ-Zx0" secondAttribute="top" constant="25" id="aCs-rL-Oya"/>
+                                        <constraint firstAttribute="trailing" secondItem="hhF-oN-yUe" secondAttribute="trailing" constant="45" id="mN6-5J-liM"/>
+                                        <constraint firstItem="hhF-oN-yUe" firstAttribute="top" secondItem="qh9-4C-FSI" secondAttribute="bottom" constant="14" id="o4R-Nu-GvX"/>
+                                        <constraint firstItem="2K1-pM-PSY" firstAttribute="leading" secondItem="lv1-VQ-Zx0" secondAttribute="leading" constant="25" id="ra6-gA-Pjh"/>
+                                        <constraint firstItem="uSD-AL-rFD" firstAttribute="top" secondItem="2K1-pM-PSY" secondAttribute="bottom" constant="15" id="tki-ep-HQT"/>
+                                        <constraint firstItem="uSD-AL-rFD" firstAttribute="leading" secondItem="lv1-VQ-Zx0" secondAttribute="leading" constant="25" id="ukj-BB-bld"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="accountNumberLabel" destination="qh9-4C-FSI" id="3K6-9Y-H8W"/>
+                                    <outlet property="balanceLabel" destination="hhF-oN-yUe" id="hTM-R0-cgl"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="65B-9x-IXZ" id="isG-VH-sGn"/>
+                            <outlet property="delegate" destination="65B-9x-IXZ" id="Q0i-vR-Cmt"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Choose Account" id="Hoh-ne-5dq">
+                        <barButtonItem key="rightBarButtonItem" title="Choose" id="hw9-vh-uw2">
+                            <connections>
+                                <action selector="choose:" destination="65B-9x-IXZ" id="gIk-od-4vp"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="chooseButton" destination="hw9-vh-uw2" id="EgJ-8Y-1T4"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1vn-4F-0lc" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="5140" y="1949"/>
+        </scene>
+    </scenes>
+</document>

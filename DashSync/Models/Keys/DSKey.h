@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)addressForChain:(DSChain*)chain;
 + (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain;
+- (NSString *)privateKeyStringForChain:(DSChain*)chain;
 
 @end
 

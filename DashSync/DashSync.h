@@ -19,6 +19,8 @@
 
 #import "DSDerivationPath.h"
 #import "DSSimpleIndexedDerivationPath.h"
+#import "DSAuthenticationKeysDerivationPath.h"
+#import "DSFundsDerivationPath.h"
 
 #import "DSChainsManager.h"
 #import "DSChainManager.h"

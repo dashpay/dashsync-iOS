@@ -1,19 +1,19 @@
 //
-//  DSDerivationPathsAddressesViewController.m
+//  DSFundsDerivationPathsAddressesViewController.m
 //  DashSync_Example
 //
 //  Created by Sam Westrich on 6/3/18.
 //  Copyright © 2018 Dash Core Group. All rights reserved.
 //
 
-#import "DSDerivationPathsAddressesViewController.h"
+#import "DSFundsDerivationPathsAddressesViewController.h"
 #import "DSAddressTableViewCell.h"
 #import <DashSync/DashSync.h>
 #import "BRBubbleView.h"
 #import "DSAddressesExporterViewController.h"
 #import "DSAddressesTransactionsViewController.h"
 
-@interface DSDerivationPathsAddressesViewController ()
+@interface DSFundsDerivationPathsAddressesViewController ()
 
 @property (nonatomic,strong) NSArray * addresses;
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -22,7 +22,7 @@
 
 @end
 
-@implementation DSDerivationPathsAddressesViewController
+@implementation DSFundsDerivationPathsAddressesViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -166,15 +166,16 @@
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
-    DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
-    addressesExporterViewController.derivationPath = self.derivationPath;
-} else if ([segue.identifier isEqualToString:@"AddressTransactionsSegue"]) {
-    DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
-    DSAddressesTransactionsViewController * addressesTransactionsViewController = (DSAddressesTransactionsViewController*)segue.destinationViewController;
-    addressesTransactionsViewController.title = addressEntity.address;
-    addressesTransactionsViewController.address = addressEntity.address;
-}
+    if ([segue.identifier isEqualToString:@"ExportAddressesSegue"]) {
+        DSAddressesExporterViewController * addressesExporterViewController = (DSAddressesExporterViewController*)segue.destinationViewController;
+        addressesExporterViewController.derivationPath = self.derivationPath;
+    } else if ([segue.identifier isEqualToString:@"AddressTransactionsSegue"]) {
+        DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:[self.tableView indexPathForSelectedRow]];
+        DSAddressesTransactionsViewController * addressesTransactionsViewController = (DSAddressesTransactionsViewController*)segue.destinationViewController;
+        addressesTransactionsViewController.title = addressEntity.address;
+        addressesTransactionsViewController.address = addressEntity.address;
+        addressesTransactionsViewController.wallet = self.derivationPath.wallet;
+    }
 }
 
 

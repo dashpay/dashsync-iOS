@@ -14,6 +14,8 @@
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSMasternodeManager.h"
 #import "DSChainManager.h"
+#import "NSString+Dash.h"
+#include <arpa/inet.h>
 
 @interface DSProviderRegistrationTransaction()
 
@@ -100,7 +102,7 @@
 
 
 
--(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
+-(instancetype)initWithProviderRegistrationTransactionVersion:(uint16_t)version type:(uint16_t)providerType mode:(uint16_t)providerMode collateralOutpoint:(DSUTXO)collateralOutpoint ipAddress:(UInt128)ipAddress port:(uint16_t)port ownerKeyHash:(UInt160)ownerKeyHash operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash operatorReward:(uint16_t)operatorReward scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_ProviderRegistration;
     self.version = SPECIAL_TX_VERSION;
@@ -108,7 +110,7 @@
     self.providerType = providerType;
     self.providerMode = providerMode;
     self.ipAddress = ipAddress;
-    self.collateralOutpoint = DSUTXO_ZERO;
+    self.collateralOutpoint = collateralOutpoint;
     self.port = port;
     self.ownerKeyHash = ownerKeyHash;
     self.operatorKey = operatorKey;
@@ -134,6 +136,8 @@
     self.votingKeyHash = votingKeyHash;
     self.operatorReward = operatorReward;
     self.scriptPayout = scriptPayout;
+    [self hasSetInputsAndOutputs];
+    
     DSDLog(@"Creating provider (masternode) with ownerKeyHash %@",uint160_data(ownerKeyHash));
     return self;
 }
@@ -142,18 +146,24 @@
     return [self payloadDataForHash].SHA256_2;
 }
 
+-(NSString*)payloadCollateralString {
+    return [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.payoutAddress,self.operatorReward,self.ownerAddress,self.votingAddress,uint256_reverse_hex(self.payloadHash)];
+}
+
+-(UInt256)payloadCollateralDigest {
+    NSMutableData * stringMessageData = [NSMutableData data];
+    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
+    [stringMessageData appendString:self.payloadCollateralString];
+    return stringMessageData.SHA256_2;
+}
+
 -(BOOL)checkPayloadSignature {
     DSECDSAKey * providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
     return uint160_eq([providerOwnerPublicKey hash160], self.ownerKeyHash);
 }
 
--(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
-    //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
-    self.payloadSignature = [privateKey compactSign:[self payloadHash]];
-}
-
 -(NSData*)basePayloadData {
+    //    DSUTXO reversedCollateral = (DSUTXO) { .hash = uint256_reverse(self.collateralOutpoint.hash), .n = self.collateralOutpoint.n};
     NSMutableData * data = [NSMutableData data];
     [data appendUInt16:self.providerRegistrationTransactionVersion]; //16
     [data appendUInt16:self.providerType]; //32
@@ -174,7 +184,6 @@
 -(NSData*)payloadDataForHash {
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
-    [data appendUInt8:0];
     return data;
 }
 
@@ -204,6 +213,10 @@
     return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorKey] forChain:self.chain];
 }
 
+-(NSString*)operatorKeyString {
+    return uint384_hex(self.operatorKey);
+}
+
 -(NSString*)votingAddress {
     return [[NSData dataWithUInt160:self.votingKeyHash] addressFromHash160DataForChain:self.chain];
 }
@@ -219,6 +232,17 @@
 
 -(NSString*)payoutAddress {
     return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.chain];
+}
+
+-(NSString*)location {
+    char s[INET6_ADDRSTRLEN];
+    NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
+    return [NSString stringWithFormat:@"%@:%hu",ipAddressString,self.port];
+}
+
+-(NSString*)coreRegistrationCommand {
+    return [NSString stringWithFormat:@"protx register_prepare %@ %lu %@ %@ %@ %@ %hu %@", uint256_reverse_hex(self.collateralOutpoint.hash),self.collateralOutpoint.n,self.location,self.ownerAddress
+            ,self.operatorKeyString,self.votingAddress,self.operatorReward,self.payoutAddress];
 }
 
 - (size_t)size

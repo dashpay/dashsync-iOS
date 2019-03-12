@@ -42,4 +42,8 @@
     return [DSKey addressWithPublicKeyData:self.publicKeyData forChain:chain];
 }
 
+- (NSString *)privateKeyStringForChain:(DSChain*)chain {
+    return nil;
+}
+
 @end

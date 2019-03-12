@@ -2045,6 +2045,7 @@ static dispatch_once_t devnetToken = 0;
             return wallet;
         }
     }
+    if (rIndex) *rIndex = UINT32_MAX;
     return nil;
 }
 
@@ -2056,6 +2057,7 @@ static dispatch_once_t devnetToken = 0;
             return wallet;
         }
     }
+    if (rIndex) *rIndex = UINT32_MAX;
     return nil;
 }
 
@@ -2067,6 +2069,7 @@ static dispatch_once_t devnetToken = 0;
             return wallet;
         }
     }
+    if (rIndex) *rIndex = UINT32_MAX;
     return nil;
 }
 
@@ -2078,6 +2081,7 @@ static dispatch_once_t devnetToken = 0;
             return wallet;
         }
     }
+    if (rIndex) *rIndex = UINT32_MAX;
     return nil;
 }
 
@@ -2091,6 +2095,7 @@ static dispatch_once_t devnetToken = 0;
             }
         }
     }
+    if (rIndex) *rIndex = UINT32_MAX;
     return nil;
 }
 
