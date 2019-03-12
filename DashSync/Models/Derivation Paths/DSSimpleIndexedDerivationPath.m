@@ -150,7 +150,7 @@
     return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
-- (NSIndexPath*)indexPathOfKnownAddress:(NSString*)address {
+- (NSIndexPath*)indexPathForKnownAddress:(NSString*)address {
     return [NSIndexPath indexPathWithIndex:[self indexOfKnownAddress:address]];
 }
 
