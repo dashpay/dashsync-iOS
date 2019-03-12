@@ -225,9 +225,9 @@
     NSString * inputAddress0 = @"yRdHYt6nG1ooGaXK7GEbwVMteLY3m4FbVT";
     NSString * inputAddress1 = @"yWJqVcT5ot5GEcB8oYkHnnYcFG5pLiVVtd";
     NSString * inputAddress2 = @"ygQ8tG3tboQ7oZEhtDBBYtquTmVyiDe6d5";
-    DSECDSAKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
-    DSECDSAKey * inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
-    DSECDSAKey * inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
+    DSKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
+    DSKey * inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
+    DSKey * inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
     
     NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
     XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
@@ -257,7 +257,7 @@
     
     NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
     
-    DSECDSAKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+    DSKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
     UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
     UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
     
