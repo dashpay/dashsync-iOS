@@ -1,0 +1,237 @@
+
+/* No comment provided by engineer. */
+" and " = "dan";
+
+/* No comment provided by engineer. */
+", " = ", ";
+
+/* No comment provided by engineer. */
+"\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\n%d attempts remaining\n" = "\n%dupaya tersisa\n";
+
+/* No comment provided by engineer. */
+"\n(local requested amount: %@)" = "\n(jumlah lokal yang diminta %@)";
+
+/* No comment provided by engineer. */
+"\n1 attempt remaining\n" = "\n1 upaya tersisa\n";
+
+/* No comment provided by engineer. */
+"\n\n     amount %@ (%@)" = "\n\n     jumlah %1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nnetwork fee +%@ (%@)" = "\nbiaya jaringan +%1$@ (%2$@)";
+
+/* No comment provided by engineer. */
+"\nno attempts remaining" = "\ntidak ada upaya yang tersisa";
+
+/* No comment provided by engineer. */
+"\ntry again in %d %@" = "\ncoba lagi dalam %1$d %2$@";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reclaim this masternode?" = "Anda yakin ingin mengklaim kembali masternode ini?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register a masternode at %@:%d?" = "Apakah Anda yakin ingin mendaftarkan masternode di %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Apakah Anda yakin ingin mendaftarkan nama pengguna %1$@ dan menghabiskan %2$@ pada kredit?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to reset this user?" = "Anda yakin ingin menyetel ulang pengguna ini?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Apakah Anda yakin ingin melakukan pengisian %1$@ dan menghabiskan %2$@ kredit?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to %@:%d?" = "Apkah Anda yakin ingin memperbarui masternode ini ke %1$@:%2$d?";
+
+/* No comment provided by engineer. */
+"Are you sure you would like to update this masternode to pay to %@?" = "Apakah Anda yakin ingin memperbarui masternode ini untuk membayar ke %@?";
+
+/* No comment provided by engineer. */
+"bad password, try again" = "kata sandi yang buruk, coba lagi";
+
+/* No comment provided by engineer. */
+"bad payment request URL" = "URL permintaan pembayaran yang buruk";
+
+/* No comment provided by engineer. */
+"bad payment URL" = "URL pembayaran yang buruk";
+
+/* No comment provided by engineer. */
+"cancel" = "batalkan";
+
+/* No comment provided by engineer. */
+"choose passcode for %@" = "pilih kode sandi untuk %@";
+
+/* No comment provided by engineer. */
+"Confirm" = "Memastikan";
+
+/* No comment provided by engineer. */
+"connect timeout" = "waktu hubungan habis";
+
+/* No comment provided by engineer. */
+"couldn't make payment" = "tidak dapat melakukan pembayaran";
+
+/* No comment provided by engineer. */
+"dash transaction not signed" = "transaksi dash tidak ditandatangani";
+
+/* No comment provided by engineer. */
+"Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"double spend" = "pengiriman ganda";
+
+/* No comment provided by engineer. */
+"enter old passcode" = "masukkan kode sandi lama";
+
+/* No comment provided by engineer. */
+"error signing dash transaction" = "kesalahan menandatangani transaksi dash";
+
+/* No comment provided by engineer. */
+"error signing transaction" = "kesalahan menandatangani transaksi";
+
+/* No comment provided by engineer. */
+"hour" = "jam";
+
+/* No comment provided by engineer. */
+"hours" = "jam";
+
+/* No comment provided by engineer. */
+"insufficient funds" = "dana tidak mencukupi";
+
+/* No comment provided by engineer. */
+"insufficient funds for dash network fee" = "dana tidak mencukupi untuk biaya jaringan dash";
+
+/* No comment provided by engineer. */
+"Internal Error" = "Kesalahan internal";
+
+/* No comment provided by engineer. */
+"Invalid DAPI Response" = "Respon DAPI tidak valid";
+
+/* No comment provided by engineer. */
+"Invalid Params" = "Params tidak valid";
+
+/* No comment provided by engineer. */
+"Invalid Request" = "Permintaan Tidak Valid";
+
+/* No comment provided by engineer. */
+"Mainnet" = "Mainnet";
+
+/* No comment provided by engineer. */
+"Method Not Found" = "Metode Tidak Ditemukan";
+
+/* No comment provided by engineer. */
+"minute" = "menit";
+
+/* No comment provided by engineer. */
+"minutes" = "menit";
+
+/* No comment provided by engineer. */
+"missing certificate" = "sertifikat hilang";
+
+/* No comment provided by engineer. */
+"no peers found" = "tidak ada peer ditemukan";
+
+/* No comment provided by engineer. */
+"not a valid private key" = "bukan kunci pribadi yang valid";
+
+/* No comment provided by engineer. */
+"not connected to the dash network" = "tidak terhubung ke jaringan dash";
+
+/* No comment provided by engineer. */
+"ok" = "ok";
+
+/* No comment provided by engineer. */
+"Parse Error" = "Kesalahan frasa";
+
+/* No comment provided by engineer. */
+"passcode" = "kode sandi";
+
+/* No comment provided by engineer. */
+"passcode for %@" = "kode sandi untuk %@";
+
+/* No comment provided by engineer. */
+"password" = "katasandi";
+
+/* No comment provided by engineer. */
+"password protected key" = "katasandi dilindungi kunci";
+
+/* No comment provided by engineer. */
+"recovery phrase" = "frasa pemulihan:";
+
+/* No comment provided by engineer. */
+"recovery phrase doesn't match" = "frasa pemulihan tidak sama";
+
+/* No comment provided by engineer. */
+"reduce payment amount by\n%@ (%@)?" = "kurangi jumlah pembayaran dengan\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"request expired" = "permintaan telah kedaluwarsa";
+
+/* No comment provided by engineer. */
+"requested network \"%@\" not currently in use" = "jaringan yang diminta \"%@\" tidak sedang digunakan";
+
+/* No comment provided by engineer. */
+"rescan" = "memindai ulang";
+
+/* No comment provided by engineer. */
+"reset" = "atur ulang";
+
+/* No comment provided by engineer. */
+"second" = "detik";
+
+/* No comment provided by engineer. */
+"seconds" = "detik";
+
+/* No comment provided by engineer. */
+"Server Error" = "Kesalahan Server";
+
+/* No comment provided by engineer. */
+"Testnet" = "Testnet";
+
+/* No comment provided by engineer. */
+"this private key is already in your wallet" = "kunci pribadi ini sudah ada di dompet anda";
+
+/* No comment provided by engineer. */
+"this private key is empty" = "kunci pribadi ini kosong";
+
+/* No comment provided by engineer. */
+"transaction canceled, network timeout" = "transaksi dibatalkan, batas waktu jaringan";
+
+/* No comment provided by engineer. */
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "biaya transaksi akan lebih mahal daripada dana yang tersedia di kunci pribadi ini (karena \"debu\" deposit kecil)";
+
+/* No comment provided by engineer. */
+"transaction rejected" = "transaksi ditolak";
+
+/* No comment provided by engineer. */
+"unexpected response from %@" = "respons tak terduga dari %@";
+
+/* No comment provided by engineer. */
+"Unknown Error" = "Kesalahan yang tidak diketahui";
+
+/* No comment provided by engineer. */
+"Unknown JSON-RPC Response" = "Respon JSON-RPC Tidak Diketahui";
+
+/* No comment provided by engineer. */
+"unsupported signature type" = "tipe tanda tangan yang tidak didukung";
+
+/* No comment provided by engineer. */
+"untrusted certificate" = "sertifikat tak terpercaya";
+
+/* Updating Price */
+"Updating Price" = "Memperbarui Harga";
+
+/* No comment provided by engineer. */
+"verify passcode" = "verifikasi kode sandi";
+
+/* No comment provided by engineer. */
+"wallet disabled" = "dompet dinonaktifkan";
+
+/* No comment provided by engineer. */
+"wipe" = "menghapus";
+
+/* No comment provided by engineer. */
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Dompet anda mungkin tidak sinkron.\nIni dapat diperbaiki dengan memindai ulang blockchain.";

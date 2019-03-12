@@ -24,16 +24,16 @@
 "\nnetwork fee +%@ (%@)" = "\nfrais de réseau +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nno attempts remaining" = "\nno attempts remaining";
+"\nno attempts remaining" = "\naucune tentative restante";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = "\nréessayez dans %1$d %2$@";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
+"Are you sure you would like to reclaim this masternode?" = "Êtes-vous sûr de revendiquer ce masternode ?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+"Are you sure you would like to register a masternode at %@:%d?" = "Êtes-vous sûr de vouloir enregistrer un masternode à %1$@:%2$d ?";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to register the username %@ and spend %@ on credits?" = "Voulez-vous vraiment enregistrer le nom d'utilisateur %1$@ et dépenser %2$@ en crédits ?";
@@ -45,10 +45,10 @@
 "Are you sure you would like to topup %@ and spend %@ on credits?" = "Voulez-vous vraiment recharger %1$@ et dépenser %2$@ en crédits ?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+"Are you sure you would like to update this masternode to %@:%d?" = "Êtes-vous sûr de vouloir mettre à jour ce masternode à %1$@:%2$d ?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to update this masternode to pay to %@?" = "Are you sure you would like to update this masternode to pay to %@?";
+"Are you sure you would like to update this masternode to pay to %@?" = "Êtes-vous sûr de vouloir mettre à jour ce masternode pour recevoir les paiements à %@ ?";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "mauvais mot de passe, veuillez réessayer";
@@ -66,13 +66,13 @@
 "choose passcode for %@" = "choisissez un code d'accès pour %@";
 
 /* No comment provided by engineer. */
-"Confirm" = "Confirm";
+"Confirm" = "Confirmer";
 
 /* No comment provided by engineer. */
 "connect timeout" = "expiration de la connexion";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "couldn't make payment";
+"couldn't make payment" = "impossible d'effectuer le paiement";
 
 /* No comment provided by engineer. */
 "dash transaction not signed" = "transaction Dash non signée";
@@ -87,7 +87,7 @@
 "enter old passcode" = "tapez l'ancien code d'accès";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "error signing dash transaction";
+"error signing dash transaction" = "erreur de signature de la transaction dash";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "erreur de signature de la transaction";
@@ -99,28 +99,28 @@
 "hours" = "heures";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "insufficient funds";
+"insufficient funds" = "fonds insuffisants";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
+"insufficient funds for dash network fee" = "fonds insuffisants pour les frais de réseau Bitcoin";
 
 /* No comment provided by engineer. */
-"Internal Error" = "Internal Error";
+"Internal Error" = "Erreur interne";
 
 /* No comment provided by engineer. */
-"Invalid DAPI Response" = "Invalid DAPI Response";
+"Invalid DAPI Response" = "Réponse DAPI invalide";
 
 /* No comment provided by engineer. */
-"Invalid Params" = "Invalid Params";
+"Invalid Params" = "Paramètres invalides";
 
 /* No comment provided by engineer. */
-"Invalid Request" = "Invalid Request";
+"Invalid Request" = "Requête invalide";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Réseau principal";
 
 /* No comment provided by engineer. */
-"Method Not Found" = "Method Not Found";
+"Method Not Found" = "Méthode non trouvée";
 
 /* No comment provided by engineer. */
 "minute" = "minute";
@@ -144,7 +144,7 @@
 "ok" = "ok";
 
 /* No comment provided by engineer. */
-"Parse Error" = "Parse Error";
+"Parse Error" = "Erreur d'analyse";
 
 /* No comment provided by engineer. */
 "passcode" = "code d'accès";
@@ -165,7 +165,7 @@
 "recovery phrase doesn't match" = "la phrase de récupération ne correspond pas";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
+"reduce payment amount by\n%@ (%@)?" = "réduire le montant du paiement de\n%1$@ (%2$@) ?";
 
 /* No comment provided by engineer. */
 "request expired" = "demande expirée";
@@ -186,7 +186,7 @@
 "seconds" = "seconds";
 
 /* No comment provided by engineer. */
-"Server Error" = "Server Error";
+"Server Error" = "Erreur de serveur";
 
 /* No comment provided by engineer. */
 "Testnet" = "Réseau de test";
@@ -210,10 +210,10 @@
 "unexpected response from %@" = "réponse inattendue de %@";
 
 /* No comment provided by engineer. */
-"Unknown Error" = "Unknown Error";
+"Unknown Error" = "Erreur inconnue";
 
 /* No comment provided by engineer. */
-"Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
+"Unknown JSON-RPC Response" = "Réponse JSON-RPC inconnue";
 
 /* No comment provided by engineer. */
 "unsupported signature type" = "type de signature non supporté";
@@ -231,7 +231,7 @@
 "wallet disabled" = "portefeuille désactivé";
 
 /* No comment provided by engineer. */
-"wipe" = "wipe";
+"wipe" = "effacer";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Votre portefeuille est peut-être désynchronisé.\nCeci peut souvent être résolu en réanalysant la chaîne de blocs.";
