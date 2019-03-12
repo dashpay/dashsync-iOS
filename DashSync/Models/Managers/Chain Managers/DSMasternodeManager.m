@@ -129,7 +129,7 @@ inline static int ceil_log2(int x)
 -(void)wipeMasternodeInfo {
     [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
     [self.localMasternodesDictionaryByRegistrationTransactionHash removeAllObjects];
-    self.baseBlockHash = self.chain.masternodeBaseBlockHash;
+    self.baseBlockHash = self.chain.genesisHash;
 }
 
 -(void)loadSimplifiedMasternodeEntries:(NSUInteger)count {
@@ -379,7 +379,7 @@ inline static int ceil_log2(int x)
             //we will redownload the full list on next connection
             [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash removeAllObjects];
             //no need to remove local masternodes
-            self.baseBlockHash = self.chain.masternodeBaseBlockHash;
+            self.baseBlockHash = self.chain.genesisHash;
             
             NSManagedObjectContext * context = [NSManagedObject context];
             [context performBlockAndWait:^{
@@ -515,6 +515,11 @@ inline static int ceil_log2(int x)
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet*)fundsWallet inOperatorWallet:(DSWallet*)operatorWallet inOwnerWallet:(DSWallet*)ownerWallet inVotingWallet:(DSWallet*)votingWallet {
     DSLocalMasternode * localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet inOperatorWallet:operatorWallet inOwnerWallet:ownerWallet inVotingWallet:votingWallet];
+    return localMasternode;
+}
+
+-(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet* _Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet* _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex inOwnerWallet:(DSWallet* _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex inVotingWallet:(DSWallet* _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex {
+    DSLocalMasternode * localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
     return localMasternode;
 }
 

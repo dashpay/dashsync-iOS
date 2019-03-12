@@ -14,6 +14,7 @@
 #import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSMasternodeManager.h"
 #import "DSChainManager.h"
+#import "NSString+Dash.h"
 #include <arpa/inet.h>
 
 @interface DSProviderRegistrationTransaction()
@@ -147,6 +148,13 @@
 
 -(NSString*)payloadCollateralString {
     return [NSString stringWithFormat:@"%@|%d|%@|%@|%@",self.payoutAddress,self.operatorReward,self.ownerAddress,self.votingAddress,uint256_reverse_hex(self.payloadHash)];
+}
+
+-(UInt256)payloadCollateralDigest {
+    NSMutableData * stringMessageData = [NSMutableData data];
+    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
+    [stringMessageData appendString:self.payloadCollateralString];
+    return stringMessageData.SHA256_2;
 }
 
 -(BOOL)checkPayloadSignature {

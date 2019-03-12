@@ -33,6 +33,7 @@
 @property (nonatomic,assign) UInt256 inputsHash;
 @property (nonatomic,strong) NSData * payloadSignature;
 @property (nonatomic,readonly) NSString * payloadCollateralString;
+@property (nonatomic,readonly) UInt256 payloadCollateralDigest;
 @property (nonatomic,readonly) NSString * coreRegistrationCommand;
 @property (nonatomic,readonly) NSString * location;
 @property (nonatomic,readonly) DSLocalMasternode * localMasternode;

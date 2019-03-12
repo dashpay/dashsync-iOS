@@ -46,25 +46,33 @@
 */
 - (IBAction)sign:(id)sender {
     
-    DSAccount * account = [self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress];
-    
-    NSMutableData * stringMessageData = [NSMutableData data];
-    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
-    [stringMessageData appendString:self.providerRegistrationTransaction.payloadCollateralString];
-    UInt256 messageDigest = stringMessageData.SHA256_2;
-    
-    
-    DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:self.collateralAddress];
-    
-    NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.collateralAddress];
-    
-    [account.wallet seedWithPrompt:@"Sign?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
-        if (seed && !cancelled) {
-            DSECDSAKey* key = (DSECDSAKey*)[derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
-            NSData * data = [key compactSign:messageDigest];
-            [self.delegate viewController:self didReturnSignature:data];
+    if (self.signatureMessageResultTextView.text && ![self.signatureMessageResultTextView.text isEqualToString:@""]) {
+        NSData * signature = [[NSData alloc] initWithBase64EncodedString:self.signatureMessageResultTextView.text options:0];
+        DSECDSAKey * key = [DSECDSAKey keyRecoveredFromCompactSig:signature andMessageDigest:self.providerRegistrationTransaction.payloadCollateralDigest];
+        NSString * address = [key addressForChain:self.providerRegistrationTransaction.chain];
+        if ([address isEqualToString:self.collateralAddress]) {
+            [self.delegate viewController:self didReturnSignature:signature];
+        } else {
+            NSLog(@"Not matching signature");
         }
-    }];
+    } else {
+        DSAccount * account = [self.providerRegistrationTransaction.chain accountContainingAddress:self.collateralAddress];
+        
+
+        
+        
+        DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:self.collateralAddress];
+        
+        NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.collateralAddress];
+        
+        [account.wallet seedWithPrompt:@"Sign?" forAmount:0 completion:^(NSData * _Nullable seed, BOOL cancelled) {
+            if (seed && !cancelled) {
+                DSECDSAKey* key = (DSECDSAKey*)[derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
+                NSData * data = [key compactSign:self.providerRegistrationTransaction.payloadCollateralDigest];
+                [self.delegate viewController:self didReturnSignature:data];
+            }
+        }];
+    }
 }
 
 @end

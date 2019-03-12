@@ -21,6 +21,9 @@
 @property (nonatomic,strong) DSKeyValueTableViewCell * ipAddressTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * portTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * payToAddressTableViewCell;
+@property (nonatomic,strong) DSKeyValueTableViewCell * ownerIndexTableViewCell;
+@property (nonatomic,strong) DSKeyValueTableViewCell * operatorIndexTableViewCell;
+@property (nonatomic,strong) DSKeyValueTableViewCell * votingIndexTableViewCell;
 @property (nonatomic,strong) DSAccountChooserTableViewCell * accountChooserTableViewCell;
 @property (nonatomic,strong) DSWalletChooserTableViewCell * walletChooserTableViewCell;
 @property (nonatomic,strong) DSAccount * account;
@@ -39,9 +42,12 @@
     self.collateralIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeCollateralIndexCellIdentifier"];
     self.ipAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeIPAddressCellIdentifier"];
     self.portTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodePortCellIdentifier"];
-    self.portTableViewCell.valueTextField.text = @"19999";
+    self.portTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%d",self.chain.standardPort];
     self.accountChooserTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeFundingAccountCellIdentifier"];
     self.walletChooserTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeWalletCellIdentifier"];
+    self.ownerIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeOwnerIndexCellIdentifier"];
+    self.votingIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeVotingIndexCellIdentifier"];
+    self.operatorIndexTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"MasternodeOperatorIndexCellIdentifier"];
 }
 
 #pragma mark - Table view data source
@@ -51,7 +57,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 7;
+    return 10;
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -68,10 +74,16 @@
                 case 3:
                     return self.portTableViewCell;
                 case 4:
-                    return self.payToAddressTableViewCell;
+                    return self.ownerIndexTableViewCell;
                 case 5:
-                    return self.accountChooserTableViewCell;
+                    return self.operatorIndexTableViewCell;
                 case 6:
+                    return self.votingIndexTableViewCell;
+                case 7:
+                    return self.payToAddressTableViewCell;
+                case 8:
+                    return self.accountChooserTableViewCell;
+                case 9:
                     return self.walletChooserTableViewCell;
             }
         }
@@ -107,7 +119,24 @@
         DSDLog(@"%08x", ip);
     }
     uint16_t port = [portString intValue];
-    DSLocalMasternode * masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inWallet:self.wallet];
+    
+    uint32_t ownerWalletIndex = UINT32_MAX;
+    uint32_t votingWalletIndex = UINT32_MAX;
+    uint32_t operatorWalletIndex = UINT32_MAX;
+    
+    if (self.ownerIndexTableViewCell.valueTextField.text && ![self.ownerIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
+        ownerWalletIndex = (uint32_t)[self.ownerIndexTableViewCell.valueTextField.text integerValue];
+    }
+    
+    if (self.operatorIndexTableViewCell.valueTextField.text && ![self.operatorIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
+        operatorWalletIndex = (uint32_t)[self.operatorIndexTableViewCell.valueTextField.text integerValue];
+    }
+    
+    if (self.votingIndexTableViewCell.valueTextField.text && ![self.votingIndexTableViewCell.valueTextField.text isEqualToString:@""]) {
+        votingWalletIndex = (uint32_t)[self.votingIndexTableViewCell.valueTextField.text integerValue];
+    }
+    
+    DSLocalMasternode * masternode = [self.chain.chainManager.masternodeManager createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:self.wallet fundsWalletIndex:UINT32_MAX inOperatorWallet:self.wallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:self.wallet ownerWalletIndex:ownerWalletIndex inVotingWallet:self.wallet votingWalletIndex:votingWalletIndex];
     
     NSString * payoutAddress = [self.payToAddressTableViewCell.valueTextField.text isValidDashAddressOnChain:self.chain]?self.payToAddressTableViewCell.textLabel.text:self.account.receiveAddress;
     
@@ -121,7 +150,7 @@
         collateral.hash = collateralTransactionHashData.reverse.UInt256;
         
         nonReversedCollateralHash = collateralTransactionHashData.UInt256;
-        collateral.n = [self.collateralIndexTableViewCell.textLabel.text integerValue];
+        collateral.n = [self.collateralIndexTableViewCell.valueTextField.text integerValue];
         
     }
     
@@ -183,7 +212,12 @@
     if ([segue.identifier isEqualToString:@"ChooseFundingAccountSegue"]) {
         DSAccountChooserViewController * chooseAccountSegue = (DSAccountChooserViewController*)segue.destinationViewController;
         chooseAccountSegue.chain = self.chain;
-        chooseAccountSegue.minAccountBalanceNeeded = [self.collateralTransactionTableViewCell.textLabel.text isEqualToString:@""]?750:750 +MASTERNODE_COST;
+        NSString * collateralString = self.collateralTransactionTableViewCell.valueTextField.text;
+        if (!collateralString || [collateralString isEqualToString:@""]) {
+            chooseAccountSegue.minAccountBalanceNeeded = (750 +MASTERNODE_COST);
+        } else {
+            chooseAccountSegue.minAccountBalanceNeeded = 750;
+        }
         chooseAccountSegue.delegate = self;
     } else if ([segue.identifier isEqualToString:@"ChooseWalletSegue"]) {
         DSWalletChooserViewController * chooseWalletSegue = (DSWalletChooserViewController*)segue.destinationViewController;

@@ -26,6 +26,8 @@
 #import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSECDSAKey.h"
+#import "DSChainManager.h"
+#import "DSSporkManager.h"
 #include <arpa/inet.h>
 
 @interface DSLocalMasternode()
@@ -62,6 +64,10 @@
     self.holdingKeysWallet = fundsWallet;
     self.ownerKeysWallet = ownerWallet;
     self.votingKeysWallet = votingWallet;
+    self.ownerWalletIndex = UINT32_MAX;
+    self.operatorWalletIndex = UINT32_MAX;
+    self.votingWalletIndex = UINT32_MAX;
+    self.holdingWalletIndex = UINT32_MAX;
     self.ipAddress = ipAddress;
     self.port = port;
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
@@ -207,6 +213,11 @@
             completion(nil);
             return;
         }
+        
+        NSMutableData *script = [NSMutableData data];
+        
+        [script appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
+        
         DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self.holdingKeysWallet];
         if (!providerFundsDerivationPath.hasExtendedPublicKey) {
             [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.holdingKeysWallet.uniqueID];
@@ -219,20 +230,43 @@
         if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
             [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.operatorKeysWallet.uniqueID];
         }
-        DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
-        if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
-            [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueID];
+        DSECDSAKey * ownerKey;
+        if (self.ownerWalletIndex == UINT32_MAX) {
+            self.ownerWalletIndex = (uint32_t)[providerOwnerKeysDerivationPath firstUnusedIndex];
+            ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
+        } else {
+            ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyAtIndex:self.ownerWalletIndex fromSeed:seed];
         }
         
-        NSMutableData *script = [NSMutableData data];
+        UInt160 votingKeyHash;
         
-        [script appendScriptPubKeyForAddress:payoutAddress forChain:fundingAccount.wallet.chain];
+        UInt160 ownerKeyHash = ownerKey.publicKeyData.hash160;
         
+        if ([fundingAccount.wallet.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
+            DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+            if (!providerVotingKeysDerivationPath.hasExtendedPublicKey) {
+                [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.votingKeysWallet.uniqueID];
+            }
+            if (self.votingWalletIndex == UINT32_MAX) {
+                self.votingWalletIndex = (uint32_t)[providerVotingKeysDerivationPath firstUnusedIndex];
+                votingKeyHash = [providerVotingKeysDerivationPath firstUnusedPublicKey].hash160;
+            } else {
+                votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:self.votingWalletIndex].hash160;
+            }
+        } else {
+            votingKeyHash = ownerKeyHash;
+            self.votingWalletIndex = UINT32_MAX;
+        }
         
-        DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
-        UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
-        UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
-        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
+        UInt384 operatorKey;
+        if (self.operatorWalletIndex == UINT32_MAX) {
+            self.operatorWalletIndex = (uint32_t)[providerOperatorKeysDerivationPath firstUnusedIndex];
+            operatorKey = [providerOperatorKeysDerivationPath firstUnusedPublicKey].UInt384;
+        } else {
+            operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:self.operatorWalletIndex].UInt384;
+        }
+        
+        DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithProviderRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:collateral ipAddress:self.ipAddress port:self.port ownerKeyHash:ownerKeyHash operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:script onChain:fundingAccount.wallet.chain];
         
 
         if (dsutxo_is_zero(collateral)) {
