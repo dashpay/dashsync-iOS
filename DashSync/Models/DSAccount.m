@@ -641,7 +641,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Existence
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
-- (BOOL)containsTransaction:(DSTransaction *)transaction
+- (BOOL)canContainTransaction:(DSTransaction *)transaction
 {
     if ([[NSSet setWithArray:transaction.outputAddresses] intersectsSet:self.allAddresses]) return YES;
     
@@ -851,7 +851,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         tx.blockHeight = height;
         tx.timestamp = timestamp;
         
-        if ([self containsTransaction:tx]) {
+        if ([self canContainTransaction:tx]) {
             [hash getValue:&h];
             [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
             [updated addObject:hash];
@@ -907,34 +907,42 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Removal
 
 // removes a transaction from the wallet along with any transactions that depend on its outputs
-- (void)removeTransaction:(UInt256)txHash
+- (BOOL)removeTransactionWithHash:(UInt256)txHash
 {
     DSTransaction *transaction = self.allTx[uint256_obj(txHash)];
-    NSMutableSet *hashes = [NSMutableSet set];
-    
-    for (DSTransaction *tx in self.transactions) { // remove dependent transactions
-        if (tx.blockHeight < transaction.blockHeight) break;
+    if (!transaction) return FALSE;
+    return [self removeTransaction:transaction];
+}
+
+- (BOOL)removeTransaction:(DSTransaction*)baseTransaction {
+    NSMutableSet *dependentTransactions = [NSMutableSet set];
+    DSTransaction *transaction = self.allTx[uint256_obj(baseTransaction.txHash)];
+    if (!transaction) return FALSE;
+    UInt256 transactionHash = transaction.txHash;
+    for (DSTransaction *possibleDependentTransaction in self.transactions) { // remove dependent transactions
+        if (possibleDependentTransaction.blockHeight < transaction.blockHeight) break; //because transactions are sorted we can break
         
-        if (! uint256_eq(txHash, tx.txHash) && [tx.inputHashes containsObject:uint256_obj(txHash)]) {
-            [hashes addObject:uint256_obj(tx.txHash)];
+        if (!uint256_eq(transactionHash, possibleDependentTransaction.txHash) && [possibleDependentTransaction.inputHashes containsObject:uint256_obj(transactionHash)]) {
+            //this transaction is dependent on one we want to remove
+            [dependentTransactions addObject:possibleDependentTransaction];
         }
     }
     
-    for (NSValue *hash in hashes) {
-        UInt256 h;
-        
-        [hash getValue:&h];
-        [self removeTransaction:h];
+    for (DSTransaction *transaction in dependentTransactions) {
+        //remove all dependent transactions
+        [self removeTransaction:transaction];
     }
     
-    [self.allTx removeObjectForKey:uint256_obj(txHash)];
-    if (transaction) [self.transactions removeObject:transaction];
+    [self.allTx removeObjectForKey:uint256_obj(transactionHash)];
+    [self.transactions removeObject:transaction];
+    
     [self updateBalance];
     
     [self.managedObjectContext performBlock:^{ // remove transaction from core data
         [DSTransactionHashEntity deleteObjects:[DSTransactionHashEntity objectsMatching:@"txHash == %@",
-                                                [NSData dataWithBytes:&txHash length:sizeof(txHash)]]];
+                                                [NSData dataWithUInt256:transactionHash]]];
     }];
+    return TRUE;
 }
 
 // MARK: = Signing
@@ -1055,7 +1063,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     if (uint256_is_zero(txHash)) return NO;
     
-    if (![self containsTransaction:transaction]) {
+    if (![self canContainTransaction:transaction]) {
         //this transaction is not meant for this account
         if (transaction.blockHeight == TX_UNCONFIRMED) {
             if ([self checkIsFirstTransaction:transaction]) _firstTransactionHash = txHash; //it's okay if this isn't really the first, as it will be close enough (500 blocks close)

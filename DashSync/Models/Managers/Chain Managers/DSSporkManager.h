@@ -50,4 +50,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 
 - (void)checkTriggers;
 
+- (void)stopGettingSporks;
+
 @end

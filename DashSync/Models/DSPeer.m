@@ -70,7 +70,7 @@
 #define ENABLED_SERVICES   0     // we don't provide full blocks to remote nodes
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
-#define MEMPOOL_TIMEOUT    5.0
+#define MEMPOOL_TIMEOUT    2.0
 
 
 @interface DSPeer ()
@@ -97,11 +97,12 @@
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
-@property (nonatomic, strong) void (^mempoolTransactionCompletion)(BOOL);
+@property (nonatomic, strong) MempoolCompletionBlock mempoolTransactionCompletion;
 @property (nonatomic, strong) NSRunLoop *runLoop;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic, assign) uint64_t receivedOrphanCount;
+@property (nonatomic, assign) NSTimeInterval mempoolRequestTime;
 
 @end
 
@@ -322,7 +323,7 @@
             [self.pongHandlers removeObjectAtIndex:0];
         }
         
-        if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO);
+        if (self.mempoolTransactionCompletion) self.mempoolTransactionCompletion(NO,YES,YES);
         self.mempoolTransactionCompletion = nil;
         [self.peerDelegate peer:self disconnectedWithError:error];
     });
@@ -449,37 +450,37 @@
 
 - (void)mempoolTimeout
 {
-    dispatch_async(self.delegateQueue, ^{
-        [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    });
     DSDLog(@"[DSPeer] mempool time out %@",self.host);
-    [self sendPingMessageWithPongHandler:self.mempoolTransactionCompletion];
+    
+    __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
+    [self sendPingMessageWithPongHandler:^(BOOL success) {
+        completion(success,YES,NO);
+        
+    }];
     self.mempoolTransactionCompletion = nil;
 }
 
-- (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL))completion
+- (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock)completion
 {
     [self.knownTxHashes addObjectsFromArray:publishedTxHashes];
     self.sentMempool = YES;
     
     if (completion) {
         if (self.mempoolTransactionCompletion) {
-            //DSDLog(@"aaaa");
             dispatch_async(self.delegateQueue, ^{
-                //DSDLog(@"bbbb");
-                if (self->_status == DSPeerStatus_Connected) completion(NO);
+                if (self->_status == DSPeerStatus_Connected) completion(NO,NO,NO);
             });
         }
         else {
             self.mempoolTransactionCompletion = completion;
-            //DSDLog(@"cccc");
-            dispatch_async(self.delegateQueue, ^{
-                //DSDLog(@"dddd");
-                [self performSelector:@selector(mempoolTimeout) withObject:nil afterDelay:MEMPOOL_TIMEOUT];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MEMPOOL_TIMEOUT * NSEC_PER_SEC)), self.delegateQueue, ^{
+                if ([NSDate timeIntervalSince1970] - self.mempoolRequestTime >= MEMPOOL_TIMEOUT) {
+                    [self mempoolTimeout];
+                }
             });
         }
     }
-    
+    self.mempoolRequestTime = [NSDate timeIntervalSince1970];
     [self sendMessage:[NSData data] type:MSG_MEMPOOL];
 }
 
@@ -763,6 +764,11 @@
         [self.pongHandlers addObject:(pongHandler) ? [pongHandler copy] : [^(BOOL success) {} copy]];
         [msg appendUInt64:self.localNonce];
         self.pingStartTime = [NSDate timeIntervalSince1970];
+        
+#if MESSAGE_LOGGING
+        DSDLog(@"%@:%u sending ping", self.host, self.port);
+#endif
+        
         [self sendMessage:msg type:MSG_PING];
     });
 }
@@ -1085,6 +1091,10 @@
         return;
     }
     
+    if (count == 0) {
+        DSDLog(@"Got empty Inv message");
+    }
+    
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
         DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message hashAtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
     }
@@ -1219,12 +1229,13 @@
                                    andHashStop:UINT256_ZERO];
     }
     
-    if (self.mempoolTransactionCompletion && (txHashes.count + txLockRequestHashes.count > 0)) {
-        dispatch_async(self.delegateQueue, ^{
-            [NSObject cancelPreviousPerformRequestsWithTarget:self];
-        });
+    if (self.mempoolTransactionCompletion && (txHashes.count + txLockRequestHashes.count + governanceObjectHashes.count + sporkHashes.count > 0)) {
+        self.mempoolRequestTime = [NSDate timeIntervalSince1970]; // this will cancel the mempool timeout
         DSDLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
-        [self sendPingMessageWithPongHandler:self.mempoolTransactionCompletion];
+        __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
+        [self sendPingMessageWithPongHandler:^(BOOL success) {
+            completion(success,YES,NO);
+        }];
         self.mempoolTransactionCompletion = nil;
     }
     
@@ -1889,6 +1900,16 @@
 
 // MARK: - NSStreamDelegate
 
+-(NSError *)connectionTimeoutError {
+    static NSError * error;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        error = [NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE
+                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"connect timeout", nil)}];
+    });
+    return error;
+}
+
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode
 {
     switch (eventCode) {
@@ -1899,10 +1920,9 @@
             
             if (aStream == self.outputStream) {
                 self.pingStartTime = [NSDate timeIntervalSince1970]; // don't count connect time in ping time
-                [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending socket connect timeout
+                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(disconnectWithError:) object:self.connectionTimeoutError]; // cancel pending socket connect timeout
                 [self performSelector:@selector(disconnectWithError:)
-                           withObject:[NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE
-                                                      userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"connect timeout", nil)}]
+                           withObject:self.connectionTimeoutError
                            afterDelay:CONNECT_TIMEOUT];
             }
             

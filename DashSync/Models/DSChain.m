@@ -1701,13 +1701,22 @@ static dispatch_once_t devnetToken = 0;
     return [self transactionForHash:txHash returnWallet:nil];
 }
 
-- (DSAccount* _Nullable)accountContainingTransaction:(DSTransaction *)transaction {
+- (DSAccount* _Nullable)firstAccountThatCanContainTransaction:(DSTransaction *)transaction {
     if (!transaction) return nil;
     for (DSWallet * wallet in self.wallets) {
-        DSAccount * account = [wallet accountContainingTransaction:transaction];
+        DSAccount * account = [wallet firstAccountThatCanContainTransaction:transaction];
         if (account) return account;
     }
     return nil;
+}
+
+- (NSArray*)accountsThatCanContainTransaction:(DSTransaction *)transaction {
+    NSMutableArray * mArray = [NSMutableArray array];
+    if (!transaction) return @[];
+    for (DSWallet * wallet in self.wallets) {
+        [mArray addObjectsFromArray:[wallet accountsThatCanContainTransaction:transaction]];
+    }
+    return [mArray copy];
 }
 
 - (DSAccount* _Nullable)accountContainingAddress:(NSString *)address {
@@ -1948,7 +1957,7 @@ static dispatch_once_t devnetToken = 0;
 
 //Does the chain mat
 -(BOOL)transactionHasLocalReferences:(DSTransaction*)transaction {
-    if ([self accountContainingTransaction:transaction]) return TRUE;
+    if ([self firstAccountThatCanContainTransaction:transaction]) return TRUE;
     
     //PROVIDERS
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {

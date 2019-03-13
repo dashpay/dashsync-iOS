@@ -46,6 +46,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionLockVote.h"
 #import "DSMasternodeManager+Protected.h"
+#import "DSSpecialTransactionsWalletHolder.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -61,6 +62,7 @@
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChainManager * chainManager;
+@property (nonatomic, strong) NSMutableArray * removeUnrelayedTransactionsLocalRequests;
 
 @end
 
@@ -76,6 +78,7 @@
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.nonFalsePositiveTransactions = [NSMutableSet set];
     self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
+    self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
     [self recreatePublishedTransactionList];
     return self;
 }
@@ -184,15 +187,12 @@
 
 
 // unconfirmed transactions that aren't in the mempools of any of connected peers have likely dropped off the network
-- (void)removeUnrelayedTransactions
+- (void)removeUnrelayedTransactionsFromPeer:(DSPeer*)peer
 {
-    BOOL rescan = NO, notify = NO;
-    NSValue *hash;
-    UInt256 h;
-    
+    [self.removeUnrelayedTransactionsLocalRequests addObject:peer.location];
     // don't remove transactions until we're connected to maxConnectCount peers
-    if (self.peerManager.connectedPeerCount < self.peerManager.maxConnectCount) {
-        DSDLog(@"[DSTransactionManager] not removing unrelayed transactions because connected peercount is only %lu",(unsigned long)self.peerManager.connectedPeerCount);
+    if (self.removeUnrelayedTransactionsLocalRequests.count < 2) {
+        DSDLog(@"[DSTransactionManager] not removing unrelayed transactions until we have synced mempools from 2 peers %lu",(unsigned long)self.peerManager.connectedPeerCount);
         return;
     }
     
@@ -201,43 +201,70 @@
         if (! p.synced) return;
     }
     DSDLog(@"[DSTransactionManager] removing unrelayed transactions");
-    BOOL removedTransaction = NO;
+    NSMutableSet * transactionsSet = [NSMutableSet set];
+
+    NSMutableArray * transactionsToBeRemoved = [NSMutableArray array];
+    
     for (DSWallet * wallet in self.chain.wallets) {
+        [transactionsSet addObjectsFromArray:[wallet.specialTransactionsHolder allTransactions]];
         for (DSAccount * account in wallet.accounts) {
-            for (DSTransaction *transaction in account.allTransactions) {
-                if (transaction.blockHeight != TX_UNCONFIRMED) break;
-                hash = uint256_obj(transaction.txHash);
-                DSDLog(@"checking published callback -> %@", self.publishedCallback[hash]?@"OK":@"no callback");
-                if (self.publishedCallback[hash] != NULL) continue;
-                DSDLog(@"transaction relays count %lu, transaction requests count %lu",[self.txRelays[hash] count],[self.txRequests[hash] count]);
-                if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
-                    // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
-                    if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
-                        DSDLog(@"failed transaction %@", transaction);
-                        rescan = notify = YES;
-                        
-                        for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
-                            [hash getValue:&h];
-                            if ([wallet transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
-                            rescan = NO;
-                            break;
-                        }
-                    } else {
-                        DSDLog(@"serious issue in transaction %@", transaction);
-                    }
-                    DSDLog(@"removing transaction %@", transaction);
-                    [account removeTransaction:transaction.txHash];
-                    removedTransaction = YES;
-                }
-                else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
-                    // set timestamp 0 to mark as unverified
-                    DSDLog(@"setting transaction as unverified %@", transaction);
-                    [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
-                }
-            }
+            [transactionsSet addObjectsFromArray:account.allTransactions];
         }
     }
-    if (removedTransaction) [DSTransactionHashEntity saveContext];
+    
+    BOOL rescan = NO, notify = NO;
+    NSValue *hash;
+    UInt256 h;
+
+    for (DSTransaction *transaction in transactionsSet) {
+        if (transaction.blockHeight != TX_UNCONFIRMED) continue;
+        hash = uint256_obj(transaction.txHash);
+        DSDLog(@"checking published callback -> %@", self.publishedCallback[hash]?@"OK":@"no callback");
+        if (self.publishedCallback[hash] != NULL) continue;
+        DSDLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
+        DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
+        if (!account) {
+            NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+            continue;
+        }
+        if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
+            // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
+            if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
+                DSDLog(@"failed transaction %@", transaction);
+                rescan = notify = YES;
+                
+                for (NSValue *hash in transaction.inputHashes) { // only recommend a rescan if all inputs are confirmed
+                    [hash getValue:&h];
+                    if ([account transactionForHash:h].blockHeight != TX_UNCONFIRMED) continue;
+                    rescan = NO;
+                    break;
+                }
+            } else {
+                DSDLog(@"serious issue in transaction %@", transaction);
+            }
+            DSDLog(@"removing transaction %@", transaction);
+            [transactionsToBeRemoved addObject:transaction];
+
+        }
+        else if ([self.txRelays[hash] count] < self.peerManager.maxConnectCount) {
+            // set timestamp 0 to mark as unverified
+            DSDLog(@"setting transaction as unverified %@", transaction);
+            [self.chain setBlockHeight:TX_UNCONFIRMED andTimestamp:0 forTxHashes:@[hash]];
+        }
+    }
+    
+    if (transactionsToBeRemoved.count) {
+        for (DSTransaction * transaction in [transactionsToBeRemoved copy]) {
+            NSArray * accounts = [self.chain accountsThatCanContainTransaction:transaction];
+            for (DSAccount * account in accounts) {
+                [account removeTransaction:transaction];
+                
+            }
+        }
+        [DSTransactionHashEntity saveContext];
+    }
+    
+    [self.removeUnrelayedTransactionsLocalRequests removeAllObjects];
     
     if (notify) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -496,19 +523,26 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
             DSDLog(@"[DSTransactionManager] fetching mempool ping success peer %@",peer.host);
-            [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success) {
+            [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success,BOOL needed,BOOL interruptedByDisconnect) {
                 if (success) {
                     DSDLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
                     peer.synced = YES;
-                    [self removeUnrelayedTransactions];
-                    [peer sendGetaddrMessage]; // request a list of other bitcoin peers
+                    [self removeUnrelayedTransactionsFromPeer:peer];
+                    [peer sendGetaddrMessage]; // request a list of other dash peers
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [[NSNotificationCenter defaultCenter]
                          postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
                     });
                 } else {
-                    DSDLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
+                    if (!needed) {
+                        DSDLog(@"[DSTransactionManager] fetching mempool message not needed peer %@",peer.host);
+                    } else if (interruptedByDisconnect) {
+                        DSDLog(@"[DSTransactionManager] fetching mempool message failure by disconnect peer %@",peer.host);
+                    } else {
+                        DSDLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
+                    }
+                    
                 }
                 
                 if (peer == self.peerManager.downloadPeer) {
@@ -632,9 +666,9 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     NSValue *hash = uint256_obj(txHash);
     DSTransaction *transaction = self.publishedTx[hash];
     BOOL transactionIsPublished = !!transaction;
-    DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (transactionIsPublished) {
-        account = [self.chain accountContainingTransaction:transaction];
+        account = [self.chain firstAccountThatCanContainTransaction:transaction];
         if (!account) {
             account = [self.chain accountForTransactionHash:txHash transaction:nil wallet:nil];
         }
@@ -698,7 +732,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
         DSDLog(@"No transaction found on chain for this transaction");
         return;
     }
-    DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (syncing && !account) {
         DSDLog(@"No account found for this transaction");
         return;
@@ -740,7 +774,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
     DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
     
     transaction.timestamp = [NSDate timeIntervalSince1970];
-    DSAccount * account = [self.chain accountContainingTransaction:transaction];
+    DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
     if (!account) {
         DSDLog(@"%@:%d no account for transaction %@", peer.host, peer.port, hash);
         if (![self.chain transactionHasLocalReferences:transaction]) return;

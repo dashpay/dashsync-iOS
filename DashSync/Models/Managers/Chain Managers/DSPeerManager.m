@@ -733,14 +733,20 @@
                     return;
                 }
                 DSDLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
-                [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:^(BOOL success) {
+                [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:^(BOOL success,BOOL needed,BOOL interruptedByDisconnect) {
                     if (! success) {
-                        DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
+                        if (!needed) {
+                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection not needed (already happening) peer %@",peer.host);
+                        } else if (interruptedByDisconnect) {
+                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
+                        } else {
+                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure disconnect peer %@",peer.host);
+                        }
                         return;
                     }
                     DSDLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
                     peer.synced = YES;
-                    [self.transactionManager removeUnrelayedTransactions];
+                    [self.transactionManager removeUnrelayedTransactionsFromPeer:peer];
                     [peer sendGetaddrMessage]; // request a list of other dash peers
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -773,6 +779,7 @@
         [peer sendFilterloadMessage:[self.transactionManager transactionsBloomFilterForPeer:peer].data];
     }
     peer.currentBlockHeight = self.chain.lastBlockHeight;
+    
     
     if ([self.chain syncsBlockchain] && (self.chain.lastBlockHeight < peer.lastblock)) { // start blockchain sync
         [self.chainManager resetLastRelayedItemTime];

@@ -494,11 +494,19 @@
     return [mArray copy];
 }
 
-- (DSAccount*)accountContainingTransaction:(DSTransaction *)transaction {
+- (DSAccount*)firstAccountThatCanContainTransaction:(DSTransaction *)transaction {
     for (DSAccount * account in self.accounts) {
-        if ([account containsTransaction:transaction]) return account;
+        if ([account canContainTransaction:transaction]) return account;
     }
     return FALSE;
+}
+
+- (NSArray*)accountsThatCanContainTransaction:(DSTransaction *)transaction {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DSAccount * account in self.accounts) {
+        if ([account canContainTransaction:transaction]) [mArray addObject:account];
+    }
+    return [mArray copy];
 }
 
 // all previously generated external addresses
