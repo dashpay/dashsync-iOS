@@ -276,7 +276,7 @@
                                                                        "This can often be fixed by rescanning the blockchain.", nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
-                                               actionWithTitle:DSLocalizedString(@"cancel", nil)
+                                               actionWithTitle:DSLocalizedString(@"ok", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
