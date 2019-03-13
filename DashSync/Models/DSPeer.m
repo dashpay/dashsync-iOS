@@ -451,9 +451,6 @@
 - (void)mempoolTimeout
 {
     DSDCriticalLog(@"[DSPeer] mempool time out %@",self.host);
-    dispatch_async(self.delegateQueue, ^{
-        [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    });
     
     __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
     [self sendPingMessageWithPongHandler:^(BOOL success) {
