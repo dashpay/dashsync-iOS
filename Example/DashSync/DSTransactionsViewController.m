@@ -313,7 +313,7 @@ static NSString *dateFormat(NSString *template)
     NSLog(@"%u",transactionEntity.transactionHash.blockHeight);
     DSTransaction *tx = [transactionEntity transactionForChain:self.chainManager.chain];
     [self.transactions setObject:tx forKey:uint256_data(tx.txHash)];
-    DSAccount * account = [self.chainManager.chain accountContainingTransaction:tx];
+    DSAccount * account = [self.chainManager.chain firstAccountThatCanContainTransaction:tx];
     uint64_t received = [account amountReceivedFromTransaction:tx],
     sent = [account amountSentByTransaction:tx],
     balance = [account balanceAfterTransaction:tx];

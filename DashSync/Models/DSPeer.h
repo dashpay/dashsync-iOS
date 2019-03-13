@@ -151,6 +151,8 @@ typedef NS_ENUM(uint32_t, DSGovernanceRequestState) {
 
 typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
+typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interruptedByDisconnect);
+
 @class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSGovernanceObject,DSGovernanceVote,DSTransactionLockVote;
 
 @protocol DSPeerDelegate<NSObject>
@@ -169,8 +171,6 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 - (void)peer:(DSPeer *)peer relayedSyncInfo:(DSSyncCountInfo)syncCountInfo count:(uint32_t)count;
 
 @end
-
-
 
 @protocol DSPeerTransactionDelegate<NSObject>
 @required
@@ -286,7 +286,7 @@ services:(uint64_t)services;
 - (void)receivedOrphanBlock;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendFilterloadMessage:(NSData *)filter;
-- (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(void (^)(BOOL success))completion;
+- (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock)completion;
 - (void)sendGetheadersMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendGetblocksMessageWithLocators:(NSArray *)locators andHashStop:(UInt256)hashStop;
 - (void)sendTransactionInvMessagesForTxHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes;

@@ -40,14 +40,15 @@
 #define SPORK_15_MIN_PROTOCOL_VERSION 70213
 
 @interface DSSporkManager()
-    
+
 @property (nonatomic,strong) NSMutableDictionary <NSNumber*,DSSpork*> * sporkDictionary;
 @property (nonatomic,strong) NSMutableArray * sporkHashesMarkedForRetrieval;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) NSTimeInterval lastRequestedSporks;
 @property (nonatomic,assign) NSTimeInterval lastSyncedSporks;
-    
+@property (nonatomic,strong) NSTimer * sporkTimer;
+
 @end
 
 @implementation DSSporkManager
@@ -83,7 +84,7 @@
 -(DSPeerManager*)peerManager {
     return self.chain.chainManager.peerManager;
 }
-    
+
 -(BOOL)instantSendActive {
     DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork2InstantSendEnabled)];
     if (!instantSendSpork) return TRUE;//assume true
@@ -116,8 +117,7 @@
 
 // MARK: - Spork Sync
 
--(void)getSporks {
-    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
+-(void)performSporkRequest {
     for (DSPeer *p in self.peerManager.connectedPeers) { // after syncing, get sporks from other peers
         if (p.status != DSPeerStatus_Connected) continue;
         
@@ -130,6 +130,23 @@
     }
 }
 
+-(void)getSporks {
+    if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_Sporks)) return; // make sure we care about sporks
+    
+    if (!self.sporkTimer) {
+        [self performSporkRequest];
+        self.sporkTimer = [NSTimer scheduledTimerWithTimeInterval:600 repeats:TRUE block:^(NSTimer * _Nonnull timer) {
+            if (self.lastSyncedSporks < [NSDate timeIntervalSince1970] - 60 * 10) { //wait 10 minutes between requests
+                [self performSporkRequest];
+            }
+        }];
+    }
+}
+
+- (void)stopGettingSporks {
+    [self.sporkTimer invalidate];
+    self.sporkTimer = nil;
+}
 
 - (void)peer:(DSPeer * _Nonnull)peer hasSporkHashes:(NSSet* _Nonnull)sporkHashes {
     BOOL hasNew = FALSE;
@@ -141,7 +158,7 @@
     }
     if (hasNew) [self getSporks];
 }
-    
+
 - (void)peer:(DSPeer *)peer relayedSpork:(DSSpork *)spork {
     if (!spork.isValid) {
         [self.peerManager peerMisbehaving:peer];
@@ -206,10 +223,10 @@
                 [self.chain setMinProtocolVersion:SPORK_15_MIN_PROTOCOL_VERSION];
             }
         }
-        break;
-        
+            break;
+            
         default:
-        break;
+            break;
     }
     
 }
@@ -223,5 +240,5 @@
 -(void)wipeSporkInfo {
     _sporkDictionary = [NSMutableDictionary dictionary];
 }
-    
+
 @end

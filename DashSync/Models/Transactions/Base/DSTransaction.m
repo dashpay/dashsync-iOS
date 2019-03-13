@@ -270,7 +270,7 @@
 }
 
 -(DSAccount*)account {
-    return [self.chain accountContainingTransaction:self];
+    return [self.chain firstAccountThatCanContainTransaction:self];
 }
 
 - (NSArray *)inputHashes
@@ -361,7 +361,7 @@
         UInt256 hash;
         [hashValue getValue:&hash];
         DSTransaction *tx = [self.chain transactionForHash:hash];
-        DSAccount * account = [self.chain accountContainingTransaction:tx];
+        DSAccount * account = [self.chain firstAccountThatCanContainTransaction:tx];
         uint32_t n = [self.inputIndexes[i++] unsignedIntValue];
         
         if (n < tx.outputAddresses.count && [account containsAddress:tx.outputAddresses[n]]) {

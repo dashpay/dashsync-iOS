@@ -125,13 +125,16 @@
 - (void)signTransaction:(DSTransaction * _Nonnull)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
-- (BOOL)containsTransaction:(DSTransaction * _Nonnull)transaction;
+- (BOOL)canContainTransaction:(DSTransaction * _Nonnull)transaction;
 
 // adds a transaction to the account, or returns false if it isn't associated with the account
 - (BOOL)registerTransaction:(DSTransaction * _Nonnull)transaction;
 
-// removes a transaction from the account along with any transactions that depend on its outputs
-- (void)removeTransaction:(UInt256)txHash;
+// removes a transaction from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
+- (BOOL)removeTransaction:(DSTransaction * _Nonnull)transaction;
+
+// removes a transaction by hash from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
+- (BOOL)removeTransactionWithHash:(UInt256)txHash;
 
 // returns the transaction with the given hash if it's been registered in the account (might also return non-registered)
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
