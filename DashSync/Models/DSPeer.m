@@ -293,9 +293,9 @@
 {
     if (_status == DSPeerStatus_Disconnected) return;
     if (!error) {
-        DSDCriticalLog(@"Disconnected from peer %@ with unknown error",self.host);
+        DSDLog(@"Disconnected from peer %@ with unknown error",self.host);
     } else {
-        DSDCriticalLog(@"Disconnected from peer %@ with error %@",self.host,error);
+        DSDLog(@"Disconnected from peer %@ with error %@",self.host,error);
     }
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel connect timeout
 
@@ -343,7 +343,7 @@
 {
     if (self.status != DSPeerStatus_Connecting || ! self.sentVerack || ! self.gotVerack) return;
     
-    DSDCriticalLog(@"%@:%u handshake completed", self.host, self.port);
+    DSDLog(@"%@:%u handshake completed", self.host, self.port);
     [NSObject cancelPreviousPerformRequestsWithTarget:self]; // cancel pending handshake timeout
     _status = DSPeerStatus_Connected;
     
@@ -450,7 +450,7 @@
 
 - (void)mempoolTimeout
 {
-    DSDCriticalLog(@"[DSPeer] mempool time out %@",self.host);
+    DSDLog(@"[DSPeer] mempool time out %@",self.host);
     
     __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
     [self sendPingMessageWithPongHandler:^(BOOL success) {
@@ -766,7 +766,7 @@
         self.pingStartTime = [NSDate timeIntervalSince1970];
         
 #if MESSAGE_LOGGING
-        DSDCriticalLog(@"%@:%u sending ping", self.host, self.port);
+        DSDLog(@"%@:%u sending ping", self.host, self.port);
 #endif
         
         [self sendMessage:msg type:MSG_PING];
@@ -1092,11 +1092,11 @@
     }
     
     if (count == 0) {
-        DSDCriticalLog(@"Got empty Inv message");
+        DSDLog(@"Got empty Inv message");
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
-        DSDCriticalLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message hashAtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
+        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message hashAtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
     }
     
     BOOL onlyPrivateSendTransactions = NO;
@@ -1607,7 +1607,7 @@
     }
     
 #if MESSAGE_LOGGING
-    DSDCriticalLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
+    DSDLog(@"%@:%u got pong in %fs", self.host, self.port, self.pingTime);
 #endif
     
     dispatch_async(self.delegateQueue, ^{
@@ -1914,7 +1914,7 @@
 {
     switch (eventCode) {
         case NSStreamEventOpenCompleted:
-            DSDCriticalLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
+            DSDLog(@"%@:%u %@ stream connected in %fs", self.host, self.port,
                   (aStream == self.inputStream) ? @"input" : (aStream == self.outputStream ? @"output" : @"unknown"),
                   [NSDate timeIntervalSince1970] - self.pingStartTime);
             

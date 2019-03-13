@@ -10,16 +10,10 @@
 #define DSLocalizedString(key, comment) \
 [[DSEnvironment sharedInstance].resourceBundle localizedStringForKey:(key) value:@"" table:nil]
 
-//#ifdef DEBUG
-//#define DSDLog(s, ...) NSLog(s, ##__VA_ARGS__)
-//#else
-#define DSDLog(s, ...)
-//#endif
-
 #ifdef DEBUG
-#define DSDCriticalLog(s, ...) NSLog(s, ##__VA_ARGS__)
+#define DSDLog(s, ...) NSLog(s, ##__VA_ARGS__)
 #else
-#define DSDCriticalLog(s, ...)
+#define DSDLog(s, ...)
 #endif
 
 @interface DSEnvironment : NSObject

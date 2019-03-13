@@ -192,15 +192,15 @@
     [self.removeUnrelayedTransactionsLocalRequests addObject:peer.location];
     // don't remove transactions until we're connected to maxConnectCount peers
     if (self.removeUnrelayedTransactionsLocalRequests.count < 2) {
-        DSDCriticalLog(@"[DSTransactionManager] not removing unrelayed transactions until we have synced mempools from 2 peers %lu",(unsigned long)self.peerManager.connectedPeerCount);
+        DSDLog(@"[DSTransactionManager] not removing unrelayed transactions until we have synced mempools from 2 peers %lu",(unsigned long)self.peerManager.connectedPeerCount);
         return;
     }
     
     for (DSPeer *p in self.peerManager.connectedPeers) { // don't remove tx until all peers have finished relaying their mempools
-        DSDCriticalLog(@"[DSTransactionManager] not removing unrelayed transactions because %@ is not synced yet",p.host);
+        DSDLog(@"[DSTransactionManager] not removing unrelayed transactions because %@ is not synced yet",p.host);
         if (! p.synced) return;
     }
-    DSDCriticalLog(@"[DSTransactionManager] removing unrelayed transactions");
+    DSDLog(@"[DSTransactionManager] removing unrelayed transactions");
     NSMutableSet * transactionsSet = [NSMutableSet set];
 
     NSMutableArray * transactionsToBeRemoved = [NSMutableArray array];
@@ -511,21 +511,21 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 // MARK: - Mempools Sync
 
 - (void)fetchMempoolFromPeer:(DSPeer*)peer {
-    DSDCriticalLog(@"[DSTransactionManager] fetching mempool from peer %@",peer.host);
+    DSDLog(@"[DSTransactionManager] fetching mempool from peer %@",peer.host);
     if (peer.status != DSPeerStatus_Connected) return;
     
     if ([self.chain canConstructAFilter] && (peer != self.peerManager.downloadPeer || self.transactionsBloomFilterFalsePositiveRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0)) {
-        DSDCriticalLog(@"[DSTransactionManager] sending filterload message from peer %@",peer.host);
+        DSDLog(@"[DSTransactionManager] sending filterload message from peer %@",peer.host);
         [peer sendFilterloadMessage:[self transactionsBloomFilterForPeer:peer].data];
     }
     
     [peer sendInvMessageForHashes:self.publishedCallback.allKeys ofType:DSInvType_Tx]; // publish pending tx
     [peer sendPingMessageWithPongHandler:^(BOOL success) {
         if (success) {
-            DSDCriticalLog(@"[DSTransactionManager] fetching mempool ping success peer %@",peer.host);
+            DSDLog(@"[DSTransactionManager] fetching mempool ping success peer %@",peer.host);
             [peer sendMempoolMessage:self.publishedTx.allKeys completion:^(BOOL success,BOOL needed,BOOL interruptedByDisconnect) {
                 if (success) {
-                    DSDCriticalLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
+                    DSDLog(@"[DSTransactionManager] fetching mempool message success peer %@",peer.host);
                     peer.synced = YES;
                     [self removeUnrelayedTransactionsFromPeer:peer];
                     [peer sendGetaddrMessage]; // request a list of other dash peers
@@ -536,11 +536,11 @@ for (NSValue *txHash in self.txRelays.allKeys) {
                     });
                 } else {
                     if (!needed) {
-                        DSDCriticalLog(@"[DSTransactionManager] fetching mempool message not needed peer %@",peer.host);
+                        DSDLog(@"[DSTransactionManager] fetching mempool message not needed peer %@",peer.host);
                     } else if (interruptedByDisconnect) {
-                        DSDCriticalLog(@"[DSTransactionManager] fetching mempool message failure by disconnect peer %@",peer.host);
+                        DSDLog(@"[DSTransactionManager] fetching mempool message failure by disconnect peer %@",peer.host);
                     } else {
-                        DSDCriticalLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
+                        DSDLog(@"[DSTransactionManager] fetching mempool message failure peer %@",peer.host);
                     }
                     
                 }

@@ -729,22 +729,22 @@
             }
             [peer sendPingMessageWithPongHandler:^(BOOL success) {
                 if (! success) {
-                    DSDCriticalLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);
+                    DSDLog(@"[DSTransactionManager] fetching mempool ping on connection failure peer %@",peer.host);
                     return;
                 }
-                DSDCriticalLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
+                DSDLog(@"[DSTransactionManager] fetching mempool ping on connection success peer %@",peer.host);
                 [peer sendMempoolMessage:self.transactionManager.publishedTx.allKeys completion:^(BOOL success,BOOL needed,BOOL interruptedByDisconnect) {
                     if (! success) {
                         if (!needed) {
-                            DSDCriticalLog(@"[DSTransactionManager] fetching mempool message on connection not needed (already happening) peer %@",peer.host);
+                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection not needed (already happening) peer %@",peer.host);
                         } else if (interruptedByDisconnect) {
-                            DSDCriticalLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
+                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure peer %@",peer.host);
                         } else {
-                            DSDCriticalLog(@"[DSTransactionManager] fetching mempool message on connection failure disconnect peer %@",peer.host);
+                            DSDLog(@"[DSTransactionManager] fetching mempool message on connection failure disconnect peer %@",peer.host);
                         }
                         return;
                     }
-                    DSDCriticalLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
+                    DSDLog(@"[DSTransactionManager] fetching mempool message on connection success peer %@",peer.host);
                     peer.synced = YES;
                     [self.transactionManager removeUnrelayedTransactionsFromPeer:peer];
                     [peer sendGetaddrMessage]; // request a list of other dash peers
