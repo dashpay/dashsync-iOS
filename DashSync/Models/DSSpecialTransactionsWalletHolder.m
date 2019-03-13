@@ -149,6 +149,7 @@
         [DSDerivationPathEntity setContext:self.managedObjectContext];
         NSMutableArray * derivationPathEntities = [NSMutableArray array];
         for (DSDerivationPath * derivationPath in [self derivationPaths]) {
+            if (![derivationPath hasExtendedPublicKey]) continue;
             DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath];
             [derivationPathEntities addObject:derivationPathEntity];
         }
