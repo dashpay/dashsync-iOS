@@ -8,6 +8,8 @@
 
 #import "DSContactsTabBarViewController.h"
 
+#import "DSContactsViewController.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactsTabBarViewController ()
@@ -18,6 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    DSContactsViewController *contacts = [self.storyboard instantiateViewControllerWithIdentifier:@"ContactsControllerId"];
+    contacts.chainManager = self.chainManager;
+    contacts.blockchainUser = self.blockchainUser;
+    
+    self.viewControllers = @[contacts];
     // Do any additional setup after loading the view.
 }
 
@@ -26,18 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
+#pragma mark - Actions
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 - (IBAction)doneButtonAction:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+
 
 @end
 

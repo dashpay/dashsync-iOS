@@ -8,7 +8,17 @@
 
 #import "DSContactsViewController.h"
 
+#import <DashSync/DashSync.h>
+#import <DashSync/DSTransition.h>
+#import <ios-dpp/DSDAPObjectsFactory.h>
+#import <ios-dpp/DSSchemaObject.h>
+#import <ios-dpp/DSSchemaHashUtils.h>
+#import <DSJSONSchemaValidation/NSDictionary+DSJSONDeepMutableCopy.h>
+#import <TinyCborObjc/NSObject+DSCborEncoding.h>
+
 NS_ASSUME_NONNULL_BEGIN
+
+static NSString * const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
 
 @interface DSContactsViewController ()
 
@@ -18,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    [self createProfile];
+//    DSTransition *transition = []
     // Do any additional setup after loading the view.
 }
 
@@ -26,7 +39,39 @@ NS_ASSUME_NONNULL_BEGIN
     // Dispose of any resources that can be recreated.
 }
 
-#pragma mark - Actions
+#pragma mark - Private
+
+- (void)createProfile {
+    NSMutableDictionary<NSString *, id> *userObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"user"];
+    userObject[@"aboutme"] = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username];
+    userObject[@"username"] = self.blockchainUser.username;
+    
+    NSMutableArray *dapObjects = [NSMutableArray array];
+    [dapObjects addObject:userObject];
+    
+    NSMutableDictionary<NSString *, id> *stPacket = [[DSDAPObjectsFactory createSTPacketInstance] ds_deepMutableCopy];
+    NSMutableDictionary<NSString *, id> *stPacketObject = stPacket[DS_STPACKET];
+    stPacketObject[DS_DAPOBJECTS] = dapObjects;
+    stPacketObject[@"dapid"] = ContactsDAPId;
+    
+    NSData *serializedSTPacketObject = [stPacketObject ds_cborEncodedObject];
+    
+    NSData *serializedSTPacketObjectHash = [DSSchemaHashUtils hashOfObject:stPacketObject];
+    UInt256 packetHash;
+    [serializedSTPacketObjectHash getBytes:&packetHash length:sizeof(packetHash)];
+    
+    DSTransition *transition = [self.blockchainUser transitionForStateTransitionPacketHash:packetHash];
+    NSData *transitionData = [transition toData];
+    
+    NSString *transitionDataHex = [transitionData hexString];
+    NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
+    
+    [self.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
+        NSLog(@"Header ID %@", headerId);
+    } failure:^(NSError * _Nonnull error) {
+        NSLog(@"Error: %@", error);
+    }];
+}
 
 @end
 

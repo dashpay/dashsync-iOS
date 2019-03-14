@@ -15,7 +15,7 @@ PODS:
 
 DEPENDENCIES:
   - DashSync (from `../`)
-  - "ios-dpp (from `git@github.com:dashevo/ios-dpp.git`, branch `master`)"
+  - "ios-dpp (from `git@github.com:dashevo/ios-dpp.git`, commit `ec69e3d68469ea069e25a82ee9fe5d62d417a7d3`, branch `master`)"
   - KVO-MVVM (= 0.5.1)
 
 SPEC REPOS:
@@ -32,11 +32,12 @@ EXTERNAL SOURCES:
     :path: "../"
   ios-dpp:
     :branch: master
+    :commit: ec69e3d68469ea069e25a82ee9fe5d62d417a7d3
     :git: "git@github.com:dashevo/ios-dpp.git"
 
 CHECKOUT OPTIONS:
   ios-dpp:
-    :commit: 5739794b2d74cb4322ce1930ca43a4e641ad30a2
+    :commit: ec69e3d68469ea069e25a82ee9fe5d62d417a7d3
     :git: "git@github.com:dashevo/ios-dpp.git"
 
 SPEC CHECKSUMS:
@@ -49,6 +50,6 @@ SPEC CHECKSUMS:
   tinycbor: 81999417a2c8ee8c4a7651738a11ad0711c82935
   TinyCborObjc: f42aa647c81de86a395a5691d6a93d04294f6d03
 
-PODFILE CHECKSUM: 06a2a8401f7f47b7d921c7187f9551f4a29ea7db
+PODFILE CHECKSUM: f3fdb383f07320c776df544f93498ba52a679c4e
 
 COCOAPODS: 1.5.3
