@@ -675,8 +675,8 @@
     return nil;
 }
 
-- (UInt256)lastBlockchainUserTransactionHashForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
-    UInt256 lastSubscriptionTransactionHash = blockchainUserRegistrationTransactionHash;
+- (UInt256)lastTransitionHashForRegistrationTransactionHash:(UInt256)registrationTransactionHash {
+    UInt256 lastSubscriptionTransactionHash = registrationTransactionHash;
     UInt256 startLastSubscriptionTransactionHash;
     do {
         startLastSubscriptionTransactionHash = lastSubscriptionTransactionHash;
@@ -737,6 +737,16 @@
     }
 }
 
+-(DSBlockchainUser*)blockchainUserForRegistrationHash:(UInt256)registrationHash {
+    DSBlockchainUser * foundBlockchainUser = nil;
+    for (DSBlockchainUser * blockchainUser in [self blockchainUsers]) {
+        if (uint256_eq([blockchainUser registrationTransactionHash],registrationHash)) {
+            foundBlockchainUser = blockchainUser;
+        }
+    }
+    return foundBlockchainUser;
+}
+
 -(NSArray*)blockchainUsers {
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
@@ -746,8 +756,8 @@
             uint32_t index = [keyChainDictionary[username] unsignedIntValue];
             UInt256 registrationTransactionHash = [self blockchainUserRegistrationTransactionForIndex:index].txHash;
             DSDLog(@"Blockchain user with %@",uint256_hex(registrationTransactionHash));
-            UInt256 lastBlockchainUserTransactionHash = [self lastBlockchainUserTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
-            [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastBlockchainUserTransactionHash:lastBlockchainUserTransactionHash]];
+            UInt256 lastTransitionHash = [self lastTransitionHashForRegistrationTransactionHash:registrationTransactionHash];
+            [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash]];
         }
     }
     return [rArray copy];

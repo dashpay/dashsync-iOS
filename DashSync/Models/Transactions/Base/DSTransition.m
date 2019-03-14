@@ -57,7 +57,7 @@
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
-    self.type = DSTransactionType_SubscriptionCloseAccount;
+    self.type = DSTransactionType_Transition;
     NSUInteger length = message.length;
     uint32_t off = self.payloadOffset;
     
@@ -99,13 +99,14 @@
     return self;
 }
 
--(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
+-(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain *)chain {
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_Transition;
     self.version = SPECIAL_TX_VERSION;
     self.transitionVersion = version;
     self.registrationTransactionHash = registrationTransactionHash;
     self.previousTransitionHash = previousTransitionHash;
+    self.packetHash = packetHash;
     self.creditFee = creditFee;
     return self;
 }
