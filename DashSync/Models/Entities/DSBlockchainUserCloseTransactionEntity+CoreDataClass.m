@@ -30,7 +30,7 @@
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
     DSBlockchainUserCloseTransaction * transaction = (DSBlockchainUserCloseTransaction *)[super transactionForChain:chain];
-    transaction.type = DSTransactionType_SubscriptionTopUp;
+    transaction.type = DSTransactionType_SubscriptionCloseAccount;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.blockchainUserCloseTransactionVersion = self.specialTransactionVersion;
         transaction.registrationTransactionHash = self.registrationTransactionHash.UInt256;
