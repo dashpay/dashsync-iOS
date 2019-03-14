@@ -71,7 +71,9 @@
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     
-    NSURL *dapiNodeURL = [NSURL URLWithString:@"http://54.169.131.115:3000"];
+    // TODO: node should be randomly selected on every DAPI call
+    // (using devnet-porto for now)
+    NSURL *dapiNodeURL = [NSURL URLWithString:@"http://18.237.69.61:3000"];
     HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
     self.DAPIClient = [[DSDAPIClient alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
     
