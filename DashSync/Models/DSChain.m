@@ -1926,6 +1926,14 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(void)registerTransition:(DSTransition*)transition {
+    DSWallet * blockchainUserRegistrationWallet = nil;
+    DSTransaction * blockchainUserRegistrationTransaction = [self transactionForHash:transition.registrationTransactionHash returnWallet:&blockchainUserRegistrationWallet];
+    if (blockchainUserRegistrationTransaction && blockchainUserRegistrationWallet) {
+        [blockchainUserRegistrationWallet.specialTransactionsHolder registerTransaction:transition];
+    }
+}
+
 -(void)registerSpecialTransaction:(DSTransaction*)transaction {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
@@ -1951,6 +1959,9 @@ static dispatch_once_t devnetToken = 0;
     } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
         DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
         [self registerBlockchainUserTopupTransaction:blockchainUserTopupTransaction];
+    } else if ([transaction isKindOfClass:[DSTransition class]]) {
+        DSTransition * transition = (DSTransition*)transaction;
+        [self registerTransition:transition];
     }
 }
 

@@ -172,8 +172,9 @@
 
 -(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
-    DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
+    //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
+    self.txHash = self.data.SHA256_2;
 }
 
 - (size_t)size

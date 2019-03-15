@@ -675,19 +675,6 @@
     return nil;
 }
 
-- (UInt256)lastTransitionHashForRegistrationTransactionHash:(UInt256)registrationTransactionHash {
-    UInt256 lastSubscriptionTransactionHash = registrationTransactionHash;
-    UInt256 startLastSubscriptionTransactionHash;
-    do {
-        startLastSubscriptionTransactionHash = lastSubscriptionTransactionHash;
-        
-        lastSubscriptionTransactionHash = [_specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:lastSubscriptionTransactionHash];
-        
-    }
-    while (!uint256_eq(startLastSubscriptionTransactionHash, lastSubscriptionTransactionHash));
-    return lastSubscriptionTransactionHash;
-}
-
 - (DSBlockchainUserResetTransaction *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     DSBlockchainUserResetTransaction * transaction = [_specialTransactionsHolder blockchainUserResetTransactionForPublicKeyHash:publicKeyHash];
     if (transaction) return transaction;
@@ -755,8 +742,9 @@
         for (NSString * username in keyChainDictionary) {
             uint32_t index = [keyChainDictionary[username] unsignedIntValue];
             UInt256 registrationTransactionHash = [self blockchainUserRegistrationTransactionForIndex:index].txHash;
-            DSDLog(@"Blockchain user with %@",uint256_hex(registrationTransactionHash));
-            UInt256 lastTransitionHash = [self lastTransitionHashForRegistrationTransactionHash:registrationTransactionHash];
+            DSDLog(@"Blockchain user %@ with reg %@",username,uint256_hex(registrationTransactionHash));
+            UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
+            DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
             [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash]];
         }
     }

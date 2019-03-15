@@ -20,7 +20,9 @@
         DSTransition * transition = (DSTransition*)tx;
         self.specialTransactionVersion = transition.transitionVersion;
         self.registrationTransactionHash = [NSData dataWithUInt256:transition.registrationTransactionHash];
+        self.previousSubcriptionHash = [NSData dataWithUInt256:transition.previousTransitionHash];
         self.creditFee = transition.creditFee;
+        self.packetHash = [NSData dataWithUInt256:transition.packetHash];
         self.payloadSignature = transition.payloadSignature;
     }];
     
@@ -34,7 +36,9 @@
     [self.managedObjectContext performBlockAndWait:^{
         transaction.transitionVersion = self.specialTransactionVersion;
         transaction.registrationTransactionHash = self.registrationTransactionHash.UInt256;
+        transaction.previousTransitionHash = self.previousSubcriptionHash.UInt256;
         transaction.creditFee = self.creditFee;
+        transaction.packetHash = self.packetHash.UInt256;
         transaction.payloadSignature = self.payloadSignature;
     }];
     

@@ -152,6 +152,9 @@ NS_ASSUME_NONNULL_BEGIN
                                           [self.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
                                               NSLog(@"Header ID %@", headerId);
                                               
+                                              [self.chainManager.chain registerSpecialTransaction:transition];
+                                              [transition save];
+                                              
                                               if (completion) {
                                                   completion(YES);
                                               }

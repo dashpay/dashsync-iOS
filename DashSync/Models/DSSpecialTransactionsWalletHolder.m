@@ -16,6 +16,7 @@
 #import "DSBlockchainUserResetTransactionEntity+CoreDataClass.h"
 #import "DSBlockchainUserCloseTransactionEntity+CoreDataClass.h"
 #import "DSBlockchainUserTopupTransactionEntity+CoreDataClass.h"
+#import "DSTransitionEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTxInputEntity+CoreDataClass.h"
@@ -32,6 +33,7 @@
 #import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
+#import "DSTransition.h"
 #import "DSChain.h"
 
 @interface DSSpecialTransactionsWalletHolder()
@@ -45,6 +47,7 @@
 @property (nonatomic,strong) NSMutableDictionary * blockchainUserTopupTransactions;
 @property (nonatomic,strong) NSMutableDictionary * blockchainUserResetTransactions;
 @property (nonatomic,strong) NSMutableDictionary * blockchainUserCloseTransactions;
+@property (nonatomic,strong) NSMutableDictionary * transitions;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
@@ -63,6 +66,7 @@
     self.blockchainUserTopupTransactions = [NSMutableDictionary dictionary];
     self.blockchainUserResetTransactions = [NSMutableDictionary dictionary];
     self.blockchainUserCloseTransactions = [NSMutableDictionary dictionary];
+    self.transitions = [NSMutableDictionary dictionary];
     self.managedObjectContext = managedObjectContext?managedObjectContext:[NSManagedObject context];
     self.wallet = wallet;
     return self;
@@ -132,6 +136,8 @@
         [self.blockchainUserCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
     } else if ([transaction isMemberOfClass:[DSBlockchainUserTopupTransaction class]]) {
         [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+    } else if ([transaction isMemberOfClass:[DSTransition class]]) {
+        [self.transitions setObject:transaction forKey:uint256_data(transaction.txHash)];
     } else {
         NSAssert(FALSE,@"unknown transaction type being registered");
         return;
@@ -225,6 +231,14 @@
                 if (! transaction) continue;
                 [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             }
+            
+            NSArray<DSTransition *>* transitions = [DSTransitionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainUserRegistrationTransaction.txHash)];
+            for (DSTransitionEntity *e in transitions) {
+                DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
+                
+                if (! transaction) continue;
+                [self.transitions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            }
         }
     }];
 }
@@ -266,6 +280,11 @@
             [subscriptionTransactions addObject:blockchainUserCloseTransaction];
         }
     }
+    for (DSTransition * transition in [self.transitions allValues]) {
+        if (uint256_eq(transition.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
+            [subscriptionTransactions addObject:transition];
+        }
+    }
     return [subscriptionTransactions copy];
 }
 
@@ -275,7 +294,9 @@
     while ([subscriptionTransactions count]) {
         BOOL found = FALSE;
         for (DSTransaction * transaction in [subscriptionTransactions copy]) {
-            if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+            if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
+                [subscriptionTransactions removeObject:transaction]; //remove topups
+            } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
                 DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction*)transaction;
                 if (uint256_eq(blockchainUserResetTransaction.previousBlockchainUserTransactionHash, lastSubscriptionTransactionHash)) {
                     lastSubscriptionTransactionHash = blockchainUserResetTransaction.txHash;
@@ -288,6 +309,14 @@
                     lastSubscriptionTransactionHash = blockchainUserCloseTransaction.txHash;
                     found = TRUE;
                     [subscriptionTransactions removeObject:blockchainUserCloseTransaction];
+                }
+            } else if ([transaction isKindOfClass:[DSTransition class]]) {
+                DSTransition * transition = (DSTransition*)transaction;
+                if (uint256_eq(transition.previousTransitionHash, lastSubscriptionTransactionHash)) {
+                    lastSubscriptionTransactionHash = transition.txHash;
+                    NSLog(@"%@",uint256_hex(transition.txHash));
+                    found = TRUE;
+                    [subscriptionTransactions removeObject:transition];
                 }
             }
         }

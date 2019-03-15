@@ -204,7 +204,7 @@
 
 -(UInt256)lastTransitionHash {
     //this is not effective, do this locally in the future
-    return [self.wallet lastTransitionHashForRegistrationTransactionHash:self.registrationTransactionHash];
+    return [self.wallet.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:self.registrationTransactionHash];
 }
 
 -(DSTransition*)transitionForStateTransitionPacketHash:(UInt256)stateTransitionHash {
