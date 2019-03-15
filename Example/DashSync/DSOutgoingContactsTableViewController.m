@@ -1,12 +1,12 @@
 //
-//  DSContactsViewController.m
+//  DSOutgoingContactsTableViewController.m
 //  DashSync_Example
 //
-//  Created by Andrew Podkovyrin on 08/03/2019.
+//  Created by Andrew Podkovyrin on 15/03/2019.
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 
-#import "DSContactsViewController.h"
+#import "DSOutgoingContactsTableViewController.h"
 
 #import "DSContactsModel.h"
 
@@ -14,40 +14,37 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const CellId = @"CellId";
 
-@interface DSContactsViewController ()
+@interface DSOutgoingContactsTableViewController ()
 
 @end
 
-@implementation DSContactsViewController
+@implementation DSOutgoingContactsTableViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
 }
 
-- (IBAction)refreshAction:(id)sender {
-    [self.refreshControl beginRefreshing];
-    __weak typeof(self) weakSelf = self;
-    [self.model fetchContacts:^(BOOL success) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+- (void)refreshData {
+    [self.tableView reloadData];
+}
 
-        [strongSelf.refreshControl endRefreshing];
-    }];
+- (IBAction)refreshAction:(id)sender {
+    [self.refreshControl endRefreshing];
+    [self.tableView reloadData];
 }
 
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.model.contacts.count;
+    return self.model.outgoingContactRequests.count;
 }
+
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.model.contacts[indexPath.row];
+    NSString *username = self.model.outgoingContactRequests[indexPath.row];
     cell.textLabel.text = username;
     
     return cell;

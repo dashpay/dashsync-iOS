@@ -25,9 +25,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (copy, nonatomic) NSDictionary *blockchainUserData;
 
+@property (copy, nonatomic) NSArray <NSString *> *contacts;
+@property (copy, nonatomic) NSArray <NSString *> *outgoingContactRequests;
+@property (copy, nonatomic) NSArray <NSString *> *incomingContactRequests;
+
+@property (copy, nonatomic) NSArray <NSString *> *contactsAndIncomingRequests;
+
 @end
 
 @implementation DSContactsModel
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _contacts = @[];
+        _outgoingContactRequests = @[];
+        _incomingContactRequests = @[];
+    }
+    return self;
+}
 
 - (void)getUser:(void (^)(BOOL))completion {
     NSString *userKey = [NSString stringWithFormat:@"ds_contacts_user_profile_%@", self.blockchainUser.username];
@@ -86,7 +102,43 @@ NS_ASSUME_NONNULL_BEGIN
         
         contactObject[@"sender"] = me;
         
-        [strongSelf sendDapObject:contactObject completion:completion];
+        [strongSelf sendDapObject:contactObject completion:^(BOOL success) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            
+            if (success) {
+                strongSelf.outgoingContactRequests = [strongSelf.outgoingContactRequests arrayByAddingObject:username];
+            }
+            
+            if (completion) {
+                completion(success);
+            }
+        }];
+    }];
+}
+
+- (void)fetchContacts:(void (^)(BOOL success))completion {
+    NSDictionary *query = @{@"data.user": self.blockchainUserData[@"regtxid"]};
+    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
+    
+    __weak typeof(self) weakSelf = self;
+    [self.chainManager.DAPIClient fetchDapObjectsForId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        [strongSelf handleContacts:dapObjects];
+        
+        if (completion) {
+            completion(YES);
+        }
+    } failure:^(NSError * _Nonnull error) {
+        if (completion) {
+            completion(NO);
+        }
     }];
 }
 
@@ -187,6 +239,35 @@ NS_ASSUME_NONNULL_BEGIN
             completion(nil);
         }
     }];
+}
+
+- (void)handleContacts:(NSArray<NSDictionary *> *)rawContacts {
+    NSMutableArray <NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
+    for (NSDictionary *rawContact in rawContacts) {
+        NSDictionary *sender = rawContact[@"sender"];
+        NSString *username = sender[@"username"];
+        [contactsAndIncomingRequests addObject:username];
+    }
+    
+    self.contactsAndIncomingRequests = contactsAndIncomingRequests;
+    
+    NSMutableArray <NSString *> *contacts = [NSMutableArray array];
+    NSMutableArray <NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
+    NSMutableArray <NSString *> *incomingContactRequests = [NSMutableArray array];
+    
+    for (NSString *username in contactsAndIncomingRequests) {
+        if ([outgoingContactRequests containsObject:username]) { // it's a match!
+            [outgoingContactRequests removeObject:username];
+            [contacts addObject:username];
+        }
+        else { // incoming request
+            [incomingContactRequests addObject:username];
+        }
+    }
+    
+    self.contacts = contacts;
+    self.outgoingContactRequests = outgoingContactRequests;
+    self.incomingContactRequests = incomingContactRequests;
 }
 
 @end
