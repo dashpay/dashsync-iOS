@@ -29,8 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, nonatomic) NSArray <NSString *> *outgoingContactRequests;
 @property (copy, nonatomic) NSArray <NSString *> *incomingContactRequests;
 
-@property (copy, nonatomic) NSArray <NSString *> *contactsAndIncomingRequests;
-
 @end
 
 @implementation DSContactsModel
@@ -248,8 +246,6 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *username = sender[@"username"];
         [contactsAndIncomingRequests addObject:username];
     }
-    
-    self.contactsAndIncomingRequests = contactsAndIncomingRequests;
     
     NSMutableArray <NSString *> *contacts = [NSMutableArray array];
     NSMutableArray <NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
