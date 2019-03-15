@@ -23,6 +23,7 @@ static NSString * const CellId = @"CellId";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.title = @"Contacts";
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -35,6 +36,7 @@ static NSString * const CellId = @"CellId";
         }
 
         [strongSelf.refreshControl endRefreshing];
+        [strongSelf.tableView reloadData];
     }];
 }
 

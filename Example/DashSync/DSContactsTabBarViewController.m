@@ -17,7 +17,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface DSContactsTabBarViewController ()
+@interface DSContactsTabBarViewController () <UITabBarControllerDelegate>
 
 @property (strong, nonatomic) DSContactsModel *model;
 @property (strong, nonatomic) DSOutgoingContactsTableViewController *outgoingController;
@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.delegate = self;
     
     self.model = [[DSContactsModel alloc] init];
     self.model.chainManager = self.chainManager;
@@ -54,6 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
     incoming.model = self.model;
     
     self.viewControllers = @[contacts, outgoing, incoming];
+    
+    self.title = contacts.title;
 }
 
 #pragma mark - Actions
@@ -96,6 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:result ? @"✅ success" : @"❌ failure" preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+
+- (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
+    self.title = viewController.title;
 }
 
 @end

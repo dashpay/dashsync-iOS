@@ -23,11 +23,21 @@ static NSString * const CellId = @"CellId";
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.title = @"Requests";
 }
 
 - (IBAction)refreshAction:(id)sender {
-    [self.refreshControl endRefreshing];
-    [self.tableView reloadData];
+    [self.refreshControl beginRefreshing];
+    __weak typeof(self) weakSelf = self;
+    [self.model fetchContacts:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        [strongSelf.refreshControl endRefreshing];
+        [strongSelf.tableView reloadData];
+    }];
 }
 
 #pragma mark - Table view

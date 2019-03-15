@@ -23,6 +23,7 @@ static NSString * const CellId = @"CellId";
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.title = @"Pending";
 }
 
 - (void)refreshData {
