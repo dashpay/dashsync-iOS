@@ -34,6 +34,8 @@
 		2A9FFEC92232920900956D5F /* DSContactsTabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC82232920900956D5F /* DSContactsTabBarViewController.m */; };
 		2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */; };
 		2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */; };
+		2AE125EE223B9B0600379C6F /* DSPendingContactsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125ED223B9B0600379C6F /* DSPendingContactsTableViewController.m */; };
+		2AE125F1223B9C3700379C6F /* DSContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125F0223B9C3700379C6F /* DSContactsModel.m */; };
 		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -191,6 +193,10 @@
 		2A9FFEFF2233B90000956D5F /* DSContactsNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsNavigationController.h; sourceTree = "<group>"; };
 		2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactsNavigationController.m; sourceTree = "<group>"; };
 		2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSGovernanceTests.m; sourceTree = "<group>"; };
+		2AE125EC223B9B0600379C6F /* DSPendingContactsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSPendingContactsTableViewController.h; sourceTree = "<group>"; };
+		2AE125ED223B9B0600379C6F /* DSPendingContactsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPendingContactsTableViewController.m; sourceTree = "<group>"; };
+		2AE125EF223B9C3700379C6F /* DSContactsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsModel.h; sourceTree = "<group>"; };
+		2AE125F0223B9C3700379C6F /* DSContactsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactsModel.m; sourceTree = "<group>"; };
 		2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -422,6 +428,10 @@
 				2A9FFEC82232920900956D5F /* DSContactsTabBarViewController.m */,
 				2A9FFEFF2233B90000956D5F /* DSContactsNavigationController.h */,
 				2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */,
+				2AE125EC223B9B0600379C6F /* DSPendingContactsTableViewController.h */,
+				2AE125ED223B9B0600379C6F /* DSPendingContactsTableViewController.m */,
+				2AE125EF223B9C3700379C6F /* DSContactsModel.h */,
+				2AE125F0223B9C3700379C6F /* DSContactsModel.m */,
 			);
 			name = Contacts;
 			sourceTree = "<group>";
@@ -1090,6 +1100,7 @@
 				FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */,
 				FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */,
 				FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */,
+				2AE125F1223B9C3700379C6F /* DSContactsModel.m in Sources */,
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
@@ -1158,6 +1169,7 @@
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
 				FBEB7E95220F0DFA0013F619 /* DSWalletChooserTableViewCell.m in Sources */,
 				FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */,
+				2AE125EE223B9B0600379C6F /* DSPendingContactsTableViewController.m in Sources */,
 				FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */,
 				FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */,
 				FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */,

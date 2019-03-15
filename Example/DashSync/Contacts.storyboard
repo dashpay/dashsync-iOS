@@ -19,7 +19,11 @@
                                 <action selector="doneButtonAction:" destination="oVw-E6-5QX" id="8iI-Bg-vAI"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="7Qe-a1-Bti"/>
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="7Qe-a1-Bti">
+                            <connections>
+                                <action selector="addContactAction:" destination="oVw-E6-5QX" id="n1c-Eb-wlQ"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="era-DB-Cjc">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="49"/>
@@ -63,7 +67,7 @@
         <!--Pending-->
         <scene sceneID="BTw-fv-NeH">
             <objects>
-                <tableViewController storyboardIdentifier="PendingControllerId" id="oKW-X1-HX8" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="PendingControllerId" id="oKW-X1-HX8" customClass="DSPendingContactsTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="2Zs-pD-TBh">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
