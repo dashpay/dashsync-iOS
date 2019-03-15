@@ -66,6 +66,11 @@ static NSString * const CellId = @"CellId";
             return;
         }
 
+        if (success) {
+            [strongSelf.model removeIncomingContactRequest:username];
+            [strongSelf.tableView reloadData];
+        }
+        
         [strongSelf showAlertTitle:@"Confirming contact request:" result:success];
     }];
 }

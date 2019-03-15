@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)fetchContacts:(void (^)(BOOL success))completion;
 
+- (void)removeIncomingContactRequest:(NSString *)username;
+
 @end
 
 NS_ASSUME_NONNULL_END

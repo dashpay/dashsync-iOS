@@ -140,6 +140,12 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
+- (void)removeIncomingContactRequest:(NSString *)username {
+    NSMutableArray <NSString *> *incomingContactRequests = [self.incomingContactRequests mutableCopy];
+    [incomingContactRequests removeObject:username];
+    self.incomingContactRequests = incomingContactRequests;
+}
+
 #pragma mark - Private
 
 - (void)createProfileWithCompletion:(void (^)(BOOL success))completion {
