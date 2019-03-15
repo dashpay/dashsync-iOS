@@ -18,7 +18,6 @@
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSString * username;
-@property (nonatomic,readonly) NSString * publicKeyHash;
 
 -(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet;
 

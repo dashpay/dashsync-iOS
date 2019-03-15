@@ -117,6 +117,7 @@
     [data appendUInt256:self.registrationTransactionHash];
     [data appendUInt256:self.previousTransitionHash];
     [data appendUInt64:self.creditFee];
+    [data appendUInt256:self.packetHash];
     return data;
 }
 
@@ -124,6 +125,7 @@
 -(NSData*)payloadDataForHash {
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
+    [data appendUInt8:0];
     return data;
 }
 

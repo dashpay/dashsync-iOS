@@ -19,6 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
+static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
 
 @interface DSContactsViewController ()
 
@@ -56,21 +57,28 @@ static NSString * const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c8
     
     NSData *serializedSTPacketObject = [stPacketObject ds_cborEncodedObject];
     
-    NSData *serializedSTPacketObjectHash = [DSSchemaHashUtils hashOfObject:stPacketObject];
-    UInt256 packetHash;
-    [serializedSTPacketObjectHash getBytes:&packetHash length:sizeof(packetHash)];
+    __block NSData *serializedSTPacketObjectHash = [DSSchemaHashUtils hashOfObject:stPacketObject];
     
-    DSTransition *transition = [self.blockchainUser transitionForStateTransitionPacketHash:packetHash];
-    NSData *transitionData = [transition toData];
+    __block DSTransition *transition = [self.blockchainUser transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
     
-    NSString *transitionDataHex = [transitionData hexString];
-    NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
+    [self.blockchainUser signStateTransition:transition
+                                  withPrompt:@"" completion:^(BOOL success) {
+                                      if (success) {
+                                          NSData *transitionData = [transition toData];
+                                          
+                                          NSString *transitionDataHex = [transitionData hexString];
+                                          NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
+                                          
+                                          [self.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
+                                              NSLog(@"Header ID %@", headerId);
+                                          } failure:^(NSError * _Nonnull error) {
+                                              NSLog(@"Error: %@", error);
+                                          }];
+                                          
+                                      }
+                                  }];
     
-    [self.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
-        NSLog(@"Header ID %@", headerId);
-    } failure:^(NSError * _Nonnull error) {
-        NSLog(@"Error: %@", error);
-    }];
+
 }
 
 @end

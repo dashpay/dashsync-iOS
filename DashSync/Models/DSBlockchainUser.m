@@ -23,6 +23,7 @@
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSDerivationPathFactory.h"
+#import "DSSpecialTransactionsWalletHolder.h"
 #import "DSTransition.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
@@ -193,6 +194,14 @@
     }
 }
 
+
+-(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
+    if (!_blockchainUserRegistrationTransaction) {
+        _blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)[self.wallet.specialTransactionsHolder transactionForHash:self.registrationTransactionHash];
+    }
+    return _blockchainUserRegistrationTransaction;
+}
+
 -(UInt256)lastTransitionHash {
     //this is not effective, do this locally in the future
     return [self.wallet lastTransitionHashForRegistrationTransactionHash:self.registrationTransactionHash];
@@ -211,6 +220,10 @@
         }
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self.wallet];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
+        NSLog(@"%@",uint160_hex(privateKey.publicKeyData.hash160));
+        
+        NSLog(@"%@",uint160_hex(self.blockchainUserRegistrationTransaction.pubkeyHash));
+        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainUserRegistrationTransaction.pubkeyHash),@"Keys aren't ok");
         [transition signPayloadWithKey:privateKey];
         completion(YES);
     }];
