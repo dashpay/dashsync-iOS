@@ -142,6 +142,12 @@
     return _ipAddress;
 }
 
+-(NSString*)ipAddressString {
+    char s[INET6_ADDRSTRLEN];
+    NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
+    return ipAddressString;
+}
+
 -(uint16_t)port {
     if ([self.providerUpdateServiceTransactions count]) {
         return [self.providerUpdateServiceTransactions lastObject].port;

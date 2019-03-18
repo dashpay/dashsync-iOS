@@ -51,8 +51,6 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;
 
--(DSLocalMasternode*)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash;
-
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash;
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
@@ -72,5 +70,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 -(DSLocalMasternode*)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry  claimedWithOwnerWallet:(DSWallet*)wallet ownerKeyIndex:(uint32_t)ownerKeyIndex;
 
 -(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction;
+
+-(DSLocalMasternode*)localMasternodeHavingProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash;
+
+-(DSLocalMasternode*)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
 @end
