@@ -143,6 +143,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address;
 
+// true if the address at index path was previously used as an input or output in any wallet transaction
+- (BOOL)addressIsUsedAtIndexPath:(NSIndexPath *)indexPath;
+
 // inform the derivation path that the address has been used by a transaction
 - (void)registerTransactionAddress:(NSString *)address;
 

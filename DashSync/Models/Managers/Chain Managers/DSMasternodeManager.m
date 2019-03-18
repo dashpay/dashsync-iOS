@@ -43,6 +43,7 @@
 #import "DSLocalMasternode+Protected.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSProviderRegistrationTransaction.h"
+#import "DSDerivationPath.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -570,21 +571,39 @@ inline static int ceil_log2(int x)
 
 }
 
+-(DSLocalMasternode*)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath {
+    for (DSLocalMasternode * localMasternode in self.localMasternodesDictionaryByRegistrationTransactionHash.allValues) {
+        switch (derivationPath.reference) {
+            case DSDerivationPathReference_ProviderFunds:
+                if (localMasternode.holdingKeysWallet == derivationPath.wallet && localMasternode.holdingWalletIndex == index) {
+                    return localMasternode;
+                }
+                break;
+            case DSDerivationPathReference_ProviderOwnerKeys:
+                if (localMasternode.ownerKeysWallet == derivationPath.wallet && localMasternode.ownerWalletIndex == index) {
+                    return localMasternode;
+                }
+                break;
+            case DSDerivationPathReference_ProviderOperatorKeys:
+                if (localMasternode.operatorKeysWallet == derivationPath.wallet && localMasternode.operatorWalletIndex == index) {
+                    return localMasternode;
+                }
+                break;
+            case DSDerivationPathReference_ProviderVotingKeys:
+                if (localMasternode.votingKeysWallet == derivationPath.wallet && localMasternode.votingWalletIndex == index) {
+                    return localMasternode;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return nil;
+}
+
 -(NSUInteger)localMasternodesCount {
     return [self.localMasternodesDictionaryByRegistrationTransactionHash count];
 }
 
-- (NSArray*)localMasternodes {
-//    if (self.localMasternodesDictionaryByRegistrationTransactionHash) return self.localMasternodesDictionaryByRegistrationTransactionHash;
-//    @synchronized(self) {
-//        self.localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
-//    }
-//    return [self.votingKeysDerivationPathByWallet objectForKey:wallet.uniqueID];
-    return nil;
-}
-
--(void)checkForLocalMasternodes:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*> *)masternodeList {
-
-}
 
 @end
