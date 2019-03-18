@@ -1,5 +1,5 @@
 //
-//  DSPendingContactsTableViewController.h
+//  DSOutgoingContactsTableViewController.h
 //  DashSync_Example
 //
 //  Created by Andrew Podkovyrin on 15/03/2019.
@@ -12,9 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSContactsModel;
 
-@interface DSPendingContactsTableViewController : UITableViewController
+@interface DSOutgoingContactsTableViewController : UITableViewController
 
 @property (strong, nonatomic) DSContactsModel *model;
+
+- (void)refreshData;
 
 @end
 

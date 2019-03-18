@@ -17,9 +17,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong) DSChainManager * chainManager;
 @property (nonatomic,strong) DSBlockchainUser * blockchainUser;
 
+@property (readonly, copy, nonatomic) NSArray <NSString *> *contacts;
+@property (readonly, copy, nonatomic) NSArray <NSString *> *outgoingContactRequests;
+@property (readonly, copy, nonatomic) NSArray <NSString *> *incomingContactRequests;
+
 - (void)getUser:(void (^)(BOOL success))completion;
 
 - (void)contactRequestUsername:(NSString *)username completion:(void (^)(BOOL))completion;
+
+- (void)fetchContacts:(void (^)(BOOL success))completion;
+
+- (void)removeIncomingContactRequest:(NSString *)username;
 
 @end
 

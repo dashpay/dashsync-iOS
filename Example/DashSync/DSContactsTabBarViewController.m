@@ -9,16 +9,18 @@
 #import "DSContactsTabBarViewController.h"
 
 #import "DSContactsViewController.h"
-#import "DSPendingContactsTableViewController.h"
+#import "DSOutgoingContactsTableViewController.h"
+#import "DSIncomingContactsTableViewController.h"
 
 #import "DSContactsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface DSContactsTabBarViewController ()
+@interface DSContactsTabBarViewController () <UITabBarControllerDelegate>
 
 @property (strong, nonatomic) DSContactsModel *model;
+@property (strong, nonatomic) DSOutgoingContactsTableViewController *outgoingController;
 
 @end
 
@@ -26,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.delegate = self;
     
     self.model = [[DSContactsModel alloc] init];
     self.model.chainManager = self.chainManager;
@@ -44,17 +48,16 @@ NS_ASSUME_NONNULL_BEGIN
     DSContactsViewController *contacts = [self.storyboard instantiateViewControllerWithIdentifier:@"ContactsControllerId"];
     contacts.model = self.model;
     
-    DSPendingContactsTableViewController *pending = [self.storyboard instantiateViewControllerWithIdentifier:@"PendingControllerId"];
-    pending.model = self.model;
+    DSOutgoingContactsTableViewController *outgoing = [self.storyboard instantiateViewControllerWithIdentifier:@"PendingControllerId"];
+    outgoing.model = self.model;
+    self.outgoingController = outgoing;
     
-    self.viewControllers = @[contacts, pending];
-    // Do any additional setup after loading the view.
+    DSIncomingContactsTableViewController *incoming = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestsControllerId"];
+    incoming.model = self.model;
     
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    self.viewControllers = @[contacts, outgoing, incoming];
+    
+    self.title = contacts.title;
 }
 
 #pragma mark - Actions
@@ -81,6 +84,10 @@ NS_ASSUME_NONNULL_BEGIN
                 return;
             }
 
+            if (success) {
+                [strongSelf.outgoingController refreshData];
+            }
+            
             [strongSelf showAlertTitle:@"Contact request result:" result:success];
         }];
     }]];
@@ -93,6 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:result ? @"✅ success" : @"❌ failure" preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+
+- (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
+    self.title = viewController.title;
 }
 
 @end
