@@ -28,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index;
 
+// true if the address at the index was previously used as an input or output in any wallet transaction
+- (BOOL)addressIsUsedAtIndex:(uint32_t)index;
+
 // gets addresses to an index
 - (NSArray *)addressesToIndex:(NSUInteger)index;
 

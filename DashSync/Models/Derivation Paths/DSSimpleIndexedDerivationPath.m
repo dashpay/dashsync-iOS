@@ -146,8 +146,11 @@
 // gets an addess at an index
 - (NSString *)addressAtIndex:(uint32_t)index
 {
-    NSData *pubKey = [self publicKeyDataAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
-    return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
+    return [self addressAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
+}
+
+- (BOOL)addressIsUsedAtIndex:(uint32_t)index {
+    return [self addressIsUsedAtIndexPath:[NSIndexPath indexPathWithIndex:index]];
 }
 
 - (NSIndexPath*)indexPathForKnownAddress:(NSString*)address {

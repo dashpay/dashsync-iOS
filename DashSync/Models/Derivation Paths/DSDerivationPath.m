@@ -297,7 +297,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 - (NSString *)addressAtIndexPath:(NSIndexPath *)indexPath
 {
     NSData *pubKey = [self publicKeyDataAtIndexPath:indexPath];
-    return [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+    return [DSKey addressWithPublicKeyData:pubKey forChain:self.chain];
 }
 
 // true if the address is controlled by the wallet
@@ -310,6 +310,12 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 - (BOOL)addressIsUsed:(NSString *)address
 {
     return (address && [self.mUsedAddresses containsObject:address]) ? YES : NO;
+}
+
+// true if the address at index path was previously used as an input or output in any wallet transaction
+- (BOOL)addressIsUsedAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [self addressIsUsed:[self addressAtIndexPath:indexPath]];
 }
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {

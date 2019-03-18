@@ -21,6 +21,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @interface DSLocalMasternode : NSObject
 
 @property(nonatomic,readonly) UInt128 ipAddress;
+@property(nonatomic,readonly) NSString * ipAddressString;
 @property(nonatomic,readonly) uint16_t port;
 @property(nonatomic,readonly) DSWallet * operatorKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t operatorWalletIndex; //the derivation path index of keys

@@ -18,8 +18,10 @@
 #import "DSKey.h"
 
 #import "DSDerivationPath.h"
+#import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
+#import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSFundsDerivationPath.h"
 
 #import "DSChainsManager.h"
@@ -46,6 +48,7 @@
 #import "DSOptionsManager.h"
 #import "NSData+Dash.h"
 #import "NSDate+Utils.h"
+#import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "DSPeerEntity+CoreDataProperties.h"
