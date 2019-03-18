@@ -9,6 +9,8 @@
 #import "DSBlockchainUserActionsViewController.h"
 #import "DSTopupBlockchainUserViewController.h"
 
+#import "DSContactsNavigationController.h"
+
 @interface DSBlockchainUserActionsViewController ()
 
 @end
@@ -56,6 +58,10 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row == 1) {
         [self reset:self];
+    }
+    else if (indexPath.row == 2) {
+        DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
+        [self presentViewController:controller animated:YES completion:nil];
     }
 }
 

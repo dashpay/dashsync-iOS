@@ -57,7 +57,7 @@
         DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
         DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
         blockchainUserCell.usernameLabel.text = blockchainUser.username;
-        blockchainUserCell.publicKeyLabel.text = blockchainUser.publicKeyHash;
+       // blockchainUserCell.publicKeyLabel.text = blockchainUser;
     }
 }
 

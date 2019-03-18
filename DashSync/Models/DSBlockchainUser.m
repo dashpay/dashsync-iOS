@@ -23,6 +23,8 @@
 #import "DSDerivationPathFactory.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSDerivationPathFactory.h"
+#import "DSSpecialTransactionsWalletHolder.h"
+#import "DSTransition.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -33,7 +35,14 @@
 @property (nonatomic,strong) NSString * uniqueIdentifier;
 @property (nonatomic,assign) uint32_t index;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;
-@property (nonatomic,assign) UInt256 lastBlockchainUserTransactionHash;
+@property (nonatomic,assign) UInt256 lastTransitionHash;
+
+@property(nonatomic,strong) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
+@property(nonatomic,strong) NSMutableArray <DSBlockchainUserTopupTransaction*>* blockchainUserTopupTransactions;
+@property(nonatomic,strong) NSMutableArray <DSBlockchainUserCloseTransaction*>* blockchainUserCloseTransactions; //this is also a transition
+@property(nonatomic,strong) NSMutableArray <DSBlockchainUserResetTransaction*>* blockchainUserResetTransactions; //this is also a transition
+@property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
+@property(nonatomic,strong) NSMutableArray <DSTransaction*>* allTransitions;
 
 @end
 
@@ -46,29 +55,27 @@
     self.wallet = wallet;
     self.registrationTransactionHash = UINT256_ZERO;
     self.index = index;
+    self.blockchainUserTopupTransactions = [NSMutableArray array];
+    self.blockchainUserCloseTransactions = [NSMutableArray array];
+    self.blockchainUserResetTransactions = [NSMutableArray array];
+    self.baseTransitions = [NSMutableArray array];
+    self.allTransitions = [NSMutableArray array];
     return self;
 }
 
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastBlockchainUserTransactionHash:(UInt256)lastBlockchainUserTransactionHash {
-    if (!(self = [super init])) return nil;
-    self.username = username;
-    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,wallet.chain.uniqueID,username];
-    self.wallet = wallet;
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash {
+    if (!(self = [self initWithUsername:username atIndex:index inWallet:wallet])) return nil;
     self.registrationTransactionHash = registrationTransactionHash;
-    self.lastBlockchainUserTransactionHash = lastBlockchainUserTransactionHash; //except topup and close, including state transitions
-    self.index = index;
+    self.lastTransitionHash = lastTransitionHash; //except topup and close, including state transitions
     return self;
 }
 
 -(instancetype)initWithBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
-    if (!(self = [super init])) return nil;
-    self.username = blockchainUserRegistrationTransaction.username;
-    self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,blockchainUserRegistrationTransaction.chain.uniqueID,self.username];
     uint32_t index = 0;
     DSWallet * wallet = [blockchainUserRegistrationTransaction.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:&index];
-    self.wallet = wallet;
-    self.index = index;
+    if (!(self = [self initWithUsername:blockchainUserRegistrationTransaction.username atIndex:index inWallet:wallet])) return nil;
     self.registrationTransactionHash = blockchainUserRegistrationTransaction.txHash;
+    self.blockchainUserRegistrationTransaction = blockchainUserRegistrationTransaction;
     return self;
 }
 
@@ -141,11 +148,114 @@
         DSECDSAKey * oldPrivateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:index fromSeed:seed];
         
-        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithBlockchainUserResetTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousBlockchainUserTransactionHash:self.lastBlockchainUserTransactionHash replacementPublicKeyHash:[privateKey.publicKeyData hash160] creditFee:1000 onChain:self.wallet.chain];
+        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithBlockchainUserResetTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousBlockchainUserTransactionHash:self.lastTransitionHash replacementPublicKeyHash:[privateKey.publicKeyData hash160] creditFee:1000 onChain:self.wallet.chain];
         [blockchainUserResetTransaction signPayloadWithKey:oldPrivateKey];
         DSDLog(@"%@",blockchainUserResetTransaction.toData);
         completion(blockchainUserResetTransaction);
     }];
+}
+
+-(void)updateWithTopupTransaction:(DSBlockchainUserTopupTransaction*)blockchainUserTopupTransaction save:(BOOL)save {
+    if (![_blockchainUserTopupTransactions containsObject:blockchainUserTopupTransaction]) {
+        [_blockchainUserTopupTransactions addObject:blockchainUserTopupTransaction];
+        if (save) {
+            [self save];
+        }
+    }
+}
+
+-(void)updateWithResetTransaction:(DSBlockchainUserResetTransaction*)blockchainUserResetTransaction save:(BOOL)save {
+    if (![_blockchainUserResetTransactions containsObject:blockchainUserResetTransaction]) {
+        [_blockchainUserResetTransactions addObject:blockchainUserResetTransaction];
+        [_allTransitions addObject:blockchainUserResetTransaction];
+        if (save) {
+            [self save];
+        }
+    }
+}
+
+-(void)updateWithCloseTransaction:(DSBlockchainUserCloseTransaction*)blockchainUserCloseTransaction save:(BOOL)save {
+    if (![_blockchainUserCloseTransactions containsObject:blockchainUserCloseTransaction]) {
+        [_blockchainUserCloseTransactions addObject:blockchainUserCloseTransaction];
+        [_allTransitions addObject:blockchainUserCloseTransaction];
+        if (save) {
+            [self save];
+        }
+    }
+}
+
+-(void)updateWithTransition:(DSTransition*)transition save:(BOOL)save {
+    if (![_baseTransitions containsObject:transition]) {
+        [_baseTransitions addObject:transition];
+        [_allTransitions addObject:transition];
+        if (save) {
+            [self save];
+        }
+    }
+}
+
+
+-(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
+    if (!_blockchainUserRegistrationTransaction) {
+        _blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)[self.wallet.specialTransactionsHolder transactionForHash:self.registrationTransactionHash];
+    }
+    return _blockchainUserRegistrationTransaction;
+}
+
+-(UInt256)lastTransitionHash {
+    //this is not effective, do this locally in the future
+    return [self.wallet.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:self.registrationTransactionHash];
+}
+
+-(DSTransition*)transitionForStateTransitionPacketHash:(UInt256)stateTransitionHash {
+    DSTransition * transition = [[DSTransition alloc] initWithTransitionVersion:1 registrationTransactionHash:self.registrationTransactionHash previousTransitionHash:self.lastTransitionHash creditFee:1000 packetHash:stateTransitionHash onChain:self.wallet.chain];
+    return transition;
+}
+
+-(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+    [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData* _Nullable seed, BOOL cancelled) {
+        if (!seed) {
+            completion(NO);
+            return;
+        }
+        DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self.wallet];
+        DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
+        NSLog(@"%@",uint160_hex(privateKey.publicKeyData.hash160));
+        
+        NSLog(@"%@",uint160_hex(self.blockchainUserRegistrationTransaction.pubkeyHash));
+        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainUserRegistrationTransaction.pubkeyHash),@"Keys aren't ok");
+        [transition signPayloadWithKey:privateKey];
+        completion(YES);
+    }];
+}
+
+// MARK: - Persistence
+
+-(void)save {
+//    NSManagedObjectContext * context = [DSTransactionEntity context];
+//    [context performBlockAndWait:^{ // add the transaction to core data
+//        [DSChainEntity setContext:context];
+//        [DSLocalMasternodeEntity setContext:context];
+//        [DSTransactionHashEntity setContext:context];
+//        [DSProviderRegistrationTransactionEntity setContext:context];
+//        [DSProviderUpdateServiceTransactionEntity setContext:context];
+//        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
+//        [DSProviderUpdateRevocationTransactionEntity setContext:context];
+//        if ([DSLocalMasternodeEntity
+//             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
+//            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+//            if (!providerRegistrationTransactionEntity) {
+//                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
+//            }
+//            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+//            [localMasternode setAttributesFromLocalMasternode:self];
+//            [DSLocalMasternodeEntity saveContext];
+//        } else {
+//            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+//            [localMasternode setAttributesFromLocalMasternode:self];
+//            [DSLocalMasternodeEntity saveContext];
+//        }
+//    }];
 }
 
 

@@ -15,6 +15,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
+#import "DSTransition.h"
 #import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
 
@@ -51,6 +52,8 @@
             return [DSProviderUpdateRegistrarTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateRevocation:
             return [DSProviderUpdateRevocationTransaction transactionWithMessage:message onChain:chain];
+        case DSTransactionType_Transition:
+            return [DSTransition transactionWithMessage:message onChain:chain];
         default:
             return [DSTransaction transactionWithMessage:message onChain:chain]; //we won't be able to check the payload, but try best to support it.
     }

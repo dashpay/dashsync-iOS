@@ -61,6 +61,7 @@
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserTopupTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
+#import "DSTransition.h"
 #import "DSLocalMasternode+Protected.h"
 #import "DSKey.h"
 #import "DSDerivationPathFactory.h"
@@ -1925,6 +1926,14 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+-(void)registerTransition:(DSTransition*)transition {
+    DSWallet * blockchainUserRegistrationWallet = nil;
+    DSTransaction * blockchainUserRegistrationTransaction = [self transactionForHash:transition.registrationTransactionHash returnWallet:&blockchainUserRegistrationWallet];
+    if (blockchainUserRegistrationTransaction && blockchainUserRegistrationWallet) {
+        [blockchainUserRegistrationWallet.specialTransactionsHolder registerTransaction:transition];
+    }
+}
+
 -(void)registerSpecialTransaction:(DSTransaction*)transaction {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
         DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
@@ -1950,6 +1959,9 @@ static dispatch_once_t devnetToken = 0;
     } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
         DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
         [self registerBlockchainUserTopupTransaction:blockchainUserTopupTransaction];
+    } else if ([transaction isKindOfClass:[DSTransition class]]) {
+        DSTransition * transition = (DSTransition*)transaction;
+        [self registerTransition:transition];
     }
 }
 
@@ -2024,6 +2036,30 @@ static dispatch_once_t devnetToken = 0;
             DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithBlockchainUserRegistrationTransaction:blockchainUserRegistrationTransaction];
             [wallet registerBlockchainUser:blockchainUser];
         }
+    } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {
+        DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction = (DSBlockchainUserTopupTransaction *)transaction;
+        DSWallet * wallet;
+        [self transactionForHash:blockchainUserTopupTransaction.registrationTransactionHash returnWallet:&wallet];
+        DSBlockchainUser * blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserTopupTransaction.registrationTransactionHash];
+        [blockchainUser updateWithTopupTransaction:blockchainUserTopupTransaction save:TRUE];
+    } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+        DSBlockchainUserResetTransaction * blockchainUserResetTransaction = (DSBlockchainUserResetTransaction *)transaction;
+        DSWallet * wallet;
+        [self transactionForHash:blockchainUserResetTransaction.registrationTransactionHash returnWallet:&wallet];
+        DSBlockchainUser * blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserResetTransaction.registrationTransactionHash];
+        [blockchainUser updateWithResetTransaction:blockchainUserResetTransaction save:TRUE];
+    } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
+        DSBlockchainUserCloseTransaction * blockchainUserCloseTransaction = (DSBlockchainUserCloseTransaction *)transaction;
+        DSWallet * wallet;
+        [self transactionForHash:blockchainUserCloseTransaction.registrationTransactionHash returnWallet:&wallet];
+        DSBlockchainUser * blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserCloseTransaction.registrationTransactionHash];
+        [blockchainUser updateWithCloseTransaction:blockchainUserCloseTransaction save:TRUE];
+    } else if ([transaction isKindOfClass:[DSTransition class]]) {
+        DSTransition * transition = (DSTransition *)transaction;
+        DSWallet * wallet;
+        [self transactionForHash:transition.registrationTransactionHash returnWallet:&wallet];
+        DSBlockchainUser * blockchainUser = [wallet blockchainUserForRegistrationHash:transition.registrationTransactionHash];
+        [blockchainUser updateWithTransition:transition save:TRUE];
     }
 }
 

@@ -44,7 +44,7 @@
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
     DSBlockchainUserResetTransaction * transaction = (DSBlockchainUserResetTransaction *)[super transactionForChain:chain];
-    transaction.type = DSTransactionType_SubscriptionTopUp;
+    transaction.type = DSTransactionType_SubscriptionResetKey;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.blockchainUserResetTransactionVersion = self.specialTransactionVersion;
         transaction.registrationTransactionHash = self.registrationTransactionHash.UInt256;
