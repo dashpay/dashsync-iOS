@@ -103,7 +103,7 @@
 }
 
 - (DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
-    UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig(self.address) } };
+    UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig((uint32_t)self.address) } };
     DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:address port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] keyIDVoting:[self.keyIDVoting UInt160AtOffset:0] isValid:self.isValid simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256AtOffset:0] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
