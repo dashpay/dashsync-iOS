@@ -80,15 +80,15 @@
     
     NSLog(@"%@", providerRegistrationTransactionFromMessage.coreRegistrationCommand);
     
-//    protx register_prepare
-//    58ab8ba7dce591c745f8b78ee49156d13277fff20880855f7cda501705439aca
-//    0
-//    1.2.5.6:19999
-//    yRxHYGLf9G4UVYdtAoB2iAzR3sxxVaZB6y
-//    97762493aef0bcba1925870abf51dc21f4bc2b8c410c79b7589590e6869a0e04
-//    yfbxyP4ctRJR1rs3A8C3PdXA4Wtcrw7zTi
-//    0
-//    ycBFJGv7V95aSs6XvMewFyp1AMngeRHBwy
+    //    protx register_prepare
+    //    58ab8ba7dce591c745f8b78ee49156d13277fff20880855f7cda501705439aca
+    //    0
+    //    1.2.5.6:19999
+    //    yRxHYGLf9G4UVYdtAoB2iAzR3sxxVaZB6y
+    //    97762493aef0bcba1925870abf51dc21f4bc2b8c410c79b7589590e6869a0e04
+    //    yfbxyP4ctRJR1rs3A8C3PdXA4Wtcrw7zTi
+    //    0
+    //    ycBFJGv7V95aSs6XvMewFyp1AMngeRHBwy
     
     NSString * txIdString = @"e65f550356250100513aa9c260400562ac8ee1b93ae1cc1214cc9f6830227b51";
     NSValue * inputTransactionHashValue = uint256_obj(@"ca9a43051750da7c5f858008f2ff7732d15691e48eb7f845c791e5dca78bab58".hexToData.UInt256);
@@ -153,7 +153,7 @@
     DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
     UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
     UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
-
+    
     NSMutableData * scriptPayout = [NSMutableData data];
     [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
     
@@ -178,7 +178,7 @@
     
     XCTAssertEqualObjects(providerRegistrationTransaction.payloadData,providerRegistrationTransactionFromMessage.payloadData,@"Provider payload data doesn't match up");
     
-        XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider payload collateral strings don't match up");
+    XCTAssertEqualObjects(providerRegistrationTransaction.payloadCollateralString, providerRegistrationTransactionFromMessage.payloadCollateralString,@"Provider payload collateral strings don't match up");
     
     XCTAssertEqual(providerRegistrationTransaction.port,providerRegistrationTransactionFromMessage.port,@"Provider transaction port doesn't match up");
     
@@ -219,12 +219,17 @@
     
     DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
     
-    NSData * hexData = [NSData dataFromHexString:@"030001000379efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002000000006b4830450221008d31ca87f95f976b645b9b1eecfdbbe32173e3c338e05aff70011069be9002da02206c20b6df83ce54e4abe56cece05823baf341ebb8ec88347a7770f8fdd3d1b3930121030de5cb8989b6902d98017ab4d42b9244912006b0a1561c1d1ba0e2f3117a39adffffffff79efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002010000006a47304402200d047e24bf72cc350e6e753309f93781676ed836584addb3540023b2db1d0e3802202fe648482ee79c002655cd9d467c4a94126478d4867ff96e98bfbd6222e7261101210270b0f0b71472736a397975a84927314261be815d423006d1bcbc00cd693c3d81ffffffff9d925d6cd8e3a408f472e872d1c2849bc664efda8c7f68f1b3a3efde221bc474010000006a4730440220793f9c111af2539c92da947b1deae3d15ee3932c1df8dcb8c1beba9ebf7f825f02204cda7b969f0947f1ad20f35737add0f4fc2540f4e38b6dbe56810ac0a22834cd0121024c0b09e261253dc40ed572c2d63d0b6cda89154583d75a5ab5a14fba81d70089ffffffff0200e87648170000001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac438ca95a020000001976a91470ed8f5b5cfd4791c15b9d8a7f829cb6a98da18c88ac00000000d101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff010101011f4e1d7fe8b4f16bda38d98cb208b6be4c8f3abb4c8b859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe8211196a96067672ba9cb7accd0ae90523ba60aba861500001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac14b33f2231f0df567e0dfb12899c893f5d2d05f6dcc7d9c8c27b68a71191c75400"];
-    UInt256 txId = *(UInt256 *)@"8f3368ceb332bdb8587fbeb540ad3bbf6f1c6c5a3f85c4e49f5f93351e4979e0".hexToData.reverse.bytes;
-    UInt256 inputId = *(UInt256 *)@"d32687ec23f0e91fc1c797b508f8755f488c6e49892adef75be77ce395fe393f".hexToData.reverse.bytes;
+    NSData * hexData = [NSData dataFromHexString:@"030001000379efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002000000006a473044022015df39c80ca8595cc197a0be692e9d158dc53bdbc8c6abca0d30c086f338c037022063becdb4f891436de3d2fb21cbf294e9dcb5c1a04bc0ba621867479e46d048cc0121030de5cb8989b6902d98017ab4d42b9244912006b0a1561c1d1ba0e2f3117a39adffffffff79efbe95cba05893d09f4ec51a71171a3852b54aa958ae35ce43276f5f8f1002010000006a47304402205c1bae23b459081b060de14133a20378243bebc05c8e2ed9acdabf6717ae7f9702204027ba0abbcce9ba5b2cb563cbff0190ba8f80e5f8fd6beb07c2c449f194c9be01210270b0f0b71472736a397975a84927314261be815d423006d1bcbc00cd693c3d81ffffffff9d925d6cd8e3a408f472e872d1c2849bc664efda8c7f68f1b3a3efde221bc474010000006a47304402203fa23ec33f91efa026b34e90b15a1fd64ff03242a6a92985b16a25b590e5bae002202d1429374b60b1180cd8b9bd0b432158524f5624d6c5d2d6db8c637c9961a21e0121024c0b09e261253dc40ed572c2d63d0b6cda89154583d75a5ab5a14fba81d70089ffffffff0200e87648170000001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac438ca95a020000001976a91470ed8f5b5cfd4791c15b9d8a7f829cb6a98da18c88ac00000000d101000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff010101014e1f3dd03f9ec192b5f275a433bfc90f468ee1a3eb4c157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfad38a30fafe61575db40f05ab0a08d55119b0aad300001976a9143795a62df2eb953c1d08bc996d4089ee5d67e28b88ac14b33f2231f0df567e0dfb12899c893f5d2d05f6dcc7d9c8c27b68a71191c75400"];
+    NSString * txIdString = @"717d2d4a7d583da184872f4a07e35d897a1be9dd9875b4c017c81cf772e36694";
+    DSUTXO input0 = (DSUTXO) { .hash = @"02108f5f6f2743ce35ae58a94ab552381a17711ac54e9fd09358a0cb95beef79".hexToData.reverse.UInt256, .n = 0};
+    DSUTXO input1 = (DSUTXO) { .hash = @"02108f5f6f2743ce35ae58a94ab552381a17711ac54e9fd09358a0cb95beef79".hexToData.reverse.UInt256, .n = 1};
+    DSUTXO input2 = (DSUTXO) { .hash = @"74c41b22deefa3b3f1687f8cdaef64c69b84c2d172e872f408a4e3d86c5d929d".hexToData.reverse.UInt256, .n = 1};
     NSString * inputAddress0 = @"yRdHYt6nG1ooGaXK7GEbwVMteLY3m4FbVT";
     NSString * inputAddress1 = @"yWJqVcT5ot5GEcB8oYkHnnYcFG5pLiVVtd";
     NSString * inputAddress2 = @"ygQ8tG3tboQ7oZEhtDBBYtquTmVyiDe6d5";
+    NSString * outputAddress0 = @"yRPMHZKviaWgqPaNP7XURemxtf7EyXNN1k";
+    NSString * outputAddress1 = @"yWcZ7ePLX3yLkC3Aj9KaZvxRQkkZC6VPL8";
+    NSString * payoutAddress = @"yRPMHZKviaWgqPaNP7XURemxtf7EyXNN1k";
     DSKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
     DSKey * inputPrivateKey1 = [wallet privateKeyForAddress:inputAddress1 fromSeed:seed];
     DSKey * inputPrivateKey2 = [wallet privateKeyForAddress:inputAddress2 fromSeed:seed];
@@ -238,10 +243,6 @@
     NSString * checkInputAddress2 = [inputPrivateKey2 addressForChain:chain];
     XCTAssertEqualObjects(checkInputAddress2,inputAddress2,@"Private key does not match input address");
     
-    DSMasternodeHoldingsDerivationPath * providerFundsDerivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:wallet];
-    if (!providerFundsDerivationPath.hasExtendedPublicKey) {
-        [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
-    }
     DSAuthenticationKeysDerivationPath * providerOwnerKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOwnerKeysDerivationPathForWallet:wallet];
     if (!providerOwnerKeysDerivationPath.hasExtendedPublicKey) {
         [providerOwnerKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
@@ -255,205 +256,180 @@
         [providerVotingKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
     }
     
-    NSString * holdingAddress = [providerFundsDerivationPath receiveAddress];
-    
-    DSKey * ownerKey = [providerOwnerKeysDerivationPath firstUnusedPrivateKeyFromSeed:seed];
-    UInt160 votingKeyHash = providerVotingKeysDerivationPath.firstUnusedPublicKey.hash160;
-    UInt384 operatorKey = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
+    DSECDSAKey * ownerKey = (DSECDSAKey *)[providerOwnerKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
+    UInt160 votingKeyHash = [providerVotingKeysDerivationPath publicKeyDataAtIndex:0].hash160;
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
     
     DSProviderRegistrationTransaction *providerRegistrationTransactionFromMessage = [[DSProviderRegistrationTransaction alloc] initWithMessage:hexData onChain:chain];
     
     XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData,hexData,@"Provider transaction does not match it's data");
     
-    //    NSMutableData * scriptPayout = [NSMutableData data];
-    //    [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:wallet.chain];
-    //
-    //    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
-    //    struct in_addr addrV4;
-    //    if (inet_aton([@"1.1.1.1" UTF8String], &addrV4) != 0) {
-    //        uint32_t ip = ntohl(addrV4.s_addr);
-    //        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
-    //    }
-    //
-    //    DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] providerRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
-    //
-    //    NSMutableData *script = [NSMutableData data];
-    //
-    //    [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
-    //    [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO toShapeshiftAddress:nil shuffleOutputOrder:NO];
-    //
-    //
-    //    [providerRegistrationTransaction updateInputsHash];
-    //
-    //    [providerRegistrationTransaction signPayloadWithKey:ownerKey];
-    //
-    //    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
+    NSMutableData * scriptPayout = [NSMutableData data];
+    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:wallet.chain];
     
-    //    DSProviderRegistrationTransaction *blockchainUserRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainUserRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
-    //    [blockchainUserRegistrationTransaction signPayloadWithKey:payloadKey];
-    //    NSData * payloadDataToConfirm = @"01000873616d697366756ec3bfec8ca49279bb1375ad3461f654ff1a277d464120f19af9563ef387fef19c82bc4027152ef5642fe8158ffeb3b8a411d9a967b6af0104b95659106c8a9d7451478010abe042e58afc9cdaf006f77cab16edcb6f84".hexToData;
-    //    NSData * payloadData = blockchainUserRegistrationTransaction.payloadData;
-    //    XCTAssertEqualObjects(payloadData,payloadDataToConfirm,@"Payload Data does not match, signing payload does not work");
-    //
-    //    [blockchainUserRegistrationTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
-    //    NSData * inputSignature = @"473044022033bafeac5704355c7855a6ad099bd6834cbcf3b052e42ed83945c58aae904aa4022073e747d376a8dcd2b5eb89fef274b01c0194ee9a13963ebbc657963417f0acf3012102393c140e7b53f3117fd038581ae66187c4be33f49e33a4c16ffbf2db1255e985".hexToData;
-    //    XCTAssertEqualObjects(blockchainUserRegistrationTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
-    //
-    //
-    //    XCTAssertEqualObjects(blockchainUserRegistrationTransaction.data,hexData,@"The transaction data does not match it's expected values");
-    //    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserRegistrationTransaction.txHash],@"The transaction does not match it's desired private key");
+    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+    struct in_addr addrV4;
+    if (inet_aton([@"1.1.1.1" UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+    }
+    
+    NSArray * inputHashes = @[uint256_obj(input0.hash),uint256_obj(input1.hash),uint256_obj(input2.hash)];
+    NSArray * inputIndexes = @[@(input0.n),@(input1.n),@(input2.n)];
+    NSArray * inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain],[NSData scriptPubKeyForAddress:inputAddress1 forChain:chain],[NSData scriptPubKeyForAddress:inputAddress2 forChain:chain]];
+    
+    DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE),@(TXIN_SEQUENCE),@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0,outputAddress1] outputAmounts:@[@100000000000,@10110995523] providerRegistrationTransactionVersion:1 type:0 mode:0 collateralOutpoint:DSUTXO_ZERO ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKeyData.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
+    
+    
+    [providerRegistrationTransaction updateInputsHash];
+    [providerRegistrationTransaction signWithPrivateKeys:@[inputPrivateKey0,inputPrivateKey1,inputPrivateKey2]];
+    
+    
+    XCTAssertEqualObjects(providerRegistrationTransactionFromMessage.toData.hexString,providerRegistrationTransaction.toData.hexString
+                          ,@"Provider transaction does not match it's data");
+    
+    XCTAssertEqualObjects(uint256_reverse_hex(providerRegistrationTransactionFromMessage.txHash),txIdString,@"Provider transaction hashes aren't correct");
+    
+    XCTAssertEqualObjects(uint256_reverse_hex(providerRegistrationTransaction.txHash),txIdString,@"Provider transaction hashes aren't correct");
 }
 
 
-/*
- -(void)testProviderUpdateServiceTransaction {
- DSChain * chain = [DSChain testnet];
- 
- NSString * seedPhrase = @"enemy check owner stumble unaware debris suffer peanut good fabric bleak outside";
- 
- NSData * seed = [[DSBIP39Mnemonic sharedInstance]
- deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
- 
- DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
- 
- NSData * hexData = [NSData dataFromHexString:@"03000200018f3fe6683e36326669b6e34876fb2a2264e8327e822f6fec304b66f47d61b3e1010000006b48304502210082af6727408f0f2ec16c7da1c42ccf0a026abea6a3a422776272b03c8f4e262a022033b406e556f6de980b2d728e6812b3ae18ee1c863ae573ece1cbdf777ca3e56101210351036c1192eaf763cd8345b44137482ad24b12003f23e9022ce46752edf47e6effffffff0180220e43000000001976a914123cbc06289e768ca7d743c8174b1e6eeb610f1488ac00000000b501003a72099db84b1c1158568eec863bea1b64f90eccee3304209cebe1df5e7539fd00000000000000000000ffff342440944e1f00e6725f799ea20480f06fb105ebe27e7c4845ab84155e4c2adf2d6e5b73a998b1174f9621bbeda5009c5a6487bdf75edcf602b67fe0da15c275cc91777cb25f5fd4bb94e84fd42cb2bb547c83792e57c80d196acd47020e4054895a0640b7861b3729c41dd681d4996090d5750f65c4b649a5cd5b2bdf55c880459821e53d91c9"];
- NSString * inputAddress0 = @"yhmDZGmiwjCPJrTFFiBFZJw31PhvJFJAwq";
- DSKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
- 
- NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
- XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
- 
- DSProviderUpdateServiceTransaction *providerUpdateServiceTransactionFromMessage = [[DSProviderUpdateServiceTransaction alloc] initWithMessage:hexData onChain:chain];
- 
- XCTAssertEqualObjects(providerUpdateServiceTransactionFromMessage.toData,hexData,@"Provider update service transaction does not match it's data");
- 
- DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
- if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
- [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
- }
- 
- UInt256 operatorSecretKey = [NSData dataFromHexString:@"1708c6585cd2ffde4cddd742670eac14a713ae94b2c00b9b2d25fbf4d654ad12"].UInt256;
- 
- DSBLSKey * privateKey = [DSBLSKey blsKeyWithPrivateKey:operatorSecretKey onChain:chain];
- 
- UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"8b782ebfd2f70b976b6aa149cc4437824a823d526380817614906c9f98943a8b7f0856d1552a7045ec47eefcd116894e"].UInt384;
- 
- UInt384 operatorKey = privateKey.publicKey;
- 
- XCTAssertTrue(uint384_eq(operatorKey, operatorKeyNeeded),@"operator keys don't match");
- 
- UInt384 operatorKeyFromDerivation = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
- 
- XCTAssertEqualObjects([NSData dataWithUInt384:operatorKey], [NSData dataWithUInt384:operatorKeyFromDerivation],@"operator keys don't match");
- 
- XCTAssertTrue(uint384_eq(operatorKeyFromDerivation, operatorKeyNeeded),@"operator keys don't match");
- 
- DSBLSKey * operatorBLSKey = [DSBLSKey blsKeyWithPublicKey:operatorKey onChain:chain];
- 
- UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
- 
- UInt768 signatureFromDigest = [privateKey signDigest:payloadHash];
- 
- UInt768 signatureFromData = [privateKey signData:providerUpdateServiceTransactionFromMessage.payloadDataForHash];
- 
- XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], [NSData dataWithUInt768:signatureFromData],@"payload signature doesn't match");
- 
- XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], providerUpdateServiceTransactionFromMessage.payloadSignature,@"payload signature doesn't match");
- 
- NSData * payloadSignature = providerUpdateServiceTransactionFromMessage.payloadSignature;
- 
- BOOL verified = [privateKey verify:payloadHash signature:signatureFromData];
- 
- XCTAssertTrue(verified,@"The signature is not signed correctly");
- 
- XCTAssertTrue([providerUpdateServiceTransactionFromMessage checkPayloadSignature:operatorBLSKey],@"The payload is not signed correctly");
- 
- //    NSMutableData * scriptPayout = [NSMutableData data];
- //    [scriptPayout appendScriptPubKeyForAddress:holdingAddress forChain:wallet.chain];
- //
- //    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
- //    struct in_addr addrV4;
- //    if (inet_aton([@"1.1.1.2" UTF8String], &addrV4) != 0) {
- //        uint32_t ip = ntohl(addrV4.s_addr);
- //        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
- //    }
- //
- //    DSProviderRegistrationTransaction * providerRegistrationTransaction = [[DSProviderRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] providerRegistrationTransactionVersion:1 type:0 mode:0 ipAddress:ipAddress port:19999 ownerKeyHash:ownerKey.publicKey.hash160 operatorKey:operatorKey votingKeyHash:votingKeyHash operatorReward:0 scriptPayout:scriptPayout onChain:wallet.chain];
- //
- //    NSMutableData *script = [NSMutableData data];
- //
- //    [script appendScriptPubKeyForAddress:holdingAddress forChain:fundingAccount.wallet.chain];
- //    [fundingAccount updateTransaction:providerRegistrationTransaction forAmounts:@[@(MASTERNODE_COST)] toOutputScripts:@[script] withFee:YES isInstant:NO toShapeshiftAddress:nil shuffleOutputOrder:NO];
- //
- //
- //    [providerRegistrationTransaction updateInputsHash];
- //
- //    [providerRegistrationTransaction signPayloadWithKey:ownerKey];
- //
- //    XCTAssertEqualObjects(providerRegistrationTransaction.toData,hexData,@"Provider transaction does not match it's data");
- }*/
+-(void)testProviderUpdateServiceTransaction {
+    DSChain * chain = [DSChain testnet];
+    
+    NSString * seedPhrase = @"enemy check owner stumble unaware debris suffer peanut good fabric bleak outside";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
+    
+    NSData * hexData = [NSData dataFromHexString:@"03000200018f3fe6683e36326669b6e34876fb2a2264e8327e822f6fec304b66f47d61b3e1010000006b48304502210082af6727408f0f2ec16c7da1c42ccf0a026abea6a3a422776272b03c8f4e262a022033b406e556f6de980b2d728e6812b3ae18ee1c863ae573ece1cbdf777ca3e56101210351036c1192eaf763cd8345b44137482ad24b12003f23e9022ce46752edf47e6effffffff0180220e43000000001976a914123cbc06289e768ca7d743c8174b1e6eeb610f1488ac00000000b501003a72099db84b1c1158568eec863bea1b64f90eccee3304209cebe1df5e7539fd00000000000000000000ffff342440944e1f00e6725f799ea20480f06fb105ebe27e7c4845ab84155e4c2adf2d6e5b73a998b1174f9621bbeda5009c5a6487bdf75edcf602b67fe0da15c275cc91777cb25f5fd4bb94e84fd42cb2bb547c83792e57c80d196acd47020e4054895a0640b7861b3729c41dd681d4996090d5750f65c4b649a5cd5b2bdf55c880459821e53d91c9"];
+    DSUTXO input0 = (DSUTXO) { .hash = @"e1b3617df4664b30ec6f2f827e32e864222afb7648e3b6696632363e68e63f8f".hexToData.reverse.UInt256, .n = 1};
+    NSString * inputAddress0 = @"yhmDZGmiwjCPJrTFFiBFZJw31PhvJFJAwq";
+    DSKey * inputPrivateKey0 = [wallet privateKeyForAddress:inputAddress0 fromSeed:seed];
+    NSString * outputAddress0 = @"yMysmZV5ftuBzuvDMHWn3tMpWg7BJownRE";
+    UInt256 providerTransactionHash = @"fd39755edfe1eb9c200433eecc0ef9641bea3b86ec8e5658111c4bb89d09723a".hexToData.reverse.UInt256;
+    
+    NSString * checkInputAddress0 = [inputPrivateKey0 addressForChain:chain];
+    XCTAssertEqualObjects(checkInputAddress0,inputAddress0,@"Private key does not match input address");
+    
+    DSProviderUpdateServiceTransaction *providerUpdateServiceTransactionFromMessage = [[DSProviderUpdateServiceTransaction alloc] initWithMessage:hexData onChain:chain];
+    
+    XCTAssertEqualObjects(providerUpdateServiceTransactionFromMessage.toData,hexData,@"Provider update service transaction does not match it's data");
+    
+    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
+    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
+        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
+    }
+    
+    UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"157b10706659e25eb362b5d902d809f9160b1688e201ee6e94b40f9b5062d7074683ef05a2d5efb7793c47059c878dfa"].UInt384;
+    
+    DSBLSKey * privateKey = (DSBLSKey *)[providerOperatorKeysDerivationPath privateKeyAtIndex:0 fromSeed:seed];
+    
+    UInt384 operatorKey = [providerOperatorKeysDerivationPath publicKeyDataAtIndex:0].UInt384;
+    
+    XCTAssertEqualObjects([NSData dataWithUInt384:operatorKey].hexString, [NSData dataWithUInt384:operatorKeyNeeded].hexString,@"operator keys don't match");
+    
+    DSBLSKey * operatorBLSKey = [DSBLSKey blsKeyWithPublicKey:operatorKey onChain:chain];
+    
+    UInt256 payloadHash = providerUpdateServiceTransactionFromMessage.payloadDataForHash.SHA256_2;
+    
+    UInt768 signatureFromDigest = [privateKey signDigest:payloadHash];
+    
+    UInt768 signatureFromData = [privateKey signData:providerUpdateServiceTransactionFromMessage.payloadDataForHash];
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], [NSData dataWithUInt768:signatureFromData],@"payload signature doesn't match");
+    
+    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], providerUpdateServiceTransactionFromMessage.payloadSignature,@"payload signature doesn't match");
+    
+    BOOL verified = [privateKey verify:payloadHash signature:signatureFromData];
+    
+    XCTAssertTrue(verified,@"The signature is not signed correctly");
+    
+    XCTAssertTrue([providerUpdateServiceTransactionFromMessage checkPayloadSignature:operatorBLSKey],@"The payload is not signed correctly");
+    
+    UInt128 ipAddress = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), 0 } };
+    struct in_addr addrV4;
+    if (inet_aton([@"52.36.64.148" UTF8String], &addrV4) != 0) {
+        uint32_t ip = ntohl(addrV4.s_addr);
+        ipAddress.u32[3] = CFSwapInt32HostToBig(ip);
+    }
+    
+    NSArray * inputHashes = @[uint256_obj(input0.hash)];
+    NSArray * inputIndexes = @[@(input0.n)];
+    NSArray * inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];
+    
+    DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = [[DSProviderUpdateServiceTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(1124999808)] providerUpdateServiceTransactionVersion:1 providerTransactionHash:providerTransactionHash ipAddress:ipAddress port:19999 scriptPayout:[NSData data] onChain:chain];
+    
+    
+    [providerUpdateServiceTransaction updateInputsHash];
+    
+    [providerUpdateServiceTransaction signPayloadWithKey:privateKey];
+    
+    [providerUpdateServiceTransaction signWithPrivateKeys:@[inputPrivateKey0]];
+    
+    XCTAssertEqualObjects(providerUpdateServiceTransaction.toData,hexData,@"Provider transaction does not match it's data");
+}
 
 
-//-(void)testProviderUpdateRegistrarTransaction {
-//    DSChain * chain = [DSChain testnet];
-//
-//    NSString * seedPhrase = @"enemy check owner stumble unaware debris suffer peanut good fabric bleak outside";
-//
-//    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
-//                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
-//
-//    DSWallet * wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase setCreationDate:0 forChain:chain storeSeedPhrase:NO isTransient:YES];
-//
-//    NSData * hexData = [NSData dataFromHexString:@"0300030001e2cfc5ba74b3c26d4d4e4bb010b676092a314d33fb007315ed88eb54ac37173c000000006a47304402202d588c47bf63948d3a7640e83d0aac9e7267ca630faa1dbaeddd4ee1a04f9c350220515c79165a64db6a6e501b149e1d9b5a23b1902b83eec69ff50ff28e8036c2710121029bce432130b30421ddc26b2281fa4f5acad0d3e6fa14f382e9bc031e82fd676dffffffff011f89a95a020000001976a9148bdba067dbb6ec9a74a655f91c8d6ea7c1f2a89688ac00000000e4010051f9d127275f3f8c1947a4f1067d9a02d6f97d4969be727b533ad6ad5286e7d70000859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe8211196a96067672ba9cb7accd0ae90523ba60aba86151976a914eb3a5c66df4f5a99250af6090192115a04b7414088ac1368c5e52a7e3ab0676cd61d09e1054036d9ea66f61c53c68b89ba310c7d035b411f6e5d8a86d2928ef45ea70bbf1f15b9d69690d3ee3afeec373bfae5745f816ac531239ec7c6c94f2511dd6c12d077df90dc3bbcf76576a2c8ebb3363bb4e9f094"];
-//    UInt256 txId = *(UInt256 *)@"bc2056e345f921d161a167f29adec1492496968511cbd60e5139b45dd3d512f8".hexToData.reverse.bytes;
-//
-//    DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransactionFromMessage = [[DSProviderUpdateRegistrarTransaction alloc] initWithMessage:hexData onChain:chain];
-//
-//    XCTAssertEqualObjects([NSData dataWithUInt256:txId], [NSData dataWithUInt256:providerUpdateRegistrarTransactionFromMessage.txHash]);
-//
-//    XCTAssertEqualObjects(providerUpdateRegistrarTransactionFromMessage.toData,hexData,@"Provider update registrar transaction does not match it's data");
-//
-//    DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:wallet];
-//    if (!providerOperatorKeysDerivationPath.hasExtendedPublicKey) {
-//        [providerOperatorKeysDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:wallet.uniqueID];
-//    }
-//
-//    UInt256 operatorSecretKey = [NSData dataFromHexString:@"17b47bb0f2a3298ee8f9d07fdafc1e8552869d11cef81e13a2706e2fdbf50dc5"].UInt256;
-//
-//    DSBLSKey * privateKey = [DSBLSKey blsKeyWithPrivateKey:operatorSecretKey onChain:chain];
-//
-//    UInt384 operatorKeyNeeded =[NSData dataFromHexString:@"859bdc161a8a246a572cbc0c1928faacecbc12133b64f18480a32938eec081129016e99929caea89f317a33adfe82111"].UInt384;
-//
-//    UInt384 operatorKey = privateKey.publicKey;
-//
-//    XCTAssertTrue(uint384_eq(operatorKey, operatorKeyNeeded),@"operator keys don't match");
-//
-//    UInt384 operatorKeyFromDerivation = providerOperatorKeysDerivationPath.firstUnusedPublicKey.UInt384;
-//
-//    XCTAssertEqualObjects([NSData dataWithUInt384:operatorKey], [NSData dataWithUInt384:operatorKeyFromDerivation],@"operator keys don't match");
-//
-//    XCTAssertTrue(uint384_eq(operatorKeyFromDerivation, operatorKeyNeeded),@"operator keys don't match");
-//
-//    DSBLSKey * operatorBLSKey = [DSBLSKey blsKeyWithPublicKey:operatorKey onChain:chain];
-//
-//    UInt256 payloadHash = providerUpdateRegistrarTransactionFromMessage.payloadDataForHash.SHA256_2;
-//
-//    UInt768 signatureFromDigest = [privateKey signDigest:payloadHash];
-//
-//    UInt768 signatureFromData = [privateKey signData:providerUpdateRegistrarTransactionFromMessage.payloadDataForHash];
-//
-//    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], [NSData dataWithUInt768:signatureFromData],@"payload signature doesn't match");
-//
-//    XCTAssertEqualObjects([NSData dataWithUInt768:signatureFromDigest], providerUpdateRegistrarTransactionFromMessage.payloadSignature,@"payload signature doesn't match");
-//
-//    NSData * payloadSignature = providerUpdateRegistrarTransactionFromMessage.payloadSignature;
-//
-//    BOOL verified = [privateKey verify:payloadHash signature:signatureFromData];
-//
-//    XCTAssertTrue(verified,@"The signature is not signed correctly");
-//
-//    XCTAssertTrue([providerUpdateRegistrarTransactionFromMessage checkPayloadSignature:operatorBLSKey],@"The payload is not signed correctly");
-//
-//}
+-(void)testProviderUpdateRegistrarTransaction {
+    DSChain * chain = [DSChain testnet];
+    
+    NSData * hexData = [NSData dataFromHexString:@"0300030001c7de76dac8dd96f9b49b12a06fe39c8caf0cad12d23ad6026094d9b11b2b260d000000006b483045022100b31895e8cea95a965c82d842eadd6eef3c7b29e677c62a5c8e2b5dce05b4ddfc02206c7b5a9ea8b71983c3b21f4ff75ac1aa44090d28af8b2d9b93e794e6eb5835e20121032ea8be689184f329dce575776bc956cd52230f4c04755d5753d9491ea5bf8f2affffffff01c94670d0060000001976a914345f07bc7ebaf9f82f273be249b6066d2d5c236688ac00000000e4010049aa692330179f95c1342715102e37777df91cc0f3a4ae7e8f9e214ee97dbb3d0000139b654f0b1c031e1cf2b934c2d895178875cfe7c6a4f6758f02bc66eea7fc292d0040701acbe31f5e14a911cb061a2f6cc4a7bb877a80c11ae06b988d98305773f93b981976a91456bcf3cac49235537d6ce0fb3214d8850a6db77788ac2d7f857a2f15eb9340a0cfbce3ff8cf09b40e582d05b1f98c7468caa0f942bcf411ff69c9cb072660cc10048332c14c08621e7461f1f4f54b448baedc0e3434d9a7c3a1780885aaef4dd44c597b49b97595e02ad54728f572967d3ce0c2c0ceac174"];
+    NSString * txIdString = @"bd98378ca37d3ae6f4850b82e77be675feb3c9bc6e33cb0c23de1b38a08034c7";
+    DSUTXO input0 = (DSUTXO) { .hash = @"0d262b1bb1d9946002d63ad212ad0caf8c9ce36fa0129bb4f996ddc8da76dec7".hexToData.reverse.UInt256, .n = 0};
+    NSString * inputAddress0 = @"yabJKtPXkYc8ZXQNYjdKxwG7TcpdyJN1Ns";
+    DSECDSAKey * inputPrivateKey = [DSECDSAKey keyWithPrivateKey:@"cRfAz5ZmPN9eGSkXrGk3VYjJWt8gWffLCKTy7BtAgpQZj8YPvXwU" onChain:chain];
+    NSString * outputAddress0 = @"yR6MpzaykeioS25qZWrTWx2ruHCecYjMwa";
+    NSString * votingAddress = @"yWEZQmGADmdSk6xCai7TPcmiSZuY65hBmo";
+    NSString * payoutAddress = @"yUE5KLX1HNA4BkjN1Zgtwq6hQ16Cvo7hrX";
+    NSString * privateOwnerKeyString = @"cQpV2b9hNQd5Xs7REcrkPXmuCNDVvx6mSndr2ZgXKhfAhWDUUznB";
+    NSString * privateOperatorKey = @"0fc63f4e6d7572a6c33465525b5c3323f57036873dd37c98c393267c58b50533";
+    
+    DSBLSKey * operatorKey = [DSBLSKey blsKeyWithPrivateKey:privateOperatorKey.hexToData.UInt256 onChain:chain];
+    
+    UInt256 providerTransactionHash = @"3dbb7de94e219e8f7eaea4f3c01cf97d77372e10152734c1959f17302369aa49".hexToData.reverse.UInt256;
+    
+    DSProviderUpdateRegistrarTransaction *providerUpdateRegistrarTransactionFromMessage = [[DSProviderUpdateRegistrarTransaction alloc] initWithMessage:hexData onChain:chain];
+    
+    XCTAssertEqualObjects(providerUpdateRegistrarTransactionFromMessage.toData,hexData,@"Provider update registrar transaction does not match it's data");
+    
+    DSECDSAKey * privateKey = [DSECDSAKey keyWithPrivateKey:privateOwnerKeyString onChain:chain];
+    
+    UInt256 payloadHash = providerUpdateRegistrarTransactionFromMessage.payloadHash;
+    
+    NSData * compactSignature = [privateKey compactSign:payloadHash];
+    
+    XCTAssertEqualObjects(compactSignature.hexString, providerUpdateRegistrarTransactionFromMessage.payloadSignature.hexString,@"payload signature doesn't match");
+    
+    
+    BOOL verified = [privateKey verify:payloadHash signature:compactSignature];
+    
+    XCTAssertTrue(verified,@"The signature is not signed correctly");
+    
+    XCTAssertTrue([providerUpdateRegistrarTransactionFromMessage checkPayloadSignature:privateKey],@"The payload is not signed correctly");
+    
+
+    NSArray * inputHashes = @[uint256_obj(input0.hash)];
+    NSArray * inputIndexes = @[@(input0.n)];
+    NSArray * inputScripts = @[[NSData scriptPubKeyForAddress:inputAddress0 forChain:chain]];
+    
+    NSMutableData * scriptPayout = [NSMutableData data];
+    [scriptPayout appendScriptPubKeyForAddress:payoutAddress forChain:chain];
+    
+    DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = [[DSProviderUpdateRegistrarTransaction alloc] initWithInputHashes:inputHashes inputIndexes:inputIndexes inputScripts:inputScripts inputSequences:@[@(TXIN_SEQUENCE)] outputAddresses:@[outputAddress0] outputAmounts:@[@(29266822857)] providerUpdateRegistrarTransactionVersion:1 providerTransactionHash:providerTransactionHash mode:0 operatorKey:operatorKey.publicKey votingKeyHash:votingAddress.addressToHash160.UInt160 scriptPayout:scriptPayout onChain:chain];
+    
+    
+    [providerUpdateRegistrarTransaction updateInputsHash];
+    
+    [providerUpdateRegistrarTransaction signPayloadWithKey:privateKey];
+    
+    [providerUpdateRegistrarTransaction signWithPrivateKeys:@[inputPrivateKey]];
+    
+    XCTAssertEqualObjects(providerUpdateRegistrarTransaction.toData.hexString,hexData.hexString,@"Provider transaction does not match it's data");
+    
+    XCTAssertEqualObjects(uint256_reverse_hex(providerUpdateRegistrarTransaction.txHash),txIdString,@"Provider transaction hashes aren't correct");
+}
 
 @end

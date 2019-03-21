@@ -277,7 +277,7 @@
 }
 
 -(DSLocalMasternode*)localMasternode {
-    return [self.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:self];
+    return [self.chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:self save:TRUE];
 }
 
 -(DSWallet*)masternodeHoldingWallet {

@@ -542,7 +542,7 @@ inline static int ceil_log2(int x)
     }
 }
 
--(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
+-(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction save:(BOOL)save {
 
     //First check to see if we have a local masternode for this provider registration hash
     

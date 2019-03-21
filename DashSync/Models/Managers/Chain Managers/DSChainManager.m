@@ -136,6 +136,7 @@
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
     [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
     [self.chain wipeBlockchainInfo];
+    [self.chain wipeMasternodes];
     [DSTransactionEntity saveContext];
     
     if (![self.chain isMainnet]) {

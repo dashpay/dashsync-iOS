@@ -284,17 +284,24 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 - (BOOL)verify:(UInt256)md signature:(NSData *)sig
 {
-    secp256k1_pubkey pk;
-    secp256k1_ecdsa_signature s;
-    BOOL r = NO;
-    
-    if (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKeyData.bytes, self.publicKeyData.length) &&
-        secp256k1_ecdsa_signature_parse_der(_ctx, &s, sig.bytes, sig.length) &&
-        secp256k1_ecdsa_verify(_ctx, &s, md.u8, &pk) == 1) { // success is 1, all other values are fail
-        r = YES;
+    if (sig.length > 65) {
+            //not compact
+        secp256k1_pubkey pk;
+        secp256k1_ecdsa_signature s;
+        BOOL r = NO;
+        
+        if (secp256k1_ec_pubkey_parse(_ctx, &pk, self.publicKeyData.bytes, self.publicKeyData.length) &&
+            secp256k1_ecdsa_signature_parse_der(_ctx, &s, sig.bytes, sig.length) &&
+            secp256k1_ecdsa_verify(_ctx, &s, md.u8, &pk) == 1) { // success is 1, all other values are fail
+            r = YES;
+        }
+        
+        return r;
+    } else {
+        //compact
+        DSECDSAKey * key = [DSECDSAKey keyRecoveredFromCompactSig:sig andMessageDigest:md];
+        return [key.publicKeyData isEqualToData:self.publicKeyData];
     }
-    
-    return r;
 }
 
 // Pieter Wuille's compact signature encoding used for bitcoin message signing

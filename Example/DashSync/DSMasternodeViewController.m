@@ -185,6 +185,7 @@
         DSMasternodeDetailViewController * masternodeDetailViewController = (DSMasternodeDetailViewController*)segue.destinationViewController;
         masternodeDetailViewController.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
         masternodeDetailViewController.localMasternode = simplifiedMasternodeEntryEntity.localMasternode?[simplifiedMasternodeEntryEntity.localMasternode loadLocalMasternode]:nil;
+        masternodeDetailViewController.chain = self.chain;
     } else if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
         NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
         DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];

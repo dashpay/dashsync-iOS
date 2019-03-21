@@ -225,6 +225,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 //This removes all blockchain information from the chain's wallets and derivation paths
 - (void)wipeBlockchainInfo;
 
+- (void)wipeMasternodes;
 
 - (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
