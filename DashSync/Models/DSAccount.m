@@ -195,11 +195,13 @@
                     DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
                     NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
                     
-                    if (! transaction || self.allTx[hash] != nil) continue;
-                    self.allTx[hash] = transaction;
-                    [self.transactions addObject:transaction];
+                    if (transaction && self.allTx[hash] == nil) {
+                        self.allTx[hash] = transaction;
+                        [self.transactions addObject:transaction];
+                    }
                     
                     DSTxInputEntity * spentInInput = e.spentInInput;
+                    
                     if (spentInInput) { //this has been spent, also add the transaction where it is being spent
                         
                         DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
