@@ -1327,6 +1327,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     [opReturnScript appendUInt8:OP_RETURN];
     return [opReturnScript copy];
 }
+
++ (NSData*)scriptPubKeyForAddress:(NSString*)address forChain:(DSChain*)chain {
+    NSMutableData * data = [NSMutableData data];
+    [data appendScriptPubKeyForAddress:address forChain:chain];
+    return [data copy];
+}
     
 +(NSData*)merkleRootFromHashes:(NSArray*)hashes {
     NSMutableArray * higherLevel = [NSMutableArray array];

@@ -161,7 +161,7 @@
 -(void)configureCell:(DSMasternodeTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     char s[INET6_ADDRSTRLEN];
-    uint32_t ipAddress = CFSwapInt32BigToHost(simplifiedMasternodeEntryEntity.address);
+    uint32_t ipAddress = CFSwapInt32BigToHost((uint32_t)simplifiedMasternodeEntryEntity.address);
     cell.masternodeLocationLabel.text = [NSString stringWithFormat:@"%s:%d",inet_ntop(AF_INET, &ipAddress, s, sizeof(s)),simplifiedMasternodeEntryEntity.port];
     cell.outputLabel.text = [NSString stringWithFormat:@"%@",simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
 }
@@ -185,6 +185,7 @@
         DSMasternodeDetailViewController * masternodeDetailViewController = (DSMasternodeDetailViewController*)segue.destinationViewController;
         masternodeDetailViewController.simplifiedMasternodeEntry = simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry;
         masternodeDetailViewController.localMasternode = simplifiedMasternodeEntryEntity.localMasternode?[simplifiedMasternodeEntryEntity.localMasternode loadLocalMasternode]:nil;
+        masternodeDetailViewController.chain = self.chain;
     } else if ([segue.identifier isEqualToString:@"ClaimMasternodeSegue"]) {
         NSIndexPath * indexPath = self.tableView.indexPathForSelectedRow;
         DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];

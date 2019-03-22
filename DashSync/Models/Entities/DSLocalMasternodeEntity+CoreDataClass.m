@@ -33,7 +33,7 @@
     DSChain * chain = providerRegistrationTransactionEntity.transactionHash.chain.chain;
     DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)[self.providerRegistrationTransaction transactionForChain:chain];
     
-    DSLocalMasternode * localMasternode = [chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction];
+    DSLocalMasternode * localMasternode = [chain.chainManager.masternodeManager localMasternodeFromProviderRegistrationTransaction:providerRegistrationTransaction save:FALSE];
     
     for (DSProviderUpdateServiceTransactionEntity * providerUpdateServiceTransactionEntity in self.providerUpdateServiceTransactions) {
         DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)[providerUpdateServiceTransactionEntity transactionForChain:chain];
