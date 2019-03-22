@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithProviderUpdateRegistrarTransactionVersion:(uint16_t)version providerTransactionHash:(UInt256)providerTransactionHash mode:(uint16_t)providerMode operatorKey:(UInt384)operatorKey votingKeyHash:(UInt160)votingKeyHash scriptPayout:(NSData*)scriptPayout onChain:(DSChain * _Nonnull)chain;
 
+-(instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction*)registrationTransaction onChain:(DSChain *)chain;
+
 -(void)updateInputsHash;
 
 -(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;

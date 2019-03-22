@@ -27,7 +27,11 @@
 
 @implementation DSProviderUpdateRegistrarTransaction
 
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain {
+    return [self initWithMessage:message registrationTransaction:nil onChain:chain];
+}
+
+- (instancetype)initWithMessage:(NSData *)message registrationTransaction:(DSProviderRegistrationTransaction*)registrationTransaction onChain:(DSChain *)chain
 {
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
     self.type = DSTransactionType_ProviderUpdateRegistrar;
@@ -44,7 +48,12 @@
     off += 2;
     
     if (length - off < 32) return nil;
-    self.providerRegistrationTransactionHash = [message UInt256AtOffset:off];
+    UInt256 providerRegistrationTransactionHash = [message UInt256AtOffset:off];
+    if (registrationTransaction) {
+        NSAssert(uint256_eq(providerRegistrationTransactionHash,registrationTransaction.txHash), @"wrong registration transaction provided");
+        self.providerRegistrationTransaction = registrationTransaction;
+    }
+    self.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     off += 32;
     
     if (length - off < 2) return nil;
@@ -81,6 +90,7 @@
     if ([self payloadData].length != payloadLength) return nil;
     self.txHash = self.data.SHA256_2;
     
+
     return self;
 }
 
@@ -113,7 +123,9 @@
 
 -(void)setProviderRegistrationTransactionHash:(UInt256)providerTransactionHash {
     _providerRegistrationTransactionHash = providerTransactionHash;
-    self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+    if (!self.providerRegistrationTransaction) {
+        self.providerRegistrationTransaction = (DSProviderRegistrationTransaction*)[self.chain transactionForHash:self.providerRegistrationTransactionHash];
+    }
 }
 
 -(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
