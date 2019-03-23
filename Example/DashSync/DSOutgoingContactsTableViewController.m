@@ -8,7 +8,6 @@
 
 #import "DSOutgoingContactsTableViewController.h"
 
-#import "DSContactsModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,14 +37,14 @@ static NSString * const CellId = @"CellId";
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.model.outgoingContactRequests.count;
+    return self.blockchainUser.outgoingContactRequests.count;
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.model.outgoingContactRequests[indexPath.row];
+    NSString *username = self.blockchainUser.outgoingContactRequests[indexPath.row];
     cell.textLabel.text = username;
     
     return cell;

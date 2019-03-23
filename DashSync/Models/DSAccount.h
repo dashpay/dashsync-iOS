@@ -29,7 +29,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSFundsDerivationPath.h"
 
-@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSContact;
 
 @interface DSAccount : NSObject
 
@@ -74,6 +74,9 @@
 
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray * _Nonnull internalAddresses;
+
+// all the contacts for an account
+@property (nonatomic, readonly) NSArray <DSContact*> * _Nonnull contacts;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
@@ -181,5 +184,7 @@
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
              completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
+
+-(void)contactForBlockchainUser:(DSBlockchainUser*)blockchainUser;
 
 @end

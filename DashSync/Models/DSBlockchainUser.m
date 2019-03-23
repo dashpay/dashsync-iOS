@@ -25,6 +25,17 @@
 #import "DSDerivationPathFactory.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSTransition.h"
+#import <ios-dpp/DSDAPObjectsFactory.h>
+#import <ios-dpp/DSSchemaObject.h>
+#import <ios-dpp/DSSchemaHashUtils.h>
+#import <DSJSONSchemaValidation/NSDictionary+DSJSONDeepMutableCopy.h>
+#import <TinyCborObjc/NSObject+DSCborEncoding.h>
+#import "DSChainManager.h"
+#import "DSDAPIClient.h"
+
+
+static NSString * const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
+static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -43,6 +54,12 @@
 @property(nonatomic,strong) NSMutableArray <DSBlockchainUserResetTransaction*>* blockchainUserResetTransactions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
 @property(nonatomic,strong) NSMutableArray <DSTransaction*>* allTransitions;
+
+@property (copy, nonatomic) NSArray <NSString *> *contacts;
+@property (copy, nonatomic) NSArray <NSString *> *outgoingContactRequests;
+@property (copy, nonatomic) NSArray <NSString *> *incomingContactRequests;
+
+@property (nonatomic,readonly) DSDAPIClient * dapiClient;
 
 @end
 
@@ -228,6 +245,187 @@
         completion(YES);
     }];
 }
+
+// MARK: - Layer 2
+
+- (void)sendDapObject:(NSMutableDictionary<NSString *, id> *)dapObject completion:(void (^)(BOOL success))completion {
+    NSMutableArray *dapObjects = [NSMutableArray array];
+    [dapObjects addObject:dapObject];
+    
+    NSMutableDictionary<NSString *, id> *stPacket = [[DSDAPObjectsFactory createSTPacketInstance] ds_deepMutableCopy];
+    NSMutableDictionary<NSString *, id> *stPacketObject = stPacket[DS_STPACKET];
+    stPacketObject[DS_DAPOBJECTS] = dapObjects;
+    stPacketObject[@"dapid"] = ContactsDAPId;
+    
+    NSData *serializedSTPacketObject = [stPacketObject ds_cborEncodedObject];
+    
+    __block NSData *serializedSTPacketObjectHash = [DSSchemaHashUtils hashOfObject:stPacketObject];
+    
+    __block DSTransition *transition = [self transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
+    
+    [self signStateTransition:transition
+                                  withPrompt:@"" completion:^(BOOL success) {
+                                      if (success) {
+                                          NSData *transitionData = [transition toData];
+                                          
+                                          NSString *transitionDataHex = [transitionData hexString];
+                                          NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
+                                          
+                                          [self.wallet.chain.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
+                                              NSLog(@"Header ID %@", headerId);
+                                              
+                                              [self.wallet.chain registerSpecialTransaction:transition];
+                                              [transition save];
+                                              
+                                              if (completion) {
+                                                  completion(YES);
+                                              }
+                                          } failure:^(NSError * _Nonnull error) {
+                                              NSLog(@"Error: %@", error);
+                                              if (completion) {
+                                                  completion(NO);
+                                              }
+                                          }];
+                                      }
+                                      else {
+                                          if (completion) {
+                                              completion(NO);
+                                          }
+                                      }
+                                  }];
+}
+
+- (void)sendNewContactRequestToUserWithUsername:(NSString *)username completion:(void (^)(BOOL))completion {
+    __weak typeof(self) weakSelf = self;
+    [self.dapiClient getUserByName:username success:^(NSDictionary * _Nullable blockchainUser) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        if (!blockchainUser) {
+            if (completion) {
+                completion(NO);
+            }
+            
+            return;
+        }
+        
+        NSMutableDictionary<NSString *, id> *contactObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"contact"];
+        contactObject[@"user"] = blockchainUser[@"regtxid"];
+        contactObject[@"username"] = username;
+        
+        NSMutableDictionary<NSString *, id> *me = [NSMutableDictionary dictionary];
+        me[@"id"] = uint256_hex(strongSelf.registrationTransactionHash);
+        me[@"username"] = strongSelf.username;
+        
+        contactObject[@"sender"] = me;
+        
+        [strongSelf sendDapObject:contactObject completion:^(BOOL success) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            
+            if (success) {
+                strongSelf.outgoingContactRequests = [strongSelf.outgoingContactRequests arrayByAddingObject:username];
+                
+                //remove the incoming contact request as well
+                NSMutableArray <NSString *> *incomingContactRequests = [strongSelf.incomingContactRequests mutableCopy];
+                [incomingContactRequests removeObject:username];
+                strongSelf.incomingContactRequests = [incomingContactRequests copy];
+            }
+        
+            
+            if (completion) {
+                completion(success);
+            }
+        }];
+    } failure:^(NSError * _Nonnull error) {
+        
+    }];
+}
+
+- (void)createProfileWithCompletion:(void (^)(BOOL success))completion {
+    NSMutableDictionary<NSString *, id> *userObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"user"];
+    userObject[@"aboutme"] = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.username];
+    userObject[@"username"] = self.username;
+    
+    __weak typeof(self) weakSelf = self;
+    [self sendDapObject:userObject completion:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        if (success) {
+            if (completion) {
+                completion(YES);
+            }
+        }
+        else {
+            if (completion) {
+                completion(NO);
+            }
+        }
+    }];
+}
+
+-(DSDAPIClient*)dapiClient {
+    return self.wallet.chain.chainManager.DAPIClient;
+}
+
+- (void)fetchContacts:(void (^)(BOOL success))completion {
+    NSDictionary *query = @{@"data.user": uint256_hex(self.registrationTransactionHash)};
+    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
+    
+    __weak typeof(self) weakSelf = self;
+    [self.wallet.chain.chainManager.DAPIClient fetchDapObjectsForId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        [strongSelf handleContacts:dapObjects];
+        
+        if (completion) {
+            completion(YES);
+        }
+    } failure:^(NSError * _Nonnull error) {
+        if (completion) {
+            completion(NO);
+        }
+    }];
+}
+
+
+- (void)handleContacts:(NSArray<NSDictionary *> *)rawContacts {
+    NSMutableArray <NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
+    for (NSDictionary *rawContact in rawContacts) {
+        NSDictionary *sender = rawContact[@"sender"];
+        NSString *username = sender[@"username"];
+        [contactsAndIncomingRequests addObject:username];
+    }
+    
+    NSMutableArray <NSString *> *contacts = [NSMutableArray array];
+    NSMutableArray <NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
+    NSMutableArray <NSString *> *incomingContactRequests = [NSMutableArray array];
+    
+    for (NSString *username in contactsAndIncomingRequests) {
+        if ([outgoingContactRequests containsObject:username]) { // it's a match!
+            [outgoingContactRequests removeObject:username];
+            [contacts addObject:username];
+        }
+        else { // incoming request
+            [incomingContactRequests addObject:username];
+        }
+    }
+    
+    self.contacts = contacts;
+    self.outgoingContactRequests = outgoingContactRequests;
+    self.incomingContactRequests = incomingContactRequests;
+}
+
 
 // MARK: - Persistence
 

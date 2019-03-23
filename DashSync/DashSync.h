@@ -83,6 +83,8 @@
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
 
+#import "DSBlockchainUser.h"
+
 #import "DSNetworking.h"
 
 #define SHAPESHIFT_ENABLED 0

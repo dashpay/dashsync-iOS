@@ -10,11 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSContactsModel;
+@class DSBlockchainUser;
 
 @interface DSOutgoingContactsTableViewController : UITableViewController
 
-@property (strong, nonatomic) DSContactsModel *model;
+@property (strong, nonatomic) DSBlockchainUser *blockchainUser;
 
 - (void)refreshData;
 

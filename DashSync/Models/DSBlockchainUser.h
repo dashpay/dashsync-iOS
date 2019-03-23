@@ -19,6 +19,10 @@
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSString * username;
 
+@property (nonatomic,readonly) NSArray <NSString *> *contacts;
+@property (nonatomic,readonly) NSArray <NSString *> *outgoingContactRequests;
+@property (nonatomic,readonly) NSArray <NSString *> *incomingContactRequests;
+
 -(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet;
 
 -(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash;
@@ -43,5 +47,11 @@
 -(DSTransition*)transitionForStateTransitionPacketHash:(UInt256)stateTransitionHash;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+
+-(void)sendDapObject:(NSMutableDictionary<NSString *, id> *)dapObject completion:(void (^)(BOOL success))completion;
+
+-(void)sendNewContactRequestToUserWithUsername:(NSString *)username completion:(void (^)(BOOL))completion;
+
+-(void)fetchContacts:(void (^)(BOOL success))completion;
 
 @end

@@ -8,8 +8,6 @@
 
 #import "DSIncomingContactsTableViewController.h"
 
-#import "DSContactsModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const CellId = @"CellId";
@@ -29,7 +27,7 @@ static NSString * const CellId = @"CellId";
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.model fetchContacts:^(BOOL success) {
+    [self.blockchainUser fetchContacts:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -43,13 +41,13 @@ static NSString * const CellId = @"CellId";
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.model.incomingContactRequests.count;
+    return self.blockchainUser.incomingContactRequests.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.model.incomingContactRequests[indexPath.row];
+    NSString *username = self.blockchainUser.incomingContactRequests[indexPath.row];
     cell.textLabel.text = username;
     
     return cell;
@@ -58,16 +56,15 @@ static NSString * const CellId = @"CellId";
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    NSString *username = self.model.incomingContactRequests[indexPath.row];
+    NSString *username = self.blockchainUser.incomingContactRequests[indexPath.row];
     __weak typeof(self) weakSelf = self;
-    [self.model contactRequestUsername:username completion:^(BOOL success) {
+    [self.blockchainUser sendNewContactRequestToUserWithUsername:username completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
 
         if (success) {
-            [strongSelf.model removeIncomingContactRequest:username];
             [strongSelf.tableView reloadData];
         }
         

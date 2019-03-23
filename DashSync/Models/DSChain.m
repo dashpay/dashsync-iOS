@@ -444,6 +444,11 @@ static dispatch_once_t devnetToken = 0;
     return @[[DSFundsDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSFundsDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
 }
 
+-(NSArray<DSFundsDerivationPath*>*)contactDerivationPathsForAccountNumber:(uint32_t)accountNumber {
+    return @[[DSFundsDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSFundsDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
+}
+
+
 -(void)save {
     [[DSChainEntity context] performBlockAndWait:^{
         self.chainEntity.totalMasternodeCount = self.totalMasternodeCount;

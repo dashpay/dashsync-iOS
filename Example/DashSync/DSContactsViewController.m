@@ -8,8 +8,6 @@
 
 #import "DSContactsViewController.h"
 
-#import "DSContactsModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const CellId = @"CellId";
@@ -29,7 +27,7 @@ static NSString * const CellId = @"CellId";
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.model fetchContacts:^(BOOL success) {
+    [self.blockchainUser fetchContacts:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -43,13 +41,13 @@ static NSString * const CellId = @"CellId";
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.model.contacts.count;
+    return self.blockchainUser.contacts.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.model.contacts[indexPath.row];
+    NSString *username = self.blockchainUser.contacts[indexPath.row];
     cell.textLabel.text = username;
     
     return cell;

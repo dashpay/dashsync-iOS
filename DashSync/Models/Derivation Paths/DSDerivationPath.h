@@ -63,7 +63,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_ProviderFunds = 4,
     DSDerivationPathReference_ProviderVotingKeys = 5,
     DSDerivationPathReference_ProviderOperatorKeys = 6,
-    DSDerivationPathReference_ProviderOwnerKeys = 7
+    DSDerivationPathReference_ProviderOwnerKeys = 7,
+    DSDerivationPathReference_ContactBasedFunds = 8,
 };
 
 @interface DSDerivationPath : NSIndexPath
