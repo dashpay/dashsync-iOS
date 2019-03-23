@@ -454,7 +454,9 @@
     
     __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
     [self sendPingMessageWithPongHandler:^(BOOL success) {
-        completion(success,YES,NO);
+        if (completion) {
+            completion(success,YES,NO);
+        }
         
     }];
     self.mempoolTransactionCompletion = nil;
@@ -1234,7 +1236,9 @@
         DSDLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
         __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
         [self sendPingMessageWithPongHandler:^(BOOL success) {
-            completion(success,YES,NO);
+            if (completion) {
+                completion(success,YES,NO);
+            }
         }];
         self.mempoolTransactionCompletion = nil;
     }
