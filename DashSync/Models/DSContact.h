@@ -16,15 +16,20 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser;
+@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction;
 
 @interface DSContact : NSObject
 
-@property (nonatomic, readonly) uint32_t account;
-@property (nonatomic, readonly) DSBlockchainUser * blockchainUser;
+@property (nonatomic, weak, readonly) DSAccount* account;
+@property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
+@property (nonatomic, readonly) UInt256 contactBlockchainUserRegistrationTransactionHash;
+@property (nonatomic, readonly) NSString * username;
+
+-(instancetype)initWithUsername:(NSString*)username contactsBlockchainUserRegistrationTransactionHash:(UInt256)contactsBlockchainUserRegistrationTransactionHash blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
 
 @end
 

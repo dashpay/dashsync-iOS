@@ -32,10 +32,15 @@
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 #import "DSChainManager.h"
 #import "DSDAPIClient.h"
-
+#import "DSContact.h"
+#import "DSContactEntity+CoreDataClass.h"
+#import "DSContactRequestEntity+CoreDataClass.h"
+#import "DSAccountEntity+CoreDataClass.h"
 
 static NSString * const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
 static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
+
+static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0fd55531c5bd8a16caa232e5edb4cdb40";
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -61,11 +66,13 @@ static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d5
 
 @property (nonatomic,readonly) DSDAPIClient * dapiClient;
 
+@property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
+
 @end
 
 @implementation DSBlockchainUser
 
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet {
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     if (!(self = [super init])) return nil;
     self.username = username;
     self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,wallet.chain.uniqueID,username];
@@ -77,20 +84,48 @@ static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d5
     self.blockchainUserResetTransactions = [NSMutableArray array];
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
+    self.contacts = @[];
+    self.outgoingContactRequests = @[];
+    self.incomingContactRequests = @[];
+    if (managedObjectContext) {
+        self.managedObjectContext = managedObjectContext;
+    } else {
+        self.managedObjectContext = [NSManagedObject context];
+    }
     return self;
 }
 
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash {
-    if (!(self = [self initWithUsername:username atIndex:index inWallet:wallet])) return nil;
+-(void)loadContacts {
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSContactEntity setContext:self.managedObjectContext];
+        [DSAccountEntity setContext:self.managedObjectContext];
+        [DSContactRequestEntity setContext:self.managedObjectContext];
+        [DSDerivationPathEntity setContext:self.managedObjectContext];
+        NSArray<DSContactEntity *>* contacts = [DSContactEntity objectsMatching:@"ownerBlockchainUserRegistrationTransaction.transactionHash.txHash == %@",uint256_data(self.registrationTransactionHash)];
+        NSMutableArray * contactArray = [NSMutableArray array];
+        for (DSContactEntity *e in contacts) {
+            DSAccount * account = [self.wallet accountWithNumber:e.account.index];
+            [contactArray addObject:[[DSContact alloc] initWithUsername:e.username contactsBlockchainUserRegistrationTransactionHash:e.blockchainUserRegistrationHash.UInt256 blockchainUserOwner:self account:account]];
+        }
+        self.contacts = [contactArray copy];
+    }];
+
+}
+
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext*)managedObjectContext {
+    if (!(self = [self initWithUsername:username atIndex:index inWallet:wallet inContext:managedObjectContext])) return nil;
     self.registrationTransactionHash = registrationTransactionHash;
     self.lastTransitionHash = lastTransitionHash; //except topup and close, including state transitions
+    
+    [self loadContacts];
+    
     return self;
 }
 
--(instancetype)initWithBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
+-(instancetype)initWithBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction inContext:(NSManagedObjectContext*)managedObjectContext {
     uint32_t index = 0;
     DSWallet * wallet = [blockchainUserRegistrationTransaction.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:&index];
-    if (!(self = [self initWithUsername:blockchainUserRegistrationTransaction.username atIndex:index inWallet:wallet])) return nil;
+    if (!(self = [self initWithUsername:blockchainUserRegistrationTransaction.username atIndex:index inWallet:wallet inContext:(NSManagedObjectContext*)managedObjectContext])) return nil;
     self.registrationTransactionHash = blockchainUserRegistrationTransaction.txHash;
     self.blockchainUserRegistrationTransaction = blockchainUserRegistrationTransaction;
     return self;
@@ -255,7 +290,7 @@ static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d5
     NSMutableDictionary<NSString *, id> *stPacket = [[DSDAPObjectsFactory createSTPacketInstance] ds_deepMutableCopy];
     NSMutableDictionary<NSString *, id> *stPacketObject = stPacket[DS_STPACKET];
     stPacketObject[DS_DAPOBJECTS] = dapObjects;
-    stPacketObject[@"dapid"] = ContactsDAPId;
+    stPacketObject[@"dapid"] = DashpayNativeDAPId;
     
     NSData *serializedSTPacketObject = [stPacketObject ds_cborEncodedObject];
     
@@ -346,9 +381,9 @@ static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d5
     }];
 }
 
-- (void)createProfileWithCompletion:(void (^)(BOOL success))completion {
+- (void)createProfileWithBioString:(NSString*)bio completion:(void (^)(BOOL success))completion {
     NSMutableDictionary<NSString *, id> *userObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"user"];
-    userObject[@"aboutme"] = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.username];
+    userObject[@"aboutme"] = bio;
     userObject[@"username"] = self.username;
     
     __weak typeof(self) weakSelf = self;
@@ -380,7 +415,7 @@ static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d5
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    [self.wallet.chain.chainManager.DAPIClient fetchDapObjectsForId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
+    [self.wallet.chain.chainManager.DAPIClient fetchDapObjectsForId:DashpayNativeDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

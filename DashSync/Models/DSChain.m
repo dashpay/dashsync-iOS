@@ -2059,7 +2059,7 @@ static dispatch_once_t devnetToken = 0;
         DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
         DSWallet * wallet = [self walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil];
         if (wallet) {
-            DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithBlockchainUserRegistrationTransaction:blockchainUserRegistrationTransaction];
+            DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithBlockchainUserRegistrationTransaction:blockchainUserRegistrationTransaction inContext:self.managedObjectContext];
             [wallet registerBlockchainUser:blockchainUser];
         }
     } else if ([transaction isKindOfClass:[DSBlockchainUserTopupTransaction class]]) {

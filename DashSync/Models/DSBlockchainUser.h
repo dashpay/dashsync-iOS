@@ -18,16 +18,17 @@
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSString * username;
+@property (nonatomic,readonly) NSString * dashpayBioString;
 
 @property (nonatomic,readonly) NSArray <NSString *> *contacts;
 @property (nonatomic,readonly) NSArray <NSString *> *outgoingContactRequests;
 @property (nonatomic,readonly) NSArray <NSString *> *incomingContactRequests;
 
--(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet;
+-(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash;
+-(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction;
+-(instancetype)initWithBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)generateBlockchainUserExtendedPublicKey:(void (^ _Nullable)(BOOL registered))completion;
 
@@ -53,5 +54,7 @@
 -(void)sendNewContactRequestToUserWithUsername:(NSString *)username completion:(void (^)(BOOL))completion;
 
 -(void)fetchContacts:(void (^)(BOOL success))completion;
+
+-(void)createProfileWithBioString:(NSString*)bio completion:(void (^)(BOOL success))completion;
 
 @end

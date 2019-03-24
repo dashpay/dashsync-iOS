@@ -17,6 +17,24 @@
 
 #import "DSContact.h"
 
+@interface DSContact()
+
+@property (nonatomic, weak) DSAccount* account;
+@property (nonatomic, weak) DSBlockchainUser * blockchainUserOwner;
+@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
+@property (nonatomic, copy) NSString * username;
+
+@end
+
 @implementation DSContact
+
+-(instancetype)initWithUsername:(NSString*)username contactsBlockchainUserRegistrationTransactionHash:(UInt256)contactsBlockchainUserRegistrationTransactionHash blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account {
+    if (!(self = [super init])) return nil;
+    self.username = username;
+    self.account = account;
+    self.blockchainUserOwner = blockchainUserOwner;
+    self.contactBlockchainUserRegistrationTransactionHash = contactsBlockchainUserRegistrationTransactionHash;
+    return self;
+}
 
 @end

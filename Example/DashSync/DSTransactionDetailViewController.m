@@ -468,8 +468,8 @@
                         DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
                         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                         [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"public key hash:", nil);
-                        s = [NSData dataWithUInt160:blockchainUserRegistrationTransaction.pubkeyHash].hexString;
+                        cell.titleLabel.text = NSLocalizedString(@"public key address:", nil);
+                        s = [[NSData dataWithUInt160:blockchainUserRegistrationTransaction.pubkeyHash] addressFromHash160DataForChain:self.transaction.chain];
                         cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
                                                      [s substringFromIndex:s.length/2]];
                         cell.identifierLabel.copyableText = s;

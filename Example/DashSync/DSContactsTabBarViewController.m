@@ -29,15 +29,15 @@ NS_ASSUME_NONNULL_BEGIN
     
     self.delegate = self;
     
-//    __weak typeof(self) weakSelf = self;
-//    [self.blockchainUser getUser:^(BOOL success) {
-//        __strong typeof(weakSelf) strongSelf = weakSelf;
-//        if (!strongSelf) {
-//            return;
-//        }
-//
-//        [strongSelf showAlertTitle:@"Get current user result:" result:success];
-//    }];
+    __weak typeof(self) weakSelf = self;
+    [self.blockchainUser createProfileWithBioString:[NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username] completion:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        [strongSelf showAlertTitle:@"Created profile:" result:success];
+    }];
     
     DSContactsViewController *contacts = [self.storyboard instantiateViewControllerWithIdentifier:@"ContactsControllerId"];
     contacts.blockchainUser = self.blockchainUser;
