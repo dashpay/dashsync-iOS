@@ -19,6 +19,9 @@
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSString * username;
 @property (nonatomic,readonly) NSString * dashpayBioString;
+@property (nonatomic,readonly) uint64_t creditBalance;
+
+@property (nonatomic,readonly) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
 
 @property (nonatomic,readonly) NSArray <NSString *> *contacts;
 @property (nonatomic,readonly) NSArray <NSString *> *outgoingContactRequests;

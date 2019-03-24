@@ -52,6 +52,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 @property (nonatomic,assign) uint32_t index;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
+@property (nonatomic,assign) uint64_t creditBalance;
 
 @property(nonatomic,strong) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainUserTopupTransaction*>* blockchainUserTopupTransactions;
@@ -92,6 +93,18 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     } else {
         self.managedObjectContext = [NSManagedObject context];
     }
+    
+    __weak typeof(self) weakSelf = self;
+    [self.dapiClient getUserByName:self.username success:^(NSDictionary * _Nullable profileDictionary) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+        strongSelf.creditBalance = creditBalance;
+    } failure:^(NSError * _Nonnull error) {
+        
+    }];
     return self;
 }
 
@@ -408,6 +421,29 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 
 -(DSDAPIClient*)dapiClient {
     return self.wallet.chain.chainManager.DAPIClient;
+}
+
+- (void)fetchProfile:(void (^)(BOOL success))completion {
+    NSDictionary *query = @{@"": uint256_hex(self.registrationTransactionHash)};
+    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
+    
+    __weak typeof(self) weakSelf = self;
+    [self.wallet.chain.chainManager.DAPIClient fetchDapObjectsForId:DashpayNativeDAPId objectsType:@"user" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        [strongSelf handleContacts:dapObjects];
+        
+        if (completion) {
+            completion(YES);
+        }
+    } failure:^(NSError * _Nonnull error) {
+        if (completion) {
+            completion(NO);
+        }
+    }];
 }
 
 - (void)fetchContacts:(void (^)(BOOL success))completion {

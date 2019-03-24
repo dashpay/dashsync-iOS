@@ -57,6 +57,10 @@
         DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
         DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
         blockchainUserCell.usernameLabel.text = blockchainUser.username;
+        blockchainUserCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainUser.creditBalance];
+        if (blockchainUser.blockchainUserRegistrationTransaction) {
+            blockchainUserCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainUser.blockchainUserRegistrationTransaction.blockHeight)];
+        }
        // blockchainUserCell.publicKeyLabel.text = blockchainUser;
     }
 }
