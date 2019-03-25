@@ -45,6 +45,7 @@
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSpecialTransactionsWalletHolder.h"
+#import "DSContact.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -145,6 +146,16 @@
     self.mBlockchainUsers = nil;
     [self blockchainUsers];
     
+    //blockchain users are loaded
+    
+    //add blockchain user derivation paths to account
+    
+    for (DSBlockchainUser * blockchainUser in self.mBlockchainUsers) {
+        for (DSContact * contact in blockchainUser.friends) {
+            [contact.account addDerivationPath:[DSFundsDerivationPath
+                                                contactBasedDerivationPathForContact:contact onChain:self.chain]];
+        }
+    }
 
     if (error) return nil;
     return self;

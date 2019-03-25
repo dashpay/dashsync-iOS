@@ -84,6 +84,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
     self.mContacts = [NSMutableDictionary dictionary];
+    self.mFriends = [NSMutableArray array];
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -115,6 +116,10 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 
 -(NSDictionary*)contacts {
     return [self.mContacts copy];
+}
+
+-(NSArray*)friends {
+    return [[self.mContacts objectForKey:self.username] outgoingContactRequests];
 }
 
 -(void)loadContacts {
