@@ -84,7 +84,6 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
     self.mContacts = [NSMutableDictionary dictionary];
-    self.mFriends = [NSMutableArray array];
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -93,7 +92,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     
     
     [self updateCreditBalance];
-
+    
     return self;
 }
 
@@ -116,6 +115,10 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 
 -(NSDictionary*)contacts {
     return [self.mContacts copy];
+}
+
+-(DSContact*)ownContact {
+    return [self.mContacts objectForKey:self.username];
 }
 
 -(NSArray*)friends {
@@ -370,54 +373,73 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
                    }];
 }
 
-- (void)sendNewContactRequestToUserWithUsername:(NSString *)username completion:(void (^)(BOOL))completion {
-    __weak typeof(self) weakSelf = self;
-    [self.dapiClient getUserByName:username success:^(NSDictionary * _Nullable blockchainUser) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
+- (void)sendNewContactRequestToContactWithUsername:(NSString *)username completion:(void (^)(BOOL))completion {
+    
+    DSContact * knownContact = [self.contacts objectForKey:username];
+    
+    if (knownContact) {
+        [self sendNewContactRequestToContact:knownContact completion:completion];
+    } else {
         
-        if (!blockchainUser) {
-            if (completion) {
-                completion(NO);
-            }
-            
-            return;
-        }
-        
-        NSMutableDictionary<NSString *, id> *contactObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"contact"];
-        contactObject[@"user"] = blockchainUser[@"regtxid"];
-        contactObject[@"username"] = username;
-        
-        NSMutableDictionary<NSString *, id> *me = [NSMutableDictionary dictionary];
-        me[@"id"] = uint256_hex(strongSelf.registrationTransactionHash);
-        me[@"username"] = strongSelf.username;
-        
-        contactObject[@"sender"] = me;
-        
-        [strongSelf sendDapObject:contactObject completion:^(BOOL success) {
+        __weak typeof(self) weakSelf = self;
+        [self.dapiClient getUserByName:username success:^(NSDictionary * _Nullable blockchainUser) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
             
-            if (success) {
-                strongSelf.outgoingContactRequests = [strongSelf.outgoingContactRequests arrayByAddingObject:username];
+            if (!blockchainUser) {
+                if (completion) {
+                    completion(NO);
+                }
                 
-                //remove the incoming contact request as well
-                NSMutableArray <NSString *> *incomingContactRequests = [strongSelf.incomingContactRequests mutableCopy];
-                [incomingContactRequests removeObject:username];
-                strongSelf.incomingContactRequests = [incomingContactRequests copy];
+                return;
             }
             
+            NSString * contactsBlockchainUserRegistrationTransactionHashString = blockchainUser[@"regtxid"];
+            UInt256 contactsBlockchainUserRegistrationTransactionHash = contactsBlockchainUserRegistrationTransactionHashString.hexToData.UInt256;
             
-            if (completion) {
-                completion(success);
-            }
+            //todo make this multi account
+            
+            DSContact * contact = [[DSContact alloc] initWithUsername:username contactsBlockchainUserRegistrationTransactionHash:contactsBlockchainUserRegistrationTransactionHash blockchainUserOwner:self account:[self.wallet accountWithNumber:0]];
+            
+            
+            
+            [strongSelf sendNewContactRequestToContact:contact completion:completion];
+        } failure:^(NSError * _Nonnull error) {
+            
         }];
-    } failure:^(NSError * _Nonnull error) {
         
+    }
+}
+
+- (void)sendNewContactRequestToContact:(DSContact *)contact completion:(void (^)(BOOL))completion {
+    NSMutableDictionary<NSString *, id> *contactObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"contact"];
+    contactObject[@"user"] = uint256_hex(contact.contactBlockchainUserRegistrationTransactionHash);
+    contactObject[@"username"] = contact.username;
+    
+    NSMutableDictionary<NSString *, id> *me = [NSMutableDictionary dictionary];
+    me[@"id"] = uint256_hex(self.registrationTransactionHash);
+    me[@"username"] = self.username;
+    
+    contactObject[@"sender"] = me;
+    
+    __weak typeof(self) weakSelf = self;
+    
+    [self sendDapObject:contactObject completion:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        if (success) {
+            [strongSelf.ownContact addOutgoingContactRequestToRecipient:contact];
+        }
+        
+        
+        if (completion) {
+            completion(success);
+        }
     }];
 }
 
@@ -432,6 +454,10 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
         if (!strongSelf) {
             return;
         }
+        
+        
+        
+        [self.mContacts setObject:<#(nonnull DSContact *)#> forKey:<#(nonnull id<NSCopying>)#>]
         
         if (success) {
             if (completion) {
@@ -484,7 +510,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
             return;
         }
         
-        [strongSelf handleContacts:dapObjects];
+        [strongSelf handleContactsDAPIObjects:dapObjects];
         
         if (completion) {
             completion(YES);
@@ -497,15 +523,16 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 
-- (void)handleContacts:(NSArray<NSDictionary *> *)rawContacts {
+- (void)handleContactsDAPIObjects:(NSArray<NSDictionary *> *)rawContacts {
     NSMutableArray <NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
+    NSMutableArray <NSMutableArray *> *contacts = [NSMutableArray array];
     for (NSDictionary *rawContact in rawContacts) {
         NSDictionary *sender = rawContact[@"sender"];
         NSString *username = sender[@"username"];
         [contactsAndIncomingRequests addObject:username];
     }
     
-    NSMutableArray <NSString *> *contacts = [NSMutableArray array];
+    
     NSMutableArray <NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
     NSMutableArray <NSString *> *incomingContactRequests = [NSMutableArray array];
     

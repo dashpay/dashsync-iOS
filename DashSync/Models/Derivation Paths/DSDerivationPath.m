@@ -63,12 +63,16 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
-__unused static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i)
+__unused static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
 {
     uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
     UInt512 I;
     
-    DSSecp256k1PointGen((DSECPoint *)buf, k);
+    if (hardened) {
+        buf[0] = 0;
+        *(UInt256 *)&buf[1] = *k;
+    }
+    else DSSecp256k1PointGen((DSECPoint *)buf, k);
     
     *(UInt256 *)&buf[sizeof(DSECPoint)] = i;
     

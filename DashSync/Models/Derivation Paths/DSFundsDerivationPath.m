@@ -31,8 +31,8 @@
 
 + (instancetype)contactBasedDerivationPathForContact:(DSContact*)contact onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, contact.account.accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:5 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, contact.account.accountNumber | BIP32_HARD,contact.contactBlockchainUserRegistrationTransactionHash.u64[0] ^ BIP32_HARD};
+    return [self derivationPathWithIndexes:indexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
 }
 
 - (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length

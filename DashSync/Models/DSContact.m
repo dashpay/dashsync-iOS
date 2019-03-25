@@ -16,6 +16,7 @@
 //
 
 #import "DSContact.h"
+#import "DSAccount.h"
 
 @interface DSContact()
 
@@ -47,6 +48,13 @@
 
 -(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient {
     [self.mOutgoingContactRequests addObject:recipient];
+}
+
+-(BOOL)isEqual:(id)object {
+    if ([super isEqual:object]) return TRUE;
+    if (![object isMemberOfClass:[DSContact class]]) return FALSE;
+    if ([self.username isEqualToString:((DSContact*)object).username] && self.account.accountNumber == ((DSContact*)object).account.accountNumber) return TRUE;
+    return FALSE;
 }
 
 @end

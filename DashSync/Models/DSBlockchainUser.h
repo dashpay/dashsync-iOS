@@ -26,6 +26,8 @@
 
 @property (nonatomic,readonly) NSDictionary <NSString*,DSContact*> *contacts;
 
+@property (nonatomic,readonly) DSContact* ownContact;
+
 @property (nonatomic,readonly) NSArray <DSContact*>* friends; //this includes people who haven't friended me back
 
 -(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
