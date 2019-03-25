@@ -1773,7 +1773,7 @@ static dispatch_once_t devnetToken = 0;
 -(uint32_t)blockchainUsersCount {
     uint32_t blockchainUsersCount = 0;
     for (DSWallet * lWallet in self.wallets) {
-        blockchainUsersCount += [lWallet blockchainUsers].count;
+        blockchainUsersCount += [lWallet blockchainUsersCount];
     }
     return blockchainUsersCount;
 }

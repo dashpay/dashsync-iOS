@@ -27,6 +27,7 @@
                                                            [self.tableView reloadData];
                                                        }];
     
+    
     // Do any additional setup after loading the view.
 }
 
@@ -55,7 +56,7 @@
 -(void)configureCell:(DSBlockchainUserTableViewCell*)blockchainUserCell atIndexPath:(NSIndexPath *)indexPath {
     @autoreleasepool {
         DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
-        DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
+        DSBlockchainUser * blockchainUser = [[wallet.blockchainUsers allValues] objectAtIndex:indexPath.row];
         blockchainUserCell.usernameLabel.text = blockchainUser.username;
         blockchainUserCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainUser.creditBalance];
         if (blockchainUser.blockchainUserRegistrationTransaction) {
@@ -74,7 +75,7 @@
 -(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
         DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
-        DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
+        DSBlockchainUser * blockchainUser = [[wallet.blockchainUsers allValues] objectAtIndex:indexPath.row];
         [wallet unregisterBlockchainUser:blockchainUser];
     }];
     UITableViewRowAction * editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"Edit" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
@@ -93,7 +94,7 @@
         blockchainUserActionsViewController.chainManager = self.chainManager;
         NSIndexPath * indexPath = [self.tableView indexPathForSelectedRow];
         DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
-        DSBlockchainUser * blockchainUser = [wallet.blockchainUsers objectAtIndex:indexPath.row];
+        DSBlockchainUser * blockchainUser = [[wallet.blockchainUsers allValues] objectAtIndex:indexPath.row];
         blockchainUserActionsViewController.blockchainUser = blockchainUser;
     }
 }

@@ -152,13 +152,17 @@
         [DSSpecialTransactionEntity setContext:self.managedObjectContext];
         [DSTxInputEntity setContext:self.managedObjectContext];
         [DSTxOutputEntity setContext:self.managedObjectContext];
+        [DSAddressEntity setContext:self.managedObjectContext];
         [DSDerivationPathEntity setContext:self.managedObjectContext];
         NSMutableArray * derivationPathEntities = [NSMutableArray array];
         for (DSDerivationPath * derivationPath in [self derivationPaths]) {
             if (![derivationPath hasExtendedPublicKey]) continue;
             DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:derivationPath];
+            
+            //DSDLog(@"addresses for derivation path entity %@",derivationPathEntity.addresses);
             [derivationPathEntities addObject:derivationPathEntity];
         }
+        
         NSArray<DSSpecialTransactionEntity *>* specialTransactionEntities = [DSSpecialTransactionEntity objectsMatching:@"(ANY addresses.derivationPath IN %@)",derivationPathEntities];
         for (DSSpecialTransactionEntity *e in specialTransactionEntities) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];

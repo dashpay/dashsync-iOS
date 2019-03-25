@@ -43,7 +43,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
 
-@property (nonatomic, readonly) NSArray * blockchainUsers;
+@property (nonatomic, readonly) NSDictionary * blockchainUsers;
 
 @property (nonatomic, readonly) NSArray * blockchainUserAddresses;
 
@@ -88,6 +88,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 // the first unused index for blockchain users
 @property (nonatomic, readonly) uint32_t unusedBlockchainUserIndex;
+
+// the amount of known blockchain users
+@property (nonatomic, readonly) uint32_t blockchainUsersCount;
 
 @property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
 

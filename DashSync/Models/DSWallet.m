@@ -73,13 +73,12 @@
 @property (nonatomic, assign) BOOL checkedWalletCreationTime;
 @property (nonatomic, assign) BOOL checkedGuessedWalletCreationTime;
 @property (nonatomic, assign) BOOL checkedVerifyWalletCreationTime;
-@property (nonatomic, strong) NSMutableDictionary<NSString *,NSNumber *> * mBlockchainUsers;
 @property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeOperators;
 @property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeOwners;
 @property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeVoters;
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
-@property (nonatomic, strong)
+@property (nonatomic, strong) NSMutableDictionary <NSString *,DSBlockchainUser*> * mBlockchainUsers;
 
 @end
 
@@ -142,7 +141,11 @@
     self.specialTransactionsHolder = [[DSSpecialTransactionsWalletHolder alloc] initWithWallet:self inContext:self.chain.managedObjectContext];
     
     NSError * error = nil;
-    self.mBlockchainUsers = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
+    
+    self.mBlockchainUsers = nil;
+    [self blockchainUsers];
+    
+
     if (error) return nil;
     return self;
 }
@@ -644,7 +647,7 @@
         }
     }
     for (DSDerivationPath * derivationPath in self.specializedDerivationPaths) {
-        [derivationPath loadAddresses];
+        [derivationPath reloadAddresses];
     }
 }
 
@@ -701,7 +704,7 @@
     });
 }
 -(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser {
-    [self.mBlockchainUsers setObject:@(blockchainUser.index) forKey:blockchainUser.username];
+    [self.mBlockchainUsers setObject:blockchainUser forKey:blockchainUser.username];
 }
 
 - (void)registerBlockchainUser:(DSBlockchainUser *)blockchainUser
@@ -720,14 +723,14 @@
 }
 
 -(void)wipeBlockchainUsers {
-    for (DSBlockchainUser * blockchainUser in [self blockchainUsers]) {
+    for (DSBlockchainUser * blockchainUser in [_mBlockchainUsers allValues]) {
         [self unregisterBlockchainUser:blockchainUser];
     }
 }
 
 -(DSBlockchainUser*)blockchainUserForRegistrationHash:(UInt256)registrationHash {
     DSBlockchainUser * foundBlockchainUser = nil;
-    for (DSBlockchainUser * blockchainUser in [self blockchainUsers]) {
+    for (DSBlockchainUser * blockchainUser in [_mBlockchainUsers allValues]) {
         if (uint256_eq([blockchainUser registrationTransactionHash],registrationHash)) {
             foundBlockchainUser = blockchainUser;
         }
@@ -735,26 +738,33 @@
     return foundBlockchainUser;
 }
 
--(NSArray*)blockchainUsers {
-    NSError * error = nil;
-    NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
-    NSMutableArray * rArray = [NSMutableArray array];
-    if (keyChainDictionary) {
-        for (NSString * username in keyChainDictionary) {
-            uint32_t index = [keyChainDictionary[username] unsignedIntValue];
-            UInt256 registrationTransactionHash = [self blockchainUserRegistrationTransactionForIndex:index].txHash;
-            DSDLog(@"Blockchain user %@ with reg %@",username,uint256_hex(registrationTransactionHash));
-            UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
-            DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
-            [rArray addObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash inContext:self.chain.managedObjectContext]];
+-(uint32_t)blockchainUsersCount {
+    return (uint32_t)[self.mBlockchainUsers count];
+}
+
+-(NSMutableDictionary*)blockchainUsers {
+    if (!_mBlockchainUsers) {
+        NSError * error = nil;
+        NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
+        NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
+        if (keyChainDictionary) {
+            for (NSString * username in keyChainDictionary) {
+                uint32_t index = [keyChainDictionary[username] unsignedIntValue];
+                UInt256 registrationTransactionHash = [self blockchainUserRegistrationTransactionForIndex:index].txHash;
+                DSDLog(@"Blockchain user %@ with reg %@",username,uint256_hex(registrationTransactionHash));
+                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
+                DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
+                [rDictionary setObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash inContext:self.chain.managedObjectContext] forKey:username];
+            }
         }
+        _mBlockchainUsers = rDictionary;
     }
-    return [rArray copy];
+    return _mBlockchainUsers;
 }
 
 -(uint32_t)unusedBlockchainUserIndex {
-    NSArray * indexes = [_mBlockchainUsers allValues];
-    NSNumber * max = [indexes valueForKeyPath:@"@max.intValue"];
+    NSArray * blockchainUsers = [_mBlockchainUsers allValues];
+    NSNumber * max = [blockchainUsers valueForKeyPath:@"index.@max.intValue"];
     return max != nil ? ([max unsignedIntValue] + 1) : 0;
 }
 

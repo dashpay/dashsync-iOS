@@ -12,7 +12,7 @@
 
 @interface DSBlockchainUser : NSObject
 
-@property (nonatomic,readonly) DSWallet * wallet;
+@property (nonatomic,weak,readonly) DSWallet * wallet;
 @property (nonatomic,readonly) NSString * uniqueIdentifier;
 @property (nonatomic,readonly) UInt256 registrationTransactionHash;
 @property (nonatomic,readonly) UInt256 lastTransitionHash;

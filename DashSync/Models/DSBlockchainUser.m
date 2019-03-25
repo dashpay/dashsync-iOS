@@ -46,7 +46,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 
 @interface DSBlockchainUser()
 
-@property (nonatomic,strong) DSWallet * wallet;
+@property (nonatomic,weak) DSWallet * wallet;
 @property (nonatomic,strong) NSString * username;
 @property (nonatomic,strong) NSString * uniqueIdentifier;
 @property (nonatomic,assign) uint32_t index;
@@ -94,18 +94,27 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
         self.managedObjectContext = [NSManagedObject context];
     }
     
-    __weak typeof(self) weakSelf = self;
-    [self.dapiClient getUserByName:self.username success:^(NSDictionary * _Nullable profileDictionary) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
-        strongSelf.creditBalance = creditBalance;
-    } failure:^(NSError * _Nonnull error) {
-        
-    }];
+    
+    [self updateCreditBalance];
+
     return self;
+}
+
+-(void)updateCreditBalance {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get dapiClient immediately
+        
+        [self.dapiClient getUserByName:self.username success:^(NSDictionary * _Nullable profileDictionary) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+            strongSelf.creditBalance = creditBalance;
+        } failure:^(NSError * _Nonnull error) {
+            
+        }];
+    });
 }
 
 -(void)loadContacts {
@@ -122,7 +131,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
         }
         self.contacts = [contactArray copy];
     }];
-
+    
 }
 
 -(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext*)managedObjectContext {
@@ -173,7 +182,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
         }
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self.wallet];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
-
+        
         DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithBlockchainUserRegistrationTransactionVersion:1 username:self.username pubkeyHash:[privateKey.publicKeyData hash160] onChain:self.wallet.chain];
         [blockchainUserRegistrationTransaction signPayloadWithKey:privateKey];
         NSMutableData * opReturnScript = [NSMutableData data];
@@ -196,7 +205,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];
         [fundingAccount updateTransaction:blockchainUserTopupTransaction forAmounts:@[@(topupAmount)] toOutputScripts:@[opReturnScript] withFee:YES isInstant:NO];
-
+        
         completion(blockchainUserTopupTransaction);
     }];
     
@@ -312,35 +321,35 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     __block DSTransition *transition = [self transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
     
     [self signStateTransition:transition
-                                  withPrompt:@"" completion:^(BOOL success) {
-                                      if (success) {
-                                          NSData *transitionData = [transition toData];
-                                          
-                                          NSString *transitionDataHex = [transitionData hexString];
-                                          NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
-                                          
-                                          [self.wallet.chain.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
-                                              NSLog(@"Header ID %@", headerId);
-                                              
-                                              [self.wallet.chain registerSpecialTransaction:transition];
-                                              [transition save];
-                                              
-                                              if (completion) {
-                                                  completion(YES);
-                                              }
-                                          } failure:^(NSError * _Nonnull error) {
-                                              NSLog(@"Error: %@", error);
-                                              if (completion) {
-                                                  completion(NO);
-                                              }
-                                          }];
-                                      }
-                                      else {
-                                          if (completion) {
-                                              completion(NO);
-                                          }
-                                      }
-                                  }];
+                   withPrompt:@"" completion:^(BOOL success) {
+                       if (success) {
+                           NSData *transitionData = [transition toData];
+                           
+                           NSString *transitionDataHex = [transitionData hexString];
+                           NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
+                           
+                           [self.wallet.chain.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString * _Nonnull headerId) {
+                               NSLog(@"Header ID %@", headerId);
+                               
+                               [self.wallet.chain registerSpecialTransaction:transition];
+                               [transition save];
+                               
+                               if (completion) {
+                                   completion(YES);
+                               }
+                           } failure:^(NSError * _Nonnull error) {
+                               NSLog(@"Error: %@", error);
+                               if (completion) {
+                                   completion(NO);
+                               }
+                           }];
+                       }
+                       else {
+                           if (completion) {
+                               completion(NO);
+                           }
+                       }
+                   }];
 }
 
 - (void)sendNewContactRequestToUserWithUsername:(NSString *)username completion:(void (^)(BOOL))completion {
@@ -383,7 +392,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
                 [incomingContactRequests removeObject:username];
                 strongSelf.incomingContactRequests = [incomingContactRequests copy];
             }
-        
+            
             
             if (completion) {
                 completion(success);
@@ -501,30 +510,30 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 // MARK: - Persistence
 
 -(void)save {
-//    NSManagedObjectContext * context = [DSTransactionEntity context];
-//    [context performBlockAndWait:^{ // add the transaction to core data
-//        [DSChainEntity setContext:context];
-//        [DSLocalMasternodeEntity setContext:context];
-//        [DSTransactionHashEntity setContext:context];
-//        [DSProviderRegistrationTransactionEntity setContext:context];
-//        [DSProviderUpdateServiceTransactionEntity setContext:context];
-//        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
-//        [DSProviderUpdateRevocationTransactionEntity setContext:context];
-//        if ([DSLocalMasternodeEntity
-//             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
-//            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-//            if (!providerRegistrationTransactionEntity) {
-//                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
-//            }
-//            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
-//            [localMasternode setAttributesFromLocalMasternode:self];
-//            [DSLocalMasternodeEntity saveContext];
-//        } else {
-//            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-//            [localMasternode setAttributesFromLocalMasternode:self];
-//            [DSLocalMasternodeEntity saveContext];
-//        }
-//    }];
+    //    NSManagedObjectContext * context = [DSTransactionEntity context];
+    //    [context performBlockAndWait:^{ // add the transaction to core data
+    //        [DSChainEntity setContext:context];
+    //        [DSLocalMasternodeEntity setContext:context];
+    //        [DSTransactionHashEntity setContext:context];
+    //        [DSProviderRegistrationTransactionEntity setContext:context];
+    //        [DSProviderUpdateServiceTransactionEntity setContext:context];
+    //        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
+    //        [DSProviderUpdateRevocationTransactionEntity setContext:context];
+    //        if ([DSLocalMasternodeEntity
+    //             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
+    //            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+    //            if (!providerRegistrationTransactionEntity) {
+    //                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
+    //            }
+    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+    //            [localMasternode setAttributesFromLocalMasternode:self];
+    //            [DSLocalMasternodeEntity saveContext];
+    //        } else {
+    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+    //            [localMasternode setAttributesFromLocalMasternode:self];
+    //            [DSLocalMasternodeEntity saveContext];
+    //        }
+    //    }];
 }
 
 
