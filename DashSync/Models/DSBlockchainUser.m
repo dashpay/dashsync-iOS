@@ -61,9 +61,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
 @property(nonatomic,strong) NSMutableArray <DSTransaction*>* allTransitions;
 
-@property (copy, nonatomic) NSArray <NSString *> *contacts;
-@property (copy, nonatomic) NSArray <NSString *> *outgoingContactRequests;
-@property (copy, nonatomic) NSArray <NSString *> *incomingContactRequests;
+@property(nonatomic,strong) NSMutableDictionary <NSString*,DSContact*> *mContacts;
 
 @property (nonatomic,readonly) DSDAPIClient * dapiClient;
 
@@ -85,9 +83,7 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     self.blockchainUserResetTransactions = [NSMutableArray array];
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
-    self.contacts = @[];
-    self.outgoingContactRequests = @[];
-    self.incomingContactRequests = @[];
+    self.mContacts = [NSMutableDictionary dictionary];
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -117,6 +113,10 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     });
 }
 
+-(NSDictionary*)contacts {
+    return [self.mContacts copy];
+}
+
 -(void)loadContacts {
     [self.managedObjectContext performBlockAndWait:^{
         [DSContactEntity setContext:self.managedObjectContext];
@@ -124,12 +124,25 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
         [DSContactRequestEntity setContext:self.managedObjectContext];
         [DSDerivationPathEntity setContext:self.managedObjectContext];
         NSArray<DSContactEntity *>* contacts = [DSContactEntity objectsMatching:@"ownerBlockchainUserRegistrationTransaction.transactionHash.txHash == %@",uint256_data(self.registrationTransactionHash)];
-        NSMutableArray * contactArray = [NSMutableArray array];
-        for (DSContactEntity *e in contacts) {
-            DSAccount * account = [self.wallet accountWithNumber:e.account.index];
-            [contactArray addObject:[[DSContact alloc] initWithUsername:e.username contactsBlockchainUserRegistrationTransactionHash:e.blockchainUserRegistrationHash.UInt256 blockchainUserOwner:self account:account]];
+        NSMutableDictionary * contactDictionary = [NSMutableDictionary dictionary];
+        for (DSContactEntity *contactEntity in contacts) {
+            DSAccount * account = [self.wallet accountWithNumber:contactEntity.account.index];
+            DSContact * contact = [[DSContact alloc] initWithUsername:contactEntity.username contactsBlockchainUserRegistrationTransactionHash:contactEntity.blockchainUserRegistrationHash.UInt256 blockchainUserOwner:self account:account];
+            [contactDictionary setObject:contact forKey:contactEntity.username];
         }
-        self.contacts = [contactArray copy];
+        self->_mContacts = contactDictionary;
+        
+        for (DSContactEntity *contactEntity in contacts) {
+            DSContact * contact = [self->_mContacts objectForKey:contactEntity.username];
+            for (DSContactRequestEntity *contactRequestEntity in contactEntity.recipientRequests) {
+                DSContact * sourceContact = [self->_mContacts objectForKey:contactRequestEntity.sourceContact.username];
+                [contact addIncomingContactRequestFromSender:sourceContact];
+            }
+            for (DSContactRequestEntity *contactRequestEntity in contactEntity.sourcedRequests) {
+                DSContact * destinationContact = [self->_mContacts objectForKey:contactRequestEntity.destinationContact.username];
+                [contact addOutgoingContactRequestToRecipient:destinationContact];
+            }
+        }
     }];
     
 }

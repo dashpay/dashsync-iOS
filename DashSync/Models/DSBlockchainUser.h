@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition;
+@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition,DSContact;
 
 @interface DSBlockchainUser : NSObject
 
@@ -20,12 +20,11 @@
 @property (nonatomic,readonly) NSString * username;
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
+@property (nonatomic,readonly) uint64_t syncHeight;
 
 @property (nonatomic,readonly) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
 
-@property (nonatomic,readonly) NSArray <NSString *> *contacts;
-@property (nonatomic,readonly) NSArray <NSString *> *outgoingContactRequests;
-@property (nonatomic,readonly) NSArray <NSString *> *incomingContactRequests;
+@property (nonatomic,readonly) NSDictionary <NSString*,DSContact*> *contacts;
 
 -(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 

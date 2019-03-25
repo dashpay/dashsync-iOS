@@ -28,8 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
 @property (nonatomic, readonly) UInt256 contactBlockchainUserRegistrationTransactionHash;
 @property (nonatomic, readonly) NSString * username;
+@property (nonatomic, readonly) NSArray <DSContact *> *outgoingContactRequests;
+@property (nonatomic, readonly) NSArray <DSContact *> *incomingContactRequests;
 
 -(instancetype)initWithUsername:(NSString*)username contactsBlockchainUserRegistrationTransactionHash:(UInt256)contactsBlockchainUserRegistrationTransactionHash blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
+
+-(void)addIncomingContactRequestFromSender:(DSContact *)sender;
+-(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient;
 
 @end
 

@@ -23,6 +23,8 @@
 @property (nonatomic, weak) DSBlockchainUser * blockchainUserOwner;
 @property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
 @property (nonatomic, copy) NSString * username;
+@property (nonatomic, strong) NSMutableArray <DSContact *> *mOutgoingContactRequests;
+@property (nonatomic, strong) NSMutableArray <DSContact *> *mIncomingContactRequests;
 
 @end
 
@@ -34,7 +36,17 @@
     self.account = account;
     self.blockchainUserOwner = blockchainUserOwner;
     self.contactBlockchainUserRegistrationTransactionHash = contactsBlockchainUserRegistrationTransactionHash;
+    self.mOutgoingContactRequests = [NSMutableArray array];
+    self.mIncomingContactRequests = [NSMutableArray array];
     return self;
+}
+
+-(void)addIncomingContactRequestFromSender:(DSContact *)sender {
+    [self.mIncomingContactRequests addObject:sender];
+}
+
+-(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient {
+    [self.mOutgoingContactRequests addObject:recipient];
 }
 
 @end
