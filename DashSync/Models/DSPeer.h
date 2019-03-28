@@ -283,6 +283,7 @@ services:(uint64_t)services;
 - (void)setChainDelegate:(id<DSPeerChainDelegate>)chainDelegate peerDelegate:(id<DSPeerDelegate>)peerDelegate transactionDelegate:(id<DSPeerTransactionDelegate>)transactionDelegate governanceDelegate:(id<DSPeerGovernanceDelegate>)governanceDelegate sporkDelegate:(id<DSPeerSporkDelegate>)sporkDelegate masternodeDelegate:(id<DSPeerMasternodeDelegate>)masternodeDelegate queue:(dispatch_queue_t)delegateQueue;
 - (void)connect;
 - (void)disconnect;
+- (void)disconnectWithError:(NSError *)error;
 - (void)receivedOrphanBlock;
 - (void)sendMessage:(NSData *)message type:(NSString *)type;
 - (void)sendFilterloadMessage:(NSData *)filter;

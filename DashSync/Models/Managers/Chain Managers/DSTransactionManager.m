@@ -664,6 +664,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 - (DSTransaction *)peer:(DSPeer *)peer requestedTransaction:(UInt256)txHash
 {
     NSValue *hash = uint256_obj(txHash);
+    DSDLog(@"Peer requested transaction with hash %@",hash);
     DSTransaction *transaction = self.publishedTx[hash];
     BOOL transactionIsPublished = !!transaction;
     DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
@@ -888,7 +889,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
             if ([self.chain transactionForHash:h].blockHeight == TX_UNCONFIRMED) return;
         }
         
-        [self.peerManager peerMisbehaving:peer];
+        [self.peerManager peerMisbehaving:peer errorMessage:@"Peer rejected the transaction"];
     }
 }
 
@@ -1045,7 +1046,7 @@ for (NSValue *txHash in self.txRelays.allKeys) {
 }
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {
-    [self.peerManager peerMisbehaving:peer];
+    [self.peerManager peerMisbehaving:peer errorMessage:@"Too many orphan blocks"];
 }
 
 // MARK: Fees
