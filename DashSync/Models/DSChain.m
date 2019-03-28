@@ -980,11 +980,11 @@ static dispatch_once_t devnetToken = 0;
     for (DSWallet * wallet in self.wallets) {
         for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
             if (tx.blockHeight != TX_UNCONFIRMED && tx.blockHeight + 100 < self.lastBlockHeight) {
-                DSDLog(@"Not adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
+                //DSDLog(@"Not adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
                 continue; // the transaction is confirmed for at least 100 blocks, then break
             }
             
-            DSDLog(@"Adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
+            //DSDLog(@"Adding transaction %@ inputs to bloom filter",uint256_hex(tx.txHash));
             
             i = 0;
             
