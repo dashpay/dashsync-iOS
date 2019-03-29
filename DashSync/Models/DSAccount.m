@@ -1241,14 +1241,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 - (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
 {
-    return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend];
+    return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend returnInputCount:nil];
 }
 
-- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend
+- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend returnInputCount:(uint32_t*)rInputCount;
 {
     DSUTXO o;
     DSTransaction *tx;
-    NSUInteger inputCount = 0;
+    uint32_t inputCount = 0;
     uint64_t amount = 0, fee;
     size_t cpfpSize = 0, txSize;
     
@@ -1270,6 +1270,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
     [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
     fee = [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
+    if (rInputCount) {
+        *rInputCount = inputCount;
+    }
     return (amount > fee) ? amount - fee : 0;
 }
 
