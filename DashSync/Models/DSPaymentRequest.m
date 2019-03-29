@@ -32,6 +32,8 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSChain.h"
+#import "DSPriceManager.h"
+#import "DSCurrencyPriceObject.h"
 
 @interface DSPaymentRequest()
 
@@ -83,8 +85,8 @@
     self.message = nil;
     self.amount = 0;
     self.callbackScheme = nil;
-    _wantsInstant = FALSE;
-    _instantValueRequired = FALSE;
+    _requestsInstantSend = FALSE;
+    _requiresInstantSend = FALSE;
     self.r = nil;
 
     if (string.length == 0) return;
@@ -155,18 +157,18 @@
             }
             else if ([[key lowercaseString] isEqual:@"is"]) {
                 if ([value  isEqual: @"1"])
-                    _wantsInstant = TRUE;
+                    _requestsInstantSend = TRUE;
                 if (require)
-                    _instantValueRequired = TRUE;
+                    _requiresInstantSend = TRUE;
             }
             else if ([key isEqual:@"r"]) {
                 self.r = value;
             }
             else if ([key isEqual:@"currency"]) {
-                self.currency = value;
+                self.requestedFiatCurrencyCode = value;
             }
             else if ([key isEqual:@"local"]) {
-                self.currencyAmount = value;
+                self.requestedFiatCurrencyAmount = [value floatValue];
             }
         }
     }
@@ -204,16 +206,16 @@
          stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
     }
     
-    if (self.wantsInstant) {
+    if (self.requestsInstantSend) {
         [q addObject:@"IS=1"];
     }
     
-    if (self.currency.length > 0) {
-        [q addObject:[@"currency=" stringByAppendingString:[self.currency stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
-    }
-
-    if (self.currencyAmount.length > 0) {
-        [q addObject:[@"local=" stringByAppendingString:[self.currencyAmount stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+    if (self.requestedFiatCurrencyCode.length > 0) {
+        [q addObject:[@"currency=" stringByAppendingString:[self.requestedFiatCurrencyCode stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
+        
+        if (self.requestedFiatCurrencyAmount > 0) {
+            [q addObject:[@"local=" stringByAppendingString:@(self.requestedFiatCurrencyAmount).stringValue]];
+        }
     }
 
     if (q.count > 0) {
@@ -283,12 +285,24 @@
 #endif
     if (script.length == 0) return nil;
     
+    uint64_t sendingAmount = 0;
+    BOOL useFiatPegging = NO;
+    if (self.amount) {
+        sendingAmount = self.amount;
+    } else if (self.requestedFiatCurrencyCode) {
+        DSCurrencyPriceObject * currencyPriceObject = [[DSPriceManager sharedInstance] priceForCurrencyCode:self.requestedFiatCurrencyCode];
+        if (currencyPriceObject) {
+            useFiatPegging = YES;
+            sendingAmount = (uint64_t)[currencyPriceObject.price unsignedLongLongValue]*self.requestedFiatCurrencyAmount;
+        }
+    }
+    
     DSPaymentProtocolDetails *details =
-        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(self.amount)]
+        [[DSPaymentProtocolDetails alloc] initWithOutputAmounts:@[@(sendingAmount)]
          outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil onChain:self.chain];
     DSPaymentProtocolRequest *request =
         [[DSPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
-         signature:nil onChain:self.chain callbackScheme:self.callbackScheme];
+                                                signature:nil requestsInstantSend:self.requestsInstantSend requiresInstantSend:self.requiresInstantSend requestedAgainstFiatCurrency:useFiatPegging?self.requestedFiatCurrencyCode:nil onChain:self.chain callbackScheme:self.callbackScheme];
     
     return request;
 }

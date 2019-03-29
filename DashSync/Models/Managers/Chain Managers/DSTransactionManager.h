@@ -36,7 +36,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFailedNotific
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceivedNotification;
 
-@class DSChain, DSPaymentRequest;
+@class DSChain, DSPaymentRequest,DSPaymentProtocolRequest,DSShapeshiftEntity,DSTransaction;
 
 @interface DSTransactionManager : NSObject <DSChainTransactionsDelegate,DSPeerTransactionDelegate>
 
@@ -56,10 +56,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceiv
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
-- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account forceInstantSend:(BOOL)forceInstantSend signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion;
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account forceInstantSend:(BOOL)forceInstantSend signedCompletion:(void (^)(NSError *error, BOOL cancelled))signedCompletion publishedCompletion:(void (^)(NSError *error, BOOL waiting, BOOL sent))publishedCompletion;
 
-- (void)confirmTransaction:(DSTransaction *)tx fromAccount:(DSAccount*)account toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount localCurrency:(NSString * _Nullable)localCurrency localCurrencyAmount:(NSString * _Nullable)localCurrencyAmount signedCompletion:(void (^)(NSError *error))signedCompletion publishedCompletion:(void (^)(NSError *error))publishedCompletion;
+- (void)confirmTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount signedCompletion:(void (^)(NSError *error, BOOL cancelled))signedCompletion publishedCompletion:(void (^)(NSError *error, BOOL waiting, BOOL sent))publishedCompletion;
 
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(NSUInteger)requestedAmount fromAccount:(DSAccount*)account currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee requestingAdditionalInfo:(void (^)(BOOL needsAmount,BOOL cancelOrChangeAmount))additionalInfoRequest presentChallenge:(void (^)(NSString * challengeTitle, NSString * challengeMessage,NSString * actionTitle, void (^actionBlock)(void), void (^cancelBlock)(void) ))challenge errorCompletion:(void (^)(NSString *errorTitle, NSString * errorMessage,BOOL shouldCancel))errorCompletion completion:(void (^)(DSTransaction *tx, NSString * prompt, uint64_t amount))completion;
 @end
 
 NS_ASSUME_NONNULL_END
