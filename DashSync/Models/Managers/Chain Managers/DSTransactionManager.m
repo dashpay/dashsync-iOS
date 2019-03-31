@@ -361,7 +361,7 @@
     
     //TODO: check for duplicates of already paid requests
     
-    if (amount == 0) {
+    if (requestedAmount == 0) {
         for (NSNumber *outputAmount in protoReq.details.outputAmounts) {
             if (outputAmount.unsignedLongLongValue > 0 && outputAmount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) {
                 outputTooSmall = YES;
