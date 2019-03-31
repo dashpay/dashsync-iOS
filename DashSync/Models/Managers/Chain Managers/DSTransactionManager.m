@@ -355,8 +355,8 @@
     
     BOOL requestsInstantSend = protoReq.requestsInstantSend;
     
-    if (! valid && [protoReq.errorMessage isEqual:NSLocalizedString(@"request expired", nil)]) {
-        errorNotificationBlock(NSLocalizedString(@"bad payment request", nil),protoReq.errorMessage,YES);
+    if (! valid && [protoReq.errorMessage isEqual:DSLocalizedString(@"request expired", nil)]) {
+        errorNotificationBlock(DSLocalizedString(@"bad payment request", nil),protoReq.errorMessage,YES);
         return;
     }
     
@@ -435,7 +435,7 @@
     for (NSData *script in protoReq.details.outputScripts) {
         NSString *addr = [NSString addressWithScriptPubKey:script onChain:chain];
         
-        if (! addr) addr = NSLocalizedString(@"unrecognized address", nil);
+        if (! addr) addr = DSLocalizedString(@"unrecognized address", nil);
         if ([address rangeOfString:addr].location != NSNotFound) continue;
         address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"", addr];
     }
@@ -546,7 +546,7 @@
     DSPriceManager * manager = [DSPriceManager sharedInstance];
     uint64_t fuzz = [manager amountForLocalCurrencyString:[manager localCurrencyStringForDashAmount:1]]*2;
     DSChain * chain = account.wallet.chain;
-    if (protocolRequest.requestsInstantSend && ([account maxOutputAmountWithConfirmationCount:chain.ixPreviousConfirmationsNeeded usingInstantSend:TRUE returnInputCount:nil] < requestedSendAmount)) {
+    if (requestedSendAmount <= account.balance && protocolRequest.requestsInstantSend && ([account maxOutputAmountWithConfirmationCount:chain.ixPreviousConfirmationsNeeded usingInstantSend:TRUE returnInputCount:nil] < requestedSendAmount)) {
         if (protocolRequest.requiresInstantSend) {
             NSString * challengeTitle = DSLocalizedString(@"instant payment", nil);
             NSString * challengeMessage = DSLocalizedString(@"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.",
