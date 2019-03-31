@@ -541,7 +541,7 @@
 }
 
 - (void)peer:(DSPeer *)peer ignoredGovernanceSync:(DSGovernanceRequestState)governanceRequestState {
-    [self.peerManager peerMisbehaving:peer];
+    [self.peerManager peerMisbehaving:peer errorMessage:@"Ignored Governance Sync"];
     [self.peerManager connect];
 }
 

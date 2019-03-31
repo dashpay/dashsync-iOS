@@ -163,7 +163,10 @@ typedef enum : NSUInteger {
     request_pki_type = 2,
     request_pki_data = 3,
     request_details = 4,
-    request_signature = 5
+    request_signature = 5,
+    request_requestsInstantSend = 6,
+    request_requiresInstantSend = 7,
+    request_fiatCurrencyPegging = 8
 } request_key;
 
 typedef enum : NSUInteger {
@@ -315,6 +318,9 @@ typedef enum : NSUInteger {
             case request_pki_data: if (d) _pkiData = d; break;
             case request_details: if (d) _details = [DSPaymentProtocolDetails detailsWithData:d onChain:chain]; break;
             case request_signature: if (d) _signature = d; break;
+            case request_requestsInstantSend: if (i) _requestsInstantSend = !!i; break;
+            case request_requiresInstantSend: if (i) _requiresInstantSend = !!i; break;
+            case request_fiatCurrencyPegging: if (d) _requestedFiatAmountCurrencyCode = protoBufString(d); break;
             default: break;
         }
     }
@@ -324,7 +330,7 @@ typedef enum : NSUInteger {
 }
 
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme
+                        details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig requestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend requestedAgainstFiatCurrency:(NSString*)currencyCode requestedFiatAmount:(float)fiatAmount onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme
 {
     if (! details) return nil; // required
     if (! (self = [self init])) return nil;
@@ -342,6 +348,9 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
     _details = details;
     _signature = sig;
     _callbackScheme = callbackScheme;
+    _requestsInstantSend = requestsInstantSend;
+    _requiresInstantSend = requiresInstantSend;
+    _requestedFiatAmountCurrencyCode = currencyCode;
     self.chain = chain;
     return self;
 }
@@ -365,6 +374,9 @@ details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSC
     if (_pkiData) [d appendProtoBufData:_pkiData withKey:request_pki_data];
     [d appendProtoBufData:_details.data withKey:request_details];
     if (_signature) [d appendProtoBufData:_signature withKey:request_signature];
+    [d appendProtoBufInt:self.requestsInstantSend withKey:request_requestsInstantSend];
+    [d appendProtoBufInt:self.requiresInstantSend withKey:request_requiresInstantSend];
+    [d appendProtoBufString:self.requestedFiatAmountCurrencyCode withKey:request_fiatCurrencyPegging];
     return d;
 }
 

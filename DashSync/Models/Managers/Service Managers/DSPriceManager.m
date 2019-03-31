@@ -431,6 +431,15 @@
     return [self.localFormat stringFromNumber:n];
 }
 
+- (NSString *)fiatCurrencyString:(NSString*)currencyCode forDashAmount:(int64_t)amount
+{
+    NSNumber *n = [self fiatCurrencyNumber:currencyCode forDashAmount:amount];
+    if (n == nil) {
+        return DSLocalizedString(@"Updating Price",@"Updating Price");
+    }
+    return [self.localFormat stringFromNumber:n];
+}
+
 - (NSString *)localCurrencyStringForBitcoinAmount:(int64_t)amount
 {
     if (amount == 0) return [self.localFormat stringFromNumber:@(0)];
@@ -460,6 +469,33 @@
     NSNumber *local = self.localCurrencyDashPrice;
     
     NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:local.decimalValue]
+                           decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
+                          decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
+    *min = [[NSDecimalNumber one]
+            decimalNumberByMultiplyingByPowerOf10:-self.localFormat.maximumFractionDigits];
+    
+    // if the amount is too small to be represented in local currency (but is != 0) then return a string like "$0.01"
+    if ([n compare:min] == NSOrderedAscending) n = min;
+    if (amount < 0) n = [n decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithInt:-1]];
+    return n;
+}
+
+- (NSNumber * _Nullable)fiatCurrencyNumber:(NSString*)currencyCode forDashAmount:(int64_t)amount {
+    if (amount == 0) {
+        return @0;
+    }
+    
+    float price;
+    
+    if ([self.pricesByCode objectForKey:currencyCode] && [DSAuthenticationManager sharedInstance].secureTime + 3*DAY_TIME_INTERVAL > [NSDate timeIntervalSince1970]) {
+        DSCurrencyPriceObject * priceObject = self.pricesByCode[currencyCode];
+        price = [priceObject.price floatValue]; // don't use exchange rate data more than 72hrs out of date
+    }
+    else {
+        price = 0;
+    }
+    
+    NSDecimalNumber *n = [[[NSDecimalNumber decimalNumberWithDecimal:@(price).decimalValue]
                            decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:llabs(amount)]]
                           decimalNumberByDividingBy:(id)[NSDecimalNumber numberWithLongLong:DUFFS]],
     *min = [[NSDecimalNumber one]

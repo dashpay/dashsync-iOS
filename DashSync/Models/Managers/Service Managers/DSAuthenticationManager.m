@@ -273,7 +273,6 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                      isSecure:(BOOL)isSecure
                  errorMessage:(NSString*)errorMessage
                 localCurrency:(NSString *)localCurrency
-          localCurrencyAmount:(NSString *)localCurrencyAmount
 {
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
@@ -287,12 +286,8 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\n\n     amount %@ (%@)", nil),
               [manager stringForDashAmount:amount - fee], [manager localCurrencyStringForDashAmount:amount - fee]];
     
-    if (localCurrency && localCurrencyAmount && ![localCurrency isEqualToString:manager.localCurrencyCode]) {
-        NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-        numberFormatter.currencyCode = localCurrency;
-        numberFormatter.numberStyle = NSNumberFormatterCurrencyStyle;
-        NSNumber *localAmount = [NSDecimalNumber decimalNumberWithString:localCurrencyAmount];
-        NSString *requestedAmount = [numberFormatter stringFromNumber:localAmount];
+    if (localCurrency && ![localCurrency isEqualToString:manager.localCurrencyCode]) {
+        NSString *requestedAmount = [[DSPriceManager sharedInstance] fiatCurrencyString:localCurrency forDashAmount:amount];
         prompt = [prompt stringByAppendingFormat:DSLocalizedString(@"\n(local requested amount: %@)", nil), requestedAmount];
     }
     

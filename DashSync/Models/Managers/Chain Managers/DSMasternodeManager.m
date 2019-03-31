@@ -406,7 +406,7 @@ inline static int ceil_log2(int x)
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
-        [self.peerManager peerMisbehaving:peer];
+        [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
     }
     
 }
