@@ -302,7 +302,7 @@
          outputScripts:@[script] time:0 expires:0 memo:self.message paymentURL:nil merchantData:nil onChain:self.chain];
     DSPaymentProtocolRequest *request =
         [[DSPaymentProtocolRequest alloc] initWithVersion:1 pkiType:@"none" certs:(name ? @[name] : nil) details:details
-                                                signature:nil requestsInstantSend:self.requestsInstantSend requiresInstantSend:self.requiresInstantSend requestedAgainstFiatCurrency:useFiatPegging?self.requestedFiatCurrencyCode:nil onChain:self.chain callbackScheme:self.callbackScheme];
+                                                signature:nil requestsInstantSend:self.requestsInstantSend requiresInstantSend:self.requiresInstantSend requestedAgainstFiatCurrency:useFiatPegging?self.requestedFiatCurrencyCode:nil requestedFiatAmount:0 onChain:self.chain callbackScheme:self.callbackScheme];
     
     return request;
 }

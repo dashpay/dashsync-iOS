@@ -351,7 +351,6 @@ typedef enum : NSUInteger {
     _requestsInstantSend = requestsInstantSend;
     _requiresInstantSend = requiresInstantSend;
     _requestedFiatAmountCurrencyCode = currencyCode;
-    _requestedFiatAmount = fiatAmount;
     self.chain = chain;
     return self;
 }

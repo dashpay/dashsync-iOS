@@ -36,6 +36,23 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFailedNotific
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceivedNotification;
 
+typedef NS_ENUM(NSUInteger, DSRequestingAdditionalInfo) {
+    DSRequestingAdditionalInfo_Amount = 1,
+    DSRequestingAdditionalInfo_CancelOrChangeAmount = 2
+};
+
+typedef void (^DSTransactionCreationRequestingAdditionalInfoBlock)(DSRequestingAdditionalInfo additionalInfo);
+
+typedef void (^DSTransactionChallengeBlock)(NSString * challengeTitle, NSString * challengeMessage,NSString * actionTitle, void (^actionBlock)(void), void (^cancelBlock)(void) );
+
+typedef void (^DSTransactionErrorNotificationBlock)(NSString * _Nullable errorTitle, NSString * _Nullable errorMessage,BOOL shouldCancel);
+
+typedef BOOL (^DSTransactionCreationCompletionBlock)(DSTransaction *tx, NSString * prompt, uint64_t amount); //return is whether we should continue automatically
+
+typedef BOOL (^DSTransactionSigningCompletionBlock)(DSTransaction * tx, NSError * _Nullable error, BOOL cancelled); //return is whether we should continue automatically
+
+typedef void (^DSTransactionPublishedCompletionBlock)(DSTransaction * tx, NSError * _Nullable error, BOOL waiting, BOOL sent);
+
 @class DSChain, DSPaymentRequest,DSPaymentProtocolRequest,DSShapeshiftEntity,DSTransaction;
 
 @interface DSTransactionManager : NSObject <DSChainTransactionsDelegate,DSPeerTransactionDelegate>
@@ -56,11 +73,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceiv
 
 - (void)publishTransaction:(DSTransaction *)transaction completion:(void (^)(NSError *error))completion;
 
-- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account forceInstantSend:(BOOL)forceInstantSend signedCompletion:(void (^)(NSError *error, BOOL cancelled))signedCompletion publishedCompletion:(void (^)(NSError *error, BOOL waiting, BOOL sent))publishedCompletion;
+- (void)confirmPaymentRequest:(DSPaymentRequest *)paymentRequest fromAccount:(DSAccount*)account acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)completion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
-- (void)confirmTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount signedCompletion:(void (^)(NSError *error, BOOL cancelled))signedCompletion publishedCompletion:(void (^)(NSError *error, BOOL waiting, BOOL sent))publishedCompletion;
+- (void)signAndPublishTransaction:(DSTransaction *)tx createdFromProtocolRequest:(DSPaymentProtocolRequest*)protocolRequest fromAccount:(DSAccount*)account toAddress:(NSString*)address withPrompt:(NSString *)prompt forAmount:(uint64_t)amount requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 
-- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(NSUInteger)requestedAmount fromAccount:(DSAccount*)account currency:(NSString*)currency associatedShapeshift:(DSShapeshiftEntity*)shapeshift acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee requestingAdditionalInfo:(void (^)(BOOL needsAmount,BOOL cancelOrChangeAmount))additionalInfoRequest presentChallenge:(void (^)(NSString * challengeTitle, NSString * challengeMessage,NSString * actionTitle, void (^actionBlock)(void), void (^cancelBlock)(void) ))challenge errorCompletion:(void (^)(NSString *errorTitle, NSString * errorMessage,BOOL shouldCancel))errorCompletion completion:(void (^)(DSTransaction *tx, NSString * prompt, uint64_t amount))completion;
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account addressIsFromPasteboard:(BOOL)addressIsFromPasteboard requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
+
+- (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protoReq forAmount:(uint64_t)requestedAmount fromAccount:(DSAccount*)account acceptReusingAddress:(BOOL)acceptReusingAddress addressIsFromPasteboard:(BOOL)addressIsFromPasteboard acceptUncertifiedPayee:(BOOL)acceptUncertifiedPayee requestingAdditionalInfo:(DSTransactionCreationRequestingAdditionalInfoBlock)additionalInfoRequest presentChallenge:(DSTransactionChallengeBlock)challenge transactionCreationCompletion:(DSTransactionCreationCompletionBlock)transactionCreationCompletion signedCompletion:(DSTransactionSigningCompletionBlock)signedCompletion publishedCompletion:(DSTransactionPublishedCompletionBlock)publishedCompletion errorNotificationBlock:(DSTransactionErrorNotificationBlock)errorNotificationBlock;
 @end
 
 NS_ASSUME_NONNULL_END
