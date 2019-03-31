@@ -475,8 +475,10 @@
             }];
         }
     } else {
-        [account signTransaction:tx withPrompt:prompt completion:^(BOOL signedTransaction) {
+        [account signTransaction:tx withPrompt:prompt completion:^(BOOL signedTransaction, BOOL cancelled) {
             if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
+            
+            if (cancelled) return;
             
             if (!signedTransaction || ! tx.isSigned) {
                 signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
