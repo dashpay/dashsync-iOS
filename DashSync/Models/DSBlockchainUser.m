@@ -523,17 +523,17 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 
-- (void)handleContactsDAPIObjects:(NSArray<NSDictionary *> *)rawContacts {
+- (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests {
     NSMutableArray <NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
     NSMutableArray <NSMutableArray *> *contacts = [NSMutableArray array];
-    for (NSDictionary *rawContact in rawContacts) {
+    for (NSDictionary *rawContact in rawContactRequests) {
         NSDictionary *sender = rawContact[@"sender"];
         NSString *username = sender[@"username"];
         [contactsAndIncomingRequests addObject:username];
     }
     
     
-    NSMutableArray <NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
+    NSMutableArray <NSString *> *outgoingContactRequests = [self.ownContact.outgoingContactRequests mutableCopy];
     NSMutableArray <NSString *> *incomingContactRequests = [NSMutableArray array];
     
     for (NSString *username in contactsAndIncomingRequests) {
@@ -545,10 +545,6 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
             [incomingContactRequests addObject:username];
         }
     }
-    
-    self.contacts = contacts;
-    self.outgoingContactRequests = outgoingContactRequests;
-    self.incomingContactRequests = incomingContactRequests;
 }
 
 
