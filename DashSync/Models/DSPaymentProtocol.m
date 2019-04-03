@@ -355,6 +355,11 @@ typedef enum : NSUInteger {
     return self;
 }
 
+-(void)updateForRequestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend {
+    _requestsInstantSend = requestsInstantSend;
+    _requiresInstantSend = requiresInstantSend;
+}
+
 - (uint32_t)version
 {
     return (_version) ? _version : 1;
