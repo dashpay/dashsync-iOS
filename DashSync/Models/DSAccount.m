@@ -381,6 +381,13 @@
     return FALSE;
 }
 
+- (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address {
+    for (DSTransaction * transaction in self.allTransactions) {
+        if ([transaction.outputAddresses containsObject:address]) return TRUE;
+    }
+    return FALSE;
+}
+
 // MARK: - Balance
 
 - (void)updateBalance
