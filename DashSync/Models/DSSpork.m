@@ -138,6 +138,14 @@
             return @"DML enabled at block";
         case DSSporkIdentifier_Spork16InstantSendAutoLocks:
             return @"Instant Send auto-locks";
+        case DSSporkIdentifier_Spork17QuorumDKGEnabled:
+            return @"Quorum DKG enabled";
+        case DSSporkIdentifier_Spork18QuorumDebugEnabled:
+            return @"Quorum debugging enabled";
+        case DSSporkIdentifier_Spork19ChainLocksEnabled:
+            return @"Chain locks enabled";
+        case DSSporkIdentifier_Spork20InstantSendLLMQBased:
+            return @"LLMQ based Instant Send";
         default:
             return @"Unknown spork";
             break;
