@@ -21,6 +21,9 @@
 "\n\n     amount %@ (%@)" = "\n\n     送金額 %1$@ （%2$@）";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nネットワーク手数料 +%1$@ （%2$@）";
 
 /* No comment provided by engineer. */
@@ -54,6 +57,9 @@
 "bad password, try again" = "不正なパスワード、もう一度ご入力ください。";
 
 /* No comment provided by engineer. */
+"bad payment request" = "bad payment request";
+
+/* No comment provided by engineer. */
 "bad payment request URL" = "不正な支払い請求URL";
 
 /* No comment provided by engineer. */
@@ -75,7 +81,13 @@
 "couldn't make payment" = "支払いを完了できませんでした";
 
 /* No comment provided by engineer. */
+"dash payments can't be less than %@" = "dash payments can't be less than %@";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "取引が署名されていません";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
@@ -85,6 +97,9 @@
 
 /* No comment provided by engineer. */
 "enter old passcode" = "現在のパスコードを\nご入力下さい";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "Dash取引署名時エラー";
@@ -97,6 +112,15 @@
 
 /* No comment provided by engineer. */
 "hours" = "時間";
+
+/* No comment provided by engineer. */
+"ignore" = "ignore";
+
+/* No comment provided by engineer. */
+"instant payment" = "instant payment";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "残高不足";
@@ -159,6 +183,9 @@
 "password protected key" = "パスワード保護された鍵";
 
 /* No comment provided by engineer. */
+"payee identity isn't certified" = "payee identity isn't certified";
+
+/* No comment provided by engineer. */
 "recovery phrase" = "復元フレーズ";
 
 /* No comment provided by engineer. */
@@ -180,10 +207,16 @@
 "reset" = "リセット";
 
 /* No comment provided by engineer. */
+"retry" = "retry";
+
+/* No comment provided by engineer. */
 "second" = "秒";
 
 /* No comment provided by engineer. */
 "seconds" = "秒";
+
+/* No comment provided by engineer. */
+"send" = "send";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
@@ -192,10 +225,16 @@
 "Testnet" = "テストネット";
 
 /* No comment provided by engineer. */
+"this payment address is already in your wallet" = "this payment address is already in your wallet";
+
+/* No comment provided by engineer. */
 "this private key is already in your wallet" = "この秘密鍵は既にあなたのウォレットに含まれています";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "この秘密鍵は承認済み残高がありません";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "取引はキャンセルされました、\nネットワークタイムアウトがありました";
@@ -216,6 +255,9 @@
 "Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
 
 /* No comment provided by engineer. */
+"unrecognized address" = "unrecognized address";
+
+/* No comment provided by engineer. */
 "unsupported signature type" = "サポートされていない署名の種類";
 
 /* No comment provided by engineer. */
@@ -229,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ウォレット無効";
+
+/* No comment provided by engineer. */
+"WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
 "wipe" = "完全削除";
