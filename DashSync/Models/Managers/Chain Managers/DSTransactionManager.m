@@ -378,8 +378,7 @@
         errorNotificationBlock(@"",DSLocalizedString(@"this payment address is already in your wallet", nil),YES);
         return;
     }
-    else if (!acceptReusingAddress && [wallet addressIsUsed:address] &&
-             addressIsFromPasteboard) {
+    else if ((amount == 0 || amount == UINT64_MAX) && !acceptReusingAddress && [wallet transactionAddressAlreadySeenInOutputs:address] && addressIsFromPasteboard) {
         NSString * challengeTitle = DSLocalizedString(@"WARNING", nil);
         NSString * challengeMessage = DSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
                                                         "re-use reduces privacy for both you and the recipient and can result in loss if "
