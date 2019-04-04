@@ -7,6 +7,8 @@
 
 #import "DSTransaction.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSECDSAKey;
 
 @interface DSTransition : DSTransaction
@@ -21,6 +23,8 @@
 -(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain * _Nonnull)chain;
 
 
--(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;
+-(void)signPayloadWithKey:(DSECDSAKey *)privateKey;
 
 @end
+
+NS_ASSUME_NONNULL_END

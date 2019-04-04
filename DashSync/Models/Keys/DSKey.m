@@ -22,6 +22,9 @@
 
 + (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain
 {
+    NSParameterAssert(data);
+    NSParameterAssert(chain);
+    
     NSMutableData *d = [NSMutableData secureDataWithCapacity:160/8 + 1];
     uint8_t version;
     UInt160 hash160 = data.hash160;
@@ -39,6 +42,8 @@
 
 - (NSString *)addressForChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     return [DSKey addressWithPublicKeyData:self.publicKeyData forChain:chain];
 }
 

@@ -93,6 +93,8 @@
 
 - (instancetype)initWithChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
@@ -470,7 +472,7 @@
     }
 }
 
--(void)setTrustedPeerHost:(NSString*)host {
+-(void)setTrustedPeerHost:(NSString * _Nullable)host {
     if (!host) [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self settingsFixedPeerKey]];
     else [[NSUserDefaults standardUserDefaults] setObject:host
                                                    forKey:[self settingsFixedPeerKey]];

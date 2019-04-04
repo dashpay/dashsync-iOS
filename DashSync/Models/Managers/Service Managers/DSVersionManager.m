@@ -67,8 +67,13 @@
 }
 
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
 {
+    NSParameterAssert(wallet);
+    NSParameterAssert(chain);
+    NSParameterAssert(message);
+    NSParameterAssert(completion);
+    
     DSAccount * account = [wallet accountWithNumber:0];
     NSString * keyString = [[account bip44DerivationPath] walletBasedExtendedPublicKeyLocationString];
     NSError * error = nil;
@@ -155,8 +160,12 @@
 }
 
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(_Nullable UpgradeCompletionBlock)completion
+- (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
 {
+    NSParameterAssert(wallets);
+    NSParameterAssert(message);
+    NSParameterAssert(completion);
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         BOOL upgradeNeeded = NO;
         __block BOOL success = YES;

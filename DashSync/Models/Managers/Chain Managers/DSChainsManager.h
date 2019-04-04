@@ -26,7 +26,9 @@
 #import <Foundation/Foundation.h>
 #import "DSChainManager.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
+NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
 
 #define SPEND_LIMIT_KEY     @"SPEND_LIMIT_KEY"
 
@@ -41,18 +43,20 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSChainsDidChangeNotification;
 @property (nonatomic,readonly) NSArray * devnetChains;
 @property (nonatomic,readonly) uint64_t spendingLimit;
 
--(DSChainManager*)chainManagerForChain:(DSChain*)chain;
+-(DSChainManager * _Nullable)chainManagerForChain:(DSChain*)chain;
 
--(void)updateDevnetChain:(DSChain* _Nonnull)chain forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations  standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString* _Nullable)sporkPrivateKey;
+-(void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString*> *)serviceLocations  standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
 
--(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString* _Nonnull)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>* _Nonnull)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort  protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString* _Nullable)sporkPrivateKey;
+-(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSMutableOrderedSet<NSString*> * )serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort  protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString * _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
 
--(void)removeDevnetChain:(DSChain* _Nonnull)chain;
+-(void)removeDevnetChain:(DSChain *)chain;
 
-+ (instancetype _Nullable)sharedInstance;
++ (instancetype)sharedInstance;
 
 -(BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
 
 -(BOOL)resetSpendingLimitsIfAuthenticated;
 
 @end
+
+NS_ASSUME_NONNULL_END

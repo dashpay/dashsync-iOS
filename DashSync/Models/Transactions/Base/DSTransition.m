@@ -100,6 +100,8 @@
 }
 
 -(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain *)chain {
+    NSParameterAssert(chain);
+    
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_Transition;
     self.version = SPECIAL_TX_VERSION;
@@ -171,6 +173,8 @@
 }
 
 -(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
+    NSParameterAssert(privateKey);
+    
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];

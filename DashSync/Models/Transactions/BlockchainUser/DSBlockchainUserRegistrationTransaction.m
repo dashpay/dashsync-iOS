@@ -21,6 +21,9 @@
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
+    NSParameterAssert(message);
+    NSParameterAssert(chain);
+    
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionRegistration;
     NSUInteger length = message.length;
@@ -59,6 +62,9 @@
 }
 
 -(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString*)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain {
+    NSParameterAssert(username);
+    NSParameterAssert(chain);
+    
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionRegistration;
     self.version = SPECIAL_TX_VERSION;
@@ -69,7 +75,16 @@
     return self;
 }
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString *)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain {
+    NSParameterAssert(hashes);
+    NSParameterAssert(indexes);
+    NSParameterAssert(scripts);
+    NSParameterAssert(inputSequences);
+    NSParameterAssert(addresses);
+    NSParameterAssert(amounts);
+    NSParameterAssert(username);
+    NSParameterAssert(chain);
+    
     NSMutableArray * realOutputAddresses = [addresses mutableCopy];
     [realOutputAddresses insertObject:[NSNull null] atIndex:topupIndex];
     NSMutableArray * realAmounts = [amounts mutableCopy];
@@ -94,6 +109,8 @@
 }
 
 -(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
+    NSParameterAssert(privateKey);
+    
     DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.payloadSignature = [privateKey compactSign:[self payloadHash]];
 }

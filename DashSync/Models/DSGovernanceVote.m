@@ -83,7 +83,10 @@
     return [data copy];
 }
 
-+(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain {
++(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData *)message onChain:(DSChain *)chain {
+    NSParameterAssert(message);
+    NSParameterAssert(chain);
+    
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     
@@ -131,7 +134,10 @@
     
 }
 
--(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData*)signature onChain:(DSChain* _Nonnull)chain {
+-(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData *)signature onChain:(DSChain *)chain {
+    NSParameterAssert(signature);
+    NSParameterAssert(chain);
+    
     if (!(self = [super init])) return nil;
     self.outcome = voteOutcome;
     self.signal = voteSignal;
@@ -152,6 +158,8 @@
 }
 
 -(void)signWithKey:(DSECDSAKey*)key {
+    NSParameterAssert(key);
+    
     self.signature = [key sign:self.governanceVoteHash];
 }
 
