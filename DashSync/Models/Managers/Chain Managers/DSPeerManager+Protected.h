@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 @property (nonatomic, readonly) NSSet *connectedPeers;
 @property (nonatomic, readonly) DSPeerManagerDesiredState desiredState;
 
-- (void)peerMisbehaving:(DSPeer *)peer;
+- (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage;
 - (void)syncStopped;
 - (void)updateFilterOnPeers;
 

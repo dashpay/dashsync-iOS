@@ -40,7 +40,7 @@
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;
 {
     if ([transaction inputAddresses].count != 1) {
-        completion(NO);
+        completion(NO,NO);
         return;
     }
     
@@ -49,12 +49,12 @@
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
         self.wallet.seedRequestBlock(authprompt, MASTERNODE_COST,^void (NSData * _Nullable seed, BOOL cancelled) {
             if (! seed) {
-                if (completion) completion(YES);
+                if (completion) completion(NO,cancelled);
             } else {
                 DSECDSAKey * key = (DSECDSAKey *)[self privateKeyAtIndex:(uint32_t)index fromSeed:seed];
                 
                 BOOL signedSuccessfully = [transaction signWithPrivateKeys:@[key]];
-                if (completion) completion(signedSuccessfully);
+                if (completion) completion(signedSuccessfully,NO);
             }
         });
     }

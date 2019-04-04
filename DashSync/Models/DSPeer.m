@@ -464,6 +464,7 @@
 
 - (void)sendMempoolMessage:(NSArray *)publishedTxHashes completion:(MempoolCompletionBlock)completion
 {
+    DSDLog(@"%@:%u sendMempoolMessage %@",self.host,self.port,publishedTxHashes);
     [self.knownTxHashes addObjectsFromArray:publishedTxHashes];
     self.sentMempool = YES;
     

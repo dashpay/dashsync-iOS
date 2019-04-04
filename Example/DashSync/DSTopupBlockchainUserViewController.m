@@ -97,7 +97,7 @@
     
     [self.blockchainUser topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction) {
         if (blockchainUserTopupTransaction) {
-            [self.fundingAccount signTransaction:blockchainUserTopupTransaction withPrompt:@"Fund Transaction" completion:^(BOOL signedTransaction) {
+            [self.fundingAccount signTransaction:blockchainUserTopupTransaction withPrompt:@"Fund Transaction" completion:^(BOOL signedTransaction, BOOL cancelled) {
                 if (signedTransaction) {
                     [self.chainManager.transactionManager publishTransaction:blockchainUserTopupTransaction completion:^(NSError * _Nullable error) {
                         if (error) {

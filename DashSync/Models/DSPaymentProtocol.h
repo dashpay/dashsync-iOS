@@ -68,12 +68,17 @@ merchantData:(NSData *)data onChain:(DSChain*)chain;
 @property (nonatomic, readonly) NSString *errorMessage; // error message if there was an error validating the request
 @property (nonatomic, readonly) NSString *callbackScheme; //used for a local device callback
 @property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) BOOL requestsInstantSend;
+@property (nonatomic, readonly) BOOL requiresInstantSend;
+@property (nonatomic, readonly) NSString * requestedFiatAmountCurrencyCode;
 
 + (instancetype)requestWithData:(NSData *)data onChain:(DSChain*)chain;
 
 - (instancetype)initWithData:(NSData *)data onChain:(DSChain*)chain;
 - (instancetype)initWithVersion:(uint32_t)version pkiType:(NSString *)type certs:(NSArray *)certs
-                        details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig onChain:(DSChain*)chain callbackScheme:(NSString *)callbackScheme;
+                        details:(DSPaymentProtocolDetails *)details signature:(NSData *)sig requestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend requestedAgainstFiatCurrency:(NSString*)currencyCode requestedFiatAmount:(float)fiatAmount onChain:(DSChain *)chain callbackScheme:(NSString *)callbackScheme;
+
+-(void)updateForRequestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend;
 
 @end
 

@@ -195,7 +195,7 @@
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
     DSDLog(@"peer at address %@ is misbehaving",peer.host);
-    [self.peerManager peerMisbehaving:peer];
+    [self.peerManager peerMisbehaving:peer errorMessage:@"Bad block received from peer"];
 }
 
 -(void)chain:(DSChain*)chain receivedOrphanBlock:(DSMerkleBlock*)block fromPeer:(DSPeer*)peer {

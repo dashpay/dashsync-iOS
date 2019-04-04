@@ -110,7 +110,7 @@
     
     __block DSGovernanceObject * proposal = [governanceManager createProposalWithIdentifier:identifier toPaymentAddress:address forAmount:amount fromAccount:self.account startDate:[NSDate date] cycles:1 url:@"dash.org"];
     __block DSTransaction * transaction = [proposal collateralTransactionForAccount:self.account];
-    [self.account signTransaction:transaction withPrompt:@"" completion:^(BOOL signedTransaction) {
+    [self.account signTransaction:transaction withPrompt:@"" completion:^(BOOL signedTransaction, BOOL cancelled) {
         if (signedTransaction) {
         [self.chainManager.transactionManager publishTransaction:transaction completion:^(NSError * _Nullable error) {
             if (error) {

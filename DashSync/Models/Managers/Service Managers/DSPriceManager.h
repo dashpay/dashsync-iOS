@@ -76,6 +76,7 @@
 - (int64_t)amountForLocalCurrencyString:(NSString * _Nonnull)string;
 - (NSString * _Nonnull)bitcoinCurrencyStringForAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSString * _Nonnull)localCurrencyStringForDashAmount:(int64_t)amount;
+- (NSString * _Nonnull)fiatCurrencyString:(NSString* _Nonnull)currencyCode forDashAmount:(int64_t)amount;
 - (NSString * _Nonnull)localCurrencyStringForBitcoinAmount:(int64_t)amount DEPRECATED_ATTRIBUTE;
 - (NSNumber * _Nullable)localCurrencyNumberForDashAmount:(int64_t)amount;
 - (NSNumber* _Nonnull)localCurrencyDashPrice;
