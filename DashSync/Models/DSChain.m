@@ -562,6 +562,7 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
         {
             setKeychainInt(protocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,PROTOCOL_VERSION_LOCATION], NO);
+            break;
         }
         default:
             break;
@@ -578,6 +579,7 @@ static dispatch_once_t devnetToken = 0;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) _cachedMinProtocolVersion = minProtocolVersion;
             else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
+            break;
         }
         case DSChainType_TestNet:
         {
@@ -585,6 +587,7 @@ static dispatch_once_t devnetToken = 0;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) _cachedMinProtocolVersion = minProtocolVersion;
             else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
+            break;
         }
         case DSChainType_DevNet:
         {
@@ -592,6 +595,7 @@ static dispatch_once_t devnetToken = 0;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) _cachedMinProtocolVersion = minProtocolVersion;
             else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
+            break;
         }
         default:
             break;
@@ -606,11 +610,14 @@ static dispatch_once_t devnetToken = 0;
     switch ([self chainType]) {
         case DSChainType_MainNet:
             setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
+            break;
         case DSChainType_TestNet:
             setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
+            break;
         case DSChainType_DevNet:
         {
             setKeychainInt(minProtocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
+            break;
         }
         default:
             break;
