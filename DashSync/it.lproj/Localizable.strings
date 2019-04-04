@@ -21,7 +21,7 @@
 "\n\n     amount %@ (%@)" = "\n\n       importo %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nINDIRIZZO GIA' USATO\ngli indirizzi dash dovrebbero essere usati solo una volta\n\nil riutilizzo riduce la pivacy sia per te che per il ricevente e può portare a perdite se il ricevente non controlla direttamente l'indirizzo           ";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncommissione di rete +%1$@ (%2$@)";
@@ -57,7 +57,7 @@
 "bad password, try again" = "password errata, riprova";
 
 /* No comment provided by engineer. */
-"bad payment request" = "bad payment request";
+"bad payment request" = "richiesta di pagamento errata";
 
 /* No comment provided by engineer. */
 "bad payment request URL" = "URL di richiesta pagamento errato";
@@ -81,13 +81,13 @@
 "couldn't make payment" = "impossibile effettuare il pagamento";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "dash payments can't be less than %@";
+"dash payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
 
 /* No comment provided by engineer. */
 "dash transaction not signed" = "transazione dash non firmata";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash transaction outputs can't be less than %@";
+"dash transaction outputs can't be less than %@" = "transazioni dash in uscita non possono essere inferiori a %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
@@ -114,13 +114,13 @@
 "hours" = "ore";
 
 /* No comment provided by engineer. */
-"ignore" = "ignore";
+"ignore" = "ignora";
 
 /* No comment provided by engineer. */
-"instant payment" = "instant payment";
+"instant payment" = "pagamento immediato";
 
 /* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "l'InstantSend richiede sufficienti input con 6 conferme, inviare comunque come normale transazione?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "fondi insufficienti";
@@ -183,7 +183,7 @@
 "password protected key" = "chiave protetta da password";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "payee identity isn't certified";
+"payee identity isn't certified" = "l'identità del beneficiario non è certificata";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "frase di recupero";
@@ -207,7 +207,7 @@
 "reset" = "resetta";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
+"retry" = "riprova";
 
 /* No comment provided by engineer. */
 "second" = "secondo";
@@ -216,7 +216,7 @@
 "seconds" = "secondi";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "Invia";
 
 /* No comment provided by engineer. */
 "Server Error" = "Errore del server";
@@ -225,7 +225,7 @@
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "this payment address is already in your wallet";
+"this payment address is already in your wallet" = "questo indirizzo di pagamento è già nel tuo portafoglio";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "questa chiave privata è già nel tuo portafoglio";
@@ -234,7 +234,7 @@
 "this private key is empty" = "questa chiave privata è vuota";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Questa richiesta richiede un pagamento immediato ma non hai abbastanza input con 6 conferme richieste da InstantSend, puoi chiedere al commerciante di accettare una transazione normale o attendere qualche minuto.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transazione cancellata, per \"timeout\" della rete";
@@ -255,7 +255,7 @@
 "Unknown JSON-RPC Response" = "Risposta JSON-RPC sconosciuta";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "unrecognized address";
+"unrecognized address" = "indirizzo non riconosciuto";
 
 /* No comment provided by engineer. */
 "unsupported signature type" = "tipo di firma non supportato";
@@ -273,7 +273,7 @@
 "wallet disabled" = "portafoglio disabilitato";
 
 /* No comment provided by engineer. */
-"WARNING" = "WARNING";
+"WARNING" = "ATTENZIONE";
 
 /* No comment provided by engineer. */
 "wipe" = "eliminare";
