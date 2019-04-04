@@ -56,7 +56,8 @@
 
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
-@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary;
+@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary; //v13 and before
+@property (nonatomic, strong) NSMutableDictionary *instantSendLockVoteDictionary; //LLMQ Instant Send locks
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
@@ -80,6 +81,7 @@
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.nonFalsePositiveTransactions = [NSMutableSet set];
     self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
+    self.instantSendLockVoteDictionary = [NSMutableDictionary dictionary];
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
     [self recreatePublishedTransactionList];
     return self;
@@ -1079,6 +1081,10 @@
 }
 
 - (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSOrderedSet *)transactionLockVoteHashes {
+    
+}
+
+- (void)peer:(DSPeer *)peer hasInstantSendLockVoteHashes:(NSOrderedSet*)instantSendLockVoteHashes {
     
 }
 

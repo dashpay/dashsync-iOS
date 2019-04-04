@@ -49,7 +49,14 @@ typedef NS_ENUM(uint32_t,DSInvType) {
     DSInvType_CompactBlock = 20, //!< Defined in BIP152
     DSInvType_QuorumFinalCommitment = 21,
     DSInvType_DummyCommitment = 22, // only valid on testnet/devnet/regtest
-    DSInvType_DummyContribution = 23 // only valid on testnet/devnet/regtest
+    DSInvType_QuorumContribution = 23,
+    DSInvType_QuorumComplaint = 24,
+    DSInvType_QuorumJustification = 25,
+    DSInvType_QuorumPrematureCommitment = 26,
+    DSInvType_QuorumDebugStatus = 27,
+    DSInvType_QuorumRecoveredSignature = 28,
+    DSInvType_ChainLockSignature = 29,
+    DSInvType_InstantSendLock = 30
 };
 
 #define DASH_PEER_TIMEOUT_CODE  1001
@@ -186,6 +193,7 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 - (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSOrderedSet*)transactionLockVoteHashes;
+- (void)peer:(DSPeer *)peer hasInstantSendLockVoteHashes:(NSOrderedSet*)instantSendLockVoteHashes;
 - (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 

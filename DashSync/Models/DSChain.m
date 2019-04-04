@@ -578,6 +578,7 @@ static dispatch_once_t devnetToken = 0;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) _cachedMinProtocolVersion = MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_MAINNET);
             else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_MAINNET;
+            break;
         }
         case DSChainType_TestNet:
         {
@@ -585,6 +586,7 @@ static dispatch_once_t devnetToken = 0;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) _cachedMinProtocolVersion = MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_TESTNET);
             else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_TESTNET;
+            break;
         }
         case DSChainType_DevNet:
         {
@@ -592,6 +594,7 @@ static dispatch_once_t devnetToken = 0;
             uint32_t minProtocolVersion = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], &error);
             if (!error && minProtocolVersion) _cachedMinProtocolVersion = MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
             else _cachedMinProtocolVersion = DEFAULT_MIN_PROTOCOL_VERSION_DEVNET;
+            break;
         }
         default:
             break;
@@ -607,13 +610,16 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_MainNet:
             setKeychainInt(MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_MAINNET),[NSString stringWithFormat:@"MAINNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
             _cachedMinProtocolVersion = MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_MAINNET);
+            break;
         case DSChainType_TestNet:
             setKeychainInt(MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_TESTNET),[NSString stringWithFormat:@"TESTNET_%@",DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
             _cachedMinProtocolVersion = MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_TESTNET);
+            break;
         case DSChainType_DevNet:
         {
             setKeychainInt(MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_DEVNET),[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DEFAULT_MIN_PROTOCOL_VERSION_LOCATION], NO);
             _cachedMinProtocolVersion = MAX(minProtocolVersion,DEFAULT_MIN_PROTOCOL_VERSION_DEVNET);
+            break;
         }
         default:
             break;
@@ -1213,7 +1219,7 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsInvertedDictionary[uint256_obj(checkpointHash)] = @(checkpoint.height);
         }
         self.delegateQueueChainEntity = [self chainEntity];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:50 onChain:self.delegateQueueChainEntity]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:600 onChain:self.delegateQueueChainEntity]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 
@@ -1434,7 +1440,7 @@ static dispatch_once_t devnetToken = 0;
         [self saveBlocks];
         DSMerkleBlock *b = block;
         
-        for (uint32_t i = 0; b && i < (DGW_PAST_BLOCKS_MAX + 50); i++) {
+        for (uint32_t i = 0; b && i < (DGW_PAST_BLOCKS_MAX + 600); i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
         NSMutableArray * blocksToRemove = [NSMutableArray array];

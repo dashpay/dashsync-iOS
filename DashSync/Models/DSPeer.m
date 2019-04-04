@@ -93,7 +93,7 @@
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *knownInstantSendLockHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
@@ -237,6 +237,7 @@
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
+    self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
     
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
@@ -1062,10 +1063,14 @@
             return @"CompactBlock";
         case DSInvType_DummyCommitment:
             return @"DummyCommitment";
-        case DSInvType_DummyContribution:
-            return @"DummyContribution";
+        case DSInvType_QuorumContribution:
+            return @"QuorumContribution";
         case DSInvType_QuorumFinalCommitment:
             return @"QuorumFinalCommitment";
+        case DSInvType_ChainLockSignature:
+            return @"ChainLockSignature";
+        case DSInvType_InstantSendLock:
+            return @"InstantSendLock";
         default:
             return @"";
     }
@@ -1078,6 +1083,7 @@
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *txLockRequestHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *instantSendLockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
@@ -1123,6 +1129,7 @@
             case DSInvType_TxLockRequest: [txLockRequestHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_DSTx: break;
             case DSInvType_TxLockVote: [txLockVoteHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_InstantSendLock : [instantSendLockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Spork: [sporkHashes addObject:[NSData dataWithUInt256:hash]]; break;
@@ -1134,7 +1141,9 @@
             case DSInvType_MasternodeBroadcast: break;
             case DSInvType_QuorumFinalCommitment: break;
             case DSInvType_DummyCommitment: break;
-            case DSInvType_DummyContribution: break;
+            case DSInvType_QuorumContribution: break;
+            case DSInvType_CompactBlock: break;
+            case DSInvType_ChainLockSignature: break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");
@@ -1213,6 +1222,23 @@
         
         dispatch_async(self.delegateQueue, ^{
             if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionLockVoteHashes:txLockVoteHashes];
+        });
+    }
+    
+    [self.knownTxLockVoteHashes unionOrderedSet:txLockVoteHashes];
+    
+    if (instantSendLockHashes.count > 0) {
+        for (NSValue *hash in instantSendLockHashes) {
+            UInt256 h;
+            
+            if (! [self.knownInstantSendLockHashes containsObject:hash]) continue;
+            [hash getValue:&h];
+        }
+        
+        [instantSendLockHashes minusOrderedSet:self.knownInstantSendLockHashes];
+        
+        dispatch_async(self.delegateQueue, ^{
+            if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockVoteHashes:instantSendLockHashes];
         });
     }
     
@@ -1631,8 +1657,8 @@
     DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:message onChain:self.chain];
     
     if (! block.valid) {
-        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
-        return;
+//        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
+//        return;
     }
     else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
         [self error:@"got merkleblock message before loading a filter"];
@@ -1977,10 +2003,10 @@
                         if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
                     }
                     
-                    if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
-                        [self error:@"malformed message header: %@", self.msgHeader];
-                        goto reset;
-                    }
+//                    if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
+//                        [self error:@"malformed message header: %@", self.msgHeader];
+//                        goto reset;
+//                    }
                     
                     type = @((const char *)self.msgHeader.bytes + 4);
                     length = [self.msgHeader UInt32AtOffset:16];
