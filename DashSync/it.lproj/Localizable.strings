@@ -21,6 +21,9 @@
 "\n\n     amount %@ (%@)" = "\n\n       importo %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nINDIRIZZO GIA' USATO\ngli indirizzi dash dovrebbero essere usati solo una volta\n\nil riutilizzo riduce la pivacy sia per te che per il ricevente e può portare a perdite se il ricevente non controlla direttamente l'indirizzo           ";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncommissione di rete +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -54,6 +57,9 @@
 "bad password, try again" = "password errata, riprova";
 
 /* No comment provided by engineer. */
+"bad payment request" = "richiesta di pagamento errata";
+
+/* No comment provided by engineer. */
 "bad payment request URL" = "URL di richiesta pagamento errato";
 
 /* No comment provided by engineer. */
@@ -75,7 +81,13 @@
 "couldn't make payment" = "impossibile effettuare il pagamento";
 
 /* No comment provided by engineer. */
+"dash payments can't be less than %@" = "i pagamneti in Bitcoin non possono essere inferiore a %@";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "transazione dash non firmata";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "transazioni dash in uscita non possono essere inferiori a %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
@@ -85,6 +97,9 @@
 
 /* No comment provided by engineer. */
 "enter old passcode" = "immetti il vecchio codice";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "errore firma di transazione dash";
@@ -97,6 +112,15 @@
 
 /* No comment provided by engineer. */
 "hours" = "ore";
+
+/* No comment provided by engineer. */
+"ignore" = "ignora";
+
+/* No comment provided by engineer. */
+"instant payment" = "pagamento immediato";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "l'InstantSend richiede sufficienti input con 6 conferme, inviare comunque come normale transazione?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "fondi insufficienti";
@@ -159,6 +183,9 @@
 "password protected key" = "chiave protetta da password";
 
 /* No comment provided by engineer. */
+"payee identity isn't certified" = "l'identità del beneficiario non è certificata";
+
+/* No comment provided by engineer. */
 "recovery phrase" = "frase di recupero";
 
 /* No comment provided by engineer. */
@@ -180,10 +207,16 @@
 "reset" = "resetta";
 
 /* No comment provided by engineer. */
+"retry" = "riprova";
+
+/* No comment provided by engineer. */
 "second" = "secondo";
 
 /* No comment provided by engineer. */
 "seconds" = "secondi";
+
+/* No comment provided by engineer. */
+"send" = "Invia";
 
 /* No comment provided by engineer. */
 "Server Error" = "Errore del server";
@@ -192,10 +225,16 @@
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
+"this payment address is already in your wallet" = "questo indirizzo di pagamento è già nel tuo portafoglio";
+
+/* No comment provided by engineer. */
 "this private key is already in your wallet" = "questa chiave privata è già nel tuo portafoglio";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "questa chiave privata è vuota";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Questa richiesta richiede un pagamento immediato ma non hai abbastanza input con 6 conferme richieste da InstantSend, puoi chiedere al commerciante di accettare una transazione normale o attendere qualche minuto.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transazione cancellata, per \"timeout\" della rete";
@@ -216,6 +255,9 @@
 "Unknown JSON-RPC Response" = "Risposta JSON-RPC sconosciuta";
 
 /* No comment provided by engineer. */
+"unrecognized address" = "indirizzo non riconosciuto";
+
+/* No comment provided by engineer. */
 "unsupported signature type" = "tipo di firma non supportato";
 
 /* No comment provided by engineer. */
@@ -229,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portafoglio disabilitato";
+
+/* No comment provided by engineer. */
+"WARNING" = "ATTENZIONE";
 
 /* No comment provided by engineer. */
 "wipe" = "eliminare";

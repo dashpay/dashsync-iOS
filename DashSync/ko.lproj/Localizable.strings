@@ -21,6 +21,9 @@
 "\n\n     amount %@ (%@)" = "\n\n     금액 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 사용된 주소입니다\nDash 주소는 일회성으로만 사용됩니다.\n\n주소 재사용은 사용자와 수신자의 개인 정보 보호에 취약하며, 수신자가 주소를 직접 제어하지 않는 경우 손실이 발생할 수 있습니다";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -54,6 +57,9 @@
 "bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
 
 /* No comment provided by engineer. */
+"bad payment request" = "잘못된 지불요청";
+
+/* No comment provided by engineer. */
 "bad payment request URL" = "잘못된 지불요청 URL";
 
 /* No comment provided by engineer. */
@@ -75,7 +81,13 @@
 "couldn't make payment" = "지불에 실패하였습니다";
 
 /* No comment provided by engineer. */
+"dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다.";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "대쉬 거래가 서명되지 않음";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "대시 거래 금액은 %@보다 적을 수 없습니다.";
 
 /* No comment provided by engineer. */
 "Devnet" = "개발자 네트워크";
@@ -85,6 +97,9 @@
 
 /* No comment provided by engineer. */
 "enter old passcode" = "이전 암호 입력";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "대쉬 거래 서명 중 오류 발생";
@@ -97,6 +112,15 @@
 
 /* No comment provided by engineer. */
 "hours" = "시간";
+
+/* No comment provided by engineer. */
+"ignore" = "무시";
+
+/* No comment provided by engineer. */
+"instant payment" = "즉시 지불";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "인스턴트샌드에는 6회의 확인이 필요합니다, 그래도 정기 거래로 보내시겠습니까?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "잔액 부족";
@@ -159,6 +183,9 @@
 "password protected key" = "비밀번호로 보호되는 키";
 
 /* No comment provided by engineer. */
+"payee identity isn't certified" = "수취인의 신원이 인증되지 않았습니다";
+
+/* No comment provided by engineer. */
 "recovery phrase" = "복원 문구";
 
 /* No comment provided by engineer. */
@@ -180,10 +207,16 @@
 "reset" = "초기화";
 
 /* No comment provided by engineer. */
+"retry" = "재시도";
+
+/* No comment provided by engineer. */
 "second" = "초";
 
 /* No comment provided by engineer. */
 "seconds" = "초";
+
+/* No comment provided by engineer. */
+"send" = "보내기";
 
 /* No comment provided by engineer. */
 "Server Error" = "서버 오류";
@@ -192,10 +225,16 @@
 "Testnet" = "테스트넷";
 
 /* No comment provided by engineer. */
+"this payment address is already in your wallet" = "이 결제 주소는 이미 당신의 지갑에 존재합니다.";
+
+/* No comment provided by engineer. */
 "this private key is already in your wallet" = "이 비밀 키는 이미 당신의 지갑에 있습니다";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "이 비밀 키는 잔액이 없습니다";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "이 요청은 즉시 지불을 요구하고 있습니다. 그러나 귀하가 가진 인스턴트샌드가 요구하는 6회의 확인을 거친 입력값이 충분하지 않습니다. 판매자에게 일반 거래를 수락하도록 요청하거나 수 분 정도 기다려주십시오.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "거래 취소, 네트워크 시간 초과";
@@ -216,6 +255,9 @@
 "Unknown JSON-RPC Response" = "알 수 없는 JSON-RPC 반응";
 
 /* No comment provided by engineer. */
+"unrecognized address" = "인식할 수 없는 주소";
+
+/* No comment provided by engineer. */
 "unsupported signature type" = "지원 되지 않는 서명 유형";
 
 /* No comment provided by engineer. */
@@ -229,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "지갑 사용 정지됨";
+
+/* No comment provided by engineer. */
+"WARNING" = "경고";
 
 /* No comment provided by engineer. */
 "wipe" = "지우기";

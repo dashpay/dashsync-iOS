@@ -92,7 +92,7 @@
 // largest amount that can be sent from the account after fees
 - (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend;
 
-- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend;
+- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend returnInputCount:(uint32_t* _Nullable)rInputCount;
 
 // true if AutoLocks enabled and can be used with provided amount
 - (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount;
@@ -103,7 +103,9 @@
 // the high level (hardened) derivation path containing the address
 -(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
 
-// true if the address was previously used as an input or output in any wallet transaction
+- (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
+
+// true if the address was previously used as an input or output in any wallet transaction (from this wallet only)
 - (BOOL)addressIsUsed:(NSString *)address;
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address

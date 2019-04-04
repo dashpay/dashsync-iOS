@@ -340,7 +340,7 @@
     });
 }
 
-- (void)peerMisbehaving:(DSPeer *)peer
+- (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage
 {
     peer.misbehaving++;
     [self.peers removeObject:peer];
@@ -353,7 +353,8 @@
         _peers = nil;
     }
     
-    [peer disconnect];
+    [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
+                                              userInfo:@{NSLocalizedDescriptionKey:errorMessage}]];
     [self connect];
 }
 
@@ -820,7 +821,7 @@
     DSDLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
     if ([error.domain isEqual:@"DashSync"] && error.code != DASH_PEER_TIMEOUT_CODE) {
-        [self peerMisbehaving:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
+        [self peerMisbehaving:peer errorMessage:error.localizedDescription]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
     else if (error) { // timeout or some non-protocol related network error
         [self.peers removeObject:peer];

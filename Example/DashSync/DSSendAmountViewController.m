@@ -63,16 +63,39 @@
     
     DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.addressField.text onChain:self.account.wallet.chain];
     paymentRequest.amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountField.text];
+    
     if ([paymentRequest isValid]) {
-        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest fromAccount:self.account forceInstantSend:self.instantSendSwitch.on signedCompletion:^(NSError * _Nonnull error) {
-            if (!error) {
-                if (self.navigationController.topViewController != self.parentViewController.parentViewController) {
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }
-            }
-        } publishedCompletion:^(NSError * _Nonnull error) {
-            if (error) {
-                
+        
+        __block BOOL displayedSentMessage = FALSE;
+        
+        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest fromAccount:self.account acceptReusingAddress:YES addressIsFromPasteboard:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+        } presentChallenge:^(NSString * _Nonnull challengeTitle, NSString * _Nonnull challengeMessage, NSString * _Nonnull actionTitle, void (^ _Nonnull actionBlock)(void), void (^ _Nonnull cancelBlock)(void)) {
+            UIAlertController * alert = [UIAlertController
+                                         alertControllerWithTitle:challengeTitle
+                                         message:challengeMessage
+                                         preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction* ignoreButton = [UIAlertAction
+                                           actionWithTitle:actionTitle
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction * action) {
+                                               actionBlock();
+                                           }];
+            UIAlertAction* cancelButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                               cancelBlock();
+                                           }];
+            
+            [alert addAction:cancelButton]; //cancel should always be on the left
+            [alert addAction:ignoreButton];
+            [self presentViewController:alert animated:YES completion:nil];
+        } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount) {
+            return TRUE; //just continue and let Dash Sync do it's thing
+        } signedCompletion:^BOOL(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL cancelled) {
+            if (cancelled) {
+
+            } else if (error) {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
                                              message:error.localizedDescription
@@ -84,12 +107,32 @@
                                                
                                            }];
                 [alert addAction:okButton];
-                [self.navigationController.topViewController presentViewController:alert animated:YES completion:nil];
-                [self cancel:nil];
-            } else {
+                [self presentViewController:alert animated:YES completion:nil];
+            }
+            return TRUE;
+        } publishedCompletion:^(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL sent) {
+            if (sent) {
+
                 [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                             center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                        popOutAfterDelay:2.0]];
+
+                
+                displayedSentMessage = TRUE;
+            }
+        } errorNotificationBlock:^(NSString * _Nonnull errorTitle, NSString * _Nonnull errorMessage, BOOL shouldCancel) {
+            if (errorTitle || errorMessage) {
+                UIAlertController * alert = [UIAlertController
+                                             alertControllerWithTitle:errorTitle
+                                             message:errorMessage
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction* okButton = [UIAlertAction
+                                           actionWithTitle:NSLocalizedString(@"ok", nil)
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                           }];
+                [alert addAction:okButton];
+                [self presentViewController:alert animated:YES completion:nil];
             }
         }];
     } else {

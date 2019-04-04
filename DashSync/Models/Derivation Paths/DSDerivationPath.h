@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction);
+typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL cancelled);
 
 #define BIP32_HARD 0x80000000
 

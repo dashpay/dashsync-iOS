@@ -104,8 +104,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (DSAccount* _Nullable)accountForAddress:(NSString *)address;
 
-// true if the address was previously used as an input or output in any wallet transaction
+// true if the address was previously used as an input or output for this wallet
 - (BOOL)addressIsUsed:(NSString * _Nonnull)address;
+
+- (BOOL)transactionAddressAlreadySeenInOutputs:(NSString * _Nonnull)address;
 
 // sets the block heights and timestamps for the given transactions, and returns an array of hashes of the updated tx
 // use a height of TX_UNCONFIRMED and timestamp of 0 to indicate a transaction and it's dependents should remain marked

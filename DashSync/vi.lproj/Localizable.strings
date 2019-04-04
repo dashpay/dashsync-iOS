@@ -21,6 +21,9 @@
 "\n\n     amount %@ (%@)" = "\n\n     số lượng %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nĐỊA CHỈ ĐÃ ĐƯỢC SỬ DỤNG\ncác địa chỉ dash chỉ nên sử dụng một lần duy nhất\n\ntái sử dụng địa chỉ làm giảm đi tính riêng tư cho cả bạn lẫn người nhận và dẫn đến tình trạng mất nếu người nhận không quản lý trực tiếp địa chỉ đó";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -54,6 +57,9 @@
 "bad password, try again" = "sai mật khẩu, hãy thử lại";
 
 /* No comment provided by engineer. */
+"bad payment request" = "yêu cầu thanh toán không đúng";
+
+/* No comment provided by engineer. */
 "bad payment request URL" = "địa chỉ URL của yêu cầu thanh toán không đúng";
 
 /* No comment provided by engineer. */
@@ -75,7 +81,13 @@
 "couldn't make payment" = "không thể thực hiện thanh toán";
 
 /* No comment provided by engineer. */
+"dash payments can't be less than %@" = "số dash thanh toán không thể nhỏ hơn %@";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "giao dịch dash không được ký";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "đầu ra của giao dịch dash không thể ít hơn %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Mạng cho phát triển";
@@ -85,6 +97,9 @@
 
 /* No comment provided by engineer. */
 "enter old passcode" = "nhập mật khẩu cũ";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "lỗi khi ký giao dịch dash";
@@ -97,6 +112,15 @@
 
 /* No comment provided by engineer. */
 "hours" = "giờ";
+
+/* No comment provided by engineer. */
+"ignore" = "bỏ qua";
+
+/* No comment provided by engineer. */
+"instant payment" = "giao dịch tức thời";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend yêu cầu phải có đủ các đầu vào với 6 xác thực, gửi theo cách thông thường?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "không đủ kinh phí";
@@ -159,6 +183,9 @@
 "password protected key" = "khoá được bảo vệ bởi mật khẩu";
 
 /* No comment provided by engineer. */
+"payee identity isn't certified" = "thông tin về người nhận chưa được xác nhận";
+
+/* No comment provided by engineer. */
 "recovery phrase" = "cụm từ phục hồi";
 
 /* No comment provided by engineer. */
@@ -180,10 +207,16 @@
 "reset" = "khởi tạo lại";
 
 /* No comment provided by engineer. */
+"retry" = "thử lại";
+
+/* No comment provided by engineer. */
 "second" = "giây";
 
 /* No comment provided by engineer. */
 "seconds" = "giây";
+
+/* No comment provided by engineer. */
+"send" = "gửi";
 
 /* No comment provided by engineer. */
 "Server Error" = "Lỗi máy chủ";
@@ -192,10 +225,16 @@
 "Testnet" = "Mạng thử nghiệm";
 
 /* No comment provided by engineer. */
+"this payment address is already in your wallet" = "địa chỉ thanh toán này đã có trong ví của bạn";
+
+/* No comment provided by engineer. */
 "this private key is already in your wallet" = "khoá riêng này đã có trong ví của bạn";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "khoá riêng này không có gì";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Yêu cầu này cần có một giao dịch tức thời nhưng bạn không có đủ đầu vào với 6 xác thực cần thiết cho InstantSend, bạn có thể phải hỏi người bán hàng xem có chấp nhận giao dịch thông thường hoặc phải đợi một vài phút.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "giao dịch bị huỷ, hết thời gian";
@@ -216,6 +255,9 @@
 "Unknown JSON-RPC Response" = "Phản hồi JSON-RPC không xác định";
 
 /* No comment provided by engineer. */
+"unrecognized address" = "không nhận ra địa chỉ";
+
+/* No comment provided by engineer. */
 "unsupported signature type" = "kiểu chữ ký không được hỗ trợ";
 
 /* No comment provided by engineer. */
@@ -229,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ví bị tắt";
+
+/* No comment provided by engineer. */
+"WARNING" = "CẢNH BÁO";
 
 /* No comment provided by engineer. */
 "wipe" = "xoá sạch";

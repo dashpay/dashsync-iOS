@@ -6,16 +6,16 @@ PODS:
   - DSJSONSchemaValidation (2.0.5)
   - ios-dpp (0.0.1):
     - DSJSONSchemaValidation (= 2.0.5)
-    - TinyCborObjc (= 0.2.2)
+    - TinyCborObjc (= 0.3.0)
   - KVO-MVVM (0.5.1)
   - secp256k1_dash (0.1.2)
-  - tinycbor (0.5.3-alpha1)
-  - TinyCborObjc (0.2.2):
-    - tinycbor (= 0.5.3-alpha1)
+  - tinycbor (0.5.3-alpha2)
+  - TinyCborObjc (0.3.0):
+    - tinycbor (= 0.5.3-alpha2)
 
 DEPENDENCIES:
   - DashSync (from `../`)
-  - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `ec69e3d68469ea069e25a82ee9fe5d62d417a7d3`, branch `master`)
+  - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `6b3210b2f0f124687175a697720099a6dd3d3024`, branch `master`)
   - KVO-MVVM (= 0.5.1)
 
 SPEC REPOS:
@@ -32,24 +32,24 @@ EXTERNAL SOURCES:
     :path: "../"
   ios-dpp:
     :branch: master
-    :commit: ec69e3d68469ea069e25a82ee9fe5d62d417a7d3
+    :commit: 6b3210b2f0f124687175a697720099a6dd3d3024
     :git: https://github.com/dashevo/ios-dpp.git
 
 CHECKOUT OPTIONS:
   ios-dpp:
-    :commit: ec69e3d68469ea069e25a82ee9fe5d62d417a7d3
+    :commit: 6b3210b2f0f124687175a697720099a6dd3d3024
     :git: https://github.com/dashevo/ios-dpp.git
 
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   DashSync: 16dbc86c1f1eeaf9822fc3f665db9d407f7f750d
   DSJSONSchemaValidation: a0d791d3c8a4801cb3c72f3c8701342e2cb66f58
-  ios-dpp: c2d06ae7d5422f3dad7344e5a96b52956685bfcf
+  ios-dpp: 5193ef55546e5cc3ce1ef5ad831f084a07731dc1
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
-  tinycbor: 81999417a2c8ee8c4a7651738a11ad0711c82935
-  TinyCborObjc: f42aa647c81de86a395a5691d6a93d04294f6d03
+  tinycbor: d2990189c8db918fbdb2936708642aeb55334dd5
+  TinyCborObjc: b514d3e288b5d26c3c65c568ec97e375a6840a98
 
-PODFILE CHECKSUM: 3ffc3955a29a378352312fc93e3b73f8dc8b1aaa
+PODFILE CHECKSUM: b09554bb9c6dde4448a8af3373e4cebe69d01959
 
 COCOAPODS: 1.5.3

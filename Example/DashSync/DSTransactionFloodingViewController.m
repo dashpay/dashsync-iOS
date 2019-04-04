@@ -150,7 +150,7 @@
         }
     } else {
         
-        [self.fundingAccount signTransaction:tx withPrompt:nil completion:^(BOOL signedTransaction) {
+        [self.fundingAccount signTransaction:tx withPrompt:nil completion:^(BOOL signedTransaction, BOOL cancelled) {
             if (!signedTransaction) {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:NSLocalizedString(@"couldn't make payment", nil)
