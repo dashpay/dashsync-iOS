@@ -57,7 +57,7 @@
 "bad password, try again" = "εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
 
 /* No comment provided by engineer. */
-"bad payment request" = "bad payment request";
+"bad payment request" = "λάθος αίτηση πληρωμής";
 
 /* No comment provided by engineer. */
 "bad payment request URL" = "λάθος URL αίτησης πληρωμής";
@@ -81,13 +81,13 @@
 "couldn't make payment" = "δεν μπορούσα να προβώ σε πληρωμή";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "dash payments can't be less than %@";
+"dash payments can't be less than %@" = "Οι πληρωμές Bitcoin δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
 "dash transaction not signed" = "Η συναλλαγή dash δεν έχει υπογραφεί";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash transaction outputs can't be less than %@";
+"dash transaction outputs can't be less than %@" = "Η συναλλαγή εξόδου Bitcoin δεν μπορεί να είναι μικρότερη από %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
@@ -114,7 +114,7 @@
 "hours" = "ώρες";
 
 /* No comment provided by engineer. */
-"ignore" = "ignore";
+"ignore" = "παράβλεψη";
 
 /* No comment provided by engineer. */
 "instant payment" = "instant payment";
@@ -183,7 +183,7 @@
 "password protected key" = "προστατευμένο κλειδί με κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "payee identity isn't certified";
+"payee identity isn't certified" = "η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "φράση ανάκτησης";
@@ -216,7 +216,7 @@
 "seconds" = "seconds";
 
 /* No comment provided by engineer. */
-"send" = "send";
+"send" = "αποστολή";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
@@ -225,7 +225,7 @@
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "this payment address is already in your wallet";
+"this payment address is already in your wallet" = "αυτή η διεύθυνση πληρωμής είναι ήδη στο πορτοφόλι σας";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";
@@ -255,7 +255,7 @@
 "Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "unrecognized address";
+"unrecognized address" = "μη αναγνωρισμένη διεύθυνση";
 
 /* No comment provided by engineer. */
 "unsupported signature type" = "μη υποστηριζόμενος τύπος υπογραφής";
@@ -273,7 +273,7 @@
 "wallet disabled" = "το πορτοφόλι απενεργοποιήθηκε";
 
 /* No comment provided by engineer. */
-"WARNING" = "WARNING";
+"WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";
 
 /* No comment provided by engineer. */
 "wipe" = "εκκαθάριση";

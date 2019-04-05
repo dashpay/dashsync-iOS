@@ -562,6 +562,7 @@ static dispatch_once_t devnetToken = 0;
         case DSChainType_DevNet:
         {
             setKeychainInt(protocolVersion,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,PROTOCOL_VERSION_LOCATION], NO);
+            break;
         }
         default:
             break;
