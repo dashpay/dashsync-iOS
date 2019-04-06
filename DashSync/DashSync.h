@@ -85,6 +85,8 @@
 
 #import "DSNetworking.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 #define SHAPESHIFT_ENABLED 0
 
 //! Project version number for dashsync.
@@ -99,7 +101,7 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 @property (nonatomic,assign) BOOL deviceIsJailbroken;
 
-+ (instancetype _Nullable)sharedSyncController;
++ (instancetype)sharedSyncController;
 
 -(void)startSyncForChain:(DSChain*)chain;
 -(void)stopSyncForChain:(DSChain*)chain;
@@ -114,5 +116,6 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 -(uint64_t)dbSize;
 
-
 @end
+
+NS_ASSUME_NONNULL_END

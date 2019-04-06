@@ -310,6 +310,8 @@ static NSData *point_mul(NSData *point, UInt256 factor)
 // generates an "intermediate code" for an EC multiply mode key, salt should be 64bits of random data
 + (NSString *)BIP38IntermediateCodeWithSalt:(uint64_t)salt andPassphrase:(NSString *)passphrase;
 {
+    NSParameterAssert(passphrase);
+    
     if (! passphrase) return nil;
     salt = CFSwapInt64HostToBig(salt);
 
@@ -326,6 +328,8 @@ static NSData *point_mul(NSData *point, UInt256 factor)
 + (NSString *)BIP38IntermediateCodeWithLot:(uint32_t)lot sequence:(uint16_t)sequence salt:(uint32_t)salt
 passphrase:(NSString *)passphrase
 {
+    NSParameterAssert(passphrase);
+    
     if (lot >= 0x100000u || sequence >= 0x1000u || ! passphrase) return nil;
     salt = CFSwapInt32HostToBig(salt);
 
@@ -385,8 +389,12 @@ passphrase:(NSString *)passphrase
     return [NSString base58checkWithData:key];
 }
 
-- (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain*)chain
+- (instancetype)initWithBIP38Key:(NSString *)key andPassphrase:(NSString *)passphrase onChain:(DSChain *)chain
 {
+    NSParameterAssert(key);
+    NSParameterAssert(passphrase);
+    NSParameterAssert(chain);
+    
     NSData *d = key.base58checkToData;
 
     if (d.length != 39 || ! passphrase) return nil;
@@ -457,6 +465,9 @@ passphrase:(NSString *)passphrase
 // encrypts receiver with passphrase and returns BIP38 key
 - (NSString *)BIP38KeyWithPassphrase:(NSString *)passphrase onChain:(DSChain*)chain
 {
+    NSParameterAssert(passphrase);
+    NSParameterAssert(chain);
+    
     NSData *priv = [self privateKeyStringForChain:chain].base58checkToData;
 
     if (priv.length < 33 || ! passphrase) return nil;

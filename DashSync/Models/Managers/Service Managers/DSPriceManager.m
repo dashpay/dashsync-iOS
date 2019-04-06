@@ -72,7 +72,7 @@
 @property (nonatomic, strong) DSOperationQueue *operationQueue;
 @property (nonatomic, strong) DSReachabilityManager *reachability;
 
-@property (nonatomic, strong) NSNumber * _Nullable bitcoinDashPrice; // exchange rate in bitcoin per dash
+@property (nonatomic, strong) NSNumber * bitcoinDashPrice; // exchange rate in bitcoin per dash
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyBitcoinPrice; // exchange rate in local currency units per bitcoin
 @property (nonatomic, strong) NSNumber * _Nullable localCurrencyDashPrice;
 
@@ -278,6 +278,7 @@
 
 - (DSCurrencyPriceObject *)priceForCurrencyCode:(NSString *)code {
     NSParameterAssert(code);
+    
     if (!code) {
         return nil;
     }
@@ -288,6 +289,8 @@
 
 - (int64_t)amountForUnknownCurrencyString:(NSString *)string
 {
+    NSParameterAssert(string);
+    
     if (! string.length) return 0;
     return [[[NSDecimalNumber decimalNumberWithString:string]
              decimalNumberByMultiplyingByPowerOf10:self.unknownFormat.maximumFractionDigits] longLongValue];
@@ -295,6 +298,8 @@
 
 - (int64_t)amountForDashString:(NSString *)string
 {
+    NSParameterAssert(string);
+    
     if (! string.length) return 0;
     NSInteger dashCharPos = [string indexOfCharacter:NSAttachmentCharacter];
     if (dashCharPos != NSNotFound) {
@@ -306,6 +311,8 @@
 
 - (int64_t)amountForBitcoinString:(NSString *)string
 {
+    NSParameterAssert(string);
+    
     if (! string.length) return 0;
     return [[[NSDecimalNumber decimalNumberWithDecimal:[[self.bitcoinFormat numberFromString:string] decimalValue]]
              decimalNumberByMultiplyingByPowerOf10:self.bitcoinFormat.maximumFractionDigits] longLongValue];
@@ -319,12 +326,16 @@
 }
 
 - (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color {
+    NSParameterAssert(color);
+    
     NSString * string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
                                                            decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
     return [string attributedStringForDashSymbolWithTintColor:color];
 }
 
 - (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color useSignificantDigits:(BOOL)useSignificantDigits {
+    NSParameterAssert(color);
+    
     NSString * string = [(useSignificantDigits?self.dashSignificantFormat:self.dashFormat) stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
                                                                                                              decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
     return [string attributedStringForDashSymbolWithTintColor:color];
@@ -332,6 +343,8 @@
 
 - (NSAttributedString *)attributedStringForDashAmount:(int64_t)amount withTintColor:(UIColor*)color dashSymbolSize:(CGSize)dashSymbolSize
 {
+    NSParameterAssert(color);
+    
     NSString * string = [self.dashFormat stringFromNumber:[(id)[NSDecimalNumber numberWithLongLong:amount]
                                                            decimalNumberByMultiplyingByPowerOf10:-self.dashFormat.maximumFractionDigits]];
     return [string attributedStringForDashSymbolWithTintColor:color dashSymbolSize:dashSymbolSize];
@@ -359,6 +372,8 @@
 // local currency. They will need to be revisited when that is no longer a safe assumption.
 - (int64_t)amountForLocalCurrencyString:(NSString *)string
 {
+    NSParameterAssert(string);
+    
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
     
     NSNumber *n = [self.localFormat numberFromString:string];
@@ -383,6 +398,8 @@
 
 - (int64_t)amountForBitcoinCurrencyString:(NSString *)string
 {
+    NSParameterAssert(string);
+    
     if (self.bitcoinDashPrice.doubleValue <= DBL_EPSILON) return 0;
     if ([string hasPrefix:@"<"]) string = [string substringFromIndex:1];
     
@@ -431,8 +448,10 @@
     return [self.localFormat stringFromNumber:n];
 }
 
-- (NSString *)fiatCurrencyString:(NSString*)currencyCode forDashAmount:(int64_t)amount
+- (NSString *)fiatCurrencyString:(NSString *)currencyCode forDashAmount:(int64_t)amount
 {
+    NSParameterAssert(currencyCode);
+    
     NSNumber *n = [self fiatCurrencyNumber:currencyCode forDashAmount:amount];
     if (n == nil) {
         return DSLocalizedString(@"Updating Price",@"Updating Price");

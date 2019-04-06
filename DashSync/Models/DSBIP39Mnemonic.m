@@ -138,7 +138,7 @@
     return _allWords;
 }
 
-- (NSString *)encodePhrase:(NSData *)data
+- (NSString * _Nullable)encodePhrase:(NSData * _Nullable)data
 {
     if (! data || (data.length % 4) != 0) return nil; // data length must be a multiple of 32 bits
 
@@ -160,8 +160,10 @@
 }
 
 // phrase must be normalized
-- (NSData *)decodePhrase:(NSString *)phrase
+- (NSData * _Nullable)decodePhrase:(NSString *)phrase
 {
+    NSParameterAssert(phrase);
+    
     NSArray *a = CFBridgingRelease(CFStringCreateArrayBySeparatingStrings(SecureAllocator(),
                                    (CFStringRef)[self normalizePhrase:phrase], CFSTR(" ")));
     NSMutableData *d = [NSMutableData secureDataWithCapacity:(a.count*11 + 7)/8];
@@ -207,24 +209,29 @@
 // true if word is a member of any known word list
 - (BOOL)wordIsValid:(NSString *)word
 {
+    NSParameterAssert(word);
     return [self.allWords containsObject:word];
 }
 
 // true if word is a member of the word list for the current locale
 - (BOOL)wordIsLocal:(NSString *)word
 {
+    NSParameterAssert(word);
     return [self.words containsObject:word];
 }
 
 // true if all words and checksum are valid, phrase must be normalized
 - (BOOL)phraseIsValid:(NSString *)phrase
 {
+    NSParameterAssert(phrase);
     return ([self decodePhrase:phrase] == nil) ? NO : YES;
 }
 
 // minimally cleans up user input phrase, suitable for display/editing
 - (NSString *)cleanupPhrase:(NSString *)phrase
 {
+    NSParameterAssert(phrase);
+    
     static NSCharacterSet *invalid = nil, *ws = nil;
     static dispatch_once_t onceToken = 0;
     NSMutableString *s = CFBridgingRelease(CFStringCreateMutableCopy(SecureAllocator(), 0,
@@ -275,7 +282,7 @@
 }
 
 // normalizes phrase, suitable for decode/derivation
-- (NSString *)normalizePhrase:(NSString *)phrase
+- (NSString * _Nullable)normalizePhrase:(NSString * _Nullable)phrase
 {
     if (! phrase) return nil;
 
@@ -300,7 +307,7 @@
 }
 
 // phrase must be normalized
-- (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString *)passphrase
+- (NSData *)deriveKeyFromPhrase:(NSString *)phrase withPassphrase:(NSString * _Nullable)passphrase
 {
     if (! phrase) return nil;
     

@@ -146,6 +146,9 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 - (instancetype)initWithPrivateKey:(NSString *)privateKey onChain:(DSChain*)chain
 {
+    NSParameterAssert(privateKey);
+    NSParameterAssert(chain);
+    
     if (privateKey.length == 0) return nil;
     if (! (self = [self init])) return nil;
     
@@ -181,6 +184,8 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 - (instancetype)initWithPublicKey:(NSData *)publicKey
 {
+    NSParameterAssert(publicKey);
+    
     if (publicKey.length != 33 && publicKey.length != 65) return nil;
     if (! (self = [self init])) return nil;
     
@@ -193,6 +198,8 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 - (instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md
 {
+    NSParameterAssert(compactSig);
+    
     if (compactSig.length != 65) return nil;
     if (! (self = [self init])) return nil;
 
@@ -216,8 +223,10 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return nil;
 }
 
-- (NSString *)privateKeyStringForChain:(DSChain*)chain
+- (nullable NSString *)privateKeyStringForChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     if (uint256_is_zero(_seckey)) return nil;
 
     NSMutableData *d = [NSMutableData secureDataWithCapacity:sizeof(UInt256) + 2];
@@ -284,6 +293,8 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 
 - (BOOL)verify:(UInt256)md signature:(NSData *)sig
 {
+    NSParameterAssert(sig);
+    
     if (sig.length > 65) {
             //not compact
         secp256k1_pubkey pk;

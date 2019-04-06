@@ -126,7 +126,9 @@
     return devnetChainManager;
 }
 
--(DSChainManager*)chainManagerForChain:(DSChain*)chain {
+-(DSChainManager *)chainManagerForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     if ([chain isMainnet]) {
         return [self mainnetManager];
     } else if ([chain isTestnet]) {
@@ -146,6 +148,9 @@
 }
 
 -(void)updateDevnetChain:(DSChain*)chain forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
+    NSParameterAssert(chain);
+    NSParameterAssert(serviceLocations);
+    
     DSChainManager * chainManager = [self chainManagerForChain:chain];
     DSPeerManager * peerManager = chainManager.peerManager;
     [peerManager clearRegisteredPeers];
@@ -184,6 +189,9 @@
 }
 
 -(DSChain*)registerDevnetChainWithIdentifier:(NSString*)identifier forServiceLocations:(NSMutableOrderedSet<NSString*>*)serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString*)sporkAddress sporkPrivateKey:(NSString*)sporkPrivateKey {
+    NSParameterAssert(identifier);
+    NSParameterAssert(serviceLocations);
+    
     NSError * error = nil;
     
     DSChain * chain = [DSChain setUpDevnetWithIdentifier:identifier withCheckpoints:nil withDefaultPort:standardPort withDefaultDapiPort:dapiPort];
@@ -235,7 +243,9 @@
     return chain;
 }
 
--(void)removeDevnetChain:(DSChain* _Nonnull)chain {
+-(void)removeDevnetChain:(DSChain *)chain {
+    NSParameterAssert(chain);
+    
     [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Remove Devnet?" andTouchId:FALSE alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
         if (!cancelled && authenticatedOrSuccess) {
             NSError * error = nil;

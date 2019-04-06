@@ -31,6 +31,8 @@
 #import "DSChain.h"
 #import "DSPeer.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerConnectedPeersDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerDownloadPeerDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotification;
@@ -49,12 +51,13 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) NSUInteger peerCount;
 @property (nonatomic, readonly) NSUInteger connectedPeerCount; // number of connected peers
-@property (nonatomic, readonly) NSString * _Nullable downloadPeerName;
+@property (nullable, nonatomic, readonly) NSString * downloadPeerName;
 @property (nonatomic, readonly) DSChain * chain;
-@property (nonatomic, readonly) DSPeer * downloadPeer, *fixedPeer;
+@property (nullable, nonatomic, readonly) DSPeer * downloadPeer;
+@property (nullable, nonatomic, readonly) DSPeer * fixedPeer;
 @property (nonatomic, readonly) NSArray* registeredDevnetPeers;
 @property (nonatomic, readonly) NSArray* registeredDevnetPeerServices;
-@property (nonatomic, readonly) NSString* trustedPeerHost;
+@property (nullable, nonatomic, readonly) NSString* trustedPeerHost;
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
@@ -67,7 +70,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 
 - (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;
-- (void)setTrustedPeerHost:(NSString*)host;
+- (void)setTrustedPeerHost:(NSString * _Nullable)host;
 - (void)removeTrustedPeerHost;
 
 @end
+
+NS_ASSUME_NONNULL_END

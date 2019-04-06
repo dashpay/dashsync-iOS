@@ -85,6 +85,9 @@
 @implementation DSWallet
 
 + (DSWallet*)standardWalletWithSeedPhrase:(NSString*)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    NSParameterAssert(seedPhrase);
+    NSParameterAssert(chain);
+    
     DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
     
     NSString * uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store forChain:chain]; //make sure we can create the wallet first
@@ -96,14 +99,20 @@
 }
 
 + (DSWallet*)standardWalletWithRandomSeedPhraseForChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    NSParameterAssert(chain);
+    
     return [self standardWalletWithRandomSeedPhraseInLanguage:DSBIP39Language_Default forChain:chain storeSeedPhrase:store isTransient:isTransient];
 }
 
 + (DSWallet*)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    NSParameterAssert(chain);
+    
     return [self standardWalletWithSeedPhrase:[self generateRandomSeedForLanguage:language] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store isTransient:isTransient];
 }
 
 -(instancetype)initWithChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     if (! (self = [super init])) return nil;
     self.transient = FALSE;
     self.mAccounts = [NSMutableDictionary dictionary];
@@ -119,6 +128,10 @@
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID andAccount:(DSAccount*)account forChain:(DSChain*)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient {
+    NSParameterAssert(uniqueID);
+    NSParameterAssert(account);
+    NSParameterAssert(chain);
+    
     if (! (self = [self initWithChain:chain])) return nil;
     self.uniqueID = uniqueID;
     __weak typeof(self) weakSelf = self;
@@ -196,6 +209,8 @@
 }
 
 -(void)addAccount:(DSAccount*)account {
+    NSParameterAssert(account);
+    
     [self.mAccounts setObject:account forKey:@(account.accountNumber)];
     account.wallet = self;
 }
@@ -230,14 +245,20 @@
 }
 
 +(NSString*)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID {
+    NSParameterAssert(uniqueID);
+    
     return [NSString stringWithFormat:@"%@_%@",WALLET_CREATION_TIME_KEY,uniqueID];
 }
 
 +(NSString*)creationGuessTimeUniqueIDForUniqueID:(NSString*)uniqueID {
+    NSParameterAssert(uniqueID);
+    
     return [NSString stringWithFormat:@"%@_%@",WALLET_CREATION_GUESS_TIME_KEY,uniqueID];
 }
 
 +(NSString*)didVerifyCreationTimeUniqueIDForUniqueID:(NSString*)uniqueID {
+    NSParameterAssert(uniqueID);
+    
     return [NSString stringWithFormat:@"%@_%@",VERIFIED_WALLET_CREATION_TIME_KEY,uniqueID];
 }
 
@@ -495,6 +516,8 @@
 }
 
 - (DSAccount*)firstAccountThatCanContainTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
     for (DSAccount * account in self.accounts) {
         if ([account canContainTransaction:transaction]) return account;
     }
@@ -502,6 +525,8 @@
 }
 
 - (NSArray*)accountsThatCanContainTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
     NSMutableArray * mArray = [NSMutableArray array];
     for (DSAccount * account in self.accounts) {
         if ([account canContainTransaction:transaction]) [mArray addObject:account];
@@ -556,6 +581,8 @@
 
 // true if the address is controlled by the wallet, this can also be for paths that are not accounts (todo)
 - (BOOL)containsAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
     for (DSAccount * account in self.accounts) {
         if ([account containsAddress:address]) return TRUE;
     }
@@ -563,6 +590,8 @@
 }
 
 - (DSAccount*)accountForAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
     for (DSAccount * account in self.accounts) {
         if ([account containsAddress:address]) return account;
     }
@@ -571,6 +600,8 @@
 
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
+    NSParameterAssert(address);
+    
     for (DSAccount * account in self.accounts) {
         if ([account addressIsUsed:address]) return TRUE;
     }
@@ -578,6 +609,8 @@
 }
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address {
+    NSParameterAssert(address);
+    
     for (DSAccount * account in self.accounts) {
         if ([account transactionAddressAlreadySeenInOutputs:address]) return TRUE;
     }
@@ -586,6 +619,8 @@
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
     uint64_t received = 0;
     for (DSAccount * account in self.accounts) {
         received += [account amountReceivedFromTransaction:transaction];
@@ -595,6 +630,8 @@
 
 // retuns the amount sent from the wallet by the trasaction (total wallet outputs consumed, change and fee included)
 - (uint64_t)amountSentByTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
     uint64_t sent = 0;
     for (DSAccount * account in self.accounts) {
         sent += [account amountSentByTransaction:transaction];
@@ -606,6 +643,8 @@
 // indicate a transaction and it's dependents should remain marked as unverified (not 0-conf safe)
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
+    NSParameterAssert(txHashes);
+    
     NSMutableArray *updated = [NSMutableArray array];
     
     for (DSAccount * account in self.accounts) {
@@ -628,6 +667,8 @@
 }
 
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction {
+    NSParameterAssert(transaction);
+    
     for (DSAccount * account in self.accounts) {
         if (![account transactionIsValid:transaction]) return FALSE;
     }
@@ -635,6 +676,9 @@
 }
 
 -(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed {
+    NSParameterAssert(address);
+    NSParameterAssert(seed);
+    
     DSAccount * account = [self accountForAddress:address];
     if (!account) return nil;
     DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
@@ -695,7 +739,9 @@
 }
 
 -(void)unregisterBlockchainUser:(DSBlockchainUser *)blockchainUser {
+    NSParameterAssert(blockchainUser);
     NSAssert(blockchainUser.wallet == self, @"the blockchainUser you are trying to remove is not in this wallet");
+    
     [self.mBlockchainUsers removeObjectForKey:blockchainUser.username];
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
@@ -707,11 +753,15 @@
     });
 }
 -(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser {
+    NSParameterAssert(blockchainUser);
+    
     [self.mBlockchainUsers setObject:@(blockchainUser.index) forKey:blockchainUser.username];
 }
 
 - (void)registerBlockchainUser:(DSBlockchainUser *)blockchainUser
 {
+    NSParameterAssert(blockchainUser);
+    
     if ([self.mBlockchainUsers objectForKey:blockchainUser.username] == nil) {
         [self addBlockchainUser:blockchainUser];
     }
@@ -765,6 +815,8 @@
 }
 
 -(DSBlockchainUser*)createBlockchainUserForUsername:(NSString*)username {
+    NSParameterAssert(username);
+    
     DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithUsername:username atIndex:[self unusedBlockchainUserIndex] inWallet:self];
     return blockchainUser;
 }
@@ -773,6 +825,8 @@
 
 - (void)registerMasternodeOperator:(DSLocalMasternode *)masternode
 {
+    NSParameterAssert(masternode);
+    
     if ([self.mMasternodeOperators objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
         [self.mMasternodeOperators setObject:@(masternode.operatorWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
     }
@@ -785,6 +839,8 @@
 
 - (void)registerMasternodeOwner:(DSLocalMasternode *)masternode
 {
+    NSParameterAssert(masternode);
+    
     if ([self.mMasternodeOwners objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
         [self.mMasternodeOwners setObject:@(masternode.ownerWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
     }
@@ -797,6 +853,8 @@
 
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode
 {
+    NSParameterAssert(masternode);
+    
     if ([self.mMasternodeVoters objectForKey:uint256_data(masternode.providerRegistrationTransaction.txHash)] == nil) {
         [self.mMasternodeVoters setObject:@(masternode.votingWalletIndex) forKey:uint256_data(masternode.providerRegistrationTransaction.txHash)];
     }
@@ -828,6 +886,8 @@
 }
 
 - (BOOL)containsHoldingAddress:(NSString*)holdingAddress {
+    NSParameterAssert(holdingAddress);
+    
     DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self];
     return [derivationPath containsAddress:holdingAddress];
 }
@@ -848,6 +908,8 @@
 }
 
 - (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress {
+    NSParameterAssert(holdingAddress);
+    
     DSMasternodeHoldingsDerivationPath * derivationPath = [DSMasternodeHoldingsDerivationPath providerFundsDerivationPathForWallet:self];
     return [derivationPath indexOfKnownAddress:holdingAddress];
 }

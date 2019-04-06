@@ -28,10 +28,12 @@
 #import "DSGovernanceVote.h"
 #import "DSPeer.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectListDidChangeNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceObjectCountUpdateNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVotesDidChangeNotification;
-FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotification;
+NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString* const DSGovernanceObjectListDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSGovernanceObjectCountUpdateNotification;
+FOUNDATION_EXPORT NSString* const DSGovernanceVotesDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSGovernanceVoteCountUpdateNotification;
 
 #define SUPERBLOCK_AVERAGE_TIME 2575480
 #define PROPOSAL_COST 500000000
@@ -48,14 +50,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 @property (nonatomic,readonly) NSUInteger governanceVotesCount;
 @property (nonatomic,readonly) NSUInteger totalGovernanceVotesCount;
 
-@property (nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
+@property (nullable, nonatomic,readonly) DSGovernanceObject * currentGovernanceSyncObject;
 
 
 -(instancetype)initWithChain:(DSChain*)chain;
 
 -(void)startGovernanceSync;
 
--(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject* _Nonnull)governanceObject;
+-(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject *)governanceObject;
 
 -(void)wipeGovernanceInfo;
 
@@ -65,3 +67,5 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSGovernanceVoteCountUpdateNotificati
 
 
 @end
+
+NS_ASSUME_NONNULL_END

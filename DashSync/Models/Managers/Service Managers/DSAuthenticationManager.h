@@ -25,6 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 #define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
 
 typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
@@ -47,7 +49,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic, readonly) BOOL usesAuthentication; //true if the app uses authentication and it is set up
 @property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic ,readonly) BOOL lockedOut;
-@property (nonatomic, copy) NSDictionary * _Nullable userAccount; // client api user id and auth token
+@property (nullable, nonatomic, copy) NSDictionary * userAccount; // client api user id and auth token
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 /**
  Secure time was updated by HTTP response since app starts
@@ -55,22 +57,24 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic, readonly) BOOL secureTimeUpdated;
 @property (nonatomic, readonly) NSTimeInterval lockoutWaitTime;
 
-+ (instancetype _Nullable)sharedInstance;
-- (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet* _Nonnull)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
++ (instancetype)sharedInstance;
+- (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinIfNeededWithCompletion:(void (^ _Nullable)(BOOL needed, BOOL success))completion; // prompts the user to set his pin if he has never set one before
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 - (void)removePin;
 
-- (void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel;
-- (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString *)name memo:(NSString *)memo isSecure:(BOOL)isSecure errorMessage:(NSString*)errorMessage localCurrency:(NSString *)localCurrency;
+- (void)requestKeyPasswordForSweepCompletion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^)(void))cancel;
+- (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString * _Nullable)name memo:(NSString * _Nullable)memo isSecure:(BOOL)isSecure errorMessage:(NSString * _Nullable)errorMessage localCurrency:(NSString * _Nullable)localCurrency;
 
--(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel;
+-(void)badKeyPasswordForSweepCompletion:(void (^)(void))completion cancel:(void (^)(void))cancel;
 
 -(void)deauthenticate;
 
 -(void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
 
--(void)showResetWalletWithWipeHandler:(ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock;
+-(void)showResetWalletWithWipeHandler:(_Nullable ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
 
 @end
+
+NS_ASSUME_NONNULL_END
