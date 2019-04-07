@@ -46,8 +46,8 @@
 @property (nonatomic, strong) NSString *requestedFiatCurrencyCode;
 @property (nonatomic, assign) float requestedFiatCurrencyAmount;
 @property (nonatomic, readonly) BOOL isValid;
-@property (nonatomic, readonly) BOOL requestsInstantSend;
-@property (nonatomic, readonly) BOOL requiresInstantSend;
+@property (nonatomic, assign) BOOL requestsInstantSend;
+@property (nonatomic, assign) BOOL requiresInstantSend;
 @property (nonatomic, readonly) BOOL amountValueImmutable;
 @property (nonatomic, readonly) DSPaymentProtocolRequest *protocolRequest;
 @property (nonatomic, readonly) DSChain * chain;

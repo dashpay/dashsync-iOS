@@ -355,6 +355,11 @@ typedef enum : NSUInteger {
     return self;
 }
 
+-(void)updateForRequestsInstantSend:(BOOL)requestsInstantSend requiresInstantSend:(BOOL)requiresInstantSend {
+    _requestsInstantSend = requestsInstantSend;
+    _requiresInstantSend = requiresInstantSend;
+}
+
 - (uint32_t)version
 {
     return (_version) ? _version : 1;
@@ -374,9 +379,9 @@ typedef enum : NSUInteger {
     if (_pkiData) [d appendProtoBufData:_pkiData withKey:request_pki_data];
     [d appendProtoBufData:_details.data withKey:request_details];
     if (_signature) [d appendProtoBufData:_signature withKey:request_signature];
-    [d appendProtoBufInt:self.requestsInstantSend withKey:request_requestsInstantSend];
-    [d appendProtoBufInt:self.requiresInstantSend withKey:request_requiresInstantSend];
-    [d appendProtoBufString:self.requestedFiatAmountCurrencyCode withKey:request_fiatCurrencyPegging];
+    if (_requestsInstantSend) [d appendProtoBufInt:self.requestsInstantSend withKey:request_requestsInstantSend];
+    if (_requiresInstantSend) [d appendProtoBufInt:self.requiresInstantSend withKey:request_requiresInstantSend];
+    if (_requestedFiatAmountCurrencyCode) [d appendProtoBufString:self.requestedFiatAmountCurrencyCode withKey:request_fiatCurrencyPegging];
     return d;
 }
 

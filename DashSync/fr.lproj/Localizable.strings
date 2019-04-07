@@ -21,6 +21,9 @@
 "\n\n     amount %@ (%@)" = "\n\n     montant %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRESSE DÉJÀ UTILISÉE\nLes adresses Dash ne devraient être utilisées en principe qu'une seule fois \n\nLeur réutilisation réduit votre niveau de confidentialité, et peut même causer une perte de fonds si le destinataire de la transaction ne possède plus d'accès à l'ancienne adresse";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nfrais de réseau +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -54,6 +57,9 @@
 "bad password, try again" = "mauvais mot de passe, veuillez réessayer";
 
 /* No comment provided by engineer. */
+"bad payment request" = "mauvaise demande de paiement";
+
+/* No comment provided by engineer. */
 "bad payment request URL" = "mauvaise URL de demande de paiement";
 
 /* No comment provided by engineer. */
@@ -75,7 +81,13 @@
 "couldn't make payment" = "impossible d'effectuer le paiement";
 
 /* No comment provided by engineer. */
+"dash payments can't be less than %@" = "les paiements Dash ne peuvent pas être inférieurs à %@";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "transaction Dash non signée";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "les sorties de transaction Dash ne peuvent pas être inférieures à %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Réseau de développement";
@@ -85,6 +97,9 @@
 
 /* No comment provided by engineer. */
 "enter old passcode" = "tapez l'ancien code d'accès";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "erreur de signature de la transaction dash";
@@ -97,6 +112,15 @@
 
 /* No comment provided by engineer. */
 "hours" = "heures";
+
+/* No comment provided by engineer. */
+"ignore" = "ignorer";
+
+/* No comment provided by engineer. */
+"instant payment" = "paiement instantané";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend exige des entrées avec 6 confirmations. Envoyer quand même en tant que transaction normale ?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "fonds insuffisants";
@@ -159,6 +183,9 @@
 "password protected key" = "clé protégée par mot de passe";
 
 /* No comment provided by engineer. */
+"payee identity isn't certified" = "l'identité du bénéficiaire n'est pas certifiée";
+
+/* No comment provided by engineer. */
 "recovery phrase" = "phrase de récupération";
 
 /* No comment provided by engineer. */
@@ -180,10 +207,16 @@
 "reset" = "réinitialiser";
 
 /* No comment provided by engineer. */
+"retry" = "retry";
+
+/* No comment provided by engineer. */
 "second" = "second";
 
 /* No comment provided by engineer. */
 "seconds" = "seconds";
+
+/* No comment provided by engineer. */
+"send" = "envoyer";
 
 /* No comment provided by engineer. */
 "Server Error" = "Erreur de serveur";
@@ -192,10 +225,16 @@
 "Testnet" = "Réseau de test";
 
 /* No comment provided by engineer. */
+"this payment address is already in your wallet" = "cette adresse de paiement est déjà dans votre portefeuille";
+
+/* No comment provided by engineer. */
 "this private key is already in your wallet" = "cette clé privée est déjà dans votre portefeuille";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "cette clé privée est vide";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Cette requête demande un paiement instantané, mais vous n'avez pas assez d'entrées avec les 6 confirmations exigées par InstantSend. Vous pouvez demander au vendeur d'accepter une transaction normale, ou bien attendre quelques minutes.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "transaction annulée, expiration du réseau";
@@ -216,6 +255,9 @@
 "Unknown JSON-RPC Response" = "Réponse JSON-RPC inconnue";
 
 /* No comment provided by engineer. */
+"unrecognized address" = "adresse non reconnue";
+
+/* No comment provided by engineer. */
 "unsupported signature type" = "type de signature non supporté";
 
 /* No comment provided by engineer. */
@@ -229,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portefeuille désactivé";
+
+/* No comment provided by engineer. */
+"WARNING" = "AVERTISSEMENT";
 
 /* No comment provided by engineer. */
 "wipe" = "effacer";

@@ -592,6 +592,13 @@
     return FALSE;
 }
 
+- (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address {
+    for (DSAccount * account in self.accounts) {
+        if ([account transactionAddressAlreadySeenInOutputs:address]) return TRUE;
+    }
+    return FALSE;
+}
+
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction {
     uint64_t received = 0;

@@ -21,6 +21,9 @@
 "\n\n     amount %@ (%@)" = "\n\n     количество %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nВЕЧЕ ИЗПОЛЗВАН АДРЕС\nDash адресите са предназначени за еднократно използване\n\nповторното използване намалява личната неприкосновеност, вашата и на получателя и може да липсва ако получателя на контролира директно адресът ";
+
+/* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nмрежова такса +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -54,6 +57,9 @@
 "bad password, try again" = "грешна парола, опитайте отново";
 
 /* No comment provided by engineer. */
+"bad payment request" = "грешна заявка за плащане";
+
+/* No comment provided by engineer. */
 "bad payment request URL" = "грешна заявка за плащане URL";
 
 /* No comment provided by engineer. */
@@ -75,7 +81,13 @@
 "couldn't make payment" = "не може да се направи плащане";
 
 /* No comment provided by engineer. */
+"dash payments can't be less than %@" = "Dash плащането не може да бъде по-малко от %@";
+
+/* No comment provided by engineer. */
 "dash transaction not signed" = "Dash транзакцията не е подписана";
+
+/* No comment provided by engineer. */
+"dash transaction outputs can't be less than %@" = "Dash изходите за транзакцията  не може да бъдат по-малко то %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Мрежа за разработчици";
@@ -85,6 +97,9 @@
 
 /* No comment provided by engineer. */
 "enter old passcode" = "въведете старата парола";
+
+/* No comment provided by engineer. */
+"Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "грешка при подписване на Dash транзакция";
@@ -97,6 +112,15 @@
 
 /* No comment provided by engineer. */
 "hours" = "часа";
+
+/* No comment provided by engineer. */
+"ignore" = "игнорирай";
+
+/* No comment provided by engineer. */
+"instant payment" = "instant payment";
+
+/* No comment provided by engineer. */
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "Недостатъчно средства";
@@ -159,6 +183,9 @@
 "password protected key" = "защитен с парола ключ";
 
 /* No comment provided by engineer. */
+"payee identity isn't certified" = "идентичността на подателя не е сертифицирана";
+
+/* No comment provided by engineer. */
 "recovery phrase" = "фраза за възстановяване";
 
 /* No comment provided by engineer. */
@@ -180,10 +207,16 @@
 "reset" = "изчистване";
 
 /* No comment provided by engineer. */
+"retry" = "повторен опит";
+
+/* No comment provided by engineer. */
 "second" = "секунда";
 
 /* No comment provided by engineer. */
 "seconds" = "секунди";
+
+/* No comment provided by engineer. */
+"send" = "изпращам";
 
 /* No comment provided by engineer. */
 "Server Error" = "Сървърна грешка";
@@ -192,10 +225,16 @@
 "Testnet" = "Тестова мрежа";
 
 /* No comment provided by engineer. */
+"this payment address is already in your wallet" = "този адрес за плащане е вече в твоя портфейл";
+
+/* No comment provided by engineer. */
 "this private key is already in your wallet" = "този частен ключ е вече в твоя портфейл";
 
 /* No comment provided by engineer. */
 "this private key is empty" = "този частен ключ е празен";
+
+/* No comment provided by engineer. */
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на InstantSend, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "отказана транзакция, мрежово прекъсване";
@@ -216,6 +255,9 @@
 "Unknown JSON-RPC Response" = "Неизвестен JSON-RPC отговор";
 
 /* No comment provided by engineer. */
+"unrecognized address" = "непознат адрес";
+
+/* No comment provided by engineer. */
 "unsupported signature type" = "неподдържан тип подпис";
 
 /* No comment provided by engineer. */
@@ -229,6 +271,9 @@
 
 /* No comment provided by engineer. */
 "wallet disabled" = "изключен портфейл";
+
+/* No comment provided by engineer. */
+"WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
 "wipe" = "изчисти";

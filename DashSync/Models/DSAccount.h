@@ -106,7 +106,9 @@
 // the high level (hardened) derivation path containing the address
 -(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
 
-// true if the address was previously used as an input or output in any wallet transaction
+- (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
+
+// true if the address was previously used as an input or output in any wallet transaction (from this wallet only)
 - (BOOL)addressIsUsed:(NSString *)address;
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
