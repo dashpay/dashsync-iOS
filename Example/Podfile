@@ -3,7 +3,7 @@ target 'DashSync_Example' do
   
   pod 'DashSync', :path => '../'
   pod 'KVO-MVVM', '0.5.1'
-  pod 'ios-dpp', :git => 'https://github.com/dashevo/ios-dpp.git', :branch => 'master', :commit => '6b3210b2f0f124687175a697720099a6dd3d3024'
+  pod 'ios-dpp', :git => 'https://github.com/dashevo/ios-dpp.git', :branch => 'supernova', :commit => '1e920ca44fe580935b8a6440cff1375cf74f2bf9'
 
   target 'DashSync_Tests' do
     inherit! :search_paths

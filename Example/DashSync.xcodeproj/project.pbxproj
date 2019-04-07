@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */; };
 		2A1B55BE2226B3C5008FED65 /* Contacts.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */; };
+		2A1BDBDB225A57BC0028F6DE /* DSBase58DataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBDA225A57BC0028F6DE /* DSBase58DataEncoder.m */; };
+		2A1BDBDE225A57D00028F6DE /* DSEntropyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBDD225A57D00028F6DE /* DSEntropyProvider.m */; };
+		2A1BDBE1225A57DE0028F6DE /* DSMerkleRootOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE0225A57DE0028F6DE /* DSMerkleRootOperation.m */; };
+		2A1BDBE4225A5A980028F6DE /* DashPlatformProtocol+DashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE3225A5A980028F6DE /* DashPlatformProtocol+DashSync.m */; };
 		2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBD820D8B327000177D8 /* DSHashTests.m */; };
 		2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */; };
 		2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */; };
@@ -156,6 +160,14 @@
 		2A1AC63A20F9012A00B3B79F /* FormSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FormSectionModel.h; sourceTree = "<group>"; };
 		2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FormSectionModel.m; sourceTree = "<group>"; };
 		2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Contacts.storyboard; sourceTree = "<group>"; };
+		2A1BDBD9225A57BC0028F6DE /* DSBase58DataEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBase58DataEncoder.h; sourceTree = "<group>"; };
+		2A1BDBDA225A57BC0028F6DE /* DSBase58DataEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBase58DataEncoder.m; sourceTree = "<group>"; };
+		2A1BDBDC225A57D00028F6DE /* DSEntropyProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSEntropyProvider.h; sourceTree = "<group>"; };
+		2A1BDBDD225A57D00028F6DE /* DSEntropyProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSEntropyProvider.m; sourceTree = "<group>"; };
+		2A1BDBDF225A57DE0028F6DE /* DSMerkleRootOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleRootOperation.h; sourceTree = "<group>"; };
+		2A1BDBE0225A57DE0028F6DE /* DSMerkleRootOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMerkleRootOperation.m; sourceTree = "<group>"; };
+		2A1BDBE2225A5A980028F6DE /* DashPlatformProtocol+DashSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashPlatformProtocol+DashSync.h"; sourceTree = "<group>"; };
+		2A1BDBE3225A5A980028F6DE /* DashPlatformProtocol+DashSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DashPlatformProtocol+DashSync.m"; sourceTree = "<group>"; };
 		2A1ECBD820D8B327000177D8 /* DSHashTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSHashTests.m; sourceTree = "<group>"; };
 		2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSKeyTests.m; sourceTree = "<group>"; };
 		2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentRequestTests.m; sourceTree = "<group>"; };
@@ -441,6 +453,21 @@
 			name = Contacts;
 			sourceTree = "<group>";
 		};
+		2A1BDBD8225A57940028F6DE /* iOSDPPSupport */ = {
+			isa = PBXGroup;
+			children = (
+				2A1BDBD9225A57BC0028F6DE /* DSBase58DataEncoder.h */,
+				2A1BDBDA225A57BC0028F6DE /* DSBase58DataEncoder.m */,
+				2A1BDBDC225A57D00028F6DE /* DSEntropyProvider.h */,
+				2A1BDBDD225A57D00028F6DE /* DSEntropyProvider.m */,
+				2A1BDBDF225A57DE0028F6DE /* DSMerkleRootOperation.h */,
+				2A1BDBE0225A57DE0028F6DE /* DSMerkleRootOperation.m */,
+				2A1BDBE2225A5A980028F6DE /* DashPlatformProtocol+DashSync.h */,
+				2A1BDBE3225A5A980028F6DE /* DashPlatformProtocol+DashSync.m */,
+			);
+			path = iOSDPPSupport;
+			sourceTree = "<group>";
+		};
 		2A3B3E9120F893F4002962FB /* Forms */ = {
 			isa = PBXGroup;
 			children = (
@@ -533,6 +560,7 @@
 		6003F593195388D20070C39A /* Example for DashSync */ = {
 			isa = PBXGroup;
 			children = (
+				2A1BDBD8225A57940028F6DE /* iOSDPPSupport */,
 				2A3B3E9120F893F4002962FB /* Forms */,
 				FB2B21A820D6FBF4000DF537 /* Views */,
 				FBB25BED20C5CD290037F5BE /* View Controllers */,
@@ -955,6 +983,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 				fr,
@@ -1048,12 +1077,10 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/ios-dpp/ios-dpp.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ios-dpp.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1095,6 +1122,7 @@
 				FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */,
 				2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */,
 				FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */,
+				2A1BDBE4225A5A980028F6DE /* DashPlatformProtocol+DashSync.m in Sources */,
 				2A3B3EB620F893F4002962FB /* SelectorFormTableViewCell.m in Sources */,
 				2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
@@ -1125,6 +1153,7 @@
 				FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */,
+				2A1BDBDB225A57BC0028F6DE /* DSBase58DataEncoder.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
 				FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
@@ -1144,6 +1173,7 @@
 				FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */,
 				FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
+				2A1BDBDE225A57D00028F6DE /* DSEntropyProvider.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,
 				2A3B3EB320F893F4002962FB /* FormTableViewController.m in Sources */,
 				FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */,
@@ -1168,6 +1198,7 @@
 				FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
+				2A1BDBE1225A57DE0028F6DE /* DSMerkleRootOperation.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
