@@ -47,6 +47,17 @@
     return [DSKey addressWithPublicKeyData:self.publicKeyData forChain:chain];
 }
 
++ (NSString *)randomAddressForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
+    UInt160 randomNumber = UINT160_ZERO;
+    for (int i =0;i<5;i++) {
+        randomNumber.u32[i] = arc4random();
+    }
+    
+    return [[NSData dataWithUInt160:randomNumber] addressFromHash160DataForChain:chain];
+}
+
 - (NSString *)privateKeyStringForChain:(DSChain*)chain {
     return nil;
 }
