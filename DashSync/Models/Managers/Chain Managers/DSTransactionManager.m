@@ -1084,10 +1084,6 @@
     
 }
 
-- (void)peer:(DSPeer *)peer hasInstantSendLockVoteHashes:(NSOrderedSet*)instantSendLockVoteHashes {
-    
-}
-
 - (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote {
     NSValue *transactionHashValue = uint256_obj(transactionLockVote.transactionHash);
     DSUTXO transactionOutput = transactionLockVote.transactionOutpoint;
@@ -1108,6 +1104,32 @@
     
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }
+
+- (void)peer:(DSPeer *)peer hasInstantSendLockVoteHashes:(NSOrderedSet*)instantSendLockVoteHashes {
+    
+}
+
+- (void)peer:(DSPeer *)peer relayedInstantSendLockVote:(DSTransactionLockVote *)transactionLockVote {
+    NSValue *transactionHashValue = uint256_obj(transactionLockVote.transactionHash);
+    DSUTXO transactionOutput = transactionLockVote.transactionOutpoint;
+    UInt256 masternodeProviderTransactionHash = transactionLockVote.masternodeProviderTransactionHash;
+    NSValue *transactionOutputValue = dsutxo_obj(transactionOutput);
+    NSValue *masternodeProviderTransactionHashValue = uint256_obj(masternodeProviderTransactionHash);
+    if (!self.transactionLockVoteDictionary[transactionHashValue]) {
+        self.transactionLockVoteDictionary[transactionHashValue] = [NSMutableDictionary dictionary];
+    }
+    if (!self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue]) {
+        self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] = [NSMutableDictionary dictionary];
+    }
+    
+    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeProviderTransactionHashValue] = transactionLockVote;
+    
+    [transactionLockVote verifySignature];
+    [transactionLockVote verifySentByIntendedQuorum];
+    
+    [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
+}
+
 
 // MARK: Blocks
 

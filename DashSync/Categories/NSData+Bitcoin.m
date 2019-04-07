@@ -1218,6 +1218,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(const UInt256 *)((const char *)self.bytes + offset);
 }
 
+-(DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + sizeof(DSUTXO)) return DSUTXO_ZERO;
+    return *(DSUTXO *)((const char *)self.bytes + offset);
+}
+
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSNumber **)length
 {
     NSNumber * ll = nil;
