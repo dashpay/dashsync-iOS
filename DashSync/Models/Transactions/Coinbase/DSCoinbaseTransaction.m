@@ -34,6 +34,12 @@
     UInt256 merkleRootMNList = [message UInt256AtOffset:off];
     off += 32;
     
+    if (version == 2) {
+        if (length - off < 32) return nil;
+        self.merkleRootLLMQList = [message UInt256AtOffset:off];
+        off += 32;
+    }
+    
     self.coinbaseTransactionVersion = version;
     self.height = height;
     self.merkleRootMNList = merkleRootMNList;
@@ -48,6 +54,9 @@
     [data appendUInt16:self.coinbaseTransactionVersion];
     [data appendUInt32:self.height];
     [data appendUInt256:self.merkleRootMNList];
+    if (self.coinbaseTransactionVersion >= 2) {
+        [data appendUInt256:self.merkleRootLLMQList];
+    }
     return data;
 }
 

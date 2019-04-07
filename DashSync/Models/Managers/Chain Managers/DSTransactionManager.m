@@ -45,6 +45,7 @@
 #import "DSPriceManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionLockVote.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "NSString+Dash.h"
@@ -57,7 +58,6 @@
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary; //v13 and before
-@property (nonatomic, strong) NSMutableDictionary *instantSendLockVoteDictionary; //LLMQ Instant Send locks
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
@@ -81,7 +81,6 @@
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.nonFalsePositiveTransactions = [NSMutableSet set];
     self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
-    self.instantSendLockVoteDictionary = [NSMutableDictionary dictionary];
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
     [self recreatePublishedTransactionList];
     return self;
@@ -173,7 +172,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:nil];
                 }
             }];
         }
@@ -1105,29 +1104,17 @@
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }
 
-- (void)peer:(DSPeer *)peer hasInstantSendLockVoteHashes:(NSOrderedSet*)instantSendLockVoteHashes {
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockVoteHashes {
     
 }
 
-- (void)peer:(DSPeer *)peer relayedInstantSendLockVote:(DSTransactionLockVote *)transactionLockVote {
-    NSValue *transactionHashValue = uint256_obj(transactionLockVote.transactionHash);
-    DSUTXO transactionOutput = transactionLockVote.transactionOutpoint;
-    UInt256 masternodeProviderTransactionHash = transactionLockVote.masternodeProviderTransactionHash;
-    NSValue *transactionOutputValue = dsutxo_obj(transactionOutput);
-    NSValue *masternodeProviderTransactionHashValue = uint256_obj(masternodeProviderTransactionHash);
-    if (!self.transactionLockVoteDictionary[transactionHashValue]) {
-        self.transactionLockVoteDictionary[transactionHashValue] = [NSMutableDictionary dictionary];
-    }
-    if (!self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue]) {
-        self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] = [NSMutableDictionary dictionary];
-    }
+- (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
+    NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
+
+    [instantSendTransactionLock verifySignature];
+    [instantSendTransactionLock verifySentByIntendedQuorum];
     
-    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][masternodeProviderTransactionHashValue] = transactionLockVote;
-    
-    [transactionLockVote verifySignature];
-    [transactionLockVote verifySentByIntendedQuorum];
-    
-    [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
+    //[self checkLocksForTransactionHash:instantSendTransactionLock.transactionHash forInput:transactionOutput];
 }
 
 

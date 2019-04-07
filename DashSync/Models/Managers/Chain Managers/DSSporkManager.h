@@ -35,10 +35,11 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 
 @property (nonatomic,readonly) NSTimeInterval lastRequestedSporks; //this is the time after a successful spork sync, this is not persisted between sessions
 @property (nonatomic,readonly) NSTimeInterval lastSyncedSporks; //this is the time after a successful spork sync, this is not persisted between sessions
-@property (nonatomic,readonly) BOOL instantSendActive;
-@property (nonatomic,readonly) BOOL instantSendAutoLocks;
-@property (nonatomic,readonly) BOOL deterministicMasternodeListEnabled;
-@property (nonatomic,readonly) BOOL llmqInstantSendEnabled;
+@property (nonatomic,readonly) BOOL instantSendActive; //spork 2
+@property (nonatomic,readonly) BOOL instantSendAutoLocks; //spork 16
+@property (nonatomic,readonly) BOOL deterministicMasternodeListEnabled; //spork 15
+@property (nonatomic,readonly) BOOL llmqInstantSendEnabled; // spork 20
+@property (nonatomic,readonly) BOOL quorumDKGEnabled; // spork 17
 
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
 @property (nonatomic,readonly) DSChain * chain;

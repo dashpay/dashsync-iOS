@@ -49,6 +49,7 @@
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSTransactionLockVote.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSSporkManager.h"
 
 #define PEER_LOGGING 1
@@ -647,20 +648,20 @@
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes blockHashes:(NSArray *)blockHashes
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
-    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         DSDLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
-              (int)txHashes.count + (int)txLockRequestHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+              (int)txHashes.count + (int)txLockRequestHashes.count + (int)instantSendLockHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
-    else if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count == 0) return;
+    else if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count + blockHashes.count == 0) return;
     
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
-    [msg appendVarInt:txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count];
+    [msg appendVarInt:txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count + instantSendLockHashes.count];
     
     for (NSValue *hash in txHashes) {
         [msg appendUInt32:DSInvType_Tx];
@@ -676,6 +677,12 @@
     
     for (NSValue *hash in txLockVoteHashes) {
         [msg appendUInt32:DSInvType_TxLockVote];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
+    }
+    
+    for (NSValue *hash in instantSendLockHashes) {
+        [msg appendUInt32:DSInvType_InstantSendLock];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -785,7 +792,7 @@
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
         DSDLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:nil txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:self.knownBlockHashes.array];
+        [self sendGetdataMessageWithTxHashes:nil txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:self.knownBlockHashes.array];
     }
 }
 
@@ -885,6 +892,7 @@
     else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
     else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message isIxTransaction:NO];
     else if ([MSG_IX isEqual:type]) [self acceptTxMessage:message isIxTransaction:YES];
+    else if ([MSG_ISLOCK isEqual:type]) [self acceptIslockMessage:message];
     else if ([MSG_TXLVOTE isEqual:type]) [self acceptTxlvoteMessage:message];
     else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
     else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
@@ -1238,18 +1246,18 @@
         [instantSendLockHashes minusOrderedSet:self.knownInstantSendLockHashes];
         
         dispatch_async(self.delegateQueue, ^{
-            if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockVoteHashes:instantSendLockHashes];
+            if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockHashes:instantSendLockHashes];
         });
     }
     
-    [self.knownTxLockVoteHashes unionOrderedSet:txLockVoteHashes];
+    [self.knownInstantSendLockHashes unionOrderedSet:instantSendLockHashes];
     
     [self.knownTxHashes unionOrderedSet:txHashes];
     [self.knownTxHashes unionOrderedSet:txLockRequestHashes];
     
-    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
+    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
         [self sendGetdataMessageWithTxHashes:txHashes.array txLockRequestHashes:txLockRequestHashes.array txLockVoteHashes:txLockVoteHashes.array
-                              blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+                             instantSendLockHashes:instantSendLockHashes.array blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
@@ -1361,6 +1369,36 @@
 #if LOG_TX_LOCK_VOTES
     DSDLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
 #endif
+    
+}
+
+- (void)acceptIslockMessage:(NSData *)message
+{
+#if LOG_TX_LOCK_VOTES
+    DSDLog(@"peer relayed islock message: %@", message.hexString);
+#endif
+    if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
+        DSDLog(@"returned instant send lock message when DML not enabled: %@", message);//no error here
+        return;
+    }
+    if (![self.chain.chainManager.sporkManager llmqInstantSendEnabled]) {
+        DSDLog(@"returned instant send lock message when llmq instant send is not enabled: %@", message);//no error here
+        return;
+    }
+    DSInstantSendTransactionLock *instantSendTransactionLock = [DSInstantSendTransactionLock instantSendTransactionLockWithMessage:message onChain:self.chain];
+    
+    if (! instantSendTransactionLock) {
+        [self error:@"malformed islock message: %@", message];
+        return;
+    }
+    else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
+        [self error:@"got islock message before loading a filter"];
+        return;
+    }
+    
+    dispatch_async(self.delegateQueue, ^{
+        [self.transactionDelegate peer:self relayedInstantSendTransactionLock:instantSendTransactionLock];;
+    });
     
 }
 

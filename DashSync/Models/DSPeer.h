@@ -80,8 +80,9 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 #define MSG_GETBLOCKS   @"getblocks"
 #define MSG_GETHEADERS  @"getheaders"
 #define MSG_TX          @"tx"
-#define MSG_IX          @"ix"
-#define MSG_TXLVOTE     @"txlvote"
+#define MSG_IX          @"ix" // deprecated in version 14
+#define MSG_TXLVOTE     @"txlvote" // deprecated in version 14
+#define MSG_ISLOCK      @"islock" //version 14
 #define MSG_BLOCK       @"block"
 #define MSG_HEADERS     @"headers"
 #define MSG_GETADDR     @"getaddr"
@@ -96,8 +97,8 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 #define MSG_REJECT      @"reject"      // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 #define MSG_SENDHEADERS @"sendheaders" // BIP130: https://github.com/bitcoin/bips/blob/master/bip-0130.mediawiki
 #define MSG_FEEFILTER   @"feefilter"   // BIP133: https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
-#define MSG_SENDDSQ     @"senddsq"
-#define MSQ_SENDCMPCT   @"sendcmpct"
+#define MSG_SENDDSQ     @"senddsq" //version 14
+#define MSQ_SENDCMPCT   @"sendcmpct" //version 12.3
 
 //Dash specific
 
@@ -162,7 +163,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo);
 
 typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interruptedByDisconnect);
 
-@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSGovernanceObject,DSGovernanceVote,DSTransactionLockVote;
+@class DSPeer, DSTransaction, DSMerkleBlock, DSChain,DSSpork,DSGovernanceObject,DSGovernanceVote,DSTransactionLockVote,DSInstantSendTransactionLock;
 
 @protocol DSPeerDelegate<NSObject>
 @required
@@ -193,8 +194,9 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
 - (void)peer:(DSPeer *)peer hasTransactionLockVoteHashes:(NSOrderedSet*)transactionLockVoteHashes;
-- (void)peer:(DSPeer *)peer hasInstantSendLockVoteHashes:(NSOrderedSet*)instantSendLockVoteHashes;
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockVoteHashes;
 - (void)peer:(DSPeer *)peer relayedTransactionLockVote:(DSTransactionLockVote *)transactionLockVote;
+- (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 
 @end
@@ -303,7 +305,7 @@ services:(uint64_t)services;
 - (void)sendTransactionInvMessagesForTxHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes blockHashes:(NSArray *)blockHashes;
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;

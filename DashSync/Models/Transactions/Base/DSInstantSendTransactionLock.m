@@ -35,7 +35,7 @@
 
 @implementation DSInstantSendTransactionLock
 
-+ (instancetype)instantSendTransactionLockWithMessage:(NSData *)message onChain:(DSChain*)chain
++ (instancetype)instantSendTransactionLockWithMessage:(NSData *)message onChain:(DSChain*)chain {
     return [[self alloc] initWithMessage:message onChain:chain];
 }
 
@@ -140,9 +140,10 @@
 }
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)intendedQuorum {
-    if (!self.masternode) return nil;
-    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
-    return [masternodeManager masternodesForQuorumHash:self.quorumModifierHash quorumCount:10];
+//    if (!self.masternode) return nil;
+//    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
+//    return [masternodeManager masternodesForQuorumHash:self.quorumModifierHash quorumCount:10];
+    return nil;
 }
 
 -(void)save {
@@ -155,7 +156,7 @@
         [DSTransactionHashEntity setContext:context];
         if ([DSInstantSendLockEntity countObjectsMatching:@"instantSendLockHash == %@", uint256_data(self.instantSendTransactionLockHash)] == 0) {
             DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObject];
-            [instantSendLockEntity setAttributesFromInstantSendLock:self];
+            [instantSendLockEntity setAttributesFromInstantSendTransactionLock:self];
             [DSInstantSendLockEntity saveContext];
         }
     }];
