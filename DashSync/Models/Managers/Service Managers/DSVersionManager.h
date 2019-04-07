@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSWallet;
 @class DSChain;
 
@@ -16,7 +18,7 @@ typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL aut
 
 @interface DSVersionManager : NSObject
 
-+ (instancetype _Nullable)sharedInstance;
++ (instancetype)sharedInstance;
 
 - (BOOL)noOldWallet;
 
@@ -27,3 +29,5 @@ typedef void (^UpgradeCompletionBlock)(BOOL success, BOOL neededUpgrade,BOOL aut
 - (BOOL)clearKeychainWalletOldData;
 
 @end
+
+NS_ASSUME_NONNULL_END

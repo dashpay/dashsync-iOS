@@ -101,7 +101,10 @@
     return hashImportantData.SHA256_2;
 }
 
-+(DSGovernanceObject* _Nullable)governanceObjectFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain {
++(DSGovernanceObject* _Nullable)governanceObjectFromMessage:(NSData *)message onChain:(DSChain *)chain {
+    NSParameterAssert(message);
+    NSParameterAssert(chain);
+    
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     if (length - offset < 32) return nil;
@@ -234,7 +237,9 @@
     return [data copy];
 }
 
--(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData*)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString*)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString*)paymentAddress url:(NSString *)url onChain:(DSChain* _Nonnull)chain {
+-(instancetype)initWithType:(DSGovernanceObjectType)governanceObjectType parentHash:(UInt256)parentHash revision:(uint32_t)revision timestamp:(NSTimeInterval)timestamp signature:(NSData*)signature collateralHash:(UInt256)collateralHash governanceObjectHash:(UInt256)governanceObjectHash identifier:(NSString*)identifier amount:(uint64_t)amount startEpoch:(uint64_t)startEpoch endEpoch:(uint64_t)endEpoch paymentAddress:(NSString*)paymentAddress url:(NSString *)url onChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     if (!(self = [super init])) return nil;
     
     _signature = signature;
@@ -399,6 +404,8 @@
 }
 
 -(void)peer:(DSPeer *)peer hasGovernanceVoteHashes:(NSSet*)governanceVoteHashes {
+    NSParameterAssert(governanceVoteHashes);
+    
     @synchronized(self) {
         if (!(([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GovernanceVotes) == DSSyncType_GovernanceVotes)) return;
         DSDLog(@"peer relayed governance vote hashes");
@@ -462,7 +469,9 @@
     }
 }
 
-- (void)peer:(DSPeer * )peer relayedGovernanceVote:(DSGovernanceVote * )governanceVote {
+- (void)peer:(DSPeer *)peer relayedGovernanceVote:(DSGovernanceVote *)governanceVote {
+    NSParameterAssert(governanceVote);
+    
     NSData *governanceVoteHash = [NSData dataWithUInt256:governanceVote.governanceVoteHash];
     DSGovernanceVoteHashEntity * relatedHashEntity = nil;
     for (DSGovernanceVoteHashEntity * governanceVoteHashEntity in [self.requestGovernanceVoteHashEntities copy]) {
@@ -522,11 +531,14 @@
 
 
 -(DSTransaction*)collateralTransactionForAccount:(DSAccount*)account {
+    NSParameterAssert(account);
     DSTransaction * collateralTransaction = [account proposalCollateralTransactionWithData:[self proposalInfo]];
     return collateralTransaction;
 }
 
--(void)registerCollateralTransaction:(DSTransaction* _Nonnull)transaction {
+-(void)registerCollateralTransaction:(DSTransaction *)transaction {
+    NSParameterAssert(transaction);
+    
     self.collateralHash = transaction.txHash;
 }
 

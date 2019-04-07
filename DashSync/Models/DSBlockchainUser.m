@@ -72,6 +72,9 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 @implementation DSBlockchainUser
 
 -(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+    NSParameterAssert(username);
+    NSParameterAssert(wallet);
+    
     if (!(self = [super init])) return nil;
     self.username = username;
     self.uniqueIdentifier = [NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,wallet.chain.uniqueID,username];
@@ -195,6 +198,8 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion {
+    NSParameterAssert(fundingAccount);
+    
     NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register the username %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
         if (!seed) {
@@ -215,6 +220,8 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 -(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion {
+    NSParameterAssert(fundingAccount);
+    
     NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to topup %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
         if (!seed) {
@@ -251,6 +258,8 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 -(void)updateWithTopupTransaction:(DSBlockchainUserTopupTransaction*)blockchainUserTopupTransaction save:(BOOL)save {
+    NSParameterAssert(blockchainUserTopupTransaction);
+    
     if (![_blockchainUserTopupTransactions containsObject:blockchainUserTopupTransaction]) {
         [_blockchainUserTopupTransactions addObject:blockchainUserTopupTransaction];
         if (save) {
@@ -260,6 +269,8 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 -(void)updateWithResetTransaction:(DSBlockchainUserResetTransaction*)blockchainUserResetTransaction save:(BOOL)save {
+    NSParameterAssert(blockchainUserResetTransaction);
+    
     if (![_blockchainUserResetTransactions containsObject:blockchainUserResetTransaction]) {
         [_blockchainUserResetTransactions addObject:blockchainUserResetTransaction];
         [_allTransitions addObject:blockchainUserResetTransaction];
@@ -270,6 +281,8 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 -(void)updateWithCloseTransaction:(DSBlockchainUserCloseTransaction*)blockchainUserCloseTransaction save:(BOOL)save {
+    NSParameterAssert(blockchainUserCloseTransaction);
+    
     if (![_blockchainUserCloseTransactions containsObject:blockchainUserCloseTransaction]) {
         [_blockchainUserCloseTransactions addObject:blockchainUserCloseTransaction];
         [_allTransitions addObject:blockchainUserCloseTransaction];
@@ -280,6 +293,8 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 -(void)updateWithTransition:(DSTransition*)transition save:(BOOL)save {
+    NSParameterAssert(transition);
+    
     if (![_baseTransitions containsObject:transition]) {
         [_baseTransitions addObject:transition];
         [_allTransitions addObject:transition];
@@ -307,7 +322,9 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     return transition;
 }
 
--(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+-(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+    NSParameterAssert(transition);
+    
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData* _Nullable seed, BOOL cancelled) {
         if (!seed) {
             completion(NO);

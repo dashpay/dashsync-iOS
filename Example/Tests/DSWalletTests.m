@@ -174,8 +174,6 @@
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSString *s;
     
-    XCTAssertEqual([manager amountForDashString:nil], 0, @"[DSPriceManager amountForDashString:]");
-    
     XCTAssertEqual([manager amountForDashString:@""], 0, @"[DSPriceManager amountForDashString:]");
     
     s = [manager stringForDashAmount:0];

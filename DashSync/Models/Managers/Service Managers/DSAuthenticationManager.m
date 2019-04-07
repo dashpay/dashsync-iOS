@@ -274,6 +274,8 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                  errorMessage:(NSString*)errorMessage
                 localCurrency:(NSString *)localCurrency
 {
+    NSParameterAssert(address);
+    
     DSPriceManager *manager = [DSPriceManager sharedInstance];
     NSString *prompt = (isSecure && name.length > 0) ? LOCK @" " : @"";
     
@@ -643,7 +645,9 @@ replacementString:(NSString *)string
 
 // MARK: - Authentication
 
-- (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet* _Nonnull)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
+- (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
+    NSParameterAssert(wallet);
+    
     if (forceAuthentication) {
         [wallet seedWithPrompt:authprompt forAmount:amount completion:completion];
     } else {
@@ -1016,6 +1020,10 @@ replacementString:(NSString *)string
 }
 
 -(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
+    NSParameterAssert(sweepCompletion);
+    NSParameterAssert(userInfo);
+    NSParameterAssert(completion);
+    NSParameterAssert(cancel);
     
     UIAlertController * alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
     [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
@@ -1044,6 +1052,8 @@ replacementString:(NSString *)string
 
 
 -(void)badKeyPasswordForSweepCompletion:(void (^_Nonnull)(void))completion cancel:(void (^_Nonnull)(void))cancel {
+    NSParameterAssert(completion);
+    NSParameterAssert(cancel);
     
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:DSLocalizedString(@"password protected key", nil)

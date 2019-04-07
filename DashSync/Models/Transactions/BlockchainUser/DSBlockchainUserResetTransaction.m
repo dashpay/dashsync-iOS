@@ -17,6 +17,9 @@
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
+    NSParameterAssert(message);
+    NSParameterAssert(chain);
+    
     if (! (self = [super initWithMessage:message onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionResetKey;
     NSUInteger length = message.length;
@@ -66,6 +69,13 @@
 }
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKeyHash:(UInt160)replacementPublicKeyHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
+    NSParameterAssert(indexes);
+    NSParameterAssert(scripts);
+    NSParameterAssert(inputSequences);
+    NSParameterAssert(addresses);
+    NSParameterAssert(amounts);
+    NSParameterAssert(chain);
+    
     if (!(self = [super initWithInputHashes:hashes inputIndexes:indexes inputScripts:scripts inputSequences:inputSequences outputAddresses:addresses outputAmounts:amounts onChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionResetKey;
     self.version = SPECIAL_TX_VERSION;
@@ -78,6 +88,8 @@
 }
 
 -(instancetype)initWithBlockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKeyHash:(UInt160)replacementPublicKeyHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain {
+    NSParameterAssert(chain);
+    
     if (!(self = [super initOnChain:chain])) return nil;
     self.type = DSTransactionType_SubscriptionResetKey;
     self.version = SPECIAL_TX_VERSION;
@@ -147,6 +159,8 @@
 }
 
 -(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
+    NSParameterAssert(privateKey);
+    
     DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     self.oldPublicKeyPayloadSignature = [privateKey compactSign:[self payloadHash]];
     self.txHash = self.data.SHA256_2; //once the payload is signed the transaction hash is ready to go.

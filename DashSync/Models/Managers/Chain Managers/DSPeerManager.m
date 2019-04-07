@@ -79,7 +79,7 @@
 
 @property (nonatomic, strong) NSMutableOrderedSet *peers;
 
-@property (nonatomic, strong) NSMutableSet *connectedPeers, *misbehavingPeers;
+@property (nonatomic, strong) NSMutableSet *mutableConnectedPeers, *mutableMisbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavingCount, maxConnectCount;
 @property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
@@ -93,11 +93,13 @@
 
 - (instancetype)initWithChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     if (! (self = [super init])) return nil;
     
     self.chain = chain;
-    self.connectedPeers = [NSMutableSet set];
-    self.misbehavingPeers = [NSMutableSet set];
+    self.mutableConnectedPeers = [NSMutableSet set];
+    self.mutableMisbehavingPeers = [NSMutableSet set];
     self.taskId = UIBackgroundTaskInvalid;
     
     //there should be one queue per chain
@@ -132,6 +134,14 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     if (self.backgroundObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.backgroundObserver];
     if (self.walletAddedObserver) [[NSNotificationCenter defaultCenter] removeObserver:self.walletAddedObserver];
+}
+
+- (NSSet *)connectedPeers {
+    return [self.mutableConnectedPeers copy];
+}
+
+- (NSSet *)misbehavingPeers {
+    return [self.mutableMisbehavingPeers copy];
 }
 
 // MARK: - Managers
@@ -223,7 +233,7 @@
             for (DSPeerEntity *e in [DSPeerEntity objectsMatching:@"chain == %@",self.chain.chainEntity]) {
                 @autoreleasepool {
                     if (e.misbehavin == 0) [self->_peers addObject:[e peer]];
-                    else [self.misbehavingPeers addObject:[e peer]];
+                    else [self.mutableMisbehavingPeers addObject:[e peer]];
                 }
             }
         }];
@@ -344,11 +354,11 @@
 {
     peer.misbehaving++;
     [self.peers removeObject:peer];
-    [self.misbehavingPeers addObject:peer];
+    [self.mutableMisbehavingPeers addObject:peer];
     
     if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
         self.misbehavingCount = 0;
-        [self.misbehavingPeers removeAllObjects];
+        [self.mutableMisbehavingPeers removeAllObjects];
         [DSPeerEntity deleteAllObjects];
         _peers = nil;
     }
@@ -470,7 +480,7 @@
     }
 }
 
--(void)setTrustedPeerHost:(NSString*)host {
+-(void)setTrustedPeerHost:(NSString * _Nullable)host {
     if (!host) [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self settingsFixedPeerKey]];
     else [[NSUserDefaults standardUserDefaults] setObject:host
                                                    forKey:[self settingsFixedPeerKey]];
@@ -598,7 +608,7 @@
         }
         
         @synchronized (self.connectedPeers) {
-            [self.connectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
+            [self.mutableConnectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
                 return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
             }]];
         }
@@ -622,7 +632,7 @@
                         [peer setChainDelegate:self.chain.chainManager peerDelegate:self transactionDelegate:self.transactionManager governanceDelegate:self.governanceSyncManager sporkDelegate:self.sporkManager masternodeDelegate:self.masternodeManager queue:self.chainPeerManagerQueue];
                         peer.earliestKeyTime = earliestWalletCreationTime;
                         
-                        [self.connectedPeers addObject:peer];
+                        [self.mutableConnectedPeers addObject:peer];
                         
                         [peer connect];
                     }
@@ -841,7 +851,7 @@
         [self syncStopped];
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
-        [self.misbehavingPeers removeAllObjects];
+        [self.mutableMisbehavingPeers removeAllObjects];
         [DSPeerEntity deleteAllObjects];
         _peers = nil;
         

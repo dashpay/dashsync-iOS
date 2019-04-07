@@ -8,6 +8,8 @@
 #import "DSTransaction.h"
 #import "BigIntTypes.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSECDSAKey;
 
 @interface DSBlockchainUserResetTransaction : DSTransaction
@@ -17,7 +19,7 @@
 @property (nonatomic,assign) UInt256 previousBlockchainUserTransactionHash;
 @property (nonatomic,assign) uint64_t creditFee;
 @property (nonatomic,assign) UInt160 replacementPublicKeyHash; //we will get rid of this and do next line later
-@property (nonatomic,readonly) NSString * replacementAddress;
+@property (nullable, nonatomic,readonly) NSString * replacementAddress; // TODO: replacementAddress is not initialized
 //@property (nonatomic,strong) NSData * replacementPublicKey;
 @property (nonatomic,strong) NSData * oldPublicKeyPayloadSignature;
 
@@ -29,8 +31,10 @@
 
 -(instancetype)initWithBlockchainUserResetTransactionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousBlockchainUserTransactionHash:(UInt256)previousBlockchainUserTransactionHash replacementPublicKeyHash:(UInt160)replacementPublicKeyHash creditFee:(uint64_t)creditFee onChain:(DSChain *)chain;
 
--(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;
+-(void)signPayloadWithKey:(DSECDSAKey*)privateKey;
 
 -(BOOL)checkPayloadSignatureIsSignedByPublicKeyWithHash:(UInt160)oldPublicKeyHash;
 
 @end
+
+NS_ASSUME_NONNULL_END

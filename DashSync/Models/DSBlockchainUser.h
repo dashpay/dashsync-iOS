@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
+NS_ASSUME_NONNULL_BEGIN
 @class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition,DSContact;
 
 @interface DSBlockchainUser : NSObject
@@ -26,6 +27,10 @@
 
 @property (nonatomic,readonly) NSDictionary <NSString*,DSContact*> *contacts;
 
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet;
+
+-(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash;
+
 @property (nonatomic,readonly) DSContact* ownContact;
 
 @property (nonatomic,readonly) NSArray <DSContact*>* friends; //this includes people who haven't friended me back
@@ -40,9 +45,9 @@
 
 -(void)registerInWallet;
 
--(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount* _Nonnull)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion;
+-(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction))completion;
 
--(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount* _Nonnull)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion;
+-(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction))completion;
 
 -(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainUserResetTransaction * blockchainUserResetTransaction))completion;
 
@@ -53,7 +58,7 @@
 
 -(DSTransition*)transitionForStateTransitionPacketHash:(UInt256)stateTransitionHash;
 
--(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString*)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+-(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
 -(void)sendDapObject:(NSMutableDictionary<NSString *, id> *)dapObject completion:(void (^)(BOOL success))completion;
 
@@ -64,3 +69,5 @@
 -(void)createProfileWithBioString:(NSString*)bio completion:(void (^)(BOOL success))completion;
 
 @end
+
+NS_ASSUME_NONNULL_END
