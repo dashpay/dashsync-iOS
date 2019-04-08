@@ -1198,7 +1198,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     for (NSValue *txHash in transaction.inputHashes) { // check if any inputs are known to be pending
-        if ([self transactionIsPending:self.allTx[txHash]]) return YES;
+        if (self.allTx[txHash]) {
+            if ([self transactionIsPending:self.allTx[txHash]]) return YES;
+        }
     }
     
     return NO;

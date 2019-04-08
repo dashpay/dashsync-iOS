@@ -1230,9 +1230,6 @@ static dispatch_once_t devnetToken = 0;
     return _blocks;
 }
 
--(BOOL)isActive {
-    return false;
-}
 
 // this is used as part of a getblocks or getheaders request
 - (NSArray *)blockLocatorArray
