@@ -6,16 +6,11 @@
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSBaseStateTransitionModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChainManager, DSBlockchainUser;
-
-@interface DSContactsModel : NSObject
-
-@property (nonatomic,strong) DSChainManager * chainManager;
-@property (nonatomic,strong) DSBlockchainUser * blockchainUser;
+@interface DSContactsModel : DSBaseStateTransitionModel
 
 @property (readonly, copy, nonatomic) NSArray <NSString *> *contacts;
 @property (readonly, copy, nonatomic) NSArray <NSString *> *outgoingContactRequests;

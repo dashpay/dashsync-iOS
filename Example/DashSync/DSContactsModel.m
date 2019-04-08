@@ -30,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSContactsModel
 
-- (instancetype)init {
-    self = [super init];
+- (instancetype)initWithChainManager:(DSChainManager *)chainManager blockchainUser:(DSBlockchainUser *)blockchainUser {
+    self = [super initWithChainManager:chainManager blockchainUser:blockchainUser];
     if (self) {
         _contacts = @[];
         _outgoingContactRequests = @[];
@@ -90,21 +90,21 @@ NS_ASSUME_NONNULL_BEGIN
         DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
         NSError *error = nil;
         DPJSONObject *data = @{
-            @"user" : strongSelf.blockchainUserData[@"regtxid"],
-            @"username" : username,
-            @"sender" : @{
-                @"id" : strongSelf.blockchainUserData[@"regtxid"],
-                @"username" : strongSelf.blockchainUser.username,
-            },
+            @"toUserId" : blockchainUser[@"regtxid"],
+            // TODO: fix me 😭
+//            @"extendedPublicKey" : ?,
         };
         DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
         NSAssert(error == nil, @"Failed to build a contact");
 
-        [strongSelf sendDapObject:contact.json completion:^(BOOL success) {
+        __weak typeof(self) weakSelf = self;
+        [strongSelf sendDocument:contact contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
             }
+            
+            BOOL success = error == nil;
 
             if (success) {
                 strongSelf.outgoingContactRequests = [strongSelf.outgoingContactRequests arrayByAddingObject:username];
@@ -153,18 +153,20 @@ NS_ASSUME_NONNULL_BEGIN
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     NSError *error = nil;
     DPJSONObject *data = @{
-        @"aboutme" : [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username],
-        @"username" : self.blockchainUser.username,
+        @"about" : [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username],
+        @"avatarUrl" : [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png", self.blockchainUser.username],
     };
-    DPDocument *user = [dpp.documentFactory documentWithType:@"user" data:data error:&error];
+    DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
     NSAssert(error == nil, @"Failed to build a user");
 
     __weak typeof(self) weakSelf = self;
-    [self sendDapObject:user.json completion:^(BOOL success) {
+    [self sendDocument:user contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
+        
+        BOOL success = error == nil;
 
         if (success) {
             [strongSelf fetchBlockchainUserData:strongSelf.blockchainUser.username completion:^(NSDictionary *_Nullable blockchainUser) {
@@ -186,53 +188,6 @@ NS_ASSUME_NONNULL_BEGIN
             }
         }
     }];
-}
-
-- (void)sendDapObject:(NSMutableDictionary<NSString *, id> *)dapObject completion:(void (^)(BOOL success))completion {
-    NSMutableArray *dapObjects = [NSMutableArray array];
-    [dapObjects addObject:dapObject];
-    
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:ContactsDAPId documents:dapObjects];
-
-    NSData *serializedSTPacketObject = [stPacket serialized];
-
-    __block NSData *serializedSTPacketObjectHash = [stPacket serializedHash];
-
-    __block DSTransition *transition = [self.blockchainUser transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
-
-    [self.blockchainUser signStateTransition:transition
-                                  withPrompt:@""
-                                  completion:^(BOOL success) {
-                                      if (success) {
-                                          NSData *transitionData = [transition toData];
-
-                                          NSString *transitionDataHex = [transitionData hexString];
-                                          NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
-
-                                          [self.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex rawTransitionPacket:serializedSTPacketObjectHex success:^(NSString *_Nonnull headerId) {
-                                              NSLog(@"Header ID %@", headerId);
-
-                                              [self.chainManager.chain registerSpecialTransaction:transition];
-                                              [transition save];
-
-                                              if (completion) {
-                                                  completion(YES);
-                                              }
-                                          }
-                                              failure:^(NSError *_Nonnull error) {
-                                                  NSLog(@"Error: %@", error);
-                                                  if (completion) {
-                                                      completion(NO);
-                                                  }
-                                              }];
-                                      }
-                                      else {
-                                          if (completion) {
-                                              completion(NO);
-                                          }
-                                      }
-                                  }];
 }
 
 - (void)fetchBlockchainUserData:(NSString *)username completion:(void (^)(NSDictionary *_Nullable blockchainUser))completion {
