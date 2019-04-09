@@ -219,7 +219,7 @@
             }
         }
     }];
-    
+    DSDLog(@"%@ %@",self.wallet.chain.name, self.allTx);
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
@@ -895,6 +895,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         UInt256 h;
         
         if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
+        DSDLog(@"Setting tx %@ height to %d",tx,height);
         tx.blockHeight = height;
         tx.timestamp = timestamp;
         
@@ -922,9 +923,11 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 NSMutableSet *entities = [NSMutableSet set];
                 
                 for (DSTransactionHashEntity *e in [DSTransactionHashEntity objectsMatching:@"txHash in %@", hashes]) {
-                    e.blockHeight = height;
-                    e.timestamp = timestamp;
-                    [entities addObject:e];
+                    if (e.blockHeight != height || e.timestamp != timestamp) {
+                        e.blockHeight = height;
+                        e.timestamp = timestamp;
+                        [entities addObject:e];
+                    }
                 }
                 
                 //                if (height != TX_UNCONFIRMED) {
@@ -939,10 +942,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                 for (DSTransactionHashEntity *e in entities) {
                     DSDLog(@"blockHeight is %u for %@",e.blockHeight,e.txHash);
                 }
-                NSError * error = nil;
-                [self.managedObjectContext save:&error];
-                if (error) {
-                    DSDLog(@"Issue Saving DB when setting Block Height");
+                if (entities.count) {
+                    NSError * error = nil;
+                    [self.managedObjectContext save:&error];
+                    if (error) {
+                        DSDLog(@"Issue Saving DB when setting Block Height");
+                    }
                 }
             }
         }];

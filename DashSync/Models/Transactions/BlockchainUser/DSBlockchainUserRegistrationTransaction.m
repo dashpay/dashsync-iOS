@@ -61,6 +61,11 @@
     return self;
 }
 
+//-(void)setBlockHeight:(uint32_t)blockHeight {
+//    DSDLog(@"%@ height %d, ST %@",self.username, blockHeight,[NSThread callStackSymbols]);
+//    [super setBlockHeight:blockHeight];
+//}
+
 -(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString*)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain {
     NSParameterAssert(username);
     NSParameterAssert(chain);
@@ -164,6 +169,12 @@
 
 -(Class)entityClass {
     return [DSBlockchainUserRegistrationTransactionEntity class];
+}
+
+- (NSString *)description
+{
+    NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
+    return [NSString stringWithFormat:@"%@<%p>(id=%@,username=%@,confirmedInBlock=%d)", [self class],self, txid,self.username,self.blockHeight];
 }
 
 @end
