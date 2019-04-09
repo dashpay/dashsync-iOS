@@ -167,6 +167,8 @@ NS_ASSUME_NONNULL_BEGIN
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
 - (uint64_t)balanceAfterTransaction:(DSTransaction *)transaction;
 
+- (void)chainUpdatedBlockHeight:(int32_t)height;
+
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 
 // This loads the derivation paths addresses once the account is set to a wallet

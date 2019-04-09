@@ -1394,6 +1394,10 @@ static dispatch_once_t devnetToken = 0;
             [updatedTx addObjectsFromArray:[wallet setBlockHeight:height andTimestamp:timestamp
                                                       forTxHashes:txHashes]];
         }
+    } else {
+        for (DSWallet * wallet in self.wallets) {
+            [wallet chainUpdatedBlockHeight:height];
+        }
     }
     
     [self.chainManager chain:self didSetBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes updatedTx:updatedTx];
