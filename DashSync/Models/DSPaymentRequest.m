@@ -354,7 +354,7 @@ completion:(void (^)(DSPaymentProtocolRequest *req, NSError *error))completion
                              [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
                               req.URL.host]}]);
         }
-        else if (![request.details.chain isActive]) {
+        else if (![request.details.chain isEqual:chain]) {
             completion(nil, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
                              [NSString stringWithFormat:DSLocalizedString(@"requested network \"%@\" not currently in use",
                                                                           nil), request.details.chain.networkName]}]);
