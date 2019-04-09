@@ -111,6 +111,8 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
 
+- (void)chainUpdatedBlockHeight:(int32_t)height;
+
 // sets the block heights and timestamps for the given transactions, and returns an array of hashes of the updated tx
 // use a height of TX_UNCONFIRMED and timestamp of 0 to indicate a transaction and it's dependents should remain marked
 // as unverified (not 0-conf safe)

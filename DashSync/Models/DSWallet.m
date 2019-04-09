@@ -649,10 +649,19 @@
     
     for (DSAccount * account in self.accounts) {
         NSArray * fromAccount = [account setBlockHeight:height andTimestamp:timestamp forTxHashes:txHashes];
-        if (fromAccount)
+        if (fromAccount) {
             [updated addObjectsFromArray:fromAccount];
+        } else {
+            [self chainUpdatedBlockHeight:height];
+        }
     }
     return updated;
+}
+
+-(void)chainUpdatedBlockHeight:(int32_t)height {
+    for (DSAccount * account in self.accounts) {
+        [account chainUpdatedBlockHeight:height];
+    }
 }
 
 - (DSAccount *)accountForTransactionHash:(UInt256)txHash transaction:(DSTransaction **)transaction {
