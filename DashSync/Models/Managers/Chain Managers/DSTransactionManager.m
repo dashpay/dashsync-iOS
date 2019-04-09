@@ -586,8 +586,8 @@
             
             void (^sendReducedBlock) (void) = ^{
                 DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:address onChain:self.chain];
-                paymentRequest.amount = requestedSendAmount - amount;
-                [self confirmProtocolRequest:paymentRequest.protocolRequest forAmount:requestedSendAmount fromAccount:account acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion
+                paymentRequest.amount = amount;
+                [self confirmProtocolRequest:paymentRequest.protocolRequest forAmount:amount fromAccount:account acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion
                          publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
                 
             };
