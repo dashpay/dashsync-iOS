@@ -58,7 +58,8 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
 
     NSData *serializedSTPacketObject = [stPacket serialized];
 
-    NSData *serializedSTPacketObjectHash = [stPacket serializedHash];
+    // ios-dpp (DAPI) uses direct byte order, but DSTransition needs reversed
+    NSData *serializedSTPacketObjectHash = [[stPacket serializedHash] reverse];
 
     DSTransition *transition = [self.blockchainUser transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
 
