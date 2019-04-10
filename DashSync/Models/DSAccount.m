@@ -183,7 +183,7 @@
 
 -(void)loadTransactions {
     if (_wallet.isTransient) return;
-    //NSDate *startTime = [NSDate date];
+    NSDate *startTime = [NSDate date];
     [self.managedObjectContext performBlockAndWait:^{
         [DSTransactionEntity setContext:self.managedObjectContext];
         [DSAccountEntity setContext:self.managedObjectContext];
@@ -196,13 +196,14 @@
             @autoreleasepool {
                 NSFetchRequest * fetchRequest = [DSTxOutputEntity fetchRequest];
                 
+                //for some reason it is faster to search by the wallet unique id on the account, then it is by the account itself, this might change if there are more than 1 account;
                 fetchRequest.predicate = [NSPredicate predicateWithFormat:@"account.walletUniqueID = %@ && account.index = %@" ,self.wallet.uniqueID,@(self.accountNumber)];
                 [fetchRequest setRelationshipKeyPathsForPrefetching:@[@"transaction.inputs",@"transaction.outputs",@"transaction.transactionHash",@"spentInInput.transaction.inputs",@"spentInInput.transaction.outputs",@"spentInInput.transaction.transactionHash"]];
                 
                 NSError * fetchRequestError = nil;
-                //NSDate *transactionOutputsStartTime = [NSDate date];
+                NSDate *transactionOutputsStartTime = [NSDate date];
                 NSArray * transactionOutputs = [self.managedObjectContext executeFetchRequest:fetchRequest error:&fetchRequestError];
-                //DSDLog(@"TransactionOutputsStartTime: %f", -[transactionOutputsStartTime timeIntervalSinceNow]);
+                DSDLog(@"TransactionOutputsStartTime: %f", -[transactionOutputsStartTime timeIntervalSinceNow]);
                 for (DSTxOutputEntity *e in transactionOutputs) {
                     @autoreleasepool {
                         if (e.transaction.transactionHash) {
@@ -236,7 +237,7 @@
             }
         }
     }];
-    //DSDLog(@"Time: %f", -[startTime timeIntervalSinceNow]);
+    DSDLog(@"Time: %f", -[startTime timeIntervalSinceNow]);
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
