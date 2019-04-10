@@ -74,7 +74,6 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
                                       if (success) {
                                           [strongSelf sendTransition:transition
                                                   serializedSTPacketObject:serializedSTPacketObject
-                                              serializedSTPacketObjectHash:serializedSTPacketObjectHash
                                                                 completion:completion];
                                       }
                                       else {
@@ -92,7 +91,6 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
 
 - (void)sendTransition:(DSTransition *)transition
         serializedSTPacketObject:(NSData *)serializedSTPacketObject
-    serializedSTPacketObjectHash:(NSData *)serializedSTPacketObjectHash
                       completion:(void (^)(NSError *_Nullable error))completion {
     NSData *transitionData = [transition toData];
 
@@ -100,8 +98,8 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
     NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
 
     __weak typeof(self) weakSelf = self;
-    [self.chainManager.DAPIClient sendRawTransitionWithRawTransitionHeader:transitionDataHex
-        rawTransitionPacket:serializedSTPacketObjectHex
+    [self.chainManager.DAPIClient sendRawTransitionWithRawStateTransition:transitionDataHex
+        rawSTPacket:serializedSTPacketObjectHex
         success:^(NSString *_Nonnull headerId) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {

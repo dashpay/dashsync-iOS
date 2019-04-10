@@ -122,13 +122,13 @@ NS_ASSUME_NONNULL_BEGIN
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
 
     __weak typeof(self) weakSelf = self;
-    [self.chainManager.DAPIClient fetchDapObjectsForId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull dapObjects) {
+    [self.chainManager.DAPIClient fetchDocumentsForContractId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
 
-        [strongSelf handleContacts:dapObjects];
+        [strongSelf handleContacts:documents];
 
         if (completion) {
             completion(YES);
