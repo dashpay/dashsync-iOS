@@ -112,6 +112,7 @@ typedef union _UInt256 UInt256;
 - (void)addInputHash:(UInt256)hash index:(NSUInteger)index script:(NSData *)script signature:(NSData *)signature
 sequence:(uint32_t)sequence;
 - (void)addOutputAddress:(NSString *)address amount:(uint64_t)amount;
+- (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount;
 - (void)addOutputShapeshiftAddress:(NSString *)address;
 - (void)addOutputBurnAmount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;

@@ -183,43 +183,61 @@
 
 -(void)loadTransactions {
     if (_wallet.isTransient) return;
+    //NSDate *startTime = [NSDate date];
     [self.managedObjectContext performBlockAndWait:^{
         [DSTransactionEntity setContext:self.managedObjectContext];
         [DSAccountEntity setContext:self.managedObjectContext];
         [DSTxInputEntity setContext:self.managedObjectContext];
         [DSTxOutputEntity setContext:self.managedObjectContext];
         [DSDerivationPathEntity setContext:self.managedObjectContext];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity] > self.allTx.count) {
+        NSUInteger transactionCount = [DSTransactionEntity countObjectsMatching:@"transactionHash.chain == %@",self.wallet.chain.chainEntity];
+        if (transactionCount > self.allTx.count) {
             // pre-fetch transaction inputs and outputs
-            [DSTxInputEntity objectsMatching:@"transaction.transactionHash.chain == %@",self.wallet.chain.chainEntity];
-            [DSTxOutputEntity objectsMatching:@"transaction.transactionHash.chain == %@",self.wallet.chain.chainEntity];
-            DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:self.accountNumber];
-            for (DSTxOutputEntity *e in accountEntity.transactionOutputs) {
-                @autoreleasepool {
-                    DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
-                    NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
-                    
-                    if (transaction && self.allTx[hash] == nil) {
-                        self.allTx[hash] = transaction;
-                        [self.transactions addObject:transaction];
-                    }
-                    
-                    DSTxInputEntity * spentInInput = e.spentInInput;
-                    
-                    if (spentInInput) { //this has been spent, also add the transaction where it is being spent
+            @autoreleasepool {
+                NSFetchRequest * fetchRequest = [DSTxOutputEntity fetchRequest];
+                
+                //for some reason it is faster to search by the wallet unique id on the account, then it is by the account itself, this might change if there are more than 1 account;
+                fetchRequest.predicate = [NSPredicate predicateWithFormat:@"account.walletUniqueID = %@ && account.index = %@" ,self.wallet.uniqueID,@(self.accountNumber)];
+                [fetchRequest setRelationshipKeyPathsForPrefetching:@[@"transaction.inputs",@"transaction.outputs",@"transaction.transactionHash",@"spentInInput.transaction.inputs",@"spentInInput.transaction.outputs",@"spentInInput.transaction.transactionHash"]];
+                
+                NSError * fetchRequestError = nil;
+                //NSDate *transactionOutputsStartTime = [NSDate date];
+                NSArray * transactionOutputs = [self.managedObjectContext executeFetchRequest:fetchRequest error:&fetchRequestError];
+                //DSDLog(@"TransactionOutputsStartTime: %f", -[transactionOutputsStartTime timeIntervalSinceNow]);
+                for (DSTxOutputEntity *e in transactionOutputs) {
+                    @autoreleasepool {
+                        if (e.transaction.transactionHash) {
+                            NSValue *hash = uint256_obj(e.transaction.transactionHash.txHash.UInt256);
+                            if (self.allTx[hash] == nil) {
+                                DSTransaction *transaction = [e.transaction transactionForChain:self.wallet.chain];
+                                
+                                if (transaction) {
+                                    self.allTx[hash] = transaction;
+                                    [self.transactions addObject:transaction];
+                                }
+                            }
+                        }
                         
-                        DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
-                        NSValue *hash = (transaction) ? uint256_obj(transaction.txHash) : nil;
+                        DSTxInputEntity * spentInInput = e.spentInInput;
                         
-                        if (! transaction || self.allTx[hash] != nil) continue;
-                        self.allTx[hash] = transaction;
-                        [self.transactions addObject:transaction];
+                        if (spentInInput) { //this has been spent, also add the transaction where it is being spent
+                            if (spentInInput.transaction.transactionHash) {
+                                NSValue *hash = uint256_obj(spentInInput.transaction.transactionHash.txHash.UInt256);
+                                if (self.allTx[hash] == nil) {
+                                    DSTransaction *transaction = [spentInInput.transaction transactionForChain:self.wallet.chain];
+                                    
+                                    if (!transaction) continue;
+                                    self.allTx[hash] = transaction;
+                                    [self.transactions addObject:transaction];
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }];
-    
+    //DSDLog(@"Time: %f", -[startTime timeIntervalSinceNow]);
     [self sortTransactions];
     _balance = UINT64_MAX; // trigger balance changed notification even if balance is zero
     [self updateBalance];
@@ -814,7 +832,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             // check for sufficient total funds before building a smaller transaction
             if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
                 DSDLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
-                      amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
+                       amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
                 return nil;
             }
             
