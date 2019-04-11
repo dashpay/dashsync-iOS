@@ -517,26 +517,27 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
 }
 
 - (void)fetchContacts:(void (^)(BOOL success))completion {
-    NSDictionary *query = @{@"data.user": uint256_hex(self.registrationTransactionHash)};
+    NSDictionary *query = @{ @"data.user" : uint256_hex(self.registrationTransactionHash)};
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    [self.wallet.chain.chainManager.DAPIClient fetchDapObjectsForId:DashpayNativeDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
+    [self.wallet.chain.chainManager.DAPIClient fetchDocumentsForContractId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
         
-        [strongSelf handleContactsDAPIObjects:dapObjects];
+        [strongSelf handleContacts:documents];
         
         if (completion) {
             completion(YES);
         }
-    } failure:^(NSError * _Nonnull error) {
-        if (completion) {
-            completion(NO);
-        }
-    }];
+    }
+                                                      failure:^(NSError *_Nonnull error) {
+                                                          if (completion) {
+                                                              completion(NO);
+                                                          }
+                                                      }];
 }
 
 
