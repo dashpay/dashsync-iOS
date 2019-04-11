@@ -12,9 +12,11 @@
 #import <DashSync/DashSync.h>
 
 #import "DashPlatformProtocol+DashSync.h"
+#import "DSRegisterDashPayContractModel.h"
 
 static NSString *const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
 static NSString *const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
+static NSString *const DashPayNativeDemo1ContractId = @"40c6dd13cd58e621cd66317ede9f1128f4164d4df223b1b840053448819e57bb";
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
         _contacts = @[];
         _outgoingContactRequests = @[];
         _incomingContactRequests = @[];
+        
+        [DSRegisterDashPayContractModel setDashPayNativeDemo1ContractIfNeeded];
     }
     return self;
 }
@@ -98,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSAssert(error == nil, @"Failed to build a contact");
 
         __weak typeof(self) weakSelf = self;
-        [strongSelf sendDocument:contact contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
+        [strongSelf sendDocument:contact contractId:DashPayNativeDemo1ContractId completion:^(NSError * _Nullable error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -122,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
 
     __weak typeof(self) weakSelf = self;
-    [self.chainManager.DAPIClient fetchDocumentsForContractId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    [self.chainManager.DAPIClient fetchDocumentsForContractId:DashPayNativeDemo1ContractId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -151,6 +155,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)createProfileWithCompletion:(void (^)(BOOL success))completion {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    
+    NSString *regTxHash = [[NSData dataWithUInt256:self.blockchainUser.registrationTransactionHash] hexString];
+    dpp.userId = regTxHash;
+    
     NSError *error = nil;
     DPJSONObject *data = @{
         @"about" : [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username],
@@ -160,7 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(error == nil, @"Failed to build a user");
 
     __weak typeof(self) weakSelf = self;
-    [self sendDocument:user contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
+    [self sendDocument:user contractId:DashPayNativeDemo1ContractId completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

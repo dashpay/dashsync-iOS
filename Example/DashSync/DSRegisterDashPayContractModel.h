@@ -20,8 +20,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSBlockchainUser;
+@class DPContract;
 
 @interface DSRegisterDashPayContractModel : DSBaseStateTransitionModel
+
++ (DPContract *)setDashPayNativeDemo1ContractIfNeeded;
 
 - (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion;
 
