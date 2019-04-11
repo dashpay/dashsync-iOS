@@ -25,10 +25,6 @@
 #import "DSDerivationPathFactory.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSTransition.h"
-#import <ios-dpp/DSDAPObjectsFactory.h>
-#import <ios-dpp/DSSchemaObject.h>
-#import <ios-dpp/DSSchemaHashUtils.h>
-#import <DSJSONSchemaValidation/NSDictionary+DSJSONDeepMutableCopy.h>
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 #import "DSChainManager.h"
 #import "DSDAPIClient.h"
@@ -36,11 +32,12 @@
 #import "DSContactEntity+CoreDataClass.h"
 #import "DSContactRequestEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
+#import "DashPlatformProtocol+DashSync.h"
 
-static NSString * const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
-static NSString * const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
+static NSString *const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
+static NSString *const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
 
-static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0fd55531c5bd8a16caa232e5edb4cdb40";
+static NSString * const DashpayNativeDAPId = @"40c6dd13cd58e621cd66317ede9f1128f4164d4df223b1b840053448819e57bb";
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
