@@ -460,26 +460,40 @@ static NSString * const DashpayNativeDAPId = @"bea82ff8176ed01eb323b0cfab098ab0f
     }];
 }
 
-- (void)createProfileWithBioString:(NSString*)bio completion:(void (^)(BOOL success))completion {
-    NSMutableDictionary<NSString *, id> *userObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"user"];
-    userObject[@"aboutme"] = bio;
-    userObject[@"username"] = self.username;
+- (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion {
+    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    NSError *error = nil;
+    DPJSONObject *data = @{
+                           @"about" :aboutme,
+                           @"avatarUrl" : [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png", self.blockchainUser.username],
+                           };
+    DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
+    NSAssert(error == nil, @"Failed to build a user");
     
     __weak typeof(self) weakSelf = self;
-    [self sendDapObject:userObject completion:^(BOOL success) {
+    [self sendDocument:user contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
         
-        
-        
-        [self.mContacts setObject:<#(nonnull DSContact *)#> forKey:<#(nonnull id<NSCopying>)#>]
+        BOOL success = error == nil;
         
         if (success) {
-            if (completion) {
-                completion(YES);
-            }
+            [strongSelf fetchBlockchainUserData:strongSelf.blockchainUser.username completion:^(NSDictionary *_Nullable blockchainUser) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                
+                strongSelf.blockchainUserData = blockchainUser;
+                
+                //[self.mContacts setObject:<#(nonnull DSContact *)#> forKey:<#(nonnull id<NSCopying>)#>]
+                
+                if (completion) {
+                    completion(!!blockchainUser);
+                }
+            }];
         }
         else {
             if (completion) {
