@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DSBaseStateTransitionModel.h"
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN

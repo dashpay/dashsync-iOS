@@ -9,9 +9,6 @@
 /* Begin PBXBuildFile section */
 		2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */; };
 		2A1B55BE2226B3C5008FED65 /* Contacts.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */; };
-		2A1BDBE6225B68600028F6DE /* dashpay-contract.json in Resources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE5225B68600028F6DE /* dashpay-contract.json */; };
-		2A1BDBEA225B857A0028F6DE /* DSRegisterDashPayContractModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE9225B857A0028F6DE /* DSRegisterDashPayContractModel.m */; };
-		2A1BDBED225B8B540028F6DE /* DSBaseStateTransitionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBEC225B8B540028F6DE /* DSBaseStateTransitionModel.m */; };
 		2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBD820D8B327000177D8 /* DSHashTests.m */; };
 		2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */; };
 		2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */; };
@@ -158,11 +155,6 @@
 		2A1AC63A20F9012A00B3B79F /* FormSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FormSectionModel.h; sourceTree = "<group>"; };
 		2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FormSectionModel.m; sourceTree = "<group>"; };
 		2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Contacts.storyboard; sourceTree = "<group>"; };
-		2A1BDBE5225B68600028F6DE /* dashpay-contract.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "dashpay-contract.json"; sourceTree = "<group>"; };
-		2A1BDBE8225B857A0028F6DE /* DSRegisterDashPayContractModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterDashPayContractModel.h; sourceTree = "<group>"; };
-		2A1BDBE9225B857A0028F6DE /* DSRegisterDashPayContractModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterDashPayContractModel.m; sourceTree = "<group>"; };
-		2A1BDBEB225B8B540028F6DE /* DSBaseStateTransitionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBaseStateTransitionModel.h; sourceTree = "<group>"; };
-		2A1BDBEC225B8B540028F6DE /* DSBaseStateTransitionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBaseStateTransitionModel.m; sourceTree = "<group>"; };
 		2A1ECBD820D8B327000177D8 /* DSHashTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSHashTests.m; sourceTree = "<group>"; };
 		2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSKeyTests.m; sourceTree = "<group>"; };
 		2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentRequestTests.m; sourceTree = "<group>"; };
@@ -447,11 +439,6 @@
 		2A1BDBE7225B855B0028F6DE /* Contracts */ = {
 			isa = PBXGroup;
 			children = (
-				2A1BDBE5225B68600028F6DE /* dashpay-contract.json */,
-				2A1BDBE8225B857A0028F6DE /* DSRegisterDashPayContractModel.h */,
-				2A1BDBE9225B857A0028F6DE /* DSRegisterDashPayContractModel.m */,
-				2A1BDBEB225B8B540028F6DE /* DSBaseStateTransitionModel.h */,
-				2A1BDBEC225B8B540028F6DE /* DSBaseStateTransitionModel.m */,
 			);
 			name = Contracts;
 			sourceTree = "<group>";
@@ -994,7 +981,6 @@
 			files = (
 				FBA676362235AD090069EC2F /* Governance.storyboard in Resources */,
 				2A3B3EB520F893F4002962FB /* SelectorFormTableViewCell.xib in Resources */,
-				2A1BDBE6225B68600028F6DE /* dashpay-contract.json in Resources */,
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
 				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
@@ -1165,7 +1151,6 @@
 				FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
-				2A1BDBED225B8B540028F6DE /* DSBaseStateTransitionModel.m in Sources */,
 				FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */,
 				FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
@@ -1186,7 +1171,6 @@
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
-				2A1BDBEA225B857A0028F6DE /* DSRegisterDashPayContractModel.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
