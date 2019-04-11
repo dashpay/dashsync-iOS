@@ -37,7 +37,7 @@
 static NSString *const ContactsDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
 static NSString *const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
 
-static NSString * const DashpayNativeDAPId = @"40c6dd13cd58e621cd66317ede9f1128f4164d4df223b1b840053448819e57bb";
+static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmPJ36pkVdzHw7";
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -575,6 +575,176 @@ static NSString * const DashpayNativeDAPId = @"40c6dd13cd58e621cd66317ede9f1128f
         }
     }
 }
+
+
+- (void)getUser:(void (^)(BOOL))completion {
+    NSString *userKey = [NSString stringWithFormat:@"ds_contacts_user_profile_%@", self.blockchainUser.username];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:userKey]) {
+        __weak typeof(self) weakSelf = self;
+        [self fetchBlockchainUserData:self.blockchainUser.username completion:^(NSDictionary *_Nullable blockchainUser) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            
+            strongSelf.blockchainUserData = blockchainUser;
+            
+            if (completion) {
+                completion(!!blockchainUser);
+            }
+        }];
+    }
+    else {
+        [self createProfileWithCompletion:^(BOOL success) {
+            if (success) {
+                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:userKey];
+            }
+            
+            if (completion) {
+                completion(success);
+            }
+        }];
+    }
+}
+
+- (void)contactRequestUsername:(NSString *)username completion:(void (^)(BOOL))completion {
+    __weak typeof(self) weakSelf = self;
+    [self fetchBlockchainUserData:username completion:^(NSDictionary *_Nullable blockchainUser) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        if (!blockchainUser) {
+            if (completion) {
+                completion(NO);
+            }
+            
+            return;
+        }
+        
+        DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+        NSError *error = nil;
+        DPJSONObject *data = @{
+                               @"toUserId" : blockchainUser[@"regtxid"],
+                               // TODO: fix me 😭
+                               //            @"extendedPublicKey" : ?,
+                               };
+        DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
+        NSAssert(error == nil, @"Failed to build a contact");
+        
+        __weak typeof(self) weakSelf = self;
+        [strongSelf sendDocument:contact contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            
+            BOOL success = error == nil;
+            
+            if (success) {
+                strongSelf.outgoingContactRequests = [strongSelf.outgoingContactRequests arrayByAddingObject:username];
+            }
+            
+            if (completion) {
+                completion(success);
+            }
+        }];
+    }];
+}
+
+#pragma mark - Private
+
+- (void)createProfileWithCompletion:(void (^)(BOOL success))completion {
+    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    NSError *error = nil;
+    DPJSONObject *data = @{
+                           @"about" : [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username],
+                           @"avatarUrl" : [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png", self.blockchainUser.username],
+                           };
+    DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
+    NSAssert(error == nil, @"Failed to build a user");
+    
+    __weak typeof(self) weakSelf = self;
+    [self sendDocument:user contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        BOOL success = error == nil;
+        
+        if (success) {
+            [strongSelf fetchBlockchainUserData:strongSelf.blockchainUser.username completion:^(NSDictionary *_Nullable blockchainUser) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                
+                strongSelf.blockchainUserData = blockchainUser;
+                
+                if (completion) {
+                    completion(!!blockchainUser);
+                }
+            }];
+        }
+        else {
+            if (completion) {
+                completion(NO);
+            }
+        }
+    }];
+}
+
+- (void)fetchBlockchainUserData:(NSString *)username completion:(void (^)(NSDictionary *_Nullable blockchainUser))completion {
+    [self.chainManager.DAPIClient getUserByName:username success:^(NSDictionary *_Nonnull blockchainUser) {
+        NSLog(@"%@", blockchainUser);
+        
+        if (completion) {
+            completion(blockchainUser);
+        }
+    }
+                                        failure:^(NSError *_Nonnull error) {
+                                            NSLog(@"%@", error);
+                                            
+                                            if (completion) {
+                                                completion(nil);
+                                            }
+                                        }];
+}
+
+- (void)handleContacts:(NSArray<NSDictionary *> *)rawContacts {
+    NSMutableArray<NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
+    for (NSDictionary *rawContact in rawContacts) {
+        NSDictionary *sender = rawContact[@"sender"];
+        NSString *username = sender[@"username"];
+        [contactsAndIncomingRequests addObject:username];
+    }
+    
+    NSMutableArray<NSString *> *contacts = [NSMutableArray array];
+    NSMutableArray<NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
+    NSMutableArray<NSString *> *incomingContactRequests = [NSMutableArray array];
+    
+    for (NSString *username in contactsAndIncomingRequests) {
+        if ([outgoingContactRequests containsObject:username]) { // it's a match!
+            [outgoingContactRequests removeObject:username];
+            [contacts addObject:username];
+        }
+        else { // incoming request
+            [incomingContactRequests addObject:username];
+        }
+    }
+    
+    self.contacts = contacts;
+    self.outgoingContactRequests = outgoingContactRequests;
+    self.incomingContactRequests = incomingContactRequests;
+}
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 
 
 // MARK: - Persistence
