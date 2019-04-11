@@ -1,0 +1,45 @@
+{
+    "name": "DashPayNativeDemo1",
+    
+    "documents": {
+        "profile": {
+            "indices": [{
+                "properties": [{
+                    "$userId": "asc"
+                }],
+                "unique": true
+            }],
+            "properties": {
+                "avatarUrl": {
+                    "type": "string",
+                    "format": "url"
+                },
+                "about": {
+                    "type": "string"
+                }
+            },
+            "required": ["avatarUrl", "about"],
+            "additionalProperties": false
+        },
+        "contact": {
+            "indices": [{
+                "properties": [{
+                    "$userId": "asc"
+                }, {
+                    "toUserId": "asc"
+                }],
+                "unique": true
+            }],
+            "properties": {
+                "toUserId": {
+                    "type": "string"
+                },
+                "extendedPublicKey": {
+                    "type": "string"
+                }
+            },
+            "required": ["toUserId", "extendedPublicKey"],
+            "additionalProperties": false
+        }
+    }
+}

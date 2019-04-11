@@ -31,9 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     self.delegate = self;
     
-    self.model = [[DSContactsModel alloc] init];
-    self.model.chainManager = self.chainManager;
-    self.model.blockchainUser = self.blockchainUser;
+    self.model = [[DSContactsModel alloc] initWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
     
     __weak typeof(self) weakSelf = self;
     [self.model getUser:^(BOOL success) {
