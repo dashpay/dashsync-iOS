@@ -27,15 +27,6 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
     DSDAPIClientErrorCodeInvalidResponse = 100,
 };
 
-
-typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
-    DSDAPIClientStatusTypeInfo,
-    DSDAPIClientStatusTypeDifficulty,
-    DSDAPIClientStatusTypeBestBlockHash,
-    DSDAPIClientStatusTypetLastBlockHash,
-};
-
-
 @protocol DSDAPIProtocol <NSObject>
 
 ///--------------
@@ -54,59 +45,78 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
                                     failure:(void (^)(NSError *error))failure;
 
 /**
- Get an address summary given an address
+ Get an address summary given an addresses
  
- @param address Dash address
+ @param addresses Dash addresses
+ @param noTxList true if a list of all txs should NOT be included in result
+ @param from start of range for the tx to be included in the tx list
+ @param to end of range for the tx to be included in the tx list
+ @param fromHeight which height to start from (optional, overriding from/to)
+ @param toHeight on which height to end (optional, overriding from/to)
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getAddressSummary:(NSString *)address
+- (void)getAddressSummary:(NSArray<NSString *> *)addresses
+                 noTxList:(BOOL)noTxList
+                     from:(NSNumber *)from
+                       to:(NSNumber *)to
+               fromHeight:(nullable NSNumber *)fromHeight
+                 toHeight:(nullable NSNumber *)toHeight
                   success:(void (^)(NSDictionary *addressSummary))success
                   failure:(void (^)(NSError *error))failure;
 
 /**
- Get the total amount of duffs received by an address
+ Get the total amount of duffs received by an addresses
  
- @param address Dash address
+ @param addresses Dash addresses
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getAddressTotalReceived:(NSString *)address
+- (void)getAddressTotalReceived:(NSArray<NSString *> *)addresses
                         success:(void (^)(NSNumber *duffsReceivedByAddress))success
                         failure:(void (^)(NSError *error))failure;
 
 /**
- Get the total amount of duffs sent by an address
+ Get the total amount of duffs sent by an addresses
  
- @param address Dash address
+ @param addresses Dash addresses
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getAddressTotalSent:(NSString *)address
+- (void)getAddressTotalSent:(NSArray<NSString *> *)addresses
                     success:(void (^)(NSNumber *duffsSentByAddress))success
                     failure:(void (^)(NSError *error))failure;
 
 /**
- Get the total unconfirmed balance for the address
+ Get the total unconfirmed balance for the addresses
  
- @param address Dash address
+ @param addresses Dash addresses
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getAddressUnconfirmedBalance:(NSString *)address
+- (void)getAddressUnconfirmedBalance:(NSArray<NSString *> *)addresses
                              success:(void (^)(NSNumber *unconfirmedBalance))success
                              failure:(void (^)(NSError *error))failure;
 
 /**
- Get the calculated balance for the address
+ Get the calculated balance for the addresses
  
- @param address Dash address
+ @param addresses Dash addresses
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getBalanceForAddress:(NSString *)address
+- (void)getBalanceForAddress:(NSArray<NSString *> *)addresses
                      success:(void (^)(NSNumber *balance))success
                      failure:(void (^)(NSError *error))failure;
+
+/**
+ Returns block hash of chaintip
+
+ @param success A block object to be executed when the request operation finishes successfully
+ @param failure A block object to be executed when the request operation finishes unsuccessfully
+ */
+- (void)getBestBlockHashSuccess:(void (^)(NSString *blockHeight))success
+                        failure:(void (^)(NSError *error))failure;
 
 /**
  Get the best block height
@@ -176,6 +186,15 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
                                            failure:(void (^)(NSError *error))failure;
 
 /**
+ Returns mempool usage info
+
+ @param success A block object to be executed when the request operation finishes successfully
+ @param failure A block object to be executed when the request operation finishes unsuccessfully
+ */
+- (void)getMempoolInfoSuccess:(void (^)(NSNumber *blockHeight))success
+                      failure:(void (^)(NSError *error))failure;
+
+/**
  Get masternode list
  
  @param success A block object to be executed when the request operation finishes successfully
@@ -194,29 +213,8 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
  */
 - (void)getMNListDiffBaseBlockHash:(NSString *)baseBlockHash
                          blockHash:(NSString *)blockHash
-                           success:(void (^)(NSArray<NSDictionary *> *mnListDiff))success
+                           success:(void (^)(NSDictionary *mnListDiff))success
                            failure:(void (^)(NSError *error))failure;
-
-/**
- Get peer data sync status
- 
- @param success A block object to be executed when the request operation finishes successfully
- @param failure A block object to be executed when the request operation finishes unsuccessfully
- */
-- (void)getPeerDataSyncStatusSuccess:(void (^)(NSDictionary *syncStatus))success
-                             failure:(void (^)(NSError *error))failure;
-
-
-/**
- Get a user quorum (LLMQ)
- 
- @param regTxId The TXID of the user's registration subscription transaction
- @param success A block object to be executed when the request operation finishes successfully
- @param failure A block object to be executed when the request operation finishes unsuccessfully
- */
-- (void)getQuorumRegTxId:(NSString *)regTxId
-                 success:(void (^)(NSDictionary *rawBlock))success
-                 failure:(void (^)(NSError *error))failure;
 
 /**
  Get the raw block for the provided block hash
@@ -241,17 +239,6 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
                     failure:(void (^)(NSError *error))failure;
 
 /**
- Get status for provided type
- 
- @param status Type of status to get
- @param success A block object to be executed when the request operation finishes successfully
- @param failure A block object to be executed when the request operation finishes unsuccessfully
- */
-- (void)getStatus:(DSDAPIClientStatusType)status
-          success:(void (^)(id response))success
-          failure:(void (^)(NSError *error))failure;
-
-/**
  Get transaction for the given hash
  
  @param txid The TXID of the transaction
@@ -263,25 +250,41 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
                    failure:(void (^)(NSError *error))failure;
 
 /**
- Get all transaction related to the given address
+ Get transactions for a given address or multiple addresses
  
- @param address Dash address
+ @param addresses Dash addresses
+ @param from start of range for the tx to be included in the tx list
+ @param to end of range for the tx to be included in the tx list
+ @param fromHeight which height to start from (optional, overriding from/to)
+ @param toHeight on which height to end (optional, overriding from/to)
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getTransactionsByAddress:(NSString *)address
-                         success:(void (^)(NSArray<NSDictionary *> *addressTXs))success
+- (void)getTransactionsByAddress:(NSArray<NSString *> *)addresses
+                            from:(NSNumber *)from
+                              to:(NSNumber *)to
+                      fromHeight:(nullable NSNumber *)fromHeight
+                        toHeight:(nullable NSNumber *)toHeight
+                         success:(void (^)(NSDictionary *result))success
                          failure:(void (^)(NSError *error))failure;
 
 /**
- Get unspent outputs for the given address
+ Get UTXO for a given address or multiple addresses (max result 1000)
  
- @param address Dash address
+ @param addresses Dash addresses
+ @param from start of range in the ordered list of latest UTXO (optional)
+ @param to end of range in the ordered list of latest UTXO (optional)
+ @param fromHeight which height to start from (optional, overriding from/to)
+ @param toHeight on which height to end (optional, overriding from/to)
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getUTXOForAddress:(NSString *)address
-                  success:(void (^)(NSArray<NSDictionary *> *unspentOutputs))success
+- (void)getUTXOForAddress:(NSArray<NSString *> *)addresses
+                     from:(nullable NSNumber *)from
+                       to:(nullable NSNumber *)to
+               fromHeight:(nullable NSNumber *)fromHeight
+                 toHeight:(nullable NSNumber *)toHeight
+                  success:(void (^)(NSDictionary *result))success
                   failure:(void (^)(NSError *error))failure;
 
 /**
@@ -347,15 +350,15 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
 ///--------------
 
 /**
- Fetch a user's DAP space
+ Fetch a user's Contract
  
- @param dapId A user's DAP ID
+ @param contractId A user's Contract ID
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)fetchDapContractForId:(NSString *)dapId
-                      success:(void (^)(NSDictionary *dapSpace))success
-                      failure:(void (^)(NSError *error))failure;
+- (void)fetchContractForId:(NSString *)contractId
+                   success:(void (^)(NSDictionary *contract))success
+                   failure:(void (^)(NSError *error))failure;
 
 /**
  Get a blockchain user by username
@@ -397,30 +400,30 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientStatusType) {
 /**
  Sends raw state transition to the network
  
- @param rawTransitionHeader Hex-string representing state transition header
- @param rawTransitionPacket Hex-string representing state transition data
+ @param rawStateTransition Hex-string representing state transition header
+ @param rawSTPacket Hex-string representing state transition data
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)sendRawTransitionWithRawTransitionHeader:(NSString *)rawTransitionHeader
-                             rawTransitionPacket:(NSString *)rawTransitionPacket
-                                         success:(void (^)(NSString *headerId))success
-                                         failure:(void (^)(NSError *error))failure;
+- (void)sendRawTransitionWithRawStateTransition:(NSString *)rawStateTransition
+                                    rawSTPacket:(NSString *)rawSTPacket
+                                        success:(void (^)(NSString *headerId))success
+                                        failure:(void (^)(NSError *error))failure;
 
 /**
  Fetches user objects for a given condition
  
- @param dapId A user's DAP ID
+ @param contractId A user's Contract ID
  @param objectsType DAP object type to fetch
  @param options Fetch options
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)fetchDapObjectsForId:(NSString *)dapId
-                 objectsType:(NSString *)objectsType
-                     options:(nullable DSDAPIClientFetchDapObjectsOptions *)options
-                     success:(void (^)(NSArray<NSDictionary *> *dapObjects))success
-                     failure:(void (^)(NSError *error))failure;
+- (void)fetchDocumentsForContractId:(NSString *)contractId
+                        objectsType:(NSString *)objectsType
+                            options:(nullable DSDAPIClientFetchDapObjectsOptions *)options
+                            success:(void (^)(NSArray<NSDictionary *> *documents))success
+                            failure:(void (^)(NSError *error))failure;
 
 @end
 
