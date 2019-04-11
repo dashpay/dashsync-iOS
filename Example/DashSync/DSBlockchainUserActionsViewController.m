@@ -10,8 +10,11 @@
 #import "DSTopupBlockchainUserViewController.h"
 
 #import "DSContactsNavigationController.h"
+#import "DSRegisterDashPayContractModel.h"
 
 @interface DSBlockchainUserActionsViewController ()
+
+@property (null_resettable, strong, nonatomic) DSRegisterDashPayContractModel *registerContractModel;
 
 @end
 
@@ -63,6 +66,21 @@
         DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
         [self presentViewController:controller animated:YES completion:nil];
     }
+    else if (indexPath.row == 3) {
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        
+        __weak typeof(self) weakSelf = self;
+        [self.registerContractModel registerDashPayContractCompletion:^(NSError * _Nullable error) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            if (error) {
+                [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
+            }
+        }];
+    }
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -71,6 +89,14 @@
         topupBlockchainUserViewController.chainManager = self.chainManager;
         topupBlockchainUserViewController.blockchainUser = self.blockchainUser;
     }
+}
+
+- (DSRegisterDashPayContractModel *)registerContractModel {
+    if (_registerContractModel == nil) {
+        _registerContractModel = [[DSRegisterDashPayContractModel alloc] initWithChainManager:self.chainManager
+                                                                               blockchainUser:self.blockchainUser];
+    }
+    return _registerContractModel;
 }
 
 @end

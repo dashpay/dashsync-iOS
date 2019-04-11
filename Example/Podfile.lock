@@ -3,25 +3,22 @@ PODS:
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
     - secp256k1_dash (= 0.1.2)
-  - DSJSONSchemaValidation (2.0.5)
   - ios-dpp (0.0.1):
-    - DSJSONSchemaValidation (= 2.0.5)
-    - TinyCborObjc (= 0.3.0)
+    - TinyCborObjc (= 0.4.1)
   - KVO-MVVM (0.5.1)
   - secp256k1_dash (0.1.2)
-  - tinycbor (0.5.3-alpha2)
-  - TinyCborObjc (0.3.0):
-    - tinycbor (= 0.5.3-alpha2)
+  - tinycbor (0.5.3-alpha3)
+  - TinyCborObjc (0.4.1):
+    - tinycbor (= 0.5.3-alpha3)
 
 DEPENDENCIES:
   - DashSync (from `../`)
-  - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `6b3210b2f0f124687175a697720099a6dd3d3024`, branch `master`)
+  - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `833c6be05565016da4f9e6db4aa4c0ee6d02f188`, branch `supernova`)
   - KVO-MVVM (= 0.5.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
-    - DSJSONSchemaValidation
     - KVO-MVVM
     - secp256k1_dash
     - tinycbor
@@ -31,25 +28,24 @@ EXTERNAL SOURCES:
   DashSync:
     :path: "../"
   ios-dpp:
-    :branch: master
-    :commit: 6b3210b2f0f124687175a697720099a6dd3d3024
+    :branch: supernova
+    :commit: 833c6be05565016da4f9e6db4aa4c0ee6d02f188
     :git: https://github.com/dashevo/ios-dpp.git
 
 CHECKOUT OPTIONS:
   ios-dpp:
-    :commit: 6b3210b2f0f124687175a697720099a6dd3d3024
+    :commit: 833c6be05565016da4f9e6db4aa4c0ee6d02f188
     :git: https://github.com/dashevo/ios-dpp.git
 
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
-  DashSync: 16dbc86c1f1eeaf9822fc3f665db9d407f7f750d
-  DSJSONSchemaValidation: a0d791d3c8a4801cb3c72f3c8701342e2cb66f58
-  ios-dpp: 5193ef55546e5cc3ce1ef5ad831f084a07731dc1
+  DashSync: 421125885841a5c20e8a2409718067acf9921f14
+  ios-dpp: 49fd8a6b749bdfd770dd3debbf5efea80df92c3c
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
-  tinycbor: d2990189c8db918fbdb2936708642aeb55334dd5
-  TinyCborObjc: b514d3e288b5d26c3c65c568ec97e375a6840a98
+  tinycbor: f3596b9acc8493b19c9e0cc2d0417d9c7aa58daa
+  TinyCborObjc: e36a42aad1134bc6eaa61b68afa4442d48e327f2
 
-PODFILE CHECKSUM: b09554bb9c6dde4448a8af3373e4cebe69d01959
+PODFILE CHECKSUM: 3a2a1b220e836b3ce01c87e48b52d3f5c4472d3e
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.6.1
