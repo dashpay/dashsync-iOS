@@ -17,37 +17,72 @@
 
 #import "DSContact.h"
 #import "DSAccount.h"
+#import "DSWallet.h"
+#import "DSDerivationPathFactory.h"
+#import "DSFundsDerivationPath.h"
+#import "DashPlatformProtocol+DashSync.h"
 
 @interface DSContact()
 
 @property (nonatomic, weak) DSAccount* account;
 @property (nonatomic, weak) DSBlockchainUser * blockchainUserOwner;
-@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
 @property (nonatomic, copy) NSString * username;
-@property (nonatomic, strong) NSMutableArray <DSContact *> *mOutgoingContactRequests;
-@property (nonatomic, strong) NSMutableArray <DSContact *> *mIncomingContactRequests;
+@property (nonatomic, strong) NSMutableSet <DSContact *> *mOutgoingFriendRequests;
+@property (nonatomic, strong) NSMutableSet <DSContact *> *mIncomingFriendRequests;
 
 @end
 
 @implementation DSContact
 
--(instancetype)initWithUsername:(NSString*)username contactsBlockchainUserRegistrationTransactionHash:(UInt256)contactsBlockchainUserRegistrationTransactionHash blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account {
+-(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account {
     if (!(self = [super init])) return nil;
     self.username = username;
     self.account = account;
     self.blockchainUserOwner = blockchainUserOwner;
-    self.contactBlockchainUserRegistrationTransactionHash = contactsBlockchainUserRegistrationTransactionHash;
-    self.mOutgoingContactRequests = [NSMutableArray array];
-    self.mIncomingContactRequests = [NSMutableArray array];
+    self.contactBlockchainUserRegistrationTransactionHash = UINT256_ZERO;
+    self.mOutgoingFriendRequests = [NSMutableSet set];
+    self.mIncomingFriendRequests = [NSMutableSet set];
     return self;
 }
 
 -(void)addIncomingContactRequestFromSender:(DSContact *)sender {
-    [self.mIncomingContactRequests addObject:sender];
+    [self.mIncomingFriendRequests addObject:sender];
 }
 
 -(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient {
-    [self.mOutgoingContactRequests addObject:recipient];
+    [self.mOutgoingFriendRequests addObject:recipient];
+}
+
+-(NSArray*)outgoingFriendRequests {
+    return [self.mOutgoingFriendRequests allObjects];
+}
+
+-(NSArray*)incomingFriendRequests {
+    return [self.mIncomingFriendRequests allObjects];
+}
+
+-(NSArray <DSContact *> *)friends {
+    NSMutableSet * friendSet = [self.mOutgoingFriendRequests mutableCopy];
+    [friendSet intersectSet:self.mIncomingFriendRequests];
+    return [friendSet allObjects];
+}
+
+-(DPDocument*)contactRequestDocument {
+    NSAssert(!uint256_is_zero(self.contactBlockchainUserRegistrationTransactionHash), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
+    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    
+    DSFundsDerivationPath * fundsDerivationPathForContact = [DSFundsDerivationPath
+                                                             contactBasedDerivationPathForContact:self onChain:self.account.wallet.chain];
+    NSError *error = nil;
+    DPJSONObject *data = @{
+                           @"toUserId" : uint256_hex(self.contactBlockchainUserRegistrationTransactionHash),
+                           @"extendedPublicKey" : fundsDerivationPathForContact.extendedPublicKey,
+                           };
+    
+    
+    DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
+    NSAssert(error == nil, @"Failed to build a contact");
+    return contact;
 }
 
 -(BOOL)isEqual:(id)object {

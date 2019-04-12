@@ -124,7 +124,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 }
 
 -(NSArray*)friends {
-    return [[self.mContacts objectForKey:self.username] outgoingContactRequests];
+    return [[self.mContacts objectForKey:self.username] outgoingFriendRequests];
 }
 
 -(void)loadContacts {
@@ -137,7 +137,8 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
         NSMutableDictionary * contactDictionary = [NSMutableDictionary dictionary];
         for (DSContactEntity *contactEntity in contacts) {
             DSAccount * account = [self.wallet accountWithNumber:contactEntity.account.index];
-            DSContact * contact = [[DSContact alloc] initWithUsername:contactEntity.username contactsBlockchainUserRegistrationTransactionHash:contactEntity.blockchainUserRegistrationHash.UInt256 blockchainUserOwner:self account:account];
+            DSContact * contact = [[DSContact alloc] initWithUsername:contactEntity.username blockchainUserOwner:self account:account];
+            [contact setContactBlockchainUserRegistrationTransactionHash:contactEntity.blockchainUserRegistrationHash.UInt256];
             [contactDictionary setObject:contact forKey:contactEntity.username];
         }
         self->_mContacts = contactDictionary;
@@ -303,6 +304,35 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     }
 }
 
+// MARK: - Persistence
+
+-(void)save {
+    //    NSManagedObjectContext * context = [DSTransactionEntity context];
+    //    [context performBlockAndWait:^{ // add the transaction to core data
+    //        [DSChainEntity setContext:context];
+    //        [DSLocalMasternodeEntity setContext:context];
+    //        [DSTransactionHashEntity setContext:context];
+    //        [DSProviderRegistrationTransactionEntity setContext:context];
+    //        [DSProviderUpdateServiceTransactionEntity setContext:context];
+    //        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
+    //        [DSProviderUpdateRevocationTransactionEntity setContext:context];
+    //        if ([DSLocalMasternodeEntity
+    //             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
+    //            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+    //            if (!providerRegistrationTransactionEntity) {
+    //                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
+    //            }
+    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
+    //            [localMasternode setAttributesFromLocalMasternode:self];
+    //            [DSLocalMasternodeEntity saveContext];
+    //        } else {
+    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
+    //            [localMasternode setAttributesFromLocalMasternode:self];
+    //            [DSLocalMasternodeEntity saveContext];
+    //        }
+    //    }];
+}
+
 
 -(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
     if (!_blockchainUserRegistrationTransaction) {
@@ -342,75 +372,49 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 
 // MARK: - Layer 2
 
-- (void)sendNewContactRequestToContactWithUsername:(NSString *)username completion:(void (^)(BOOL))completion {
-        __weak typeof(self) weakSelf = self;
-        [self fetchBlockchainUserData:username completion:^(NSDictionary *_Nullable blockchainUser) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            
-            if (!blockchainUser) {
-                if (completion) {
-                    completion(NO);
-                }
-                
-                return;
-            }
-            
-            DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-            NSError *error = nil;
-            DPJSONObject *data = @{
-                                   @"toUserId" : blockchainUser[@"regtxid"],
-                                   // TODO: fix me 😭
-                                   //            @"extendedPublicKey" : ?,
-                                   };
-            DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
-            NSAssert(error == nil, @"Failed to build a contact");
-            
-            __weak typeof(self) weakSelf = self;
-            [strongSelf.stateTransitionModel sendDocument:contact contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-                
-                BOOL success = error == nil;
-                
-                if (success) {
-                    strongSelf.outgoingContactRequests = [strongSelf.outgoingContactRequests arrayByAddingObject:username];
-                }
-                
-                if (completion) {
-                    completion(success);
-                }
-            }];
-        }];
-    }
-
-- (void)sendNewContactRequestToContact:(DSContact *)contact completion:(void (^)(BOOL))completion {
-    NSMutableDictionary<NSString *, id> *contactObject = [DSDAPObjectsFactory createDAPObjectForTypeName:@"contact"];
-    contactObject[@"user"] = uint256_hex(contact.contactBlockchainUserRegistrationTransactionHash);
-    contactObject[@"username"] = contact.username;
-    
-    NSMutableDictionary<NSString *, id> *me = [NSMutableDictionary dictionary];
-    me[@"id"] = uint256_hex(self.registrationTransactionHash);
-    me[@"username"] = self.username;
-    
-    contactObject[@"sender"] = me;
-    
+- (void)sendNewContactRequestToContactWithoutBlockchainUserData:(DSContact*)contact completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    
-    [self sendDapObject:contactObject completion:^(BOOL success) {
+    [self fetchBlockchainUserData:contact.username completion:^(NSDictionary *_Nullable blockchainUser) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
         
+        if (!blockchainUser) {
+            if (completion) {
+                completion(NO);
+            }
+            
+            return;
+        }
+        
+        UInt256 blockchainUserContactRegistrationHash = ((NSString*)blockchainUser[@"id"]).hexToData.UInt256;
+        
+        [contact setContactBlockchainUserRegistrationTransactionHash:blockchainUserContactRegistrationHash];
+        
+        [self sendNewContactRequestToContact:contact completion:completion];
+        
+    }];
+}
+
+- (void)sendNewContactRequestToContact:(DSContact*)contact completion:(void (^)(BOOL))completion {
+    if (uint256_is_zero(contact.contactBlockchainUserRegistrationTransactionHash)) {
+        [self sendNewContactRequestToContactWithoutBlockchainUserData:contact completion:completion];
+        return;
+    }
+    
+    __weak typeof(self) weakSelf = self;
+    [self.stateTransitionModel sendDocument:contact.contactRequestDocument contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        BOOL success = error == nil;
+        
         if (success) {
             [strongSelf.ownContact addOutgoingContactRequestToRecipient:contact];
         }
-        
         
         if (completion) {
             completion(success);
@@ -429,7 +433,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     NSAssert(error == nil, @"Failed to build a user");
     
     __weak typeof(self) weakSelf = self;
-    [self.stateTransitionModel sendDocument:user contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
+    [self.stateTransitionModel sendDocument:user contractId:DashpayNativeDAPId completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -444,7 +448,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
                     return;
                 }
                 
-                strongSelf.blockchainUserData = blockchainUser;
+                //strongSelf.blockchainUserData = blockchainUser;
                 
                 //[self.mContacts setObject:<#(nonnull DSContact *)#> forKey:<#(nonnull id<NSCopying>)#>]
                 
@@ -466,26 +470,27 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 }
 
 - (void)fetchProfile:(void (^)(BOOL success))completion {
-    NSDictionary *query = @{@"": uint256_hex(self.registrationTransactionHash)};
+    NSDictionary *query = @{ @"data.user" : uint256_hex(self.registrationTransactionHash) };
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    [self.wallet.chain.chainManager.DAPIClient fetchDapObjectsForId:DashpayNativeDAPId objectsType:@"user" options:options success:^(NSArray<NSDictionary *> * _Nonnull dapObjects) {
+    [self.wallet.chain.chainManager.DAPIClient fetchDocumentsForContractId:DashpayNativeDAPId objectsType:@"profile" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
         
-        [strongSelf handleContacts:dapObjects];
+        [strongSelf handleContactRequestObjects:documents];
         
         if (completion) {
             completion(YES);
         }
-    } failure:^(NSError * _Nonnull error) {
-        if (completion) {
-            completion(NO);
-        }
-    }];
+    }
+                                                                   failure:^(NSError *_Nonnull error) {
+                                                                       if (completion) {
+                                                                           completion(NO);
+                                                                       }
+                                                                   }];
 }
 
 - (void)fetchContacts:(void (^)(BOOL success))completion {
@@ -493,23 +498,23 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    [self.wallet.chain.chainManager.DAPIClient fetchDocumentsForContractId:ContactsDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    [self.wallet.chain.chainManager.DAPIClient fetchDocumentsForContractId:DashpayNativeDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
         
-        [strongSelf handleContacts:documents];
+        [strongSelf handleContactRequestObjects:documents];
         
         if (completion) {
             completion(YES);
         }
     }
-                                                      failure:^(NSError *_Nonnull error) {
-                                                          if (completion) {
-                                                              completion(NO);
-                                                          }
-                                                      }];
+                                                                   failure:^(NSError *_Nonnull error) {
+                                                                       if (completion) {
+                                                                           completion(NO);
+                                                                       }
+                                                                   }];
 }
 
 
@@ -523,7 +528,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     }
     
     
-    NSMutableArray <NSString *> *outgoingContactRequests = [self.ownContact.outgoingContactRequests mutableCopy];
+    NSMutableArray <NSString *> *outgoingContactRequests = [self.ownContact.outgoingFriendRequests mutableCopy];
     NSMutableArray <NSString *> *incomingContactRequests = [NSMutableArray array];
     
     for (NSString *username in contactsAndIncomingRequests) {
@@ -538,158 +543,55 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 }
 
 
-- (void)getUser:(void (^)(BOOL))completion {
-    NSString *userKey = [NSString stringWithFormat:@"ds_contacts_user_profile_%@", self.blockchainUser.username];
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:userKey]) {
-        __weak typeof(self) weakSelf = self;
-        [self fetchBlockchainUserData:self.blockchainUser.username completion:^(NSDictionary *_Nullable blockchainUser) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            
-            strongSelf.blockchainUserData = blockchainUser;
-            
-            if (completion) {
-                completion(!!blockchainUser);
-            }
-        }];
-    }
-    else {
-        [self createProfileWithCompletion:^(BOOL success) {
-            if (success) {
-                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:userKey];
-            }
-            
-            if (completion) {
-                completion(success);
-            }
-        }];
-    }
-}
+//- (void)getUser:(void (^)(BOOL))completion {
+//    NSString *userKey = [NSString stringWithFormat:@"ds_contacts_user_profile_%@", self.username];
+//
+//    if ([[NSUserDefaults standardUserDefaults] boolForKey:userKey]) {
+//        __weak typeof(self) weakSelf = self;
+//        [self fetchBlockchainUserData:self.username completion:^(NSDictionary *_Nullable blockchainUser) {
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//
+//            strongSelf.blockchainUserData = blockchainUser;
+//
+//            if (completion) {
+//                completion(!!blockchainUser);
+//            }
+//        }];
+//    }
+//    else {
+//        [self createProfileWithCompletion:^(BOOL success) {
+//            if (success) {
+//                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:userKey];
+//            }
+//
+//            if (completion) {
+//                completion(success);
+//            }
+//        }];
+//    }
+//}
 
 #pragma mark - Private
 
-- (void)createProfileWithCompletion:(void (^)(BOOL success))completion {
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    NSError *error = nil;
-    DPJSONObject *data = @{
-                           @"about" : [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username],
-                           @"avatarUrl" : [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png", self.blockchainUser.username],
-                           };
-    DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
-    NSAssert(error == nil, @"Failed to build a user");
-    
-    __weak typeof(self) weakSelf = self;
-    [self sendDocument:user contractId:ContactsDAPId completion:^(NSError * _Nullable error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        
-        BOOL success = error == nil;
-        
-        if (success) {
-            [strongSelf fetchBlockchainUserData:strongSelf.blockchainUser.username completion:^(NSDictionary *_Nullable blockchainUser) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-                
-                strongSelf.blockchainUserData = blockchainUser;
-                
-                if (completion) {
-                    completion(!!blockchainUser);
-                }
-            }];
-        }
-        else {
-            if (completion) {
-                completion(NO);
-            }
-        }
-    }];
-}
 
 - (void)fetchBlockchainUserData:(NSString *)username completion:(void (^)(NSDictionary *_Nullable blockchainUser))completion {
-    [self.chainManager.DAPIClient getUserByName:username success:^(NSDictionary *_Nonnull blockchainUser) {
+    [self.wallet.chain.chainManager.DAPIClient getUserByName:username success:^(NSDictionary *_Nonnull blockchainUser) {
         NSLog(@"%@", blockchainUser);
         
         if (completion) {
             completion(blockchainUser);
         }
     }
-                                        failure:^(NSError *_Nonnull error) {
-                                            NSLog(@"%@", error);
-                                            
-                                            if (completion) {
-                                                completion(nil);
-                                            }
-                                        }];
+                                                     failure:^(NSError *_Nonnull error) {
+                                                         NSLog(@"%@", error);
+                                                         
+                                                         if (completion) {
+                                                             completion(nil);
+                                                         }
+                                                     }];
 }
-
-- (void)handleContacts:(NSArray<NSDictionary *> *)rawContacts {
-    NSMutableArray<NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
-    for (NSDictionary *rawContact in rawContacts) {
-        NSDictionary *sender = rawContact[@"sender"];
-        NSString *username = sender[@"username"];
-        [contactsAndIncomingRequests addObject:username];
-    }
-    
-    NSMutableArray<NSString *> *contacts = [NSMutableArray array];
-    NSMutableArray<NSString *> *outgoingContactRequests = [self.outgoingContactRequests mutableCopy];
-    NSMutableArray<NSString *> *incomingContactRequests = [NSMutableArray array];
-    
-    for (NSString *username in contactsAndIncomingRequests) {
-        if ([outgoingContactRequests containsObject:username]) { // it's a match!
-            [outgoingContactRequests removeObject:username];
-            [contacts addObject:username];
-        }
-        else { // incoming request
-            [incomingContactRequests addObject:username];
-        }
-    }
-    
-    self.contacts = contacts;
-    self.outgoingContactRequests = outgoingContactRequests;
-    self.incomingContactRequests = incomingContactRequests;
-}
-
-@end
-
-NS_ASSUME_NONNULL_END
-
-
-
-// MARK: - Persistence
-
--(void)save {
-    //    NSManagedObjectContext * context = [DSTransactionEntity context];
-    //    [context performBlockAndWait:^{ // add the transaction to core data
-    //        [DSChainEntity setContext:context];
-    //        [DSLocalMasternodeEntity setContext:context];
-    //        [DSTransactionHashEntity setContext:context];
-    //        [DSProviderRegistrationTransactionEntity setContext:context];
-    //        [DSProviderUpdateServiceTransactionEntity setContext:context];
-    //        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
-    //        [DSProviderUpdateRevocationTransactionEntity setContext:context];
-    //        if ([DSLocalMasternodeEntity
-    //             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
-    //            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-    //            if (!providerRegistrationTransactionEntity) {
-    //                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
-    //            }
-    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
-    //            [localMasternode setAttributesFromLocalMasternode:self];
-    //            [DSLocalMasternodeEntity saveContext];
-    //        } else {
-    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-    //            [localMasternode setAttributesFromLocalMasternode:self];
-    //            [DSLocalMasternodeEntity saveContext];
-    //        }
-    //    }];
-}
-
 
 @end

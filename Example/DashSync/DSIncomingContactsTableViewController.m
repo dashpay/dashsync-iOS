@@ -41,13 +41,13 @@ static NSString * const CellId = @"CellId";
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.blockchainUser.incomingContactRequests.count;
+    return self.blockchainUser.ownContact.incomingFriendRequests.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.blockchainUser.incomingContactRequests[indexPath.row];
+    NSString *username = self.blockchainUser.ownContact.incomingFriendRequests[indexPath.row].username;
     cell.textLabel.text = username;
     
     return cell;
@@ -56,7 +56,7 @@ static NSString * const CellId = @"CellId";
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    NSString *username = self.blockchainUser.incomingContactRequests[indexPath.row];
+    NSString *username = self.blockchainUser.ownContact.incomingFriendRequests[indexPath.row].username;
     __weak typeof(self) weakSelf = self;
     [self.blockchainUser sendNewContactRequestToUserWithUsername:username completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;

@@ -17,6 +17,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import <ios-dpp/DashPlatformProtocol.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,12 +27,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak, readonly) DSAccount* account;
 @property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
-@property (nonatomic, readonly) UInt256 contactBlockchainUserRegistrationTransactionHash;
+@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
 @property (nonatomic, readonly) NSString * username;
-@property (nonatomic, readonly) NSArray <DSContact *> *outgoingContactRequests;
-@property (nonatomic, readonly) NSArray <DSContact *> *incomingContactRequests;
+@property (nonatomic, readonly) NSArray <DSContact *> *outgoingFriendRequests;
+@property (nonatomic, readonly) NSArray <DSContact *> *incomingFriendRequests;
+@property (nonatomic, readonly) NSArray <DSContact *> *friends;
 
--(instancetype)initWithUsername:(NSString*)username contactsBlockchainUserRegistrationTransactionHash:(UInt256)contactsBlockchainUserRegistrationTransactionHash blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
+@property (nonatomic, readonly) DPDocument* contactRequestDocument;
+
+-(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
 
 -(void)addIncomingContactRequestFromSender:(DSContact *)sender;
 -(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient;

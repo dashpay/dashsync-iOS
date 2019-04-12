@@ -47,7 +47,7 @@ static NSString * const CellId = @"CellId";
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.blockchainUser.contacts[indexPath.row];
+    NSString *username = self.blockchainUser.ownContact.friends[indexPath.row].username;
     cell.textLabel.text = username;
     
     return cell;
