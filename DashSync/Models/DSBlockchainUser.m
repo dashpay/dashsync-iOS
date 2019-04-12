@@ -346,7 +346,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 
 - (void)sendNewContactRequestToPotentialContactWithoutBlockchainUserData:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self fetchBlockchainUserData:potentialContact.username completion:^(NSDictionary *_Nullable blockchainUser) {
+    [self fetchBlockchainUserData:uint256_data(potentialContact.contactBlockchainUserRegistrationTransactionHash) completion:^(NSDictionary *_Nullable blockchainUser) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -434,7 +434,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
         BOOL success = error == nil;
         
         if (success) {
-            [strongSelf fetchBlockchainUserData:strongSelf.username completion:^(NSDictionary *_Nullable blockchainUser) {
+            [strongSelf fetchBlockchainUserData:uint256_data(self.registrationTransactionHash) completion:^(NSDictionary *_Nullable blockchainUser) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
                     return;

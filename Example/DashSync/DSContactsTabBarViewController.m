@@ -30,12 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
     self.delegate = self;
     
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser createProfileWithBioString:[NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username] completion:^(BOOL success) {
+    [self.blockchainUser createProfileWithAboutMeString:[NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username] completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-
+        
         [strongSelf showAlertTitle:@"Created profile:" result:success];
     }];
     
@@ -72,7 +72,15 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *username = textField.text;
         
         __weak typeof(self) weakSelf = self;
-        [self.blockchainUser sendNewContactRequestToUserWithUsername:username completion:^(BOOL success) {
+        DSBlockchainUser *blockchainUserOwner = nil;
+        NSParameterAssert(blockchainUserOwner); // TODO: fix me
+        DSAccount *account = nil;
+        NSParameterAssert(account);
+        DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:username
+                                                                        blockchainUserOwner:blockchainUserOwner
+                                                                                    account:account];
+        
+        [self.blockchainUser sendNewContactRequestToPotentialContact:potentialContact completion:^(BOOL success) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;

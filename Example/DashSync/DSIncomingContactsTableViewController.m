@@ -41,14 +41,17 @@ static NSString * const CellId = @"CellId";
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.blockchainUser.ownContact.incomingFriendRequests.count;
+    return 0; // TODO: get from FRC
+//    return self.blockchainUser.ownContact.incomingFriendRequests.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.blockchainUser.ownContact.incomingFriendRequests[indexPath.row].username;
-    cell.textLabel.text = username;
+    DSPotentialContact *potentialContact = nil;
+    NSParameterAssert(potentialContact); // TODO: get from FRC
+
+    cell.textLabel.text = potentialContact.username;
     
     return cell;
 }
@@ -56,14 +59,15 @@ static NSString * const CellId = @"CellId";
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    NSString *username = self.blockchainUser.ownContact.incomingFriendRequests[indexPath.row].username;
+    DSPotentialContact *potentialContact = nil;
+    NSParameterAssert(potentialContact); // TODO: get from FRC
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser sendNewContactRequestToUserWithUsername:username completion:^(BOOL success) {
+    [self.blockchainUser sendNewContactRequestToPotentialContact:potentialContact completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-
+        
         if (success) {
             [strongSelf.tableView reloadData];
         }

@@ -53,7 +53,7 @@
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"toUserId" : uint256_hex(self.contactBlockchainUserRegistrationTransactionHash),
-                           @"extendedPublicKey" : fundsDerivationPathForContact.extendedPublicKey,
+                           @"extendedPublicKey" : [fundsDerivationPathForContact.extendedPublicKey hexString],
                            };
     
     
@@ -87,10 +87,24 @@
 }
 
 -(BOOL)isEqual:(id)object {
-    if ([super isEqual:object]) return TRUE;
-    if (![object isMemberOfClass:[DSPotentialContact class]]) return FALSE;
-    if ([self.username isEqualToString:((DSPotentialContact*)object).username] && self.account.accountNumber == ((DSPotentialContact*)object).account.accountNumber) return TRUE;
+    if (self == object) {
+        return TRUE;
+    }
+    
+    if (![object isKindOfClass:[self class]]) {
+        return FALSE;
+    }
+    
+    if ([self.username isEqualToString:((DSPotentialContact*)object).username] &&
+        self.account.accountNumber == ((DSPotentialContact*)object).account.accountNumber) {
+        return TRUE;
+    }
+    
     return FALSE;
+}
+
+- (NSUInteger)hash {
+    return self.username.hash ^ self.account.accountNumber;
 }
 
 @end

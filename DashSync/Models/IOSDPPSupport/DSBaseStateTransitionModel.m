@@ -38,6 +38,91 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
     return self;
 }
 
+- (void)sendDocument:(DPDocument *)document
+          contractId:(NSString *)contractId
+          completion:(void (^)(NSError *_Nullable error))completion {
+    NSParameterAssert(document);
+    NSParameterAssert(contractId);
+    
+    NSArray *documents = @[ document ];
+    
+    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:contractId documents:documents];
+    [self sendPacket:stPacket completion:completion];
+}
+
+- (void)sendPacket:(DPSTPacket *)stPacket
+        completion:(void (^)(NSError *_Nullable error))completion {
+    NSParameterAssert(stPacket);
+    NSParameterAssert(completion);
+    
+    NSData *serializedSTPacketObject = [stPacket serialized];
+    
+    // ios-dpp (DAPI) uses direct byte order, but DSTransition needs reversed
+    NSData *serializedSTPacketObjectHash = [[stPacket serializedHash] reverse];
+    
+    DSTransition *transition = [self.blockchainUser transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
+    
+    __weak typeof(self) weakSelf = self;
+    [self.blockchainUser signStateTransition:transition
+                                  withPrompt:@""
+                                  completion:^(BOOL success) {
+                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
+                                      
+                                      if (success) {
+                                          [strongSelf sendTransition:transition
+                                            serializedSTPacketObject:serializedSTPacketObject
+                                                          completion:completion];
+                                      }
+                                      else {
+                                          if (completion) {
+                                              NSError *error = [NSError errorWithDomain:DSStateTransitionModelErrorDomain
+                                                                                   code:DSStateTransitionModelErrorCodeSignTransitionFailed
+                                                                               userInfo:nil];
+                                              completion(error);
+                                          }
+                                      }
+                                  }];
+}
+
+#pragma mark - Private
+
+- (void)sendTransition:(DSTransition *)transition
+serializedSTPacketObject:(NSData *)serializedSTPacketObject
+            completion:(void (^)(NSError *_Nullable error))completion {
+    NSData *transitionData = [transition toData];
+    
+    NSString *transitionDataHex = [transitionData hexString];
+    NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
+    
+    __weak typeof(self) weakSelf = self;
+    [self.chainManager.DAPIClient sendRawTransitionWithRawStateTransition:transitionDataHex
+                                                              rawSTPacket:serializedSTPacketObjectHex
+                                                                  success:^(NSString *_Nonnull headerId) {
+                                                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                      if (!strongSelf) {
+                                                                          return;
+                                                                      }
+                                                                      
+                                                                      NSLog(@"Header ID %@", headerId);
+                                                                      
+                                                                      [strongSelf.chainManager.chain registerSpecialTransaction:transition];
+                                                                      [transition save];
+                                                                      
+                                                                      if (completion) {
+                                                                          completion(nil);
+                                                                      }
+                                                                  }
+                                                                  failure:^(NSError *_Nonnull error) {
+                                                                      NSLog(@"Error: %@", error);
+                                                                      if (completion) {
+                                                                          completion(error);
+                                                                      }
+                                                                  }];
+}
 
 
 @end

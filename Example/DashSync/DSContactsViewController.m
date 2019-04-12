@@ -41,13 +41,16 @@ static NSString * const CellId = @"CellId";
 #pragma mark - Table view
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.blockchainUser.contacts.count;
+    return 0; // TODO: fix me ?
+//    return self.blockchainUser.contacts.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellId forIndexPath:indexPath];
     
-    NSString *username = self.blockchainUser.ownContact.friends[indexPath.row].username;
+//    NSString *username = self.blockchainUser.ownContact.friends[indexPath.row].username;
+    NSString *username = nil; // TODO: fix me
+    NSParameterAssert(username);
     cell.textLabel.text = username;
     
     return cell;
