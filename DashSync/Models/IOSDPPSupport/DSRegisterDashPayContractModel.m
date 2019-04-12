@@ -25,12 +25,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSRegisterDashPayContractModel
 
-- (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion {
-    DPContract *contract = [self.class dashPayContract];
-    
++ (DPContract *)setDashPayNativeDemo1ContractIfNeeded {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    if (dpp.contract) {
+        return dpp.contract;
+    }
+    
+    DPContract *contract = [self.class dashPayContract];
     dpp.contract = contract;
     
+    return contract;
+}
+
+- (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion {
+    DPContract *contract = [self.class setDashPayNativeDemo1ContractIfNeeded];
+    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
     [self sendPacket:stPacket completion:completion];
 }
