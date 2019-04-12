@@ -15,7 +15,6 @@
 }
 
 @dynamic blockHeight;
-@dynamic extendedPublicKey;
 @dynamic username;
 @dynamic blockchainUserRegistrationHash;
 @dynamic publicMessage;

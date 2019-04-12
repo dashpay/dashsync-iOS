@@ -19,5 +19,6 @@
 @dynamic destinationContact;
 @dynamic sourceContact;
 @dynamic transition;
+@dynamic extendedPublicKey;
 
 @end

@@ -74,6 +74,18 @@
     return friendRequestEntity;
 }
 
+-(DSFriendRequestEntity*)incomingFriendRequest {
+    DSContactEntity * contactEntity = [DSContactEntity managedObject];
+    
+    [contactEntity setAttributesFromPotentialContact:self];
+    
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
+    friendRequestEntity.sourceContact = contactEntity;
+    friendRequestEntity.destinationContact = self.blockchainUserOwner.ownContact;
+    friendRequestEntity.extendedPublicKey = self.extendedPublicKey;
+    return friendRequestEntity;
+}
+
 -(BOOL)isEqual:(id)object {
     if ([super isEqual:object]) return TRUE;
     if (![object isMemberOfClass:[DSPotentialContact class]]) return FALSE;

@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSContactEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, copy) NSNumber *blockHeight;
-@property (nullable, nonatomic, retain) NSData *extendedPublicKey;
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, retain) NSData *blockchainUserRegistrationHash;
