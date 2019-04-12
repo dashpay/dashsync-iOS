@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18A391" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.98" systemVersion="18E226" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -72,17 +72,11 @@
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="account" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="contacts" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="derivationPath" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="contact" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="friends" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
+        <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="ownerBlockchainUserRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainUserRegistrationTransactionEntity" inverseName="contacts" inverseEntity="DSBlockchainUserRegistrationTransactionEntity" syncable="YES"/>
         <relationship name="profileTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactProfileCreations" inverseEntity="DSTransitionEntity" syncable="YES"/>
-        <relationship name="recipientRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactRequestEntity" inverseName="destinationContact" inverseEntity="DSContactRequestEntity" syncable="YES"/>
-        <relationship name="sourcedRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactRequestEntity" inverseName="sourceContact" inverseEntity="DSContactRequestEntity" syncable="YES"/>
-    </entity>
-    <entity name="DSContactRequestEntity" representedClassName="DSContactRequestEntity" syncable="YES">
-        <attribute name="destinationBlockchainUserRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="sourceBlockchainUserRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <relationship name="destinationContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="recipientRequests" inverseEntity="DSContactEntity" syncable="YES"/>
-        <relationship name="sourceContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="sourcedRequests" inverseEntity="DSContactEntity" syncable="YES"/>
-        <relationship name="transition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactRequests" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
         <attribute name="derivationPath" attributeType="Binary" indexed="YES" syncable="YES"/>
@@ -98,6 +92,13 @@
                 <index value="syncBlockHeight"/>
             </compoundIndex>
         </compoundIndexes>
+    </entity>
+    <entity name="DSFriendRequestEntity" representedClassName="DSFriendRequestEntity" syncable="YES">
+        <attribute name="destinationBlockchainUserRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="sourceBlockchainUserRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="destinationContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="incomingRequests" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="sourceContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="outgoingRequests" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="transition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactRequests" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSGovernanceObjectEntity" representedClassName="DSGovernanceObjectEntity" syncable="YES">
         <attribute name="amount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
@@ -350,7 +351,7 @@
         <attribute name="registrationTransactionHash" attributeType="Binary" syncable="YES"/>
         <relationship name="blockchainUserRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainUserRegistrationTransactionEntity" inverseName="transitions" inverseEntity="DSBlockchainUserRegistrationTransactionEntity" indexed="YES" syncable="YES"/>
         <relationship name="contactProfileCreations" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="profileTransition" inverseEntity="DSContactEntity" syncable="YES"/>
-        <relationship name="contactRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContactRequestEntity" inverseName="transition" inverseEntity="DSContactRequestEntity" syncable="YES"/>
+        <relationship name="contactRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="transition" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
     </entity>
     <entity name="DSTxInputEntity" representedClassName="DSTxInputEntity" syncable="YES">
         <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -382,7 +383,8 @@
         <element name="DSBlockchainUserTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="60"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="300"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
-        <element name="DSContactEntity" positionX="-2322" positionY="-81" width="128" height="210"/>
+        <element name="DSContactEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
+        <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="120"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="150"/>
         <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>
         <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
@@ -406,6 +408,5 @@
         <element name="DSTransitionEntity" positionX="-2322" positionY="-81" width="128" height="165"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSContactRequestEntity" positionX="-2313" positionY="-72" width="128" height="120"/>
     </elements>
 </model>

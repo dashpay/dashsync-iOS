@@ -45,7 +45,8 @@
 #import "DSMasternodeHoldingsDerivationPath+Protected.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSpecialTransactionsWalletHolder.h"
-#import "DSContact.h"
+#import "DSContactEntity+CoreDataClass.h"
+#import "DSAccountEntity+CoreDataClass.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -164,9 +165,10 @@
     //add blockchain user derivation paths to account
     
     for (DSBlockchainUser * blockchainUser in self.mBlockchainUsers) {
-        for (DSContact * contact in blockchainUser.friends) {
-            [contact.account addDerivationPath:[DSFundsDerivationPath
-                                                contactBasedDerivationPathForContact:contact onChain:self.chain]];
+        for (DSContactEntity * friend in blockchainUser.ownContact.friends) {
+            DSAccount * account = [self accountWithNumber:friend.account.index];
+            [account addDerivationPath:[DSFundsDerivationPath
+                                                contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:friend.blockchainUserRegistrationHash.UInt256 forAccountNumber:account.accountNumber onChain:self.chain]];
         }
     }
 

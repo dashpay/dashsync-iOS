@@ -1,19 +1,19 @@
 //
-//  DSContactRequestEntity+CoreDataProperties.h
+//  DSFriendRequestEntity+CoreDataProperties.h
 //  DashSync
 //
 //  Created by Sam Westrich on 3/24/19.
 //
 //
 
-#import "DSContactRequestEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSContactRequestEntity (CoreDataProperties)
+@interface DSFriendRequestEntity (CoreDataProperties)
 
-+ (NSFetchRequest<DSContactRequestEntity *> *)fetchRequest;
++ (NSFetchRequest<DSFriendRequestEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *sourceBlockchainUserRegistrationTransactionHash;
 @property (nullable, nonatomic, retain) NSData *destinationBlockchainUserRegistrationTransactionHash;

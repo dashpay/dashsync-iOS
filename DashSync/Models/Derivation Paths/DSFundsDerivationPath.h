@@ -16,8 +16,6 @@
 #define EXTENDED_0_PUBKEY_KEY_BIP44_V1   @"extended0pubkeyBIP44"
 #define EXTENDED_0_PUBKEY_KEY_BIP32_V1   @"extended0pubkeyBIP32"
 
-@class DSContact;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFundsDerivationPath : DSDerivationPath
@@ -44,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
 
-+ (instancetype)contactBasedDerivationPathForContact:(DSContact*)contact onChain:(DSChain*)chain;
++ (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses

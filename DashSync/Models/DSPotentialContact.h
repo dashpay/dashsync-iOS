@@ -21,24 +21,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction;
+@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity;
 
-@interface DSContact : NSObject
-
-@property (nonatomic, weak, readonly) DSAccount* account;
-@property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
-@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
-@property (nonatomic, readonly) NSString * username;
-@property (nonatomic, readonly) NSArray <DSContact *> *outgoingFriendRequests;
-@property (nonatomic, readonly) NSArray <DSContact *> *incomingFriendRequests;
-@property (nonatomic, readonly) NSArray <DSContact *> *friends;
+@protocol DSContactRequestProtocol <NSObject>
 
 @property (nonatomic, readonly) DPDocument* contactRequestDocument;
 
+@end
+
+@interface DSPotentialContact : NSObject <DSContactRequestProtocol>
+
+@property (nonatomic, readonly) DSAccount* account;
+@property (nonatomic, readonly) NSString * username;
+@property (nonatomic, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
+@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
+
 -(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
 
--(void)addIncomingContactRequestFromSender:(DSContact *)sender;
--(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient;
+-(DSFriendRequestEntity*)outgoingFriendRequest;
 
 @end
 

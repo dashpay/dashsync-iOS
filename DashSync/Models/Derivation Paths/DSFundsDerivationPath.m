@@ -8,7 +8,7 @@
 #import "DSDerivationPath+Protected.h"
 #import "DSFundsDerivationPath.h"
 #import "DSBlockchainUser.h"
-#import "DSContact.h"
+#import "DSContactEntity+CoreDataClass.h"
 #import "DSAccount.h"
 
 @interface DSFundsDerivationPath()
@@ -29,9 +29,10 @@
     return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
 
-+ (instancetype)contactBasedDerivationPathForContact:(DSContact*)contact onChain:(DSChain*)chain {
++ (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, contact.account.accountNumber | BIP32_HARD,contact.contactBlockchainUserRegistrationTransactionHash.u64[0] ^ BIP32_HARD};
+    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD,blockchainUserRegistrationTransactionHash.u64[0] ^ BIP32_HARD};
+    //todo full uint256 derivation
     return [self derivationPathWithIndexes:indexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
 }
 

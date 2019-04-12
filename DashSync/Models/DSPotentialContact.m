@@ -15,24 +15,25 @@
 //  limitations under the License.
 //
 
-#import "DSContact.h"
+#import "DSPotentialContact.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSDerivationPathFactory.h"
 #import "DSFundsDerivationPath.h"
 #import "DashPlatformProtocol+DashSync.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSContactEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
-@interface DSContact()
+@interface DSPotentialContact()
 
-@property (nonatomic, weak) DSAccount* account;
-@property (nonatomic, weak) DSBlockchainUser * blockchainUserOwner;
+@property (nonatomic, strong) DSAccount* account;
+@property (nonatomic, strong) DSBlockchainUser * blockchainUserOwner;
 @property (nonatomic, copy) NSString * username;
-@property (nonatomic, strong) NSMutableSet <DSContact *> *mOutgoingFriendRequests;
-@property (nonatomic, strong) NSMutableSet <DSContact *> *mIncomingFriendRequests;
 
 @end
 
-@implementation DSContact
+@implementation DSPotentialContact
 
 -(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account {
     if (!(self = [super init])) return nil;
@@ -40,31 +41,7 @@
     self.account = account;
     self.blockchainUserOwner = blockchainUserOwner;
     self.contactBlockchainUserRegistrationTransactionHash = UINT256_ZERO;
-    self.mOutgoingFriendRequests = [NSMutableSet set];
-    self.mIncomingFriendRequests = [NSMutableSet set];
     return self;
-}
-
--(void)addIncomingContactRequestFromSender:(DSContact *)sender {
-    [self.mIncomingFriendRequests addObject:sender];
-}
-
--(void)addOutgoingContactRequestToRecipient:(DSContact *)recipient {
-    [self.mOutgoingFriendRequests addObject:recipient];
-}
-
--(NSArray*)outgoingFriendRequests {
-    return [self.mOutgoingFriendRequests allObjects];
-}
-
--(NSArray*)incomingFriendRequests {
-    return [self.mIncomingFriendRequests allObjects];
-}
-
--(NSArray <DSContact *> *)friends {
-    NSMutableSet * friendSet = [self.mOutgoingFriendRequests mutableCopy];
-    [friendSet intersectSet:self.mIncomingFriendRequests];
-    return [friendSet allObjects];
 }
 
 -(DPDocument*)contactRequestDocument {
@@ -72,7 +49,7 @@
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     
     DSFundsDerivationPath * fundsDerivationPathForContact = [DSFundsDerivationPath
-                                                             contactBasedDerivationPathForContact:self onChain:self.account.wallet.chain];
+                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"toUserId" : uint256_hex(self.contactBlockchainUserRegistrationTransactionHash),
@@ -85,10 +62,21 @@
     return contact;
 }
 
+
+-(DSFriendRequestEntity*)outgoingFriendRequest {
+    DSContactEntity * contactEntity = [DSContactEntity managedObject];
+    contactEntity.
+    
+    
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
+    friendRequestEntity.sourceContact = self.blockchainUserOwner.ownContact;
+    friendRequestEntity.destinationContact = self.
+}
+
 -(BOOL)isEqual:(id)object {
     if ([super isEqual:object]) return TRUE;
-    if (![object isMemberOfClass:[DSContact class]]) return FALSE;
-    if ([self.username isEqualToString:((DSContact*)object).username] && self.account.accountNumber == ((DSContact*)object).account.accountNumber) return TRUE;
+    if (![object isMemberOfClass:[DSPotentialContact class]]) return FALSE;
+    if ([self.username isEqualToString:((DSPotentialContact*)object).username] && self.account.accountNumber == ((DSPotentialContact*)object).account.accountNumber) return TRUE;
     return FALSE;
 }
 

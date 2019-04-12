@@ -1,5 +1,5 @@
 //
-//  DSContactRequestEntity+CoreDataClass.h
+//  DSFriendRequestEntity+CoreDataClass.h
 //  DashSync
 //
 //  Created by Sam Westrich on 3/24/19.
@@ -13,10 +13,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSContactRequestEntity : NSManagedObject
+@interface DSFriendRequestEntity : NSManagedObject
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-#import "DSContactRequestEntity+CoreDataProperties.h"
+#import "DSFriendRequestEntity+CoreDataProperties.h"

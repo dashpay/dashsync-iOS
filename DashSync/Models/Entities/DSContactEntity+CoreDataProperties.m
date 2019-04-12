@@ -22,8 +22,9 @@
 @dynamic account;
 @dynamic derivationPath;
 @dynamic ownerBlockchainUserRegistrationTransaction;
-@dynamic sourcedRequests;
-@dynamic recipientRequests;
+@dynamic outgoingRequests;
+@dynamic incomingRequests;
 @dynamic profileTransition;
+@dynamic friends;
 
 @end
