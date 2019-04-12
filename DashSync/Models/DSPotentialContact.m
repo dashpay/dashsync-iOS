@@ -65,12 +65,13 @@
 
 -(DSFriendRequestEntity*)outgoingFriendRequest {
     DSContactEntity * contactEntity = [DSContactEntity managedObject];
-    contactEntity.
     
+    [contactEntity setAttributesFromPotentialContact:self];
     
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.blockchainUserOwner.ownContact;
-    friendRequestEntity.destinationContact = self.
+    friendRequestEntity.destinationContact = contactEntity;
+    return friendRequestEntity;
 }
 
 -(BOOL)isEqual:(id)object {

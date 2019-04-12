@@ -34,9 +34,6 @@
 #import "DashPlatformProtocol+DashSync.h"
 #import "DSPotentialContact.h"
 
-static NSString *const DashpayNativeDAPId = @"9ae7bb6e437218d8be36b04843f63a135491c898ff22d1ead73c43e105cc2444";
-static NSString *const DashpayDAPId = @"7723be402fbd457bc8e8435addd4efcbe41c1d548db9fc3075a03bb68929fc61";
-
 static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmPJ36pkVdzHw7";
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
@@ -304,30 +301,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 // MARK: - Persistence
 
 -(void)save {
-    //    NSManagedObjectContext * context = [DSTransactionEntity context];
-    //    [context performBlockAndWait:^{ // add the transaction to core data
-    //        [DSChainEntity setContext:context];
-    //        [DSLocalMasternodeEntity setContext:context];
-    //        [DSTransactionHashEntity setContext:context];
-    //        [DSProviderRegistrationTransactionEntity setContext:context];
-    //        [DSProviderUpdateServiceTransactionEntity setContext:context];
-    //        [DSProviderUpdateRegistrarTransactionEntity setContext:context];
-    //        [DSProviderUpdateRevocationTransactionEntity setContext:context];
-    //        if ([DSLocalMasternodeEntity
-    //             countObjectsMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)] == 0) {
-    //            DSProviderRegistrationTransactionEntity * providerRegistrationTransactionEntity = [DSProviderRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-    //            if (!providerRegistrationTransactionEntity) {
-    //                providerRegistrationTransactionEntity = (DSProviderRegistrationTransactionEntity *)[self.providerRegistrationTransaction save];
-    //            }
-    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity managedObject];
-    //            [localMasternode setAttributesFromLocalMasternode:self];
-    //            [DSLocalMasternodeEntity saveContext];
-    //        } else {
-    //            DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(self.providerRegistrationTransaction.txHash)];
-    //            [localMasternode setAttributesFromLocalMasternode:self];
-    //            [DSLocalMasternodeEntity saveContext];
-    //        }
-    //    }];
+    
 }
 
 
@@ -410,9 +384,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
         BOOL success = error == nil;
         
         if (success) {
-            DSContactEntity * contactEntity = potentialContact.contactEntity;
-            [DSFriendRequestEntity ]
-            [strongSelf.ownContact addOutgoingRequestsObject:<#(nonnull DSFriendRequestEntity *)#>];
+            [strongSelf.ownContact addOutgoingRequestsObject:[potentialContact outgoingFriendRequest]];
         }
         
         if (completion) {
@@ -422,8 +394,6 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 }
 
 -(void)acceptContactRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL))completion {
-
-    
     __weak typeof(self) weakSelf = self;
     [self.stateTransitionModel sendDocument:friendRequest.sourceContact.contactRequestDocument contractId:DashpayNativeDAPId completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -434,9 +404,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
         BOOL success = error == nil;
         
         if (success) {
-            DSContactEntity * contactEntity = potentialContact.contactEntity;
-            [DSFriendRequestEntity ]
-            [strongSelf.ownContact addOutgoingRequestsObject:<#(nonnull DSFriendRequestEntity *)#>];
+            [strongSelf.ownContact addFriendsObject:friendRequest.sourceContact];
         }
         
         if (completion) {
@@ -470,10 +438,6 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
                 if (!strongSelf) {
                     return;
                 }
-                
-                //strongSelf.blockchainUserData = blockchainUser;
-                
-                //[self.mContacts setObject:<#(nonnull DSContact *)#> forKey:<#(nonnull id<NSCopying>)#>]
                 
                 if (completion) {
                     completion(!!blockchainUser);
@@ -516,7 +480,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
                                                                    }];
 }
 
-- (void)fetchContacts:(void (^)(BOOL success))completion {
+- (void)fetchContactRequests:(void (^)(BOOL success))completion {
     NSDictionary *query = @{ @"data.user" : uint256_hex(self.registrationTransactionHash)};
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
@@ -532,12 +496,11 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
         if (completion) {
             completion(YES);
         }
-    }
-                                                                   failure:^(NSError *_Nonnull error) {
-                                                                       if (completion) {
-                                                                           completion(NO);
-                                                                       }
-                                                                   }];
+    } failure:^(NSError *_Nonnull error) {
+        if (completion) {
+            completion(NO);
+        }
+    }];
 }
 
 
@@ -545,9 +508,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     NSMutableArray <NSString *> *contactsAndIncomingRequests = [NSMutableArray array];
     NSMutableArray <NSMutableArray *> *contacts = [NSMutableArray array];
     for (NSDictionary *rawContact in rawContactRequests) {
-        NSDictionary *sender = rawContact[@"sender"];
-        NSString *username = sender[@"username"];
-        [contactsAndIncomingRequests addObject:username];
+        NSString *recipient = rawContact[@"toUserId"];
     }
     
     
@@ -607,14 +568,13 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
         if (completion) {
             completion(blockchainUser);
         }
-    }
-                                                     failure:^(NSError *_Nonnull error) {
-                                                         NSLog(@"%@", error);
-                                                         
-                                                         if (completion) {
-                                                             completion(nil);
-                                                         }
-                                                     }];
+    } failure:^(NSError *_Nonnull error) {
+        NSLog(@"%@", error);
+        
+        if (completion) {
+            completion(nil);
+        }
+    }];
 }
 
 @end

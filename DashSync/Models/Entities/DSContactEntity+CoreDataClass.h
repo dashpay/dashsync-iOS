@@ -21,7 +21,7 @@
 #import <ios-dpp/DashPlatformProtocol.h>
 #import "DSPotentialContact.h"
 
-@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSDerivationPathEntity, DSTransitionEntity, DSBlockchainUser,DSBlockchainUserRegistrationTransaction;
+@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSDerivationPathEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialContact;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
 
+- (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact;
 
 @end
 

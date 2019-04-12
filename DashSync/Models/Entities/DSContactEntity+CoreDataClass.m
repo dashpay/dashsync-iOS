@@ -34,6 +34,15 @@
 
 @synthesize blockchainUserOwner;
 
+- (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact {
+    [self.managedObjectContext performBlockAndWait:^{
+        self.username = potentialContact.username;
+        self.account = [DSAccountEntity accountEntityForWalletUniqueID:potentialContact.account.wallet.uniqueID index:potentialContact.account.accountNumber];
+    }];
+    
+    return self;
+}
+
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero(self.blockchainUserRegistrationHash.UInt256), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
     DashPlatformProtocol * dpp = [DashPlatformProtocol sharedInstance];
