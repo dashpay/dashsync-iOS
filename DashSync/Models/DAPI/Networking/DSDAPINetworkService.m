@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 
 #import "DSHTTPJSONRPCClient.h"
 
@@ -24,13 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
 
-@interface DSDAPIClient ()
+@interface DSDAPINetworkService ()
 
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
 
 @end
 
-@implementation DSDAPIClient
+@implementation DSDAPINetworkService
 
 - (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory {
     NSParameterAssert(url);

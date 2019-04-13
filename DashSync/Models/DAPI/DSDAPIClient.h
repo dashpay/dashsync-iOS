@@ -25,9 +25,9 @@ typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
     DSStateTransitionModelErrorCodeSignTransitionFailed = 1,
 };
 
-@class DSChainManager, DSBlockchainUser, DPDocument, DPSTPacket;
+@class DSChainManager, DSBlockchainUser, DPDocument, DPSTPacket, DPContract;
 
-@interface DSBaseStateTransitionModel : NSObject
+@interface DSDAPIClient : NSObject
 
 @property (readonly, nonatomic, strong) DSChainManager *chainManager;
 @property (readonly, nonatomic, strong) DSBlockchainUser *blockchainUser;
@@ -38,7 +38,7 @@ typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)sendDocument:(DPDocument *)document
-          contractId:(NSString *)contractId
+            contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)sendPacket:(DPSTPacket *)stPacket

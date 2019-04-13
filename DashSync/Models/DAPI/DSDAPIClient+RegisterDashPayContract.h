@@ -15,18 +15,17 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DSDAPIProtocol.h"
+#import "DSDAPIClient.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class HTTPLoaderFactory;
+@class DPContract;
 
-@interface DSDAPIClient : NSObject <DSDAPIProtocol>
+@interface DSDAPIClient (RegisterDashPayContract)
 
-- (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
++ (DPContract *)ds_currentDashPayContract;
+
+- (void)ds_registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion;
 
 @end
 

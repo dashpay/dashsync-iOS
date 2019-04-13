@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
     DSDAPIClientErrorCodeInvalidResponse = 100,
 };
 
-@protocol DSDAPIProtocol <NSObject>
+@protocol DSDAPINetworkServiceProtocol <NSObject>
 
 ///--------------
 /// @name Layer 1

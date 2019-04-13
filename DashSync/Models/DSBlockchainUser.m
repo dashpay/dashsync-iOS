@@ -27,15 +27,14 @@
 #import "DSTransition.h"
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
 #import "DSChainManager.h"
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DashPlatformProtocol+DashSync.h"
 #import "DSPotentialContact.h"
 #import "NSData+Bitcoin.h"
-
-static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmPJ36pkVdzHw7";
+#import "DSDAPIClient+RegisterDashPayContract.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -58,8 +57,8 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 
 @property(nonatomic,strong) DSContactEntity * ownContact;
 
-@property (nonatomic,readonly) DSDAPIClient * dapiClient;
-@property (nonatomic,strong) DSBaseStateTransitionModel * stateTransitionModel;
+@property (nonatomic,readonly) DSDAPINetworkService * DAPINetworkService;
+@property (nonatomic,strong) DSDAPIClient * dapiClient;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
@@ -82,7 +81,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     self.blockchainUserResetTransactions = [NSMutableArray array];
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
-    self.stateTransitionModel = [[DSBaseStateTransitionModel alloc] initWithChainManager:wallet.chain.chainManager blockchainUser:self];
+    self.dapiClient = [[DSDAPIClient alloc] initWithChainManager:wallet.chain.chainManager blockchainUser:self];
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -97,9 +96,9 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 
 -(void)updateCreditBalance {
     __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get dapiClient immediately
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        [self.dapiClient getUserByName:self.username success:^(NSDictionary * _Nullable profileDictionary) {
+        [self.DAPINetworkService getUserByName:self.username success:^(NSDictionary * _Nullable profileDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -376,7 +375,8 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     }
     
     __weak typeof(self) weakSelf = self;
-    [self.stateTransitionModel sendDocument:potentialContact.contactRequestDocument contractId:DashpayNativeDAPId completion:^(NSError * _Nullable error) {
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    [self.dapiClient sendDocument:potentialContact.contactRequestDocument contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -396,7 +396,8 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 
 -(void)acceptContactRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.stateTransitionModel sendDocument:friendRequest.sourceContact.contactRequestDocument contractId:DashpayNativeDAPId completion:^(NSError * _Nullable error) {
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    [self.dapiClient sendDocument:friendRequest.sourceContact.contactRequestDocument contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -425,7 +426,8 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     NSAssert(error == nil, @"Failed to build a user");
     
     __weak typeof(self) weakSelf = self;
-    [self.stateTransitionModel sendDocument:user contractId:DashpayNativeDAPId completion:^(NSError * _Nullable error) {
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    [self.dapiClient sendDocument:user contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -453,8 +455,8 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     }];
 }
 
--(DSDAPIClient*)dapiClient {
-    return self.wallet.chain.chainManager.DAPIClient;
+-(DSDAPINetworkService*)DAPINetworkService {
+    return self.wallet.chain.chainManager.DAPINetworkService;
 }
 
 - (void)fetchProfile:(void (^)(BOOL success))completion {
@@ -462,7 +464,9 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    [self.wallet.chain.chainManager.DAPIClient fetchDocumentsForContractId:DashpayNativeDAPId objectsType:@"profile" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"profile" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -486,7 +490,9 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    [self.wallet.chain.chainManager.DAPIClient fetchDocumentsForContractId:DashpayNativeDAPId objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -588,7 +594,7 @@ static NSString * const DashpayNativeDAPId = @"84Cdj9cB6bakxC6SWCGns7bZxNg6b5VmP
 }
 
 - (void)fetchBlockchainUserData:(NSData *)blockchainUserRegistrationHash completion:(void (^)(NSDictionary *_Nullable blockchainUser))completion {
-    [self.wallet.chain.chainManager.DAPIClient getUserById:blockchainUserRegistrationHash.hexString success:^(NSDictionary *_Nonnull blockchainUser) {
+    [self.DAPINetworkService getUserById:blockchainUserRegistrationHash.hexString success:^(NSDictionary *_Nonnull blockchainUser) {
         NSLog(@"%@", blockchainUser);
         
         if (completion) {

@@ -15,30 +15,28 @@
 //  limitations under the License.
 //
 
-#import "DSRegisterDashPayContractModel.h"
-
-#import <DashSync/DashSync.h>
+#import "DSDAPIClient+RegisterDashPayContract.h"
 
 #import "DashPlatformProtocol+DashSync.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DSRegisterDashPayContractModel
+@implementation DSDAPIClient (RegisterDashPayContract)
 
-+ (DPContract *)setDashPayNativeDemo1ContractIfNeeded {
++ (DPContract *)ds_currentDashPayContract {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     if (dpp.contract) {
         return dpp.contract;
     }
     
-    DPContract *contract = [self.class dashPayContract];
+    DPContract *contract = [self ds_localDashPayContract];
     dpp.contract = contract;
     
     return contract;
 }
 
-- (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion {
-    DPContract *contract = [self.class setDashPayNativeDemo1ContractIfNeeded];
+- (void)ds_registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion {
+    DPContract *contract = [self.class ds_currentDashPayContract];
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
     [self sendPacket:stPacket completion:completion];
@@ -46,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-+ (DPContract *)dashPayContract {
++ (DPContract *)ds_localDashPayContract {
     // TODO: read async'ly
     NSString *path = [[NSBundle mainBundle] pathForResource:@"dashpay-contract" ofType:@"json"];
     NSError *error = nil;

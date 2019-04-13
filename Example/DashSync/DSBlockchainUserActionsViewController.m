@@ -10,11 +10,11 @@
 #import "DSTopupBlockchainUserViewController.h"
 
 #import "DSContactsNavigationController.h"
-#import "DSRegisterDashPayContractModel.h"
+#import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
 
 @interface DSBlockchainUserActionsViewController ()
 
-@property (null_resettable, strong, nonatomic) DSRegisterDashPayContractModel *registerContractModel;
+@property (null_resettable, strong, nonatomic) DSDAPIClient *dapiClient;
 
 @end
 
@@ -70,7 +70,7 @@
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         
         __weak typeof(self) weakSelf = self;
-        [self.registerContractModel registerDashPayContractCompletion:^(NSError * _Nullable error) {
+        [self.dapiClient ds_registerDashPayContractCompletion:^(NSError * _Nullable error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -91,12 +91,12 @@
     }
 }
 
-- (DSRegisterDashPayContractModel *)registerContractModel {
-    if (_registerContractModel == nil) {
-        _registerContractModel = [[DSRegisterDashPayContractModel alloc] initWithChainManager:self.chainManager
-                                                                               blockchainUser:self.blockchainUser];
+- (DSDAPIClient *)dapiClient {
+    if (_dapiClient == nil) {
+        _dapiClient = [[DSDAPIClient alloc] initWithChainManager:self.chainManager
+                                                  blockchainUser:self.blockchainUser];
     }
-    return _registerContractModel;
+    return nil;
 }
 
 @end

@@ -48,7 +48,7 @@
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
-@property (nonatomic, strong) DSDAPIClient * DAPIClient;
+@property (nonatomic, strong) DSDAPINetworkService * DAPINetworkService;
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
 @property (nonatomic, assign) uint32_t syncStartHeight;
@@ -75,7 +75,7 @@
     // (using devnet-maithai for now)
     NSURL *dapiNodeURL = [NSURL URLWithString:@"http://18.237.69.61:3000"];
     HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-    self.DAPIClient = [[DSDAPIClient alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
+    self.DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
     
     return self;
 }

@@ -29,7 +29,7 @@
 #import "DSTransactionManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"

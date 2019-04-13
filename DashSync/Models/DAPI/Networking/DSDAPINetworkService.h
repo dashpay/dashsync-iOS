@@ -15,18 +15,18 @@
 //  limitations under the License.
 //
 
-#import "DSBaseStateTransitionModel.h"
+#import <Foundation/Foundation.h>
+
+#import "DSDAPINetworkServiceProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser;
-@class DPContract;
+@class HTTPLoaderFactory;
 
-@interface DSRegisterDashPayContractModel : DSBaseStateTransitionModel
+@interface DSDAPINetworkService : NSObject <DSDAPINetworkServiceProtocol>
 
-+ (DPContract *)setDashPayNativeDemo1ContractIfNeeded;
-
-- (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion;
+- (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DSBaseStateTransitionModel.h"
+#import "DSDAPIClient.h"
 
 #import <DashSync/DSTransition.h>
 #import <DashSync/DashSync.h>
@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModelErrorDomain";
 
-@implementation DSBaseStateTransitionModel
+@implementation DSDAPIClient
 
 - (instancetype)initWithChainManager:(DSChainManager *)chainManager
                       blockchainUser:(DSBlockchainUser *)blockchainUser {
@@ -39,15 +39,15 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
 }
 
 - (void)sendDocument:(DPDocument *)document
-          contractId:(NSString *)contractId
+            contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(document);
-    NSParameterAssert(contractId);
+    NSParameterAssert(contract);
     
     NSArray *documents = @[ document ];
     
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:contractId documents:documents];
+    DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:contract.identifier documents:documents];
     [self sendPacket:stPacket completion:completion];
 }
 
@@ -99,7 +99,7 @@ serializedSTPacketObject:(NSData *)serializedSTPacketObject
     NSString *serializedSTPacketObjectHex = [serializedSTPacketObject hexString];
     
     __weak typeof(self) weakSelf = self;
-    [self.chainManager.DAPIClient sendRawTransitionWithRawStateTransition:transitionDataHex
+    [self.chainManager.DAPINetworkService sendRawTransitionWithRawStateTransition:transitionDataHex
                                                               rawSTPacket:serializedSTPacketObjectHex
                                                                   success:^(NSString *_Nonnull headerId) {
                                                                       __strong typeof(weakSelf) strongSelf = weakSelf;

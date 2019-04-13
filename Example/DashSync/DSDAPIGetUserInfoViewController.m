@@ -87,7 +87,7 @@
         return;
     }
     
-    [self.chainManager.DAPIClient getUserByName:username success:^(NSDictionary * _Nonnull blockchainUser) {
+    [self.chainManager.DAPINetworkService getUserByName:username success:^(NSDictionary * _Nonnull blockchainUser) {
         NSLog(@"%@", blockchainUser);
     } failure:^(NSError * _Nonnull error) {
         NSLog(@"%@", error);

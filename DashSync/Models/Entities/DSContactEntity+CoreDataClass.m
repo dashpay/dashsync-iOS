@@ -27,7 +27,7 @@
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 #import "DSChainManager.h"
 
 @implementation DSContactEntity
@@ -61,8 +61,8 @@
     return contact;
 }
 
--(DSDAPIClient*)dapiClient {
-    return self.blockchainUserOwner.wallet.chain.chainManager.DAPIClient;
+-(DSDAPINetworkService*)DAPINetworkService {
+    return self.blockchainUserOwner.wallet.chain.chainManager.DAPINetworkService;
 }
 
 @end
