@@ -18,6 +18,7 @@
 #import "DSDAPIClient+RegisterDashPayContract.h"
 
 #import "DashPlatformProtocol+DashSync.h"
+#import "DSBlockchainUser.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,11 +36,12 @@ NS_ASSUME_NONNULL_BEGIN
     return contract;
 }
 
-- (void)ds_registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion {
+- (void)ds_registerDashPayContractForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion {
     DPContract *contract = [self.class ds_currentDashPayContract];
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    dpp.userId = blockchainUser.registrationTransactionHashIdentifier;
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
-    [self sendPacket:stPacket completion:completion];
+    [self sendPacket:stPacket forUser:blockchainUser completion:completion];
 }
 
 #pragma mark - Private

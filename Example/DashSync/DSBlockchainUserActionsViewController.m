@@ -14,8 +14,6 @@
 
 @interface DSBlockchainUserActionsViewController ()
 
-@property (null_resettable, strong, nonatomic) DSDAPIClient *dapiClient;
-
 @end
 
 @implementation DSBlockchainUserActionsViewController
@@ -70,7 +68,7 @@
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         
         __weak typeof(self) weakSelf = self;
-        [self.dapiClient ds_registerDashPayContractCompletion:^(NSError * _Nullable error) {
+        [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainUser completion:^(NSError * _Nullable error) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -89,14 +87,6 @@
         topupBlockchainUserViewController.chainManager = self.chainManager;
         topupBlockchainUserViewController.blockchainUser = self.blockchainUser;
     }
-}
-
-- (DSDAPIClient *)dapiClient {
-    if (_dapiClient == nil) {
-        _dapiClient = [[DSDAPIClient alloc] initWithChainManager:self.chainManager
-                                                  blockchainUser:self.blockchainUser];
-    }
-    return nil;
 }
 
 @end

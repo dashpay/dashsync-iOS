@@ -40,7 +40,7 @@ typedef NS_ENUM(uint32_t, DSSyncCountInfo) {
 
 FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
-@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPINetworkService, DSTransactionManager, DSBloomFilter;
+@class DSGovernanceSyncManager, DSMasternodeManager, DSSporkManager, DSPeerManager, DSGovernanceVote, DSDAPIClient, DSTransactionManager, DSBloomFilter;
 
 @interface DSChainManager : NSObject <DSChainDelegate,DSPeerChainDelegate>
 
@@ -48,7 +48,7 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 @property (nonatomic, readonly) DSSporkManager * sporkManager;
 @property (nonatomic, readonly) DSMasternodeManager * masternodeManager;
 @property (nonatomic, readonly) DSGovernanceSyncManager * governanceSyncManager;
-@property (nonatomic, readonly) DSDAPINetworkService * DAPINetworkService;
+@property (nonatomic, readonly) DSDAPIClient * DAPIClient;
 @property (nonatomic, readonly) DSTransactionManager * transactionManager;
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChain * chain;

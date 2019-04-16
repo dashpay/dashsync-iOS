@@ -25,23 +25,25 @@ typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
     DSStateTransitionModelErrorCodeSignTransitionFailed = 1,
 };
 
-@class DSChainManager, DSBlockchainUser, DPDocument, DPSTPacket, DPContract;
+@class DSChain, DSBlockchainUser, DPDocument, DPSTPacket, DPContract, DSDAPINetworkService,DSPeer;
 
 @interface DSDAPIClient : NSObject
 
-@property (readonly, nonatomic, strong) DSChainManager *chainManager;
-@property (readonly, nonatomic, strong) DSBlockchainUser *blockchainUser;
+@property (readonly, nonatomic) DSChain * chain;
+@property (nonatomic, readonly) DSDAPINetworkService * DAPINetworkService;
 
-- (instancetype)initWithChainManager:(DSChainManager *)chainManager
-                      blockchainUser:(DSBlockchainUser *)blockchainUser NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
+- (void)addPeer:(DSPeer*)peer;
+
 - (void)sendDocument:(DPDocument *)document
+             forUser:(DSBlockchainUser*)blockchainUser
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
-- (void)sendPacket:(DPSTPacket *)stPacket
+- (void)sendPacket:(DPSTPacket *)stPacket forUser:(DSBlockchainUser*)blockchainUser
         completion:(void (^)(NSError *_Nullable error))completion;
 
 @end
