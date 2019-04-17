@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
+NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.error";
 
 
 @interface DSDAPINetworkService ()
@@ -546,8 +546,8 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                     NSLocalizedDescriptionKey : DSLocalizedString(@"Invalid DAPI Response", nil),
                     NSDebugDescriptionErrorKey : responseObject,
                 };
-                NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain
-                                                     code:DSDAPIClientErrorCodeInvalidResponse
+                NSError *error = [NSError errorWithDomain:DSDAPINetworkServiceErrorDomain
+                                                     code:DSDAPINetworkServiceErrorCodeInvalidResponse
                                                  userInfo:userInfo];
 
                 failure(error);

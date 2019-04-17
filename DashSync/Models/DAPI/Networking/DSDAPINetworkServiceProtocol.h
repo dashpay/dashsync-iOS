@@ -21,10 +21,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const DSDAPIClientErrorDomain;
+extern NSString *const DSDAPINetworkServiceErrorDomain;
 
-typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
-    DSDAPIClientErrorCodeInvalidResponse = 100,
+typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
+    DSDAPINetworkServiceErrorCodeInvalidResponse = 100,
 };
 
 @protocol DSDAPINetworkServiceProtocol <NSObject>

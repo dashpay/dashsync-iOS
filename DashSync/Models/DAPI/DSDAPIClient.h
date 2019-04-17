@@ -19,10 +19,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSErrorDomain const DSStateTransitionModelErrorDomain;
+extern NSErrorDomain const DSDAPIClientErrorDomain;
 
-typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
-    DSStateTransitionModelErrorCodeSignTransitionFailed = 1,
+typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
+    DSDAPIClientErrorCodeSignTransitionFailed = 1,
+    DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
 @class DSChain, DSBlockchainUser, DPDocument, DPSTPacket, DPContract, DSDAPINetworkService,DSPeer;
@@ -43,7 +44,8 @@ typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
-- (void)sendPacket:(DPSTPacket *)stPacket forUser:(DSBlockchainUser*)blockchainUser
+- (void)sendPacket:(DPSTPacket *)stPacket
+           forUser:(DSBlockchainUser*)blockchainUser
         completion:(void (^)(NSError *_Nullable error))completion;
 
 @end

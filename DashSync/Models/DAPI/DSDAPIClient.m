@@ -26,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModelErrorDomain";
+NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
 @interface DSDAPIClient()
 
@@ -63,7 +63,8 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
     [self sendPacket:stPacket forUser:blockchainUser completion:completion];
 }
 
-- (void)sendPacket:(DPSTPacket *)stPacket forUser:(DSBlockchainUser*)blockchainUser
+- (void)sendPacket:(DPSTPacket *)stPacket
+           forUser:(DSBlockchainUser*)blockchainUser
         completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(stPacket);
     NSParameterAssert(completion);
@@ -91,8 +92,8 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
                                       }
                                       else {
                                           if (completion) {
-                                              NSError *error = [NSError errorWithDomain:DSStateTransitionModelErrorDomain
-                                                                                   code:DSStateTransitionModelErrorCodeSignTransitionFailed
+                                              NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain
+                                                                                   code:DSDAPIClientErrorCodeSignTransitionFailed
                                                                                userInfo:nil];
                                               completion(error);
                                           }
@@ -128,7 +129,9 @@ serializedSTPacketObject:(NSData *)serializedSTPacketObject
             completion:(void (^)(NSError *_Nullable error))completion {
     DSDAPINetworkService * service = self.DAPINetworkService;
     if (!service) {
-        completion([NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
+        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
+                                       code:DSDAPIClientErrorCodeNoKnownDAPINodes
+                                   userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
         return;
     }
     NSData *transitionData = [transition toData];
