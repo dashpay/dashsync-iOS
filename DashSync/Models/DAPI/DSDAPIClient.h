@@ -36,7 +36,7 @@ typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)addPeer:(DSPeer*)peer;
+- (void)addDAPINodeByAddress:(NSString*)host;
 
 - (void)sendDocument:(DPDocument *)document
              forUser:(DSBlockchainUser*)blockchainUser

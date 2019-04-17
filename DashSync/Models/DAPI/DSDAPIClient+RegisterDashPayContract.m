@@ -48,7 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (DPContract *)ds_localDashPayContract {
     // TODO: read async'ly
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"dashpay-contract" ofType:@"json"];
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *path = [bundle pathForResource:@"dashpay-contract" ofType:@"json"];
     NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
     NSAssert(error == nil, @"Failed reading contract json");

@@ -71,6 +71,11 @@
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
     self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain];
+    if (chain.isDevnetAny) {
+        for (DSPeer * peer in self.peerManager.registeredDevnetPeers) {
+            [self.DAPIClient addDAPINodeByAddress:peer.host];
+        }
+    }
     
     return self;
 }

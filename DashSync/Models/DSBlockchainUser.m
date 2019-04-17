@@ -418,6 +418,8 @@
 - (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     dpp.userId = uint256_hex(self.registrationTransactionHash);
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    dpp.contract = contract;
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"about" :aboutme,
@@ -427,7 +429,7 @@
     NSAssert(error == nil, @"Failed to build a user");
     
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    
     [self.wallet.chain.chainManager.DAPIClient sendDocument:user forUser:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {

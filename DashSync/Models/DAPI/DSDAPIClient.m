@@ -44,6 +44,7 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
         _chain = chain;
         self.availablePeers = [NSMutableArray array];
         self.activeServices = [NSMutableArray array];
+
     }
     return self;
 }
@@ -101,8 +102,8 @@ NSErrorDomain const DSStateTransitionModelErrorDomain = @"DSStateTransitionModel
 
 #pragma mark - Peers
 
-- (void)addPeer:(DSPeer*)peer {
-    [self.availablePeers addObject:peer.host];
+- (void)addDAPINodeByAddress:(NSString*)host {
+    [self.availablePeers addObject:host];
 }
 
 -(DSDAPINetworkService*)DAPINetworkService {

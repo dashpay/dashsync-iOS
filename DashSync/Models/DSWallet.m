@@ -164,7 +164,8 @@
     
     //add blockchain user derivation paths to account
     
-    for (DSBlockchainUser * blockchainUser in self.mBlockchainUsers) {
+    for (NSString * blockchainUsername in self.mBlockchainUsers) {
+        DSBlockchainUser * blockchainUser = [self.mBlockchainUsers objectForKey:blockchainUsername];
         for (DSContactEntity * friend in blockchainUser.ownContact.friends) {
             DSAccount * account = [self accountWithNumber:friend.account.index];
             [account addDerivationPath:[DSFundsDerivationPath
