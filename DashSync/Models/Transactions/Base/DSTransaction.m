@@ -504,16 +504,24 @@
     [self.outScripts.lastObject appendUInt8:OP_RETURN];
 }
 
-- (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
+- (void)addOutputScript:(NSData *)script amount:(uint64_t)amount
 {
     NSString *address = [NSString addressWithScriptPubKey:script onChain:self.chain];
-    
+    [self addOutputScript:script withAddress:address amount:amount];
+}
+
+
+- (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount
+{
+    if (!address && script) {
+        address = [NSString addressWithScriptPubKey:script onChain:self.chain];
+    }
     [self.amounts addObject:@(amount)];
     [self.outScripts addObject:script];
     [self.addresses addObject:(address) ? address : [NSNull null]];
 }
 
-- (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
+- (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index
 {
     NSMutableData *d = [NSMutableData data];
     
