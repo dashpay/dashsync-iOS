@@ -417,7 +417,7 @@
 
 - (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    dpp.userId = uint256_hex(self.registrationTransactionHash);
+    dpp.userId = uint256_hex(uint256_reverse(self.registrationTransactionHash));
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;
     NSError *error = nil;
@@ -439,7 +439,7 @@
         BOOL success = error == nil;
         
         if (success) {
-            [strongSelf fetchBlockchainUserData:uint256_data(self.registrationTransactionHash) completion:^(NSDictionary *_Nullable blockchainUser) {
+            [strongSelf fetchBlockchainUserData:uint256_data(uint256_reverse(self.registrationTransactionHash)) completion:^(NSDictionary *_Nullable blockchainUser) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
                     return;
