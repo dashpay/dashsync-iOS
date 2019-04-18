@@ -76,6 +76,13 @@ static NSUInteger _fetchBatchSize = 100;
     return [self fetchObjects:self.fetchReq];
 }
 
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray
+{
+    NSFetchRequest * fetchRequest = self.fetchReq;
+    [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchArray];
+    return [self fetchObjects:fetchRequest];
+}
+
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
 {
     NSArray *a;

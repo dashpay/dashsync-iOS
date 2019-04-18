@@ -49,6 +49,7 @@
     [self.managedObjectContext performBlockAndWait:^{
         transaction.blockchainUserRegistrationTransactionVersion = self.specialTransactionVersion;
         transaction.pubkeyHash = self.publicKey.UInt160;
+        DSDLog(@"%@",uint160_hex(transaction.pubkeyHash));
         transaction.username = self.username;
         transaction.payloadSignature = self.payloadSignature;
     }];

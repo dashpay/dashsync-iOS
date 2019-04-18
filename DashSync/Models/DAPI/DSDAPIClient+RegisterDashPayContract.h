@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (DPContract *)ds_currentDashPayContract;
 
-- (void)ds_registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion;
+- (void)ds_registerDashPayContractForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion;
 
 @end
 

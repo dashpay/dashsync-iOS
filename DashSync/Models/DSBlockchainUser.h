@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,weak,readonly) DSWallet * wallet;
 @property (nonatomic,readonly) NSString * uniqueIdentifier;
 @property (nonatomic,readonly) UInt256 registrationTransactionHash;
+@property (nonatomic,readonly) NSString * registrationTransactionHashIdentifier;
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSString * username;
@@ -25,10 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) uint64_t syncHeight;
 
 @property (nonatomic,readonly) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
-
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet;
-
--(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash;
 
 @property (nonatomic,readonly) DSContactEntity* ownContact;
 

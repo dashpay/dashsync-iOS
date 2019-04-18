@@ -53,6 +53,7 @@
 
 -(void)reloadAddresses {
     [self.mAllAddresses removeAllObjects];
+    [self.mOrderedAddresses removeAllObjects];
     [self.mUsedAddresses removeAllObjects];
     self.addressesLoaded = NO;
     [self loadAddresses];

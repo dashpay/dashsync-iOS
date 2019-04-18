@@ -129,7 +129,7 @@
         }
         
         for (DSTxOutputEntity *e in self.outputs) {
-            [tx addOutputScript:e.script amount:e.value];
+            [tx addOutputScript:e.script withAddress:e.address amount:e.value];
         }
         
         NSMutableDictionary * lockVotesDictionary = [NSMutableDictionary dictionary];

@@ -27,7 +27,6 @@
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSDAPINetworkService.h"
 #import "DSChainManager.h"
 
 @implementation DSContactEntity
@@ -59,10 +58,6 @@
     DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
     NSAssert(error == nil, @"Failed to build a contact");
     return contact;
-}
-
--(DSDAPINetworkService*)DAPINetworkService {
-    return self.blockchainUserOwner.wallet.chain.chainManager.DAPINetworkService;
 }
 
 @end

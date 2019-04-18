@@ -37,6 +37,7 @@
 
 // fetch existing objects
 + (NSArray *)allObjects;
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...;
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat, ...;
 + (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args;

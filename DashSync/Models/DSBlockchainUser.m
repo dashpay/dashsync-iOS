@@ -57,9 +57,6 @@
 
 @property(nonatomic,strong) DSContactEntity * ownContact;
 
-@property (nonatomic,readonly) DSDAPINetworkService * DAPINetworkService;
-@property (nonatomic,strong) DSDAPIClient * dapiClient;
-
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -81,7 +78,6 @@
     self.blockchainUserResetTransactions = [NSMutableArray array];
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
-    self.dapiClient = [[DSDAPIClient alloc] initWithChainManager:wallet.chain.chainManager blockchainUser:self];
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -92,6 +88,10 @@
     [self updateCreditBalance];
     
     return self;
+}
+
+-(NSString*)registrationTransactionHashIdentifier {
+    return uint256_hex(self.registrationTransactionHash);
 }
 
 -(void)updateCreditBalance {
@@ -376,7 +376,7 @@
     
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
-    [self.dapiClient sendDocument:potentialContact.contactRequestDocument contract:contract completion:^(NSError * _Nullable error) {
+    [self.wallet.chain.chainManager.DAPIClient sendDocument:potentialContact.contactRequestDocument forUser:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -397,7 +397,7 @@
 -(void)acceptContactRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
-    [self.dapiClient sendDocument:friendRequest.sourceContact.contactRequestDocument contract:contract completion:^(NSError * _Nullable error) {
+    [self.wallet.chain.chainManager.DAPIClient sendDocument:friendRequest.sourceContact.contactRequestDocument forUser:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -417,6 +417,9 @@
 
 - (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    dpp.userId = uint256_hex(uint256_reverse(self.registrationTransactionHash));
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    dpp.contract = contract;
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"about" :aboutme,
@@ -426,8 +429,8 @@
     NSAssert(error == nil, @"Failed to build a user");
     
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
-    [self.dapiClient sendDocument:user contract:contract completion:^(NSError * _Nullable error) {
+    
+    [self.wallet.chain.chainManager.DAPIClient sendDocument:user forUser:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -436,7 +439,7 @@
         BOOL success = error == nil;
         
         if (success) {
-            [strongSelf fetchBlockchainUserData:uint256_data(self.registrationTransactionHash) completion:^(NSDictionary *_Nullable blockchainUser) {
+            [strongSelf fetchBlockchainUserData:uint256_data(uint256_reverse(self.registrationTransactionHash)) completion:^(NSDictionary *_Nullable blockchainUser) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
                     return;
@@ -456,7 +459,7 @@
 }
 
 -(DSDAPINetworkService*)DAPINetworkService {
-    return self.wallet.chain.chainManager.DAPINetworkService;
+    return self.wallet.chain.chainManager.DAPIClient.DAPINetworkService;
 }
 
 - (void)fetchProfile:(void (^)(BOOL success))completion {
