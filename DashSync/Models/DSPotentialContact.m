@@ -48,7 +48,7 @@
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero(self.contactBlockchainUserRegistrationTransactionHash), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    dpp.userId = self.blockchainUserOwner.registrationTransactionHashIdentifier;
+    dpp.userId = uint256_hex(uint256_reverse(self.blockchainUserOwner.registrationTransactionHash));
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;
     
