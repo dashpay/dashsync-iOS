@@ -111,7 +111,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     if ([self.activeServices count]) {
         if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //iif only 1 service, just use first one
         return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
-    } else if (self.availablePeers) {
+    } else if ([self.availablePeers count]) {
         NSString * peerHost = [self.availablePeers objectAtIndex:0];
         NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:3000",peerHost]];
         HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
