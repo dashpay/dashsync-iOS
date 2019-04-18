@@ -442,8 +442,11 @@
         }
         
         for (DSAccount * account in accounts) {
-            for (DSDerivationPath * derivationPath in account.derivationPaths) {
+            for (DSDerivationPath * derivationPath in account.fundDerivationPaths) {
                 [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
+            }
+            if ([chain isDevnetAny]) {
+                [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:storeOnUniqueId];
             }
         }
     }
@@ -716,7 +719,7 @@
 
 -(void)reloadDerivationPaths {
     for (DSAccount * account in self.accounts) {
-        for (DSDerivationPath * derivationPath in account.derivationPaths) {
+        for (DSDerivationPath * derivationPath in account.fundDerivationPaths) {
             [derivationPath reloadAddresses];
         }
     }

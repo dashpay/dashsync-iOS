@@ -41,7 +41,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 
-    return [self.account.derivationPaths count];
+    return [self.account.fundDerivationPaths count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -54,7 +54,7 @@
 
 
 -(void)configureCell:(DSDerivationPathTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[self.account.derivationPaths objectAtIndex:indexPath.row];
+    DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
     cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
@@ -104,7 +104,7 @@
     if ([segue.identifier isEqualToString:@"ViewAddressesSegue"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
         DSFundsDerivationPathsAddressesViewController * derivationPathsAddressesViewController = (DSFundsDerivationPathsAddressesViewController*)segue.destinationViewController;
-        derivationPathsAddressesViewController.derivationPath = [self.account.derivationPaths objectAtIndex:indexPath.row];
+        derivationPathsAddressesViewController.derivationPath = [self.account.fundDerivationPaths objectAtIndex:indexPath.row];
     } else if ([segue.identifier isEqualToString:@"SendAmountSegue"]) {
         DSSendAmountViewController * sendAmountViewController = (DSSendAmountViewController*)(((UINavigationController*)segue.destinationViewController).topViewController);
         sendAmountViewController.account = self.account;

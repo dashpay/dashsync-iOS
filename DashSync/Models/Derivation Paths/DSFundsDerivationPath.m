@@ -19,11 +19,11 @@
 
 @implementation DSFundsDerivationPath
 
-+ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
++ (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger indexes[] = {accountNumber | BIP32_HARD};
     return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
-+ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
++ (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     NSUInteger indexes[] = {44 | BIP32_HARD, coinType | BIP32_HARD, accountNumber | BIP32_HARD};
     return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
@@ -31,7 +31,7 @@
 
 + (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD,blockchainUserRegistrationTransactionHash.u64[0] ^ BIP32_HARD};
+    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD,blockchainUserRegistrationTransactionHash.u64[0]};
     //todo full uint256 derivation
     return [self derivationPathWithIndexes:indexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
 }

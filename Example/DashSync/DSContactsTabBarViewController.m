@@ -72,12 +72,11 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *username = textField.text;
         
         __weak typeof(self) weakSelf = self;
-        DSBlockchainUser *blockchainUserOwner = nil;
-        NSParameterAssert(blockchainUserOwner); // TODO: fix me
-        DSAccount *account = nil;
+        NSParameterAssert(self.blockchainUser);
+        DSAccount * account = [self.blockchainUser.wallet accountWithNumber:0];
         NSParameterAssert(account);
         DSPotentialContact *potentialContact = [[DSPotentialContact alloc] initWithUsername:username
-                                                                        blockchainUserOwner:blockchainUserOwner
+                                                                        blockchainUserOwner:self.blockchainUser
                                                                                     account:account];
         
         [self.blockchainUser sendNewContactRequestToPotentialContact:potentialContact completion:^(BOOL success) {

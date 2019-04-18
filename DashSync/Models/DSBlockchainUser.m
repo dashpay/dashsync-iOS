@@ -345,7 +345,7 @@
 
 - (void)sendNewContactRequestToPotentialContactWithoutBlockchainUserData:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self fetchBlockchainUserData:uint256_data(potentialContact.contactBlockchainUserRegistrationTransactionHash) completion:^(NSDictionary *_Nullable blockchainUser) {
+    [self.DAPINetworkService getUserByName:potentialContact.username success:^(NSDictionary *_Nonnull blockchainUser) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -355,16 +355,20 @@
             if (completion) {
                 completion(NO);
             }
-            
             return;
         }
         
-        UInt256 blockchainUserContactRegistrationHash = ((NSString*)blockchainUser[@"id"]).hexToData.UInt256;
+        UInt256 blockchainUserContactRegistrationHash = ((NSString*)blockchainUser[@"regtxid"]).hexToData.UInt256;
         
         [potentialContact setContactBlockchainUserRegistrationTransactionHash:blockchainUserContactRegistrationHash];
         
         [self sendNewContactRequestToPotentialContact:potentialContact completion:completion];
+    } failure:^(NSError *_Nonnull error) {
+        NSLog(@"%@", error);
         
+        if (completion) {
+            completion(NO);
+        }
     }];
 }
 
@@ -439,7 +443,7 @@
         BOOL success = error == nil;
         
         if (success) {
-            [strongSelf fetchBlockchainUserData:uint256_data(uint256_reverse(self.registrationTransactionHash)) completion:^(NSDictionary *_Nullable blockchainUser) {
+            [self.DAPINetworkService getUserById:uint256_hex(uint256_reverse(self.registrationTransactionHash)) success:^(NSDictionary *_Nonnull blockchainUser) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
                     return;
@@ -447,6 +451,11 @@
                 
                 if (completion) {
                     completion(!!blockchainUser);
+                }
+            } failure:^(NSError * _Nonnull error) {
+                DSDLog(@"%@",error);
+                if (completion) {
+                    completion(NO);
                 }
             }];
         }
@@ -480,12 +489,11 @@
         if (completion) {
             completion(YES);
         }
-    }
-                                                                   failure:^(NSError *_Nonnull error) {
-                                                                       if (completion) {
-                                                                           completion(NO);
-                                                                       }
-                                                                   }];
+    } failure:^(NSError *_Nonnull error) {
+        if (completion) {
+            completion(NO);
+        }
+    }];
 }
 
 - (void)fetchContactRequests:(void (^)(BOOL success))completion {
@@ -549,7 +557,7 @@
         DSContactEntity * contactRequestFromContact = [DSContactEntity anyObjectMatching:@"blockchainUserRegistrationHash == %@",blockchainUserRegistrationHash];
         if (!contactRequestFromContact) {
             //no contact exists yet
-            [self fetchBlockchainUserData:blockchainUserRegistrationHash completion:^(NSDictionary * _Nullable blockchainUserDictionary) {
+            [self.DAPINetworkService getUserById:blockchainUserRegistrationHash.hexString success:^(NSDictionary *_Nonnull blockchainUserDictionary) {
                 if (blockchainUserDictionary) {
                     NSString * username = blockchainUserDictionary[@""];
                     DSAccount * account = [self.wallet accountWithNumber:0];
@@ -557,6 +565,8 @@
                     potentialContact.extendedPublicKey = incomingRequests[blockchainUserRegistrationHash];
                     [self.ownContact addIncomingRequestsObject:[potentialContact incomingFriendRequest]];
                 }
+            } failure:^(NSError * _Nonnull error) {
+                
             }];
         } else {
             //the contact already existed, he should now become a friend
@@ -575,14 +585,16 @@
         DSContactEntity * contactRequestFromContact = [DSContactEntity anyObjectMatching:@"blockchainUserRegistrationHash == %@",blockchainUserRegistrationHash];
         if (!contactRequestFromContact) {
             //no contact exists yet
-            [self fetchBlockchainUserData:blockchainUserRegistrationHash completion:^(NSDictionary * _Nullable blockchainUserDictionary) {
+            [self.DAPINetworkService getUserById:blockchainUserRegistrationHash.hexString success:^(NSDictionary *_Nonnull blockchainUserDictionary) {
                 if (blockchainUserDictionary) {
-                    NSString * username = blockchainUserDictionary[@""];
+                    NSString * username = blockchainUserDictionary[@"uname"];
                     DSAccount * account = [self.wallet accountWithNumber:0];
                     DSPotentialContact * potentialContact =[[DSPotentialContact alloc] initWithUsername:username blockchainUserOwner:self account:account];
                     potentialContact.extendedPublicKey = outgoingRequests[blockchainUserRegistrationHash];
                     [self.ownContact addOutgoingRequestsObject:[potentialContact outgoingFriendRequest]];
                 }
+            } failure:^(NSError * _Nonnull error) {
+                
             }];
         } else {
             //the contact already existed, meaning they had made a friend request to us before, and on another device we had accepted
@@ -594,22 +606,6 @@
             [self.ownContact addFriendsObject:contactRequestFromContact];
         }
     }
-}
-
-- (void)fetchBlockchainUserData:(NSData *)blockchainUserRegistrationHash completion:(void (^)(NSDictionary *_Nullable blockchainUser))completion {
-    [self.DAPINetworkService getUserById:blockchainUserRegistrationHash.hexString success:^(NSDictionary *_Nonnull blockchainUser) {
-        NSLog(@"%@", blockchainUser);
-        
-        if (completion) {
-            completion(blockchainUser);
-        }
-    } failure:^(NSError *_Nonnull error) {
-        NSLog(@"%@", error);
-        
-        if (completion) {
-            completion(nil);
-        }
-    }];
 }
 
 @end

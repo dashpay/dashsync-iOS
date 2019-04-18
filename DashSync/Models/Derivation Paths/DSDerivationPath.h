@@ -44,7 +44,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
     DSDerivationPathType_AnonymousFunds = 1 << 1,
     DSDerivationPathType_ViewOnlyFunds = 1 << 2,
     DSDerivationPathType_Authentication = 1 << 3,
-    DSDerivationPathType_Transitioning = 1 << 4,
+    DSDerivationPathType_PartialPath = 1 << 4,
     DSDerivationPathType_ProtectedFunds = 1 << 5,
     
     DSDerivationPathType_IsForFunds = DSDerivationPathType_ClearFunds | DSDerivationPathType_AnonymousFunds | DSDerivationPathType_ViewOnlyFunds | DSDerivationPathType_ProtectedFunds
@@ -65,6 +65,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_ProviderOperatorKeys = 6,
     DSDerivationPathReference_ProviderOwnerKeys = 7,
     DSDerivationPathReference_ContactBasedFunds = 8,
+    DSDerivationPathReference_ContactBasedFundsRoot = 9,
 };
 
 @interface DSDerivationPath : NSIndexPath
@@ -120,6 +121,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 // there might be times where the derivationPath is actually unknown, for example when importing from an extended public key
 @property (nonatomic, readonly) BOOL derivationPathIsKnown;
 
++ (instancetype)masterBlockchainUserContactsDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
+
 + (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
                                                type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
@@ -163,6 +166,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromSeed:(NSData *)seed storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
+//you can set wallet unique Id to nil if you don't wish to store the extended Public Key
+- (NSData * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
 + (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
 

@@ -36,13 +36,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nullable, nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
+@property (nullable, nonatomic, readonly) NSArray<DSFundsDerivationPath *> * fundDerivationPaths;
 
 @property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
+
+@property (nullable, nonatomic, readonly) DSDerivationPath * masterContactsDerivationPath;
 
 @property (nullable, nonatomic, weak) DSWallet * wallet;
 

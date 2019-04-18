@@ -440,8 +440,8 @@ static dispatch_once_t devnetToken = 0;
     return nil;
 }
 
--(NSArray<DSFundsDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
-    return @[[DSFundsDerivationPath bip32DerivationPathOnChain:self forAccountNumber:accountNumber],[DSFundsDerivationPath bip44DerivationPathOnChain:self forAccountNumber:accountNumber]];
+-(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber {
+    return @[[DSFundsDerivationPath bip32DerivationPathForAccountNumber:accountNumber onChain:self],[DSFundsDerivationPath bip44DerivationPathForAccountNumber:accountNumber onChain:self],[DSDerivationPath masterBlockchainUserContactsDerivationPathForAccountNumber:accountNumber onChain:self]];
 }
 
 
@@ -876,7 +876,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)unregisterAllStandaloneDerivationPaths {
-    for (DSDerivationPath * standaloneDerivationPath in [self.viewingAccount.derivationPaths copy]) {
+    for (DSDerivationPath * standaloneDerivationPath in [self.viewingAccount.fundDerivationPaths copy]) {
         [self unregisterStandaloneDerivationPath:standaloneDerivationPath];
     }
 }
@@ -898,7 +898,7 @@ static dispatch_once_t devnetToken = 0;
 
 - (void)registerStandaloneDerivationPath:(DSDerivationPath*)derivationPath
 {
-    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]] && ![self.viewingAccount.derivationPaths containsObject:(DSFundsDerivationPath*)derivationPath]) {
+    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]] && ![self.viewingAccount.fundDerivationPaths containsObject:(DSFundsDerivationPath*)derivationPath]) {
         [self addStandaloneDerivationPath:derivationPath];
     }
     NSError * error = nil;
@@ -912,7 +912,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(NSArray*)standaloneDerivationPaths {
-    return [self.viewingAccount derivationPaths];
+    return [self.viewingAccount fundDerivationPaths];
 }
 
 // MARK: - Voting Keys
@@ -1090,7 +1090,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(BOOL)hasAStandaloneDerivationPath {
-    return !![self.viewingAccount.derivationPaths count];
+    return !![self.viewingAccount.fundDerivationPaths count];
 }
 
 -(BOOL)hasAWallet {

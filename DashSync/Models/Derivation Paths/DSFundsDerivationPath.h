@@ -38,9 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 // used internal addresses
 @property (nonatomic, readonly) NSArray * usedChangeAddresses;
 
-+ (instancetype)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
-+ (instancetype)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber;
++ (instancetype)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
 + (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 

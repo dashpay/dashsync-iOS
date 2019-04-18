@@ -24,6 +24,7 @@
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSDAPIClient+RegisterDashPayContract.h"
 
 @interface DSPotentialContact()
 
@@ -47,9 +48,16 @@
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero(self.contactBlockchainUserRegistrationTransactionHash), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    dpp.userId = self.blockchainUserOwner.registrationTransactionHashIdentifier;
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    dpp.contract = contract;
     
     DSFundsDerivationPath * fundsDerivationPathForContact = [DSFundsDerivationPath
                                                              contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
+    DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
+    
+    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"toUserId" : uint256_hex(self.contactBlockchainUserRegistrationTransactionHash),
