@@ -60,8 +60,8 @@
     NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     DPJSONObject *data = @{
-                           @"toUserId" : uint256_hex(self.contactBlockchainUserRegistrationTransactionHash),
-                           @"extendedPublicKey" : [fundsDerivationPathForContact.extendedPublicKey hexString],
+                           @"toUserId" : uint256_reverse_hex(self.contactBlockchainUserRegistrationTransactionHash),
+                           @"extendedPublicKey" : [fundsDerivationPathForContact.extendedPublicKey base64EncodedStringWithOptions:0],
                            };
     
     
