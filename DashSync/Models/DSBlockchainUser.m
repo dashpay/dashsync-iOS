@@ -530,7 +530,7 @@
         UInt256 recipientRegistrationHash = [recipientString hexToData].UInt256;
         NSString *senderString = rawContact[@"userId"];
         UInt256 senderRegistrationHash = [senderString hexToData].UInt256;
-        NSString *extendedPublicKeyString = rawContact[@"extendedPublicKey"];
+        NSString *extendedPublicKeyString = rawContact[@"publicKey"];
         NSData *extendedPublicKey = extendedPublicKeyString.hexToData;
         if (uint256_eq(recipientRegistrationHash, self.ownContact.blockchainUserRegistrationHash.UInt256)) {
             //we are the recipient, this is an incoming request
