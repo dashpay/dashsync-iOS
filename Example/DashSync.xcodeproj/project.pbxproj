@@ -30,6 +30,7 @@
 		2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAF20DA080F0097049F /* DSWalletTests.m */; };
 		2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */; };
 		2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */; };
+		2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */; };
 		2A9FFEC622328D0E00956D5F /* DSContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC522328D0E00956D5F /* DSContactsViewController.m */; };
 		2A9FFEC92232920900956D5F /* DSContactsTabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC82232920900956D5F /* DSContactsTabBarViewController.m */; };
 		2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */; };
@@ -186,6 +187,7 @@
 		2A7DCCAF20DA080F0097049F /* DSWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletTests.m; sourceTree = "<group>"; };
 		2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBloomFilterTests.m; sourceTree = "<group>"; };
 		2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentProtocolTests.m; sourceTree = "<group>"; };
+		2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUInt256IndexPathTests.m; sourceTree = "<group>"; };
 		2A9FFEC422328D0E00956D5F /* DSContactsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsViewController.h; sourceTree = "<group>"; };
 		2A9FFEC522328D0E00956D5F /* DSContactsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactsViewController.m; sourceTree = "<group>"; };
 		2A9FFEC72232920900956D5F /* DSContactsTabBarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsTabBarViewController.h; sourceTree = "<group>"; };
@@ -571,20 +573,21 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				6003F5BB195388D20070C39A /* Tests.m */,
+				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
+				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
+				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
+				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
+				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
 				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
-				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
-				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
-				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
-				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
-				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
-				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
 				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
-				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
-				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
-				6003F5B6195388D20070C39A /* Supporting Files */,
+				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
 				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
+				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
+				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
+				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
+				6003F5B6195388D20070C39A /* Supporting Files */,
+				6003F5BB195388D20070C39A /* Tests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1197,6 +1200,7 @@
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
+				2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
 				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,
