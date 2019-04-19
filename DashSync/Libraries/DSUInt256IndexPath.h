@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)indexPathWithIndex:(UInt256)index;
 + (instancetype)indexPathWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length;
 
+- (instancetype)initWithUnsignedLongIndexes:(const uint64_t *)indexes length:(NSUInteger)length;
 - (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithIndex:(UInt256)index;
 

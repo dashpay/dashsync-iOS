@@ -84,11 +84,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
++(DSAccount*)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
+-(instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
+-(instancetype)initAsViewOnlyWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 

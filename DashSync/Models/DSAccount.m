@@ -109,13 +109,11 @@
 
 // MARK: - Initiation
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context {
-    return [[self alloc] initWithDerivationPaths:derivationPaths inContext:context];
++(DSAccount*)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context {
+    return [[self alloc] initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context];
 }
 
 -(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
-    if (![self.mFundDerivationPaths count])
-        _accountNumber = (uint32_t)[[derivationPaths firstObject] indexAtPosition:[[derivationPaths firstObject] length] - 1] & ~(BIP32_HARD);
     for (int i = 0;i<[derivationPaths count];i++) {
         DSDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
         if (derivationPath.reference == DSDerivationPathReference_BIP32) {
@@ -141,17 +139,19 @@
         for (DSFundsDerivationPath * derivationPath3 in self.mFundDerivationPaths) {
             NSAssert(![derivationPath isDerivationPathEqual:derivationPath3],@"Added derivation paths should be different from existing ones on account");
         }
-        if ([self.mFundDerivationPaths count] || i != 0) {
-            NSAssert(([derivationPath indexAtPosition:[derivationPath length] - 1] & ~(BIP32_HARD)) == _accountNumber, @"all derivationPaths need to be on same account");
-        }
+        //to do redo this check
+//        if ([self.mFundDerivationPaths count] || i != 0) {
+//            NSAssert(([derivationPath indexAtPosition:[derivationPath length] - 1] & ~(BIP32_HARD)) == _accountNumber, @"all derivationPaths need to be on same account");
+//        }
     }
 }
 
--(instancetype)initWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context {
+-(instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context {
     NSParameterAssert(derivationPaths);
     
     if (! (self = [super init])) return nil;
     NSAssert([derivationPaths count], @"derivationPaths can not be empty");
+    _accountNumber = accountNumber;
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.mFundDerivationPaths = [NSMutableArray array];
     for (DSDerivationPath * derivationPath in derivationPaths) {
@@ -167,17 +167,10 @@
     return self;
 }
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context  {
+-(instancetype)initAsViewOnlyWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext*)context  {
     NSParameterAssert(derivationPaths);
     
-    if (! (self = [super init])) return nil;
-    self.mFundDerivationPaths = [derivationPaths mutableCopy];
-    for (DSFundsDerivationPath * derivationPath in derivationPaths) {
-        derivationPath.account = self;
-    }
-    self.transactions = [NSMutableOrderedSet orderedSet];
-    self.allTx = [NSMutableDictionary dictionary];
-    self.managedObjectContext = context?context:[NSManagedObject context];
+    if (! (self = [self initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context])) return nil;
     self.isViewOnlyAccount = TRUE;
     
     return self;

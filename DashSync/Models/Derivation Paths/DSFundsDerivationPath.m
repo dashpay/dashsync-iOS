@@ -20,26 +20,28 @@
 @implementation DSFundsDerivationPath
 
 + (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
-    NSUInteger indexes[] = {accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
 + (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {44 | BIP32_HARD, coinType | BIP32_HARD, accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(44),uint256_from_long(coinType),uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES,YES,YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
 
 + (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 5 | BIP32_HARD, 1 | BIP32_HARD, accountNumber | BIP32_HARD,blockchainUserRegistrationTransactionHash.u64[0]};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber), blockchainUserRegistrationTransactionHash};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO};
     //todo full uint256 derivation
-    return [self derivationPathWithIndexes:indexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
 }
 
-- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+- (instancetype)initWithIndexes:(const UInt256 [])indexes hardened:(const BOOL [])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     
-    if (! (self = [super initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+    if (! (self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
     
     self.internalAddresses = [NSMutableArray array];
     self.externalAddresses = [NSMutableArray array];

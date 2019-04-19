@@ -29,6 +29,28 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DSUInt256IndexPath alloc] initWithIndexes:indexes length:length];
 }
 
+- (instancetype)initWithUnsignedLongIndexes:(const uint64_t *)indexes length:(NSUInteger)length {
+    self = [self init];
+    if (self) {
+        _length = length;
+        _indexes = NULL;
+        if (length > 0) {
+            const size_t size = sizeof(UInt256);
+            const size_t memorySize = length * size;
+            _indexes = calloc(memorySize, size);
+            if (_indexes == NULL) {
+                @throw [NSException exceptionWithName:NSMallocException
+                                               reason:@"DSUInt256IndexPath could not allocate memory"
+                                             userInfo:nil];
+            }
+            for (NSUInteger i =0;i<length;i++) {
+                _indexes[i] = ((UInt256) { .u64 = { 0, 0, 0, indexes[1] } });
+            }
+        }
+    }
+    return self;
+}
+
 - (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length {
     self = [super init];
     if (self) {

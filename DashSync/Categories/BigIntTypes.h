@@ -129,6 +129,8 @@ typedef struct _DSUTXO {
 
 #define uint256_reverse(u)  [NSData dataWithUInt256:u].reverse.UInt256
 
+#define uint256_from_long(u) ((UInt256) { .u64 = { 0, 0, 0, u } })
+
 #define UINT768_ZERO ((UInt768) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT512_ZERO ((UInt512) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT384_ZERO ((UInt384) { .u64 = { 0, 0, 0, 0, 0, 0 } })

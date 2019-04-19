@@ -90,7 +90,7 @@
     NSParameterAssert(seedPhrase);
     NSParameterAssert(chain);
     
-    DSAccount * account = [DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
+    DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
     
     NSString * uniqueId = [self setSeedPhrase:seedPhrase createdAt:creationDate withAccounts:@[account] storeOnKeychain:store forChain:chain]; //make sure we can create the wallet first
     if (!uniqueId) return nil;
@@ -202,7 +202,7 @@
 }
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain {
-    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
+    if (! (self = [self initWithUniqueID:uniqueID andAccount:[DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext] forChain:chain storeSeedPhrase:NO isTransient:NO])) return nil;
     return self;
 }
 

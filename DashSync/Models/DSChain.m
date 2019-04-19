@@ -857,7 +857,7 @@ static dispatch_once_t devnetToken = 0;
 
 -(DSAccount*)viewingAccount {
     if (_viewingAccount) return _viewingAccount;
-    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithDerivationPaths:@[] inContext:self.managedObjectContext];
+    self.viewingAccount = [[DSAccount alloc] initAsViewOnlyWithAccountNumber:0 withDerivationPaths:@[] inContext:self.managedObjectContext];
     return _viewingAccount;
 }
 

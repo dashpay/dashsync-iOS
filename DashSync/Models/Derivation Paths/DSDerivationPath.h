@@ -27,6 +27,7 @@
 #import "DSTransaction.h"
 #import "NSData+Bitcoin.h"
 #import "DSDerivationPath.h"
+#import "DSUInt256IndexPath.h"
 #import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,7 +36,7 @@ typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL 
 
 #define BIP32_HARD 0x80000000
 
-#define FEATURE_PURPOSE_HARDENED (9 | BIP32_HARD)
+#define FEATURE_PURPOSE 9
 
 @class DSTransaction,DSKey,DSAccount,DSDerivationPath;
 
@@ -68,7 +69,10 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_ContactBasedFundsRoot = 9,
 };
 
-@interface DSDerivationPath : NSIndexPath
+@interface DSDerivationPath : DSUInt256IndexPath{
+@private
+    BOOL *_hardenedIndexes;
+}
 
 //is this an open account
 @property (nonatomic,assign,readonly) DSDerivationPathType type;
@@ -123,8 +127,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 + (instancetype)masterBlockchainUserContactsDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
-+ (instancetype _Nullable)derivationPathWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                               type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
++ (instancetype _Nullable)derivationPathWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
 + (instancetype _Nullable)derivationPathWithSerializedExtendedPrivateKey:(NSString*)serializedExtendedPrivateKey fundsType:(DSDerivationPathType)fundsType signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm onChain:(DSChain*)chain;
 
@@ -132,11 +135,12 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 - (instancetype _Nullable)initWithExtendedPublicKeyIdentifier:(NSString*)extendedPublicKeyIdentifier onChain:(DSChain*)chain;
 
-- (instancetype _Nullable)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                                     type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
+- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain;
 
 -(BOOL)isBIP32Only;
 -(BOOL)isBIP43Based;
+
+-(NSIndexPath*)baseIndexPath;
 
 // set the account, can not be later changed
 - (void)setAccount:(DSAccount *)account;
