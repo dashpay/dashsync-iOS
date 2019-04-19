@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -22,18 +22,17 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSUInt256IndexPath : NSObject <NSCopying, NSCoding> {
-    @private
+  @private
     UInt256 *_indexes;
     NSUInteger _hash;
     NSUInteger _length;
 }
 
 + (instancetype)indexPathWithIndex:(UInt256)index;
++ (instancetype)indexPathWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length;
 
-+ (instancetype)indexPathWithIndexes:(const UInt256 [_Nullable])indexes length:(NSUInteger)length;
-
-- (instancetype)initWithIndexes:(const UInt256 [_Nullable])indexes length:(NSUInteger)length NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithSingleIndex:(UInt256)index;
+- (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithIndex:(UInt256)index;
 
 - (DSUInt256IndexPath *)indexPathByAddingIndex:(UInt256)index;
 - (DSUInt256IndexPath *)indexPathByRemovingLastIndex;

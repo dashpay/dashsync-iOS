@@ -22,11 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DSUInt256IndexPath
 
 + (instancetype)indexPathWithIndex:(UInt256)index {
-    return [[self alloc] initWithSingleIndex:index];
+    return [[DSUInt256IndexPath alloc] initWithIndex:index];
 }
 
 + (instancetype)indexPathWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length {
-    return [[self alloc] initWithIndexes:indexes length:length];
+    return [[DSUInt256IndexPath alloc] initWithIndexes:indexes length:length];
 }
 
 - (instancetype)initWithIndexes:(const UInt256[_Nullable])indexes length:(NSUInteger)length {
@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (instancetype)initWithSingleIndex:(UInt256)index {
+- (instancetype)initWithIndex:(UInt256)index {
     return [self initWithIndexes:&index length:1];
 }
 
@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (UInt256)indexAtPosition:(NSUInteger)position {
-    if (position > _length) {
+    if (position >= _length) {
         return UINT256_MAX;
     }
     return _indexes[position];
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)getIndexes:(UInt256 *)indexes range:(NSRange)positionRange {
-    if (positionRange.location == NSNotFound || positionRange.location + positionRange.length > _length) {
+    if (positionRange.location == NSNotFound || positionRange.location + positionRange.length >= _length) {
         NSString *reason = [NSString stringWithFormat:@"Range '%@' is out of indexes length '%ld'",
                                                       NSStringFromRange(positionRange), _length];
         @throw [NSException exceptionWithName:NSRangeException reason:reason userInfo:nil];
@@ -126,19 +126,19 @@ NS_ASSUME_NONNULL_BEGIN
     const NSUInteger length1 = _length;
     const NSUInteger length2 = otherObject.length;
     for (NSUInteger pos = 0; pos < MIN(length1, length2); pos++) {
-        const UInt256 i1 = [self indexAtPosition:pos];
-        const UInt256 i2 = [otherObject indexAtPosition:pos];
-        if (i1.u64[0] < i2.u64[0] &&
-            i1.u64[1] < i2.u64[1] &&
-            i1.u64[2] < i2.u64[2] &&
-            i1.u64[3] < i2.u64[3]) {
+        const UInt256 idx1 = [self indexAtPosition:pos];
+        const UInt256 idx2 = [otherObject indexAtPosition:pos];
+        if (idx1.u64[0] < idx2.u64[0] ||
+            idx1.u64[1] < idx2.u64[1] ||
+            idx1.u64[2] < idx2.u64[2] ||
+            idx1.u64[3] < idx2.u64[3]) {
 
             return NSOrderedAscending;
         }
-        else if (i1.u64[0] > i2.u64[0] &&
-                 i1.u64[1] > i2.u64[1] &&
-                 i1.u64[2] > i2.u64[2] &&
-                 i1.u64[3] > i2.u64[3]) {
+        else if (idx1.u64[0] > idx2.u64[0] ||
+                 idx1.u64[1] > idx2.u64[1] ||
+                 idx1.u64[2] > idx2.u64[2] ||
+                 idx1.u64[3] > idx2.u64[3]) {
 
             return NSOrderedDescending;
         }
@@ -170,6 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
             hash += DSUINTROTATE(index.u64[0] ^ index.u64[1], DSUINT_BIT / 2) ^
                     DSUINTROTATE(index.u64[2] ^ index.u64[3], DSUINT_BIT / 2);
         }
+        _hash = hash;
     }
 
     return _hash;
@@ -191,21 +192,22 @@ NS_ASSUME_NONNULL_BEGIN
     return [self isEqualToUInt256IndexPath:(DSUInt256IndexPath *)object];
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<%@: %p> {length = %ld}",
+                                      NSStringFromClass([self class]), self, _length];
+}
+
 #pragma mark - NSCoding
 
 #define DS_NSCODING_KEY @"indexes"
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
-    NSUInteger memorySize;
-    const uint8_t *bytes = [aDecoder decodeBytesForKey:DS_NSCODING_KEY returnedLength:&memorySize];
-    if (!bytes) {
-        return nil;
-    }
-
     self = [self init];
     if (self) {
+        NSUInteger memorySize;
+        const size_t size = sizeof(UInt256);
+        const uint8_t *bytes = [aDecoder decodeBytesForKey:DS_NSCODING_KEY returnedLength:&memorySize];
         if (bytes) {
-            const size_t size = sizeof(UInt256);
             _length = memorySize / size;
             _indexes = calloc(memorySize, size);
             if (_indexes == NULL) {
@@ -220,7 +222,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
-    if (_indexes) {
+    if (_indexes != NULL) {
         const NSUInteger memorySize = sizeof(UInt256) * _length;
         [aCoder encodeBytes:(void *)_indexes length:memorySize forKey:DS_NSCODING_KEY];
     }
