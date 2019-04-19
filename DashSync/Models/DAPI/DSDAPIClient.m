@@ -108,18 +108,20 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 -(DSDAPINetworkService*)DAPINetworkService {
-    if ([self.activeServices count]) {
-        if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //iif only 1 service, just use first one
-        return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
-    } else if ([self.availablePeers count]) {
-        NSString * peerHost = [self.availablePeers objectAtIndex:0];
-        NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:3000",peerHost]];
-        HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-        DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
-        [self.activeServices addObject:DAPINetworkService];
-        return DAPINetworkService;
+    @synchronized (self) {
+        if ([self.activeServices count]) {
+            if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //iif only 1 service, just use first one
+            return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
+        } else if ([self.availablePeers count]) {
+            NSString * peerHost = [self.availablePeers objectAtIndex:0];
+            NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:3000",peerHost]];
+            HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
+            DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
+            [self.activeServices addObject:DAPINetworkService];
+            return DAPINetworkService;
+        }
+        return nil;
     }
-    return nil;
 }
 
 #pragma mark - Private
