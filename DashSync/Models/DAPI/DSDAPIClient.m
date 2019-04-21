@@ -101,6 +101,62 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                   }];
 }
 
+-(void)getAllStateTransitionsForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion {
+    DSDAPINetworkService * service = self.DAPINetworkService;
+    if (!service) {
+        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
+                                       code:DSDAPIClientErrorCodeNoKnownDAPINodes
+                                   userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
+        return;
+    }
+    [service getUserById:uint256_reverse_hex(blockchainUser.registrationTransactionHash) success:^(NSDictionary * _Nonnull blockchainUserDictionary) {
+        if ([blockchainUserDictionary objectForKey:@"subtx"] && [[blockchainUserDictionary objectForKey:@"subtx"] isKindOfClass:[NSArray class]]) {
+            NSArray * subscriptionTransactions = [blockchainUserDictionary objectForKey:@"subtx"];
+            NSMutableArray * oldSubscriptionTransactionHashes = [NSMutableArray array];
+            for (DSTransaction * transaction in blockchainUser.allTransitions) {
+                [oldSubscriptionTransactionHashes addObject:[NSData dataWithUInt256:transaction.txHash]];
+            }
+            NSMutableArray * novelSubscriptionTransactionHashes = [NSMutableArray array];
+            for (NSString * possiblyNewSubscriptionTransactionHashString in subscriptionTransactions) {
+                NSData * data = possiblyNewSubscriptionTransactionHashString.hexToData;
+                if (![oldSubscriptionTransactionHashes containsObject:data]) {
+                    [novelSubscriptionTransactionHashes addObject:data];
+                }
+            }
+            for (NSData * unknownSubscriptionTransactionHash in novelSubscriptionTransactionHashes) {
+                //dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+                [service getTransactionById:unknownSubscriptionTransactionHash.hexString success:^(NSDictionary * _Nonnull tx) {
+                    if (tx[@"version"] && tx[@"blockheight"] && tx[@"extraPayload"] && tx[@"valueIn"] && tx[@"valueOut"] && ([tx[@"valueIn"] integerValue] + [tx[@"valueOut"] integerValue] == 0)) {
+                        //this is a transition
+                        NSString * extraPayload = tx[@"extraPayload"];
+                        uint16_t version = [tx[@"version"] shortValue];
+                        DSTransition * transition = [[DSTransition alloc] initWithVersion:version payloadData:extraPayload.hexToData onChain:blockchainUser.wallet.chain];
+                        transition.blockHeight = [tx[@"blockheight"] unsignedIntValue];
+                        [blockchainUser.wallet.specialTransactionsHolder registerTransaction:transition];
+                        [blockchainUser updateWithTransition:transition save:TRUE];
+                        if (completion) {
+                            completion(nil);
+                        }
+                    }
+                    //dispatch_semaphore_signal(sem);
+                } failure:^(NSError * _Nonnull error) {
+                    if (completion) {
+                        completion(error);
+                    }
+                    //dispatch_semaphore_signal(sem);
+                }];
+                //dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+            }
+        }
+        
+    } failure:^(NSError * _Nonnull error) {
+        if (completion) {
+            completion(error);
+        }
+    }];
+    
+}
+
 #pragma mark - Peers
 
 - (void)addDAPINodeByAddress:(NSString*)host {

@@ -8,6 +8,7 @@
 
 #import "DSBlockchainUserActionsViewController.h"
 #import "DSTopupBlockchainUserViewController.h"
+#import "DSBlockchainUserTransitionsViewController.h"
 
 #import "DSContactsNavigationController.h"
 #import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
@@ -86,6 +87,10 @@
         DSTopupBlockchainUserViewController * topupBlockchainUserViewController = (DSTopupBlockchainUserViewController*)segue.destinationViewController;
         topupBlockchainUserViewController.chainManager = self.chainManager;
         topupBlockchainUserViewController.blockchainUser = self.blockchainUser;
+    } else if ([segue.identifier isEqualToString:@"BlockchainUserTransitionsSegue"]) {
+        DSBlockchainUserTransitionsViewController * blockchainUserTransitionsViewController = (DSBlockchainUserTransitionsViewController*)segue.destinationViewController;
+        blockchainUserTransitionsViewController.chainManager = self.chainManager;
+        blockchainUserTransitionsViewController.blockchainUser = self.blockchainUser;
     }
 }
 

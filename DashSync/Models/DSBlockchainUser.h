@@ -10,7 +10,7 @@
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialContact;
+@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialContact,DSTransaction;
 
 @interface DSBlockchainUser : NSObject
 
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint64_t syncHeight;
+@property (nonatomic,readonly) NSArray<DSTransaction*>*allTransitions;
 
 @property (nonatomic,readonly) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
 

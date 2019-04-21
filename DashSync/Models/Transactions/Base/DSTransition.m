@@ -99,6 +99,45 @@
     return self;
 }
 
+- (instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain
+{
+    if (! (self = [super initOnChain:chain])) return nil;
+    self.type = DSTransactionType_Transition;
+    self.version = version;
+    NSUInteger length = message.length;
+    uint32_t off = self.payloadOffset;
+    
+    if (length - off < 2) return nil;
+    self.transitionVersion = [message UInt16AtOffset:off];
+    off += 2;
+    
+    if (length - off < 32) return nil;
+    self.registrationTransactionHash = [message UInt256AtOffset:off];
+    off += 32;
+    
+    if (length - off < 32) return nil;
+    self.previousTransitionHash = [message UInt256AtOffset:off];
+    off += 32;
+    
+    if (length - off < 8) return nil;
+    self.creditFee = [message UInt64AtOffset:off];
+    off += 8;
+    
+    if (length - off < 32) return nil;
+    self.packetHash = [message UInt256AtOffset:off];
+    off += 32;
+    
+    if (length - off < 1) return nil;
+    NSNumber * payloadSignatureLength = nil;
+    self.payloadSignature = [message dataAtOffset:off length:&payloadSignatureLength];
+    off += payloadSignatureLength.unsignedLongValue;
+    
+    
+    self.payloadOffset = off;
+    self.txHash = self.data.SHA256_2;
+    return self;
+}
+
 -(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain *)chain {
     NSParameterAssert(chain);
     

@@ -39,6 +39,8 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 
 - (void)addDAPINodeByAddress:(NSString*)host;
 
+- (void)getAllStateTransitionsForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion;
+
 - (void)sendDocument:(DPDocument *)document
              forUser:(DSBlockchainUser*)blockchainUser
             contract:(DPContract *)contract

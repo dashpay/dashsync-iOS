@@ -150,7 +150,6 @@
     NSParameterAssert(derivationPaths);
     
     if (! (self = [super init])) return nil;
-    NSAssert([derivationPaths count], @"derivationPaths can not be empty");
     _accountNumber = accountNumber;
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.mFundDerivationPaths = [NSMutableArray array];
