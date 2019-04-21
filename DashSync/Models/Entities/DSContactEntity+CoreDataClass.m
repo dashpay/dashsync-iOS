@@ -51,7 +51,7 @@
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"toUserId" : uint256_hex(self.blockchainUserRegistrationHash.UInt256),
-                           @"extendedPublicKey" : [fundsDerivationPathForContact.extendedPublicKey hexString],
+                           @"publicKey" : [fundsDerivationPathForContact.extendedPublicKey hexString],
                            };
     
     

@@ -1,5 +1,5 @@
 {
-    "name": "DashPayNativeDemo1",
+    "name": "DashPayNativePreDemo1",
     
     "documents": {
         "profile": {
@@ -34,11 +34,11 @@
                 "toUserId": {
                     "type": "string"
                 },
-                "extendedPublicKey": {
+                "publicKey": {
                     "type": "string"
                 }
             },
-            "required": ["toUserId", "extendedPublicKey"],
+            "required": ["toUserId", "publicKey"],
             "additionalProperties": false
         }
     }
