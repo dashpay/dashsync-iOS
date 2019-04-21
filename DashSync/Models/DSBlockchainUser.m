@@ -447,7 +447,7 @@
 
 - (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    dpp.userId = uint256_hex(uint256_reverse(self.registrationTransactionHash));
+    dpp.userId = uint256_reverse_hex(self.registrationTransactionHash);
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;
     NSError *error = nil;

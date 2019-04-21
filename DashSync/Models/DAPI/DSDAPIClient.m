@@ -75,7 +75,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     NSData *serializedSTPacketObjectHash = [[stPacket serializedHash] reverse];
     
     DSTransition *transition = [blockchainUser transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
-    
+    DSDLog(@"registrationHash %@ previousTransitionHash %@",uint256_hex(transition.registrationTransactionHash) ,uint256_hex(transition.previousTransitionHash));
     __weak typeof(self) weakSelf = self;
     [blockchainUser signStateTransition:transition
                                   withPrompt:@""
