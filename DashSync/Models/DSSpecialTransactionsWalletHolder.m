@@ -73,7 +73,7 @@
 }
 
 -(NSArray<NSMutableDictionary*>*)transactionDictionaries {
-    return @[self.providerRegistrationTransactions,self.providerUpdateServiceTransactions,self.providerUpdateRegistrarTransactions,self.providerUpdateRevocationTransactions,self.blockchainUserRegistrationTransactions,self.blockchainUserCloseTransactions,self.blockchainUserResetTransactions,self.blockchainUserTopupTransactions];
+    return @[self.providerRegistrationTransactions,self.providerUpdateServiceTransactions,self.providerUpdateRegistrarTransactions,self.providerUpdateRevocationTransactions,self.blockchainUserRegistrationTransactions,self.blockchainUserCloseTransactions,self.blockchainUserResetTransactions,self.blockchainUserTopupTransactions,self.transitions];
 }
 
 -(NSUInteger)allTransactionsCount {
@@ -236,7 +236,6 @@
                 if (! transaction) continue;
                 [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             }
-            
             NSArray<DSTransition *>* transitions = [DSTransitionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainUserRegistrationTransaction.txHash)];
             for (DSTransitionEntity *e in transitions) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
@@ -268,8 +267,9 @@
     return nil;
 }
 
-- (NSArray*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
-    NSMutableArray * subscriptionTransactions = [NSMutableArray array];
+- (NSArray<DSTransaction*>*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash {
+    NSLog(@"blockchainUserRegistrationTransactionHash %@",uint256_hex(blockchainUserRegistrationTransactionHash));
+    NSMutableArray<DSTransaction*> * subscriptionTransactions = [NSMutableArray array];
     for (DSBlockchainUserTopupTransaction * blockchainUserTopupTransaction in [self.blockchainUserTopupTransactions allValues]) {
         if (uint256_eq(blockchainUserTopupTransaction.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
             [subscriptionTransactions addObject:blockchainUserTopupTransaction];
@@ -286,6 +286,7 @@
         }
     }
     for (DSTransition * transition in [self.transitions allValues]) {
+        NSLog(@"transition blockchainUserRegistrationTransactionHash %@",uint256_hex(transition.registrationTransactionHash));
         if (uint256_eq(transition.registrationTransactionHash, blockchainUserRegistrationTransactionHash)) {
             [subscriptionTransactions addObject:transition];
         }

@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransitionTableViewCell : UITableViewCell
 @property (strong, nonatomic) IBOutlet UILabel *transactionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *previousTransitionHashLabel;
 @property (strong, nonatomic) IBOutlet UILabel *confirmedInBlockLabel;
 @property (strong, nonatomic) IBOutlet UILabel *numberLabel;
 

@@ -267,20 +267,26 @@
         <scene sceneID="Q4k-TW-R0G">
             <objects>
                 <tableViewController id="agZ-KA-0cL" customClass="DSBlockchainUserTransitionsViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="110" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="Gdi-jj-M9N">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="138" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="Gdi-jj-M9N">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransitionCell" rowHeight="110" id="Qj8-cz-gZ6" customClass="DSTransitionTableViewCell">
-                                <rect key="frame" x="0.0" y="28" width="375" height="110"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="TransitionCell" rowHeight="138" id="Qj8-cz-gZ6" customClass="DSTransitionTableViewCell">
+                                <rect key="frame" x="0.0" y="28" width="375" height="138"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Qj8-cz-gZ6" id="CcK-Lv-9TI">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="109.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="137.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Number" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cYL-lQ-3H3">
                                             <rect key="frame" x="16" y="8" width="62" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rRM-tO-T2O">
+                                            <rect key="frame" x="348.5" y="8" width="10.5" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -303,8 +309,8 @@
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rRM-tO-T2O">
-                                            <rect key="frame" x="348.5" y="8" width="10.5" height="21"/>
+                                        <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PreviousHash" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0TT-tS-Foa" customClass="BRCopyLabel">
+                                            <rect key="frame" x="16" y="95" width="343" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -312,8 +318,11 @@
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="huA-O9-9jc" firstAttribute="leading" secondItem="8X9-nI-Jky" secondAttribute="leading" id="3zg-v2-5Fa"/>
+                                        <constraint firstItem="0TT-tS-Foa" firstAttribute="leading" secondItem="huA-O9-9jc" secondAttribute="leading" id="Guk-ft-xZ9"/>
                                         <constraint firstAttribute="trailing" secondItem="rRM-tO-T2O" secondAttribute="trailing" constant="16" id="Nbn-ou-A9q"/>
                                         <constraint firstItem="8X9-nI-Jky" firstAttribute="leading" secondItem="cYL-lQ-3H3" secondAttribute="leading" id="NhN-Cg-kb4"/>
+                                        <constraint firstItem="0TT-tS-Foa" firstAttribute="top" secondItem="huA-O9-9jc" secondAttribute="bottom" constant="8" id="O46-T6-asW"/>
+                                        <constraint firstItem="0TT-tS-Foa" firstAttribute="trailing" secondItem="huA-O9-9jc" secondAttribute="trailing" id="OvF-PE-a3M"/>
                                         <constraint firstItem="8X9-nI-Jky" firstAttribute="top" secondItem="cYL-lQ-3H3" secondAttribute="bottom" constant="8" id="f1O-Ri-YLa"/>
                                         <constraint firstItem="lH2-Le-ASe" firstAttribute="firstBaseline" secondItem="8X9-nI-Jky" secondAttribute="firstBaseline" id="hIh-vr-EW8"/>
                                         <constraint firstItem="cYL-lQ-3H3" firstAttribute="leading" secondItem="CcK-Lv-9TI" secondAttribute="leading" constant="16" id="kvy-5K-PSL"/>
@@ -327,6 +336,7 @@
                                 <connections>
                                     <outlet property="confirmedInBlockLabel" destination="lH2-Le-ASe" id="CIV-z1-qZS"/>
                                     <outlet property="numberLabel" destination="rRM-tO-T2O" id="r1G-Yf-1Rj"/>
+                                    <outlet property="previousTransitionHashLabel" destination="0TT-tS-Foa" id="MGI-sy-BpR"/>
                                     <outlet property="transactionLabel" destination="huA-O9-9jc" id="A7T-qM-5NN"/>
                                 </connections>
                             </tableViewCell>

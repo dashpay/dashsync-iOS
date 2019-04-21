@@ -87,6 +87,7 @@
     
     [self updateCreditBalance];
     
+    
     return self;
 }
 
@@ -109,6 +110,19 @@
             
         }];
     });
+}
+
+-(void)loadTransitions {
+    self.allTransitions = [[self.wallet.specialTransactionsHolder subscriptionTransactionsForRegistrationTransactionHash:self.registrationTransactionHash] mutableCopy];
+    for (DSTransaction * transaction in self.allTransitions) {
+        if ([transaction isKindOfClass:[DSTransition class]]) {
+            [self.baseTransitions addObject:(DSTransition*)transaction];
+        } else if ([transaction isKindOfClass:[DSBlockchainUserCloseTransaction class]]) {
+            [self.blockchainUserCloseTransactions addObject:(DSBlockchainUserCloseTransaction*)transaction];
+        } else if ([transaction isKindOfClass:[DSBlockchainUserResetTransaction class]]) {
+            [self.blockchainUserResetTransactions addObject:(DSBlockchainUserResetTransaction*)transaction];
+        }
+    }
 }
 
 //-(void)loadContacts {
@@ -154,8 +168,11 @@
 
 -(instancetype)initWithUsername:(NSString*)username atIndex:(uint32_t)index inWallet:(DSWallet*)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext*)managedObjectContext {
     if (!(self = [self initWithUsername:username atIndex:index inWallet:wallet inContext:managedObjectContext])) return nil;
+    NSAssert(!uint256_is_zero(registrationTransactionHash), @"Registration hash must not be nil");
     self.registrationTransactionHash = registrationTransactionHash;
     self.lastTransitionHash = lastTransitionHash; //except topup and close, including state transitions
+    
+    [self loadTransitions];
     
     //[self loadContacts];
     
@@ -168,6 +185,9 @@
     if (!(self = [self initWithUsername:blockchainUserRegistrationTransaction.username atIndex:index inWallet:wallet inContext:(NSManagedObjectContext*)managedObjectContext])) return nil;
     self.registrationTransactionHash = blockchainUserRegistrationTransaction.txHash;
     self.blockchainUserRegistrationTransaction = blockchainUserRegistrationTransaction;
+    
+    [self loadTransitions];
+    
     return self;
 }
 
