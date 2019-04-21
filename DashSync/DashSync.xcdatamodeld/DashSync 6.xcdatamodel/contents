@@ -72,7 +72,7 @@
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="account" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="contacts" inverseEntity="DSAccountEntity" syncable="YES"/>
-        <relationship name="derivationPath" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="contact" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
+        <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="contact" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="friends" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>

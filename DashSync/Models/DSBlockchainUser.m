@@ -35,6 +35,8 @@
 #import "DSPotentialContact.h"
 #import "NSData+Bitcoin.h"
 #import "DSDAPIClient+RegisterDashPayContract.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -84,7 +86,6 @@
         self.managedObjectContext = [NSManagedObject context];
     }
     
-    
     [self updateCreditBalance];
     
     
@@ -92,6 +93,7 @@
 }
 
 -(NSString*)registrationTransactionHashIdentifier {
+    NSAssert(!uint256_is_zero(self.registrationTransactionHash), @"Registration transaction hash is null");
     return uint256_hex(self.registrationTransactionHash);
 }
 
@@ -173,6 +175,10 @@
     self.lastTransitionHash = lastTransitionHash; //except topup and close, including state transitions
     
     [self loadTransitions];
+    
+    [self.managedObjectContext performBlockAndWait:^{
+        self.ownContact = [DSContactEntity anyObjectMatching:@"ownerBlockchainUserRegistrationTransaction.transactionHash.txHash == %@",uint256_data(self.registrationTransactionHash)];
+    }];
     
     //[self loadContacts];
     
@@ -492,12 +498,14 @@
 }
 
 - (void)fetchProfile:(void (^)(BOOL success))completion {
-    NSDictionary *query = @{ @"data.user" : uint256_hex(self.registrationTransactionHash) };
+    NSDictionary *query = @{ @"userId" : uint256_reverse_hex(self.registrationTransactionHash) };
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
+    
+    DSDLog(@"contract ID %@",[contract identifier]);
     [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"profile" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
@@ -511,9 +519,17 @@
         }
         //todo
         if (!self.ownContact) {
+            NSDictionary * contactDictionary = [documents firstObject];
             [self.managedObjectContext performBlockAndWait:^{
+                [DSContactEntity setContext:self.managedObjectContext];
                 DSContactEntity * contact = [DSContactEntity managedObject];
+                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+                contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                contact.username = self.username;
+                contact.account = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0];
+                contact.ownerBlockchainUserRegistrationTransaction = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",uint256_data(self.registrationTransactionHash)];
                 self.ownContact = contact;
+                [DSContactEntity saveContext];
             }];
         }
         
@@ -528,7 +544,7 @@
 }
 
 - (void)fetchContactRequests:(void (^)(BOOL success))completion {
-    NSDictionary *query = @{ @"data.user" : uint256_hex(self.registrationTransactionHash)};
+    NSDictionary *query = @{ @"userId" : uint256_reverse_hex(self.registrationTransactionHash)};
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
