@@ -49,6 +49,7 @@
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+#import "DSTransition.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -226,7 +227,9 @@
         DSDLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
         DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
         if (!account) {
-            NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+            if (!self.chain.isDevnetAny || ![transaction isKindOfClass:[DSTransition class]]) {
+                NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+            }
             continue;
         }
         if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {

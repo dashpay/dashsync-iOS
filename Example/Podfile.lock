@@ -6,6 +6,9 @@ PODS:
   - ios-dpp (0.0.1):
     - TinyCborObjc (= 0.4.1)
   - KVO-MVVM (0.5.1)
+  - SDWebImage (5.0.1):
+    - SDWebImage/Core (= 5.0.1)
+  - SDWebImage/Core (5.0.1)
   - secp256k1_dash (0.1.2)
   - tinycbor (0.5.3-alpha3)
   - TinyCborObjc (0.4.1):
@@ -15,11 +18,13 @@ DEPENDENCIES:
   - DashSync (from `../`)
   - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `2460e6b`, branch `supernova`)
   - KVO-MVVM (= 0.5.1)
+  - SDWebImage (= 5.0.1)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
     - KVO-MVVM
+    - SDWebImage
     - secp256k1_dash
     - tinycbor
     - TinyCborObjc
@@ -42,10 +47,11 @@ SPEC CHECKSUMS:
   DashSync: c28816fc54b1b7711960f9a4587a43eb8e487345
   ios-dpp: 49fd8a6b749bdfd770dd3debbf5efea80df92c3c
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
+  SDWebImage: 27dd2c9ea07a2252f94557c9fbb6105ee94b74c9
   secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
   tinycbor: f3596b9acc8493b19c9e0cc2d0417d9c7aa58daa
   TinyCborObjc: e36a42aad1134bc6eaa61b68afa4442d48e327f2
 
-PODFILE CHECKSUM: e4e8437b9a35eba8eb2039998c1a854ad9b72bc2
+PODFILE CHECKSUM: 3be2e30cd7a05e963e71b094ad4b5735e7195162
 
 COCOAPODS: 1.6.1

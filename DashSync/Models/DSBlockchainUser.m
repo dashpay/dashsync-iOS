@@ -503,8 +503,19 @@
         if (!strongSelf) {
             return;
         }
-        
+        if (![documents count]) {
+            if (completion) {
+                completion(NO);
+            }
+            return;
+        }
         //todo
+        if (!self.ownContact) {
+            [self.managedObjectContext performBlockAndWait:^{
+                DSContactEntity * contact = [DSContactEntity managedObject];
+                self.ownContact = contact;
+            }];
+        }
         
         if (completion) {
             completion(YES);

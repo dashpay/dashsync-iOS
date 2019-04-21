@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSNumber *blockHeight;
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
 @property (nullable, nonatomic, copy) NSString *username;
+@property (nullable, nonatomic, copy) NSString *avatarPath;
 @property (nullable, nonatomic, retain) NSData *blockchainUserRegistrationHash;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
 @property (nullable, nonatomic, retain) DSAccountEntity *account;

@@ -12,8 +12,11 @@
 
 #import "DSContactsNavigationController.h"
 #import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
+#import <SDWebImage/SDWebImage.h>
 
 @interface DSBlockchainUserActionsViewController ()
+@property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
+@property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
 
 @end
 
@@ -21,12 +24,19 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    self.title = self.blockchainUser.username;
+    if (self.blockchainUser.ownContact) {
+        [self loadProfile];
+    } else {
+        [self.blockchainUser fetchProfile:^(BOOL success) {
+            [self loadProfile];
+        }];
+    }
+}
+
+-(void)loadProfile {
+    self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+    [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
 }
 
 - (void)didReceiveMemoryWarning {
