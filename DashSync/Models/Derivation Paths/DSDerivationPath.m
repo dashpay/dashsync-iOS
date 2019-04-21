@@ -53,9 +53,9 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     else DSSecp256k1PointGen((DSECPoint *)buf, k);
     
     *(uint32_t *)&buf[sizeof(DSECPoint)] = CFSwapInt32HostToBig(i);
-    
+    NSLog(@"c is %@, buf is %@",uint256_hex(*c),[NSData dataWithBytes:buf length:sizeof(DSECPoint) + sizeof(i)].hexString);
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    
+    NSLog(@"c now is %@, I now is %@",uint256_hex(*c),uint512_hex(I));
     DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
     
@@ -65,7 +65,10 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
 
 static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
 {
-    uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
+    BOOL iIs31Bits = uint256_is_31_bits(i);
+    uint32_t smallI;
+    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):(sizeof(i) + sizeof(hardened)));
+    uint8_t buf[length];
     UInt512 I;
     
     if (hardened) {
@@ -73,11 +76,18 @@ static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
         *(UInt256 *)&buf[1] = *k;
     }
     else DSSecp256k1PointGen((DSECPoint *)buf, k);
-    
-    *(UInt256 *)&buf[sizeof(DSECPoint)] = i;
-    
+
+    if (iIs31Bits) {
+        //we are deriving a 31 bit integer
+        smallI = i.u32[0];
+        if (hardened) smallI |= BIP32_HARD;
+        smallI = CFSwapInt32HostToBig(smallI);
+        *(uint32_t *)&buf[sizeof(DSECPoint)] = smallI;
+    } else {
+        *(BOOL *)&buf[sizeof(DSECPoint)] = hardened;
+        *(UInt256 *)&buf[sizeof(DSECPoint) + sizeof(hardened)] = i;
+    }
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-    
     DSSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
     *c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
     
@@ -121,12 +131,24 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 {
     if (hardened) return; // can't derive private child key from public parent key
-    
-    uint8_t buf[sizeof(*K) + sizeof(i)];
+    BOOL iIs31Bits = uint256_is_31_bits(i);
+    uint32_t smallI;
+    uint32_t length = sizeof(*K) + (iIs31Bits?sizeof(smallI):(sizeof(i) + sizeof(hardened)));
+    uint8_t buf[length];
     UInt512 I;
     
     *(DSECPoint *)buf = *K;
-    *(UInt256 *)&buf[sizeof(*K)] = i;
+    
+    if (iIs31Bits) {
+        smallI = i.u32[0];
+        if (hardened) smallI |= BIP32_HARD;
+        smallI = CFSwapInt32HostToBig(smallI);
+        
+        *(uint32_t *)&buf[sizeof(*K)] = smallI;
+    } else {
+        *(BOOL *)&buf[sizeof(*K)] = hardened;
+        *(UInt256 *)&buf[sizeof(*K)] = i;
+    }
     
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
     
@@ -268,7 +290,11 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 -(NSIndexPath*)baseIndexPath {
     NSUInteger indexes[self.length];
     for (NSUInteger position = 0;position < self.length;position++) {
-        indexes[position] = [self indexAtPosition:position].u64[3] & [self isHardenedAtPosition:position];
+        if ([self isHardenedAtPosition:position]) {
+            indexes[position] = [self indexAtPosition:position].u64[0] | BIP32_HARD;
+        } else {
+            indexes[position] = [self indexAtPosition:position].u64[0];
+        }
     }
     return [NSIndexPath indexPathWithIndexes:indexes length:self.length];
 }
@@ -287,14 +313,14 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 }
 
 -(NSUInteger)purpose {
-    if ([self isBIP43Based]) return [self indexAtPosition:0].u64[3];
+    if ([self isBIP43Based]) return [self indexAtPosition:0].u64[0];
     return 0;
 }
 
 // MARK: - Account
 
 -(NSUInteger)accountNumber {
-    return [self indexAtPosition:[self length] - 1].u64[3] & ~BIP32_HARD;
+    return [self indexAtPosition:[self length] - 1].u64[0] & ~BIP32_HARD;
 }
 
 - (void)setAccount:(DSAccount *)account {
@@ -433,9 +459,9 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     if (self.length) {
         for (NSInteger i = 0;i<self.length;i++) {
             if ([self isHardenedAtPosition:i]) {
-                [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i].u64[3]];
+                [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i].u64[0]];
             } else {
-                [mutableString appendFormat:@"/%lu",(unsigned long)[self indexAtPosition:i].u64[3]];
+                [mutableString appendFormat:@"/%lu",(unsigned long)[self indexAtPosition:i].u64[0]];
             }
         }
     } else if ([self.depth integerValue]) {
@@ -528,7 +554,7 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 -(NSString*)walletBasedExtendedPublicKeyLocationStringForWalletUniqueID:(NSString*)uniqueID {
     NSMutableString * mutableString = [NSMutableString string];
     for (NSInteger i = 0;i<self.length;i++) {
-        [mutableString appendFormat:@"_%lu",(unsigned long)([self isHardenedAtPosition:i]?[self indexAtPosition:i].u64[3] | BIP32_HARD:[self indexAtPosition:i].u64[3])];
+        [mutableString appendFormat:@"_%lu",(unsigned long)([self isHardenedAtPosition:i]?[self indexAtPosition:i].u64[0] | BIP32_HARD:[self indexAtPosition:i].u64[0])];
     }
     return [NSString stringWithFormat:@"%@%@%@",[DSDerivationPath walletBasedExtendedPublicKeyLocationStringForUniqueID:uniqueID],self.signingAlgorithm==DSDerivationPathSigningAlgorith_BLS?@"_BLS_":@"",mutableString];
 }
@@ -643,7 +669,7 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     [mpk appendBytes:[DSECDSAKey keyWithSecret:secret compressed:YES].hash160.u32 length:4];
     
     for (NSInteger i = 0;i<[self length];i++) {
-        uint32_t derivation = (uint32_t)[self indexAtPosition:i].u64[3];
+        uint32_t derivation = (uint32_t)[self indexAtPosition:i].u64[0];
         CKDpriv(&secret, &chain, derivation);
     }
     
@@ -789,8 +815,9 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     }
     
     for (NSInteger i = 0;i<[self length];i++) {
-        uint32_t index = [self indexAtPosition:i].u32[7];
-        CKDpriv(&secretRoot, &chainRoot, index | [self isHardenedAtPosition:i]);
+//        uint32_t index = [self isHardenedAtPosition:i]?[self indexAtPosition:i].u32[7] | BIP32_HARD:[self indexAtPosition:i].u32[7];
+//        CKDpriv(&secretRoot, &chainRoot, index);
+        CKDpriv256(&secretRoot, &chainRoot, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
     }
 
     

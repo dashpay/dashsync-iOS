@@ -102,6 +102,8 @@ typedef struct _DSUTXO {
 (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7]) == 0)
 #define uint384_is_zero(u)\
 (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5]) == 0)
+
+#define uint256_is_31_bits(u) ((((u).u64[1] | (u).u64[2] | (u).u64[3]) == 0) && ((u).u32[1] == 0) && (((u).u32[0] & 0x80000000) == 0))
 #define uint256_is_zero(u) (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3]) == 0)
 #define uint160_is_zero(u) (((u).u32[0] | (u).u32[1] | (u).u32[2] | (u).u32[3] | (u).u32[4]) == 0)
 #define uint128_is_zero(u) (((u).u64[0] | (u).u64[1]) == 0)
@@ -126,10 +128,12 @@ typedef struct _DSUTXO {
 #define uint256_reverse_hex(u) [NSData dataWithUInt256:u].reverse.hexString
 #define uint384_hex(u) [NSData dataWithUInt384:u].hexString
 #define uint384_reverse_hex(u) [NSData dataWithUInt384:u].reverse.hexString
+#define uint512_hex(u) [NSData dataWithUInt512:u].hexString
 
 #define uint256_reverse(u)  [NSData dataWithUInt256:u].reverse.UInt256
 
-#define uint256_from_long(u) ((UInt256) { .u64 = { 0, 0, 0, u } })
+#define uint256_from_int(u) ((UInt256) { .u32 = { u, 0, 0, 0, 0, 0 ,0 ,0 } })
+#define uint256_from_long(u) ((UInt256) { .u64 = { u, 0, 0, 0 } })
 
 #define UINT768_ZERO ((UInt768) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } })
 #define UINT512_ZERO ((UInt512) { .u64 = { 0, 0, 0, 0, 0, 0, 0, 0 } })
