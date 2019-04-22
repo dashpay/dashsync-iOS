@@ -1,5 +1,5 @@
 {
-    "name": "DashPayNativePreDemo2",
+    "name": "DashPayNativePreDemo1",
     
     "documents": {
         "profile": {
@@ -22,6 +22,14 @@
             "additionalProperties": false
         },
         "contact": {
+            "indices": [{
+                "properties": [{
+                    "$userId": "asc"
+                }, {
+                    "toUserId": "asc"
+                }],
+                "unique": true
+            }],
             "properties": {
                 "toUserId": {
                     "type": "string"
@@ -35,3 +43,4 @@
         }
     }
 }
+

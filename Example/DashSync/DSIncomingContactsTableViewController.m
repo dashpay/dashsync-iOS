@@ -27,7 +27,7 @@ static NSString * const CellId = @"CellId";
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser fetchContacts:^(BOOL success) {
+    [self.blockchainUser fetchContactRequests:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
