@@ -27,14 +27,19 @@ static NSString * const CellId = @"CellId";
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser fetchContactRequests:^(BOOL success) {
+    [self.blockchainUser fetchIncomingContactRequests:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-
-        [strongSelf.refreshControl endRefreshing];
-        [strongSelf.tableView reloadData];
+        [self.blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            
+            [strongSelf.refreshControl endRefreshing];
+        }];
     }];
 }
 

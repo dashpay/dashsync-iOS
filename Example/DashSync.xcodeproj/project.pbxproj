@@ -129,6 +129,7 @@
 		FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF422226B6E770081D673 /* DSBigNumberTests.m */; };
 		FBBDF426226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */; };
 		FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */; };
+		FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
@@ -378,6 +379,8 @@
 		FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserTransitionsViewController.m; sourceTree = "<group>"; };
 		FBBDF427226C8ECA0081D673 /* DSTransitionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransitionTableViewCell.h; sourceTree = "<group>"; };
 		FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransitionTableViewCell.m; sourceTree = "<group>"; };
+		FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactTableViewCell.h; sourceTree = "<group>"; };
+		FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactTableViewCell.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -786,6 +789,8 @@
 				FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */,
 				FBBDF427226C8ECA0081D673 /* DSTransitionTableViewCell.h */,
 				FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */,
+				FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */,
+				FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1176,6 +1181,7 @@
 				FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */,
 				FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */,
 				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */,
+				FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,

@@ -59,7 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)sendNewContactRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion;
 
-- (void)fetchContactRequests:(void (^)(BOOL success))completion;
+- (void)fetchOutgoingContactRequests:(void (^)(BOOL success))completion;
+
+- (void)fetchIncomingContactRequests:(void (^)(BOOL success))completion;
 
 - (void)fetchProfile:(void (^)(BOOL success))completion;
 

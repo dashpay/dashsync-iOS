@@ -17,9 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactsTabBarViewController () <UITabBarControllerDelegate>
 
-
-@property (strong, nonatomic) DSOutgoingContactsTableViewController *outgoingController;
-
 @end
 
 @implementation DSContactsTabBarViewController
@@ -40,20 +37,12 @@ NS_ASSUME_NONNULL_BEGIN
             [strongSelf showAlertTitle:@"Created profile:" result:success];
         }];
     }
-    
-    DSContactsViewController *contacts = [self.storyboard instantiateViewControllerWithIdentifier:@"ContactsControllerId"];
-    contacts.blockchainUser = self.blockchainUser;
-    
-    DSOutgoingContactsTableViewController *outgoing = [self.storyboard instantiateViewControllerWithIdentifier:@"PendingControllerId"];
-    outgoing.blockchainUser = self.blockchainUser;
-    self.outgoingController = outgoing;
-    
-    DSIncomingContactsTableViewController *incoming = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestsControllerId"];
-    incoming.blockchainUser = self.blockchainUser;
-    
-    self.viewControllers = @[contacts, outgoing, incoming];
-    
-    self.title = contacts.title;
+    for (UIViewController * viewController in self.viewControllers) {
+        if ([viewController respondsToSelector:@selector(setBlockchainUser:)]) {
+            [(id)viewController setBlockchainUser:self.blockchainUser];
+        }
+    }
+    self.title = [self.viewControllers objectAtIndex:0].title;
 }
 
 #pragma mark - Actions
@@ -85,10 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
-            }
-
-            if (success) {
-                [strongSelf.outgoingController refreshData];
             }
             
             [strongSelf showAlertTitle:@"Contact request result:" result:success];
