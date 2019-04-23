@@ -384,7 +384,7 @@
             return;
         }
         
-        UInt256 blockchainUserContactRegistrationHash = ((NSString*)blockchainUser[@"regtxid"]).hexToData.UInt256;
+        UInt256 blockchainUserContactRegistrationHash = ((NSString*)blockchainUser[@"regtxid"]).hexToData.reverse.UInt256;
         
         [potentialContact setContactBlockchainUserRegistrationTransactionHash:blockchainUserContactRegistrationHash];
         
@@ -550,6 +550,7 @@
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
+    NSLog(@"%@",[contract identifier]);
     [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {

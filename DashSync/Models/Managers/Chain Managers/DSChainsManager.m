@@ -117,7 +117,6 @@
             devnetChainManager = [[DSChainManager alloc] initWithChain:chain];
             chain.chainManager = devnetChainManager;
             [self.knownChains addObject:chain];
-            [self.knownDevnetChains addObject:chain];
             [self.devnetGenesisDictionary setObject:devnetChainManager forKey:genesisValue];
         } else {
             devnetChainManager = [self.devnetGenesisDictionary objectForKey:genesisValue];

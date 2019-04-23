@@ -76,7 +76,7 @@
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="friends" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
-        <relationship name="ownerBlockchainUserRegistrationTransaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainUserRegistrationTransactionEntity" inverseName="contacts" inverseEntity="DSBlockchainUserRegistrationTransactionEntity" syncable="YES"/>
+        <relationship name="ownerBlockchainUserRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainUserRegistrationTransactionEntity" inverseName="contacts" inverseEntity="DSBlockchainUserRegistrationTransactionEntity" syncable="YES"/>
         <relationship name="profileTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactProfileCreations" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">

@@ -127,6 +127,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                 //dispatch_semaphore_t sem = dispatch_semaphore_create(0);
                 [service getTransactionById:unknownSubscriptionTransactionHash.hexString success:^(NSDictionary * _Nonnull tx) {
                     if (tx[@"version"] && tx[@"blockheight"] && tx[@"extraPayload"] && tx[@"valueIn"] && tx[@"valueOut"] && ([tx[@"valueIn"] integerValue] + [tx[@"valueOut"] integerValue] == 0)) {
+                        DSDLog(@"state transition %@",tx);
                         //this is a transition
                         NSString * extraPayload = tx[@"extraPayload"];
                         uint16_t version = [tx[@"version"] shortValue];
