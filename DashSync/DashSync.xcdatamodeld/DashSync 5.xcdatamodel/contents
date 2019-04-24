@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18A391" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14490.98" systemVersion="18E226" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
@@ -223,6 +223,17 @@
         <attribute name="scriptPayout" attributeType="Binary" syncable="YES"/>
         <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateServiceTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
+    <entity name="DSQuorumCommitmentTransactionEntity" representedClassName="DSQuorumCommitmentTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+        <attribute name="allCommitmentAggregatedSignature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="llmqType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="membersCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="quorumCommitmentHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="quorumHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumThresholdSignature" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumVerificationVectorHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="signersCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+    </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="expiresAt" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
@@ -375,6 +386,7 @@
         <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
         <element name="DSGovernanceVoteEntity" positionX="-681.9609375" positionY="527.89453125" width="128" height="180"/>
         <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
+        <element name="DSInstantSendLockEntity" positionX="-2322" positionY="-81" width="128" height="165"/>
         <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="240"/>
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="225"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
@@ -393,6 +405,6 @@
         <element name="DSTransitionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSInstantSendLockEntity" positionX="-2322" positionY="-81" width="128" height="165"/>
+        <element name="DSQuorumCommitmentTransactionEntity" positionX="-2322" positionY="-81" width="128" height="180"/>
     </elements>
 </model>

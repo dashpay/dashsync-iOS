@@ -43,7 +43,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 
 
--(instancetype)initWithChain:(DSChain*)chain;
+-(instancetype _Nonnull)initWithChain:(DSChain* _Nonnull)chain NS_DESIGNATED_INITIALIZER;
 
 -(void)setUp;
 

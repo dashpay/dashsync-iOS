@@ -97,7 +97,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain* _Nonnull)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
 
--(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain;
+-(instancetype)initWithUniqueID:(NSString* _Nonnull)uniqueID forChain:(DSChain* _Nonnull)chain;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString * _Nonnull)address;
@@ -145,27 +145,27 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
 
 //returns the seed phrase after authenticating
--(void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
+- (void)seedPhraseAfterAuthentication:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 - (void)seedPhraseAfterAuthenticationWithPrompt:(NSString *)authprompt completion:(void (^ _Nullable)(NSString * _Nullable seedPhrase))completion;
 
--(NSString* _Nullable)seedPhraseIfAuthenticated;
+- (NSString* _Nullable)seedPhraseIfAuthenticated;
 
 //this is used from the account to help determine best start sync position for future resync
--(void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
+- (void)setGuessedWalletCreationTime:(NSTimeInterval)guessedWalletCreationTime;
 
--(DSKey*)privateKeyForAddress:(NSString*)address fromSeed:(NSData*)seed;
+- (DSKey* _Nullable)privateKeyForAddress:(NSString* _Nonnull)address fromSeed:(NSData* _Nonnull)seed;
 
 //generate a random Mnemonic seed
-+ (NSString *)generateRandomSeed;
++ (NSString * _Nonnull)generateRandomSeed;
 
 //generate a random Mnemonic seed in a specified language
-+ (NSString *)generateRandomSeedForLanguage:(DSBIP39Language)language;
++ (NSString * _Nonnull)generateRandomSeedForLanguage:(DSBIP39Language)language;
 
 //get the MNEMONIC KEY prefixed unique ID
-+ (NSString*)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
++ (NSString* _Nonnull)mnemonicUniqueIDForUniqueID:(NSString*)uniqueID;
 
 //get the CREATION TIME KEY prefixed unique ID
-+ (NSString*)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
++ (NSString* _Nonnull)creationTimeUniqueIDForUniqueID:(NSString*)uniqueID;
 
 //This removes all blockchain information from the wallet, used for resync
 - (void)wipeBlockchainInfo;
