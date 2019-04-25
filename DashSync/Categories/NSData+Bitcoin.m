@@ -963,6 +963,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 @implementation NSData (Bitcoin)
 
++ (instancetype)dataWithLLMQ:(DSLLMQ)llmq
+{
+    return [NSData dataWithBytes:&llmq length:sizeof(llmq)];
+}
+
 + (instancetype)dataWithUInt768:(UInt768)n
 {
     return [NSData dataWithBytes:&n length:sizeof(n)];
@@ -1182,10 +1187,16 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt768 *)(self.bytes);
 }
 
--(DSUTXO)transactionOutpoint
+- (DSUTXO)transactionOutpoint
 {
     if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
     return *(DSUTXO *)(self.bytes);
+}
+
+- (DSLLMQ)llmq
+{
+    if (self.length < sizeof(DSLLMQ)) return DSLLMQ_ZERO;
+    return *(DSLLMQ *)(self.bytes);
 }
 
 

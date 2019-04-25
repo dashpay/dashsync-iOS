@@ -2,7 +2,7 @@
 //  DSQuorumCommitmentTransactionEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 4/24/19.
+//  Created by Sam Westrich on 4/25/19.
 //
 //
 
@@ -15,13 +15,6 @@
 }
 
 @dynamic quorumCommitmentHeight;
-@dynamic llmqType;
-@dynamic quorumHash;
-@dynamic signersCount;
-@dynamic membersCount;
-@dynamic quorumPublicKey;
-@dynamic quorumVerificationVectorHash;
-@dynamic quorumThresholdSignature;
-@dynamic allCommitmentAggregatedSignature;
+@dynamic entry;
 
 @end

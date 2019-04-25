@@ -24,8 +24,8 @@
 //  THE SOFTWARE.
 
 #import "DSMasternodeManager.h"
-#import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
-#import "DSProviderRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSSimplifiedMasternodeEntryEntity+CoreDataClass.h"
+#import "DSProviderRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSAddressEntity+CoreDataProperties.h"
 #import "DSChainEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
@@ -41,9 +41,11 @@
 #import "DSPeerManager+Protected.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import "DSLocalMasternode+Protected.h"
-#import "DSLocalMasternodeEntity+CoreDataProperties.h"
+#import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSDerivationPath.h"
+#import "DSQuorumEntry.h"
+#import "DSQuorumEntryEntity+CoreDataClass.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -92,6 +94,7 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,DSQuorumEntry*> *quorumListDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 
 @end
@@ -103,6 +106,7 @@ inline static int ceil_log2(int x)
     if (! (self = [super init])) return nil;
     _chain = chain;
     _simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [NSMutableDictionary dictionary];
+    _quorumListDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     self.baseBlockHash = chain.masternodeBaseBlockHash;
@@ -112,6 +116,7 @@ inline static int ceil_log2(int x)
 
 -(void)setUp {
     [self loadSimplifiedMasternodeEntries:NSUIntegerMax];
+    [self loadQuorumEntries:NSUIntegerMax];
     [self loadLocalMasternodes];
 }
 
@@ -142,6 +147,18 @@ inline static int ceil_log2(int x)
     NSArray * simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity fetchObjects:fetchRequest];
     for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in simplifiedMasternodeEntryEntities) {
         [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash setObject:simplifiedMasternodeEntryEntity.simplifiedMasternodeEntry forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash.reverse];
+    }
+}
+
+-(void)loadQuorumEntries:(NSUInteger)count {
+    NSFetchRequest * fetchRequest = [[DSQuorumEntryEntity fetchRequest] copy];
+    if (count && count != NSUIntegerMax) {
+        [fetchRequest setFetchLimit:count];
+    }
+    [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity]];
+    NSArray * quorumEntryEntities = [DSQuorumEntryEntity fetchObjects:fetchRequest];
+    for (DSQuorumEntryEntity * quorumEntryEntity in quorumEntryEntities) {
+        [self.quorumListDictionaryByRegistrationTransactionHash setObject:quorumEntryEntity. forKey:quorumEntryEntity.quo];
     }
 }
 
@@ -313,6 +330,73 @@ inline static int ceil_log2(int x)
     
     BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRootMNList);
     
+    if (peer.version >= 70214) {
+        if (length - offset < 1) return;
+        NSNumber * deletedQuorumsCountLength;
+        uint64_t deletedQuorumsCount = [message varIntAtOffset:offset length:&deletedQuorumsCountLength];
+        offset += [deletedQuorumsCountLength unsignedLongValue];
+        
+        NSMutableArray * deletedQuorums = [NSMutableArray array];
+        
+        while (deletedQuorumsCount >= 1) {
+            if (length - offset < 33) return;
+            DSLLMQ llmq;
+            llmq.type = [message UInt8AtOffset:offset];
+            llmq.hash = [message UInt256AtOffset:offset]; //maybe this needs reversing
+            [deletedQuorums addObject:[NSData dataWithLLMQ:llmq]];
+            offset += 33;
+            deletedQuorumsCount--;
+        }
+        
+        if (length - offset < 1) return;
+        NSNumber * addedQuorumsCountLength;
+        uint64_t addedQuorumsCount = [message varIntAtOffset:offset length:&addedQuorumsCountLength];
+        offset += [addedQuorumsCountLength unsignedLongValue];
+        
+        leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
+        NSMutableDictionary * addedOrModifiedQuorums = [NSMutableDictionary dictionary];
+        
+        while (addedQuorumsCount >= 1) {
+            if (length - offset < [DSQuorumEntry payloadLength]) return;
+            NSData * data = [message subdataWithRange:NSMakeRange(offset, [DSQuorumEntry payloadLength])];
+            DSQuorumEntry * quorumEntry = [DSQuorumEntry quorumEntryWithData:data onChain:self.chain];
+            [addedOrModifiedQuorums setObject:quorumEntry forKey:[NSData dataWithUInt256:quorumEntry.quorumHash].reverse];
+            offset += [DSQuorumEntry payloadLength];
+            addedQuorumsCount--;
+        }
+        
+        NSMutableDictionary * addedQuorums = [addedOrModifiedQuorums mutableCopy];
+        [addedQuorums removeObjectsForKeys:self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys];
+        NSMutableSet * modifiedQuorumKeys = [NSMutableSet setWithArray:[addedOrModifiedQuorums allKeys]];
+        [modifiedQuorumKeys intersectSet:[NSSet setWithArray:self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys]];
+        NSMutableDictionary * modifiedQuorums = [NSMutableDictionary dictionary];
+        for (NSData * data in modifiedQuorumKeys) {
+            [modifiedQuorums setObject:addedOrModifiedQuorums[data] forKey:data];
+        }
+        
+        NSMutableDictionary * tentativeQuorumList = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy];
+        
+        [tentativeQuorumList removeObjectsForKeys:deletedQuorums];
+        [tentativeQuorumList addEntriesFromDictionary:addedOrModifiedQuorums];
+        
+        NSArray * llmqHashes = [tentativeQuorumList allKeys];
+        llmqHashes = [llmqHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = [((NSData*)obj1) llmq].hash;
+            UInt256 hash2 = [((NSData*)obj2) llmq].hash;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
+        for (NSData * proTxHash in proTxHashes) {
+            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [tentativeMasternodeList objectForKey:proTxHash];
+            [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+        }
+        
+        UInt256 merkleRootLLMQList = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
+        
+        BOOL rootQuorumListValid = uint256_eq(coinbaseTransaction.merkleRootLLMQList, merkleRootLLMQList);
+    }
+    
     DSMerkleBlock * lastBlock = peer.chain.lastBlock;
     while (lastBlock && !uint256_eq(lastBlock.blockHash, blockHash)) {
         lastBlock = peer.chain.recentBlocks[uint256_obj(lastBlock.prevBlock)];
@@ -330,7 +414,7 @@ inline static int ceil_log2(int x)
             break;
         }
     }
-
+    
     //we also need to check that the coinbase is in the merkle block
     DSMerkleBlock * coinbaseVerificationMerkleBlock = [[DSMerkleBlock alloc] initWithBlockHash:blockHash merkleRoot:lastBlock.merkleRoot totalTransactions:totalTransactions hashes:merkleHashes flags:merkleFlags];
     

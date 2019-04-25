@@ -53,6 +53,7 @@
         <relationship name="governanceObjectHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceObjectHashEntity" inverseName="chain" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
         <relationship name="instantSendLocks" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSInstantSendLockEntity" inverseName="chain" inverseEntity="DSInstantSendLockEntity" syncable="YES"/>
         <relationship name="peers" toMany="YES" deletionRule="Cascade" destinationEntity="DSPeerEntity" inverseName="chain" inverseEntity="DSPeerEntity" syncable="YES"/>
+        <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSQuorumEntryEntity" inverseName="chain" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
         <relationship name="simplifiedMasternodeEntries" toMany="YES" deletionRule="Cascade" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="chain" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
         <relationship name="sporks" toMany="YES" deletionRule="Cascade" destinationEntity="DSSporkHashEntity" inverseName="chain" inverseEntity="DSSporkHashEntity" syncable="YES"/>
         <relationship name="transactionHashes" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransactionHashEntity" inverseName="chain" inverseEntity="DSTransactionHashEntity" syncable="YES"/>
@@ -224,15 +225,20 @@
         <relationship name="localMasternode" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSLocalMasternodeEntity" inverseName="providerUpdateServiceTransactions" inverseEntity="DSLocalMasternodeEntity" syncable="YES"/>
     </entity>
     <entity name="DSQuorumCommitmentTransactionEntity" representedClassName="DSQuorumCommitmentTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
-        <attribute name="allCommitmentAggregatedSignature" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="llmqType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="membersCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="quorumCommitmentHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="quorumHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="quorumPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="quorumThresholdSignature" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="quorumVerificationVectorHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="signersCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="commitmentTransaction" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSQuorumEntryEntity" representedClassName="DSQuorumEntryEntity" syncable="YES">
+        <attribute name="allCommitmentAggregatedSignatureData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="llmqType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="membersCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="quorumHashData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumPublicKeyData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumThresholdSignatureData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumVerificationVectorHashData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="signersCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="quorums" inverseEntity="DSChainEntity" syncable="YES"/>
+        <relationship name="commitmentTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumCommitmentTransactionEntity" inverseName="entry" inverseEntity="DSQuorumCommitmentTransactionEntity" syncable="YES"/>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
@@ -379,7 +385,7 @@
         <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="105"/>
         <element name="DSBlockchainUserResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="120"/>
         <element name="DSBlockchainUserTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="60"/>
-        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="315"/>
+        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="330"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="135"/>
         <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>
@@ -394,6 +400,7 @@
         <element name="DSProviderUpdateRegistrarTransactionEntity" positionX="-2313" positionY="-72" width="128" height="150"/>
         <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
         <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
+        <element name="DSQuorumCommitmentTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="255"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
@@ -405,6 +412,6 @@
         <element name="DSTransitionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSQuorumCommitmentTransactionEntity" positionX="-2322" positionY="-81" width="128" height="180"/>
+        <element name="DSQuorumEntryEntity" positionX="-2322" positionY="-81" width="128" height="195"/>
     </elements>
 </model>
