@@ -36,7 +36,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSMasternodeListCountUpdateNotificati
 
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
-@property (nonatomic,readonly) DSChain * chain;
+@property (nonatomic,readonly,nonnull) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic,readonly) NSUInteger localMasternodesCount;
 

@@ -22,7 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int32_t signersCount;
 @property (nullable, nonatomic, retain) NSData *allCommitmentAggregatedSignatureData;
 @property (nonatomic, assign) int16_t llmqType;
-@property (nonatomic, assign) int32_t membersCount;
+@property (nonatomic, assign) int32_t validMembersCount;
+@property (nullable, nonatomic, retain) NSData * signersBitset;
+@property (nullable, nonatomic, retain) NSData * validMembersBitset;
 @property (nullable, nonatomic, retain) DSQuorumCommitmentTransactionEntity *commitmentTransaction;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 

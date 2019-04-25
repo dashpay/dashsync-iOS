@@ -13,6 +13,63 @@
 
 @implementation DSQuorumEntryEntity
 
+- (BOOL)applyMessage:(NSData *)message atOffset:(uint32_t*)offset onChain:(DSChain *)chain
+{
+    NSUInteger length = message.length;
+    uint32_t off = *offset;
+    
+    
+    if (length - off < 1) return nil;
+    self.llmqType = [message UInt8AtOffset:off];
+    off += 1;
+    
+    if (length - off < 32) return nil;
+    self.quorumHash = [message UInt256AtOffset:off];
+    off += 32;
+    
+    if (length - off < 1) return nil;
+    NSNumber * signersCountLengthSize = nil;
+    self.signersCount = (uint32_t)[message varIntAtOffset:off length:&signersCountLengthSize];
+    off += signersCountLengthSize.unsignedLongValue;
+    
+    uint16_t signersBufferLength = ((self.signersCount +7)/8);
+    
+    if (length - off < signersBufferLength) return nil;
+    self.signersBitset = [message subdataWithRange:NSMakeRange(off, signersBufferLength)];
+    off += signersBufferLength;
+    
+    if (length - off < 1) return nil;
+    NSNumber * validMembersCountLengthSize = nil;
+    self.validMembersCount = (uint32_t)[message varIntAtOffset:off length:&validMembersCountLengthSize];
+    off += validMembersCountLengthSize.unsignedLongValue;
+    
+    uint16_t validMembersCountBufferLength = ((self.validMembersCount +7)/8);
+    
+    if (length - off < validMembersCountBufferLength) return nil;
+    self.validMembersBitset = [message subdataWithRange:NSMakeRange(off, validMembersCountBufferLength)];
+    off += validMembersCountBufferLength;
+    
+    if (length - off < 48) return nil;
+    self.quorumPublicKey = [message UInt384AtOffset:off];
+    off += 48;
+    
+    if (length - off < 32) return nil;
+    self.quorumVerificationVectorHash = [message UInt256AtOffset:off];
+    off += 32;
+    
+    if (length - off < 96) return nil;
+    self.quorumThresholdSignature = [message UInt768AtOffset:off];
+    off += 96;
+    
+    if (length - off < 96) return nil;
+    self.allCommitmentAggregatedSignature = [message UInt768AtOffset:off];
+    off += 96;
+    
+    *offset = off;
+    
+    return self;
+}
+
 -(UInt256)quorumHash {
     return self.quorumHashData.UInt256;
 }

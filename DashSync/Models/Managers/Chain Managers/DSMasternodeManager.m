@@ -44,8 +44,8 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSDerivationPath.h"
-#import "DSQuorumEntry.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
+#import "DSPotentialQuorumEntry.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -94,7 +94,7 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
-@property (nonatomic,strong) NSMutableDictionary<NSData*,DSQuorumEntry*> *quorumListDictionaryByRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,DSQuorumEntryEntity*> *quorumListDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 
 @end
@@ -158,7 +158,7 @@ inline static int ceil_log2(int x)
     [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"chain == %@",self.chain.chainEntity]];
     NSArray * quorumEntryEntities = [DSQuorumEntryEntity fetchObjects:fetchRequest];
     for (DSQuorumEntryEntity * quorumEntryEntity in quorumEntryEntities) {
-        [self.quorumListDictionaryByRegistrationTransactionHash setObject:quorumEntryEntity. forKey:quorumEntryEntity.quo];
+        [self.quorumListDictionaryByRegistrationTransactionHash setObject:quorumEntryEntity forKey:quorumEntryEntity.quorumHashData];
     }
 }
 
@@ -330,6 +330,8 @@ inline static int ceil_log2(int x)
     
     BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRootMNList);
     
+    BOOL rootQuorumListValid = TRUE;
+    
     if (peer.version >= 70214) {
         if (length - offset < 1) return;
         NSNumber * deletedQuorumsCountLength;
@@ -357,24 +359,22 @@ inline static int ceil_log2(int x)
         NSMutableDictionary * addedOrModifiedQuorums = [NSMutableDictionary dictionary];
         
         while (addedQuorumsCount >= 1) {
-            if (length - offset < [DSQuorumEntry payloadLength]) return;
-            NSData * data = [message subdataWithRange:NSMakeRange(offset, [DSQuorumEntry payloadLength])];
-            DSQuorumEntry * quorumEntry = [DSQuorumEntry quorumEntryWithData:data onChain:self.chain];
-            [addedOrModifiedQuorums setObject:quorumEntry forKey:[NSData dataWithUInt256:quorumEntry.quorumHash].reverse];
-            offset += [DSQuorumEntry payloadLength];
+            DSPotentialQuorumEntry * potentialQuorumEntry = [DSPotentialQuorumEntry potentialQuorumEntryWithData:message dataOffset:(uint32_t)offset onChain:self.chain];
+            [addedOrModifiedQuorums setObject:potentialQuorumEntry forKey:[NSData dataWithUInt256:potentialQuorumEntry.quorumHash]];
+            offset += potentialQuorumEntry.length;
             addedQuorumsCount--;
         }
         
         NSMutableDictionary * addedQuorums = [addedOrModifiedQuorums mutableCopy];
-        [addedQuorums removeObjectsForKeys:self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys];
+        [addedQuorums removeObjectsForKeys:self.quorumListDictionaryByRegistrationTransactionHash.allKeys];
         NSMutableSet * modifiedQuorumKeys = [NSMutableSet setWithArray:[addedOrModifiedQuorums allKeys]];
-        [modifiedQuorumKeys intersectSet:[NSSet setWithArray:self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys]];
+        [modifiedQuorumKeys intersectSet:[NSSet setWithArray:self.quorumListDictionaryByRegistrationTransactionHash.allKeys]];
         NSMutableDictionary * modifiedQuorums = [NSMutableDictionary dictionary];
         for (NSData * data in modifiedQuorumKeys) {
             [modifiedQuorums setObject:addedOrModifiedQuorums[data] forKey:data];
         }
         
-        NSMutableDictionary * tentativeQuorumList = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy];
+        NSMutableDictionary * tentativeQuorumList = [self.quorumListDictionaryByRegistrationTransactionHash mutableCopy];
         
         [tentativeQuorumList removeObjectsForKeys:deletedQuorums];
         [tentativeQuorumList addEntriesFromDictionary:addedOrModifiedQuorums];
@@ -394,7 +394,7 @@ inline static int ceil_log2(int x)
         
         UInt256 merkleRootLLMQList = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
         
-        BOOL rootQuorumListValid = uint256_eq(coinbaseTransaction.merkleRootLLMQList, merkleRootLLMQList);
+        rootQuorumListValid = uint256_eq(coinbaseTransaction.merkleRootLLMQList, merkleRootLLMQList);
     }
     
     DSMerkleBlock * lastBlock = peer.chain.lastBlock;
@@ -420,7 +420,7 @@ inline static int ceil_log2(int x)
     
     BOOL validCoinbase = [coinbaseVerificationMerkleBlock isMerkleTreeValid];
     
-    if (foundCoinbase && validCoinbase && rootMNListValid) {
+    if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid) {
         //yay this is the correct masternode list verified deterministically
         self.baseBlockHash = blockHash;
         self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = tentativeMasternodeList;

@@ -21,8 +21,10 @@
 @dynamic signersCount;
 @dynamic allCommitmentAggregatedSignatureData;
 @dynamic llmqType;
-@dynamic membersCount;
+@dynamic validMembersCount;
 @dynamic commitmentTransaction;
 @dynamic chain;
+@dynamic signersBitset;
+@dynamic validMembersBitset;
 
 @end
