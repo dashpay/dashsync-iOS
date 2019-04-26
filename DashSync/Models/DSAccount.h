@@ -29,20 +29,22 @@
 #import "NSData+Bitcoin.h"
 #import "DSFundsDerivationPath.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
+@property (nullable, nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
 
-@property (nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
+@property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
-@property (nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
+@property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
 
-@property (nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
+@property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
 
-@property (nonatomic, weak) DSWallet * wallet;
+@property (nullable, nonatomic, weak) DSWallet * wallet;
 
 @property (nonatomic, readonly) NSString * uniqueID;
 
@@ -52,28 +54,28 @@
 @property (nonatomic, readonly) uint64_t balance;
 
 // NSValue objects containing UTXO structs
-@property (nonatomic, readonly) NSArray * _Nonnull unspentOutputs;
+@property (nonatomic, readonly) NSArray * unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * _Nonnull recentTransactions;
+@property (nonatomic, readonly) NSArray * recentTransactions;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * _Nonnull recentTransactionsWithInternalOutput;
+@property (nonatomic, readonly) NSArray * recentTransactionsWithInternalOutput;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * _Nonnull allTransactions;
+@property (nonatomic, readonly) NSArray * allTransactions;
 
 // returns the first unused external address
-@property (nonatomic, readonly) NSString * _Nullable receiveAddress;
+@property (nullable, nonatomic, readonly) NSString * receiveAddress;
 
 // returns the first unused internal address
-@property (nonatomic, readonly) NSString * _Nullable changeAddress;
+@property (nullable, nonatomic, readonly) NSString * changeAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSArray * _Nonnull externalAddresses;
+@property (nonatomic, readonly) NSArray * externalAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSArray * _Nonnull internalAddresses;
+@property (nonatomic, readonly) NSArray * internalAddresses;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
@@ -109,31 +111,31 @@
 - (BOOL)addressIsUsed:(NSString *)address;
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
-- (DSTransaction * _Nullable)transactionFor:(uint64_t)amount to:(NSString * _Nonnull)address withFee:(BOOL)fee;
+- (DSTransaction * _Nullable)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts
-                                   toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee;
+- (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts
+                                   toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
+- (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction * _Nullable)transactionForAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
+- (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString* _Nullable)shapeshiftAddress;
 
-- (DSTransaction *)updateTransaction:(DSTransaction* _Nonnull)transaction forAmounts:(NSArray * _Nonnull)amounts toOutputScripts:(NSArray * _Nonnull)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
+- (DSTransaction *)updateTransaction:(DSTransaction *)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant;
 
 // sign any inputs in the given transaction that can be signed using private keys from the wallet
-- (void)signTransaction:(DSTransaction * _Nonnull)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
+- (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString * _Nullable)authprompt completion:(_Nonnull TransactionValidityCompletionBlock)completion;
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
-- (BOOL)canContainTransaction:(DSTransaction * _Nonnull)transaction;
+- (BOOL)canContainTransaction:(DSTransaction *)transaction;
 
 // adds a transaction to the account, or returns false if it isn't associated with the account
-- (BOOL)registerTransaction:(DSTransaction * _Nonnull)transaction;
+- (BOOL)registerTransaction:(DSTransaction *)transaction;
 
 // removes a transaction from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
-- (BOOL)removeTransaction:(DSTransaction * _Nonnull)transaction;
+- (BOOL)removeTransaction:(DSTransaction *)transaction;
 
 // removes a transaction by hash from the account along with any transactions that depend on its outputs, returns TRUE if a transaction was removed
 - (BOOL)removeTransactionWithHash:(UInt256)txHash;
@@ -142,28 +144,30 @@
 - (DSTransaction * _Nullable)transactionForHash:(UInt256)txHash;
 
 // true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
-- (BOOL)transactionIsValid:(DSTransaction * _Nonnull)transaction;
+- (BOOL)transactionIsValid:(DSTransaction *)transaction;
 
 // true if transaction cannot be immediately spent because of a time lock (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
-- (BOOL)transactionIsPending:(DSTransaction * _Nonnull)transaction;
+- (BOOL)transactionIsPending:(DSTransaction *)transaction;
 
 // true if transaction cannot be immediately spent
-- (BOOL)transactionOutputsAreLocked:(DSTransaction * _Nonnull)transaction;
+- (BOOL)transactionOutputsAreLocked:(DSTransaction *)transaction;
 
 // true if tx is considered 0-conf safe (valid and not pending, timestamp is greater than 0, and no unverified inputs)
-- (BOOL)transactionIsVerified:(DSTransaction * _Nonnull)transaction;
+- (BOOL)transactionIsVerified:(DSTransaction *)transaction;
 
 // returns the amount received by the account from the transaction (total outputs to change and/or receive addresses)
-- (uint64_t)amountReceivedFromTransaction:(DSTransaction * _Nonnull)transaction;
+- (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
 
 // retuns the amount sent from the account by the trasaction (total account outputs consumed, change and fee included)
-- (uint64_t)amountSentByTransaction:(DSTransaction * _Nonnull)transaction;
+- (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
 
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
-- (uint64_t)feeForTransaction:(DSTransaction * _Nonnull)transaction;
+- (uint64_t)feeForTransaction:(DSTransaction *)transaction;
 
 // historical wallet balance after the given transaction, or current balance if transaction is not registered in wallet
-- (uint64_t)balanceAfterTransaction:(DSTransaction * _Nonnull)transaction;
+- (uint64_t)balanceAfterTransaction:(DSTransaction *)transaction;
+
+- (void)chainUpdatedBlockHeight:(int32_t)height;
 
 - (NSArray *)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes;
 
@@ -181,7 +185,9 @@
 
 // given a private key, queries api.dashwallet.com for unspent outputs and calls the completion block with a signed
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
+- (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
              completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -8,6 +8,8 @@
 #import "DSTransaction.h"
 #import "BigIntTypes.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSECDSAKey;
 
 @interface DSBlockchainUserRegistrationTransaction : DSTransaction
@@ -17,16 +19,18 @@
 @property (nonatomic,assign) uint16_t blockchainUserRegistrationTransactionVersion;
 @property (nonatomic,copy) NSString * username;
 @property (nonatomic,assign) UInt160 pubkeyHash;
-@property (nonatomic,readonly) NSString * pubkeyAddress;
+@property (nullable, nonatomic,readonly) NSString * pubkeyAddress;
 @property (nonatomic,strong) NSData * payloadSignature;
 @property (nonatomic,readonly) uint64_t topupAmount;
 
-- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain;
+- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString *)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain;
 
--(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString* _Nonnull)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain * _Nonnull)chain;
+-(instancetype)initWithBlockchainUserRegistrationTransactionVersion:(uint16_t)version username:(NSString *)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain;
 
--(void)signPayloadWithKey:(DSECDSAKey* _Nonnull)privateKey;
+-(void)signPayloadWithKey:(DSECDSAKey *)privateKey;
 
 -(BOOL)checkPayloadSignature;
 
 @end
+
+NS_ASSUME_NONNULL_END

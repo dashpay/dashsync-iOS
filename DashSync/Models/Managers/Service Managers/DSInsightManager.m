@@ -40,6 +40,9 @@
 - (void)utxosForAddresses:(NSArray *)addresses onChain:(DSChain*)chain 
                completion:(void (^)(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error))completion
 {
+    NSParameterAssert(addresses);
+    NSParameterAssert(chain);
+    
     NSString * insightURL = [chain isMainnet]?INSIGHT_URL:TESTNET_INSIGHT_URL;
     [self utxos:insightURL forAddresses:addresses
      completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
@@ -56,6 +59,8 @@
 }
 
 -(void)queryInsightForTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion {
+    NSParameterAssert(chain);
+    
     NSString * insightURL = [chain isMainnet]?INSIGHT_URL:TESTNET_INSIGHT_URL;
     [self queryInsight:insightURL forTransactionWithHash:transactionHash onChain:chain completion:^(DSTransaction *transaction, NSError *error) {
          if (error) {
@@ -70,6 +75,7 @@
 }
 
 -(void)queryInsight:(NSString *)insightURL forTransactionWithHash:(UInt256)transactionHash onChain:(DSChain*)chain completion:(void (^)(DSTransaction * transaction, NSError *error))completion {
+    NSParameterAssert(insightURL);
     
     NSString * path = [[insightURL stringByAppendingPathComponent:TX_PATH] stringByAppendingPathComponent:uint256_hex(transactionHash)];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]

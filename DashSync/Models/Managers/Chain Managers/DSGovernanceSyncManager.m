@@ -69,6 +69,8 @@
 
 - (instancetype)initWithChain:(id)chain
 {
+    NSParameterAssert(chain);
+
     if (! (self = [super init])) return nil;
     _chain = chain;
     _governanceObjects = [NSMutableArray array];
@@ -163,6 +165,8 @@
 }
 
 -(void)publishProposal:(DSGovernanceObject*)goveranceProposal {
+    NSParameterAssert(goveranceProposal);
+    
     if (![goveranceProposal isValid]) return;
     [self.peerManager.downloadPeer sendGovObject:goveranceProposal];
 }
@@ -558,6 +562,12 @@
 // MARK:- Proposal Creation
 
 -(DSGovernanceObject*)createProposalWithIdentifier:(NSString*)identifier toPaymentAddress:(NSString*)paymentAddress forAmount:(uint64_t)amount fromAccount:(DSAccount*)account startDate:(NSDate*)startDate cycles:(NSUInteger)cycles url:(NSString*)url {
+    NSParameterAssert(identifier);
+    NSParameterAssert(paymentAddress);
+    NSParameterAssert(account);
+    NSParameterAssert(startDate);
+    NSParameterAssert(url);
+    
     uint64_t endEpoch = [startDate timeIntervalSince1970] + (SUPERBLOCK_AVERAGE_TIME * cycles);
     DSGovernanceObject * governanceObject = [[DSGovernanceObject alloc] initWithType:DSGovernanceObjectType_Proposal parentHash:UINT256_ZERO revision:1 timestamp:[[NSDate date] timeIntervalSince1970] signature:nil collateralHash:UINT256_ZERO governanceObjectHash:UINT256_ZERO identifier:identifier amount:amount startEpoch:[startDate timeIntervalSince1970] endEpoch:endEpoch paymentAddress:paymentAddress url:url onChain:self.chain];
     return governanceObject;
@@ -567,6 +577,8 @@
 // MARK:- Voting
 
 -(void)vote:(DSGovernanceVoteOutcome)governanceVoteOutcome onGovernanceProposal:(DSGovernanceObject*)governanceObject {
+    NSParameterAssert(governanceObject);
+    
     //TODO fix voting
 //    NSArray * registeredMasternodes = [self.chain registeredMasternodes];
 //    DSPeerManager * peerManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.chain];

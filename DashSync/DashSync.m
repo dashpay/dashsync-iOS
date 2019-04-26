@@ -64,6 +64,8 @@
 
 -(void)startSyncForChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager connect];
 }
 
@@ -76,10 +78,14 @@
 
 -(void)stopSyncForChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager disconnect];
 }
 
 -(void)wipePeerDataForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     [self stopSyncForChain:chain];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager removeTrustedPeerHost];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager clearPeers];
@@ -89,6 +95,8 @@
 }
 
 -(void)wipeBlockchainDataForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
@@ -106,6 +114,8 @@
 }
 
 -(void)wipeMasternodeDataForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     [self stopSyncForChain:chain];
     NSManagedObjectContext * context = [NSManagedObject context];
     [context performBlockAndWait:^{
@@ -129,6 +139,8 @@
 }
 
 -(void)wipeSporkDataForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSSporkEntity deleteSporksOnChain:chainEntity];
@@ -141,6 +153,8 @@
 }
 
 -(void)wipeGovernanceDataForChain:(DSChain*)chain {
+    NSParameterAssert(chain);
+    
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
@@ -160,6 +174,8 @@
 }
 
 -(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication {
+    NSParameterAssert(chain);
+    
     [self wipeBlockchainDataForChain:chain];
     if (!forceReauthentication && [[DSAuthenticationManager sharedInstance] didAuthenticate]) {
         [chain wipeWalletsAndDerivatives];

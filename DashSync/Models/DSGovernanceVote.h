@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import "DSChain.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSGovernanceObject,DSSimplifiedMasternodeEntry,DSChain,DSECDSAKey;
 
 typedef NS_ENUM(uint32_t, DSGovernanceVoteSignal) {
@@ -27,7 +29,7 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 
 @interface DSGovernanceVote : NSObject
 
-@property (nonatomic,strong) DSGovernanceObject * governanceObject;
+@property (nullable, nonatomic,strong) DSGovernanceObject * governanceObject;
 @property (nonatomic,readonly) DSSimplifiedMasternodeEntry * masternode;
 @property (nonatomic,readonly) DSGovernanceVoteOutcome outcome;
 @property (nonatomic,readonly) DSGovernanceVoteSignal signal;
@@ -38,11 +40,13 @@ typedef NS_ENUM(uint32_t, DSGovernanceVoteOutcome) {
 @property (nonatomic,readonly) DSUTXO masternodeUTXO;
 @property (nonatomic,readonly) UInt256 governanceVoteHash;
 
-+(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData * _Nonnull)message onChain:(DSChain* _Nonnull)chain;
--(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData* _Nullable)signature onChain:(DSChain* _Nonnull)chain;
++(DSGovernanceVote* _Nullable)governanceVoteFromMessage:(NSData *)message onChain:(DSChain *)chain;
+-(instancetype)initWithParentHash:(UInt256)parentHash forMasternodeUTXO:(DSUTXO)masternodeUTXO voteOutcome:(DSGovernanceVoteOutcome)voteOutcome voteSignal:(DSGovernanceVoteSignal)voteSignal createdAt:(NSTimeInterval)createdAt signature:(NSData* _Nullable)signature onChain:(DSChain *)chain;
 -(void)signWithKey:(DSECDSAKey*)key;
 
 -(NSData*)dataMessage;
 -(BOOL)isValid;
 
 @end
+
+NS_ASSUME_NONNULL_END

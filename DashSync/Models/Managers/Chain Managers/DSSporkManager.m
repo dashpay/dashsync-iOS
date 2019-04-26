@@ -53,8 +53,10 @@
 
 @implementation DSSporkManager
 
-- (instancetype)initWithChain:(id)chain
+- (instancetype)initWithChain:(DSChain *)chain
 {
+    NSParameterAssert(chain);
+    
     if (! (self = [super init])) return nil;
     _chain = chain;
     __block NSMutableArray * sporkHashesMarkedForRetrieval = [NSMutableArray array];

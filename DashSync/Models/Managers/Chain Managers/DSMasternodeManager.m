@@ -103,6 +103,8 @@ inline static int ceil_log2(int x)
 
 - (instancetype)initWithChain:(DSChain*)chain
 {
+    NSParameterAssert(chain);
+    
     if (! (self = [super init])) return nil;
     _chain = chain;
     _simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [NSMutableDictionary dictionary];
@@ -550,6 +552,8 @@ inline static int ceil_log2(int x)
 }
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash {
+    NSParameterAssert(providerRegistrationTransactionHash);
+    
     return [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:providerRegistrationTransactionHash];
 }
 
@@ -582,6 +586,7 @@ inline static int ceil_log2(int x)
 }
 
 -(UInt256)masternodeScore:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry quorumHash:(UInt256)quorumHash {
+    NSParameterAssert(simplifiedMasternodeEntry);
     
     if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
         return UINT256_ZERO;
@@ -636,6 +641,8 @@ inline static int ceil_log2(int x)
 }
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet {
+    NSParameterAssert(wallet);
+    
     return [self createNewMasternodeWithIPAddress:ipAddress onPort:port inFundsWallet:wallet inOperatorWallet:wallet inOwnerWallet:wallet inVotingWallet:wallet];
 }
 
@@ -650,6 +657,9 @@ inline static int ceil_log2(int x)
 }
 
 -(DSLocalMasternode*)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet*)ownerWallet ownerKeyIndex:(uint32_t)ownerKeyIndex {
+    NSParameterAssert(simplifiedMasternodeEntry);
+    NSParameterAssert(ownerWallet);
+    
     DSLocalMasternode * localMasternode = [self localMasternodeHavingProviderRegistrationTransactionHash:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     
     if (localMasternode) return localMasternode;
@@ -668,7 +678,8 @@ inline static int ceil_log2(int x)
 }
 
 -(DSLocalMasternode*)localMasternodeFromProviderRegistrationTransaction:(DSProviderRegistrationTransaction*)providerRegistrationTransaction save:(BOOL)save {
-
+    NSParameterAssert(providerRegistrationTransaction);
+    
     //First check to see if we have a local masternode for this provider registration hash
     
     @synchronized (self) {
@@ -697,6 +708,8 @@ inline static int ceil_log2(int x)
 }
 
 -(DSLocalMasternode*)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath {
+    NSParameterAssert(derivationPath);
+    
     for (DSLocalMasternode * localMasternode in self.localMasternodesDictionaryByRegistrationTransactionHash.allValues) {
         switch (derivationPath.reference) {
             case DSDerivationPathReference_ProviderFunds:

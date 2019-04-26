@@ -27,7 +27,9 @@
 #import "DSSpork.h"
 #import "DSPeer.h"
 
-FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
+NS_ASSUME_NONNULL_BEGIN
+
+FOUNDATION_EXPORT NSString* const DSSporkListDidUpdateNotification;
 
 @class DSPeer,DSChain;
 
@@ -55,3 +57,5 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSSporkListDidUpdateNotification;
 - (void)stopGettingSporks;
 
 @end
+
+NS_ASSUME_NONNULL_END

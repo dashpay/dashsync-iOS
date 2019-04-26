@@ -112,7 +112,6 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) NSString * name;
 @property (nonatomic, readonly) NSString * localizedName;
 @property (nonatomic, readonly) NSString * uniqueID;
-@property (nonatomic, readonly,getter=isActive) BOOL active;
 @property (nonatomic, weak,nullable) DSChainManager * chainManager;
 @property (nonatomic, readonly,nullable) DSMerkleBlock * lastBlock;
 @property (nonatomic, readonly,nullable) NSArray * blockLocatorArray;
