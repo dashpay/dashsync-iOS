@@ -15,6 +15,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
+#import "DSQuorumEntryEntity+CoreDataClass.h"
 
 @interface DashSync ()
 
@@ -92,6 +93,7 @@
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
     [DSAddressEntity deleteAddressesOnChain:chainEntity];
+    [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
     [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
     [chain wipeBlockchainInfo];
     [DSTransactionEntity saveContext];

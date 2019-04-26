@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSPotentialQuorumEntry : NSObject
 
+@property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) UInt256 quorumHash;
 @property (nonatomic, readonly) UInt384 quorumPublicKey;
 @property (nonatomic, readonly) UInt768 quorumThresholdSignature;
@@ -25,8 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSData * signersBitset;
 @property (nonatomic, readonly) NSData * validMembersBitset;
 @property (nonatomic, readonly) uint32_t length;
+@property (nonatomic, readonly, getter=toData) NSData * data;
+@property (nonatomic, readonly) UInt256 commitmentHash;
+@property (nonatomic, readonly) DSChain * chain;
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;
+
+-(BOOL)validateWithMasternodeList:(NSMutableDictionary*)dictionary;
 
 @end
 

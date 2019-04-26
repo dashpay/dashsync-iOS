@@ -1395,6 +1395,18 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [d base58String];
 }
 
+- (uint64_t)trueBitsCount {
+    uint64_t trueBitsCount = 0;
+    for (uint64_t i = 0;i<self.length;i++) {
+        uint8_t bits = [self UInt8AtOffset:i];
+        for (uint8_t j = 0;j<8;j++) {
+            if (bits & 1) trueBitsCount++;
+            bits >>= 1;
+        }
+    }
+    return trueBitsCount;
+}
+
 @end
 
 

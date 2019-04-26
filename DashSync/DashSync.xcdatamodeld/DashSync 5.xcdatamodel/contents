@@ -230,6 +230,7 @@
     </entity>
     <entity name="DSQuorumEntryEntity" representedClassName="DSQuorumEntryEntity" syncable="YES">
         <attribute name="allCommitmentAggregatedSignatureData" attributeType="Binary" syncable="YES"/>
+        <attribute name="commitmentHashData" attributeType="Binary" syncable="YES"/>
         <attribute name="llmqType" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="quorumHashData" attributeType="Binary" syncable="YES"/>
         <attribute name="quorumPublicKeyData" attributeType="Binary" syncable="YES"/>
@@ -239,6 +240,7 @@
         <attribute name="signersCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="validMembersBitset" attributeType="Binary" syncable="YES"/>
         <attribute name="validMembersCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="version" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="quorums" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="commitmentTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumCommitmentTransactionEntity" inverseName="entry" inverseEntity="DSQuorumCommitmentTransactionEntity" syncable="YES"/>
     </entity>
@@ -403,6 +405,7 @@
         <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
         <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSQuorumCommitmentTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
+        <element name="DSQuorumEntryEntity" positionX="-2322" positionY="-81" width="128" height="255"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
         <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="255"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
@@ -414,6 +417,5 @@
         <element name="DSTransitionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSQuorumEntryEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
     </elements>
 </model>

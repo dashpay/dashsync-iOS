@@ -26,5 +26,7 @@
 @dynamic chain;
 @dynamic signersBitset;
 @dynamic validMembersBitset;
+@dynamic commitmentHashData;
+@dynamic version;
 
 @end

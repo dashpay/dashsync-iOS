@@ -10,64 +10,24 @@
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSPotentialQuorumEntry.h"
 
 @implementation DSQuorumEntryEntity
 
-- (BOOL)applyMessage:(NSData *)message atOffset:(uint32_t*)offset onChain:(DSChain *)chain
-{
-    NSUInteger length = message.length;
-    uint32_t off = *offset;
-    
-    
-    if (length - off < 1) return nil;
-    self.llmqType = [message UInt8AtOffset:off];
-    off += 1;
-    
-    if (length - off < 32) return nil;
-    self.quorumHash = [message UInt256AtOffset:off];
-    off += 32;
-    
-    if (length - off < 1) return nil;
-    NSNumber * signersCountLengthSize = nil;
-    self.signersCount = (uint32_t)[message varIntAtOffset:off length:&signersCountLengthSize];
-    off += signersCountLengthSize.unsignedLongValue;
-    
-    uint16_t signersBufferLength = ((self.signersCount +7)/8);
-    
-    if (length - off < signersBufferLength) return nil;
-    self.signersBitset = [message subdataWithRange:NSMakeRange(off, signersBufferLength)];
-    off += signersBufferLength;
-    
-    if (length - off < 1) return nil;
-    NSNumber * validMembersCountLengthSize = nil;
-    self.validMembersCount = (uint32_t)[message varIntAtOffset:off length:&validMembersCountLengthSize];
-    off += validMembersCountLengthSize.unsignedLongValue;
-    
-    uint16_t validMembersCountBufferLength = ((self.validMembersCount +7)/8);
-    
-    if (length - off < validMembersCountBufferLength) return nil;
-    self.validMembersBitset = [message subdataWithRange:NSMakeRange(off, validMembersCountBufferLength)];
-    off += validMembersCountBufferLength;
-    
-    if (length - off < 48) return nil;
-    self.quorumPublicKey = [message UInt384AtOffset:off];
-    off += 48;
-    
-    if (length - off < 32) return nil;
-    self.quorumVerificationVectorHash = [message UInt256AtOffset:off];
-    off += 32;
-    
-    if (length - off < 96) return nil;
-    self.quorumThresholdSignature = [message UInt768AtOffset:off];
-    off += 96;
-    
-    if (length - off < 96) return nil;
-    self.allCommitmentAggregatedSignature = [message UInt768AtOffset:off];
-    off += 96;
-    
-    *offset = off;
-    
-    return self;
+- (void)setAttributesFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry {
+    self.quorumHash = potentialQuorumEntry.quorumHash;
+    self.quorumPublicKey = potentialQuorumEntry.quorumPublicKey;
+    self.quorumThresholdSignature = potentialQuorumEntry.quorumThresholdSignature;
+    self.quorumVerificationVectorHash = potentialQuorumEntry.quorumVerificationVectorHash;
+    self.signersCount = potentialQuorumEntry.signersCount;
+    self.signersBitset = potentialQuorumEntry.signersBitset;
+    self.validMembersCount = potentialQuorumEntry.validMembersCount;
+    self.validMembersBitset = potentialQuorumEntry.validMembersBitset;
+    self.llmqType = potentialQuorumEntry.llmqType;
+    self.version = potentialQuorumEntry.version;
+    self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
+    self.commitmentHash = potentialQuorumEntry.commitmentHash;
+    self.chain = potentialQuorumEntry.chain.chainEntity;
 }
 
 -(UInt256)quorumHash {
@@ -108,6 +68,14 @@
 
 -(void)setQuorumVerificationVectorHash:(UInt256)quorumVerificationVectorHash {
     self.quorumVerificationVectorHashData = [NSData dataWithUInt256:quorumVerificationVectorHash];
+}
+
+-(UInt256)commitmentHash {
+    return self.commitmentHashData.UInt256;
+}
+
+-(void)setCommitmentHash:(UInt256)commitmentHash {
+    self.commitmentHashData = [NSData dataWithUInt256:commitmentHash];
 }
 
 + (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChain:(DSChainEntity*)chainEntity {
