@@ -92,6 +92,10 @@
     return self;
 }
 
+-(NSData*)registrationTransactionHashData {
+    return uint256_data(self.registrationTransactionHash);
+}
+
 -(NSString*)registrationTransactionHashIdentifier {
     NSAssert(!uint256_is_zero(self.registrationTransactionHash), @"Registration transaction hash is null");
     return uint256_hex(self.registrationTransactionHash);
@@ -385,8 +389,11 @@
         }
         
         UInt256 blockchainUserContactRegistrationHash = ((NSString*)blockchainUser[@"regtxid"]).hexToData.reverse.UInt256;
-        
+        UInt384 blockchainUserContactEncryptionPublicKey = ((NSString*)blockchainUser[@"publicKey"]).hexToData.reverse.UInt384;
+        NSAssert(!uint256_is_zero(blockchainUserContactRegistrationHash), @"blockchainUserContactRegistrationHash should not be null");
+        NSAssert(!uint384_is_zero(blockchainUserContactEncryptionPublicKey), @"blockchainUserContactEncryptionPublicKey should not be null");
         [potentialContact setContactBlockchainUserRegistrationTransactionHash:blockchainUserContactRegistrationHash];
+        [potentialContact setContactEncryptionPublicKey:blockchainUserContactEncryptionPublicKey];
         
         [self sendNewContactRequestToPotentialContact:potentialContact completion:completion];
     } failure:^(NSError *_Nonnull error) {

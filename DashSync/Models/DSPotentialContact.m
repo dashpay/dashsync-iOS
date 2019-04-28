@@ -25,6 +25,7 @@
 #import "DSContactEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSDAPIClient+RegisterDashPayContract.h"
+#import "DSBLSKey.h"
 
 @interface DSPotentialContact()
 
@@ -57,6 +58,9 @@
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.blockchainUserOwner.wallet.chain];
+    [key en]
+    
     NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     DPJSONObject *data = @{

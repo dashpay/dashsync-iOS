@@ -80,7 +80,7 @@
 @property (nonatomic, strong) NSMutableDictionary<NSData *,NSNumber *> * mMasternodeVoters;
 @property (nonatomic, strong) SeedRequestBlock seedRequestBlock;
 @property (nonatomic, assign, getter=isTransient) BOOL transient;
-@property (nonatomic, strong) NSMutableDictionary <NSString *,DSBlockchainUser*> * mBlockchainUsers;
+@property (nonatomic, strong) NSMutableDictionary <NSData *,DSBlockchainUser*> * mBlockchainUsers;
 
 @end
 
@@ -772,11 +772,11 @@
     NSParameterAssert(blockchainUser);
     NSAssert(blockchainUser.wallet == self, @"the blockchainUser you are trying to remove is not in this wallet");
     
-    [self.mBlockchainUsers removeObjectForKey:blockchainUser.username];
+    [self.mBlockchainUsers removeObjectForKey:blockchainUser.registrationTransactionHashData];
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary removeObjectForKey:blockchainUser.username];
+    [keyChainDictionary removeObjectForKey:blockchainUser.registrationTransactionHashData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
@@ -793,13 +793,13 @@
 {
     NSParameterAssert(blockchainUser);
     
-    if ([self.mBlockchainUsers objectForKey:blockchainUser.username] == nil) {
+    if ([self.mBlockchainUsers objectForKey:blockchainUser.registrationTransactionHashData] == nil) {
         [self addBlockchainUser:blockchainUser];
     }
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary setObject:@(blockchainUser.index) forKey:blockchainUser.username];
+    [keyChainDictionary setObject:@(blockchainUser.index) forKey:blockchainUser.registrationTransactionHashData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
@@ -832,13 +832,19 @@
         NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
         NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
         if (keyChainDictionary) {
-            for (NSString * username in keyChainDictionary) {
-                uint32_t index = [keyChainDictionary[username] unsignedIntValue];
-                UInt256 registrationTransactionHash = [self blockchainUserRegistrationTransactionForIndex:index].txHash;
-                DSDLog(@"Blockchain user %@ with reg %@",username,uint256_hex(registrationTransactionHash));
+            for (NSData * registrationTransactionHashData in keyChainDictionary) {
+                if ([registrationTransactionHashData isKindOfClass:[NSString class]]) {
+                    setKeychainDict(rDictionary, self.walletBlockchainUsersKey, NO);
+                    break;
+                }
+                uint32_t index = [keyChainDictionary[registrationTransactionHashData] unsignedIntValue];
+                UInt256 registrationTransactionHash = registrationTransactionHashData.UInt256;
+                DSDLog(@"Blockchain user with reg %@",uint256_hex(registrationTransactionHash));
                 UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
                 DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
-                [rDictionary setObject:[[DSBlockchainUser alloc] initWithUsername:username atIndex:[keyChainDictionary[username] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash inContext:self.chain.managedObjectContext] forKey:username];
+                DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [self blockchainUserRegistrationTransactionForIndex:index];
+                DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithUsername:blockchainUserRegistrationTransaction.username atIndex:[keyChainDictionary[registrationTransactionHashData] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash inContext:self.chain.managedObjectContext];
+                [rDictionary setObject:blockchainUser forKey:registrationTransactionHashData];
             }
         }
         _mBlockchainUsers = rDictionary;

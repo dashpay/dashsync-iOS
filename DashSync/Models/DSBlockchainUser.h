@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,weak,readonly) DSWallet * wallet;
 @property (nonatomic,readonly) NSString * uniqueIdentifier;
 @property (nonatomic,readonly) UInt256 registrationTransactionHash;
+@property (nonatomic,readonly) NSData * registrationTransactionHashData;
 @property (nonatomic,readonly) NSString * registrationTransactionHashIdentifier;
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
