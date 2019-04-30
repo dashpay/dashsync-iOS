@@ -9,8 +9,6 @@
 #import "DSOutgoingContactsTableViewController.h"
 #import "DSContactTableViewCell.h"
 
-static NSString * const CellId = @"CellId";
-
 @interface DSOutgoingContactsTableViewController ()
 
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -39,7 +37,8 @@ static NSString * const CellId = @"CellId";
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && SUBQUERY(sourceContact.incomingRequests, $g, $g == SELF).@count == 0",self.blockchainUser.ownContact];
+    // && SUBQUERY(sourceContact.outgoingRequests, $g, $g == SELF).@count == 0
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@",self.blockchainUser.ownContact];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {

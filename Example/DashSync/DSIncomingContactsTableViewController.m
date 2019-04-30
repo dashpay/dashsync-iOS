@@ -39,7 +39,8 @@ static NSString * const CellId = @"CellId";
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && SUBQUERY(destinationContact.outgoingRequests, $g, $g == SELF).@count == 0",self.blockchainUser.ownContact];
+    // && SUBQUERY(destinationContact.incomingRequests, $g, $g == SELF).@count == 0
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@",self.blockchainUser.ownContact];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {

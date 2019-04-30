@@ -174,6 +174,12 @@
     }];
 }
 
+-(void)registerInWalletForBlockchainUserRegistrationTransaction:(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
+    self.blockchainUserRegistrationTransaction = blockchainUserRegistrationTransaction;
+    self.registrationTransactionHash = blockchainUserRegistrationTransaction.txHash;
+    [self registerInWallet];
+}
+
 -(void)registerInWallet {
     [self.wallet registerBlockchainUser:self];
 }

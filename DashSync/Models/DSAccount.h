@@ -92,6 +92,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 
+-(DSIncomingFundsDerivationPath*)derivationPathForContactWithIdentifier:(NSData*)contactIdentifier;
+
 -(void)removeDerivationPathForContactWithIdentifier:(NSData*)contactIdentifier;
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;

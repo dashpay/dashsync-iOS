@@ -1,53 +1,59 @@
-//
-//  DSContactsViewController.m
-//  DashSync_Example
-//
-//  Created by Andrew Podkovyrin on 08/03/2019.
+//  
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
 
-#import "DSContactsViewController.h"
-#import "DSContactTableViewCell.h"
-#import "DSContactReceivedTransactionsTableViewController.h"
 #import "DSContactSentTransactionsTableViewController.h"
-#import "DSContactSendDashViewController.h"
+#import "DSTransactionDetailTableViewCell.h"
 
-static NSString * const CellId = @"CellId";
+@interface DSContactSentTransactionsTableViewController ()
 
-@interface DSContactsViewController ()
-
+@property (nonatomic,strong) DSAccount * account;
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 
 @end
 
-@implementation DSContactsViewController
+@implementation DSContactSentTransactionsTableViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = self.blockchainUser.username;
+    
+    // Uncomment the following line to preserve selection between presentations.
+    // self.clearsSelectionOnViewWillAppear = NO;
+    
+    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
-- (IBAction)refreshAction:(id)sender {
-    [self.refreshControl beginRefreshing];
-    __weak typeof(self) weakSelf = self;
-    [self.blockchainUser fetchIncomingContactRequests:^(BOOL success) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        [self.blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            
-            [strongSelf.refreshControl endRefreshing];
-        }];
-    }];
+-(void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
+    _blockchainUser = blockchainUser;
+    if (_contact) {
+        self.account = [blockchainUser.wallet accountWithNumber:_contact.account.index];
+    }
 }
+
+-(void)setContact:(DSContactEntity *)contact {
+    _contact = contact;
+    if (_blockchainUser) {
+        self.account = [_blockchainUser.wallet accountWithNumber:_contact.account.index];
+    }
+}
+
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"ANY friends == %@",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"localAddress.derivationPath.contact == %@",self.contact];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {
@@ -59,14 +65,14 @@ static NSString * const CellId = @"CellId";
     if (_fetchedResultsController) return _fetchedResultsController;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSContactEntity" inManagedObjectContext:self.managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSTxOutputEntity" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
     
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:20];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"username" ascending:YES];
+    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transaction.transactionHash.blockHeight" ascending:YES];
     NSArray *sortDescriptors = @[usernameSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
@@ -139,44 +145,19 @@ static NSString * const CellId = @"CellId";
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSContactTableViewCell *cell = (DSContactTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"ContactCellIdentifier" forIndexPath:indexPath];
+    DSTransactionDetailTableViewCell *cell = (DSTransactionDetailTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier" forIndexPath:indexPath];
     
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSContactEntity * friend = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.textLabel.text = friend.username;
-}
-
-#pragma mark - Private
-
-- (void)showAlertTitle:(NSString *)title result:(BOOL)result {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:result ? @"✅ success" : @"❌ failure" preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
-    [self presentViewController:alert animated:YES completion:nil];
-}
-
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
-    DSContactEntity * friend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
-    if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
-        UITabBarController * tabBarController = segue.destinationViewController;
-        for (UIViewController * controller in tabBarController.viewControllers) {
-            if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
-                ((DSContactReceivedTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactReceivedTransactionsTableViewController*)controller).contact = friend;
-            } else if ([controller isKindOfClass:[DSContactSentTransactionsTableViewController class]]) {
-                ((DSContactSentTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactSentTransactionsTableViewController*)controller).contact = friend;
-            } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
-                ((DSContactSendDashViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactSendDashViewController*)controller).contact = friend;
-            }
-        }
-    }
+-(void)configureCell:(DSTransactionDetailTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+    
+    DSTxOutputEntity * transactionOuput = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSTransaction * transaction = [self.account transactionForHash:transactionOuput.transaction.transactionHash.txHash.UInt256];
+    cell.addressLabel.text = transactionOuput.address;
+    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",[self.account amountSentByTransaction:transaction]];
 }
 
 

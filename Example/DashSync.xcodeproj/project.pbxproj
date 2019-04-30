@@ -80,6 +80,9 @@
 		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
 		FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */; };
 		FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */; };
+		FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */; };
+		FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */; };
+		FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -287,6 +290,12 @@
 		FB5A0FA821951CFC0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		FB5A0FA921951CFC0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FB5A0FAA21951CFD0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		FB6B78442278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactReceivedTransactionsTableViewController.h; sourceTree = "<group>"; };
+		FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactReceivedTransactionsTableViewController.m; sourceTree = "<group>"; };
+		FB6B78472278D5210005C9DB /* DSContactSentTransactionsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactSentTransactionsTableViewController.h; sourceTree = "<group>"; };
+		FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactSentTransactionsTableViewController.m; sourceTree = "<group>"; };
+		FB6B784A2278FB3A0005C9DB /* DSContactSendDashViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactSendDashViewController.h; sourceTree = "<group>"; };
+		FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactSendDashViewController.m; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -445,6 +454,12 @@
 				2AE125F3223BD14B00379C6F /* DSIncomingContactsTableViewController.m */,
 				2AE125EC223B9B0600379C6F /* DSOutgoingContactsTableViewController.h */,
 				2AE125ED223B9B0600379C6F /* DSOutgoingContactsTableViewController.m */,
+				FB6B78442278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.h */,
+				FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */,
+				FB6B78472278D5210005C9DB /* DSContactSentTransactionsTableViewController.h */,
+				FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */,
+				FB6B784A2278FB3A0005C9DB /* DSContactSendDashViewController.h */,
+				FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */,
 			);
 			name = Contacts;
 			sourceTree = "<group>";
@@ -1129,6 +1144,7 @@
 				FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */,
 				FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */,
 				2AE125F4223BD14B00379C6F /* DSIncomingContactsTableViewController.m in Sources */,
+				FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */,
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
@@ -1164,7 +1180,9 @@
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB995D9D21101C9600AC37D0 /* DSPeerTableViewCell.m in Sources */,
 				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
+				FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */,
 				FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */,
+				FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */,
 				FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */,
 				FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,

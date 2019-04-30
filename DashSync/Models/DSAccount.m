@@ -328,6 +328,11 @@
     }
 }
 
+-(DSIncomingFundsDerivationPath*)derivationPathForContactWithIdentifier:(NSData*)contactIdentifier {
+    NSParameterAssert(contactIdentifier);
+    return [self.mContactFundDerivationPathsDictionary objectForKey:contactIdentifier];
+}
+
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {
     NSParameterAssert(derivationPath);
     
@@ -1067,12 +1072,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         for (NSString *addr in transaction.inputAddresses) {
             
             if (!(derivationPath.type == DSDerivationPathType_ClearFunds || derivationPath.type == DSDerivationPathType_AnonymousFunds)) continue;
-            NSInteger index = [derivationPath.allChangeAddresses indexOfObject:addr];
-            if (index != NSNotFound) {
-                [internalIndexes addObject:@(index)];
-                continue;
+            if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                NSInteger index = [derivationPath.allChangeAddresses indexOfObject:addr];
+                if (index != NSNotFound) {
+                    [internalIndexes addObject:@(index)];
+                    continue;
+                }
             }
-            index = [derivationPath.allReceiveAddresses indexOfObject:addr];
+            NSInteger index = [derivationPath.allReceiveAddresses indexOfObject:addr];
             if (index != NSNotFound) {
                 [externalIndexes addObject:@(index)];
                 continue;
