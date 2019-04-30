@@ -113,6 +113,9 @@ NS_ASSUME_NONNULL_BEGIN
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)baseDerivationPathsContainAddress:(NSString *)address;
+
 // the high level (hardened) derivation path containing the address
 -(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
 

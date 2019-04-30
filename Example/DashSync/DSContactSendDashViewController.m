@@ -17,11 +17,13 @@
 
 #import "DSContactSendDashViewController.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "BRBubbleView.h"
 
 @interface DSContactSendDashViewController ()
 @property (strong, nonatomic) IBOutlet UITextField *addressTextField;
 @property (strong, nonatomic) IBOutlet UITextField *amountTextField;
 @property (strong, nonatomic) DSAccount * account;
+@property (strong, nonatomic) NSString * address;
 
 @end
 
@@ -32,9 +34,9 @@
     // Do any additional setup after loading the view.
     self.account = [self.blockchainUser.wallet accountWithNumber:self.contact.account.index];
     DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForContactWithIdentifier:self.contact.blockchainUserRegistrationHash];
-    NSString * address = [derivationPath receiveAddress];
-    NSString * address = [derivationPath indexOfAddress];
-    self.addressTextField.text = [NSString stringWithFormat:@"%@ - %@",self.contact,address];
+    self.address = [derivationPath receiveAddress];
+    NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.address];
+    self.addressTextField.text = [NSString stringWithFormat:@"%lu - %@",(unsigned long)[indexPath indexAtPosition:0],self.address];
 }
 
 /*
@@ -47,7 +49,7 @@
 }
 */
 - (IBAction)sendTransaction:(id)sender {
-    DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.addressTextField.text onChain:self.account.wallet.chain];
+    DSPaymentRequest * paymentRequest = [DSPaymentRequest requestWithString:self.address onChain:self.account.wallet.chain];
     paymentRequest.amount = [[DSPriceManager sharedInstance] amountForDashString:self.amountTextField.text];
     
     if ([paymentRequest isValid]) {

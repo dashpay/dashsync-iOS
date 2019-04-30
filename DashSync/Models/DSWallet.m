@@ -617,6 +617,16 @@
     return FALSE;
 }
 
+// true if the address is controlled by the wallet, this can also be for paths that are not accounts (todo)
+- (BOOL)accountsBaseDerivationPathsContainAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
+    for (DSAccount * account in self.accounts) {
+        if ([account baseDerivationPathsContainAddress:address]) return TRUE;
+    }
+    return FALSE;
+}
+
 - (DSAccount*)accountForAddress:(NSString *)address {
     NSParameterAssert(address);
     

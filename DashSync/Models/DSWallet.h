@@ -107,6 +107,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)accountsBaseDerivationPathsContainAddress:(NSString *)address;
+
 - (DSAccount* _Nullable)accountForAddress:(NSString *)address;
 
 // true if the address was previously used as an input or output for this wallet

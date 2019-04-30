@@ -377,7 +377,7 @@
     
     
     NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:chain];
-    if ([wallet containsAddress:address]) {
+    if ([wallet accountsBaseDerivationPathsContainAddress:address]) {
         errorNotificationBlock(@"",DSLocalizedString(@"this payment address is already in your wallet", nil),YES);
         return;
     }

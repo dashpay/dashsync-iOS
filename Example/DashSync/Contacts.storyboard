@@ -323,11 +323,8 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="addressField" destination="a1g-kK-tQR" id="p6a-YZ-gwa"/>
                         <outlet property="addressTextField" destination="a1g-kK-tQR" id="Wnz-AK-i5M"/>
-                        <outlet property="amountField" destination="I8n-1d-dFG" id="FhH-PB-wVA"/>
                         <outlet property="amountTextField" destination="I8n-1d-dFG" id="yMN-Ss-UKX"/>
-                        <outlet property="sendButton" destination="TTe-Ut-ZzN" id="eKg-FG-c7X"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ThX-ut-wCI" userLabel="First Responder" sceneMemberID="firstResponder"/>

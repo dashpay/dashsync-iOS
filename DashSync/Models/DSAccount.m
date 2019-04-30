@@ -435,6 +435,17 @@
     return FALSE;
 }
 
+- (BOOL)baseDerivationPathsContainAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
+    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            if ([derivationPath containsAddress:address]) return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     NSParameterAssert(address);
