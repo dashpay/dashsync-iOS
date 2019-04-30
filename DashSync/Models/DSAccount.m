@@ -62,6 +62,7 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSTransactionFactory.h"
+#import "DSIncomingFundsDerivationPath.h"
 
 #define LOG_BALANCE_UPDATE 0
 
@@ -69,12 +70,13 @@
 #define AUTH_SWEEP_FEE @"AUTH_SWEEP_FEE"
 
 
-@class DSFundsDerivationPath,DSAccount;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSAccount;
 
 @interface DSAccount()
 
 // BIP 43 derivation paths
-@property (nonatomic, strong) NSMutableArray<DSFundsDerivationPath *> * mFundDerivationPaths;
+@property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mFundDerivationPaths;
+@property (nonatomic, strong) NSMutableDictionary<NSData*,DSIncomingFundsDerivationPath *> * mContactFundDerivationPathsDictionary;
 
 @property (nonatomic, strong) NSArray *balanceHistory;
 
@@ -113,7 +115,7 @@
     return [[self alloc] initWithAccountNumber:accountNumber withDerivationPaths:derivationPaths inContext:context];
 }
 
--(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
+-(void)verifyAndAssignAddedDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths {
     for (int i = 0;i<[derivationPaths count];i++) {
         DSDerivationPath * derivationPath = [derivationPaths objectAtIndex:i];
         if (derivationPath.reference == DSDerivationPathReference_BIP32) {
@@ -133,10 +135,10 @@
             self.masterContactsDerivationPath = derivationPath;
         }
         for (int j = i + 1;j<[derivationPaths count];j++) {
-            DSFundsDerivationPath * derivationPath2 = [derivationPaths objectAtIndex:j];
+            DSDerivationPath * derivationPath2 = [derivationPaths objectAtIndex:j];
             NSAssert(![derivationPath isDerivationPathEqual:derivationPath2],@"Derivation paths should all be different");
         }
-        for (DSFundsDerivationPath * derivationPath3 in self.mFundDerivationPaths) {
+        for (DSDerivationPath * derivationPath3 in self.mFundDerivationPaths) {
             NSAssert(![derivationPath isDerivationPathEqual:derivationPath3],@"Added derivation paths should be different from existing ones on account");
         }
         //to do redo this check
@@ -153,6 +155,7 @@
     _accountNumber = accountNumber;
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.mFundDerivationPaths = [NSMutableArray array];
+    self.mContactFundDerivationPathsDictionary = [NSMutableDictionary dictionary];
     for (DSDerivationPath * derivationPath in derivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
             [self.mFundDerivationPaths addObject:(DSFundsDerivationPath*)derivationPath];
@@ -261,8 +264,8 @@
             self.defaultDerivationPath = self.bip44DerivationPath;
         } else if (self.bip32DerivationPath) {
             self.defaultDerivationPath = self.bip32DerivationPath;
-        } else {
-            self.defaultDerivationPath = [self.fundDerivationPaths objectAtIndex:0];
+        } else if ([self.fundDerivationPaths objectAtIndex:0] && [[self.fundDerivationPaths objectAtIndex:0] isKindOfClass:[DSFundsDerivationPath class]]) {
+            self.defaultDerivationPath = (DSFundsDerivationPath*)[self.fundDerivationPaths objectAtIndex:0];
         }
     }
 }
@@ -309,7 +312,7 @@
 
 // MARK: - Derivation Paths
 
--(void)removeDerivationPath:(DSFundsDerivationPath*)derivationPath {
+-(void)removeDerivationPath:(DSDerivationPath*)derivationPath {
     NSParameterAssert(derivationPath);
     
     if ([self.mFundDerivationPaths containsObject:derivationPath]) {
@@ -317,7 +320,15 @@
     }
 }
 
--(void)addDerivationPath:(DSFundsDerivationPath*)derivationPath {
+-(void)removeDerivationPathForContactWithIdentifier:(NSData*)contactIdentifier {
+    NSParameterAssert(contactIdentifier);
+    DSIncomingFundsDerivationPath * derivationPath = [self.mContactFundDerivationPathsDictionary objectForKey:contactIdentifier];
+    if (derivationPath) {
+        [self removeDerivationPath:derivationPath];
+    }
+}
+
+-(void)addDerivationPath:(DSDerivationPath*)derivationPath {
     NSParameterAssert(derivationPath);
     
     if (!_isViewOnlyAccount) {
@@ -326,7 +337,14 @@
     [self.mFundDerivationPaths addObject:derivationPath];
 }
 
--(void)addDerivationPathsFromArray:(NSArray<DSFundsDerivationPath *> *)derivationPaths {
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forContactIdentifier:(NSData*)contactIdentifier {
+    NSParameterAssert(derivationPath);
+    NSParameterAssert(contactIdentifier);
+    [self addDerivationPath:derivationPath];
+    [self.mContactFundDerivationPathsDictionary setObject:derivationPath forKey:contactIdentifier];
+}
+
+-(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
     NSParameterAssert(derivationPaths);
     
     if (!_isViewOnlyAccount) {
@@ -344,8 +362,8 @@
     _defaultDerivationPath = defaultDerivationPath;
 }
 
--(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address {
-    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
+-(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address {
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath containsAddress:address]) return derivationPath;
     }
     return nil;
@@ -355,8 +373,13 @@
 
 -(NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal {
     NSMutableArray * mArray = [NSMutableArray array];
-    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-        [mArray addObjectsFromArray:[derivationPath registerAddressesWithGapLimit:gapLimit internal:internal]];
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            [mArray addObjectsFromArray:[(DSFundsDerivationPath*)derivationPath registerAddressesWithGapLimit:gapLimit internal:internal]];
+        } else if (!internal && [derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            [mArray addObjectsFromArray:[(DSIncomingFundsDerivationPath*)derivationPath registerAddressesWithGapLimit:gapLimit]];
+        }
+        
     }
     return [mArray copy];
 }
@@ -364,8 +387,8 @@
 // all previously generated external addresses
 -(NSArray *)externalAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
-    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[derivationPath allReceiveAddresses]];
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
+        [mSet addObjectsFromArray:[(id)derivationPath allReceiveAddresses]];
     }
     return [mSet allObjects];
 }
@@ -373,8 +396,10 @@
 // all previously generated internal addresses
 -(NSArray *)internalAddresses {
     NSMutableSet * mSet = [NSMutableSet set];
-    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
-        [mSet addObjectsFromArray:[derivationPath allChangeAddresses]];
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
+        if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+            [mSet addObjectsFromArray:[(DSFundsDerivationPath*)derivationPath allChangeAddresses]];
+        }
     }
     return [mSet allObjects];
 }

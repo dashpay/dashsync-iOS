@@ -21,15 +21,18 @@
 #import <ios-dpp/DashPlatformProtocol.h>
 #import "DSPotentialContact.h"
 
-@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSDerivationPathEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialContact;
+@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSDerivationPathEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialContact,DSWallet;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSContactEntity : NSManagedObject <DSContactRequestProtocol>
+@interface DSContactEntity : NSManagedObject
 
 @property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
 
 - (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact;
+
+-(DPDocument*)contactRequestDocumentForWallet:(DSWallet*)wallet;
+-(void)storeExtendedPublicKeyInWallet:(DSWallet*)wallet;
 
 @end
 

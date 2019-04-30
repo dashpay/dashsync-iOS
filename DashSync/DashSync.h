@@ -86,6 +86,7 @@
 #import "DSBlockchainUser.h"
 #import "DSPotentialContact.h"
 #import "DSContactEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
 
 #import "DSNetworking.h"
 

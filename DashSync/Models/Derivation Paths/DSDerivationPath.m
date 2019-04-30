@@ -363,7 +363,9 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             _extendedPublicKey = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
         }
     }
+    NSLog(@"a %@",[self walletBasedExtendedPublicKeyLocationString]);
     NSAssert(_extendedPublicKey, @"extended public key not set");
+    NSLog(@"b");
     return _extendedPublicKey;
 }
 
@@ -458,10 +460,10 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     NSMutableString * mutableString = [NSMutableString stringWithFormat:@"m"];
     if (self.length) {
         for (NSInteger i = 0;i<self.length;i++) {
-            if ([self isHardenedAtPosition:i]) {
-                [mutableString appendFormat:@"/%lu'",(unsigned long)[self indexAtPosition:i].u64[0]];
+            if (uint256_is_31_bits([self indexAtPosition:i])) {
+                [mutableString appendFormat:@"/%lu%@",(unsigned long)[self indexAtPosition:i].u64[0],[self isHardenedAtPosition:i]?@"'":@""];
             } else {
-                [mutableString appendFormat:@"/%lu",(unsigned long)[self indexAtPosition:i].u64[0]];
+                [mutableString appendFormat:@"/0x%@%@",uint256_hex([self indexAtPosition:i]),[self isHardenedAtPosition:i]?@"'":@""];
             }
         }
     } else if ([self.depth integerValue]) {
@@ -523,7 +525,10 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 -(NSString *)standaloneExtendedPublicKeyUniqueID {
     if (!_standaloneExtendedPublicKeyUniqueID) {
-        if (!_extendedPublicKey && !self.wallet) return nil;
+        if (!_extendedPublicKey && !self.wallet) {
+            NSAssert(FALSE, @"we really should have a wallet");
+            return nil;
+        }
         _standaloneExtendedPublicKeyUniqueID = [NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString;
     }
     return _standaloneExtendedPublicKeyUniqueID;

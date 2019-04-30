@@ -31,12 +31,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialContact;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialContact;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nullable, nonatomic, readonly) NSArray<DSFundsDerivationPath *> * fundDerivationPaths;
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * fundDerivationPaths;
 
 @property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
@@ -92,7 +92,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 
+-(void)removeDerivationPathForContactWithIdentifier:(NSData*)contactIdentifier;
+
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
+
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forContactIdentifier:(NSData*)contactIdentifier;
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 
@@ -108,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)containsAddress:(NSString *)address;
 
 // the high level (hardened) derivation path containing the address
--(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+-(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
 

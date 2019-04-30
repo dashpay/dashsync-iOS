@@ -26,6 +26,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSDAPIClient+RegisterDashPayContract.h"
 #import "DSBLSKey.h"
+#import "DSIncomingFundsDerivationPath.h"
 
 @interface DSPotentialContact()
 
@@ -53,13 +54,12 @@
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;
     
-    DSFundsDerivationPath * fundsDerivationPathForContact = [DSFundsDerivationPath
+    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
                                                              contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.blockchainUserOwner.wallet.chain];
-    [key en]
     
     NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
@@ -74,6 +74,14 @@
     return contact;
 }
 
+-(void)storeExtendedPublicKey {
+    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
+                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
+    DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
+    
+    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:self.account.wallet.uniqueID];
+}
+
 
 -(DSFriendRequestEntity*)outgoingFriendRequest {
     DSContactEntity * contactEntity = [DSContactEntity managedObject];
@@ -83,6 +91,8 @@
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.blockchainUserOwner.ownContact;
     friendRequestEntity.destinationContact = contactEntity;
+    friendRequestEntity.sourceBlockchainUserRegistrationTransactionHash = self.blockchainUserOwner.registrationTransactionHashData;
+    friendRequestEntity.destinationBlockchainUserRegistrationTransactionHash = contactEntity.blockchainUserRegistrationHash;
     return friendRequestEntity;
 }
 
@@ -94,7 +104,9 @@
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = contactEntity;
     friendRequestEntity.destinationContact = self.blockchainUserOwner.ownContact;
-    friendRequestEntity.extendedPublicKey = self.extendedPublicKey;
+    friendRequestEntity.sourceBlockchainUserRegistrationTransactionHash = contactEntity.blockchainUserRegistrationHash;
+    friendRequestEntity.destinationBlockchainUserRegistrationTransactionHash = self.blockchainUserOwner.registrationTransactionHashData;
+    friendRequestEntity.extendedPublicKey = self.incomingExtendedPublicKey;
     return friendRequestEntity;
 }
 

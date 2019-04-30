@@ -47,6 +47,8 @@
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -164,14 +166,19 @@
     
     //add blockchain user derivation paths to account
     
-    for (NSString * blockchainUsername in self.mBlockchainUsers) {
-        DSBlockchainUser * blockchainUser = [self.mBlockchainUsers objectForKey:blockchainUsername];
-        for (DSContactEntity * friend in blockchainUser.ownContact.friends) {
-            DSAccount * account = [self accountWithNumber:friend.account.index];
-            [account addDerivationPath:[DSFundsDerivationPath
-                                                contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:friend.blockchainUserRegistrationHash.UInt256 forAccountNumber:account.accountNumber onChain:self.chain]];
+    [self.chain.managedObjectContext performBlockAndWait:^{
+        for (NSData * blockchainRegistrationHashData in self.mBlockchainUsers) {
+            DSBlockchainUser * blockchainUser = [self.mBlockchainUsers objectForKey:blockchainRegistrationHashData];
+            for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.outgoingRequests) {
+                DSAccount * account = [self accountWithNumber:friendRequest.destinationContact.account.index];
+                DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
+                                                               contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.blockchainUserRegistrationHash.UInt256 forAccountNumber:account.accountNumber onChain:self.chain];
+                fundsDerivationPath.wallet = self;
+                [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationBlockchainUserRegistrationTransactionHash];
+                //[fundsDerivationPath loadAddresses];
+            }
         }
-    }
+    }];
 
     if (error) return nil;
     return self;
@@ -778,6 +785,19 @@
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     [keyChainDictionary removeObjectForKey:blockchainUser.registrationTransactionHashData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
+    
+    //we also have to remove all contacts derivation paths from their associated accounts.
+    
+    [self.chain.managedObjectContext performBlockAndWait:^{
+        NSSet <DSContactEntity *>* friends = [blockchainUser.ownContact friends];
+        for (DSContactEntity * contactEntity in friends) {
+            uint32_t accountNumber = contactEntity.account.index;
+            DSAccount * account = [blockchainUser.wallet accountWithNumber:accountNumber];
+            [account removeDerivationPathForContactWithIdentifier:contactEntity.blockchainUserRegistrationHash];
+        }
+    }];
+    
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainUsersDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
@@ -799,6 +819,8 @@
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
+    
+    NSAssert(!uint256_is_zero(blockchainUser.registrationTransactionHashData.UInt256), @"registrationTransactionHashData must not be null");
     [keyChainDictionary setObject:@(blockchainUser.index) forKey:blockchainUser.registrationTransactionHashData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainUsersKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{

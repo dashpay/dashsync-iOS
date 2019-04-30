@@ -298,7 +298,7 @@ static NSUInteger _fetchBatchSize = 100;
              options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
             DSDLog(@"%s: %@", __func__, error);
-#if DEBUG
+#if (DEBUG && 1)
             abort();
 #else
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing

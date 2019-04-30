@@ -1,0 +1,51 @@
+//  
+//  Created by Sam Westrich
+//  Copyright © 2019 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+#import "DSDerivationPath.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface DSIncomingFundsDerivationPath : DSDerivationPath
+
++ (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
+
+// returns the first unused external address
+@property (nonatomic, readonly, nullable) NSString * receiveAddress;
+
+// all previously generated external addresses
+@property (nonatomic, readonly) NSArray * allReceiveAddresses;
+
+// used external addresses
+@property (nonatomic, readonly) NSArray * usedReceiveAddresses;
+
+- (NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit;
+
+- (NSString * _Nullable)privateKeyStringAtIndex:(uint32_t)n fromSeed:(NSData *)seed;
+- (NSArray * _Nullable)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed;
+
+- (NSData * _Nullable)publicKeyDataAtIndex:(uint32_t)n;
+
+// gets an addess at an index one level down based on bip32
+- (NSString *)addressAtIndex:(uint32_t)index;
+
+- (NSString *)receiveAddressAtOffset:(NSUInteger)offset;
+
+- (NSIndexPath* _Nullable)indexPathForKnownAddress:(NSString*)address;
+
+@end
+
+NS_ASSUME_NONNULL_END

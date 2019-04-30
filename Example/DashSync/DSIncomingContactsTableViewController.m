@@ -39,7 +39,7 @@ static NSString * const CellId = @"CellId";
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"ANY incomingRequests.destinationContact == %@",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@",self.blockchainUser.ownContact];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {
@@ -51,14 +51,14 @@ static NSString * const CellId = @"CellId";
     if (_fetchedResultsController) return _fetchedResultsController;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSContactEntity" inManagedObjectContext:self.managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"DSFriendRequestEntity" inManagedObjectContext:self.managedObjectContext];
     [fetchRequest setEntity:entity];
     
     // Set the batch size to a suitable number.
     [fetchRequest setFetchBatchSize:20];
     
     // Edit the sort key as appropriate.
-    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"username" ascending:YES];
+    NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"sourceContact.username" ascending:YES];
     NSArray *sortDescriptors = @[usernameSortDescriptor];
     
     [fetchRequest setSortDescriptors:sortDescriptors];
@@ -139,8 +139,9 @@ static NSString * const CellId = @"CellId";
 }
 
 -(void)configureCell:(DSContactTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSContactEntity *contactEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.textLabel.text = contactEntity.username;
+    DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSContactEntity * sourceFriendRequest = friendRequest.sourceContact;
+    cell.textLabel.text = sourceFriendRequest.username;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

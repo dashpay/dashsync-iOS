@@ -28,6 +28,7 @@
 #import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
+#import "DSIncomingFundsDerivationPath.h"
 
 @implementation DSContactEntity
 
@@ -42,22 +43,41 @@
     return self;
 }
 
--(DPDocument*)contactRequestDocument {
+
+
+-(DPDocument*)contactRequestDocumentForWallet:(DSWallet*)wallet {
     NSAssert(!uint256_is_zero(self.blockchainUserRegistrationHash.UInt256), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
     DashPlatformProtocol * dpp = [DashPlatformProtocol sharedInstance];
     
-    DSFundsDerivationPath * fundsDerivationPathForContact = [DSFundsDerivationPath
+    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
                                                              contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:self.ownerBlockchainUserRegistrationTransaction.chain.chain];
+    DSAccount * account = [wallet accountWithNumber:self.account.index];
+    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
+    
+    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    //DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.blockchainUserOwner.wallet.chain];
+    
+    NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     DPJSONObject *data = @{
-                           @"toUserId" : uint256_hex(self.blockchainUserRegistrationHash.UInt256),
-                           @"publicKey" : [fundsDerivationPathForContact.extendedPublicKey hexString],
+                           @"toUserId" : self.blockchainUserRegistrationHash.reverse,
+                           @"publicKey" : [fundsDerivationPathForContact.extendedPublicKey base64EncodedStringWithOptions:0],
                            };
     
     
     DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
     NSAssert(error == nil, @"Failed to build a contact");
     return contact;
+}
+
+
+-(void)storeExtendedPublicKeyInWallet:(DSWallet*)wallet {
+    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
+                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:self.ownerBlockchainUserRegistrationTransaction.chain.chain];
+    DSAccount * account =[wallet accountWithNumber:self.account.index];
+    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
+    
+    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:wallet.uniqueID];
 }
 
 @end

@@ -315,7 +315,9 @@
 
 - (NSData*)encryptData:(NSData*)data {
     bls::PublicKey blsPublicKey = [self blsPublicKey];
-    blsPublicKey.en
+    //to do
+    //[data aes]
+    return data;
 }
 
 // MARK: - Verification

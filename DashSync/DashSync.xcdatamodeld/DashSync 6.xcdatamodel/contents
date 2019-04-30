@@ -95,11 +95,11 @@
         </compoundIndexes>
     </entity>
     <entity name="DSFriendRequestEntity" representedClassName="DSFriendRequestEntity" syncable="YES">
-        <attribute name="destinationBlockchainUserRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="extendedPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
-        <attribute name="sourceBlockchainUserRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
-        <relationship name="destinationContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="incomingRequests" inverseEntity="DSContactEntity" syncable="YES"/>
-        <relationship name="sourceContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="outgoingRequests" inverseEntity="DSContactEntity" syncable="YES"/>
+        <attribute name="destinationBlockchainUserRegistrationTransactionHash" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="extendedPublicKey" attributeType="Binary" syncable="YES"/>
+        <attribute name="sourceBlockchainUserRegistrationTransactionHash" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="destinationContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="incomingRequests" inverseEntity="DSContactEntity" indexed="YES" syncable="YES"/>
+        <relationship name="sourceContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="outgoingRequests" inverseEntity="DSContactEntity" indexed="YES" syncable="YES"/>
         <relationship name="transition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactRequests" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSGovernanceObjectEntity" representedClassName="DSGovernanceObjectEntity" syncable="YES">

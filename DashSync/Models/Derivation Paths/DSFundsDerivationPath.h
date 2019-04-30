@@ -42,8 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
-+ (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
-
 // Derivation paths are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
