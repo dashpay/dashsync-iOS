@@ -27,21 +27,23 @@
 
 @implementation DSBLSIESEncryptedDataTests
 
-- (void)testEncryption {
+- (void)testEncryptionAndDecryption {
     uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     NSData *seedData = [NSData dataWithBytes:seed length:10];
     DSBLSKey *keyPair = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData onChain:[DSChain mainnet]];
 
     bls::PublicKey blsPublicKey = bls::PublicKey::FromBytes(keyPair.publicKey.u8);
     
-    DSBLSIESEncryptedData *encryptedDate = [[DSBLSIESEncryptedData alloc] init];
+    DSBLSIESEncryptedData *encryptedData = [[DSBLSIESEncryptedData alloc] init];
     
     NSString *secret = @"my little secret";
     NSData *data = [secret dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *result = [encryptedDate encryptWithPeerPublicKey:blsPublicKey
-                                                        data:data];
+    NSData *encrypted = [encryptedData encryptWithPeerPublicKey:blsPublicKey data:data];
+    XCTAssertNotNil(encrypted);
     
-    XCTAssertNotNil(result);
+    bls::PrivateKey secretKey = bls::PrivateKey::FromBytes(keyPair.secretKey.u8);
+    NSData *decrypted = [encryptedData decryptData:encrypted secretKey:secretKey];
+    XCTAssertNotNil(decrypted);
 }
 
 @end

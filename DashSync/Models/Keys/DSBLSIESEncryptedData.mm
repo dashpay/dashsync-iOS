@@ -19,18 +19,7 @@
 
 #import <CommonCrypto/CommonCryptor.h>
 
-#import "NSData+Bitcoin.h"
-
 NS_ASSUME_NONNULL_BEGIN
-
-static UInt256 RandomUInt256() {
-    return ((UInt256){.u64 = {
-        ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(),
-        ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(),
-        ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(),
-        ((uint64_t)arc4random() << 32) | (uint64_t)arc4random(),
-    }});
-}
 
 static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
                                        NSData *data,
@@ -81,8 +70,12 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
         return data;
     }
     
-    UInt256 randomNumber = RandomUInt256();
-    bls::PrivateKey secretKey = bls::PrivateKey::FromSeed(randomNumber.u8, sizeof(UInt256));
+    unsigned char randomBuffer[32];
+    for (int i = 0; i < sizeof(randomBuffer); i++) {
+        randomBuffer[i] = arc4random_uniform(UCHAR_MAX - 1);
+    }
+    
+    bls::PrivateKey secretKey = bls::PrivateKey::FromSeed(randomBuffer, sizeof(randomBuffer));
     bls::PublicKey publicKey = secretKey.GetPublicKey();
     ephemeralPubKey = &publicKey;
     [self generateIV];
