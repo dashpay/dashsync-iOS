@@ -39,7 +39,7 @@ static NSString * const CellId = @"CellId";
 }
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && SUBQUERY(destinationContact.outgoingRequests, $g, $g == SELF).@count == 0",self.blockchainUser.ownContact];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {
@@ -146,18 +146,12 @@ static NSString * const CellId = @"CellId";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
-    DSPotentialContact *potentialContact = nil;
-    NSParameterAssert(potentialContact); // TODO: get from FRC
+    DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser sendNewContactRequestToPotentialContact:potentialContact completion:^(BOOL success) {
+    [self.blockchainUser acceptContactRequest:friendRequest completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
-        }
-        
-        if (success) {
-            [strongSelf.tableView reloadData];
         }
         
         [strongSelf showAlertTitle:@"Confirming contact request:" result:success];

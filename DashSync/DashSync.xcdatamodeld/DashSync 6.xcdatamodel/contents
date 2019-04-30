@@ -28,7 +28,7 @@
         <attribute name="payloadSignature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="publicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="ownerBlockchainUserRegistrationTransaction" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="ownContact" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="ownerBlockchainUserRegistrationTransaction" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="transitions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransitionEntity" inverseName="blockchainUserRegistrationTransaction" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainUserResetTransactionEntity" representedClassName="DSBlockchainUserResetTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
@@ -76,7 +76,7 @@
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="friends" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
-        <relationship name="ownerBlockchainUserRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainUserRegistrationTransactionEntity" inverseName="contacts" inverseEntity="DSBlockchainUserRegistrationTransactionEntity" syncable="YES"/>
+        <relationship name="ownerBlockchainUserRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainUserRegistrationTransactionEntity" inverseName="ownContact" inverseEntity="DSBlockchainUserRegistrationTransactionEntity" syncable="YES"/>
         <relationship name="profileTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactProfileCreations" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">

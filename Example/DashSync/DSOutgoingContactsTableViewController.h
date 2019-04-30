@@ -12,11 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSBlockchainUser;
 
-@interface DSOutgoingContactsTableViewController : UITableViewController
+@interface DSOutgoingContactsTableViewController : UITableViewController <NSFetchedResultsControllerDelegate>
 
 @property (strong, nonatomic) DSBlockchainUser *blockchainUser;
-
-- (void)refreshData;
 
 @end
 

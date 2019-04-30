@@ -10,7 +10,7 @@
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialContact,DSTransaction;
+@class DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserTopupTransaction,DSBlockchainUserResetTransaction,DSBlockchainUserCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialContact,DSTransaction,DSFriendRequestEntity;
 
 @interface DSBlockchainUser : NSObject
 
@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)sendDapObject:(NSMutableDictionary<NSString *, id> *)dapObject completion:(void (^)(BOOL success))completion;
 
 - (void)sendNewContactRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion;
+
+-(void)acceptContactRequest:(DSFriendRequestEntity*)friendRequest completion:(void (^)(BOOL))completion;
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success))completion;
 

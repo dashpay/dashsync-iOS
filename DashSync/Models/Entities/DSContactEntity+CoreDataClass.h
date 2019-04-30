@@ -27,11 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactEntity : NSManagedObject
 
-@property (nonatomic, weak, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
-
 - (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact;
 
--(DPDocument*)contactRequestDocumentForWallet:(DSWallet*)wallet;
+-(DPDocument*)contactRequestDocumentCreatedByBlockchainUser:(DSBlockchainUser*)blockchainUser;
 -(void)storeExtendedPublicKeyInWallet:(DSWallet*)wallet;
 
 @end

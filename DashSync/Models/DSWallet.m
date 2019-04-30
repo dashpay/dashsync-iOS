@@ -175,7 +175,7 @@
                                                                contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.blockchainUserRegistrationHash.UInt256 forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationBlockchainUserRegistrationTransactionHash];
-                //[fundsDerivationPath loadAddresses];
+                [fundsDerivationPath loadAddresses];
             }
         }
     }];

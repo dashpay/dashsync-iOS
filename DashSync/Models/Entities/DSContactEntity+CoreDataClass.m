@@ -29,10 +29,10 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSDAPIClient+RegisterDashPayContract.h"
+#import "NSData+Bitcoin.h"
 
 @implementation DSContactEntity
-
-@synthesize blockchainUserOwner;
 
 - (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact {
     [self.managedObjectContext performBlockAndWait:^{
@@ -45,12 +45,17 @@
 
 
 
--(DPDocument*)contactRequestDocumentForWallet:(DSWallet*)wallet {
+-(DPDocument*)contactRequestDocumentCreatedByBlockchainUser:(DSBlockchainUser*)blockchainUser {
+    NSParameterAssert(blockchainUser);
     NSAssert(!uint256_is_zero(self.blockchainUserRegistrationHash.UInt256), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
+    DSWallet * wallet = blockchainUser.wallet;
+    NSAssert(wallet, @"the blockchain user must be associated to a wallet");
     DashPlatformProtocol * dpp = [DashPlatformProtocol sharedInstance];
-    
+    dpp.userId = uint256_reverse_hex(blockchainUser.registrationTransactionHash);
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    dpp.contract = contract;
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:self.ownerBlockchainUserRegistrationTransaction.chain.chain];
+                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:wallet.chain];
     DSAccount * account = [wallet accountWithNumber:self.account.index];
     DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
     
@@ -60,7 +65,7 @@
     NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
     DPJSONObject *data = @{
-                           @"toUserId" : self.blockchainUserRegistrationHash.reverse,
+                           @"toUserId" : self.blockchainUserRegistrationHash.reverse.hexString,
                            @"publicKey" : [fundsDerivationPathForContact.extendedPublicKey base64EncodedStringWithOptions:0],
                            };
     
@@ -73,7 +78,7 @@
 
 -(void)storeExtendedPublicKeyInWallet:(DSWallet*)wallet {
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:self.ownerBlockchainUserRegistrationTransaction.chain.chain];
+                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:wallet.chain];
     DSAccount * account =[wallet accountWithNumber:self.account.index];
     DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
     

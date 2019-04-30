@@ -745,9 +745,15 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 -(BOOL)checkIsFirstTransaction:(DSTransaction *)transaction {
     NSParameterAssert(transaction);
     
-    for (DSFundsDerivationPath * derivationPath in self.fundDerivationPaths) {
+    for (DSDerivationPath * derivationPath in self.fundDerivationPaths) {
         if ([derivationPath type] & DSDerivationPathType_IsForFunds)  {
-            NSString * firstAddress = [derivationPath addressAtIndex:0 internal:NO];
+            NSString * firstAddress;
+            if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                firstAddress = [(DSFundsDerivationPath*)derivationPath addressAtIndex:0 internal:NO];
+            } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+                firstAddress = [(DSIncomingFundsDerivationPath*)derivationPath addressAtIndex:0];
+            }
+            
             if ([transaction.outputAddresses containsObject:firstAddress]) {
                 return TRUE;
             }
