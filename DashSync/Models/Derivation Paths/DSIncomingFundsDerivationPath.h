@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSIncomingFundsDerivationPath : DSDerivationPath
 
+@property (nonatomic,readonly) UInt256 contactBlockchainUserRegistrationTransactionHash;
+
 + (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
 // returns the first unused external address

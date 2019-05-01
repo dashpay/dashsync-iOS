@@ -25,6 +25,8 @@
 
 @property (nonatomic, strong) NSMutableArray *externalAddresses;
 
+@property (nonatomic,assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
+
 @end
 
 @implementation DSIncomingFundsDerivationPath
@@ -35,6 +37,8 @@
     BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO};
     //todo full uint256 derivation
     DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    
+    derivationPath.contactBlockchainUserRegistrationTransactionHash = blockchainUserRegistrationTransactionHash;
     
     return derivationPath;
 }

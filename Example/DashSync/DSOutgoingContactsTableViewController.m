@@ -37,8 +37,7 @@
 }
 
 -(NSPredicate*)searchPredicate {
-    // && SUBQUERY(sourceContact.outgoingRequests, $g, $g == SELF).@count == 0
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainUser.ownContact];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {
