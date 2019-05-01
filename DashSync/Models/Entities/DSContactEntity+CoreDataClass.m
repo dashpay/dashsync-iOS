@@ -39,7 +39,7 @@
 - (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact {
     [self.managedObjectContext performBlockAndWait:^{
         self.username = potentialContact.username;
-        self.account = [DSAccountEntity accountEntityForWalletUniqueID:potentialContact.account.wallet.uniqueID index:potentialContact.account.accountNumber];
+        self.account = [DSAccountEntity accountEntityForWalletUniqueID:potentialContact.account.wallet.uniqueID index:potentialContact.account.accountNumber onChain:potentialContact.blockchainUserOwner.wallet.chain];
     }];
     
     return self;
@@ -93,6 +93,15 @@
     }];
     
     return fundsDerivationPathForContact;
+}
+
++(void)deleteContactsOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * contactsToDelete = [self objectsMatching:@"(account.chain == %@)",chainEntity];
+        for (DSContactEntity * contact in contactsToDelete) {
+            [chainEntity.managedObjectContext deleteObject:contact];
+        }
+    }];
 }
 
 @end

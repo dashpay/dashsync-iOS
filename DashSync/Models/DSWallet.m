@@ -174,6 +174,7 @@
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
                                                                contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.blockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
+                fundsDerivationPath.account = account;
                 [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationBlockchainUserRegistrationTransactionHash];
                 [fundsDerivationPath loadAddresses];
             }

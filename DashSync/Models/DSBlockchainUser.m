@@ -504,7 +504,7 @@
                 contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
                 contact.publicMessage = [contactDictionary objectForKey:@"about"];
                 contact.username = self.username;
-                contact.account = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0];
+                contact.account = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0 onChain:self.wallet.chain];
                 contact.blockchainUserRegistrationHash = uint256_data(self.registrationTransactionHash);
                 DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",uint256_data(self.registrationTransactionHash)];
                 NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
@@ -684,6 +684,10 @@
                 [self.ownContact addOutgoingRequestsObject:friendRequestEntity];
                 if ([[externalContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
                     [self.ownContact addFriendsObject:externalContact];
+                }
+                if (externalContact.blockchainUserRegistrationHash) {
+                    //it's also local (aka both contacts are on this device), we should store the extended public key for the destination
+                    [self.ownContact storeExtendedPublicKeyForBlockchainUser:self associatedWithFriendRequest:friendRequestEntity];
                 }
             }
         }

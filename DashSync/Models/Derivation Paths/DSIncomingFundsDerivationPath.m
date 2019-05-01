@@ -91,6 +91,10 @@
     }
 }
 
+-(NSUInteger)accountNumber {
+    return [self indexAtPosition:[self length] - 3].u64[0] & ~BIP32_HARD;
+}
+
 // MARK: - Derivation Path Addresses
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
@@ -108,6 +112,7 @@
 // for receive addresses.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
 {
+    NSAssert(self.account, @"Account must be set");
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }

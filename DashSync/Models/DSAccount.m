@@ -273,6 +273,8 @@
 // MARK: - Reinitiation
 
 - (void)wipeBlockchainInfo {
+    [self.mFundDerivationPaths removeObjectsInArray:[self.mContactFundDerivationPathsDictionary allValues]];
+    [self.mContactFundDerivationPathsDictionary removeAllObjects];
     [self.transactions removeAllObjects];
     [self.allTx removeAllObjects];
     [self updateBalance];

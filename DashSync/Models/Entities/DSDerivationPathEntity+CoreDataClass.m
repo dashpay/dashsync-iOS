@@ -58,7 +58,7 @@
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         if (derivationPath.account) {
-            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber];
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber onChain:derivationPath.chain];
         }
         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
@@ -94,7 +94,7 @@
         derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         if (derivationPath.account) {
-            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber];
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber onChain:derivationPath.chain];
         }
         
         
@@ -102,6 +102,15 @@
         
         return derivationPathEntity;
     }
+}
+
++(void)deleteDerivationPathsOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * derivationPathsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSDerivationPathEntity * derivationPath in derivationPathsToDelete) {
+            [chainEntity.managedObjectContext deleteObject:derivationPath];
+        }
+    }];
 }
 
 @end

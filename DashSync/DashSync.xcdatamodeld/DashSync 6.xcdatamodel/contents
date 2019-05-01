@@ -3,6 +3,7 @@
     <entity name="DSAccountEntity" representedClassName="DSAccountEntity" syncable="YES">
         <attribute name="index" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="walletUniqueID" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="accounts" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="account" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="derivationPaths" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSDerivationPathEntity" inverseName="account" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="transactionOutputs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSTxOutputEntity" inverseName="account" inverseEntity="DSTxOutputEntity" syncable="YES"/>
@@ -50,6 +51,7 @@
         <attribute name="totalGovernanceObjectsCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="totalMasternodeCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="accounts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAccountEntity" inverseName="chain" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="blocks" toMany="YES" deletionRule="Cascade" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="derivationPaths" toMany="YES" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="chain" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="governanceObjectHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceObjectHashEntity" inverseName="chain" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
@@ -377,13 +379,13 @@
         <relationship name="transaction" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="outputs" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <elements>
-        <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="120"/>
+        <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
         <element name="DSAddressEntity" positionX="-2527.6015625" positionY="327.6796875" width="128" height="180"/>
         <element name="DSBlockchainUserCloseTransactionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="105"/>
         <element name="DSBlockchainUserRegistrationTransactionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="120"/>
         <element name="DSBlockchainUserResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="120"/>
         <element name="DSBlockchainUserTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="60"/>
-        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="300"/>
+        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="315"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
         <element name="DSContactEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="150"/>

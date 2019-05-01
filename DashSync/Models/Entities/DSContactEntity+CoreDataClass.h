@@ -21,7 +21,7 @@
 #import <ios-dpp/DashPlatformProtocol.h>
 #import "DSPotentialContact.h"
 
-@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialContact,DSWallet,DSIncomingFundsDerivationPath;
+@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialContact,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DPDocument*)contactRequestDocumentCreatedByBlockchainUser:(DSBlockchainUser*)blockchainUser;
 -(DSIncomingFundsDerivationPath*)storeExtendedPublicKeyForBlockchainUser:(DSBlockchainUser*)blockchainUser associatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
++(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
 
 @end
 
