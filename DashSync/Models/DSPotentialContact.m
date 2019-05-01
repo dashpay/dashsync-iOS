@@ -27,6 +27,7 @@
 #import "DSDAPIClient+RegisterDashPayContract.h"
 #import "DSBLSKey.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
 
 @interface DSPotentialContact()
 
@@ -74,12 +75,17 @@
     return contact;
 }
 
--(void)storeExtendedPublicKey {
+-(void)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity {
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
                                                                      contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:self.blockchainUserOwner.registrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:self.account.wallet.uniqueID];
+    
+    [friendRequestEntity.managedObjectContext performBlockAndWait:^{
+        [DSDerivationPathEntity setContext:friendRequestEntity.managedObjectContext];
+        [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity];
+    }];
 }
 
 

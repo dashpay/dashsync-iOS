@@ -72,4 +72,36 @@
     }
 }
 
++(DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest {
+    NSAssert(derivationPath.standaloneExtendedPublicKeyUniqueID, @"standaloneExtendedPublicKeyUniqueID must be set");
+    NSParameterAssert(friendRequest);
+    //DSChain * chain = derivationPath.chain;
+    NSArray * derivationPathEntities;
+    NSData * archivedDerivationPath = [NSKeyedArchiver archivedDataWithRootObject:derivationPath];
+    DSChainEntity * chainEntity = derivationPath.chain.chainEntity;
+    //NSUInteger count = [chainEntity.derivationPaths count];
+    derivationPathEntities = [[chainEntity.derivationPaths objectsPassingTest:^BOOL(DSDerivationPathEntity * _Nonnull obj, BOOL * _Nonnull stop) {
+        return ([obj.publicKeyIdentifier isEqualToString:derivationPath.standaloneExtendedPublicKeyUniqueID]);
+    }] allObjects];
+    
+    //&& [obj.derivationPath isEqualToData:archivedDerivationPath]
+    if ([derivationPathEntities count]) {
+        return [derivationPathEntities firstObject];
+    } else {
+        DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
+        derivationPathEntity.derivationPath = archivedDerivationPath;
+        derivationPathEntity.chain = chainEntity;
+        derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
+        derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
+        if (derivationPath.account) {
+            derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber];
+        }
+        
+        
+        derivationPathEntity.friendRequest = friendRequest;
+        
+        return derivationPathEntity;
+    }
+}
+
 @end

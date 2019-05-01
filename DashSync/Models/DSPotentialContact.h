@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(DSFriendRequestEntity*)outgoingFriendRequest;
 -(DSFriendRequestEntity*)incomingFriendRequest;
 
--(void)storeExtendedPublicKey;
+-(void)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 
 -(DPDocument*)contactRequestDocument;
 

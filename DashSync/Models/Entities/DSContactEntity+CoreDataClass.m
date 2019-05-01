@@ -31,6 +31,8 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSDAPIClient+RegisterDashPayContract.h"
 #import "NSData+Bitcoin.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSContactEntity
 
@@ -76,7 +78,7 @@
 }
 
 
--(void)storeExtendedPublicKeyForBlockchainUser:(DSBlockchainUser*)blockchainUser {
+-(DSIncomingFundsDerivationPath*)storeExtendedPublicKeyForBlockchainUser:(DSBlockchainUser*)blockchainUser associatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity {
     NSParameterAssert(blockchainUser);
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
                                                                      contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:self.account.index onChain:blockchainUser.wallet.chain];
@@ -84,6 +86,13 @@
     DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
     
     [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:blockchainUser.wallet.uniqueID];
+    
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSDerivationPathEntity setContext:self.managedObjectContext];
+        [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity];
+    }];
+    
+    return fundsDerivationPathForContact;
 }
 
 @end

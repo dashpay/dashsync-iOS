@@ -386,8 +386,9 @@
         BOOL success = error == nil;
         
         if (success) {
-            [potentialContact storeExtendedPublicKey];
-            [strongSelf.ownContact addOutgoingRequestsObject:[potentialContact outgoingFriendRequest]];
+            DSFriendRequestEntity * friendRequest = [potentialContact outgoingFriendRequest];
+            [strongSelf.ownContact addOutgoingRequestsObject:friendRequest];
+            [potentialContact storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
         }
         
         if (completion) {
@@ -412,7 +413,7 @@
         BOOL success = error == nil;
         
         if (success) {
-            [friendRequest.sourceContact storeExtendedPublicKeyForBlockchainUser:self];
+            [friendRequest.sourceContact storeExtendedPublicKeyForBlockchainUser:self associatedWithFriendRequest:friendRequest];
             [strongSelf.ownContact addFriendsObject:friendRequest.sourceContact];
         }
         
@@ -645,7 +646,7 @@
                 }
                 if (externalContact.blockchainUserRegistrationHash) {
                     //it's also local (aka both contacts are on this device), we should store the extended public key for the destination
-                    [self.ownContact storeExtendedPublicKeyForBlockchainUser:self];
+                    [self.ownContact storeExtendedPublicKeyForBlockchainUser:self associatedWithFriendRequest:friendRequestEntity];
                 }
             }
         }
