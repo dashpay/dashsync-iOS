@@ -133,7 +133,7 @@
                 } else {
                     DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
                     if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactBlockchainUserRegistrationTransactionHash];
+                        UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainUserRegistrationTransactionHash];
                         DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"blockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
                         [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username]];
                     } else {
@@ -444,7 +444,7 @@
                     } else {
                         DSDerivationPath * derivationPath = [account derivationPathContainingAddress:self.inputAddresses[indexPath.row]];
                         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                            UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactBlockchainUserRegistrationTransactionHash];
+                            UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainUserRegistrationTransactionHash];
                             DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"blockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
                             cell.typeInfoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username];
                         } else {

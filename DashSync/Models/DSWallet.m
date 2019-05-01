@@ -172,7 +172,7 @@
             for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.outgoingRequests) {
                 DSAccount * account = [self accountWithNumber:friendRequest.destinationContact.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
-                                                               contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.blockchainUserRegistrationHash.UInt256 forAccountNumber:account.accountNumber onChain:self.chain];
+                                                               contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.blockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationBlockchainUserRegistrationTransactionHash];
                 [fundsDerivationPath loadAddresses];

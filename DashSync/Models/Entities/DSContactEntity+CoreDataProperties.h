@@ -22,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *blockchainUserRegistrationHash;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
 @property (nullable, nonatomic, retain) DSAccountEntity *account;
-@property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 @property (nullable, nonatomic, retain) DSBlockchainUserRegistrationTransactionEntity *ownerBlockchainUserRegistrationTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;

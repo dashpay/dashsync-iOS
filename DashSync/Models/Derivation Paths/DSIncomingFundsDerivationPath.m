@@ -25,20 +25,22 @@
 
 @property (nonatomic, strong) NSMutableArray *externalAddresses;
 
-@property (nonatomic,assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
+@property (nonatomic,assign) UInt256 contactSourceBlockchainUserRegistrationTransactionHash;
+@property (nonatomic,assign) UInt256 contactDestinationBlockchainUserRegistrationTransactionHash;
 
 @end
 
 @implementation DSIncomingFundsDerivationPath
 
-+ (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
++ (instancetype)contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:(UInt256)destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256)sourceBlockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber), blockchainUserRegistrationTransactionHash};
-    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber), sourceBlockchainUserRegistrationTransactionHash,destinationBlockchainUserRegistrationTransactionHash};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO,NO};
     //todo full uint256 derivation
-    DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:7 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
     
-    derivationPath.contactBlockchainUserRegistrationTransactionHash = blockchainUserRegistrationTransactionHash;
+    derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
+    derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
     
     return derivationPath;
 }

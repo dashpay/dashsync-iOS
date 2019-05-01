@@ -55,7 +55,7 @@
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:wallet.chain];
+                                                             contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:self.account.index onChain:wallet.chain];
     DSAccount * account = [wallet accountWithNumber:self.account.index];
     DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
     
@@ -76,13 +76,14 @@
 }
 
 
--(void)storeExtendedPublicKeyInWallet:(DSWallet*)wallet {
+-(void)storeExtendedPublicKeyForBlockchainUser:(DSBlockchainUser*)blockchainUser {
+    NSParameterAssert(blockchainUser);
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:wallet.chain];
-    DSAccount * account =[wallet accountWithNumber:self.account.index];
+                                                                     contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:self.account.index onChain:blockchainUser.wallet.chain];
+    DSAccount * account =[blockchainUser.wallet accountWithNumber:self.account.index];
     DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
     
-    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:wallet.uniqueID];
+    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:blockchainUser.wallet.uniqueID];
 }
 
 @end

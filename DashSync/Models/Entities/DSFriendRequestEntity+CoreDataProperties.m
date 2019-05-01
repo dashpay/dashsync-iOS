@@ -20,5 +20,6 @@
 @dynamic sourceContact;
 @dynamic transition;
 @dynamic extendedPublicKey;
+@dynamic derivationPath;
 
 @end

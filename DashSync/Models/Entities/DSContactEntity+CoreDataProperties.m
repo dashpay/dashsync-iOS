@@ -19,7 +19,6 @@
 @dynamic blockchainUserRegistrationHash;
 @dynamic publicMessage;
 @dynamic account;
-@dynamic derivationPath;
 @dynamic ownerBlockchainUserRegistrationTransaction;
 @dynamic outgoingRequests;
 @dynamic incomingRequests;

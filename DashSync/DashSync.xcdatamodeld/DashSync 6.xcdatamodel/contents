@@ -72,7 +72,6 @@
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="account" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="contacts" inverseEntity="DSAccountEntity" syncable="YES"/>
-        <relationship name="derivationPath" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="contact" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="friends" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
@@ -86,7 +85,7 @@
         <relationship name="account" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSAccountEntity" inverseName="derivationPaths" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAddressEntity" inverseName="derivationPath" inverseEntity="DSAddressEntity" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="derivationPaths" inverseEntity="DSChainEntity" syncable="YES"/>
-        <relationship name="contact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="derivationPath" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="friendRequest" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSFriendRequestEntity" inverseName="derivationPath" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <compoundIndexes>
             <compoundIndex>
                 <index value="chain"/>
@@ -98,6 +97,7 @@
         <attribute name="destinationBlockchainUserRegistrationTransactionHash" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="extendedPublicKey" attributeType="Binary" syncable="YES"/>
         <attribute name="sourceBlockchainUserRegistrationTransactionHash" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="derivationPath" maxCount="1" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="friendRequest" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="destinationContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="incomingRequests" inverseEntity="DSContactEntity" indexed="YES" syncable="YES"/>
         <relationship name="sourceContact" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="outgoingRequests" inverseEntity="DSContactEntity" indexed="YES" syncable="YES"/>
         <relationship name="transition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransitionEntity" inverseName="contactRequests" inverseEntity="DSTransitionEntity" syncable="YES"/>
@@ -385,9 +385,9 @@
         <element name="DSBlockchainUserTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="60"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="300"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
-        <element name="DSContactEntity" positionX="-2322" positionY="-81" width="128" height="240"/>
+        <element name="DSContactEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="150"/>
-        <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="135"/>
+        <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="150"/>
         <element name="DSGovernanceObjectEntity" positionX="-674.609375" positionY="-171.16796875" width="128" height="270"/>
         <element name="DSGovernanceObjectHashEntity" positionX="-956.1328125" positionY="-21.26171875" width="128" height="105"/>
         <element name="DSGovernanceVoteEntity" positionX="-681.9609375" positionY="527.89453125" width="128" height="180"/>

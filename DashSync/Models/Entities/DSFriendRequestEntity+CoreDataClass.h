@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSContactEntity, DSTransitionEntity;
+@class DSContactEntity, DSTransitionEntity,DSDerivationPathEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

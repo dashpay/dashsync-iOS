@@ -412,7 +412,7 @@
         BOOL success = error == nil;
         
         if (success) {
-            [friendRequest.sourceContact storeExtendedPublicKeyInWallet:self.wallet];
+            [friendRequest.sourceContact storeExtendedPublicKeyForBlockchainUser:self];
             [strongSelf.ownContact addFriendsObject:friendRequest.sourceContact];
         }
         
@@ -645,7 +645,7 @@
                 }
                 if (externalContact.blockchainUserRegistrationHash) {
                     //it's also local (aka both contacts are on this device), we should store the extended public key for the destination
-                    [self.ownContact storeExtendedPublicKeyInWallet:self.wallet];
+                    [self.ownContact storeExtendedPublicKeyForBlockchainUser:self];
                 }
             }
         }

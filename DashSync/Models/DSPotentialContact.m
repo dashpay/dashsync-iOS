@@ -55,7 +55,7 @@
     dpp.contract = contract;
     
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
+                                                             contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:self.blockchainUserOwner.registrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
@@ -76,7 +76,7 @@
 
 -(void)storeExtendedPublicKey {
     DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
+                                                                     contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:self.blockchainUserOwner.registrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:self.account.wallet.uniqueID];

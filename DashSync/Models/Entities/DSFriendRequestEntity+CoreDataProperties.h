@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSContactEntity *sourceContact;
 @property (nullable, nonatomic, retain) DSTransitionEntity *transition;
 @property (nullable, nonatomic, retain) NSData *extendedPublicKey;
+@property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
 
 @end
 
