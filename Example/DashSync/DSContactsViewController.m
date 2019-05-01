@@ -162,15 +162,18 @@ static NSString * const CellId = @"CellId";
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
     DSContactEntity * friend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
+    DSContactEntity * me = self.blockchainUser.ownContact;
+    DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",friend]] anyObject];
+    DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",friend]] anyObject];
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
         UITabBarController * tabBarController = segue.destinationViewController;
         for (UIViewController * controller in tabBarController.viewControllers) {
             if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
                 ((DSContactReceivedTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactReceivedTransactionsTableViewController*)controller).contact = friend;
+                ((DSContactReceivedTransactionsTableViewController*)controller).friendRequest = meToFriend;
             } else if ([controller isKindOfClass:[DSContactSentTransactionsTableViewController class]]) {
                 ((DSContactSentTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactSentTransactionsTableViewController*)controller).contact = friend;
+                ((DSContactSentTransactionsTableViewController*)controller).friendRequest = friendToMe;
             } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
                 ((DSContactSendDashViewController*)controller).blockchainUser = self.blockchainUser;
                 ((DSContactSendDashViewController*)controller).contact = friend;

@@ -31,6 +31,9 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSAccountEntity+CoreDataClass.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSDerivationPathEntity
 
@@ -56,6 +59,14 @@
         derivationPathEntity.syncBlockHeight = BIP39_CREATION_TIME;
         if (derivationPath.account) {
             derivationPathEntity.account = [DSAccountEntity accountEntityForWalletUniqueID:derivationPath.account.wallet.uniqueID index:derivationPath.account.accountNumber];
+        }
+        if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatching:@"sourceBlockchainUserRegistrationTransactionHash == %@ && destinationBlockchainUserRegistrationTransactionHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash),uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash)];
+            NSAssert(friendRequest, @"there should always be a friend request here");
+            if (friendRequest) {
+                derivationPathEntity.friendRequest = friendRequest;
+            }
         }
         return derivationPathEntity;
     }

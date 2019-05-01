@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSContactSentTransactionsTableViewController : UITableViewController <NSFetchedResultsControllerDelegate>
 
 @property (strong, nonatomic) DSBlockchainUser *blockchainUser;
-@property (strong, nonatomic) DSContactEntity *contact;
+@property (strong, nonatomic) DSFriendRequestEntity * friendRequest;
 
 @end
 

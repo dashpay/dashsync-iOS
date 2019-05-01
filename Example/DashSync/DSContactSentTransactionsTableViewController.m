@@ -39,21 +39,21 @@
 
 -(void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
     _blockchainUser = blockchainUser;
-    if (_contact) {
-        self.account = [blockchainUser.wallet accountWithNumber:_contact.account.index];
+    if (_friendRequest) {
+        self.account = [blockchainUser.wallet accountWithNumber:_friendRequest.sourceContact.account.index];
     }
 }
 
--(void)setContact:(DSContactEntity *)contact {
-    _contact = contact;
+-(void)setFriendRequest:(DSFriendRequestEntity *)friendRequest {
+    _friendRequest = friendRequest;
     if (_blockchainUser) {
-        self.account = [_blockchainUser.wallet accountWithNumber:_contact.account.index];
+        self.account = [_blockchainUser.wallet accountWithNumber:_friendRequest.sourceContact.account.index];
     }
 }
 
 
 -(NSPredicate*)searchPredicate {
-    return [NSPredicate predicateWithFormat:@"localAddress.derivationPath.contact == %@",self.contact];
+    return [NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest == %@",self.friendRequest];
 }
 
 -(NSManagedObjectContext*)managedObjectContext {
