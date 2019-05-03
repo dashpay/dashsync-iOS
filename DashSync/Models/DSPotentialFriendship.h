@@ -21,23 +21,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity;
+@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity,DSPotentialContact,DSContactEntity;
 
 @interface DSPotentialFriendship : NSObject
 
 @property (nonatomic, readonly) DSAccount* account;
-@property (nonatomic, readonly) NSString * destinationContactUsername;
+@property (nonatomic, readonly) DSPotentialContact * destinationContact;
 @property (nonatomic, readonly) DSBlockchainUser * sourceBlockchainUser; //this is the holder of the contacts, not the destination
-@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
-//@property (nonatomic, strong) NSData * incomingExtendedPublicKey;
 @property (nonatomic, assign) UInt384 contactEncryptionPublicKey;
 
--(instancetype)initWithDestinationUsername:(NSString*)username sourceBlockchainUser:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
+-(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact sourceBlockchainUser:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
 
 -(DSFriendRequestEntity*)outgoingFriendRequest;
-//-(DSFriendRequestEntity*)incomingFriendRequest;
+
+-(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSContactEntity*)contactEntity;
 
 -(void)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
+
+-(void)createDerivationPath;
 
 -(DPDocument*)contactRequestDocument;
 

@@ -344,11 +344,11 @@
     [self.mFundDerivationPaths addObject:derivationPath];
 }
 
--(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forContactIdentifier:(NSData*)contactIdentifier {
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
     NSParameterAssert(derivationPath);
-    NSParameterAssert(contactIdentifier);
+    NSParameterAssert(friendshipIdentifier);
     [self addDerivationPath:derivationPath];
-    [self.mContactFundDerivationPathsDictionary setObject:derivationPath forKey:contactIdentifier];
+    [self.mContactFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {

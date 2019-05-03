@@ -15,16 +15,21 @@
 
 @interface DSFriendRequestEntity()
 
+@property (nonatomic,strong) NSData * _friendshipIdentifier;
+
 @end
 
 @implementation DSFriendRequestEntity
 
+@synthesize _friendshipIdentifier;
+
 -(NSData*)friendshipIdentifier {
-    if (self.friendshipIdentifier) return self.friendshipIdentifier;
+    if (_friendshipIdentifier) return _friendshipIdentifier;
     UInt256 sourceIdentifier = self.sourceContact.associatedBlockchainUserRegistrationHash.UInt256;
     UInt256 destinationIdentifier = self.destinationContact.associatedBlockchainUserRegistrationHash.UInt256;
     UInt256 friendship = uint256_xor(sourceIdentifier, destinationIdentifier);
-    return uint256_data(friendship);
+    _friendshipIdentifier = uint256_data(friendship);
+    return _friendshipIdentifier;
 }
 
 @end

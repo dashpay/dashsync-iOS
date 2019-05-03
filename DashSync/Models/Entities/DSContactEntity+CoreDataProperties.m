@@ -25,5 +25,6 @@
 @dynamic friends;
 @dynamic encryptionPublicKey;
 @dynamic avatarPath;
+@dynamic chain;
 
 @end

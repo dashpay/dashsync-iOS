@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSContactEntity *> *friends;
 @property (nullable, nonatomic, retain) DSTransitionEntity *profileTransition;
+@property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
 

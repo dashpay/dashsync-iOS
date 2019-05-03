@@ -24,6 +24,7 @@
 @property (strong, nonatomic) IBOutlet UITextField *amountTextField;
 @property (strong, nonatomic) DSAccount * account;
 @property (strong, nonatomic) NSString * address;
+@property (strong, nonatomic) DSFriendRequestEntity * friendRequest;
 
 @end
 
@@ -32,8 +33,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.account = [self.blockchainUser.wallet accountWithNumber:self.contact.account.index];
-    DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForContactWithIdentifier:self.contact.associatedBlockchainUserRegistrationHash];
+    DSFriendRequestEntity * friendRequest = [[_contact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainUserRegistrationHash == %@",self.blockchainUser.registrationTransactionHashData]] anyObject];
+    NSAssert(friendRequest, @"there must be a friendRequest");
+    self.friendRequest = friendRequest;
+    self.account = [self.blockchainUser.wallet accountWithNumber:0];
+    DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+    NSAssert(derivationPath.extendedPublicKey, @"Extended public key must exist already");
     self.address = [derivationPath receiveAddress];
     NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.address];
     self.addressTextField.text = [NSString stringWithFormat:@"%lu - %@",(unsigned long)[indexPath indexAtPosition:0],self.address];

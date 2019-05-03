@@ -66,11 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
         NSParameterAssert(self.blockchainUser);
         DSAccount * account = [self.blockchainUser.wallet accountWithNumber:0];
         NSParameterAssert(account);
-        DSPotentialFriendship *potentialContact = [[DSPotentialFriendship alloc] initWithUsername:username
-                                                                        blockchainUserOwner:self.blockchainUser
-                                                                                    account:account];
         
-        [self.blockchainUser sendNewContactRequestToPotentialContact:potentialContact completion:^(BOOL success) {
+        DSPotentialContact * potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
+        
+        [self.blockchainUser sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;

@@ -38,7 +38,7 @@
 
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity {
     [chainEntity.managedObjectContext performBlockAndWait:^{
-        NSArray * contactsToDelete = [self objectsMatching:@"(account.chain == %@)",chainEntity];
+        NSArray * contactsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
         for (DSContactEntity * contact in contactsToDelete) {
             [chainEntity.managedObjectContext deleteObject:contact];
         }

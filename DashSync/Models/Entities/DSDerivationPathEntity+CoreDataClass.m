@@ -62,7 +62,7 @@
         }
         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatching:@"sourceBlockchainUserRegistrationTransactionHash == %@ && destinationBlockchainUserRegistrationTransactionHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash),uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash)];
+            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatching:@"sourceContact.associatedBlockchainUserRegistrationHash == %@ && destinationContact.associatedBlockchainUserRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash),uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash)];
             if (friendRequest) {
                 derivationPathEntity.friendRequest = friendRequest;
             }
