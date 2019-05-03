@@ -27,12 +27,14 @@
 
 @property (nonatomic,assign) UInt256 contactSourceBlockchainUserRegistrationTransactionHash;
 @property (nonatomic,assign) UInt256 contactDestinationBlockchainUserRegistrationTransactionHash;
+@property (nonatomic,assign) BOOL externalDerivationPath;
 
 @end
 
 @implementation DSIncomingFundsDerivationPath
 
-+ (instancetype)contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:(UInt256)destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256)sourceBlockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
++ (instancetype)contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
+    NSAssert(!uint256_eq(sourceBlockchainUserRegistrationTransactionHash,destinationBlockchainUserRegistrationTransactionHash), @"source and destination must be different");
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber), sourceBlockchainUserRegistrationTransactionHash,destinationBlockchainUserRegistrationTransactionHash};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO,NO};
@@ -45,6 +47,19 @@
     return derivationPath;
 }
 
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash onChain:(DSChain*)chain {
+    UInt256 indexes[] = {};
+    BOOL hardenedIndexes[] = {};
+    DSIncomingFundsDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
+    derivationPath.extendedPublicKey = extendedPublicKey;
+    
+    derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
+    derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
+    derivationPath.externalDerivationPath = TRUE;
+    [derivationPath loadAddresses];
+    return derivationPath;
+}
+
 - (instancetype)initWithIndexes:(const UInt256 [])indexes hardened:(const BOOL [])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     
     if (! (self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
@@ -52,6 +67,11 @@
     self.externalAddresses = [NSMutableArray array];
     
     return self;
+}
+
+-(void)storeExternalDerivationPathExtendedPublicKeyToKeyChain {
+    if (!self.extendedPublicKey) return;
+    setKeychainData(self.extendedPublicKey, self.standaloneExtendedPublicKeyLocationString, NO);
 }
 
 -(void)reloadAddresses {
@@ -104,6 +124,11 @@
             [self registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_EXTERNAL];
         }
     }
+}
+
+-(NSString *)standaloneExtendedPublicKeyUniqueID {
+    NSString * standaloneExtendedPublicKeyUniqueID = [super standaloneExtendedPublicKeyUniqueID];
+    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainUserRegistrationTransactionHash].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainUserRegistrationTransactionHash].shortHexString,standaloneExtendedPublicKeyUniqueID];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is

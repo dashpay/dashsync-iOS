@@ -33,7 +33,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.account = [self.blockchainUser.wallet accountWithNumber:self.contact.account.index];
-    DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForContactWithIdentifier:self.contact.blockchainUserRegistrationHash];
+    DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForContactWithIdentifier:self.contact.associatedBlockchainUserRegistrationHash];
     self.address = [derivationPath receiveAddress];
     NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:self.address];
     self.addressTextField.text = [NSString stringWithFormat:@"%lu - %@",(unsigned long)[indexPath indexAtPosition:0],self.address];

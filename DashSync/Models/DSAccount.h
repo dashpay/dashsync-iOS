@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialContact;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialFriendship;
 
 @interface DSAccount : NSObject
 
@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSArray * internalAddresses;
 
 // all the contacts for an account
-@property (nonatomic, readonly) NSArray <DSPotentialContact*> * _Nonnull contacts;
+@property (nonatomic, readonly) NSArray <DSPotentialFriendship*> * _Nonnull contacts;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 

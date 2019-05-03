@@ -152,7 +152,7 @@ static NSString * const CellId = @"CellId";
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser acceptContactRequest:friendRequest completion:^(BOOL success) {
+    [self.blockchainUser acceptFriendRequest:friendRequest completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

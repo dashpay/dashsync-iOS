@@ -23,19 +23,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity;
 
-@interface DSPotentialContact : NSObject
+@interface DSPotentialFriendship : NSObject
 
 @property (nonatomic, readonly) DSAccount* account;
-@property (nonatomic, readonly) NSString * username;
-@property (nonatomic, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
+@property (nonatomic, readonly) NSString * destinationContactUsername;
+@property (nonatomic, readonly) DSBlockchainUser * sourceBlockchainUser; //this is the holder of the contacts, not the destination
 @property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
-@property (nonatomic, strong) NSData * incomingExtendedPublicKey;
+//@property (nonatomic, strong) NSData * incomingExtendedPublicKey;
 @property (nonatomic, assign) UInt384 contactEncryptionPublicKey;
 
--(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
+-(instancetype)initWithDestinationUsername:(NSString*)username sourceBlockchainUser:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
 
 -(DSFriendRequestEntity*)outgoingFriendRequest;
--(DSFriendRequestEntity*)incomingFriendRequest;
+//-(DSFriendRequestEntity*)incomingFriendRequest;
 
 -(void)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 

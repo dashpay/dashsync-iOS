@@ -67,6 +67,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_ProviderOwnerKeys = 7,
     DSDerivationPathReference_ContactBasedFunds = 8,
     DSDerivationPathReference_ContactBasedFundsRoot = 9,
+    DSDerivationPathReference_ContactBasedFundsExternal = 10
 };
 
 @interface DSDerivationPath : DSUInt256IndexPath{
@@ -172,6 +173,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
+
+//sometimes we need to store the public key but not at generation time, use this method for that
+- (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString* _Nonnull)walletUniqueId;
 
 + (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
 

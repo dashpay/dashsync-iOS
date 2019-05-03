@@ -19,17 +19,15 @@
 #import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
 #import <ios-dpp/DashPlatformProtocol.h>
-#import "DSPotentialContact.h"
+#import "DSPotentialFriendship.h"
 
-@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialContact,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity;
+@class DSAccountEntity, DSBlockchainUserRegistrationTransactionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainUser,DSPotentialFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactEntity : NSManagedObject
 
-- (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact;
-
--(DPDocument*)contactRequestDocumentCreatedByBlockchainUser:(DSBlockchainUser*)blockchainUser;
+-(DPDocument*)friendRequestDocumentRequestedByBlockchainUser:(DSBlockchainUser*)blockchainUser forAccount:(DSAccount*)account;
 -(DSIncomingFundsDerivationPath*)storeExtendedPublicKeyForBlockchainUser:(DSBlockchainUser*)blockchainUser associatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
 

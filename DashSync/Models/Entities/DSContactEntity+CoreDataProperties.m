@@ -16,10 +16,9 @@
 
 @dynamic blockHeight;
 @dynamic username;
-@dynamic blockchainUserRegistrationHash;
+@dynamic associatedBlockchainUserRegistrationHash;
 @dynamic publicMessage;
-@dynamic account;
-@dynamic ownerBlockchainUserRegistrationTransaction;
+@dynamic associatedBlockchainUserRegistrationTransaction;
 @dynamic outgoingRequests;
 @dynamic incomingRequests;
 @dynamic profileTransition;

@@ -172,10 +172,10 @@
             for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.outgoingRequests) {
                 DSAccount * account = [self accountWithNumber:friendRequest.destinationContact.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
-                                                               contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.blockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
+                                                               contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
-                [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationBlockchainUserRegistrationTransactionHash];
+                [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash];
                 [fundsDerivationPath loadAddresses];
             }
         }
@@ -804,7 +804,7 @@
         for (DSContactEntity * contactEntity in friends) {
             uint32_t accountNumber = contactEntity.account.index;
             DSAccount * account = [blockchainUser.wallet accountWithNumber:accountNumber];
-            [account removeDerivationPathForContactWithIdentifier:contactEntity.blockchainUserRegistrationHash];
+            [account removeDerivationPathForContactWithIdentifier:contactEntity.associatedBlockchainUserRegistrationHash];
         }
     }];
     
