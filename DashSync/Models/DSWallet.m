@@ -170,12 +170,12 @@
         for (NSData * blockchainRegistrationHashData in self.mBlockchainUsers) {
             DSBlockchainUser * blockchainUser = [self.mBlockchainUsers objectForKey:blockchainRegistrationHashData];
             for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.outgoingRequests) {
-                DSAccount * account = [self accountWithNumber:friendRequest.destinationContact.account.index];
+                DSAccount * account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
                                                                contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
-                [account addIncomingDerivationPath:fundsDerivationPath forContactIdentifier:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash];
+                [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 [fundsDerivationPath loadAddresses];
             }
         }
@@ -800,11 +800,11 @@
     //we also have to remove all contacts derivation paths from their associated accounts.
     
     [self.chain.managedObjectContext performBlockAndWait:^{
-        NSSet <DSContactEntity *>* friends = [blockchainUser.ownContact friends];
-        for (DSContactEntity * contactEntity in friends) {
-            uint32_t accountNumber = contactEntity.account.index;
+        NSSet <DSFriendRequestEntity *>* friendRequests = [blockchainUser.ownContact outgoingRequests];
+        for (DSFriendRequestEntity * friendRequest in friendRequests) {
+            uint32_t accountNumber = friendRequest.account.index;
             DSAccount * account = [blockchainUser.wallet accountWithNumber:accountNumber];
-            [account removeDerivationPathForContactWithIdentifier:contactEntity.associatedBlockchainUserRegistrationHash];
+            [account removeDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
         }
     }];
     

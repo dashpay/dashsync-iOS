@@ -322,17 +322,17 @@
     }
 }
 
--(void)removeDerivationPathForContactWithIdentifier:(NSData*)contactIdentifier {
-    NSParameterAssert(contactIdentifier);
-    DSIncomingFundsDerivationPath * derivationPath = [self.mContactFundDerivationPathsDictionary objectForKey:contactIdentifier];
+-(void)removeDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier {
+    NSParameterAssert(friendshipIdentifier);
+    DSIncomingFundsDerivationPath * derivationPath = [self.mContactFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
     if (derivationPath) {
         [self removeDerivationPath:derivationPath];
     }
 }
 
--(DSIncomingFundsDerivationPath*)derivationPathForContactWithIdentifier:(NSData*)contactIdentifier {
-    NSParameterAssert(contactIdentifier);
-    return [self.mContactFundDerivationPathsDictionary objectForKey:contactIdentifier];
+-(DSIncomingFundsDerivationPath*)derivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier {
+    NSParameterAssert(friendshipIdentifier);
+    return [self.mContactFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
 }
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {

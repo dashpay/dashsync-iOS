@@ -27,8 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSContactEntity : NSManagedObject
 
--(DPDocument*)friendRequestDocumentRequestedByBlockchainUser:(DSBlockchainUser*)blockchainUser forAccount:(DSAccount*)account;
--(DSIncomingFundsDerivationPath*)storeExtendedPublicKeyForBlockchainUser:(DSBlockchainUser*)blockchainUser associatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 +(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
 
 @end
