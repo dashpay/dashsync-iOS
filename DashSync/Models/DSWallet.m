@@ -177,7 +177,6 @@
                 fundsDerivationPath.account = account;
                 NSLog(@"%@",blockchainUser.ownContact.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
-                [fundsDerivationPath loadAddresses];
             }
         }
     }];

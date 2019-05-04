@@ -637,6 +637,39 @@
     }
 }
 
+-(void)addIncomingRequestFromContact:(DSContactEntity*)contactEntity forExtendedPublicKey:(NSData*)extendedPublicKey {
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
+    friendRequestEntity.sourceContact = contactEntity;
+    friendRequestEntity.destinationContact = self.ownContact;
+    
+    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
+    derivationPathEntity.chain = self.wallet.chain.chainEntity;
+    
+    friendRequestEntity.derivationPath = derivationPathEntity;
+    
+    DSAccount * account = [self.wallet accountWithNumber:0];
+    
+    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:account.accountNumber onChain:self.wallet.chain];
+    
+    derivationPathEntity.account = accountEntity;
+    
+    friendRequestEntity.account = accountEntity;
+    
+    [friendRequestEntity finalizeWithFriendshipIdentifier];
+    
+    DSIncomingFundsDerivationPath * derivationPath = [DSIncomingFundsDerivationPath externalDerivationPathWithExtendedPublicKey:extendedPublicKey withDestinationBlockchainUserRegistrationTransactionHash:self.ownContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:contactEntity.associatedBlockchainUserRegistrationHash.UInt256 onChain:self.wallet.chain];
+    
+    derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
+    
+    [derivationPath storeExternalDerivationPathExtendedPublicKeyToKeyChain];
+    
+    [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+    
+    [self.ownContact addIncomingRequestsObject:friendRequestEntity];
+    
+    [DSContactEntity saveContext];
+}
+
 - (void)handleIncomingRequests:(NSDictionary <NSData *,NSData *>  *)incomingRequests {
     [self.managedObjectContext performBlockAndWait:^{
         [DSContactEntity setContext:self.managedObjectContext];
@@ -654,32 +687,7 @@
                                 contactEntity.username = username;
                                 contactEntity.associatedBlockchainUserRegistrationHash = uint256_data(contactBlockchainUserTransactionRegistrationHash);
                                 
-                                DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
-                                friendRequestEntity.sourceContact = contactEntity;
-                                friendRequestEntity.destinationContact = self.ownContact;
-                                
-                                DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObject];
-                                derivationPathEntity.chain = self.wallet.chain.chainEntity;
-                                
-                                friendRequestEntity.derivationPath = derivationPathEntity;
-                                
-                                DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0 onChain:self.wallet.chain];
-                                
-                                derivationPathEntity.account = accountEntity;
-                                
-                                friendRequestEntity.account = accountEntity;
-                                
-                                [friendRequestEntity finalizeWithFriendshipIdentifier];
-                                
-                                DSIncomingFundsDerivationPath * derivationPath = [DSIncomingFundsDerivationPath externalDerivationPathWithExtendedPublicKey:incomingRequests[blockchainUserRegistrationHash] withDestinationBlockchainUserRegistrationTransactionHash:self.ownContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:contactEntity.associatedBlockchainUserRegistrationHash.UInt256 onChain:self.wallet.chain];
-                                
-                                derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
-                                
-                                [derivationPath storeExternalDerivationPathExtendedPublicKeyToKeyChain];
-                                
-                                [self.ownContact addIncomingRequestsObject:friendRequestEntity];
-                                
-                                [DSContactEntity saveContext];
+                                [self addIncomingRequestFromContact:contactEntity forExtendedPublicKey:incomingRequests[blockchainUserRegistrationHash]];
                             }
                         }];
                     }
@@ -696,24 +704,18 @@
                     
                     DSPotentialFriendship * potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact sourceBlockchainUser:sourceBlockchainUser account:account];
                     
-                    [potentialFriendship createDerivationPath];
+                    DSIncomingFundsDerivationPath * derivationPath = [potentialFriendship createDerivationPath];
                     
                     DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForContactEntity:self.ownContact];
                     [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
                     [self.ownContact addIncomingRequestsObject:friendRequest];
+                    
+                    [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                    
                 } else {
                     //the contact already existed, create the incoming friend request, add a friendship if an outgoing friend request also exists
-                    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
-                    friendRequestEntity.sourceContact = externalContact;
-                    friendRequestEntity.destinationContact = self.ownContact;
+                    [self addIncomingRequestFromContact:externalContact forExtendedPublicKey:incomingRequests[blockchainUserRegistrationHash]];
                     
-                    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0 onChain:self.wallet.chain];
-                    
-                    friendRequestEntity.account = accountEntity;
-                    
-                    [friendRequestEntity finalizeWithFriendshipIdentifier];
-                    
-                    [self.ownContact addIncomingRequestsObject:friendRequestEntity];
                     if ([[externalContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
                         [self.ownContact addFriendsObject:externalContact];
                     }
@@ -787,9 +789,13 @@
                 
                 DSPotentialFriendship * realFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact sourceBlockchainUser:self account:account];
                 
-                [realFriendship createDerivationPath];
+                DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                 
                 [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+                
+                if (destinationContact.associatedBlockchainUserRegistrationTransaction) { //the destination is also local
+                    [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+                }
                 
                 [self.ownContact addOutgoingRequestsObject:friendRequestEntity];
                 if ([[destinationContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {

@@ -51,7 +51,7 @@
     return self;
 }
 
--(void)createDerivationPath {
+-(DSIncomingFundsDerivationPath*)createDerivationPath {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainUserRegistrationTransactionHash), @"associatedBlockchainUserRegistrationTransactionHash must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
                                           contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:self.destinationContact.associatedBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:self.sourceBlockchainUser.registrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainUser.wallet.chain];
@@ -60,6 +60,7 @@
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
+    return self.fundsDerivationPathForContact;
 }
 
 -(DPDocument*)contactRequestDocument {

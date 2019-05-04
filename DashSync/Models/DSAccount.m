@@ -349,6 +349,7 @@
     NSParameterAssert(friendshipIdentifier);
     [self addDerivationPath:derivationPath];
     [self.mContactFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
+    [derivationPath loadAddresses];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {

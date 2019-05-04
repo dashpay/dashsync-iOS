@@ -134,7 +134,7 @@
                     DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
                     if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
                         UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainUserRegistrationTransactionHash];
-                        DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"blockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
+                        DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
                         [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username]];
                     } else {
                         [detail addObject:NSLocalizedString(@"wallet address", nil)];
