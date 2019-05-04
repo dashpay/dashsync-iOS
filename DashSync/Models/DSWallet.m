@@ -175,6 +175,7 @@
                                                                contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:blockchainUser.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
+                NSLog(@"%@",blockchainUser.ownContact.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 [fundsDerivationPath loadAddresses];
             }
@@ -860,6 +861,7 @@
 }
 
 -(NSMutableDictionary*)blockchainUsers {
+    //setKeychainDict(@{}, self.walletBlockchainUsersKey, NO);
     if (!_mBlockchainUsers) {
         NSError * error = nil;
         NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainUsersKey, &error) mutableCopy];

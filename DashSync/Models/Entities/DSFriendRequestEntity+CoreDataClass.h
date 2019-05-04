@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
 
-@property (nonatomic,readonly) NSData * friendshipIdentifier;
+-(NSData*)finalizeWithFriendshipIdentifier;
 
 @end
 

@@ -102,6 +102,9 @@
     friendRequestEntity.sourceContact = self.sourceBlockchainUser.ownContact;
     friendRequestEntity.destinationContact = contactEntity;
     friendRequestEntity.derivationPath = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact];
+    friendRequestEntity.account = friendRequestEntity.derivationPath.account;
+    
+    [friendRequestEntity finalizeWithFriendshipIdentifier];
     return friendRequestEntity;
 }
 

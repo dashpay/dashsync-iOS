@@ -337,6 +337,10 @@
     }];
 }
 
+-(NSString*)debugDescription {
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@}",self.username,self.registrationTransactionHashIdentifier]];
+}
+
 // MARK: - Layer 2
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
@@ -665,6 +669,8 @@
                                 
                                 friendRequestEntity.account = accountEntity;
                                 
+                                [friendRequestEntity finalizeWithFriendshipIdentifier];
+                                
                                 DSIncomingFundsDerivationPath * derivationPath = [DSIncomingFundsDerivationPath externalDerivationPathWithExtendedPublicKey:incomingRequests[blockchainUserRegistrationHash] withDestinationBlockchainUserRegistrationTransactionHash:self.ownContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:contactEntity.associatedBlockchainUserRegistrationHash.UInt256 onChain:self.wallet.chain];
                                 
                                 derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
@@ -700,6 +706,12 @@
                     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
                     friendRequestEntity.sourceContact = externalContact;
                     friendRequestEntity.destinationContact = self.ownContact;
+                    
+                    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0 onChain:self.wallet.chain];
+                    
+                    friendRequestEntity.account = accountEntity;
+                    
+                    [friendRequestEntity finalizeWithFriendshipIdentifier];
                     
                     [self.ownContact addIncomingRequestsObject:friendRequestEntity];
                     if ([[externalContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
@@ -738,6 +750,8 @@
                             
                             friendRequestEntity.account = accountEntity;
                             
+                            [friendRequestEntity finalizeWithFriendshipIdentifier];
+                            
                             [self.ownContact addOutgoingRequestsObject:friendRequestEntity];
                             
                             DSPotentialContact * contact = [[DSPotentialContact alloc] initWithContactEntity:destinationContactEntity];
@@ -764,6 +778,8 @@
                 DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:0 onChain:self.wallet.chain];
                 
                 friendRequestEntity.account = accountEntity;
+                
+                [friendRequestEntity finalizeWithFriendshipIdentifier];
                 
                 DSAccount * account = [self.wallet accountWithNumber:0];
                 

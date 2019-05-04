@@ -19,5 +19,6 @@
 @dynamic transition;
 @dynamic derivationPath;
 @dynamic account;
+@dynamic friendshipIdentifier;
 
 @end
