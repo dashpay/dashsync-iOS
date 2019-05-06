@@ -154,11 +154,10 @@
 
 -(void)configureCell:(DSTransactionTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     
-    DSTxOutputEntity * transactionOuput = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSTransaction * transaction = [self.account transactionForHash:transactionOuput.transaction.transactionHash.txHash.UInt256];
+    DSTxOutputEntity * transactionOutput = [self.fetchedResultsController objectAtIndexPath:indexPath];
     //cell.addressLabel.text = transactionOuput.address;
-    cell.transactionLabel.text = transactionOuput.transaction.transactionHash.txHash.hexString;
-    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",[self.account amountSentByTransaction:transaction]];
+    cell.transactionLabel.text = transactionOutput.transaction.transactionHash.txHash.hexString;
+    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",transactionOutput.value / DUFFS];
 }
 
 

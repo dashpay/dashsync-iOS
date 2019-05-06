@@ -16,7 +16,7 @@
 //
 
 #import "DSContactReceivedTransactionsTableViewController.h"
-#import "DSTransactionDetailTableViewCell.h"
+#import "DSTransactionTableViewCell.h"
 
 @interface DSContactReceivedTransactionsTableViewController ()
 
@@ -140,19 +140,18 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSTransactionDetailTableViewCell *cell = (DSTransactionDetailTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier" forIndexPath:indexPath];
+    DSTransactionTableViewCell *cell = (DSTransactionTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier" forIndexPath:indexPath];
     
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
--(void)configureCell:(DSTransactionDetailTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
+-(void)configureCell:(DSTransactionTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
 
-    DSTxOutputEntity * transactionOuput = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    DSTransaction * transaction = [self.account transactionForHash:transactionOuput.transaction.transactionHash.txHash.UInt256];
-    cell.addressLabel.text = transactionOuput.address;
-    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",[self.account amountSentByTransaction:transaction]];
+    DSTxOutputEntity * transactionOutput = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    cell.transactionLabel.text = transactionOutput.transaction.transactionHash.txHash.hexString;
+    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",transactionOutput.value / DUFFS];
 }
 
 
