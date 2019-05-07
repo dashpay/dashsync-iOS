@@ -202,8 +202,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
              completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
--(void)contactForBlockchainUser:(DSBlockchainUser*)blockchainUser;
-
 @end
 
 NS_ASSUME_NONNULL_END

@@ -19,6 +19,7 @@
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) BOOL externalScope;
+@property (nonatomic,strong) IBOutlet UISearchBar * searchBar;
 
 @end
 
@@ -27,11 +28,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     _externalScope = YES;
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    if ([self.derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+        self.searchBar.showsScopeBar = FALSE;
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -134,7 +133,12 @@
 -(void)configureCell:(DSAddressTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSAddressEntity *addressEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.addressLabel.text = addressEntity.address;
-    cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%d/%u",self.derivationPath.stringRepresentation,addressEntity.internal?1:0,addressEntity.index];
+    
+    if ([self.derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+        cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%d/%u",self.derivationPath.stringRepresentation,addressEntity.internal?1:0,addressEntity.index];
+    } else {
+        cell.derivationPathLabel.text = [NSString stringWithFormat:@"%@/%u",self.derivationPath.stringRepresentation,addressEntity.index];
+    }
     cell.balanceLabel.text = [NSString stringWithFormat:@"%llu",addressEntity.balance];
     cell.inLabel.text = [NSString stringWithFormat:@"%llu",addressEntity.inAmount];
     cell.outLabel.text = [NSString stringWithFormat:@"%llu",addressEntity.outAmount];
