@@ -148,7 +148,7 @@
         }
         else if ([account externalDerivationPathContainingAddress:address]) {
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [account externalDerivationPathContainingAddress:address];
-            DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash)];
+            DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash)];
             [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username]];
             [text addObject:address];
             [amount addObject:@(-amt)];

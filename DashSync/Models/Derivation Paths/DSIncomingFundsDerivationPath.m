@@ -184,32 +184,42 @@
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
         
-        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+        NSUInteger upperLimit = gapLimit;
+        while (a.count < upperLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n];
-            NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSString *address = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
-            if (! addr) {
+            if (! address) {
                 DSDLog(@"error generating keys");
                 return nil;
             }
             
+            
+            __block BOOL isUsed = FALSE;
+            
             if (!self.account.wallet.isTransient) {
-                [self.moc performBlock:^{ // store new address in core data
+                [self.moc performBlockAndWait:^{ // store new address in core data
                     [DSDerivationPathEntity setContext:self.moc];
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
                     DSAddressEntity *e = [DSAddressEntity managedObject];
                     e.derivationPath = derivationPathEntity;
-                    NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
-                    e.address = addr;
+                    NSAssert([address isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
+                    e.address = address;
                     e.index = n;
                     e.internal = NO;
                     e.standalone = NO;
+                    NSArray * outputs = [DSTxOutputEntity objectsMatching:@"address == %@",address];
+                    [e addUsedInOutputs:[NSSet setWithArray:outputs]];
+                    if (outputs.count) isUsed = TRUE;
                 }];
             }
-            
-            [self.mAllAddresses addObject:addr];
-            [self.externalAddresses addObject:addr];
-            [a addObject:addr];
+            if (isUsed) {
+                [self.mUsedAddresses addObject:address];
+                upperLimit++;
+            }
+            [self.mAllAddresses addObject:address];
+            [self.externalAddresses addObject:address];
+            [a addObject:address];
             n++;
         }
         

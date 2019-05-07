@@ -26,6 +26,8 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSContactEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -365,6 +367,15 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             NSAssert(_extendedPublicKey, @"extended public key not set");
         } else {
             _extendedPublicKey = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
+            if (!_extendedPublicKey) {
+                if ([self isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+                    DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatching:@"derivationPath.publicKeyIdentifier == %@",self.standaloneExtendedPublicKeyUniqueID];
+                    
+                    NSAssert(friendRequest, @"friend request must exist");
+                    
+                    DSDLog(@"No extended public key set for the relationship between %@ and %@ (%@ receiving payments) ",friendRequest.sourceContact.username,friendRequest.destinationContact.username,friendRequest.sourceContact.username);
+                }
+            }
             NSAssert(_extendedPublicKey, @"extended public key not set");
         }
     }

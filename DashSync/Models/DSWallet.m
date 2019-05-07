@@ -182,7 +182,10 @@
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
             }
-            
+        }
+        
+        for (NSData * blockchainRegistrationHashData in self.mBlockchainUsers) {
+            DSBlockchainUser * blockchainUser = [self.mBlockchainUsers objectForKey:blockchainRegistrationHashData];
             for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.incomingRequests) {
                 
                 DSAccount * account = [self accountWithNumber:friendRequest.account.index];
@@ -193,11 +196,11 @@
                 } else {
                     DSDerivationPathEntity * derivationPathEntity = friendRequest.derivationPath;
                     
-                    DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
+                    DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [DSIncomingFundsDerivationPath
                                                                        externalDerivationPathWithExtendedPublicKeyUniqueID:derivationPathEntity.publicKeyIdentifier withDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:friendRequest.sourceContact.associatedBlockchainUserRegistrationHash.UInt256 onChain:self.chain];
-                    fundsDerivationPath.wallet = self;
-                    fundsDerivationPath.account = account;
-                    [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                    incomingFundsDerivationPath.wallet = self;
+                    incomingFundsDerivationPath.account = account;
+                    [account addOutgoingDerivationPath:incomingFundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                 }
             }
         }
