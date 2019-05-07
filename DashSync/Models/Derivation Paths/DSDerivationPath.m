@@ -362,11 +362,12 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     if (!_extendedPublicKey) {
         if (self.wallet && self.length) {
             _extendedPublicKey = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
+            NSAssert(_extendedPublicKey, @"extended public key not set");
         } else {
             _extendedPublicKey = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);
+            NSAssert(_extendedPublicKey, @"extended public key not set");
         }
     }
-    NSAssert(_extendedPublicKey, @"extended public key not set");
     return _extendedPublicKey;
 }
 

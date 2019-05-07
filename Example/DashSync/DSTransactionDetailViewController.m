@@ -150,6 +150,9 @@
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [account externalDerivationPathContainingAddress:address];
             DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash)];
             [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username]];
+            [text addObject:address];
+            [amount addObject:@(-amt)];
+            [currencyIsBitcoinInstead addObject:@FALSE];
         }
         else if (self.sent > 0) {
             [text addObject:address];

@@ -379,6 +379,10 @@
     return [self.mFundDerivationPaths copy];
 }
 
+-(NSArray*)outgoingFundDerivationPaths {
+    return [self.mContactOutgoingFundDerivationPathsDictionary allValues];
+}
+
 -(void)setDefaultDerivationPath:(DSFundsDerivationPath *)defaultDerivationPath {
     NSAssert([self.mFundDerivationPaths containsObject:defaultDerivationPath], @"The derivationPath is not in the account");
     _defaultDerivationPath = defaultDerivationPath;
@@ -466,7 +470,7 @@
 - (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address {
     NSParameterAssert(address);
     
-    for (DSIncomingFundsDerivationPath * derivationPath in self.mContactIncomingFundDerivationPathsDictionary.allValues) {
+    for (DSIncomingFundsDerivationPath * derivationPath in self.mContactOutgoingFundDerivationPathsDictionary.allValues) {
         if ([derivationPath containsAddress:address]) return derivationPath;
     }
     return FALSE;

@@ -81,7 +81,7 @@
 }
 
 -(void)storeExternalDerivationPathExtendedPublicKeyToKeyChain {
-    if (!self.extendedPublicKey) return;
+    NSAssert(self.extendedPublicKey != nil,@"the extended public key must exist");
     setKeychainData(self.extendedPublicKey, self.standaloneExtendedPublicKeyLocationString, NO);
 }
 

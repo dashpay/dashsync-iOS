@@ -711,6 +711,7 @@
                                 contactEntity.associatedBlockchainUserRegistrationHash = uint256_data(contactBlockchainUserTransactionRegistrationHash);
                                 
                                 [self addIncomingRequestFromContact:contactEntity forExtendedPublicKey:incomingRequests[blockchainUserRegistrationHash]];
+                                
                             }
                         }];
                     }
@@ -733,6 +734,10 @@
                     DSFriendRequestEntity * friendRequest = [potentialFriendship outgoingFriendRequestForContactEntity:self.ownContact];
                     [potentialFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequest];
                     [self.ownContact addIncomingRequestsObject:friendRequest];
+                    
+                    if ([[friendRequest.sourceContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
+                        [self.ownContact addFriendsObject:friendRequest.sourceContact];
+                    }
                     
                     [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                     

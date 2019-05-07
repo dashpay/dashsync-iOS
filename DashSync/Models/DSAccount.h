@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 // BIP 43 derivation paths
 @property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * fundDerivationPaths;
 
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * outgoingFundDerivationPaths;
+
 @property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
