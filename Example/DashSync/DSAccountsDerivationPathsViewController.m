@@ -54,15 +54,22 @@
 
 
 -(void)configureCell:(DSDerivationPathTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
+    DSDerivationPath * derivationPath = (DSDerivationPath *)[self.account.fundDerivationPaths objectAtIndex:indexPath.row];
     cell.xPublicKeyLabel.text = derivationPath.serializedExtendedPublicKey;
     cell.derivationPathLabel.text = derivationPath.stringRepresentation;
     cell.balanceLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:derivationPath.balance];
     cell.referenceNameLabel.text = derivationPath.referenceName;
-    cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allReceiveAddresses.count];
-    cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedReceiveAddresses.count];
-    cell.knownInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.allChangeAddresses.count];
-    cell.usedInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)derivationPath.usedChangeAddresses.count];
+    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+        DSFundsDerivationPath * fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+        cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)fundsDerivationPath.allReceiveAddresses.count];
+        cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)fundsDerivationPath.usedReceiveAddresses.count];
+        cell.knownInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)fundsDerivationPath.allChangeAddresses.count];
+        cell.usedInternalAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)fundsDerivationPath.usedChangeAddresses.count];
+    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+        DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+        cell.knownAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)incomingFundsDerivationPath.allReceiveAddresses.count];
+        cell.usedAddressesLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)incomingFundsDerivationPath.usedReceiveAddresses.count];
+    }
 }
 
 

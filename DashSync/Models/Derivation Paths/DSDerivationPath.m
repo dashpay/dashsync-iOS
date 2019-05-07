@@ -23,6 +23,9 @@
 //  THE SOFTWARE.
 
 #import "DSDerivationPath+Protected.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSContactEntity+CoreDataClass.h"
 
 // BIP32 is a scheme for deriving chains of addresses from a seed value
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -461,7 +464,16 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             if (uint256_is_31_bits([self indexAtPosition:i])) {
                 [mutableString appendFormat:@"/%lu%@",(unsigned long)[self indexAtPosition:i].u64[0],[self isHardenedAtPosition:i]?@"'":@""];
             } else {
-                [mutableString appendFormat:@"/0x%@%@",uint256_hex([self indexAtPosition:i]),[self isHardenedAtPosition:i]?@"'":@""];
+                UInt256 index = [self indexAtPosition:i];
+                [[DSContactEntity context] performBlockAndWait:^{
+                    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(index)];
+                    if (contactEntity) {
+                        [mutableString appendFormat:@"/%@%@",contactEntity.username,[self isHardenedAtPosition:i]?@"'":@""];
+                    } else {
+                        [mutableString appendFormat:@"/0x%@%@",uint256_hex([self indexAtPosition:i]),[self isHardenedAtPosition:i]?@"'":@""];
+                    }
+                }];
+                
             }
         }
     } else if ([self.depth integerValue]) {
@@ -505,6 +517,15 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             break;
         case DSDerivationPathReference_BlockchainUsers:
             return @"Blockchain Users";
+            break;
+        case DSDerivationPathReference_ContactBasedFunds:
+            return @"Contact Funds";
+            break;
+        case DSDerivationPathReference_ContactBasedFundsExternal:
+            return @"Contact Funds External";
+            break;
+        case DSDerivationPathReference_ContactBasedFundsRoot:
+            return @"Contact Funds Root";
             break;
         default:
             return @"Unknown";
