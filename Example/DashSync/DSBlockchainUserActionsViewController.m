@@ -17,6 +17,7 @@
 @interface DSBlockchainUserActionsViewController ()
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
+@property (strong, nonatomic) IBOutlet UILabel *transactionRegistrationHashLabel;
 
 @end
 
@@ -36,6 +37,7 @@
 
 -(void)loadProfile {
     self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+    self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainUser.registrationTransactionHash);
     [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
 }
 
@@ -68,27 +70,29 @@
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 1) {
-        [self reset:self];
-    }
-    else if (indexPath.row == 2) {
-        DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
-        [self presentViewController:controller animated:YES completion:nil];
-    }
-    else if (indexPath.row == 3) {
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
-        
-        __weak typeof(self) weakSelf = self;
-        [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainUser completion:^(NSError * _Nullable error) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            if (error) {
-                [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
-            }
-        }];
+    if (indexPath.section == 1) {
+        if (indexPath.row == 1) {
+            [self reset:self];
+        }
+        else if (indexPath.row == 2) {
+            DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
+            [self presentViewController:controller animated:YES completion:nil];
+        }
+        else if (indexPath.row == 3) {
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+            
+            __weak typeof(self) weakSelf = self;
+            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainUser completion:^(NSError * _Nullable error) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                
+                if (error) {
+                    [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
+                }
+            }];
+        }
     }
 }
 

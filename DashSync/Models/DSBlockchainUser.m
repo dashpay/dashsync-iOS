@@ -367,6 +367,8 @@
         DSAccount * account = [self.wallet accountWithNumber:0];
         DSPotentialFriendship * potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:potentialContact sourceBlockchainUser:self account:account];
         
+        [potentialFriendship createDerivationPath];
+        
         [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
     } failure:^(NSError *_Nonnull error) {
         DSDLog(@"%@", error);
@@ -735,9 +737,9 @@
             DSContactEntity * destinationContact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",blockchainUserRegistrationHash];
             if (!destinationContact) {
                 //no contact exists yet
-                [self.DAPINetworkService getUserById:blockchainUserRegistrationHash.hexString success:^(NSDictionary *_Nonnull blockchainUserDictionary) {
+                [self.DAPINetworkService getUserById:blockchainUserRegistrationHash.reverse.hexString success:^(NSDictionary *_Nonnull blockchainUserDictionary) {
                     if (blockchainUserDictionary) {
-                        UInt256 contactBlockchainUserTransactionRegistrationHash = ((NSString*)blockchainUserDictionary[@"hash"]).hexToData.reverse.UInt256;
+                        UInt256 contactBlockchainUserTransactionRegistrationHash = ((NSString*)blockchainUserDictionary[@"regtxid"]).hexToData.reverse.UInt256;
                         [self fetchProfileForRegistrationTransactionHash:contactBlockchainUserTransactionRegistrationHash saveReturnedProfile:NO completion:^(DSContactEntity *destinationContactEntity) {
                             NSString * username = blockchainUserDictionary[@"uname"];
                             destinationContactEntity.username = username;

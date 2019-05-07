@@ -147,4 +147,8 @@
     return self.destinationContact.username.hash ^ self.sourceBlockchainUser.hash ^ self.account.accountNumber;
 }
 
+-(NSString*)debugDescription {
+    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainUser.username, self.destinationContact.username];
+}
+
 @end
