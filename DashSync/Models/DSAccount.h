@@ -119,7 +119,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)baseDerivationPathsContainAddress:(NSString *)address;
 
 // the high level (hardened) derivation path containing the address
--(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+- (DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+
+// the high level (hardened) derivation path containing the address that is external to the wallet, basically a friend's address
+- (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address;
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
 

@@ -463,6 +463,15 @@
     return FALSE;
 }
 
+- (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
+    for (DSIncomingFundsDerivationPath * derivationPath in self.mContactIncomingFundDerivationPathsDictionary.allValues) {
+        if ([derivationPath containsAddress:address]) return derivationPath;
+    }
+    return FALSE;
+}
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     NSParameterAssert(address);
@@ -1125,11 +1134,20 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             } else {
                 NSMutableArray *privkeys = [NSMutableArray array];
                 for (NSDictionary * dictionary in usedDerivationPaths) {
-                    DSFundsDerivationPath * derivationPath = dictionary[@"derivationPath"];
+                    DSDerivationPath * derivationPath = dictionary[@"derivationPath"];
                     NSMutableOrderedSet *externalIndexes = dictionary[@"externalIndexes"],
                     *internalIndexes = dictionary[@"internalIndexes"];
-                    [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                    [privkeys addObjectsFromArray:[derivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                    if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
+                        DSFundsDerivationPath * fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
+                        [privkeys addObjectsFromArray:[fundsDerivationPath serializedPrivateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[fundsDerivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                    } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+                        DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
+                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath serializedPrivateKeys:externalIndexes.array fromSeed:seed]];
+                    } else {
+                        NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
+                    }
+                   
                 }
                 
                 BOOL signedSuccessfully = [transaction signWithSerializedPrivateKeys:privkeys];
