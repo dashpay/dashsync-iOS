@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString * _Nullable)privateKeyStringAtIndex:(uint32_t)n fromSeed:(NSData *)seed;
 - (NSArray * _Nullable)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed;
+- (NSArray * _Nullable)privateKeys:(NSArray *)n fromSeed:(NSData *)seed;
 
 - (NSData * _Nullable)publicKeyDataAtIndex:(uint32_t)n;
 

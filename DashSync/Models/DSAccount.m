@@ -356,6 +356,7 @@
     [self addDerivationPath:derivationPath];
     [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
     [derivationPath loadAddresses];
+    [self updateBalance];
 }
 
 -(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
@@ -364,6 +365,7 @@
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
     [derivationPath loadAddresses];
+    [self updateBalance];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
@@ -1143,18 +1145,18 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     *internalIndexes = dictionary[@"internalIndexes"];
                     if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
                         DSFundsDerivationPath * fundsDerivationPath = (DSFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[fundsDerivationPath serializedPrivateKeys:externalIndexes.array internal:NO fromSeed:seed]];
-                        [privkeys addObjectsFromArray:[fundsDerivationPath serializedPrivateKeys:internalIndexes.array internal:YES fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:externalIndexes.array internal:NO fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[fundsDerivationPath privateKeys:internalIndexes.array internal:YES fromSeed:seed]];
                     } else if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
                         DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath *)derivationPath;
-                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath serializedPrivateKeys:externalIndexes.array fromSeed:seed]];
+                        [privkeys addObjectsFromArray:[incomingFundsDerivationPath privateKeys:externalIndexes.array fromSeed:seed]];
                     } else {
                         NSAssert(FALSE, @"The derivation path must be a normal or incoming funds derivation path");
                     }
                    
                 }
                 
-                BOOL signedSuccessfully = [transaction signWithSerializedPrivateKeys:privkeys];
+                BOOL signedSuccessfully = [transaction signWithPrivateKeys:privkeys];
                 if (completion) completion(signedSuccessfully,NO);
             }
         });

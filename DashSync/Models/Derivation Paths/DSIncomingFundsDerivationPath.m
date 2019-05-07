@@ -272,6 +272,17 @@
     return seed ? [self serializedPrivateKeys:@[@(n)] fromSeed:seed].lastObject : nil;
 }
 
+- (NSArray *)privateKeys:(NSArray *)n fromSeed:(NSData *)seed
+{
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSNumber * index in n) {
+        NSUInteger indexes[] = {index.unsignedIntValue};
+        [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:1]];
+    }
+    
+    return [self privateKeysAtIndexPaths:mArray fromSeed:seed];
+}
+
 - (NSArray *)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed
 {
     NSMutableArray * mArray = [NSMutableArray array];

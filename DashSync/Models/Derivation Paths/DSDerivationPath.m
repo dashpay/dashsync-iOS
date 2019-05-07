@@ -665,6 +665,16 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     return nil;
 }
 
+- (NSArray *)privateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed {
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [self privateECDSAKeysAtIndexPaths:indexPaths fromSeed:seed];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        return [self privateBLSKeysAtIndexPaths:indexPaths fromSeed:seed];
+    }
+    return nil;
+}
+
+
 
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed {
     if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
@@ -861,8 +871,6 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     }
     
     for (NSInteger i = 0;i<[self length];i++) {
-//        uint32_t index = [self isHardenedAtPosition:i]?[self indexAtPosition:i].u32[7] | BIP32_HARD:[self indexAtPosition:i].u32[7];
-//        CKDpriv(&secretRoot, &chainRoot, index);
         CKDpriv256(&secretRoot, &chainRoot, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
     }
 
@@ -883,6 +891,53 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         [privKey appendBytes:&secret length:sizeof(secret)];
         [privKey appendBytes:"\x01" length:1]; // specifies compressed pubkey format
         [a addObject:[NSString base58checkWithData:privKey]];
+    }
+    
+    return a;
+}
+
+- (NSArray *)privateECDSAKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
+{
+    if (! seed || ! indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
+    
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secretRoot = *(UInt256 *)&I, chainRoot = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    uint8_t version;
+    if ([self.chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
+    
+    for (NSInteger i = 0;i<[self length];i++) {
+        CKDpriv256(&secretRoot, &chainRoot, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
+    }
+    
+    if (_extendedPublicKey) {
+        //let's verify this matches
+        DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)_extendedPublicKey.bytes + 36);
+        NSData * publicKey = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+        NSData * publicKeyFromDerivation = [DSECDSAKey keyWithSecret:secretRoot compressed:YES].publicKeyData;
+        NSAssert([publicKey isEqualToData:publicKeyFromDerivation], @"The derivation doesn't match the public key");
+    }
+    
+    
+    for (NSIndexPath *indexPath in indexPaths) {
+        
+        UInt256 secret = secretRoot;
+        UInt256 chain = chainRoot;
+        
+        for (NSInteger i = 0;i<[indexPath length];i++) {
+            uint32_t derivation = (uint32_t)[indexPath indexAtPosition:i];
+            CKDpriv(&secret, &chain, derivation);
+        }
+        
+        [a addObject:[DSECDSAKey keyWithSecret:secret compressed:YES]];
     }
     
     return a;
@@ -943,6 +998,30 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     
     return a;
 }
+
+- (NSArray *)privateBLSKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed
+{
+    if (! seed || ! indexPaths) return nil;
+    if (indexPaths.count == 0) return @[];
+    
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    uint8_t version;
+    if ([self.chain isMainnet]) {
+        version = DASH_PRIVKEY;
+    } else {
+        version = DASH_PRIVKEY_TEST;
+    }
+    DSBLSKey * topKey = [DSBLSKey blsKeyWithExtendedPrivateKeyFromSeed:seed onChain:self.chain];
+    DSBLSKey * derivationPathExtendedKey = [topKey deriveToPath:[self baseIndexPath]];
+    
+    for (NSIndexPath *indexPath in indexPaths) {
+        DSBLSKey * privateKey = [derivationPathExtendedKey deriveToPath:indexPath];
+        [a addObject:privateKey];
+    }
+    
+    return a;
+}
+
 
 // MARK: - Authentication Key Generation
 
