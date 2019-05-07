@@ -50,5 +50,10 @@
     return self;
 }
 
+-(NSString*)debugDescription {
+    return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainUserRegistrationTransactionHash)];
+}
+
+
 
 @end

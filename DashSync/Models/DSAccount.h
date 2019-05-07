@@ -94,11 +94,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSIncomingFundsDerivationPath*)derivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
 
--(void)removeDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
+-(void)removeIncomingDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
 
 -(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 

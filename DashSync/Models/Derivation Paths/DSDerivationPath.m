@@ -326,7 +326,9 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 - (void)setAccount:(DSAccount *)account {
     if (!_account) {
-        NSAssert(account.accountNumber == [self accountNumber], @"account number doesn't match derivation path ending");
+        if (self.length) {
+            NSAssert(account.accountNumber == [self accountNumber], @"account number doesn't match derivation path ending");
+        }
         _account = account;
         //when we set the account load addresses
         
@@ -358,7 +360,7 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 -(NSData*)extendedPublicKey {
     if (!_extendedPublicKey) {
-        if (self.wallet) {
+        if (self.wallet && self.length) {
             _extendedPublicKey = getKeychainData([self walletBasedExtendedPublicKeyLocationString], nil);
         } else {
             _extendedPublicKey = getKeychainData([self standaloneExtendedPublicKeyLocationString], nil);

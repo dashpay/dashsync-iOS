@@ -26,7 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(instancetype)contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:(UInt256)destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256)sourceBlockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
+//The extended public key will be saved to disk (storeExternalDerivationPathExtendedPublicKeyToKeyChain call needed)
 + (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash onChain:(DSChain*)chain;
+
+//The extended public key will be loaded from disk
++ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString*)extendedPublicKeyUniqueId withDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash onChain:(DSChain*)chain;
 
 // returns the first unused external address
 @property (nonatomic, readonly, nullable) NSString * receiveAddress;

@@ -56,7 +56,18 @@
     derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
     derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
     derivationPath.externalDerivationPath = TRUE;
-    [derivationPath loadAddresses];
+    return derivationPath;
+}
+
++ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString*)extendedPublicKeyUniqueId withDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash onChain:(DSChain*)chain {
+    UInt256 indexes[] = {};
+    BOOL hardenedIndexes[] = {};
+    DSIncomingFundsDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
+    derivationPath.standaloneExtendedPublicKeyUniqueID = extendedPublicKeyUniqueId;
+    
+    derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
+    derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
+    derivationPath.externalDerivationPath = TRUE;
     return derivationPath;
 }
 

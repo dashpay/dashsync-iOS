@@ -49,6 +49,7 @@
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -167,6 +168,8 @@
     //add blockchain user derivation paths to account
     
     [self.chain.managedObjectContext performBlockAndWait:^{
+        
+        NSMutableArray * usedFriendshipIdentifiers = [NSMutableArray array];
         for (NSData * blockchainRegistrationHashData in self.mBlockchainUsers) {
             DSBlockchainUser * blockchainUser = [self.mBlockchainUsers objectForKey:blockchainRegistrationHashData];
             for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.outgoingRequests) {
@@ -177,6 +180,25 @@
                 fundsDerivationPath.account = account;
                 NSLog(@"%@",blockchainUser.ownContact.outgoingRequests);
                 [account addIncomingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                [usedFriendshipIdentifiers addObject:friendRequest.friendshipIdentifier];
+            }
+            
+            for (DSFriendRequestEntity * friendRequest in blockchainUser.ownContact.incomingRequests) {
+                
+                DSAccount * account = [self accountWithNumber:friendRequest.account.index];
+                DSIncomingFundsDerivationPath * fundsDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+                if (fundsDerivationPath) {
+                    //both contacts are on device
+                    [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                } else {
+                    DSDerivationPathEntity * derivationPathEntity = friendRequest.derivationPath;
+                    
+                    DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
+                                                                       externalDerivationPathWithExtendedPublicKeyUniqueID:derivationPathEntity.publicKeyIdentifier withDestinationBlockchainUserRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash.UInt256 sourceBlockchainUserRegistrationTransactionHash:friendRequest.sourceContact.associatedBlockchainUserRegistrationHash.UInt256 onChain:self.chain];
+                    fundsDerivationPath.wallet = self;
+                    fundsDerivationPath.account = account;
+                    [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                }
             }
         }
     }];
@@ -804,7 +826,7 @@
         for (DSFriendRequestEntity * friendRequest in friendRequests) {
             uint32_t accountNumber = friendRequest.account.index;
             DSAccount * account = [blockchainUser.wallet accountWithNumber:accountNumber];
-            [account removeDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+            [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
         }
     }];
     

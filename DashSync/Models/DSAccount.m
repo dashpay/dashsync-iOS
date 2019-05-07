@@ -76,7 +76,8 @@
 
 // BIP 43 derivation paths
 @property (nonatomic, strong) NSMutableArray<DSDerivationPath *> * mFundDerivationPaths;
-@property (nonatomic, strong) NSMutableDictionary<NSData*,DSIncomingFundsDerivationPath *> * mContactFundDerivationPathsDictionary;
+@property (nonatomic, strong) NSMutableDictionary<NSData*,DSIncomingFundsDerivationPath *> * mContactIncomingFundDerivationPathsDictionary;
+@property (nonatomic, strong) NSMutableDictionary<NSData*,DSIncomingFundsDerivationPath *> * mContactOutgoingFundDerivationPathsDictionary;
 
 @property (nonatomic, strong) NSArray *balanceHistory;
 
@@ -155,7 +156,8 @@
     _accountNumber = accountNumber;
     [self verifyAndAssignAddedDerivationPaths:derivationPaths];
     self.mFundDerivationPaths = [NSMutableArray array];
-    self.mContactFundDerivationPathsDictionary = [NSMutableDictionary dictionary];
+    self.mContactIncomingFundDerivationPathsDictionary = [NSMutableDictionary dictionary];
+    self.mContactOutgoingFundDerivationPathsDictionary = [NSMutableDictionary dictionary];
     for (DSDerivationPath * derivationPath in derivationPaths) {
         if ([derivationPath isKindOfClass:[DSFundsDerivationPath class]]) {
             [self.mFundDerivationPaths addObject:(DSFundsDerivationPath*)derivationPath];
@@ -273,8 +275,9 @@
 // MARK: - Reinitiation
 
 - (void)wipeBlockchainInfo {
-    [self.mFundDerivationPaths removeObjectsInArray:[self.mContactFundDerivationPathsDictionary allValues]];
-    [self.mContactFundDerivationPathsDictionary removeAllObjects];
+    [self.mFundDerivationPaths removeObjectsInArray:[self.mContactIncomingFundDerivationPathsDictionary allValues]];
+    [self.mContactIncomingFundDerivationPathsDictionary removeAllObjects];
+    [self.mContactOutgoingFundDerivationPathsDictionary removeAllObjects];
     [self.transactions removeAllObjects];
     [self.allTx removeAllObjects];
     [self updateBalance];
@@ -322,9 +325,9 @@
     }
 }
 
--(void)removeDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier {
+-(void)removeIncomingDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier {
     NSParameterAssert(friendshipIdentifier);
-    DSIncomingFundsDerivationPath * derivationPath = [self.mContactFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
+    DSIncomingFundsDerivationPath * derivationPath = [self.mContactIncomingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
     if (derivationPath) {
         [self removeDerivationPath:derivationPath];
     }
@@ -332,7 +335,9 @@
 
 -(DSIncomingFundsDerivationPath*)derivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier {
     NSParameterAssert(friendshipIdentifier);
-    return [self.mContactFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
+    DSIncomingFundsDerivationPath * derivationPath = [self.mContactIncomingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
+    if (derivationPath) return derivationPath;
+    return [self.mContactOutgoingFundDerivationPathsDictionary objectForKey:friendshipIdentifier];
 }
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath {
@@ -347,8 +352,17 @@
 -(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
+    derivationPath.account = self;
     [self addDerivationPath:derivationPath];
-    [self.mContactFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
+    [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
+    [derivationPath loadAddresses];
+}
+
+-(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
+    NSParameterAssert(derivationPath);
+    NSParameterAssert(friendshipIdentifier);
+    derivationPath.account = self;
+    [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
     [derivationPath loadAddresses];
 }
 
