@@ -23,7 +23,7 @@
 
 @interface DSIncomingFundsDerivationPath()
 
-@property (nonatomic, strong) NSMutableArray *externalAddresses;
+@property (nonatomic,strong) NSMutableArray *externalAddresses;
 
 @property (nonatomic,assign) UInt256 contactSourceBlockchainUserRegistrationTransactionHash;
 @property (nonatomic,assign) UInt256 contactDestinationBlockchainUserRegistrationTransactionHash;
@@ -137,9 +137,10 @@
     }
 }
 
--(NSString *)standaloneExtendedPublicKeyUniqueID {
-    NSString * standaloneExtendedPublicKeyUniqueID = [super standaloneExtendedPublicKeyUniqueID];
-    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainUserRegistrationTransactionHash].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainUserRegistrationTransactionHash].shortHexString,standaloneExtendedPublicKeyUniqueID];
+
+
+-(NSString*)createIdentifierForDerivationPath {
+    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainUserRegistrationTransactionHash].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainUserRegistrationTransactionHash].shortHexString,[NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString];
 }
 
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is

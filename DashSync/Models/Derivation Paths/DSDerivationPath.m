@@ -541,6 +541,9 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 //Derivation paths can be stored based on the wallet and derivation or based solely on the public key
 
+-(NSString*)createIdentifierForDerivationPath {
+    return [NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString;
+}
 
 -(NSString *)standaloneExtendedPublicKeyUniqueID {
     if (!_standaloneExtendedPublicKeyUniqueID) {
@@ -548,7 +551,7 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             NSAssert(FALSE, @"we really should have a wallet");
             return nil;
         }
-        _standaloneExtendedPublicKeyUniqueID = [NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString;
+        _standaloneExtendedPublicKeyUniqueID = [self createIdentifierForDerivationPath];
     }
     return _standaloneExtendedPublicKeyUniqueID;
 }
