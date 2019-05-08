@@ -419,7 +419,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="qOv-eC-9X4"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Item" id="IFs-bz-LYu"/>
+                    <tabBarItem key="tabBarItem" title="Send" id="IFs-bz-LYu"/>
                     <navigationItem key="navigationItem" title="Send" id="SYE-Fo-XIq">
                         <barButtonItem key="leftBarButtonItem" title="Cancel" id="BdA-JK-kkM">
                             <connections>

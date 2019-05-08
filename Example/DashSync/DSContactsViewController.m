@@ -24,7 +24,13 @@ static NSString * const CellId = @"CellId";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = self.blockchainUser.username;
+    
+}
+
+- (void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
+    _blockchainUser = blockchainUser;
+    
+    self.title = blockchainUser.username;
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -167,6 +173,7 @@ static NSString * const CellId = @"CellId";
     DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",friend]] anyObject];
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
         UITabBarController * tabBarController = segue.destinationViewController;
+        tabBarController.title = friend.username;
         for (UIViewController * controller in tabBarController.viewControllers) {
             if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
                 ((DSContactReceivedTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
