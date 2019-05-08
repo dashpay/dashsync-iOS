@@ -115,6 +115,21 @@
     return [self standardWalletWithSeedPhrase:[self generateRandomSeedForLanguage:language] setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:store isTransient:isTransient];
 }
 
+//this is for testing purposes only
++ (DSWallet*)transientWalletWithDerivedKeyData:(NSData*)derivedData forChain:(DSChain*)chain {
+    NSParameterAssert(derivedData);
+    NSParameterAssert(chain);
+    
+    DSAccount * account = [DSAccount accountWithAccountNumber:0 withDerivationPaths:[chain standardDerivationPathsForAccountNumber:0] inContext:chain.managedObjectContext];
+    
+    NSString * uniqueId = [self setTransientDerivedKeyData:derivedData withAccounts:@[account] forChain:chain]; //make sure we can create the wallet first
+    if (!uniqueId) return nil;
+    //[self registerSpecializedDerivationPathsForSeedPhrase:seedPhrase underUniqueId:uniqueId onChain:chain];
+    DSWallet * wallet = [[DSWallet alloc] initWithUniqueID:uniqueId andAccount:account forChain:chain storeSeedPhrase:NO isTransient:YES];
+    
+    return wallet;
+}
+
 -(instancetype)initWithChain:(DSChain*)chain {
     NSParameterAssert(chain);
     
@@ -441,6 +456,33 @@
     NSError * error = nil;
     BOOL hasSeed = hasKeychainData(self.uniqueID, &error);
     return hasSeed;
+}
+
++ (NSString*)setTransientDerivedKeyData:(NSData *)derivedKeyData withAccounts:(NSArray*)accounts forChain:(DSChain*)chain
+{
+    if (!derivedKeyData) return nil;
+    NSString * uniqueID = nil;
+    @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
+        // we store the wallet creation time on the keychain because keychain data persists even when an app is deleted
+        UInt512 I;
+        
+        HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), derivedKeyData.bytes, derivedKeyData.length);
+        
+        NSData * publicKey = [DSECDSAKey keyWithSecret:*(UInt256 *)&I compressed:YES].publicKeyData;
+        NSMutableData * uniqueIDData = [[NSData dataWithUInt256:chain.genesisHash] mutableCopy];
+        [uniqueIDData appendData:publicKey];
+        uniqueID = [NSData dataWithUInt256:[uniqueIDData SHA256]].shortHexString; //one way injective function
+        
+        for (DSAccount * account in accounts) {
+            for (DSDerivationPath * derivationPath in account.fundDerivationPaths) {
+                [derivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
+            }
+            if ([chain isDevnetAny]) {
+                [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:nil];
+            }
+        }
+    }
+    return uniqueID;
 }
 
 + (NSString*)setSeedPhrase:(NSString *)seedPhrase createdAt:(NSTimeInterval)createdAt withAccounts:(NSArray*)accounts storeOnKeychain:(BOOL)storeOnKeychain forChain:(DSChain*)chain
