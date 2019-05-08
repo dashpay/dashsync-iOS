@@ -29,8 +29,14 @@
 #import "DSDerivationPath.h"
 #import "DSUInt256IndexPath.h"
 #import "DSChain.h"
+#import "DSECDSAKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+extern void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
+extern void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened);
+extern void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i);
+extern void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened);
 
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL cancelled);
 

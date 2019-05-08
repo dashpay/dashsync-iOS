@@ -14,6 +14,8 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSBLSKey.h"
+#import "DSIncomingFundsDerivationPath.h"
+#import "NSMutableData+Dash.h"
 
 
 @interface DSBIP32Tests : XCTestCase
@@ -262,6 +264,149 @@
     XCTAssertEqualObjects(mpk,
                           deserializedMpk,
                           @"[DSDerivationPath deserializedMasterPublicKey: onChain:]");
+}
+
+-(void)test31BitDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain2, chain = chain2 = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    DSECDSAKey * parentSecret = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    
+    NSData * parentPublicKey = parentSecret.publicKeyData;
+    
+    uint32_t derivation = 0;
+    
+    CKDpriv(&secret, &chain, derivation);
+    
+    NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
+    
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
+    
+    CKDpub(&pubKey, &chain2, 0);
+    
+    NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    
+    XCTAssertEqualObjects(uint256_hex(chain),uint256_hex(chain2),@"the bip32 chains must match");
+    
+    XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
+    
+}
+
+-(void)test31BitCompatibilityModeDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain2, chain = chain2 = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    DSECDSAKey * parentSecret = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    
+    NSData * parentPublicKey = parentSecret.publicKeyData;
+    
+    UInt256 derivation = UINT256_ZERO;
+    
+    CKDpriv256(&secret, &chain, derivation,NO);
+    
+    NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
+    
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
+    
+    CKDpub256(&pubKey, &chain2, derivation,NO);
+    
+    NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    
+    XCTAssertEqualObjects(uint256_hex(chain),uint256_hex(chain2),@"the bip32 chains must match");
+    
+    XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
+    
+}
+
+-(void)test256BitDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    UInt512 I;
+    
+    HMAC(&I, SHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed.bytes, seed.length);
+    
+    UInt256 secret = *(UInt256 *)&I, chain2, chain = chain2 = *(UInt256 *)&I.u8[sizeof(UInt256)];
+    
+    DSECDSAKey * parentSecret = [DSECDSAKey keyWithSecret:secret compressed:YES];
+    
+    NSData * parentPublicKey = parentSecret.publicKeyData;
+    
+    UInt256 derivation = ((UInt256){.u64 = {
+        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
+        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
+        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
+        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
+    }});
+    
+    CKDpriv256(&secret, &chain, derivation,NO);
+    
+    NSData * publicKey = [DSECDSAKey keyWithSecret:secret compressed:YES].publicKeyData;
+    
+    DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentPublicKey.bytes);
+    
+    CKDpub256(&pubKey, &chain2, derivation,NO);
+    
+    NSData * publicKey2 = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
+    
+    XCTAssertEqualObjects(uint256_hex(chain),uint256_hex(chain2),@"the bip32 chains must match");
+    
+    XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
+    
+}
+
+-(void)testDashpayDerivation {
+    
+    NSString * seedPhrase = @"upper renew that grow pelican pave subway relief describe enforce suit hedgehog blossom dose swallow";
+    
+    NSData * seed = [[DSBIP39Mnemonic sharedInstance]
+                     deriveKeyFromPhrase:seedPhrase withPassphrase:nil];
+    
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                               setCreationDate:0 forChain:self.chain storeSeedPhrase:NO isTransient:YES];
+    
+    DSAccount *account = [wallet accountWithNumber:0];
+    
+    [account.masterContactsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    
+    //NSData * data = [account.masterContactsDerivationPath extendedPublicKey];
+    
+    UInt256 sourceUser1 = @"01".hexToData.SHA256;
+    
+    UInt256 destinationUser2 = @"02".hexToData.SHA256;
+    
+    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
+    
+    DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:destinationUser2 sourceBlockchainUserRegistrationTransactionHash:sourceUser1 forAccountNumber:0 onChain:self.chain];
+    
+    incomingFundsDerivationPath.account = account;
+    
+    NSData * extendedPublicKeyFromMasterContactDerivationPath = [incomingFundsDerivationPath generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    
+    NSData * extendedPublicKeyFromSeed = [incomingFundsDerivationPath generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:nil];
+    
+    XCTAssertEqualObjects(extendedPublicKeyFromMasterContactDerivationPath,extendedPublicKeyFromSeed,@"The extended public keys should be the same");
 }
 
 @end

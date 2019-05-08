@@ -46,7 +46,7 @@
 // - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
 //   (Note: this has probability lower than 1 in 2^127.)
 //
-static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
+void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
 {
     uint8_t buf[sizeof(DSECPoint) + sizeof(i)];
     UInt512 I;
@@ -68,11 +68,11 @@ static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
-static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
+void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
 {
     BOOL iIs31Bits = uint256_is_31_bits(i);
     uint32_t smallI;
-    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):(sizeof(i) + sizeof(hardened)));
+    uint32_t length = sizeof(DSECPoint) + (iIs31Bits?sizeof(smallI):((sizeof(i) + sizeof(hardened))));
     uint8_t buf[length];
     UInt512 I;
     
@@ -114,7 +114,7 @@ static void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened)
 // - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
 //   the next value for i.
 //
-static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
+void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
 {
     if (i & BIP32_HARD) return; // can't derive private child key from public parent key
     
@@ -133,7 +133,7 @@ static void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i)
     memset(&I, 0, sizeof(I));
 }
 
-static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
+void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 {
     if (hardened) return; // can't derive private child key from public parent key
     BOOL iIs31Bits = uint256_is_31_bits(i);
@@ -146,13 +146,12 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     
     if (iIs31Bits) {
         smallI = i.u32[0];
-        if (hardened) smallI |= BIP32_HARD;
         smallI = CFSwapInt32HostToBig(smallI);
         
         *(uint32_t *)&buf[sizeof(*K)] = smallI;
     } else {
         *(BOOL *)&buf[sizeof(*K)] = hardened;
-        *(UInt256 *)&buf[sizeof(*K)] = i;
+        *(UInt256 *)&buf[sizeof(*K) + sizeof(hardened)] = i;
     }
     
     HMAC(&I, SHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
@@ -769,17 +768,21 @@ static void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     
     UInt256 chain = *(const UInt256 *)((const uint8_t *)parentDerivationPath.extendedPublicKey.bytes + 4);
     DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentDerivationPath.extendedPublicKey.bytes + 36);
+    DSDLog(@"starting with pubkey %@",[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
     for (NSInteger i = 0;i<[self length] - 1;i++) {
         if (i < parentDerivationPath.length) {
             if (!uint256_eq([parentDerivationPath indexAtPosition:i],[self indexAtPosition:i])) return nil;
         } else {
             CKDpub256(&pubKey, &chain, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
+            DSDLog(@"after %@ pubkey %@",[NSData dataWithUInt256:[self indexAtPosition:i]],[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
         }
     }
     NSData * publicKeyParentData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
     
     [mpk appendBytes:publicKeyParentData.hash160.u32 length:4];
     CKDpub256(&pubKey, &chain, [self indexAtPosition:[self length] - 1],[self isHardenedAtPosition:[self length] - 1]);
+    
+    DSDLog(@"after %@ pubkey %@",[NSData dataWithUInt256:[self indexAtPosition:[self length] - 1]],[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
     [mpk appendBytes:&chain length:sizeof(chain)];
     
     NSData * publicKeyData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
