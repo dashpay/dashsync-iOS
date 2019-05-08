@@ -23,6 +23,10 @@ static NSString * const CellId = @"CellId";
     [super viewDidLoad];
 
     self.title = @"Requests";
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(mocDidSaveNotification:)
+                                                 name:NSManagedObjectContextDidSaveNotification object:nil];
 }
 
 - (IBAction)refreshAction:(id)sender {
@@ -36,6 +40,35 @@ static NSString * const CellId = @"CellId";
         
         [strongSelf.refreshControl endRefreshing];
     }];
+}
+
+- (void)mocDidSaveNotification:(NSNotification *)notification {
+    BOOL (^objectsHasChangedContact)(NSArray *, DSContactEntity *) = ^BOOL(NSArray *objects, DSContactEntity *contact) {
+        BOOL hasRelationshipChanges = NO;
+        for (NSManagedObject *mo in objects) {
+            if ([mo isKindOfClass:DSFriendRequestEntity.class]) {
+                DSFriendRequestEntity *friendRequest = (DSFriendRequestEntity *)mo;
+                if (friendRequest.sourceContact == contact ||
+                    friendRequest.destinationContact == contact) {
+                    hasRelationshipChanges = YES;
+                    break;
+                }
+            }
+        }
+        
+        return hasRelationshipChanges;
+    };
+    
+    NSArray <NSManagedObject *> *insertedObjects = notification.userInfo[NSInsertedObjectsKey];
+    NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
+    NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
+    
+    DSContactEntity *contact = self.blockchainUser.ownContact;
+    if (objectsHasChangedContact(insertedObjects, contact) ||
+        objectsHasChangedContact(updatedObjects, contact) ||
+        objectsHasChangedContact(deletedObjects, contact)) {
+        [self.fetchedResultsController performFetch:nil];
+    }
 }
 
 -(NSPredicate*)searchPredicate {
