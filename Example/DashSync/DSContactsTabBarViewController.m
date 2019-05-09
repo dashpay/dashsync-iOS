@@ -41,6 +41,10 @@ NS_ASSUME_NONNULL_BEGIN
         if ([viewController respondsToSelector:@selector(setBlockchainUser:)]) {
             [(id)viewController setBlockchainUser:self.blockchainUser];
         }
+        
+        if ([viewController respondsToSelector:@selector(setChainManager:)]) {
+            [(id)viewController setChainManager:self.chainManager];
+        }
     }
     self.title = [self.viewControllers objectAtIndex:0].title;
 }
