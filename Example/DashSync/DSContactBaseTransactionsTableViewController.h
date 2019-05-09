@@ -1,5 +1,5 @@
 //  
-//  Created by Sam Westrich
+//  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,17 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DSContactBaseTransactionsTableViewController.h"
+#import "DSFetchedResultsTableViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser;
-@class DSFriendRequestEntity;
+typedef NS_ENUM(NSUInteger, DSContactTransactionDirection) {
+    DSContactTransactionDirectionSent,
+    DSContactTransactionDirectionReceived,
+};
 
-@interface DSContactSentTransactionsTableViewController : DSContactBaseTransactionsTableViewController
+@class DSChainManager;
 
-@property (strong, nonatomic) DSBlockchainUser *blockchainUser;
-@property (strong, nonatomic) DSFriendRequestEntity * friendRequest;
+@interface DSContactBaseTransactionsTableViewController : DSFetchedResultsTableViewController
+
+@property (nonatomic,strong) DSChainManager *chainManager;
+@property (nonatomic, assign) DSContactTransactionDirection direction;
 
 @end
 
