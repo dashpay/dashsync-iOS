@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSFetchedResultsTableViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSContactSentTransactionsTableViewController : UITableViewController <NSFetchedResultsControllerDelegate>
+@interface DSContactSentTransactionsTableViewController : DSFetchedResultsTableViewController
 
 @property (strong, nonatomic) DSBlockchainUser *blockchainUser;
 @property (strong, nonatomic) DSFriendRequestEntity * friendRequest;
