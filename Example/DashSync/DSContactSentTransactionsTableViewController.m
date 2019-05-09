@@ -29,11 +29,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    self.direction = DSContactTransactionDirectionSent;
 }
 
 -(void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
@@ -61,28 +57,6 @@
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
     NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transaction.transactionHash.blockHeight" ascending:YES];
     return @[usernameSortDescriptor];
-}
-
-#pragma mark - Table view data source
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSTransactionTableViewCell *cell = (DSTransactionTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier" forIndexPath:indexPath];
-    
-    // Configure the cell...
-    [self configureCell:cell atIndexPath:indexPath];
-    return cell;
-}
-
--(void)configureCell:(DSTransactionTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    
-    DSTxOutputEntity * transactionOutput = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    //cell.addressLabel.text = transactionOuput.address;
-    cell.transactionLabel.text = transactionOutput.transaction.transactionHash.txHash.hexString;
-    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",transactionOutput.value / DUFFS];
-}
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end

@@ -14,9 +14,9 @@
 
 #define TRANSACTION_CELL_HEIGHT 75
 
-static NSString *dateFormat(NSString *template)
+NSString *dateFormat(NSString *_template)
 {
-    NSString *format = [NSDateFormatter dateFormatFromTemplate:template options:0 locale:[NSLocale currentLocale]];
+    NSString *format = [NSDateFormatter dateFormatFromTemplate:_template options:0 locale:[NSLocale currentLocale]];
     
     format = [format stringByReplacingOccurrencesOfString:@", " withString:@" "];
     format = [format stringByReplacingOccurrencesOfString:@" a" withString:@"a"];

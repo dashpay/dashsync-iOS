@@ -97,11 +97,15 @@ static NSString * const CellId = @"CellId";
         tabBarController.title = friend.username;
         for (UIViewController * controller in tabBarController.viewControllers) {
             if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
-                ((DSContactReceivedTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactReceivedTransactionsTableViewController*)controller).friendRequest = meToFriend;
+                DSContactReceivedTransactionsTableViewController *receivedTransactionsController = (DSContactReceivedTransactionsTableViewController *)controller;
+                receivedTransactionsController.chainManager = self.chainManager;
+                receivedTransactionsController.blockchainUser = self.blockchainUser;
+                receivedTransactionsController.friendRequest = meToFriend;
             } else if ([controller isKindOfClass:[DSContactSentTransactionsTableViewController class]]) {
-                ((DSContactSentTransactionsTableViewController*)controller).blockchainUser = self.blockchainUser;
-                ((DSContactSentTransactionsTableViewController*)controller).friendRequest = friendToMe;
+                DSContactSentTransactionsTableViewController *sentTransactionsController = (DSContactSentTransactionsTableViewController *)controller;
+                sentTransactionsController.chainManager = self.chainManager;
+                sentTransactionsController.blockchainUser = self.blockchainUser;
+                sentTransactionsController.friendRequest = friendToMe;
             } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
                 ((DSContactSendDashViewController*)controller).blockchainUser = self.blockchainUser;
                 ((DSContactSendDashViewController*)controller).contact = friend;

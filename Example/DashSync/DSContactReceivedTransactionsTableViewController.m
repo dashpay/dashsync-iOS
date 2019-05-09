@@ -16,7 +16,6 @@
 //
 
 #import "DSContactReceivedTransactionsTableViewController.h"
-#import "DSTransactionTableViewCell.h"
 
 @interface DSContactReceivedTransactionsTableViewController ()
 
@@ -28,6 +27,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.direction = DSContactTransactionDirectionReceived;
 }
 
 -(void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
@@ -48,34 +49,13 @@
     return @"DSTxOutputEntity";
 }
 
--(NSPredicate*)predicate {
+- (NSPredicate*)predicate {
     return [NSPredicate predicateWithFormat:@"localAddress.derivationPath.friendRequest == %@",self.friendRequest];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
     NSSortDescriptor *usernameSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"transaction.transactionHash.blockHeight" ascending:YES];
     return @[usernameSortDescriptor];
-}
-
-#pragma mark - Table view data source
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    DSTransactionTableViewCell *cell = (DSTransactionTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier" forIndexPath:indexPath];
-    
-    // Configure the cell...
-    [self configureCell:cell atIndexPath:indexPath];
-    return cell;
-}
-
--(void)configureCell:(DSTransactionTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-
-    DSTxOutputEntity * transactionOutput = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.transactionLabel.text = transactionOutput.transaction.transactionHash.txHash.hexString;
-    cell.amountLabel.text = [NSString stringWithFormat:@"%llu",transactionOutput.value / DUFFS];
-}
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 @end
