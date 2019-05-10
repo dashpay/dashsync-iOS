@@ -453,7 +453,7 @@
                         DSDerivationPath * derivationPath = [account derivationPathContainingAddress:self.inputAddresses[indexPath.row]];
                         if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
                             UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainUserRegistrationTransactionHash];
-                            DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"blockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
+                            DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
                             cell.typeInfoLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username];
                         } else {
                             cell.typeInfoLabel.text = NSLocalizedString(@"wallet address", nil);
