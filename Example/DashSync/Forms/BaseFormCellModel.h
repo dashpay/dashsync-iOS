@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface BaseFormCellModel : NSObject
 
 @property (nullable, readonly, copy, nonatomic) NSString *title;
+@property (readonly, assign, nonatomic) CGFloat cellHeight;
 @property (assign, nonatomic) NSUInteger tag;
 
 - (instancetype)initWithTitle:(nullable NSString *)title NS_DESIGNATED_INITIALIZER;

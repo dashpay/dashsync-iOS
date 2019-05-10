@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)fetchProfile:(void (^)(BOOL success))completion;
 
-- (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion;
+- (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
 
 @end
 

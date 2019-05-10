@@ -42,6 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
     UINib *nib = [UINib nibWithNibName:CELL_ID bundle:nil];
     NSParameterAssert(nib);
     [self.tableView registerNib:nib forCellReuseIdentifier:CELL_ID];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self.tableView
+                                             selector:@selector(reloadData)
+                                                 name:DSTransactionManagerTransactionStatusDidChangeNotification
+                                               object:nil];
 }
 
 #pragma mark - Table view data source

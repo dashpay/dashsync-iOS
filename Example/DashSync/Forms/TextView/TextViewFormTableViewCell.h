@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,23 +17,14 @@
 
 #import <KVO-MVVM/KVOUITableViewCell.h>
 
-#import "TextFieldFormCellModel.h"
+#import "TextViewFormCellModel.h"
 #import "TextInputFormTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TextFieldFormTableViewCell;
+@interface TextViewFormTableViewCell : KVOUITableViewCell <TextInputFormTableViewCell>
 
-@protocol TextFieldFormTableViewCellDelegate <NSObject>
-
-- (void)textFieldFormTableViewCellActivateNextFirstResponder:(TextFieldFormTableViewCell *)cell;
-
-@end
-
-@interface TextFieldFormTableViewCell : KVOUITableViewCell <TextInputFormTableViewCell>
-
-@property (nullable, strong, nonatomic) TextFieldFormCellModel *cellModel;
-@property (nullable, weak, nonatomic) id<TextFieldFormTableViewCellDelegate> delegate;
+@property (nullable, strong, nonatomic) TextViewFormCellModel *cellModel;
 
 @end
 
