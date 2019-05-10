@@ -74,7 +74,10 @@ NS_ASSUME_NONNULL_BEGIN
     
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DSTransactionDetailViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"TransactionDetailViewController"];
-    DSTransaction *transaction = [transactionEntity transactionForChain:self.chainManager.chain];
+    DSTransaction *transaction = [self.chainManager.chain transactionForHash:transactionEntity.transactionHash.txHash.UInt256];
+    if (!transaction) {
+        transaction = [transactionEntity transactionForChain:self.chainManager.chain];
+    }
     controller.transaction = transaction;
     controller.txDateString = [self dateForTx:transactionEntity];
     [self.navigationController pushViewController:controller animated:YES];
