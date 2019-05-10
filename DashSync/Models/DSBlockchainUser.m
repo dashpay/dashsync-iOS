@@ -536,8 +536,12 @@
         [self.managedObjectContext performBlockAndWait:^{
             [DSContactEntity setContext:self.managedObjectContext];
             [DSChainEntity setContext:self.managedObjectContext];
-            DSContactEntity * contact = [DSContactEntity managedObject];
-            contact.documentScopeID = [contactDictionary objectForKey:@"$scopeId"];
+            NSString *scopeID = [contactDictionary objectForKey:@"$scopeId"];
+            DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"documentScopeID == %@", scopeID];
+            if (!contact) {
+                contact = [DSContactEntity managedObject];
+            }
+            contact.documentScopeID = scopeID;
             contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] integerValue];
             contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
             contact.publicMessage = [contactDictionary objectForKey:@"about"];
