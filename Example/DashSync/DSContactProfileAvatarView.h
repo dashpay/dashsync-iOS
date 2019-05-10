@@ -1,6 +1,6 @@
-//
+//  
 //  Created by Andrew Podkovyrin
-//  Copyright © 2018 Dash Core Group. All rights reserved.
+//  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,25 +15,13 @@
 //  limitations under the License.
 //
 
-#import <KVO-MVVM/KVOUITableViewCell.h>
-
-#import "TextFieldFormCellModel.h"
-#import "TextInputFormTableViewCell.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class TextFieldFormTableViewCell;
+@interface DSContactProfileAvatarView : UIView
 
-@protocol TextFieldFormTableViewCellDelegate <NSObject>
-
-- (void)textFieldFormTableViewCellActivateNextFirstResponder:(TextFieldFormTableViewCell *)cell;
-
-@end
-
-@interface TextFieldFormTableViewCell : KVOUITableViewCell <TextInputFormTableViewCell>
-
-@property (nullable, strong, nonatomic) TextFieldFormCellModel *cellModel;
-@property (nullable, weak, nonatomic) id<TextFieldFormTableViewCellDelegate> delegate;
+- (void)updateWithImageURL:(nullable NSURL *)url;
 
 @end
 

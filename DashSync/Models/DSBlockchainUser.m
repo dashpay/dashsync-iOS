@@ -433,7 +433,7 @@
     
 }
 
-- (void)createProfileWithAboutMeString:(NSString*)aboutme completion:(void (^)(BOOL success))completion {
+- (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     dpp.userId = uint256_reverse_hex(self.registrationTransactionHash);
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
@@ -441,9 +441,21 @@
     NSError *error = nil;
     DPJSONObject *data = @{
                            @"about" :aboutme,
-                           @"avatarUrl" : [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png", self.username],
+                           @"avatarUrl" : avatarURLString,
                            };
     DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
+    if (self.ownContact) {
+        NSError *error = nil;
+        [user setAction:DPDocumentAction_Update error:&error];
+        NSAssert(!error, @"Invalid action");
+        
+        // TODO: refactor DPDocument update/delete API
+        DPMutableJSONObject *mutableData = [data mutableCopy];
+        mutableData[@"$scopeId"] = self.ownContact.documentScopeID;
+        mutableData[@"$rev"] = @(self.ownContact.documentRevision + 1);
+        [user setData:mutableData error:&error];
+        NSAssert(!error, @"Invalid data");
+    }
     NSAssert(error == nil, @"Failed to build a user");
     
     __weak typeof(self) weakSelf = self;
@@ -499,14 +511,6 @@
 
 - (void)fetchProfileForRegistrationTransactionHash:(UInt256)registrationTransactionHash saveReturnedProfile:(BOOL)saveReturnedProfile completion:(void (^)(DSContactEntity* contactEntity))completion {
     
-    //first lets double check we don't have it locally
-    [self.managedObjectContext performBlockAndWait:^{
-        DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data( registrationTransactionHash)];
-            if (contactEntity && completion) {
-                completion(contactEntity);
-                return;
-            }
-    }];
     NSDictionary *query = @{ @"userId" : uint256_reverse_hex(registrationTransactionHash) };
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
@@ -533,6 +537,8 @@
             [DSContactEntity setContext:self.managedObjectContext];
             [DSChainEntity setContext:self.managedObjectContext];
             DSContactEntity * contact = [DSContactEntity managedObject];
+            contact.documentScopeID = [contactDictionary objectForKey:@"$scopeId"];
+            contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] integerValue];
             contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
             contact.publicMessage = [contactDictionary objectForKey:@"about"];
             contact.associatedBlockchainUserRegistrationHash = uint256_data(registrationTransactionHash);

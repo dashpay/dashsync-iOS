@@ -13,8 +13,9 @@
 #import "DSContactsNavigationController.h"
 #import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
 #import <SDWebImage/SDWebImage.h>
+#import "DSContactProfileViewController.h"
 
-@interface DSBlockchainUserActionsViewController ()
+@interface DSBlockchainUserActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *transactionRegistrationHashLabel;
@@ -26,19 +27,23 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = self.blockchainUser.username;
-    if (self.blockchainUser.ownContact) {
+    
+    [self.blockchainUser fetchProfile:^(BOOL success) {
         [self loadProfile];
-    } else {
-        [self.blockchainUser fetchProfile:^(BOOL success) {
-            [self loadProfile];
-        }];
-    }
+    }];
 }
 
 -(void)loadProfile {
-    self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+    if (!self.blockchainUser.ownContact) {
+        self.aboutMeLabel.text = @"Register Profile";
+        [self.avatarImageView sd_setImageWithURL:nil];
+    }
+    else {
+        self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
+    }
+    
     self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainUser.registrationTransactionHash);
-    [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -70,7 +75,15 @@
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 1) {
+    if (indexPath.section == 0) {
+        if (indexPath.row == 1) { // About me / Register
+            DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainUser:self.blockchainUser];
+            controller.delegate = self;
+            UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
+            [self presentViewController:navigationController animated:YES completion:nil];
+        }
+    }
+    else if (indexPath.section == 1) {
         if (indexPath.row == 1) {
             [self reset:self];
         }
@@ -106,6 +119,20 @@
         blockchainUserTransitionsViewController.chainManager = self.chainManager;
         blockchainUserTransitionsViewController.blockchainUser = self.blockchainUser;
     }
+}
+
+#pragma mark - DSContactProfileViewControllerDelegate
+
+- (void)contactProfileViewControllerDidCancel:(DSContactProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)contactProfileViewControllerDidUpdateProfile:(DSContactProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+    
+    [self.blockchainUser fetchProfile:^(BOOL success) {
+        [self loadProfile];
+    }];
 }
 
 @end

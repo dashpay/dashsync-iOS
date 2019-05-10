@@ -15,6 +15,8 @@
 }
 
 @dynamic blockHeight;
+@dynamic documentRevision;
+@dynamic documentScopeID;
 @dynamic username;
 @dynamic associatedBlockchainUserRegistrationHash;
 @dynamic publicMessage;

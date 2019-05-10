@@ -26,17 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
     
     self.delegate = self;
     
-    if (!self.blockchainUser.ownContact) {
-        __weak typeof(self) weakSelf = self;
-        [self.blockchainUser createProfileWithAboutMeString:[NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username] completion:^(BOOL success) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-            
-            [strongSelf showAlertTitle:@"Created profile:" result:success];
-        }];
-    }
     for (UIViewController * viewController in self.viewControllers) {
         if ([viewController respondsToSelector:@selector(setBlockchainUser:)]) {
             [(id)viewController setBlockchainUser:self.blockchainUser];
@@ -92,7 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
 }
-
 
 - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
     self.title = viewController.title;
