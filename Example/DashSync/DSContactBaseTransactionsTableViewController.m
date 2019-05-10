@@ -21,6 +21,7 @@
 
 #import "DSTransactionsViewController.h"
 #import "DSContactTransactionTableViewCell.h"
+#import "DSTransactionDetailViewController.h"
 
 NSString * const CELL_ID = @"DSContactTransactionTableViewCell";
 
@@ -67,6 +68,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    DSTxOutputEntity * transactionOutput = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSTransactionEntity *transactionEntity = transactionOutput.transaction;
+    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    DSTransactionDetailViewController *controller = [storyboard instantiateViewControllerWithIdentifier:@"TransactionDetailViewController"];
+    DSTransaction *transaction = [transactionEntity transactionForChain:self.chainManager.chain];
+    controller.transaction = transaction;
+    controller.txDateString = [self dateForTx:transactionEntity];
+    [self.navigationController pushViewController:controller animated:YES];
 }
 
 #pragma mark - Private
