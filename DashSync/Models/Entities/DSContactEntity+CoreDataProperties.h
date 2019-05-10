@@ -16,7 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSContactEntity *> *)fetchRequest;
 
 @property (nonatomic, assign) uint64_t blockHeight;
+@property (nonatomic, assign) uint64_t documentRevision;
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
+@property (nullable, nonatomic, copy) NSString *documentScopeID;
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
 @property (nullable, nonatomic, retain) NSData *associatedBlockchainUserRegistrationHash;

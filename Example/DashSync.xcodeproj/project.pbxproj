@@ -41,6 +41,12 @@
 		2AF8A943228434CA00F8C72D /* DSContactTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A941228434CA00F8C72D /* DSContactTransactionTableViewCell.m */; };
 		2AF8A944228434CA00F8C72D /* DSContactTransactionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */; };
 		2AF8A947228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A946228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m */; };
+		2AF8A94F2284745700F8C72D /* TextViewFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A94D2284745700F8C72D /* TextViewFormTableViewCell.m */; };
+		2AF8A9502284745700F8C72D /* TextViewFormTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF8A94E2284745700F8C72D /* TextViewFormTableViewCell.xib */; };
+		2AF8A9532284781C00F8C72D /* PlaceholderTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A9522284781C00F8C72D /* PlaceholderTextView.m */; };
+		2AF8A95622847ACB00F8C72D /* TextViewFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */; };
+		2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */; };
+		2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */; };
 		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -217,6 +223,18 @@
 		2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSContactTransactionTableViewCell.xib; sourceTree = "<group>"; };
 		2AF8A945228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactBaseTransactionsTableViewController.h; sourceTree = "<group>"; };
 		2AF8A946228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactBaseTransactionsTableViewController.m; sourceTree = "<group>"; };
+		2AF8A94C2284745700F8C72D /* TextViewFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewFormTableViewCell.h; sourceTree = "<group>"; };
+		2AF8A94D2284745700F8C72D /* TextViewFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewFormTableViewCell.m; sourceTree = "<group>"; };
+		2AF8A94E2284745700F8C72D /* TextViewFormTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextViewFormTableViewCell.xib; sourceTree = "<group>"; };
+		2AF8A9512284781C00F8C72D /* PlaceholderTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlaceholderTextView.h; sourceTree = "<group>"; };
+		2AF8A9522284781C00F8C72D /* PlaceholderTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlaceholderTextView.m; sourceTree = "<group>"; };
+		2AF8A95422847ACB00F8C72D /* TextViewFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewFormCellModel.h; sourceTree = "<group>"; };
+		2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewFormCellModel.m; sourceTree = "<group>"; };
+		2AF8A95722847C2A00F8C72D /* TextInputFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextInputFormTableViewCell.h; sourceTree = "<group>"; };
+		2AF8A95822847E5200F8C72D /* DSContactProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactProfileViewController.h; sourceTree = "<group>"; };
+		2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileViewController.m; sourceTree = "<group>"; };
+		2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactProfileAvatarView.h; sourceTree = "<group>"; };
+		2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileAvatarView.m; sourceTree = "<group>"; };
 		2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -478,6 +496,10 @@
 				2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */,
 				2AF8A945228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.h */,
 				2AF8A946228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m */,
+				2AF8A95822847E5200F8C72D /* DSContactProfileViewController.h */,
+				2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */,
+				2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */,
+				2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */,
 			);
 			name = Contacts;
 			sourceTree = "<group>";
@@ -492,6 +514,7 @@
 		2A3B3E9120F893F4002962FB /* Forms */ = {
 			isa = PBXGroup;
 			children = (
+				2AF8A9482284741A00F8C72D /* TextView */,
 				2A3B3E9320F893F4002962FB /* Selector */,
 				2A3B3E9A20F893F4002962FB /* Switcher */,
 				2A3B3EA020F893F4002962FB /* TextField */,
@@ -501,6 +524,7 @@
 				2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */,
 				2A3B3EAB20F893F4002962FB /* FormTableViewController.h */,
 				2A3B3E9220F893F4002962FB /* FormTableViewController.m */,
+				2AF8A95722847C2A00F8C72D /* TextInputFormTableViewCell.h */,
 			);
 			path = Forms;
 			sourceTree = "<group>";
@@ -542,6 +566,20 @@
 				2A3B3EA220F893F4002962FB /* TextFieldFormTableViewCell.xib */,
 			);
 			path = TextField;
+			sourceTree = "<group>";
+		};
+		2AF8A9482284741A00F8C72D /* TextView */ = {
+			isa = PBXGroup;
+			children = (
+				2AF8A9512284781C00F8C72D /* PlaceholderTextView.h */,
+				2AF8A9522284781C00F8C72D /* PlaceholderTextView.m */,
+				2AF8A95422847ACB00F8C72D /* TextViewFormCellModel.h */,
+				2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */,
+				2AF8A94C2284745700F8C72D /* TextViewFormTableViewCell.h */,
+				2AF8A94D2284745700F8C72D /* TextViewFormTableViewCell.m */,
+				2AF8A94E2284745700F8C72D /* TextViewFormTableViewCell.xib */,
+			);
+			path = TextView;
 			sourceTree = "<group>";
 		};
 		6003F581195388D10070C39A = {
@@ -1036,6 +1074,7 @@
 				FBA676362235AD090069EC2F /* Governance.storyboard in Resources */,
 				2A3B3EB520F893F4002962FB /* SelectorFormTableViewCell.xib in Resources */,
 				2AF8A944228434CA00F8C72D /* DSContactTransactionTableViewCell.xib in Resources */,
+				2AF8A9502284745700F8C72D /* TextViewFormTableViewCell.xib in Resources */,
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
 				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
@@ -1152,12 +1191,14 @@
 				2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */,
 				FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */,
 				2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */,
+				2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */,
 				FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */,
 				2A3B3EB620F893F4002962FB /* SelectorFormTableViewCell.m in Sources */,
 				2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB3FF0AF222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m in Sources */,
 				FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */,
+				2AF8A95622847ACB00F8C72D /* TextViewFormCellModel.m in Sources */,
 				FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */,
 				FBB4E36F2145B414008040B7 /* DSLayer2ViewController.m in Sources */,
 				FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */,
@@ -1220,18 +1261,21 @@
 				2A3B3EBD20F893F4002962FB /* TextFieldFormTableViewCell.m in Sources */,
 				FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */,
 				FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */,
+				2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */,
 				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */,
 				FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
+				2AF8A94F2284745700F8C72D /* TextViewFormTableViewCell.m in Sources */,
 				FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 				FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */,
 				2A3B3EBB20F893F4002962FB /* NumberTextFieldFormCellModel.m in Sources */,
 				FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
+				2AF8A9532284781C00F8C72D /* PlaceholderTextView.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
