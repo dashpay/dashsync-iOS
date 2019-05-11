@@ -60,6 +60,7 @@
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary;
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
+@property (nonatomic, assign) BOOL resetBloomFilterAfterNextBlock;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
 @property (nonatomic, assign) double transactionsBloomFilterFalsePositiveRate;
@@ -888,11 +889,29 @@
         if (![account registerTransaction:transaction]) return;
     }
     
+    BOOL isNewBlockchainUser = FALSE;
+    DSBlockchainUser * blockchainUser = nil;
+    
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
-        [self.chain registerSpecialTransaction:transaction];
+        BOOL registered = [self.chain registerSpecialTransaction:transaction];
         
-        [self.chain triggerUpdatesForLocalReferences:transaction];
+        if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+            DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
+            DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil];
+            
+            if (wallet) {
+                blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+            }
+            [self.chain triggerUpdatesForLocalReferences:transaction];
+            
+            
+            if (!blockchainUser && (blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash])) {
+                isNewBlockchainUser = TRUE;
+            }
+        } else {
+            [self.chain triggerUpdatesForLocalReferences:transaction];
+        }
     }
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
@@ -935,11 +954,7 @@
     [self.txRequests[hash] removeObject:peer];
     
     
-    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-        DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
-        uint32_t index;
-        DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:&index];
-        DSBlockchainUser * blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]] && isNewBlockchainUser) {
         [self fetchFriendshipsForBlockchainUser:blockchainUser];
     } else {
         [self updateTransactionsBloomFilter];
@@ -962,8 +977,7 @@
         }
     }];
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
-    [self.peerManager updateFilterOnPeers];
+    _resetBloomFilterAfterNextBlock = TRUE;
 }
 
 // MARK: Transaction Issues
@@ -1177,7 +1191,18 @@
         return;
     }
     
+    
+    if (_resetBloomFilterAfterNextBlock) {
+        NSLog(@"here");
+    }
+    
     [self.chain addBlock:block fromPeer:peer];
+    
+    if (_resetBloomFilterAfterNextBlock) {
+        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
+        [self.peerManager updateFilterOnPeers];
+        _resetBloomFilterAfterNextBlock = FALSE;
+    }
 }
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {

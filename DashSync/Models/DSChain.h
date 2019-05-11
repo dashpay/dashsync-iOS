@@ -242,7 +242,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 
-- (void)registerSpecialTransaction:(DSTransaction*)transaction;
+- (BOOL)registerSpecialTransaction:(DSTransaction*)transaction;
 
 - (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 /**

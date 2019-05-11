@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSTransaction*)transactionForHash:(UInt256)transactionHash;
 
-- (void)registerTransaction:(DSTransaction*)transaction;
+- (BOOL)registerTransaction:(DSTransaction*)transaction;
 
 - (void)removeAllTransactions;
 
