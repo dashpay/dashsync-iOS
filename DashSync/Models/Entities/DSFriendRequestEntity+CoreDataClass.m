@@ -35,4 +35,8 @@
     return self.friendshipIdentifier;
 }
 
+-(NSString*)debugDescription {
+    return [NSString stringWithFormat:@"%@ - { %@ -> %@ / %d }",[super debugDescription],self.sourceContact.username,self.destinationContact.username,self.account.index];
+}
+
 @end

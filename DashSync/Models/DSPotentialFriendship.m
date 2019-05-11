@@ -86,13 +86,17 @@
     return contact;
 }
 
--(void)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity {
+-(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity {
     [self.fundsDerivationPathForContact storeExtendedPublicKeyUnderWalletUniqueId:self.account.wallet.uniqueID];
+    
+    
+    __block DSDerivationPathEntity* fundsDerivationPathEntity = nil;
     
     [friendRequestEntity.managedObjectContext performBlockAndWait:^{
         [DSDerivationPathEntity setContext:friendRequestEntity.managedObjectContext];
-        [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity];
+        fundsDerivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self.fundsDerivationPathForContact associateWithFriendRequest:friendRequestEntity];
     }];
+    return fundsDerivationPathEntity;
 }
 
 

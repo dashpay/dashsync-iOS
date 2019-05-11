@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity,DSPotentialContact,DSContactEntity,DSIncomingFundsDerivationPath;
+@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity,DSPotentialContact,DSContactEntity,DSIncomingFundsDerivationPath,DSDerivationPathEntity;
 
 @interface DSPotentialFriendship : NSObject
 
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSContactEntity*)contactEntity;
 
--(void)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
+-(DSDerivationPathEntity*)storeExtendedPublicKeyAssociatedWithFriendRequest:(DSFriendRequestEntity*)friendRequestEntity;
 
 -(DSIncomingFundsDerivationPath*)createDerivationPath;
 

@@ -50,6 +50,7 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSTransition.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -932,7 +933,37 @@
     
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.txRequests[hash] removeObject:peer];
-    [self updateTransactionsBloomFilter];
+    
+    
+    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+        DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
+        uint32_t index;
+        DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:&index];
+        DSBlockchainUser * blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+        [self fetchFriendshipsForBlockchainUser:blockchainUser];
+    } else {
+        [self updateTransactionsBloomFilter];
+    }
+}
+
+-(void)fetchFriendshipsForBlockchainUser:(DSBlockchainUser*)blockchainUser {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [blockchainUser fetchProfile:^(BOOL success) {
+        if (success) {
+            [blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
+                if (success) {
+                    [blockchainUser fetchIncomingContactRequests:^(BOOL success) {
+                        if (success) {
+                            dispatch_semaphore_signal(sem);
+                        }
+                    }];
+                }
+            }];
+        }
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
+    [self.peerManager updateFilterOnPeers];
 }
 
 // MARK: Transaction Issues

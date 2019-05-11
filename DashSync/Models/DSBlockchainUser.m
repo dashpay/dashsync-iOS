@@ -538,7 +538,7 @@
             [DSChainEntity setContext:self.managedObjectContext];
             DSContactEntity * contact = [DSContactEntity managedObject];
             contact.documentScopeID = [contactDictionary objectForKey:@"$scopeId"];
-            contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] integerValue];
+            contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
             contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
             contact.publicMessage = [contactDictionary objectForKey:@"about"];
             contact.associatedBlockchainUserRegistrationHash = uint256_data(registrationTransactionHash);
@@ -650,6 +650,7 @@
                 
             }
         } else if (uint256_eq(senderRegistrationHash, self.ownContact.associatedBlockchainUserRegistrationHash.UInt256)) {
+            NSArray * a = [DSFriendRequestEntity allObjects];
             BOOL isNew = ![DSFriendRequestEntity countObjectsMatching:@"sourceContact == %@ && destinationContact.associatedBlockchainUserRegistrationHash == %@",self.ownContact,[NSData dataWithUInt256:recipientRegistrationHash]];
             if (isNew) {
                 [outgoingNewRequests setObject:extendedPublicKey forKey:[NSData dataWithUInt256:recipientRegistrationHash]];
@@ -774,7 +775,10 @@
                     if (blockchainUserDictionary) {
                         UInt256 contactBlockchainUserTransactionRegistrationHash = ((NSString*)blockchainUserDictionary[@"regtxid"]).hexToData.reverse.UInt256;
                         [self fetchProfileForRegistrationTransactionHash:contactBlockchainUserTransactionRegistrationHash saveReturnedProfile:NO completion:^(DSContactEntity *destinationContactEntity) {
+                            
                             NSString * username = blockchainUserDictionary[@"uname"];
+                            
+                            DSDLog(@"NEW outgoing friend request with new contact %@",username);
                             destinationContactEntity.username = username;
                             destinationContactEntity.associatedBlockchainUserRegistrationHash = uint256_data(contactBlockchainUserTransactionRegistrationHash);
                             DSAccount * account = [self.wallet accountWithNumber:0];
@@ -797,7 +801,9 @@
                             
                             [realFriendship createDerivationPath];
                             
-                            [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+                            friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+                            
+                            NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
                             
                             [DSContactEntity saveContext];
                         }];
@@ -809,6 +815,7 @@
                 //the contact already existed, meaning they had made a friend request to us before, and on another device we had accepted
                 //or the contact is locally known on the device
                 DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
+                DSDLog(@"NEW outgoing friend request with known contact %@",destinationContact.username);
                 friendRequestEntity.sourceContact = self.ownContact;
                 friendRequestEntity.destinationContact = destinationContact;
                 
@@ -826,7 +833,9 @@
                 
                 DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                 
-                [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+                friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
+                
+                NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
                 
                 if (destinationContact.associatedBlockchainUserRegistrationTransaction) { //the destination is also local
                     [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];

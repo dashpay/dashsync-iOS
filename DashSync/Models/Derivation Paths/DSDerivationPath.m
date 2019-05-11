@@ -768,13 +768,13 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     
     UInt256 chain = *(const UInt256 *)((const uint8_t *)parentDerivationPath.extendedPublicKey.bytes + 4);
     DSECPoint pubKey = *(const DSECPoint *)((const uint8_t *)parentDerivationPath.extendedPublicKey.bytes + 36);
-    DSDLog(@"starting with pubkey %@",[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
+    //DSDLog(@"starting with pubkey %@",[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
     for (NSInteger i = 0;i<[self length] - 1;i++) {
         if (i < parentDerivationPath.length) {
             if (!uint256_eq([parentDerivationPath indexAtPosition:i],[self indexAtPosition:i])) return nil;
         } else {
             CKDpub256(&pubKey, &chain, [self indexAtPosition:i],[self isHardenedAtPosition:i]);
-            DSDLog(@"after %@ pubkey %@",[NSData dataWithUInt256:[self indexAtPosition:i]],[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
+            //DSDLog(@"after %@ pubkey %@",[NSData dataWithUInt256:[self indexAtPosition:i]],[NSData dataWithBytes:&pubKey length:sizeof(pubKey)].hexString);
         }
     }
     NSData * publicKeyParentData = [NSData dataWithBytes:&pubKey length:sizeof(pubKey)];
