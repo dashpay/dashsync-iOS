@@ -538,34 +538,38 @@
             [DSChainEntity setContext:self.managedObjectContext];
             NSString *scopeID = [contactDictionary objectForKey:@"$scopeId"];
             DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"documentScopeID == %@", scopeID];
-            if (!contact) {
-                contact = [DSContactEntity managedObject];
-            }
-            contact.documentScopeID = scopeID;
-            contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
-            contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-            contact.publicMessage = [contactDictionary objectForKey:@"about"];
-            contact.associatedBlockchainUserRegistrationHash = uint256_data(registrationTransactionHash);
-            contact.chain = self.wallet.chain.chainEntity;
-            if (uint256_eq(registrationTransactionHash, self.registrationTransactionHash) && !self.ownContact) {
-                DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
-                NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
-                contact.associatedBlockchainUserRegistrationTransaction = blockchainUserRegistrationTransactionEntity;
-                contact.username = self.username;
-                self.ownContact = contact;
-                if (saveReturnedProfile) {
-                    [DSContactEntity saveContext];
+            if (!contact || [[contactDictionary objectForKey:@"$rev"] intValue] != contact.documentRevision) {
+                
+                if (!contact) {
+                    contact = [DSContactEntity managedObject];
                 }
-            } else if ([self.wallet blockchainUserForRegistrationHash:registrationTransactionHash]) {
-                //this means we are fetching a contact for another blockchain user on the device
-                DSBlockchainUser * blockchainUser = [self.wallet blockchainUserForRegistrationHash:registrationTransactionHash];
-                DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
-                NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
-                contact.associatedBlockchainUserRegistrationTransaction = blockchainUserRegistrationTransactionEntity;
-                contact.username = blockchainUser.username;
-                blockchainUser.ownContact = contact;
-                if (saveReturnedProfile) {
-                    [DSContactEntity saveContext];
+                
+                contact.documentScopeID = scopeID;
+                contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
+                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+                contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                contact.associatedBlockchainUserRegistrationHash = uint256_data(registrationTransactionHash);
+                contact.chain = self.wallet.chain.chainEntity;
+                if (uint256_eq(registrationTransactionHash, self.registrationTransactionHash) && !self.ownContact) {
+                    DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
+                    NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
+                    contact.associatedBlockchainUserRegistrationTransaction = blockchainUserRegistrationTransactionEntity;
+                    contact.username = self.username;
+                    self.ownContact = contact;
+                    if (saveReturnedProfile) {
+                        [DSContactEntity saveContext];
+                    }
+                } else if ([self.wallet blockchainUserForRegistrationHash:registrationTransactionHash]) {
+                    //this means we are fetching a contact for another blockchain user on the device
+                    DSBlockchainUser * blockchainUser = [self.wallet blockchainUserForRegistrationHash:registrationTransactionHash];
+                    DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
+                    NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
+                    contact.associatedBlockchainUserRegistrationTransaction = blockchainUserRegistrationTransactionEntity;
+                    contact.username = blockchainUser.username;
+                    blockchainUser.ownContact = contact;
+                    if (saveReturnedProfile) {
+                        [DSContactEntity saveContext];
+                    }
                 }
             }
             

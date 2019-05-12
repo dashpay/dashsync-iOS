@@ -26,16 +26,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = self.blockchainUser.username;
-    
+    [self loadProfileInitial];
     [self.blockchainUser fetchProfile:^(BOOL success) {
-        [self loadProfile];
+        [self updateProfile];
     }];
 }
 
--(void)loadProfile {
+-(void)loadProfileInitial {
+    self.title = self.blockchainUser.username;
     if (!self.blockchainUser.ownContact) {
-        self.aboutMeLabel.text = @"Register Profile";
+        self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
     }
     else {
@@ -44,6 +44,18 @@
     }
     
     self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainUser.registrationTransactionHash);
+}
+
+-(void)updateProfile {
+    self.title = self.blockchainUser.username;
+    if (!self.blockchainUser.ownContact) {
+        self.aboutMeLabel.text = @"Register Profile";
+        [self.avatarImageView sd_setImageWithURL:nil];
+    }
+    else {
+        self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -131,7 +143,7 @@
     [controller dismissViewControllerAnimated:YES completion:nil];
     
     [self.blockchainUser fetchProfile:^(BOOL success) {
-        [self loadProfile];
+        [self updateProfile];
     }];
 }
 
