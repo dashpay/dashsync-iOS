@@ -501,6 +501,21 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             [mutableString appendFormat:@"/?'"];
         }
         
+    } else {
+        if ([self isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
+            mutableString = [NSMutableString stringWithFormat:@"inc"];
+            DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath*)self;
+            [[DSContactEntity context] performBlockAndWait:^{
+                DSContactEntity * sourceContactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash)];
+                if (sourceContactEntity) {
+                    [mutableString appendFormat:@"/%@",sourceContactEntity.username];
+                } else {
+                    [mutableString appendFormat:@"/0x%@",uint256_hex(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash)];
+                }
+            }];
+            DSBlockchainUser * blockchainUser = [self.wallet blockchainUserForRegistrationHash:incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash];
+            [mutableString appendFormat:@"/%@",blockchainUser.username];
+        }
     }
     _stringRepresentation = [mutableString copy];
     return _stringRepresentation;

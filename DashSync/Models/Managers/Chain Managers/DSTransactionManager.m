@@ -896,21 +896,23 @@
         //it's a special transaction
         BOOL registered = [self.chain registerSpecialTransaction:transaction];
         
-        if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-            DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
-            DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil];
-            
-            if (wallet) {
-                blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+        if (registered) {
+            if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+                DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
+                DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil];
+                
+                if (wallet) {
+                    blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+                }
+                [self.chain triggerUpdatesForLocalReferences:transaction];
+                
+                
+                if (!blockchainUser && (blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash])) {
+                    isNewBlockchainUser = TRUE;
+                }
+            } else {
+                [self.chain triggerUpdatesForLocalReferences:transaction];
             }
-            [self.chain triggerUpdatesForLocalReferences:transaction];
-            
-            
-            if (!blockchainUser && (blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash])) {
-                isNewBlockchainUser = TRUE;
-            }
-        } else {
-            [self.chain triggerUpdatesForLocalReferences:transaction];
         }
     }
     
@@ -954,7 +956,7 @@
     [self.txRequests[hash] removeObject:peer];
     
     
-    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]] && isNewBlockchainUser) {
+    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]] && blockchainUser && isNewBlockchainUser) {
         [self fetchFriendshipsForBlockchainUser:blockchainUser];
     } else {
         [self updateTransactionsBloomFilter];
