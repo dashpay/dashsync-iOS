@@ -133,9 +133,11 @@
                 } else {
                     DSDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
                     if ([derivationPath isKindOfClass:[DSIncomingFundsDerivationPath class]]) {
-                        UInt256 registrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainUserRegistrationTransactionHash];
-                        DSContactEntity * contact = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(registrationTransactionHash)];
-                        [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address", nil),contact.username]];
+                        UInt256 destinationRegistrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactDestinationBlockchainUserRegistrationTransactionHash];
+                        UInt256 sourceRegistrationTransactionHash = [((DSIncomingFundsDerivationPath*) derivationPath) contactSourceBlockchainUserRegistrationTransactionHash];
+                        DSContactEntity * destination = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(destinationRegistrationTransactionHash)];
+                        DSContactEntity * source = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(sourceRegistrationTransactionHash)];
+                        [detail addObject:[NSString stringWithFormat:NSLocalizedString(@"%@'s address from %@", nil),source.username,destination.username]];
                     } else {
                         [detail addObject:NSLocalizedString(@"wallet address", nil)];
                     }

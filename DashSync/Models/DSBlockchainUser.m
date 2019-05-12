@@ -697,6 +697,7 @@
     
     [derivationPath storeExternalDerivationPathExtendedPublicKeyToKeyChain];
     
+    //incoming request uses an outgoing derivation path
     [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
     
     [self.ownContact addIncomingRequestsObject:friendRequestEntity];
@@ -803,7 +804,9 @@
                             
                             DSPotentialFriendship * realFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact sourceBlockchainUser:self account:account];
                             
-                            [realFriendship createDerivationPath];
+                            DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
+                            
+                            [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
                             
                             friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
                             
@@ -837,12 +840,14 @@
                 
                 DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                 
+                [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+                
                 friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
                 
                 NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
                 
                 if (destinationContact.associatedBlockchainUserRegistrationTransaction) { //the destination is also local
-                    [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+                    [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
                 }
                 
                 [self.ownContact addOutgoingRequestsObject:friendRequestEntity];
@@ -853,8 +858,6 @@
                 [DSContactEntity saveContext];
             }
         }
-        
-        
     }];
 }
 

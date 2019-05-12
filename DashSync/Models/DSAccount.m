@@ -352,6 +352,7 @@
 -(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
+    NSAssert(derivationPath.length, @"derivation path must have a length");
     derivationPath.account = self;
     [self addDerivationPath:derivationPath];
     [self.mContactIncomingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
@@ -362,6 +363,7 @@
 -(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier {
     NSParameterAssert(derivationPath);
     NSParameterAssert(friendshipIdentifier);
+    NSAssert(!derivationPath.length, @"derivation path must not have a length");
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
     [derivationPath loadAddresses];
