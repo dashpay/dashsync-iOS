@@ -844,13 +844,15 @@
                 
                 DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                 
-                [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
                 
                 friendRequestEntity.derivationPath = [realFriendship storeExtendedPublicKeyAssociatedWithFriendRequest:friendRequestEntity];
                 
                 NSAssert(friendRequestEntity.derivationPath, @"derivation path must be present");
                 
                 if (destinationContact.associatedBlockchainUserRegistrationTransaction) { //the destination is also local
+                    [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+                } else {
+                    //todo update outgoing derivation paths to incoming derivation paths as blockchain users come in
                     [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
                 }
                 

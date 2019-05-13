@@ -367,7 +367,6 @@
     derivationPath.account = self;
     [self.mContactOutgoingFundDerivationPathsDictionary setObject:derivationPath forKey:friendshipIdentifier];
     [derivationPath loadAddresses];
-    [self updateBalance];
 }
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths {
