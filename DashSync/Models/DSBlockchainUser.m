@@ -498,7 +498,7 @@
 }
 
 - (void)fetchProfile:(void (^)(BOOL))completion {
-    [self fetchProfileForRegistrationTransactionHash:self.registrationTransactionHash saveReturnedProfile:TRUE completion:^(DSContactEntity *contactEntity) {
+    [self fetchProfileForRegistrationTransactionHash:self.registrationTransactionHash saveReturnedProfile:TRUE context:self.managedObjectContext completion:^(DSContactEntity *contactEntity) {
         if (completion) {
             if (contactEntity) {
                 completion(YES);
@@ -509,7 +509,7 @@
     }];
 }
 
-- (void)fetchProfileForRegistrationTransactionHash:(UInt256)registrationTransactionHash saveReturnedProfile:(BOOL)saveReturnedProfile completion:(void (^)(DSContactEntity* contactEntity))completion {
+- (void)fetchProfileForRegistrationTransactionHash:(UInt256)registrationTransactionHash saveReturnedProfile:(BOOL)saveReturnedProfile context:(NSManagedObjectContext*)context completion:(void (^)(DSContactEntity* contactEntity))completion {
     
     NSDictionary *query = @{ @"userId" : uint256_reverse_hex(registrationTransactionHash) };
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
@@ -599,11 +599,11 @@
             return;
         }
         
-        [strongSelf handleContactRequestObjects:documents];
-        
-        if (completion) {
-            completion(YES);
-        }
+        [strongSelf handleContactRequestObjects:documents completion:^(BOOL success) {
+            if (completion) {
+                completion(YES);
+            }
+        }];
     } failure:^(NSError *_Nonnull error) {
         if (completion) {
             completion(NO);
@@ -625,11 +625,12 @@
             return;
         }
         
-        [strongSelf handleContactRequestObjects:documents];
+        [strongSelf handleContactRequestObjects:documents completion:^(BOOL success) {
+            if (completion) {
+                completion(YES);
+            }
+        }];
         
-        if (completion) {
-            completion(YES);
-        }
     } failure:^(NSError *_Nonnull error) {
         if (completion) {
             completion(NO);
@@ -638,7 +639,7 @@
 }
 
 
-- (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests {
+- (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests completion:(void (^)(BOOL success))completion {
     NSMutableDictionary <NSData *,NSData *> *incomingNewRequests = [NSMutableDictionary dictionary];
     NSMutableDictionary <NSData *,NSData *> *outgoingNewRequests = [NSMutableDictionary dictionary];
     for (NSDictionary *rawContact in rawContactRequests) {
@@ -658,7 +659,6 @@
                 
             }
         } else if (uint256_eq(senderRegistrationHash, self.ownContact.associatedBlockchainUserRegistrationHash.UInt256)) {
-            NSArray * a = [DSFriendRequestEntity allObjects];
             BOOL isNew = ![DSFriendRequestEntity countObjectsMatching:@"sourceContact == %@ && destinationContact.associatedBlockchainUserRegistrationHash == %@",self.ownContact,[NSData dataWithUInt256:recipientRegistrationHash]];
             if (isNew) {
                 [outgoingNewRequests setObject:extendedPublicKey forKey:[NSData dataWithUInt256:recipientRegistrationHash]];
@@ -667,11 +667,12 @@
             NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
         }
     }
+    //to do merge these into 1 completion
     if ([incomingNewRequests count]) {
-        [self handleIncomingRequests:incomingNewRequests];
+        [self handleIncomingRequests:incomingNewRequests completion:completion];
     }
     if ([outgoingNewRequests count]) {
-        [self handleOutgoingRequests:outgoingNewRequests];
+        [self handleOutgoingRequests:outgoingNewRequests completion:completion];
     }
 }
 
@@ -709,7 +710,7 @@
     [DSContactEntity saveContext];
 }
 
-- (void)handleIncomingRequests:(NSDictionary <NSData *,NSData *>  *)incomingRequests {
+- (void)handleIncomingRequests:(NSDictionary <NSData *,NSData *>  *)incomingRequests completion:(void (^)(BOOL success))completion {
     [self.managedObjectContext performBlockAndWait:^{
         [DSContactEntity setContext:self.managedObjectContext];
         [DSFriendRequestEntity setContext:self.managedObjectContext];
@@ -772,7 +773,7 @@
     }];
 }
 
-- (void)handleOutgoingRequests:(NSDictionary <NSData *,NSData *>  *)outgoingRequests {
+- (void)handleOutgoingRequests:(NSDictionary <NSData *,NSData *>  *)outgoingRequests completion:(void (^)(BOOL success))completion {
     [self.managedObjectContext performBlockAndWait:^{
         [DSContactEntity setContext:self.managedObjectContext];
         [DSFriendRequestEntity setContext:self.managedObjectContext];
@@ -784,6 +785,11 @@
                     if (blockchainUserDictionary) {
                         UInt256 contactBlockchainUserTransactionRegistrationHash = ((NSString*)blockchainUserDictionary[@"regtxid"]).hexToData.reverse.UInt256;
                         [self fetchProfileForRegistrationTransactionHash:contactBlockchainUserTransactionRegistrationHash saveReturnedProfile:NO completion:^(DSContactEntity *destinationContactEntity) {
+                            
+                            if (!destinationContactEntity) {
+                                completion(FALSE);
+                                return;
+                            }
                             
                             NSString * username = blockchainUserDictionary[@"uname"];
                             

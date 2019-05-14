@@ -107,7 +107,7 @@ static NSUInteger _fetchBatchSize = 100;
     } else return nil;
 }
 
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args 
 {
     NSFetchRequest *request = self.fetchReq;
     
@@ -115,9 +115,25 @@ static NSUInteger _fetchBatchSize = 100;
     return [self fetchObjects:request];
 }
 
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
+{
+    NSFetchRequest *request = self.fetchReq;
+    
+    request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
+    return [self fetchObjects:request inContext:context];
+}
+
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
     NSArray * array = [self objectsMatching:predicateFormat arguments:args];
+    if ([array count]) {
+        return [array objectAtIndex:0];
+    } else return nil;
+}
+
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
+{
+    NSArray * array = [self objectsMatching:predicateFormat arguments:args context:context];
     if ([array count]) {
         return [array objectAtIndex:0];
     } else return nil;
@@ -162,7 +178,31 @@ static NSUInteger _fetchBatchSize = 100;
     return a;
 }
 
-+ (NSArray *)fetchObjectsInContext:(NSFetchRequest *)request
++ (NSArray *)fetchObjectsFromRequest:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context
+{
+    __block NSArray *a = nil;
+    __block NSError *error = nil;
+    
+    [context performBlockAndWait:^{
+        @try {
+            a = [context executeFetchRequest:request error:&error];
+            if (error) DSDLog(@"%s: %@", __func__, error);
+        }
+        @catch (NSException *exception) {
+#if DEBUG
+            @throw;
+#endif
+            // if this is a not a debug build, delete the persisent data store before crashing
+            [[NSFileManager defaultManager]
+             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
+            @throw;
+        }
+    }];
+    
+    return a;
+}
+
++ (NSArray *)fetchObjectsAlreadyInContext:(NSFetchRequest *)request
 {
     NSArray *a = nil;
     NSError *error = nil;
