@@ -546,7 +546,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
-                                            <segue destination="9nn-cu-RX2" kind="show" id="kq4-Ua-uMa"/>
+                                            <segue destination="9nn-cu-RX2" kind="show" identifier="QuorumListSegue" id="kq4-Ua-uMa"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -759,6 +759,7 @@
                         <outlet property="peerCountLabel" destination="V2o-cq-31B" id="RwI-Af-uoB"/>
                         <outlet property="progressView" destination="BjK-YS-joe" id="lgb-rW-P4u"/>
                         <outlet property="pulseView" destination="bv4-vl-znP" id="N75-S4-dyo"/>
+                        <outlet property="quorumCountLabel" destination="g4H-rx-shs" id="OWY-sc-SNn"/>
                         <outlet property="receivedProposalCountLabel" destination="8QG-68-bK7" id="RaP-Cu-2RG"/>
                         <outlet property="receivedVotesCountLabel" destination="wpl-iM-XrG" id="KU9-yz-Fjo"/>
                         <outlet property="receivingAddressLabel" destination="1Cf-iw-Bhs" id="DEr-n4-ZPg"/>

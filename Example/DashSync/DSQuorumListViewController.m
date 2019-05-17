@@ -142,7 +142,11 @@
     DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
 
     cell.quorumHashLabel.text = uint256_hex(quorumEntryEntity.quorumHash);
-    cell.heightLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.block.height];
+    if (quorumEntryEntity.block) {
+        cell.heightLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.block.height];
+    } else {
+        cell.heightLabel.text = @"?";
+    }
 }
 
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {

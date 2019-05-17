@@ -30,8 +30,10 @@ NSString* const DSWalletBalanceDidChangeNotification =        @"DSWalletBalanceC
 NSString* const DSSporkListDidUpdateNotification =     @"DSSporkListDidUpdateNotification";
 
 NSString* const DSMasternodeListDidChangeNotification = @"DSMasternodeListDidChangeNotification";
-NSString* const DSMasternodeListValidationErrorNotification = @"DSMasternodeListValidationErrorNotification";
-NSString* const DSMasternodeListCountUpdateNotification = @"DSMasternodeListCountUpdateNotification";
+
+NSString* const DSQuorumListDidChangeNotification = @"DSQuorumListDidChangeNotification";
+
+NSString* const DSMasternodeListDiffValidationErrorNotification = @"DSMasternodeListDiffValidationErrorNotification"; //Also for Quorums
 
 NSString* const DSGovernanceObjectListDidChangeNotification = @"DSGovernanceObjectListDidChangeNotification";
 NSString* const DSGovernanceVotesDidChangeNotification = @"DSGovernanceVotesDidChangeNotification";

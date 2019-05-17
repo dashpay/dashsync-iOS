@@ -250,9 +250,7 @@
     switch (syncCountInfo) {
         case DSSyncCountInfo_List:
         {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{@(syncCountInfo):@(count),DSChainManagerNotificationChainKey:self.chain}];
-            });
+            //deprecated
             break;
         }
         case DSSyncCountInfo_GovernanceObject:

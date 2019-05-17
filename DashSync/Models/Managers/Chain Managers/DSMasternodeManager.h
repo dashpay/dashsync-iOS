@@ -29,8 +29,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString* const DSMasternodeListDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSMasternodeListValidationErrorNotification;
-FOUNDATION_EXPORT NSString* const DSMasternodeListCountUpdateNotification;
+FOUNDATION_EXPORT NSString* const DSMasternodeListDiffValidationErrorNotification;
+FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 #define MASTERNODE_COST 100000000000
 
@@ -41,6 +41,7 @@ FOUNDATION_EXPORT NSString* const DSMasternodeListCountUpdateNotification;
 @property (nonatomic,readonly,nonnull) DSChain * chain;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic,readonly) NSUInteger localMasternodesCount;
+@property (nonatomic,readonly) NSUInteger quorumsCount;
 
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 

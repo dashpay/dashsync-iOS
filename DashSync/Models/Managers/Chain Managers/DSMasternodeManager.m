@@ -256,7 +256,7 @@ inline static int ceil_log2(int x)
     UInt256 blockHash = [message UInt256AtOffset:offset];
     offset += 32;
     
-    DSDLog(@"baseBlockHash %@ (%@) blockHash %@ (%@)",[NSData dataWithUInt256:baseBlockHash].hexString,[NSData dataWithUInt256:baseBlockHash].reverse.hexString,[NSData dataWithUInt256:blockHash].hexString,[NSData dataWithUInt256:blockHash].reverse.hexString);
+    DSDLog(@"baseBlockHash %@ (%@) blockHash %@ (%@)",uint256_hex(baseBlockHash),uint256_reverse_hex(baseBlockHash),uint256_hex(blockHash),uint256_reverse_hex(blockHash));
     
     if (length - offset < 4) return;
     uint32_t totalTransactions = [message UInt32AtOffset:offset];
@@ -393,7 +393,7 @@ inline static int ceil_log2(int x)
             if (length - offset < 33) return;
             DSLLMQ llmq;
             llmq.type = [message UInt8AtOffset:offset];
-            llmq.hash = [message UInt256AtOffset:offset]; //maybe this needs reversing
+            llmq.hash = [message UInt256AtOffset:offset + 1];
             if (![deletedQuorums objectForKey:@(llmq.type)]) {
                 [deletedQuorums setObject:[NSMutableArray arrayWithObject:[NSData dataWithUInt256:llmq.hash]] forKey:@(llmq.type)];
             } else {
@@ -431,9 +431,19 @@ inline static int ceil_log2(int x)
         for (NSNumber * number in self.quorumsDictionary) {
             tentativeQuorumList[number] = [self.quorumsDictionary[number] mutableCopy];
             if (deletedQuorums[number]) {
-                
-                [quorumsForDeletion addObjectsFromArray:[tentativeQuorumList[number] objectsForKeys:deletedQuorums[number] notFoundMarker:[NSNull null]]];
-                [tentativeQuorumList removeObjectsForKeys:deletedQuorums[number]];
+                //we need to translate from blockhash to commitment hash
+                for (NSData * data in deletedQuorums[number]) {
+                    NSData * commitmentHashData = self.quorumsBlockHashToCommitmentHashDictionary[number][data];
+                    if (!commitmentHashData) {
+                        DSDLog(@"Unknown quorum for block hash %@",data.reverse.hexString);
+                    }
+                    DSQuorumEntryEntity * quorumEntry = [tentativeQuorumList[number] objectForKey:commitmentHashData];
+                    NSAssert(quorumEntry, @"quorum should be here already, though this might also be an attack from the remote node");
+                    if (quorumEntry) {
+                        [quorumsForDeletion addObject:quorumEntry];
+                    }
+                    [tentativeQuorumList[number] removeObjectForKey:commitmentHashData];
+                }
             }
         }
         
@@ -489,7 +499,7 @@ inline static int ceil_log2(int x)
                 [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
             }
             
-            if (addedQuorums.count > 0) {
+            if (addedQuorums.count > 0 || quorumsForDeletion.count) {
                 //quorums
                 [DSQuorumEntryEntity setContext:self.managedObjectContext];
                 [DSMerkleBlockEntity setContext:self.managedObjectContext];
@@ -509,6 +519,10 @@ inline static int ceil_log2(int x)
                             DSDLog(@"Quorum Entry not found for block %@",uint256_reverse_hex(potentialQuorumEntry.quorumHash));
                         }
                     }
+                }
+                
+                for (DSQuorumEntryEntity * quorumEntry in quorumsForDeletion) {
+                    [quorumEntry deleteObject];
                 }
                 self.quorumsDictionary = tentativeQuorumList;
             }
@@ -560,7 +574,7 @@ inline static int ceil_log2(int x)
             [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDiffValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
         });
         [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
     }
@@ -569,6 +583,14 @@ inline static int ceil_log2(int x)
 
 -(NSUInteger)simplifiedMasternodeEntryCount {
     return [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
+}
+
+-(NSUInteger)quorumsCount {
+    NSUInteger count = 0;
+    for (NSNumber * type in self.quorumsBlockHashToCommitmentHashDictionary) {
+        count += self.quorumsBlockHashToCommitmentHashDictionary[type].count;
+    }
+    return count;
 }
 
 -(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
