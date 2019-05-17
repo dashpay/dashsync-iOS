@@ -796,7 +796,7 @@
     
     DSAccount * account = [self accountForAddress:address];
     if (!account) return nil;
-    DSFundsDerivationPath * derivationPath = [account derivationPathContainingAddress:address];
+    DSFundsDerivationPath * derivationPath = (DSFundsDerivationPath *)[account derivationPathContainingAddress:address];
     if (!derivationPath) return nil;
     NSIndexPath * indexPath = [derivationPath indexPathForKnownAddress:address];
     return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
