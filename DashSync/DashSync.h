@@ -20,6 +20,7 @@
 #import "DSDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath.h"
+#import "DSIncomingFundsDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSFundsDerivationPath.h"
@@ -29,7 +30,7 @@
 #import "DSTransactionManager.h"
 #import "DSPriceManager.h"
 #import "DSMasternodeManager.h"
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 #import "DSGovernanceSyncManager.h"
 #import "DSGovernanceObject.h"
 #import "DSGovernanceVote.h"
@@ -62,6 +63,7 @@
 #import "DSTransactionHashEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
+#import "DSAccountEntity+CoreDataClass.h"
 #import "DSSimplifiedMasternodeEntry.h"
 #import "DSLocalMasternode.h"
 #import "DSSpecialTransactionsWalletHolder.h"
@@ -82,6 +84,12 @@
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
+
+#import "DSBlockchainUser.h"
+#import "DSPotentialFriendship.h"
+#import "DSPotentialContact.h"
+#import "DSContactEntity+CoreDataClass.h"
+#import "DSFriendRequestEntity+CoreDataClass.h"
 
 #import "DSNetworking.h"
 

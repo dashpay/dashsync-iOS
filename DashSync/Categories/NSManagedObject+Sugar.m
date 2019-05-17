@@ -42,12 +42,17 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (instancetype)managedObject
 {
+    return [self managedObjectInContext:self.context];
+}
+
++ (instancetype)managedObjectInContext:(NSManagedObjectContext *)context
+{
     __block NSEntityDescription *entity = nil;
     __block NSManagedObject *obj = nil;
     
-    [self.context performBlockAndWait:^{
-        entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:self.context];
-        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:self.context];
+    [context performBlockAndWait:^{
+        entity = [NSEntityDescription entityForName:self.entityName inManagedObjectContext:context];
+        obj = [[self alloc] initWithEntity:entity insertIntoManagedObjectContext:context];
     }];
     
     return obj;
@@ -76,6 +81,13 @@ static NSUInteger _fetchBatchSize = 100;
     return [self fetchObjects:self.fetchReq];
 }
 
++ (NSArray *)allObjectsWithPrefetch:(NSArray<NSString*> *) prefetchArray
+{
+    NSFetchRequest * fetchRequest = self.fetchReq;
+    [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchArray];
+    return [self fetchObjects:fetchRequest];
+}
+
 + (NSArray *)objectsMatching:(NSString *)predicateFormat, ...
 {
     NSArray *a;
@@ -100,17 +112,40 @@ static NSUInteger _fetchBatchSize = 100;
     } else return nil;
 }
 
-+ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args
++ (instancetype)anyObjectMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...
+{
+    NSArray *a;
+    va_list args;
+    
+    va_start(args, predicateFormat);
+    a = [self objectsMatching:predicateFormat arguments:args inContext:context];
+    va_end(args);
+    if ([a count]) {
+        return [a objectAtIndex:0];
+    } else return nil;
+}
+
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args 
+{
+    return [self objectsMatching:predicateFormat arguments:args inContext:self.context];
+}
+
++ (NSArray *)objectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
 {
     NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
-    return [self fetchObjects:request];
+    return [self fetchObjects:request inContext:context];
 }
 
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args
 {
-    NSArray * array = [self objectsMatching:predicateFormat arguments:args];
+    return [self anyObjectMatching:predicateFormat arguments:args inContext:self.context];
+}
+
++ (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
+{
+    NSArray * array = [self objectsMatching:predicateFormat arguments:args inContext:context];
     if ([array count]) {
         return [array objectAtIndex:0];
     } else return nil;
@@ -133,12 +168,17 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (NSArray *)fetchObjects:(NSFetchRequest *)request
 {
+    return [self fetchObjects:request inContext:self.context];
+}
+
++ (NSArray *)fetchObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext*)context
+{
     __block NSArray *a = nil;
     __block NSError *error = nil;
-
-    [self.context performBlockAndWait:^{
+    
+    [context performBlockAndWait:^{
         @try {
-            a = [self.context executeFetchRequest:request error:&error];
+            a = [context executeFetchRequest:request error:&error];
             if (error) DSDLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
@@ -151,28 +191,6 @@ static NSUInteger _fetchBatchSize = 100;
             @throw;
         }
     }];
-     
-    return a;
-}
-
-+ (NSArray *)fetchObjectsInContext:(NSFetchRequest *)request
-{
-    NSArray *a = nil;
-    NSError *error = nil;
-    
-        @try {
-            a = [self.context executeFetchRequest:request error:&error];
-            if (error) DSDLog(@"%s: %@", __func__, error);
-        }
-        @catch (NSException *exception) {
-#if DEBUG
-            @throw;
-#endif
-            // if this is a not a debug build, delete the persisent data store before crashing
-            [[NSFileManager defaultManager]
-             removeItemAtURL:objc_getAssociatedObject([NSManagedObject class], &_storeURLKey) error:nil];
-            @throw;
-        }
     
     return a;
 }
@@ -195,22 +213,43 @@ static NSUInteger _fetchBatchSize = 100;
     return count;
 }
 
++ (NSUInteger)countObjectsMatchingInContext:(NSManagedObjectContext *)context withPredicate:(NSString *)predicateFormat, ...
+{
+    NSUInteger count;
+    va_list args;
+    
+    va_start(args, predicateFormat);
+    count = [self countObjectsMatching:predicateFormat arguments:args inContext:context];
+    va_end(args);
+    return count;
+}
+
 + (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args
+{
+    return [self countObjectsMatching:predicateFormat arguments:args inContext:self.context];
+}
+
++ (NSUInteger)countObjectsMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext *)context
 {
     NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
-    return [self countObjects:request];
+    return [self countObjects:request inContext:context];
 }
 
 + (NSUInteger)countObjects:(NSFetchRequest *)request
 {
+    return [self countObjects:request inContext:self.context];
+}
+
++ (NSUInteger)countObjects:(NSFetchRequest *)request inContext:(NSManagedObjectContext *)context
+{
     __block NSUInteger count = 0;
     __block NSError *error = nil;
-
-    [self.context performBlockAndWait:^{
+    
+    [context performBlockAndWait:^{
         @try {
-            count = [self.context countForFetchRequest:request error:&error];
+            count = [context countForFetchRequest:request error:&error];
             if (error) DSDLog(@"%s: %@", __func__, error);
         }
         @catch (NSException *exception) {
@@ -291,7 +330,7 @@ static NSUInteger _fetchBatchSize = 100;
              options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
                        NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
             DSDLog(@"%s: %@", __func__, error);
-#if DEBUG
+#if (DEBUG && 1)
             abort();
 #else
             // if this is a not a debug build, attempt to delete and create a new persisent data store before crashing

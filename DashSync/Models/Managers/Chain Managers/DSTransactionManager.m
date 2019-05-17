@@ -49,6 +49,8 @@
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
+#import "DSTransition.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -58,6 +60,7 @@
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
 @property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary;
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
+@property (nonatomic, assign) BOOL resetBloomFilterAfterNextBlock;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
 @property (nonatomic, assign) double transactionsBloomFilterFalsePositiveRate;
@@ -226,7 +229,9 @@
         DSDLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
         DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
         if (!account) {
-            NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+            if (!self.chain.isDevnetAny || ![transaction isKindOfClass:[DSTransition class]]) {
+                NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+            }
             continue;
         }
         if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
@@ -374,7 +379,7 @@
     
     
     NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:chain];
-    if ([wallet containsAddress:address]) {
+    if ([wallet accountsBaseDerivationPathsContainAddress:address]) {
         errorNotificationBlock(@"",DSLocalizedString(@"this payment address is already in your wallet", nil),YES);
         return;
     }
@@ -884,11 +889,31 @@
         if (![account registerTransaction:transaction]) return;
     }
     
+    BOOL isNewBlockchainUser = FALSE;
+    DSBlockchainUser * blockchainUser = nil;
+    
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
-        [self.chain registerSpecialTransaction:transaction];
+        BOOL registered = [self.chain registerSpecialTransaction:transaction];
         
-        [self.chain triggerUpdatesForLocalReferences:transaction];
+        if (registered) {
+            if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+                DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
+                DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil];
+                
+                if (wallet) {
+                    blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+                }
+                [self.chain triggerUpdatesForLocalReferences:transaction];
+                
+                
+                if (!blockchainUser && (blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash])) {
+                    isNewBlockchainUser = TRUE;
+                }
+            } else {
+                [self.chain triggerUpdatesForLocalReferences:transaction];
+            }
+        }
     }
     
     if (peer == self.peerManager.downloadPeer) [self.chainManager relayedNewItem];
@@ -929,7 +954,32 @@
     
     [self.nonFalsePositiveTransactions addObject:hash];
     [self.txRequests[hash] removeObject:peer];
-    [self updateTransactionsBloomFilter];
+    
+    
+    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]] && blockchainUser && isNewBlockchainUser) {
+        [self fetchFriendshipsForBlockchainUser:blockchainUser];
+    } else {
+        [self updateTransactionsBloomFilter];
+    }
+}
+
+-(void)fetchFriendshipsForBlockchainUser:(DSBlockchainUser*)blockchainUser {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [blockchainUser fetchProfile:^(BOOL success) {
+        if (success) {
+            [blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
+                if (success) {
+                    [blockchainUser fetchIncomingContactRequests:^(BOOL success) {
+                        if (success) {
+                            dispatch_semaphore_signal(sem);
+                        }
+                    }];
+                }
+            }];
+        }
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    _resetBloomFilterAfterNextBlock = TRUE;
 }
 
 // MARK: Transaction Issues
@@ -1143,7 +1193,18 @@
         return;
     }
     
+    
+    if (_resetBloomFilterAfterNextBlock) {
+        NSLog(@"here");
+    }
+    
     [self.chain addBlock:block fromPeer:peer];
+    
+    if (_resetBloomFilterAfterNextBlock) {
+        _bloomFilter = nil; // reset bloom filter so it's recreated with new wallet addresses
+        [self.peerManager updateFilterOnPeers];
+        _resetBloomFilterAfterNextBlock = FALSE;
+    }
 }
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {

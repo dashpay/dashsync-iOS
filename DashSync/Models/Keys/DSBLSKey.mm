@@ -311,6 +311,15 @@
     return signature;
 }
 
+// MARK: - Encryption
+
+- (NSData*)encryptData:(NSData*)data {
+    bls::PublicKey blsPublicKey = [self blsPublicKey];
+    //to do
+    //[data aes]
+    return data;
+}
+
 // MARK: - Verification
 
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature {

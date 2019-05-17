@@ -50,6 +50,7 @@
 #import "DSChainManager.h"
 #import "DSTransactionLockVote.h"
 #import "DSSporkManager.h"
+#import "DSBlockchainUserRegistrationTransaction.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
@@ -60,9 +61,9 @@
 #define DSDLog(...)
 #endif
 
-#define MESSAGE_LOGGING 1
-#define MESSAGE_CONTENT_LOGGING 1
-#define MESSAGE_IN_DEPTH_TX_LOGGING 1
+#define MESSAGE_LOGGING (1 & DEBUG)
+#define MESSAGE_CONTENT_LOGGING (1 & DEBUG)
+#define MESSAGE_IN_DEPTH_TX_LOGGING (1 & DEBUG)
 
 #define HEADER_LENGTH      24 
 #define MAX_MSG_LENGTH     0x02000000
@@ -71,6 +72,9 @@
 #define LOCAL_HOST         0x7f000001
 #define CONNECT_TIMEOUT    3.0
 #define MEMPOOL_TIMEOUT    2.0
+
+#define LOCK(lock) dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
+#define UNLOCK(lock) dispatch_semaphore_signal(lock);
 
 
 @interface DSPeer ()
@@ -103,6 +107,7 @@
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic, assign) uint64_t receivedOrphanCount;
 @property (nonatomic, assign) NSTimeInterval mempoolRequestTime;
+@property (nonatomic, strong) dispatch_semaphore_t outputBufferSemaphore;
 
 @end
 
@@ -127,6 +132,7 @@
     _address = address;
     _port = (port == 0) ? [chain standardPort] : port;
     self.chain = chain;
+    _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
 }
 
@@ -148,6 +154,7 @@
     _address = (UInt128){ .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), addr.s_addr } };
     if (_port == 0) _port = chain.standardPort;
     self.chain = chain;
+    _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
 }
 
@@ -158,6 +165,7 @@
     
     _timestamp = timestamp;
     _services = services;
+    _outputBufferSemaphore = dispatch_semaphore_create(1);
     return self;
 }
 
@@ -389,6 +397,8 @@
         }
 #endif
         
+        LOCK(self.outputBufferSemaphore);
+        
         [self.outputBuffer appendMessage:message type:type forChain:self.chain];
         
         while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
@@ -397,6 +407,8 @@
             if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
             //if (self.outputBuffer.length == 0) DSDLog(@"%@:%u output buffer cleared", self.host, self.port);
         }
+        
+        UNLOCK(self.outputBufferSemaphore);
     });
     CFRunLoopWakeUp([self.runLoop getCFRunLoop]);
 }
@@ -1269,9 +1281,15 @@
     }
     
     if (tx) {
-        dispatch_async(self.delegateQueue, ^{
-            [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
-        });
+        if ([tx isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+            dispatch_sync(self.delegateQueue, ^{ // if there is a blockchain user process this synchronously
+                [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
+            });
+        } else {
+            dispatch_async(self.delegateQueue, ^{
+                [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
+            });
+        }
     }
     
 #if LOG_FULL_TX_MESSAGE
@@ -1935,11 +1953,15 @@
         case NSStreamEventHasSpaceAvailable:
             if (aStream != self.outputStream) return;
             
+            LOCK(self.outputBufferSemaphore);
+            
             while (self.outputBuffer.length > 0 && self.outputStream.hasSpaceAvailable) {
                 NSInteger l = [self.outputStream write:self.outputBuffer.bytes maxLength:self.outputBuffer.length];
                 
                 if (l > 0) [self.outputBuffer replaceBytesInRange:NSMakeRange(0, l) withBytes:NULL length:0];
             }
+            
+            UNLOCK(self.outputBufferSemaphore);
             
             break;
             

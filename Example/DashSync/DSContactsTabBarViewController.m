@@ -12,15 +12,10 @@
 #import "DSOutgoingContactsTableViewController.h"
 #import "DSIncomingContactsTableViewController.h"
 
-#import "DSContactsModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 
 @interface DSContactsTabBarViewController () <UITabBarControllerDelegate>
-
-@property (strong, nonatomic) DSContactsModel *model;
-@property (strong, nonatomic) DSOutgoingContactsTableViewController *outgoingController;
 
 @end
 
@@ -31,31 +26,16 @@ NS_ASSUME_NONNULL_BEGIN
     
     self.delegate = self;
     
-    self.model = [[DSContactsModel alloc] initWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
-    
-    __weak typeof(self) weakSelf = self;
-    [self.model getUser:^(BOOL success) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
+    for (UIViewController * viewController in self.viewControllers) {
+        if ([viewController respondsToSelector:@selector(setBlockchainUser:)]) {
+            [(id)viewController setBlockchainUser:self.blockchainUser];
         }
-
-        [strongSelf showAlertTitle:@"Get current user result:" result:success];
-    }];
-    
-    DSContactsViewController *contacts = [self.storyboard instantiateViewControllerWithIdentifier:@"ContactsControllerId"];
-    contacts.model = self.model;
-    
-    DSOutgoingContactsTableViewController *outgoing = [self.storyboard instantiateViewControllerWithIdentifier:@"PendingControllerId"];
-    outgoing.model = self.model;
-    self.outgoingController = outgoing;
-    
-    DSIncomingContactsTableViewController *incoming = [self.storyboard instantiateViewControllerWithIdentifier:@"RequestsControllerId"];
-    incoming.model = self.model;
-    
-    self.viewControllers = @[contacts, outgoing, incoming];
-    
-    self.title = contacts.title;
+        
+        if ([viewController respondsToSelector:@selector(setChainManager:)]) {
+            [(id)viewController setChainManager:self.chainManager];
+        }
+    }
+    self.title = [self.viewControllers objectAtIndex:0].title;
 }
 
 #pragma mark - Actions
@@ -76,14 +56,16 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *username = textField.text;
         
         __weak typeof(self) weakSelf = self;
-        [self.model contactRequestUsername:username completion:^(BOOL success) {
+        NSParameterAssert(self.blockchainUser);
+        DSAccount * account = [self.blockchainUser.wallet accountWithNumber:0];
+        NSParameterAssert(account);
+        
+        DSPotentialContact * potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
+        
+        [self.blockchainUser sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
-            }
-
-            if (success) {
-                [strongSelf.outgoingController refreshData];
             }
             
             [strongSelf showAlertTitle:@"Contact request result:" result:success];
@@ -99,7 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
 }
-
 
 - (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
     self.title = viewController.title;

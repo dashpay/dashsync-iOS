@@ -101,6 +101,8 @@
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
     [DSAddressEntity deleteAddressesOnChain:chainEntity];
     [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+    [DSDerivationPathEntity deleteDerivationPathsOnChain:chainEntity];
+    [DSContactEntity deleteContactsOnChain:chainEntity];
     [chain wipeBlockchainInfo];
     [DSTransactionEntity saveContext];
     [chain reloadDerivationPaths];

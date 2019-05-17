@@ -8,13 +8,17 @@
 
 #import "DSBlockchainUserActionsViewController.h"
 #import "DSTopupBlockchainUserViewController.h"
+#import "DSBlockchainUserTransitionsViewController.h"
 
 #import "DSContactsNavigationController.h"
-#import "DSRegisterDashPayContractModel.h"
+#import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
+#import <SDWebImage/SDWebImage.h>
+#import "DSContactProfileViewController.h"
 
-@interface DSBlockchainUserActionsViewController ()
-
-@property (null_resettable, strong, nonatomic) DSRegisterDashPayContractModel *registerContractModel;
+@interface DSBlockchainUserActionsViewController () <DSContactProfileViewControllerDelegate>
+@property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
+@property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
+@property (strong, nonatomic) IBOutlet UILabel *transactionRegistrationHashLabel;
 
 @end
 
@@ -22,12 +26,36 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self loadProfileInitial];
+    [self.blockchainUser fetchProfile:^(BOOL success) {
+        [self updateProfile];
+    }];
+}
+
+-(void)loadProfileInitial {
+    self.title = self.blockchainUser.username;
+    if (!self.blockchainUser.ownContact) {
+        self.aboutMeLabel.text = @"Fetching";
+        [self.avatarImageView sd_setImageWithURL:nil];
+    }
+    else {
+        self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
+    }
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainUser.registrationTransactionHash);
+}
+
+-(void)updateProfile {
+    self.title = self.blockchainUser.username;
+    if (!self.blockchainUser.ownContact) {
+        self.aboutMeLabel.text = @"Register Profile";
+        [self.avatarImageView sd_setImageWithURL:nil];
+    }
+    else {
+        self.aboutMeLabel.text = self.blockchainUser.ownContact.publicMessage;
+        [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainUser.ownContact.avatarPath]];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -59,27 +87,37 @@
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 1) {
-        [self reset:self];
+    if (indexPath.section == 0) {
+        if (indexPath.row == 1) { // About me / Register
+            DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainUser:self.blockchainUser];
+            controller.delegate = self;
+            UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
+            [self presentViewController:navigationController animated:YES completion:nil];
+        }
     }
-    else if (indexPath.row == 2) {
-        DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
-        [self presentViewController:controller animated:YES completion:nil];
-    }
-    else if (indexPath.row == 3) {
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
-        
-        __weak typeof(self) weakSelf = self;
-        [self.registerContractModel registerDashPayContractCompletion:^(NSError * _Nullable error) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            if (error) {
-                [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
-            }
-        }];
+    else if (indexPath.section == 1) {
+        if (indexPath.row == 1) {
+            [self reset:self];
+        }
+        else if (indexPath.row == 2) {
+            DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainUser:self.blockchainUser];
+            [self presentViewController:controller animated:YES completion:nil];
+        }
+        else if (indexPath.row == 3) {
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+            
+            __weak typeof(self) weakSelf = self;
+            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainUser completion:^(NSError * _Nullable error) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                
+                if (error) {
+                    [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
+                }
+            }];
+        }
     }
 }
 
@@ -88,15 +126,25 @@
         DSTopupBlockchainUserViewController * topupBlockchainUserViewController = (DSTopupBlockchainUserViewController*)segue.destinationViewController;
         topupBlockchainUserViewController.chainManager = self.chainManager;
         topupBlockchainUserViewController.blockchainUser = self.blockchainUser;
+    } else if ([segue.identifier isEqualToString:@"BlockchainUserTransitionsSegue"]) {
+        DSBlockchainUserTransitionsViewController * blockchainUserTransitionsViewController = (DSBlockchainUserTransitionsViewController*)segue.destinationViewController;
+        blockchainUserTransitionsViewController.chainManager = self.chainManager;
+        blockchainUserTransitionsViewController.blockchainUser = self.blockchainUser;
     }
 }
 
-- (DSRegisterDashPayContractModel *)registerContractModel {
-    if (_registerContractModel == nil) {
-        _registerContractModel = [[DSRegisterDashPayContractModel alloc] initWithChainManager:self.chainManager
-                                                                               blockchainUser:self.blockchainUser];
-    }
-    return _registerContractModel;
+#pragma mark - DSContactProfileViewControllerDelegate
+
+- (void)contactProfileViewControllerDidCancel:(DSContactProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)contactProfileViewControllerDidUpdateProfile:(DSContactProfileViewController *)controller {
+    [controller dismissViewControllerAnimated:YES completion:nil];
+    
+    [self.blockchainUser fetchProfile:^(BOOL success) {
+        [self updateProfile];
+    }];
 }
 
 @end

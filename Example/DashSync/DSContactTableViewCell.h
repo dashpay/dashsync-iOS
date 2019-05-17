@@ -1,5 +1,5 @@
-//
-//  Created by Andrew Podkovyrin
+//  
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,15 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DSBaseStateTransitionModel.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser;
-
-@interface DSRegisterDashPayContractModel : DSBaseStateTransitionModel
-
-- (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion;
+@interface DSContactTableViewCell : UITableViewCell
 
 @end
 

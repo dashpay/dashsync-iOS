@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain * _Nonnull)chain;
 
+-(instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain;
+
 
 -(void)signPayloadWithKey:(DSECDSAKey *)privateKey;
 

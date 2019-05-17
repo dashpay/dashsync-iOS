@@ -15,22 +15,22 @@
 //  limitations under the License.
 //
 
-#import "DSDAPIClient.h"
+#import "DSDAPINetworkService.h"
 
 #import "DSHTTPJSONRPCClient.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
+NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.error";
 
 
-@interface DSDAPIClient ()
+@interface DSDAPINetworkService ()
 
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
 
 @end
 
-@implementation DSDAPIClient
+@implementation DSDAPINetworkService
 
 - (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory {
     NSParameterAssert(url);
@@ -546,8 +546,8 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                     NSLocalizedDescriptionKey : DSLocalizedString(@"Invalid DAPI Response", nil),
                     NSDebugDescriptionErrorKey : responseObject,
                 };
-                NSError *error = [NSError errorWithDomain:DSDAPIClientErrorDomain
-                                                     code:DSDAPIClientErrorCodeInvalidResponse
+                NSError *error = [NSError errorWithDomain:DSDAPINetworkServiceErrorDomain
+                                                     code:DSDAPINetworkServiceErrorCodeInvalidResponse
                                                  userInfo:userInfo];
 
                 failure(error);
@@ -560,6 +560,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                                  success:internalSuccess
                                  failure:failure];
 }
+
 
 @end
 

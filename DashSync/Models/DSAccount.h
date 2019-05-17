@@ -31,18 +31,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialFriendship;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
-@property (nullable, nonatomic, readonly) NSArray<DSFundsDerivationPath *> * derivationPaths;
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * fundDerivationPaths;
+
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * outgoingFundDerivationPaths;
 
 @property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip44DerivationPath;
 
 @property (nullable, nonatomic, readonly) DSFundsDerivationPath * bip32DerivationPath;
+
+@property (nullable, nonatomic, readonly) DSDerivationPath * masterContactsDerivationPath;
 
 @property (nullable, nonatomic, weak) DSWallet * wallet;
 
@@ -77,17 +81,28 @@ NS_ASSUME_NONNULL_BEGIN
 // all previously generated internal addresses
 @property (nonatomic, readonly) NSArray * internalAddresses;
 
+// all the contacts for an account
+@property (nonatomic, readonly) NSArray <DSPotentialFriendship*> * _Nonnull contacts;
+
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
-+(DSAccount*)accountWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
++(DSAccount*)accountWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context;
 
--(instancetype)initWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
+-(instancetype)initWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
--(instancetype)initAsViewOnlyWithDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
+-(instancetype)initAsViewOnlyWithAccountNumber:(uint32_t)accountNumber withDerivationPaths:(NSArray<DSDerivationPath *> *)derivationPaths inContext:(NSManagedObjectContext* _Nullable)context ;
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 
+-(DSIncomingFundsDerivationPath*)derivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)removeIncomingDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
+
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
+
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 
@@ -102,8 +117,14 @@ NS_ASSUME_NONNULL_BEGIN
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)baseDerivationPathsContainAddress:(NSString *)address;
+
 // the high level (hardened) derivation path containing the address
--(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+- (DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+
+// the high level (hardened) derivation path containing the address that is external to the wallet, basically a friend's address
+- (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address;
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
 

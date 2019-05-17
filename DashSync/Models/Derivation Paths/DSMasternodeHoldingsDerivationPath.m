@@ -23,8 +23,9 @@
 
 + (instancetype _Nonnull)providerFundsDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {FEATURE_PURPOSE_HARDENED, coinType | BIP32_HARD, 3 | BIP32_HARD, 0 | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(3), uint256_from_long(0)};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_ProtectedFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ProviderFunds onChain:chain];
 }
 
 -(NSString*)receiveAddress {

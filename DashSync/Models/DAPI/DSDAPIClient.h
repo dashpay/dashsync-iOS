@@ -19,29 +19,35 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSErrorDomain const DSStateTransitionModelErrorDomain;
+extern NSErrorDomain const DSDAPIClientErrorDomain;
 
-typedef NS_ENUM(NSUInteger, DSStateTransitionModelErrorCode) {
-    DSStateTransitionModelErrorCodeSignTransitionFailed = 1,
+typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
+    DSDAPIClientErrorCodeSignTransitionFailed = 1,
+    DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
-@class DSChainManager, DSBlockchainUser, DPDocument, DPSTPacket;
+@class DSChain, DSBlockchainUser, DPDocument, DPSTPacket, DPContract, DSDAPINetworkService,DSPeer;
 
-@interface DSBaseStateTransitionModel : NSObject
+@interface DSDAPIClient : NSObject
 
-@property (readonly, nonatomic, strong) DSChainManager *chainManager;
-@property (readonly, nonatomic, strong) DSBlockchainUser *blockchainUser;
+@property (readonly, nonatomic) DSChain * chain;
+@property (nonatomic, readonly) DSDAPINetworkService * DAPINetworkService;
 
-- (instancetype)initWithChainManager:(DSChainManager *)chainManager
-                      blockchainUser:(DSBlockchainUser *)blockchainUser NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
+- (void)addDAPINodeByAddress:(NSString*)host;
+
+- (void)getAllStateTransitionsForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion;
+
 - (void)sendDocument:(DPDocument *)document
-          contractId:(NSString *)contractId
+             forUser:(DSBlockchainUser*)blockchainUser
+            contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)sendPacket:(DPSTPacket *)stPacket
+           forUser:(DSBlockchainUser*)blockchainUser
         completion:(void (^)(NSError *_Nullable error))completion;
 
 @end

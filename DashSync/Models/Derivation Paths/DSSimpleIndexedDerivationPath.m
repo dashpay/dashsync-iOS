@@ -11,10 +11,9 @@
 
 @implementation DSSimpleIndexedDerivationPath
 
-- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+- (instancetype _Nullable)initWithIndexes:(const UInt256[_Nullable])indexes hardened:(const BOOL[_Nullable])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
     
-    if (! (self = [super initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+    if (! (self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
     
     self.mOrderedAddresses = [NSMutableArray array];
     
@@ -53,6 +52,7 @@
 
 -(void)reloadAddresses {
     [self.mAllAddresses removeAllObjects];
+    [self.mOrderedAddresses removeAllObjects];
     [self.mUsedAddresses removeAllObjects];
     self.addressesLoaded = NO;
     [self loadAddresses];

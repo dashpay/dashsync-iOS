@@ -9,13 +9,6 @@
 /* Begin PBXBuildFile section */
 		2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */; };
 		2A1B55BE2226B3C5008FED65 /* Contacts.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */; };
-		2A1BDBDB225A57BC0028F6DE /* DSBase58DataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBDA225A57BC0028F6DE /* DSBase58DataEncoder.m */; };
-		2A1BDBDE225A57D00028F6DE /* DSEntropyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBDD225A57D00028F6DE /* DSEntropyProvider.m */; };
-		2A1BDBE1225A57DE0028F6DE /* DSMerkleRootOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE0225A57DE0028F6DE /* DSMerkleRootOperation.m */; };
-		2A1BDBE4225A5A980028F6DE /* DashPlatformProtocol+DashSync.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE3225A5A980028F6DE /* DashPlatformProtocol+DashSync.m */; };
-		2A1BDBE6225B68600028F6DE /* dashpay-contract.json in Resources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE5225B68600028F6DE /* dashpay-contract.json */; };
-		2A1BDBEA225B857A0028F6DE /* DSRegisterDashPayContractModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBE9225B857A0028F6DE /* DSRegisterDashPayContractModel.m */; };
-		2A1BDBED225B8B540028F6DE /* DSBaseStateTransitionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1BDBEC225B8B540028F6DE /* DSBaseStateTransitionModel.m */; };
 		2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBD820D8B327000177D8 /* DSHashTests.m */; };
 		2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */; };
 		2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */; };
@@ -37,13 +30,23 @@
 		2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAF20DA080F0097049F /* DSWalletTests.m */; };
 		2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */; };
 		2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */; };
+		2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */; };
 		2A9FFEC622328D0E00956D5F /* DSContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC522328D0E00956D5F /* DSContactsViewController.m */; };
 		2A9FFEC92232920900956D5F /* DSContactsTabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFEC82232920900956D5F /* DSContactsTabBarViewController.m */; };
 		2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */; };
 		2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */; };
 		2AE125EE223B9B0600379C6F /* DSOutgoingContactsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125ED223B9B0600379C6F /* DSOutgoingContactsTableViewController.m */; };
-		2AE125F1223B9C3700379C6F /* DSContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125F0223B9C3700379C6F /* DSContactsModel.m */; };
 		2AE125F4223BD14B00379C6F /* DSIncomingContactsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125F3223BD14B00379C6F /* DSIncomingContactsTableViewController.m */; };
+		2AF8A93C2283539800F8C72D /* DSFetchedResultsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A93B2283539800F8C72D /* DSFetchedResultsTableViewController.m */; };
+		2AF8A943228434CA00F8C72D /* DSContactTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A941228434CA00F8C72D /* DSContactTransactionTableViewCell.m */; };
+		2AF8A944228434CA00F8C72D /* DSContactTransactionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */; };
+		2AF8A947228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A946228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m */; };
+		2AF8A94F2284745700F8C72D /* TextViewFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A94D2284745700F8C72D /* TextViewFormTableViewCell.m */; };
+		2AF8A9502284745700F8C72D /* TextViewFormTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF8A94E2284745700F8C72D /* TextViewFormTableViewCell.xib */; };
+		2AF8A9532284781C00F8C72D /* PlaceholderTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A9522284781C00F8C72D /* PlaceholderTextView.m */; };
+		2AF8A95622847ACB00F8C72D /* TextViewFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */; };
+		2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */; };
+		2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */; };
 		4E82B138191525F4D3E4D175 /* libPods-DashSync_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 825B33F19FEBBA03353877A6 /* libPods-DashSync_Example.a */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -87,6 +90,9 @@
 		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
 		FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FB20F232C9009A2BF1 /* DSTransactionDetailViewController.m */; };
 		FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252FE20F2377D009A2BF1 /* BRCopyLabel.m */; };
+		FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */; };
+		FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */; };
+		FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */; };
 		FB6DC62520AB63AC00E35EED /* DSSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */; };
 		FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62820AB64F400E35EED /* DSChainsViewController.m */; };
 		FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB6DC62B20AB678500E35EED /* DSChainTableViewCell.m */; };
@@ -133,6 +139,10 @@
 		FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */; };
 		FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */; };
 		FBB5D73C221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */; };
+		FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF422226B6E770081D673 /* DSBigNumberTests.m */; };
+		FBBDF426226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */; };
+		FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */; };
+		FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
@@ -163,19 +173,6 @@
 		2A1AC63A20F9012A00B3B79F /* FormSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FormSectionModel.h; sourceTree = "<group>"; };
 		2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FormSectionModel.m; sourceTree = "<group>"; };
 		2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Contacts.storyboard; sourceTree = "<group>"; };
-		2A1BDBD9225A57BC0028F6DE /* DSBase58DataEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBase58DataEncoder.h; sourceTree = "<group>"; };
-		2A1BDBDA225A57BC0028F6DE /* DSBase58DataEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBase58DataEncoder.m; sourceTree = "<group>"; };
-		2A1BDBDC225A57D00028F6DE /* DSEntropyProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSEntropyProvider.h; sourceTree = "<group>"; };
-		2A1BDBDD225A57D00028F6DE /* DSEntropyProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSEntropyProvider.m; sourceTree = "<group>"; };
-		2A1BDBDF225A57DE0028F6DE /* DSMerkleRootOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleRootOperation.h; sourceTree = "<group>"; };
-		2A1BDBE0225A57DE0028F6DE /* DSMerkleRootOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMerkleRootOperation.m; sourceTree = "<group>"; };
-		2A1BDBE2225A5A980028F6DE /* DashPlatformProtocol+DashSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashPlatformProtocol+DashSync.h"; sourceTree = "<group>"; };
-		2A1BDBE3225A5A980028F6DE /* DashPlatformProtocol+DashSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DashPlatformProtocol+DashSync.m"; sourceTree = "<group>"; };
-		2A1BDBE5225B68600028F6DE /* dashpay-contract.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "dashpay-contract.json"; sourceTree = "<group>"; };
-		2A1BDBE8225B857A0028F6DE /* DSRegisterDashPayContractModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterDashPayContractModel.h; sourceTree = "<group>"; };
-		2A1BDBE9225B857A0028F6DE /* DSRegisterDashPayContractModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterDashPayContractModel.m; sourceTree = "<group>"; };
-		2A1BDBEB225B8B540028F6DE /* DSBaseStateTransitionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBaseStateTransitionModel.h; sourceTree = "<group>"; };
-		2A1BDBEC225B8B540028F6DE /* DSBaseStateTransitionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBaseStateTransitionModel.m; sourceTree = "<group>"; };
 		2A1ECBD820D8B327000177D8 /* DSHashTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSHashTests.m; sourceTree = "<group>"; };
 		2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSKeyTests.m; sourceTree = "<group>"; };
 		2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentRequestTests.m; sourceTree = "<group>"; };
@@ -207,6 +204,7 @@
 		2A7DCCAF20DA080F0097049F /* DSWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletTests.m; sourceTree = "<group>"; };
 		2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBloomFilterTests.m; sourceTree = "<group>"; };
 		2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSPaymentProtocolTests.m; sourceTree = "<group>"; };
+		2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUInt256IndexPathTests.m; sourceTree = "<group>"; };
 		2A9FFEC422328D0E00956D5F /* DSContactsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsViewController.h; sourceTree = "<group>"; };
 		2A9FFEC522328D0E00956D5F /* DSContactsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactsViewController.m; sourceTree = "<group>"; };
 		2A9FFEC72232920900956D5F /* DSContactsTabBarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsTabBarViewController.h; sourceTree = "<group>"; };
@@ -216,10 +214,27 @@
 		2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSGovernanceTests.m; sourceTree = "<group>"; };
 		2AE125EC223B9B0600379C6F /* DSOutgoingContactsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSOutgoingContactsTableViewController.h; sourceTree = "<group>"; };
 		2AE125ED223B9B0600379C6F /* DSOutgoingContactsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSOutgoingContactsTableViewController.m; sourceTree = "<group>"; };
-		2AE125EF223B9C3700379C6F /* DSContactsModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactsModel.h; sourceTree = "<group>"; };
-		2AE125F0223B9C3700379C6F /* DSContactsModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactsModel.m; sourceTree = "<group>"; };
 		2AE125F2223BD14B00379C6F /* DSIncomingContactsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSIncomingContactsTableViewController.h; sourceTree = "<group>"; };
 		2AE125F3223BD14B00379C6F /* DSIncomingContactsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSIncomingContactsTableViewController.m; sourceTree = "<group>"; };
+		2AF8A93A2283539800F8C72D /* DSFetchedResultsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSFetchedResultsTableViewController.h; sourceTree = "<group>"; };
+		2AF8A93B2283539800F8C72D /* DSFetchedResultsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSFetchedResultsTableViewController.m; sourceTree = "<group>"; };
+		2AF8A940228434CA00F8C72D /* DSContactTransactionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactTransactionTableViewCell.h; sourceTree = "<group>"; };
+		2AF8A941228434CA00F8C72D /* DSContactTransactionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactTransactionTableViewCell.m; sourceTree = "<group>"; };
+		2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DSContactTransactionTableViewCell.xib; sourceTree = "<group>"; };
+		2AF8A945228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactBaseTransactionsTableViewController.h; sourceTree = "<group>"; };
+		2AF8A946228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactBaseTransactionsTableViewController.m; sourceTree = "<group>"; };
+		2AF8A94C2284745700F8C72D /* TextViewFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewFormTableViewCell.h; sourceTree = "<group>"; };
+		2AF8A94D2284745700F8C72D /* TextViewFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewFormTableViewCell.m; sourceTree = "<group>"; };
+		2AF8A94E2284745700F8C72D /* TextViewFormTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextViewFormTableViewCell.xib; sourceTree = "<group>"; };
+		2AF8A9512284781C00F8C72D /* PlaceholderTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlaceholderTextView.h; sourceTree = "<group>"; };
+		2AF8A9522284781C00F8C72D /* PlaceholderTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlaceholderTextView.m; sourceTree = "<group>"; };
+		2AF8A95422847ACB00F8C72D /* TextViewFormCellModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextViewFormCellModel.h; sourceTree = "<group>"; };
+		2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TextViewFormCellModel.m; sourceTree = "<group>"; };
+		2AF8A95722847C2A00F8C72D /* TextInputFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextInputFormTableViewCell.h; sourceTree = "<group>"; };
+		2AF8A95822847E5200F8C72D /* DSContactProfileViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactProfileViewController.h; sourceTree = "<group>"; };
+		2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileViewController.m; sourceTree = "<group>"; };
+		2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactProfileAvatarView.h; sourceTree = "<group>"; };
+		2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactProfileAvatarView.m; sourceTree = "<group>"; };
 		2CB0B2B92A8EA70CAE7DC362 /* Pods-DashSync_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashSync_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example.release.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* DashSync_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DashSync_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -304,6 +319,12 @@
 		FB5A0FA821951CFC0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		FB5A0FA921951CFC0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FB5A0FAA21951CFD0079CF42 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		FB6B78442278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactReceivedTransactionsTableViewController.h; sourceTree = "<group>"; };
+		FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactReceivedTransactionsTableViewController.m; sourceTree = "<group>"; };
+		FB6B78472278D5210005C9DB /* DSContactSentTransactionsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactSentTransactionsTableViewController.h; sourceTree = "<group>"; };
+		FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactSentTransactionsTableViewController.m; sourceTree = "<group>"; };
+		FB6B784A2278FB3A0005C9DB /* DSContactSendDashViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactSendDashViewController.h; sourceTree = "<group>"; };
+		FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactSendDashViewController.m; sourceTree = "<group>"; };
 		FB6DC62320AB63AC00E35EED /* DSSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSettingsViewController.h; sourceTree = "<group>"; };
 		FB6DC62420AB63AC00E35EED /* DSSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSettingsViewController.m; sourceTree = "<group>"; };
 		FB6DC62720AB64F400E35EED /* DSChainsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSChainsViewController.h; sourceTree = "<group>"; };
@@ -391,6 +412,13 @@
 		FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeServiceViewController.m; sourceTree = "<group>"; };
 		FBB5D73A221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRegistrarViewController.h; sourceTree = "<group>"; };
 		FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRegistrarViewController.m; sourceTree = "<group>"; };
+		FBBDF422226B6E770081D673 /* DSBigNumberTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBigNumberTests.m; sourceTree = "<group>"; };
+		FBBDF424226C843C0081D673 /* DSBlockchainUserTransitionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserTransitionsViewController.h; sourceTree = "<group>"; };
+		FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserTransitionsViewController.m; sourceTree = "<group>"; };
+		FBBDF427226C8ECA0081D673 /* DSTransitionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransitionTableViewCell.h; sourceTree = "<group>"; };
+		FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransitionTableViewCell.m; sourceTree = "<group>"; };
+		FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactTableViewCell.h; sourceTree = "<group>"; };
+		FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactTableViewCell.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -445,8 +473,6 @@
 			isa = PBXGroup;
 			children = (
 				2A1B55BD2226B3C4008FED65 /* Contacts.storyboard */,
-				2AE125EF223B9C3700379C6F /* DSContactsModel.h */,
-				2AE125F0223B9C3700379C6F /* DSContactsModel.m */,
 				2A9FFEFF2233B90000956D5F /* DSContactsNavigationController.h */,
 				2A9FFF002233B90000956D5F /* DSContactsNavigationController.m */,
 				2A9FFEC72232920900956D5F /* DSContactsTabBarViewController.h */,
@@ -457,33 +483,30 @@
 				2AE125F3223BD14B00379C6F /* DSIncomingContactsTableViewController.m */,
 				2AE125EC223B9B0600379C6F /* DSOutgoingContactsTableViewController.h */,
 				2AE125ED223B9B0600379C6F /* DSOutgoingContactsTableViewController.m */,
+				FB6B78442278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.h */,
+				FB6B78452278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m */,
+				FB6B78472278D5210005C9DB /* DSContactSentTransactionsTableViewController.h */,
+				FB6B78482278D5210005C9DB /* DSContactSentTransactionsTableViewController.m */,
+				FB6B784A2278FB3A0005C9DB /* DSContactSendDashViewController.h */,
+				FB6B784B2278FB3A0005C9DB /* DSContactSendDashViewController.m */,
+				2AF8A93A2283539800F8C72D /* DSFetchedResultsTableViewController.h */,
+				2AF8A93B2283539800F8C72D /* DSFetchedResultsTableViewController.m */,
+				2AF8A940228434CA00F8C72D /* DSContactTransactionTableViewCell.h */,
+				2AF8A941228434CA00F8C72D /* DSContactTransactionTableViewCell.m */,
+				2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */,
+				2AF8A945228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.h */,
+				2AF8A946228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m */,
+				2AF8A95822847E5200F8C72D /* DSContactProfileViewController.h */,
+				2AF8A95922847E5200F8C72D /* DSContactProfileViewController.m */,
+				2AF8A95B2284820F00F8C72D /* DSContactProfileAvatarView.h */,
+				2AF8A95C2284820F00F8C72D /* DSContactProfileAvatarView.m */,
 			);
 			name = Contacts;
-			sourceTree = "<group>";
-		};
-		2A1BDBD8225A57940028F6DE /* iOSDPPSupport */ = {
-			isa = PBXGroup;
-			children = (
-				2A1BDBD9225A57BC0028F6DE /* DSBase58DataEncoder.h */,
-				2A1BDBDA225A57BC0028F6DE /* DSBase58DataEncoder.m */,
-				2A1BDBDC225A57D00028F6DE /* DSEntropyProvider.h */,
-				2A1BDBDD225A57D00028F6DE /* DSEntropyProvider.m */,
-				2A1BDBDF225A57DE0028F6DE /* DSMerkleRootOperation.h */,
-				2A1BDBE0225A57DE0028F6DE /* DSMerkleRootOperation.m */,
-				2A1BDBE2225A5A980028F6DE /* DashPlatformProtocol+DashSync.h */,
-				2A1BDBE3225A5A980028F6DE /* DashPlatformProtocol+DashSync.m */,
-			);
-			path = iOSDPPSupport;
 			sourceTree = "<group>";
 		};
 		2A1BDBE7225B855B0028F6DE /* Contracts */ = {
 			isa = PBXGroup;
 			children = (
-				2A1BDBE5225B68600028F6DE /* dashpay-contract.json */,
-				2A1BDBE8225B857A0028F6DE /* DSRegisterDashPayContractModel.h */,
-				2A1BDBE9225B857A0028F6DE /* DSRegisterDashPayContractModel.m */,
-				2A1BDBEB225B8B540028F6DE /* DSBaseStateTransitionModel.h */,
-				2A1BDBEC225B8B540028F6DE /* DSBaseStateTransitionModel.m */,
 			);
 			name = Contracts;
 			sourceTree = "<group>";
@@ -491,6 +514,7 @@
 		2A3B3E9120F893F4002962FB /* Forms */ = {
 			isa = PBXGroup;
 			children = (
+				2AF8A9482284741A00F8C72D /* TextView */,
 				2A3B3E9320F893F4002962FB /* Selector */,
 				2A3B3E9A20F893F4002962FB /* Switcher */,
 				2A3B3EA020F893F4002962FB /* TextField */,
@@ -500,6 +524,7 @@
 				2A1AC63B20F9012A00B3B79F /* FormSectionModel.m */,
 				2A3B3EAB20F893F4002962FB /* FormTableViewController.h */,
 				2A3B3E9220F893F4002962FB /* FormTableViewController.m */,
+				2AF8A95722847C2A00F8C72D /* TextInputFormTableViewCell.h */,
 			);
 			path = Forms;
 			sourceTree = "<group>";
@@ -543,6 +568,20 @@
 			path = TextField;
 			sourceTree = "<group>";
 		};
+		2AF8A9482284741A00F8C72D /* TextView */ = {
+			isa = PBXGroup;
+			children = (
+				2AF8A9512284781C00F8C72D /* PlaceholderTextView.h */,
+				2AF8A9522284781C00F8C72D /* PlaceholderTextView.m */,
+				2AF8A95422847ACB00F8C72D /* TextViewFormCellModel.h */,
+				2AF8A95522847ACB00F8C72D /* TextViewFormCellModel.m */,
+				2AF8A94C2284745700F8C72D /* TextViewFormTableViewCell.h */,
+				2AF8A94D2284745700F8C72D /* TextViewFormTableViewCell.m */,
+				2AF8A94E2284745700F8C72D /* TextViewFormTableViewCell.xib */,
+			);
+			path = TextView;
+			sourceTree = "<group>";
+		};
 		6003F581195388D10070C39A = {
 			isa = PBXGroup;
 			children = (
@@ -580,7 +619,6 @@
 		6003F593195388D20070C39A /* Example for DashSync */ = {
 			isa = PBXGroup;
 			children = (
-				2A1BDBD8225A57940028F6DE /* iOSDPPSupport */,
 				2A3B3E9120F893F4002962FB /* Forms */,
 				FB2B21A820D6FBF4000DF537 /* Views */,
 				FBB25BED20C5CD290037F5BE /* View Controllers */,
@@ -617,20 +655,22 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				6003F5BB195388D20070C39A /* Tests.m */,
+				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
+				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
+				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
+				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
+				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
 				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
-				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
-				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
-				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
-				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
-				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
-				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
 				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
-				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
-				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
-				6003F5B6195388D20070C39A /* Supporting Files */,
+				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
 				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
+				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
+				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
+				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
+				6003F5B6195388D20070C39A /* Supporting Files */,
+				6003F5BB195388D20070C39A /* Tests.m */,
+				FBBDF422226B6E770081D673 /* DSBigNumberTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -678,6 +718,8 @@
 				FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */,
 				FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */,
 				FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */,
+				FBBDF424226C843C0081D673 /* DSBlockchainUserTransitionsViewController.h */,
+				FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */,
 			);
 			name = "Blockchain Users";
 			sourceTree = "<group>";
@@ -816,6 +858,10 @@
 				FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */,
 				FBAA774D222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.h */,
 				FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */,
+				FBBDF427226C8ECA0081D673 /* DSTransitionTableViewCell.h */,
+				FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */,
+				FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */,
+				FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1027,7 +1073,8 @@
 			files = (
 				FBA676362235AD090069EC2F /* Governance.storyboard in Resources */,
 				2A3B3EB520F893F4002962FB /* SelectorFormTableViewCell.xib in Resources */,
-				2A1BDBE6225B68600028F6DE /* dashpay-contract.json in Resources */,
+				2AF8A944228434CA00F8C72D /* DSContactTransactionTableViewCell.xib in Resources */,
+				2AF8A9502284745700F8C72D /* TextViewFormTableViewCell.xib in Resources */,
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
 				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
@@ -1134,6 +1181,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */,
+				2AF8A93C2283539800F8C72D /* DSFetchedResultsTableViewController.m in Sources */,
 				FB763C652089B0A700CDBA57 /* DSAddressTableViewCell.m in Sources */,
 				2A3B3EB820F893F4002962FB /* SwitcherFormTableViewCell.m in Sources */,
 				FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */,
@@ -1143,20 +1191,22 @@
 				2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */,
 				FB995D9A21101C4200AC37D0 /* DSPeersViewController.m in Sources */,
 				2A1AC63C20F9012A00B3B79F /* FormSectionModel.m in Sources */,
+				2AF8A95A22847E5300F8C72D /* DSContactProfileViewController.m in Sources */,
 				FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */,
-				2A1BDBE4225A5A980028F6DE /* DashPlatformProtocol+DashSync.m in Sources */,
 				2A3B3EB620F893F4002962FB /* SelectorFormTableViewCell.m in Sources */,
 				2A9FFF012233B90000956D5F /* DSContactsNavigationController.m in Sources */,
 				FB6DC62C20AB678500E35EED /* DSChainTableViewCell.m in Sources */,
 				FB3FF0AF222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m in Sources */,
 				FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */,
+				2AF8A95622847ACB00F8C72D /* TextViewFormCellModel.m in Sources */,
 				FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */,
 				FBB4E36F2145B414008040B7 /* DSLayer2ViewController.m in Sources */,
 				FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */,
+				2AF8A943228434CA00F8C72D /* DSContactTransactionTableViewCell.m in Sources */,
 				FB90D2D220C3F76E002B7956 /* DSDerivationPathTableViewCell.m in Sources */,
 				FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */,
 				2AE125F4223BD14B00379C6F /* DSIncomingContactsTableViewController.m in Sources */,
-				2AE125F1223B9C3700379C6F /* DSContactsModel.m in Sources */,
+				FB6B78492278D5210005C9DB /* DSContactSentTransactionsTableViewController.m in Sources */,
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
@@ -1173,9 +1223,9 @@
 				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
 				FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */,
 				FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */,
+				FBBDF426226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */,
-				2A1BDBDB225A57BC0028F6DE /* DSBase58DataEncoder.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
 				FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
@@ -1183,6 +1233,7 @@
 				2A9FFEC622328D0E00956D5F /* DSContactsViewController.m in Sources */,
 				FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */,
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
+				2AF8A947228442EF00F8C72D /* DSContactBaseTransactionsTableViewController.m in Sources */,
 				FB9A106620D7A72D006883E2 /* DSAddressesExporterViewController.m in Sources */,
 				FB763C5620897B0F00CDBA57 /* DSWalletTableViewCell.m in Sources */,
 				FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */,
@@ -1192,39 +1243,42 @@
 				FB90D2C920C3EF14002B7956 /* DSAccountsViewController.m in Sources */,
 				FB995D9D21101C9600AC37D0 /* DSPeerTableViewCell.m in Sources */,
 				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
+				FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */,
 				FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */,
+				FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */,
 				FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */,
+				FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
-				2A1BDBDE225A57D00028F6DE /* DSEntropyProvider.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,
 				2A3B3EB320F893F4002962FB /* FormTableViewController.m in Sources */,
 				FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
-				2A1BDBED225B8B540028F6DE /* DSBaseStateTransitionModel.m in Sources */,
 				FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */,
 				FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
 				2A3B3EBD20F893F4002962FB /* TextFieldFormTableViewCell.m in Sources */,
 				FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */,
 				FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */,
+				2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */,
 				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */,
+				FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,
 				FB90D2CC20C3F0D3002B7956 /* DSAccountTableViewCell.m in Sources */,
 				FB6DC62920AB64F400E35EED /* DSChainsViewController.m in Sources */,
+				2AF8A94F2284745700F8C72D /* TextViewFormTableViewCell.m in Sources */,
 				FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 				FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */,
 				2A3B3EBB20F893F4002962FB /* NumberTextFieldFormCellModel.m in Sources */,
 				FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */,
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
+				2AF8A9532284781C00F8C72D /* PlaceholderTextView.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
-				2A1BDBE1225A57DE0028F6DE /* DSMerkleRootOperation.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
-				2A1BDBEA225B857A0028F6DE /* DSRegisterDashPayContractModel.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
 				FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */,
@@ -1246,11 +1300,13 @@
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,
+				FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,
 				2A1ECBDF20D8F7DB000177D8 /* DSTransactionTests.m in Sources */,
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
+				2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
 				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,

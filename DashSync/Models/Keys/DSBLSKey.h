@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (UInt768)signData:(NSData *)data;
 - (UInt768)signDataSingleSHA256:(NSData *)data;
 
+- (NSData*)encryptData:(NSData*)data;
+
 + (UInt768)aggregateSignatures:(NSArray*)signatures withPublicKeys:(NSArray*)publicKeys withMessages:(NSArray*)messages;
 
 @end

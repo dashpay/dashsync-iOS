@@ -15,31 +15,42 @@
 //  limitations under the License.
 //
 
-#import "DSRegisterDashPayContractModel.h"
-
-#import <DashSync/DashSync.h>
+#import "DSDAPIClient+RegisterDashPayContract.h"
 
 #import "DashPlatformProtocol+DashSync.h"
+#import "DSBlockchainUser.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DSRegisterDashPayContractModel
+@implementation DSDAPIClient (RegisterDashPayContract)
 
-- (void)registerDashPayContractCompletion:(void (^)(NSError *_Nullable error))completion {
-    DPContract *contract = [self.class dashPayContract];
-    
++ (DPContract *)ds_currentDashPayContract {
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    if (dpp.contract) {
+        return dpp.contract;
+    }
+    
+    DPContract *contract = [self ds_localDashPayContract];
     dpp.contract = contract;
     
+    return contract;
+}
+
+- (void)ds_registerDashPayContractForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion {
+    DPContract *contract = [self.class ds_currentDashPayContract];
+    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    dpp.userId = blockchainUser.registrationTransactionHashIdentifier;
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
-    [self sendPacket:stPacket completion:completion];
+    [self sendPacket:stPacket forUser:blockchainUser completion:completion];
 }
 
 #pragma mark - Private
 
-+ (DPContract *)dashPayContract {
++ (DPContract *)ds_localDashPayContract {
     // TODO: read async'ly
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"dashpay-contract" ofType:@"json"];
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *path = [bundle pathForResource:@"dashpay-contract" ofType:@"json"];
     NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
     NSAssert(error == nil, @"Failed reading contract json");

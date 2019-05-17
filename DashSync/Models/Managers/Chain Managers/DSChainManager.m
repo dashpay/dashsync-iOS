@@ -70,12 +70,12 @@
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
-    
-    // TODO: node should be randomly selected on every DAPI call
-    // (using devnet-maithai for now)
-    NSURL *dapiNodeURL = [NSURL URLWithString:@"http://18.237.69.61:3000"];
-    HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-    self.DAPIClient = [[DSDAPIClient alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
+    self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain];
+    if (chain.isDevnetAny) {
+        for (DSPeer * peer in self.peerManager.registeredDevnetPeers) {
+            [self.DAPIClient addDAPINodeByAddress:peer.host];
+        }
+    }
     
     return self;
 }
