@@ -45,6 +45,7 @@
 #import "DSPriceManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionLockVote.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "NSString+Dash.h"
@@ -58,7 +59,7 @@
 
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
-@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary;
+@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary; //v13 and before
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
 @property (nonatomic, assign) BOOL resetBloomFilterAfterNextBlock;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
@@ -174,7 +175,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:nil];
                 }
             }];
         }
@@ -1152,6 +1153,20 @@
     
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }
+
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockVoteHashes {
+    
+}
+
+- (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
+    NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
+
+    [instantSendTransactionLock verifySignature];
+    [instantSendTransactionLock verifySentByIntendedQuorum];
+    
+    //[self checkLocksForTransactionHash:instantSendTransactionLock.transactionHash forInput:transactionOutput];
+}
+
 
 // MARK: Blocks
 

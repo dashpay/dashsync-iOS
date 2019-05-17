@@ -21,7 +21,11 @@ typedef NS_ENUM(uint32_t,DSSporkIdentifier) {
     DSSporkIdentifier_Spork13OldSuperblockFlag = 10012,
     DSSporkIdentifier_Spork14RequireSentinelFlag = 10013,
     DSSporkIdentifier_Spork15DeterministicMasternodesEnabled = 10014,
-    DSSporkIdentifier_Spork16InstantSendAutoLocks = 10015
+    DSSporkIdentifier_Spork16InstantSendAutoLocks = 10015,
+    DSSporkIdentifier_Spork17QuorumDKGEnabled = 10016,
+    DSSporkIdentifier_Spork18QuorumDebugEnabled = 10017,
+    DSSporkIdentifier_Spork19ChainLocksEnabled = 10018,
+    DSSporkIdentifier_Spork20InstantSendLLMQBased = 10019,
 };
 
 @class DSChain;

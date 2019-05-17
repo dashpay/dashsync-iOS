@@ -73,6 +73,11 @@ typedef struct _DSUTXO {
     unsigned long n; // use unsigned long instead of uint32_t to avoid trailing struct padding (for NSValue comparisons)
 } DSUTXO;
 
+typedef struct _DSLLMQ {
+    uint8_t type;
+    UInt256 hash;
+} DSLLMQ;
+
 #define uint768_eq(a, b)\
 ((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3] &&\
 (a).u64[4] == (b).u64[4] && (a).u64[5] == (b).u64[5] && (a).u64[6] == (b).u64[6] && (a).u64[7] == (b).u64[7] &&\
@@ -143,6 +148,7 @@ typedef struct _DSUTXO {
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 #define DSUTXO_ZERO ((DSUTXO) { .hash = UINT256_ZERO , .n = 0 })
+#define DSLLMQ_ZERO ((DSLLMQ) { .type = 0, .hash = UINT256_ZERO })
 
 #define dsutxo_eq(a,b) (uint256_eq(a.hash,b.hash) && (a.n == b.n))
 #define dsutxo_is_zero(a) (uint256_is_zero(a.hash) && (a.n == 0))

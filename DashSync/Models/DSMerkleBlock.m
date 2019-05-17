@@ -189,6 +189,7 @@ inline static int ceil_log2(int x)
     }];
     
     [root getValue:&merkleRoot];
+    //DSDLog(@"%@ - %@",uint256_hex(merkleRoot),uint256_hex(_merkleRoot));
     if (_totalTransactions > 0 && ! uint256_eq(merkleRoot, _merkleRoot)) return NO; // merkle root check failed
     return YES;
 }

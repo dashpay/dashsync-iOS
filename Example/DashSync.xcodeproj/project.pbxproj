@@ -85,6 +85,9 @@
 		FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */; };
 		FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */; };
 		FB3FF0AF222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3FF0AE222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m */; };
+		FB44D621228C73FB00354A4D /* Quorums.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB44D620228C73FB00354A4D /* Quorums.storyboard */; };
+		FB44D625228C774800354A4D /* DSQuorumTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */; };
+		FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB44D627228C77E400354A4D /* DSQuorumListViewController.m */; };
 		FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */; };
 		FB5252F620EE159B009A2BF1 /* DSAccountChooserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F520EE159B009A2BF1 /* DSAccountChooserViewController.m */; };
 		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
@@ -306,6 +309,11 @@
 		FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSendAmountViewController.m; sourceTree = "<group>"; };
 		FB3FF0AD222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRevocationViewController.h; sourceTree = "<group>"; };
 		FB3FF0AE222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRevocationViewController.m; sourceTree = "<group>"; };
+		FB44D620228C73FB00354A4D /* Quorums.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Quorums.storyboard; sourceTree = "<group>"; };
+		FB44D623228C774800354A4D /* DSQuorumTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSQuorumTableViewCell.h; sourceTree = "<group>"; };
+		FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSQuorumTableViewCell.m; sourceTree = "<group>"; };
+		FB44D626228C77E400354A4D /* DSQuorumListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSQuorumListViewController.h; sourceTree = "<group>"; };
+		FB44D627228C77E400354A4D /* DSQuorumListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSQuorumListViewController.m; sourceTree = "<group>"; };
 		FB5252F120EE0A34009A2BF1 /* DSProposalCreatorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalCreatorViewController.h; sourceTree = "<group>"; };
 		FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalCreatorViewController.m; sourceTree = "<group>"; };
 		FB5252F420EE159B009A2BF1 /* DSAccountChooserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAccountChooserViewController.h; sourceTree = "<group>"; };
@@ -636,6 +644,7 @@
 				FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */,
 				FBA676332235A9620069EC2F /* Helpers.storyboard */,
 				FBA676352235AD090069EC2F /* Governance.storyboard */,
+				FB44D620228C73FB00354A4D /* Quorums.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -786,6 +795,15 @@
 			name = Views;
 			sourceTree = "<group>";
 		};
+		FB44D622228C753300354A4D /* Quorums */ = {
+			isa = PBXGroup;
+			children = (
+				FB44D626228C77E400354A4D /* DSQuorumListViewController.h */,
+				FB44D627228C77E400354A4D /* DSQuorumListViewController.m */,
+			);
+			name = Quorums;
+			sourceTree = "<group>";
+		};
 		FB6DC62620AB63B600E35EED /* Main */ = {
 			isa = PBXGroup;
 			children = (
@@ -862,6 +880,8 @@
 				FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */,
 				FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */,
 				FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */,
+				FB44D623228C774800354A4D /* DSQuorumTableViewCell.h */,
+				FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -946,6 +966,7 @@
 		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FB44D622228C753300354A4D /* Quorums */,
 				2A1B55BC2226B15A008FED65 /* Contacts */,
 				FB83C2E121B7B72F0057A0EF /* Actions */,
 				FBB4E37D214A9EC4008040B7 /* DAPI Calls */,
@@ -1078,6 +1099,7 @@
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
 				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
+				FB44D621228C73FB00354A4D /* Quorums.storyboard in Resources */,
 				2A3B3EB920F893F4002962FB /* SwitcherFormTableViewCell.xib in Resources */,
 				2A3B3EBA20F893F4002962FB /* TextFieldFormTableViewCell.xib in Resources */,
 				71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */,
@@ -1253,6 +1275,7 @@
 				2A3B3EB320F893F4002962FB /* FormTableViewController.m in Sources */,
 				FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */,
+				FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
 				FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */,
@@ -1278,6 +1301,7 @@
 				2AF8A9532284781C00F8C72D /* PlaceholderTextView.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
+				FB44D625228C774800354A4D /* DSQuorumTableViewCell.m in Sources */,
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,

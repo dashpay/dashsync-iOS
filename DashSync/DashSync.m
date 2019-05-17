@@ -15,6 +15,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
+#import "DSQuorumEntryEntity+CoreDataClass.h"
 
 @interface DashSync ()
 
@@ -100,6 +101,7 @@
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
     [DSAddressEntity deleteAddressesOnChain:chainEntity];
+    [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
     [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
     [DSDerivationPathEntity deleteDerivationPathsOnChain:chainEntity];
     [DSContactEntity deleteContactsOnChain:chainEntity];
@@ -122,9 +124,11 @@
         [DSChainEntity setContext:context];
         [DSSimplifiedMasternodeEntryEntity setContext:context];
         [DSLocalMasternodeEntity setContext:context];
+        [DSQuorumEntryEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
         [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager resetSyncCountInfo:DSSyncCountInfo_List];
         [chainManager.masternodeManager wipeMasternodeInfo];
@@ -132,7 +136,6 @@
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListCountUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
     }];
     

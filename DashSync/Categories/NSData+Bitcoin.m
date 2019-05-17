@@ -964,6 +964,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 @implementation NSData (Bitcoin)
 
++ (instancetype)dataWithLLMQ:(DSLLMQ)llmq
+{
+    return [NSData dataWithBytes:&llmq length:sizeof(llmq)];
+}
+
 + (instancetype)dataWithUInt768:(UInt768)n
 {
     return [NSData dataWithBytes:&n length:sizeof(n)];
@@ -1183,10 +1188,16 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return *(UInt768 *)(self.bytes);
 }
 
--(DSUTXO)transactionOutpoint
+- (DSUTXO)transactionOutpoint
 {
     if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
     return *(DSUTXO *)(self.bytes);
+}
+
+- (DSLLMQ)llmq
+{
+    if (self.length < sizeof(DSLLMQ)) return DSLLMQ_ZERO;
+    return *(DSLLMQ *)(self.bytes);
 }
 
 
@@ -1217,6 +1228,12 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 {
     if (self.length < offset + sizeof(UInt256)) return UINT256_ZERO;
     return *(const UInt256 *)((const char *)self.bytes + offset);
+}
+
+-(DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset
+{
+    if (self.length < offset + sizeof(DSUTXO)) return DSUTXO_ZERO;
+    return *(DSUTXO *)((const char *)self.bytes + offset);
 }
 
 - (NSString *)stringAtOffset:(NSUInteger)offset length:(NSNumber **)length
@@ -1377,6 +1394,18 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     [d appendData:self];
     [d appendBytes:d.SHA256_2.u32 length:4];
     return [d base58String];
+}
+
+- (uint64_t)trueBitsCount {
+    uint64_t trueBitsCount = 0;
+    for (uint64_t i = 0;i<self.length;i++) {
+        uint8_t bits = [self UInt8AtOffset:i];
+        for (uint8_t j = 0;j<8;j++) {
+            if (bits & 1) trueBitsCount++;
+            bits >>= 1;
+        }
+    }
+    return trueBitsCount;
 }
 
 @end
