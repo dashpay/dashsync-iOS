@@ -344,14 +344,13 @@ static NSUInteger _fetchBatchSize = 100;
 }
 
 // persists changes (this is called automatically for the main context when the app terminates)
-+ (void)saveContext
++ (NSError*)saveContext;
 {
-    if (! self.context.hasChanges) return;
-    
+    if (! self.context.hasChanges) return nil;
+    __block NSError * error = nil;
     [self.context performBlockAndWait:^{
         if (self.context.hasChanges) {
             @autoreleasepool {
-                NSError *error = nil;
                 NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
                 // this seems to fix unreleased temporary object IDs
@@ -368,6 +367,8 @@ static NSUInteger _fetchBatchSize = 100;
             }
         }
     }];
+    
+    return error;
 }
 
 // MARK: - entity methods

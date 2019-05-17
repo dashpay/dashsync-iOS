@@ -28,5 +28,7 @@
 @dynamic validMembersBitset;
 @dynamic commitmentHashData;
 @dynamic version;
+@dynamic block;
+@dynamic verified;
 
 @end

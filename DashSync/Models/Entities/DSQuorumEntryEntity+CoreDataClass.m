@@ -11,10 +11,20 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPotentialQuorumEntry.h"
+#import "DSMerkleBlockEntity+CoreDataClass.h"
 
 @implementation DSQuorumEntryEntity
 
-- (void)setAttributesFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry {
++(instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry {
+    DSMerkleBlockEntity * block = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(potentialQuorumEntry.quorumHash)];
+    DSQuorumEntryEntity * quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+    [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+    return quorumEntryEntity;
+}
+
+- (void)setAttributesFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *) block {
+    self.verified = !!block && potentialQuorumEntry.verified;
+    self.block = block;
     self.quorumHash = potentialQuorumEntry.quorumHash;
     self.quorumPublicKey = potentialQuorumEntry.quorumPublicKey;
     self.quorumThresholdSignature = potentialQuorumEntry.quorumThresholdSignature;

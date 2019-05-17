@@ -122,9 +122,11 @@
         [DSChainEntity setContext:context];
         [DSSimplifiedMasternodeEntryEntity setContext:context];
         [DSLocalMasternodeEntity setContext:context];
+        [DSQuorumEntryEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
         [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager resetSyncCountInfo:DSSyncCountInfo_List];
         [chainManager.masternodeManager wipeMasternodeInfo];

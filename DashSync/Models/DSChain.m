@@ -1442,7 +1442,7 @@ static dispatch_once_t devnetToken = 0;
         [self saveBlocks];
         DSMerkleBlock *b = block;
         
-        for (uint32_t i = 0; b && i < (DGW_PAST_BLOCKS_MAX + 600); i++) {
+        for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
             b = self.blocks[uint256_obj(b.prevBlock)];
         }
         NSMutableArray * blocksToRemove = [NSMutableArray array];
@@ -1611,7 +1611,8 @@ static dispatch_once_t devnetToken = 0;
             if ([recentOrphans count])  DSDLog(@"%lu recent orphans will be removed from disk",(unsigned long)[recentOrphans count]);
             [DSMerkleBlockEntity deleteObjects:recentOrphans];
         } else {
-            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && !(blockHash in %@)",self.delegateQueueChainEntity,blocks.allKeys];
+            //remember to not delete blocks needed for quorums
+            NSArray<DSMerkleBlockEntity *> * oldBlockHeaders = [DSMerkleBlockEntity objectsMatching:@"(chain == %@) && !(blockHash in %@) && (quorums.@count == 0)",self.delegateQueueChainEntity,blocks.allKeys];
             [DSMerkleBlockEntity deleteObjects:oldBlockHeaders];
         }
         

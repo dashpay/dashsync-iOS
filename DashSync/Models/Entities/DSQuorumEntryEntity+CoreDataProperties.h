@@ -11,6 +11,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(uint16_t, DSLLMQType) {
+    DSLLMQType_50_60 = 1, //every 24 blocks
+    DSLLMQType_400_60 = 2, //288 blocks
+    DSLLMQType_400_85 = 3, //576 blocks
+    DSLLMQType_5_60 = 100 //24 blocks
+};
+
 @interface DSQuorumEntryEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSQuorumEntryEntity *> *)fetchRequest;
@@ -20,8 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *quorumThresholdSignatureData;
 @property (nullable, nonatomic, retain) NSData *quorumVerificationVectorHashData;
 @property (nonatomic, assign) int32_t signersCount;
+@property (nonatomic, assign) BOOL verified;
 @property (nullable, nonatomic, retain) NSData *allCommitmentAggregatedSignatureData;
-@property (nonatomic, assign) int16_t llmqType;
+@property (nonatomic, assign) DSLLMQType llmqType;
 @property (nonatomic, assign) int16_t version;
 @property (nonatomic, assign) int32_t validMembersCount;
 @property (nullable, nonatomic, retain) NSData * signersBitset;
@@ -29,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSQuorumCommitmentTransactionEntity *commitmentTransaction;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) NSData *commitmentHashData;
+@property (nonatomic, retain) DSMerkleBlockEntity * block;
 
 @end
 

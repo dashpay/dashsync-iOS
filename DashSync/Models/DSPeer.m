@@ -715,7 +715,7 @@
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:previousBlockHash];
     [msg appendUInt256:blockHash];
-    DSDLog(@"%@",msg);
+    DSDLog(@"Requesting masternode list and quorums from %@ to %@",uint256_reverse_hex(previousBlockHash),uint256_reverse_hex(blockHash));
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 

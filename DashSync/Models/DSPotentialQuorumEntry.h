@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=toData) NSData * data;
 @property (nonatomic, readonly) UInt256 commitmentHash;
 @property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) BOOL verified;
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;
 

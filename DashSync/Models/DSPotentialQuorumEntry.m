@@ -25,6 +25,7 @@
 @property (nonatomic, assign) UInt256 commitmentHash;
 @property (nonatomic, assign) uint32_t length;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, assign) BOOL verified;
 
 @end
 
@@ -96,6 +97,8 @@
     self.commitmentHash = [self.toData SHA256_2];
     
     self.chain = chain;
+    
+    self.verified = FALSE;
     
     return self;
 }
@@ -169,6 +172,8 @@
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
     
     //todo
+    
+    self.verified = YES;
     
     return YES;
         
