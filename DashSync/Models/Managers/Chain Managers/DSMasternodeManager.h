@@ -78,6 +78,8 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSLocalMasternode * _Nullable)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
+-(UInt384)quorumPublicKeyForInstantSendRequestID:(UInt256)requestID;
+
 @end
 
 NS_ASSUME_NONNULL_END

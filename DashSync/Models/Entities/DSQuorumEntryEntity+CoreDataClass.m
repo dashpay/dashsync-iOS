@@ -12,6 +12,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPotentialQuorumEntry.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "NSMutableData+Dash.h"
 
 @implementation DSQuorumEntryEntity
 
@@ -105,6 +106,14 @@
 + (DSQuorumEntryEntity*)quorumEntryForHash:(NSData*)quorumEntryHash onChain:(DSChainEntity*)chainEntity {
     NSArray * objects = [self objectsMatching:@"(chain == %@) && (quorumEntryHash == %@)",chainEntity,quorumEntryHash];
     return [objects firstObject];
+}
+
+- (UInt256)orderingHashForRequestID:(UInt256)requestID {
+    NSMutableData * data = [NSMutableData data];
+    [data appendVarInt:1];
+    [data appendUInt256:self.quorumHash];
+    [data appendUInt256:requestID];
+    return [data SHA256_2];
 }
 
 @end

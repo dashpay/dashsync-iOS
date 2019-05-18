@@ -680,6 +680,26 @@ inline static int ceil_log2(int x)
     return [self masternodesForQuorumHash:quorumHash quorumCount:quorumCount forBlockHash:self.baseBlockHash];
 }
 
+// MARK: - Quorums
+
+-(UInt384)quorumPublicKeyForInstantSendRequestID:(UInt256)requestID {
+    __block UInt384 publicKey;
+    [self.managedObjectContext performBlockAndWait:^{
+        NSArray * quorumsForIS = [self.quorumsDictionary[@(1)] allValues];
+        UInt256 lowestValue = UINT256_MAX;
+        DSQuorumEntryEntity * firstQuorum;
+        for (DSQuorumEntryEntity * quorumEntry in quorumsForIS) {
+            UInt256 orderingHash = [quorumEntry orderingHashForRequestID:requestID];
+            if (uint256_sup(lowestValue, orderingHash)) {
+                lowestValue = orderingHash;
+                firstQuorum = quorumEntry;
+            }
+        }
+        publicKey = firstQuorum.quorumPublicKey;
+    }];
+    return publicKey;
+}
+
 // MARK: - Local Masternodes
 
 -(void)loadLocalMasternodes {
@@ -793,6 +813,9 @@ inline static int ceil_log2(int x)
 -(NSUInteger)localMasternodesCount {
     return [self.localMasternodesDictionaryByRegistrationTransactionHash count];
 }
+
+
+
 
 
 @end

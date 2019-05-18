@@ -130,7 +130,11 @@
 }
 
 -(NSString*)payoutAddress {
-    return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    if (self.scriptPayout.length == 0) {
+        return nil; //no payout address
+    } else {
+        return [NSString addressWithScriptPubKey:self.scriptPayout onChain:self.providerRegistrationTransaction.chain];
+    }
 }
 
 -(NSData*)basePayloadData {

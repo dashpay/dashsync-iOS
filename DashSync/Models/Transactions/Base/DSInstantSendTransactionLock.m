@@ -18,11 +18,13 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSBLSKey.h"
 
 @interface DSInstantSendTransactionLock()
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) UInt256 transactionHash;
+@property (nonatomic, assign) UInt256 requestID;
 @property (nonatomic, assign) UInt256 instantSendTransactionLockHash;
 @property (nonatomic, strong) NSArray * inputOutpoints;
 @property (nonatomic, assign) BOOL signatureVerified;
@@ -101,15 +103,17 @@
         NSMutableArray * mutableInputOutpoints = [NSMutableArray array];
         for (NSUInteger i = 0; i < count; i++) { // inputs
             DSUTXO outpoint = [message transactionOutpointAtOffset:off];
-            off += sizeof(DSUTXO);
+            off += 36;
             [mutableInputOutpoints addObject:dsutxo_data(outpoint)];
         }
         self.inputOutpoints = [mutableInputOutpoints copy];
         
         self.transactionHash = [message UInt256AtOffset:off]; // tx
+        //DSDLog(@"transactionHash is %@",uint256_reverse_hex(self.transactionHash));
         off += sizeof(UInt256);
         
         self.signature = [message UInt768AtOffset:off];
+        NSAssert(!uint768_is_zero(self.signature), @"signature must be set");
         self.instantSendTransactionLockHash = [self instantSendTransactionLockHash];
     }
     
@@ -126,25 +130,28 @@
     return self;
 }
 
+
+-(UInt256)requestID {
+    if (!uint256_is_zero(_requestID)) return _requestID;
+    NSMutableData * data = [NSMutableData data];
+    [data appendString:@"islock"];
+    [data appendVarInt:self.inputOutpoints.count];
+    for (NSData * input in self.inputOutpoints) {
+        [data appendUTXO:[input transactionOutpoint]];
+    }
+    _requestID = [data SHA256_2];
+    return _requestID;
+}
+
 - (BOOL)verifySignature {
-//    if (!self.masternode) return NO;
-//
-//    self.signatureVerified = [self.masternode verifySignature:self.signature forMessageDigest:self.transactionLockVoteHash];
+    UInt384 publicKey = [self.chain.chainManager.masternodeManager quorumPublicKeyForInstantSendRequestID:[self requestID]];
+    DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
+    DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString);
+    self.signatureVerified = [blsKey verify:self.transactionHash signature:self.signature];
     return self.signatureVerified;
 }
 
-- (BOOL)verifySentByIntendedQuorum {
-//    if (!self.masternode) return NO;
-//    self.quorumVerified = [self.intendedQuorum containsObject:self.masternode];
-    return self.quorumVerified;
-}
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)intendedQuorum {
-//    if (!self.masternode) return nil;
-//    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
-//    return [masternodeManager masternodesForQuorumHash:self.quorumModifierHash quorumCount:10];
-    return nil;
-}
 
 -(void)save {
     if (_saved) return;

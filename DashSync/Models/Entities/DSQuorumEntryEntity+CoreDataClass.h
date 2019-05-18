@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)deleteAllOnChain:(DSChainEntity*)chainEntity;
 
+- (UInt256)orderingHashForRequestID:(UInt256)requestID;
+
 @end
 
 NS_ASSUME_NONNULL_END
