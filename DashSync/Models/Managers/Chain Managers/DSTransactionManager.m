@@ -1112,7 +1112,6 @@
     NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
 
     [instantSendTransactionLock verifySignature];
-    [instantSendTransactionLock verifySentByIntendedQuorum];
     
     //[self checkLocksForTransactionHash:instantSendTransactionLock.transactionHash forInput:transactionOutput];
 }

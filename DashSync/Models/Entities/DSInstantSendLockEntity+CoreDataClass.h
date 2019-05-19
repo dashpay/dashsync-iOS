@@ -2,14 +2,14 @@
 //  DSInstantSendLockEntity+CoreDataClass.h
 //  DashSync
 //
-//  Created by Sam Westrich on 4/7/19.
+//  Created by Sam Westrich on 5/19/19.
 //
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity, DSSimplifiedMasternodeEntryEntity, DSTransactionEntity,DSChain,DSInstantSendTransactionLock;
+@class DSQuorumEntryEntity, DSTransactionEntity,DSInstantSendTransactionLock,DSChain;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DSInstantSendTransactionLock *)instantSendTransactionLockForChain:(DSChain*)chain;
 - (instancetype)setAttributesFromInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock;
-
 
 @end
 

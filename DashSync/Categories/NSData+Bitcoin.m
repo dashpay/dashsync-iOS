@@ -1407,6 +1407,14 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return trueBitsCount;
 }
 
+- (BOOL)bitIsTrueAtIndex:(uint32_t)index {
+    uint32_t offset = index / 8;
+    uint32_t bitPosition = index % 8;
+    uint8_t bits = [self UInt8AtOffset:offset];
+    BOOL bitIsSet = ((bits >> (bitPosition - 7)) & 1);
+    return bitIsSet;
+}
+
 @end
 
 

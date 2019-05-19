@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain;
 + (nullable instancetype)blsKeyWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain;
 - (nullable instancetype)initWithPrivateKey:(UInt256)secretKey onChain:(DSChain*)chain;
++ (nullable instancetype)blsKeyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys onChain:(DSChain*)chain;
 
 - (DSBLSKey* _Nullable)deriveToPath:(NSIndexPath *)derivationPath;
 - (DSBLSKey* _Nullable)publicDeriveToPath:(NSIndexPath *)derivationPath;

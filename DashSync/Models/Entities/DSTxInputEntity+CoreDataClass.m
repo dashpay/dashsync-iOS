@@ -50,5 +50,9 @@
     return self;
 }
 
+-(DSUTXO)outpoint {
+    return ((DSUTXO) { .hash = self.txHash.UInt256 , .n = self.n });
+}
+
 
 @end

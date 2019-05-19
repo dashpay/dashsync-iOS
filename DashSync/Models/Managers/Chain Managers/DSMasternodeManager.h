@@ -34,7 +34,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 #define MASTERNODE_COST 100000000000
 
-@class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSWallet,DSLocalMasternode,DSProviderRegistrationTransaction;
+@class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSWallet,DSLocalMasternode,DSProviderRegistrationTransaction,DSQuorumEntry;
 
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
@@ -78,7 +78,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSLocalMasternode * _Nullable)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
--(UInt384)quorumPublicKeyForInstantSendRequestID:(UInt256)requestID;
+-(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
 
 @end
 

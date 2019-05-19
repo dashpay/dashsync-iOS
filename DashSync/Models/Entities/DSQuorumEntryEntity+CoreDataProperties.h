@@ -7,16 +7,9 @@
 //
 
 #import "DSQuorumEntryEntity+CoreDataClass.h"
-
+#import "DSQuorumEntry.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(uint16_t, DSLLMQType) {
-    DSLLMQType_50_60 = 1, //every 24 blocks
-    DSLLMQType_400_60 = 2, //288 blocks
-    DSLLMQType_400_85 = 3, //576 blocks
-    DSLLMQType_5_60 = 100 //24 blocks
-};
 
 @interface DSQuorumEntryEntity (CoreDataProperties)
 

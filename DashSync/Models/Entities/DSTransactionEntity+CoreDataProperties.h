@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
 @property (nonatomic, retain) DSChainEntity *chain;
 @property (nonatomic, retain) DSTransactionHashEntity * transactionHash;
+@property (nonatomic, retain) DSInstantSendLockEntity * instantSendLock;
 
 @end
 

@@ -29,7 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity;
+@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock;
 
 #define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
@@ -139,6 +139,8 @@ sequence:(uint32_t)sequence;
 
 //instant send
 
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes;
+-(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*, NSArray<DSTransactionLockVote *> *> *)transactionLockVotes;
+
+- (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
 
 @end

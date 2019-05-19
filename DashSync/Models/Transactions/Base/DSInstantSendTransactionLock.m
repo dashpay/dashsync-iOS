@@ -19,17 +19,17 @@
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
+#import "DSQuorumEntry.h"
 
 @interface DSInstantSendTransactionLock()
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) UInt256 transactionHash;
 @property (nonatomic, assign) UInt256 requestID;
-@property (nonatomic, assign) UInt256 instantSendTransactionLockHash;
 @property (nonatomic, strong) NSArray * inputOutpoints;
 @property (nonatomic, assign) BOOL signatureVerified;
 @property (nonatomic, assign) BOOL quorumVerified;
-@property (nonatomic, strong) NSArray<DSSimplifiedMasternodeEntry*>* intendedQuorum;
+@property (nonatomic, strong) DSQuorumEntry * intendedQuorum;
 @property (nonatomic, assign) BOOL saved;
 @property (nonatomic, assign) UInt768 signature;
 
@@ -54,25 +54,6 @@
     self.chain = chain;
 
     return self;
-}
-
-
--(UInt256)calculateInstantSendTransactionLockHash {
-    //hash calculation
-    NSMutableData * hashImportantData = [NSMutableData data];
-    [hashImportantData appendVarInt:self.inputOutpoints.count];
-    for (NSData * inputOutpoint in self.inputOutpoints) {
-        [hashImportantData appendUTXO:inputOutpoint.transactionOutpoint];
-    }
-    [hashImportantData appendUInt256:self.transactionHash];
-    return hashImportantData.SHA256_2;
-}
-
--(UInt256)instantSendTransactionLockHash {
-    if (uint256_is_zero(_instantSendTransactionLockHash)) {
-        _instantSendTransactionLockHash = [self calculateInstantSendTransactionLockHash];
-    }
-    return _instantSendTransactionLockHash;
 }
 
 //transaction hash (32)
@@ -114,7 +95,6 @@
         
         self.signature = [message UInt768AtOffset:off];
         NSAssert(!uint768_is_zero(self.signature), @"signature must be set");
-        self.instantSendTransactionLockHash = [self instantSendTransactionLockHash];
     }
     
     return self;
@@ -137,21 +117,37 @@
     [data appendString:@"islock"];
     [data appendVarInt:self.inputOutpoints.count];
     for (NSData * input in self.inputOutpoints) {
-        [data appendUTXO:[input transactionOutpoint]];
+        [data appendData:input];
     }
     _requestID = [data SHA256_2];
+    DSDLog(@"the request ID is %@",uint256_hex(_requestID));
     return _requestID;
 }
 
+-(UInt256)signIDForQuorumEntry:(DSQuorumEntry*)quorumEntry {
+    NSMutableData * data = [NSMutableData data];
+    [data appendVarInt:1];
+    [data appendUInt256:quorumEntry.quorumHash];
+    [data appendUInt256:self.requestID];
+    [data appendUInt256:self.transactionHash];
+    return [data SHA256_2];
+}
+
 - (BOOL)verifySignature {
-    UInt384 publicKey = [self.chain.chainManager.masternodeManager quorumPublicKeyForInstantSendRequestID:[self requestID]];
+    DSQuorumEntry * quorumEntry = [self intendedQuorum];
+    UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
+    UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
     DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString);
-    self.signatureVerified = [blsKey verify:self.transactionHash signature:self.signature];
+    self.signatureVerified = [blsKey verify:signId signature:self.signature];
     return self.signatureVerified;
 }
 
-
+-(DSQuorumEntry*)intendedQuorum {
+    if (_intendedQuorum) return _intendedQuorum;
+    self.intendedQuorum = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID]];
+    return _intendedQuorum;
+}
 
 -(void)save {
     if (_saved) return;
@@ -161,7 +157,7 @@
         [DSChainEntity setContext:context];
         [DSInstantSendLockEntity setContext:context];
         [DSTransactionHashEntity setContext:context];
-        if ([DSInstantSendLockEntity countObjectsMatching:@"instantSendLockHash == %@", uint256_data(self.instantSendTransactionLockHash)] == 0) {
+        if ([DSInstantSendLockEntity countObjectsMatching:@"transaction.transactionHash.txHash == %@", uint256_data(self.transactionHash)] == 0) {
             DSInstantSendLockEntity * instantSendLockEntity = [DSInstantSendLockEntity managedObject];
             [instantSendLockEntity setAttributesFromInstantSendTransactionLock:self];
             [DSInstantSendLockEntity saveContext];

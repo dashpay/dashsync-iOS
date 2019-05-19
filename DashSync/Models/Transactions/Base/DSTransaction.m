@@ -43,6 +43,7 @@
 #import "DSTransactionLockVote.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSInstantSendTransactionLock.h"
 
 @interface DSTransaction ()
 
@@ -639,6 +640,8 @@
 
 // MARK: - Instant Send
 
+// v13
+
 -(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
     BOOL instantSendReceived = !!transactionLockVotes.count;
     self.transactionLockVotesDictionary = transactionLockVotes;
@@ -669,6 +672,15 @@
         [array addObjectsFromArray:votesForInput];
     }
     return array;
+}
+
+// v14
+
+-(void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock {
+    self.instantSendReceived = instantSendLock.signatureVerified;
+    if (!instantSendLock.saved) {
+        [instantSendLock save];
+    }
 }
 
 // MARK: - Polymorphic data

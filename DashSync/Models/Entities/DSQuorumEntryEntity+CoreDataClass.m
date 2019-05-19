@@ -13,6 +13,7 @@
 #import "DSPotentialQuorumEntry.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "NSMutableData+Dash.h"
+#import "DSQuorumEntry.h"
 
 @implementation DSQuorumEntryEntity
 
@@ -114,6 +115,13 @@
     [data appendUInt256:self.quorumHash];
     [data appendUInt256:requestID];
     return [data SHA256_2];
+}
+
+-(DSQuorumEntry*)quorumEntry {
+    DSQuorumEntry * quorumEntry = [[DSQuorumEntry alloc] init];
+    quorumEntry.quorumHash = self.quorumHash;
+    quorumEntry.quorumPublicKey = self.quorumPublicKey;
+    return quorumEntry;
 }
 
 @end

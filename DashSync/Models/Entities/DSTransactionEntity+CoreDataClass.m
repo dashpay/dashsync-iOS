@@ -130,15 +130,19 @@
             [tx addOutputScript:e.script withAddress:e.address amount:e.value];
         }
         
-        NSMutableDictionary * lockVotesDictionary = [NSMutableDictionary dictionary];
-        
-        for (DSTransactionLockVoteEntity * lockVoteEntity in self.lockVotes) {
-            DSTransactionLockVote * transactionLockVote = [lockVoteEntity transactionLockVoteForChain:chain];
-            NSValue * inputOutpoint = dsutxo_obj(((DSUTXO) { lockVoteEntity.inputHash.UInt256, lockVoteEntity.inputIndex }));
-            if (!lockVotesDictionary[inputOutpoint]) lockVotesDictionary[inputOutpoint] = [NSMutableArray array];
-            [lockVotesDictionary[inputOutpoint] addObject:transactionLockVote];
+        if (!self.instantSendLock) { //v13 or absent
+            NSMutableDictionary * lockVotesDictionary = [NSMutableDictionary dictionary];
+            
+            for (DSTransactionLockVoteEntity * lockVoteEntity in self.lockVotes) {
+                DSTransactionLockVote * transactionLockVote = [lockVoteEntity transactionLockVoteForChain:chain];
+                NSValue * inputOutpoint = dsutxo_obj(((DSUTXO) { lockVoteEntity.inputHash.UInt256, lockVoteEntity.inputIndex }));
+                if (!lockVotesDictionary[inputOutpoint]) lockVotesDictionary[inputOutpoint] = [NSMutableArray array];
+                [lockVotesDictionary[inputOutpoint] addObject:transactionLockVote];
+            }
+            [tx setInstantSendReceivedWithTransactionLockVotes:lockVotesDictionary];
+        } else { //14
+            [tx setInstantSendReceivedWithInstantSendLock:self.instantSendLock];
         }
-        [tx setInstantSendReceivedWithTransactionLockVotes:lockVotesDictionary];
     }];
     
     return tx;

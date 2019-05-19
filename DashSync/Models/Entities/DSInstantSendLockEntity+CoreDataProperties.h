@@ -2,7 +2,7 @@
 //  DSInstantSendLockEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 4/7/19.
+//  Created by Sam Westrich on 5/19/19.
 //
 //
 
@@ -15,14 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSInstantSendLockEntity *> *)fetchRequest;
 
-@property (nonatomic) BOOL fromValidQuorum;
-@property (nullable, nonatomic, retain) NSArray *inputsOutpoints;
-@property (nullable, nonatomic, retain) NSData *transactionHash;
-@property (nullable, nonatomic, retain) NSData *instantSendLockHash;
 @property (nullable, nonatomic, retain) NSData *signature;
-@property (nullable, nonatomic, retain) DSChainEntity *chain;
+@property (assign, nonatomic) BOOL validSignature;
 @property (nullable, nonatomic, retain) DSTransactionEntity *transaction;
-@property (nullable, nonatomic, retain) DSSimplifiedMasternodeEntryEntity *simplifiedMasternodeEntries;
+@property (nullable, nonatomic, retain) DSQuorumEntryEntity *quorum;
 
 @end
 

@@ -2,7 +2,7 @@
 //  DSInstantSendLockEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 4/7/19.
+//  Created by Sam Westrich on 5/19/19.
 //
 //
 
@@ -14,13 +14,9 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSInstantSendLockEntity"];
 }
 
-@dynamic fromValidQuorum;
-@dynamic inputsOutpoints;
-@dynamic transactionHash;
-@dynamic instantSendLockHash;
 @dynamic signature;
-@dynamic chain;
+@dynamic validSignature;
 @dynamic transaction;
-@dynamic simplifiedMasternodeEntries;
+@dynamic quorum;
 
 @end

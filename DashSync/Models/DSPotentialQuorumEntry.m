@@ -8,6 +8,10 @@
 #import "DSPotentialQuorumEntry.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSChainManager.h"
+#import "DSMasternodeManager.h"
+#import "DSBLSKey.h"
+#import "DSSimplifiedMasternodeEntry.h"
 
 @interface DSPotentialQuorumEntry()
 
@@ -140,7 +144,17 @@
     }
 }
 
+-(UInt256)llmqQuorumHash {
+    NSMutableData * data = [NSMutableData data];
+    [data appendVarInt:self.llmqType];
+    [data appendUInt256:self.quorumHash];
+    return [data SHA256_2];
+}
+
 -(BOOL)validateWithMasternodeList:(NSMutableDictionary*)dictionary {
+    
+    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
+    
     //The quorumHash must match the current DKG session
     //todo
     
@@ -167,7 +181,21 @@
     
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     
-    //todo
+    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeManager masternodesForQuorumHash:self.llmqQuorumHash quorumCount:50];
+    NSMutableArray * publicKeyArray = [NSMutableArray array];
+    uint32_t i = 0;
+    for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
+        if ([self.signersBitset bitIsTrueAtIndex:i] && [self.validMembersBitset bitIsTrueAtIndex:i]) {
+            DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:masternodeEntry.operatorPublicKey onChain:self.chain];
+            [publicKeyArray addObject:masternodePublicKey];
+        }
+        i++;
+    }
+    DSBLSKey * blsKey = [DSBLSKey blsKeyByAggregatingPublicKeys:publicKeyArray onChain:self.chain];
+    
+    BOOL quorumSignatureValidated = [blsKey verify:self.commitmentHash signature:self.quorumThresholdSignature];
+    
+    if (!quorumSignatureValidated) return NO;
     
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
     

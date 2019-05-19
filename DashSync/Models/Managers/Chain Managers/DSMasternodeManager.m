@@ -682,22 +682,22 @@ inline static int ceil_log2(int x)
 
 // MARK: - Quorums
 
--(UInt384)quorumPublicKeyForInstantSendRequestID:(UInt256)requestID {
-    __block UInt384 publicKey;
+-(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID {
+    __block DSQuorumEntry * quorumEntry = nil;
     [self.managedObjectContext performBlockAndWait:^{
         NSArray * quorumsForIS = [self.quorumsDictionary[@(1)] allValues];
         UInt256 lowestValue = UINT256_MAX;
         DSQuorumEntryEntity * firstQuorum;
         for (DSQuorumEntryEntity * quorumEntry in quorumsForIS) {
-            UInt256 orderingHash = [quorumEntry orderingHashForRequestID:requestID];
+            UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
             if (uint256_sup(lowestValue, orderingHash)) {
                 lowestValue = orderingHash;
                 firstQuorum = quorumEntry;
             }
         }
-        publicKey = firstQuorum.quorumPublicKey;
+        quorumEntry = firstQuorum.quorumEntry;
     }];
-    return publicKey;
+    return quorumEntry;
 }
 
 // MARK: - Local Masternodes

@@ -44,6 +44,5 @@
 @dynamic simplifiedMasternodeEntries;
 @dynamic baseBlockHash;
 @dynamic transactionLockVotes;
-@dynamic instantSendLocks;
 
 @end

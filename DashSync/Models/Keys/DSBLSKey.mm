@@ -87,6 +87,16 @@
 + (nullable instancetype)blsKeyWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain {
     return [[DSBLSKey alloc] initWithPublicKey:publicKey onChain:chain];
 }
+
++ (nullable instancetype)blsKeyByAggregatingPublicKeys:(NSArray<DSBLSKey*>*)publicKeys onChain:(DSChain*)chain {
+    bls::PublicKey blsPublicKey = [DSBLSKey aggregatePublicKeys:publicKeys];
+    
+    UInt384 publicKey = UINT384_ZERO;
+    blsPublicKey.Serialize(publicKey.u8);
+    
+    return [[DSBLSKey alloc] initWithPublicKey:publicKey onChain:chain];
+}
+
 - (nullable instancetype)initWithPublicKey:(UInt384)publicKey onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     self.publicKey = publicKey;
@@ -318,6 +328,17 @@
     bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash(blsPublicKey, messageDigest.u8);
     bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
     return blsSignature.Verify();
+}
+
+// MARK: - Public Key Aggregation
+
++ (bls::PublicKey)aggregatePublicKeys:(NSArray*)publicKeys {
+    __block std::vector<bls::PublicKey> vectorList;
+    [publicKeys enumerateObjectsUsingBlock:^(DSBLSKey * _Nonnull key, NSUInteger idx, BOOL * _Nonnull stop) {
+        vectorList.push_back([key blsPublicKey]);
+    }];
+    bls::PublicKey blsPublicKey = bls::PublicKey::Aggregate(vectorList);
+    return blsPublicKey;
 }
 
 // MARK: - Signature Aggregation

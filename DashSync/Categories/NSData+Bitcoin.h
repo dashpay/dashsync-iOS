@@ -207,6 +207,8 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 - (uint64_t)trueBitsCount;
 
+- (BOOL)bitIsTrueAtIndex:(uint32_t)index;
+
 @end
 
 
