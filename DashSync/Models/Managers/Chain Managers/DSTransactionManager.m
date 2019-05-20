@@ -879,7 +879,7 @@
     BOOL syncing = (self.chain.lastBlockHeight < self.chain.estimatedBlockHeight);
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
-    DSDLog(@"%@:%d relayed transaction %@", peer.host, peer.port, hash);
+    DSDLog(@"%@:%d relayed transaction %@ of type %d", peer.host, peer.port, hash, transaction.type);
     
     transaction.timestamp = [NSDate timeIntervalSince1970];
     DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
