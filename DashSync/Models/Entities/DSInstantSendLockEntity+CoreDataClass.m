@@ -40,9 +40,9 @@
 {
     NSMutableArray * inputOutpoints = [NSMutableArray array];
     for (DSTxInputEntity * input in self.transaction.inputs) {
-        
+        [inputOutpoints addObject:dsutxo_data(input.outpoint)];
     }
-    DSInstantSendTransactionLock * instantSendTransactionLock = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash.UInt256 withInputOutpoints:self.transaction.inputs signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
+    DSInstantSendTransactionLock * instantSendTransactionLock = [[DSInstantSendTransactionLock alloc] initWithTransactionHash:self.transaction.transactionHash.txHash.UInt256 withInputOutpoints:inputOutpoints signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
     
     return instantSendTransactionLock;
 }

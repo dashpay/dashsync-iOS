@@ -34,7 +34,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 #define MASTERNODE_COST 100000000000
 
-@class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSWallet,DSLocalMasternode,DSProviderRegistrationTransaction,DSQuorumEntry;
+@class DSPeer,DSChain,DSSimplifiedMasternodeEntry,DSWallet,DSLocalMasternode,DSProviderRegistrationTransaction,DSQuorumEntry,DSMasternodeList;
 
 @interface DSMasternodeManager : NSObject <DSPeerMasternodeDelegate>
 
@@ -42,6 +42,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic,readonly) NSUInteger localMasternodesCount;
 @property (nonatomic,readonly) NSUInteger quorumsCount;
+@property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 
 @property (nonatomic,readonly) UInt256 baseBlockHash;
 

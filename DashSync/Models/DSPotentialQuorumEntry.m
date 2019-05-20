@@ -12,6 +12,7 @@
 #import "DSMasternodeManager.h"
 #import "DSBLSKey.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSMasternodeList.h"
 
 @interface DSPotentialQuorumEntry()
 
@@ -151,7 +152,7 @@
     return [data SHA256_2];
 }
 
--(BOOL)validateWithMasternodeList:(NSMutableDictionary*)dictionary {
+-(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList {
     
     DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
     
