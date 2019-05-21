@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSCurrencyPriceObject;
 
-@interface DSHTTPSparkOperation : DSHTTPOperation
+@interface DSHTTPDashRetailOperation : DSHTTPOperation
 
 @property (readonly, copy, nonatomic, nullable) NSArray<DSCurrencyPriceObject *> *prices;
 

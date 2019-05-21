@@ -15,35 +15,35 @@
 //  limitations under the License.
 //
 
-#import "DSFetchSparkPricesOperation.h"
+#import "DSFetchDashRetailPricesOperation.h"
 
-#import "DSHTTPSparkOperation.h"
+#import "DSHTTPDashRetailOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define SPARK_TICKER_URL @"https://api.get-spark.com/list"
+#define DASHRETAIL_TICKER_URL @"https://rates2.dashretail.org/rates?source=dashretail"
 
-@interface DSFetchSparkPricesOperation ()
+@interface DSFetchDashRetailPricesOperation ()
 
-@property (strong, nonatomic) DSHTTPSparkOperation *sparkOperation;
+@property (strong, nonatomic) DSHTTPDashRetailOperation *dashRetailOperation;
 
 @property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
 
 @end
 
-@implementation DSFetchSparkPricesOperation
+@implementation DSFetchDashRetailPricesOperation
 
 - (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable))completion {
     self = [super initWithOperations:nil];
     if (self) {
-        HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:SPARK_TICKER_URL]
+        HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:DASHRETAIL_TICKER_URL]
                                                     method:HTTPRequestMethod_GET
                                                 parameters:nil];
         request.timeout = 30.0;
         request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
 
-        DSHTTPSparkOperation *operation = [[DSHTTPSparkOperation alloc] initWithRequest:request];
-        _sparkOperation = operation;
+        DSHTTPDashRetailOperation *operation = [[DSHTTPDashRetailOperation alloc] initWithRequest:request];
+        _dashRetailOperation = operation;
         _fetchCompletion = [completion copy];
 
         [self addOperation:operation];
@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    NSArray<DSCurrencyPriceObject *> *prices = self.sparkOperation.prices;
+    NSArray<DSCurrencyPriceObject *> *prices = self.dashRetailOperation.prices;
     self.fetchCompletion(prices);
 }
 

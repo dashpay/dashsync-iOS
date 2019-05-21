@@ -15,35 +15,35 @@
 //  limitations under the License.
 //
 
-#import "DSHTTPSparkOperation.h"
+#import "DSHTTPDashRetailOperation.h"
 
 #import "DSCurrencyPriceObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSHTTPSparkOperation ()
+@interface DSHTTPDashRetailOperation ()
 
 @property (copy, nonatomic, nullable) NSArray<DSCurrencyPriceObject *> *prices;
 
 @end
 
-@implementation DSHTTPSparkOperation
+@implementation DSHTTPDashRetailOperation
 
 - (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
     NSParameterAssert(parsedData);
 
-    NSDictionary *response = (NSDictionary *)parsedData;
-    if (![response isKindOfClass:NSDictionary.class]) {
+    NSArray *response = (NSArray *)parsedData;
+    if (![response isKindOfClass:NSArray.class]) {
         [self cancelWithInvalidResponse:response];
 
         return;
     }
 
     BOOL responseIsValid = YES;
-    for (id key in response) {
-        id value = response[key];
-
-        responseIsValid = [key isKindOfClass:NSString.class] && [value isKindOfClass:NSNumber.class];
+    for (id value in response) {
+        responseIsValid = [value isKindOfClass:NSDictionary.class] &&
+            [value[@"price"] isKindOfClass:NSString.class] &&
+            [value[@"symbol"] isKindOfClass:NSString.class];
         if (!responseIsValid) {
             break;
         }
@@ -56,8 +56,13 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSMutableArray<DSCurrencyPriceObject *> *prices = [NSMutableArray array];
-    for (NSString *code in response) {
-        NSNumber *price = response[code];
+    for (NSDictionary *rawPriceObject in response) {
+        NSString *symbol = rawPriceObject[@"symbol"];
+        if (![symbol hasPrefix:@"DASH"]) {
+            continue;
+        }
+        NSString *code = [symbol substringFromIndex:4];
+        NSNumber *price = @([rawPriceObject[@"price"] doubleValue]);
         DSCurrencyPriceObject *priceObject = [[DSCurrencyPriceObject alloc] initWithCode:code price:price];
         if (priceObject) {
             [prices addObject:priceObject];
