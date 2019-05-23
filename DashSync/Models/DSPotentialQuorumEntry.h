@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSChain;
+@class DSChain,DSMasternodeList;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;
 
--(BOOL)validateWithMasternodeList:(NSMutableDictionary*)dictionary;
+-(BOOL)validateWithMasternodeList:(DSMasternodeList*)dictionary;
 
 @end
 

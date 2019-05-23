@@ -29,7 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Protected)
 
--(void)getMasternodeList;
+-(void)getCurrentMasternodeList;
+
+-(void)getMasternodeListsForBlockHashes:(NSArray*)blockHashes;
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 

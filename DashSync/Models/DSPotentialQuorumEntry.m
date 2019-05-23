@@ -154,7 +154,7 @@
 
 -(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList {
     
-    DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
+    if (!masternodeList) return NO;
     
     //The quorumHash must match the current DKG session
     //todo
@@ -182,7 +182,7 @@
     
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     
-    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeManager masternodesForQuorumHash:self.llmqQuorumHash quorumCount:50];
+    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumHash:self.llmqQuorumHash quorumCount:50];
     NSMutableArray * publicKeyArray = [NSMutableArray array];
     uint32_t i = 0;
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {

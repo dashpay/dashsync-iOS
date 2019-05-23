@@ -35,6 +35,8 @@
 #import "NSMutableData+Dash.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionLockVoteEntity+CoreDataClass.h"
+#import "DSInstantSendLockEntity+CoreDataClass.h"
+#import "DSInstantSendTransactionLock.h"
 
 @implementation DSTransactionEntity
 
@@ -141,7 +143,8 @@
             }
             [tx setInstantSendReceivedWithTransactionLockVotes:lockVotesDictionary];
         } else { //14
-            [tx setInstantSendReceivedWithInstantSendLock:self.instantSendLock];
+            DSInstantSendTransactionLock * instantSendLock = [self.instantSendLock instantSendTransactionLockForChain:chain];
+            [tx setInstantSendReceivedWithInstantSendLock:instantSendLock];
         }
     }];
     

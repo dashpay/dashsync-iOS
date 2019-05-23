@@ -19,6 +19,7 @@
 @dynamic address;
 @dynamic port;
 @dynamic operatorBLSPublicKey;
+@dynamic previousOperatorBLSPublicKeys;
 @dynamic keyIDVoting;
 @dynamic isValid;
 @dynamic simplifiedMasternodeEntryHash;

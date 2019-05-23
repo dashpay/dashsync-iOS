@@ -152,7 +152,8 @@
     </entity>
     <entity name="DSMasternodeListEntity" representedClassName="DSMasternodeListEntity" syncable="YES">
         <relationship name="block" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="masternodeList" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
-        <relationship name="masternodes" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="masternodeLists" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+        <relationship name="masternodes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="masternodeLists" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
+        <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="masternodeList" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
     </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
@@ -247,6 +248,7 @@
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="quorums" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="commitmentTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumCommitmentTransactionEntity" inverseName="entry" inverseEntity="DSQuorumCommitmentTransactionEntity" syncable="YES"/>
         <relationship name="instantSendLocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSInstantSendLockEntity" inverseName="quorum" inverseEntity="DSInstantSendLockEntity" syncable="YES"/>
+        <relationship name="masternodeList" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="quorums" inverseEntity="DSMasternodeListEntity" syncable="YES"/>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>
@@ -269,6 +271,7 @@
         <attribute name="keyIDVoting" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="operatorBLSPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="port" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="previousOperatorBLSPublicKeys" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="providerRegistrationTransactionHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="simplifiedMasternodeEntryHash" optional="YES" attributeType="Binary" syncable="YES"/>
         <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DSAddressEntity" inverseName="usedInSimplifiedMasternodeEntries" inverseEntity="DSAddressEntity" syncable="YES"/>
@@ -402,6 +405,7 @@
         <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
         <element name="DSInstantSendLockEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
         <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="240"/>
+        <element name="DSMasternodeListEntity" positionX="-2322" positionY="-81" width="128" height="90"/>
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="255"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
         <element name="DSProviderRegistrationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="225"/>
@@ -409,9 +413,9 @@
         <element name="DSProviderUpdateRevocationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
         <element name="DSProviderUpdateServiceTransactionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSQuorumCommitmentTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
-        <element name="DSQuorumEntryEntity" positionX="-2322" positionY="-81" width="128" height="300"/>
+        <element name="DSQuorumEntryEntity" positionX="-2322" positionY="-81" width="128" height="315"/>
         <element name="DSShapeshiftEntity" positionX="-946.375" positionY="817.2578125" width="128" height="225"/>
-        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="255"/>
+        <element name="DSSimplifiedMasternodeEntryEntity" positionX="-1511.95703125" positionY="276.51953125" width="128" height="270"/>
         <element name="DSSpecialTransactionEntity" positionX="-1145.90625" positionY="1134.63671875" width="128" height="75"/>
         <element name="DSSporkEntity" positionX="-1631.40625" positionY="479.12890625" width="128" height="120"/>
         <element name="DSSporkHashEntity" positionX="-1438.984375" positionY="509.0234375" width="128" height="90"/>
@@ -421,6 +425,5 @@
         <element name="DSTransitionEntity" positionX="-2322" positionY="-81" width="128" height="135"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSMasternodeListEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
     </elements>
 </model>

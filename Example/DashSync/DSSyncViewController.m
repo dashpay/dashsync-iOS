@@ -435,7 +435,7 @@
 }
 
 -(void)updateMasternodeList {
-        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager.currentMasternodeList simplifiedMasternodeEntryCount]];
+        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager.currentMasternodeList masternodeCount]];
         self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
 }
 

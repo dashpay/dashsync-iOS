@@ -48,6 +48,7 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "DSPotentialQuorumEntry.h"
 #import "DSMasternodeList.h"
+#import "DSTransactionManager.h"
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
@@ -60,11 +61,14 @@
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
 @property (nonatomic,assign) UInt256 baseBlockHash;
+@property (nonatomic,assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSMasternodeList*>* masternodeListsByBlockHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,NSNumber*>* masternodeListsBlockHashHeights;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *knownMasternodeDictionaryByReversedRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableDictionary<NSNumber*,NSMutableDictionary<NSData*,DSQuorumEntryEntity*>*> *quorumsDictionary;
 @property (nonatomic,strong) NSMutableDictionary<NSNumber*,NSMutableDictionary<NSData*,NSData*>*> *quorumsBlockHashToCommitmentHashDictionary;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableArray <NSData*>* masternodeListRetrievalQueue;
 
 @end
 
@@ -77,14 +81,21 @@
     if (! (self = [super init])) return nil;
     _chain = chain;
     _quorumsDictionary = [NSMutableDictionary dictionary];
+    _masternodeListRetrievalQueue = [NSMutableArray array];
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
+    _masternodeListsBlockHashHeights = [NSMutableDictionary dictionary];
     _knownMasternodeDictionaryByReversedRegistrationTransactionHash = [NSMutableDictionary dictionary];
     _quorumsBlockHashToCommitmentHashDictionary = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     self.baseBlockHash = chain.masternodeBaseBlockHash;
+    self.lastQueriedBlockHash = UINT256_ZERO;
     DSDLog(@"Setting base block hash to %@",uint256_reverse_hex(self.baseBlockHash));
     return self;
+}
+
+-(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash {
+    return [self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)];
 }
 
 -(void)setUp {
@@ -99,10 +110,51 @@
 
 // MARK: - Masternode List Sync
 
--(void)getMasternodeList {
-    if (!uint256_eq(self.baseBlockHash, self.chain.lastBlock.blockHash)) {
-        [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
+// Syncing the masternode list starts by syncing the current list
+// When syncing quorums masternode lists
+
+-(UInt256)closestKnownBlockHashForBlockHash:(UInt256)blockHash {
+    DSMasternodeList * masternodeList = [self masternodeListBeforeBlockHash:blockHash];
+    if (masternodeList) return masternodeList.blockHash;
+    else return self.baseBlockHash;
+}
+
+-(void)dequeueMasternodeListRequest {
+    if (![self.masternodeListRetrievalQueue count]) return;
+    UInt256 blockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
+    [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:[self closestKnownBlockHashForBlockHash:blockHash] forBlockHash:blockHash];
+}
+
+-(void)getCurrentMasternodeList {
+    self.lastQueriedBlockHash = self.chain.lastBlock.blockHash;
+    if ([self.masternodeListRetrievalQueue count] && ![self.masternodeListRetrievalQueue containsObject:[NSData dataWithUInt256:self.chain.lastBlock.blockHash]]) {
+        [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:self.chain.lastBlock.blockHash]];
+    } else {
+        if (!uint256_eq(self.baseBlockHash, self.chain.lastBlock.blockHash)) {
+            [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:self.baseBlockHash forBlockHash:self.chain.lastBlock.blockHash];
+        }
     }
+}
+
+-(void)getMasternodeListsForBlockHashes:(NSArray*)blockHashes {
+    [self.masternodeListRetrievalQueue addObjectsFromArray:blockHashes];
+    [self dequeueMasternodeListRequest];
+}
+
+-(DSMasternodeList*)masternodeListBeforeBlockHash:(UInt256)blockHash {
+    uint32_t minDistance = UINT32_MAX;
+    uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
+    DSMasternodeList * closestMasternodeList = nil;
+    for (NSData * blockHashData in self.masternodeListsByBlockHash) {
+        uint32_t masternodeListBlockHeight = [self.chain heightForBlockHash:blockHashData.UInt256];
+        if (blockHeight <= masternodeListBlockHeight) continue;
+        uint32_t distance = blockHeight - masternodeListBlockHeight;
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestMasternodeList = self.masternodeListsByBlockHash[blockHashData];
+        }
+    }
+    return closestMasternodeList;
 }
 
 -(void)wipeMasternodeInfo {
@@ -197,7 +249,11 @@
     
     DSMasternodeList * baseMasternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(baseBlockHash)];
     
-    if (!baseMasternodeList) return;
+    if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && !uint256_is_zero(baseBlockHash)) {
+        //this could have been deleted in the meantime, if so rerequest
+        [self dequeueMasternodeListRequest];
+        return;
+    };
     
     if (length - offset < 32) return;
     UInt256 blockHash = [message UInt256AtOffset:offset];
@@ -264,41 +320,26 @@
     }
     
     NSMutableDictionary * addedMasternodes = [addedOrModifiedMasternodes mutableCopy];
-    [addedMasternodes removeObjectsForKeys:baseMasternodeList.reversedRegistrationTransactionHashes];
-    NSMutableSet * modifiedMasternodeKeys = [NSMutableSet setWithArray:[addedOrModifiedMasternodes allKeys]];
-    [modifiedMasternodeKeys intersectSet:[NSSet setWithArray:baseMasternodeList.reversedRegistrationTransactionHashes]];
+    if (baseMasternodeList) [addedMasternodes removeObjectsForKeys:baseMasternodeList.reversedRegistrationTransactionHashes];
+    NSMutableSet * modifiedMasternodeKeys;
+    if (baseMasternodeList) {
+        modifiedMasternodeKeys = [NSMutableSet setWithArray:[addedOrModifiedMasternodes allKeys]];
+        [modifiedMasternodeKeys intersectSet:[NSSet setWithArray:baseMasternodeList.reversedRegistrationTransactionHashes]];
+    } else {
+        modifiedMasternodeKeys = [NSMutableSet set];
+    }
     NSMutableDictionary * modifiedMasternodes = [NSMutableDictionary dictionary];
     for (NSData * data in modifiedMasternodeKeys) {
         [modifiedMasternodes setObject:addedOrModifiedMasternodes[data] forKey:data];
     }
     
-    NSMutableDictionary * tentativeMasternodeList = [baseMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy];
+    DSMasternodeList * masternodeList = [DSMasternodeList masternodeListAtBlockHash:blockHash fromBaseMasternodeList:baseMasternodeList addedMasternodes:addedMasternodes removedMasternodeHashes:deletedMasternodeHashes modifiedMasternodes:modifiedMasternodes onChain:self.chain];
     
-    [tentativeMasternodeList removeObjectsForKeys:deletedMasternodeHashes];
-    [tentativeMasternodeList addEntriesFromDictionary:addedOrModifiedMasternodes];
-    
-    NSArray * proTxHashes = [tentativeMasternodeList allKeys];
-    proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
-        UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
-        return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
-    }];
-    
-    NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
-    for (NSData * proTxHash in proTxHashes) {
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [tentativeMasternodeList objectForKey:proTxHash];
-        [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
-    }
-    
-    UInt256 merkleRootMNList = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
-    
-    BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, merkleRootMNList);
+    BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, masternodeList.merkleRoot);
     
     if (!rootMNListValid) {
-        DSDLog(@"Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootMNList),uint256_hex(merkleRootMNList));
+        DSDLog(@"Merkle root not valid for DML on block %d version %d (%@ wanted - %@ calculated)",coinbaseTransaction.height,coinbaseTransaction.version,uint256_hex(coinbaseTransaction.merkleRootMNList),uint256_hex(masternodeList.merkleRoot));
     }
-    
-    DSMasternodeList * masternodeList = [DSMasternodeList masternodeListWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList atBlockHash:blockHash onChain:self.chain];
     
     BOOL rootQuorumListValid = TRUE;
     
@@ -362,10 +403,19 @@
         
         NSMutableArray * llmqCommitmentHashes = [NSMutableArray array];
         
+        NSMutableArray * neededMasternodeLists = [NSMutableArray array];
+        
         while (addedQuorumsCount >= 1) {
             DSPotentialQuorumEntry * potentialQuorumEntry = [DSPotentialQuorumEntry potentialQuorumEntryWithData:message dataOffset:(uint32_t)offset onChain:self.chain];
-            [potentialQuorumEntry validateWithMasternodeList:tentativeMasternodeList];
-            DSDLog(@"%@",potentialQuorumEntry.data);
+            
+            DSMasternodeList * quorumMasternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(potentialQuorumEntry.quorumHash)];
+            
+            if (!quorumMasternodeList) {
+                [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+            }
+            
+            [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList];
+
             if (![addedQuorums objectForKey:@(potentialQuorumEntry.llmqType)]) {
                 [addedQuorums setObject:[NSMutableDictionary dictionaryWithObject:potentialQuorumEntry forKey:[NSData dataWithUInt256:potentialQuorumEntry.commitmentHash]] forKey:@(potentialQuorumEntry.llmqType)];
             } else {
@@ -375,6 +425,13 @@
             [llmqCommitmentHashes addObject:[NSData dataWithUInt256:potentialQuorumEntry.commitmentHash]];
             offset += potentialQuorumEntry.length;
             addedQuorumsCount--;
+        }
+        
+        if ([neededMasternodeLists count] && uint256_eq(self.lastQueriedBlockHash,blockHash)) {
+            //This is the current one
+            [self getMasternodeListsForBlockHashes:neededMasternodeLists];
+            [self getCurrentMasternodeList]; //this is queued at the end
+            return;
         }
         
         for (NSNumber * number in self.quorumsDictionary) {
@@ -419,9 +476,8 @@
     }
     
     if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid) {
-        //yay this is the correct masternode list verified deterministically
+        //yay this is the correct masternode list verified deterministically for the given block
         [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(blockHash)];
-        self.baseBlockHash = blockHash; //maybe remove this
         [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:addedOrModifiedMasternodes.allValues];
         [self.managedObjectContext performBlockAndWait:^{
             //masternodes
@@ -430,13 +486,13 @@
             [DSLocalMasternodeEntity setContext:self.managedObjectContext];
             [DSAddressEntity setContext:self.managedObjectContext];
             DSChainEntity * chainEntity = self.chain.chainEntity;
-            if (deletedMasternodeHashes.count) {
-                NSMutableArray * nonReversedDeletedMasternodeHashes = [NSMutableArray array];
-                for (NSData * deletedMasternodeHash in deletedMasternodeHashes) {
-                    [nonReversedDeletedMasternodeHashes addObject:deletedMasternodeHash.reverse];
-                }
-                [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:nonReversedDeletedMasternodeHashes onChain:chainEntity];
-            }
+//            if (deletedMasternodeHashes.count) {
+//                NSMutableArray * nonReversedDeletedMasternodeHashes = [NSMutableArray array];
+//                for (NSData * deletedMasternodeHash in deletedMasternodeHashes) {
+//                    [nonReversedDeletedMasternodeHashes addObject:deletedMasternodeHash.reverse];
+//                }
+//                [DSSimplifiedMasternodeEntryEntity deleteHavingProviderTransactionHashes:nonReversedDeletedMasternodeHashes onChain:chainEntity];
+//            }
             for (NSString * addedMasternodeKey in addedMasternodes) {
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [addedMasternodes objectForKey:addedMasternodeKey];
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];

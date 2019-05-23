@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t address; //it's really on 32 bits but unsigned
 @property (nonatomic, assign) uint16_t port;
 @property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
+@property (nullable, nonatomic, retain) NSDictionary *previousOperatorBLSPublicKeys; //keys are last block used
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nonatomic, assign) Boolean isValid;
 @property (nullable, nonatomic, retain) NSData *simplifiedMasternodeEntryHash;

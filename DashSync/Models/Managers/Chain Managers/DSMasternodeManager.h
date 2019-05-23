@@ -44,9 +44,6 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) NSUInteger quorumsCount;
 @property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 
-@property (nonatomic,readonly) UInt256 baseBlockHash;
-
-
 -(instancetype _Nonnull)initWithChain:(DSChain* _Nonnull)chain NS_DESIGNATED_INITIALIZER;
 
 -(void)setUp;
@@ -54,12 +51,6 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 //-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;
-
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount forBlockHash:(UInt256)blockHash;
-
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
-
--(UInt256)masternodeScore:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry quorumHash:(UInt256)quorumHash;
 
 -(void)wipeMasternodeInfo;
 
@@ -80,6 +71,8 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 -(DSLocalMasternode * _Nullable)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
 -(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
+
+-(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
 
 @end
 

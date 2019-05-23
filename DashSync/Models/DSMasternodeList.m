@@ -53,6 +53,8 @@ inline static int ceil_log2(int x)
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,assign) UInt256 blockHash;
+@property (nonatomic,assign) UInt256 merkleRoot;
+@property (nonatomic,assign) uint32_t knownHeight;
 
 @end
 
@@ -74,10 +76,48 @@ inline static int ceil_log2(int x)
     NSParameterAssert(chain);
     
     if (! (self = [super init])) return nil;
+    self.merkleRoot = UINT256_ZERO;
+    self.knownHeight = 0;
     self.chain = chain;
     self.blockHash = blockHash;
     self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [simplifiedMasternodeEntries mutableCopy];
     return self;
+}
+
++(instancetype)masternodeListAtBlockHash:(UInt256)blockHash fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodes modifiedMasternodes:(NSDictionary*)modifiedMasternodes onChain:(DSChain*)chain {
+    NSMutableDictionary * tentativeMasternodeList = baseMasternodeList?[baseMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy]:[NSMutableDictionary dictionary];
+    
+    [tentativeMasternodeList removeObjectsForKeys:removedMasternodes];
+    [tentativeMasternodeList addEntriesFromDictionary:addedMasternodes];
+    for (NSData * data in modifiedMasternodes) {
+        DSSimplifiedMasternodeEntry * oldMasternodeEntry = tentativeMasternodeList[data];
+        //the masternode has changed
+        DSSimplifiedMasternodeEntry * modifiedMasternode = modifiedMasternodes[data];
+        [modifiedMasternode updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:oldMasternodeEntry atBlockHash:blockHash];
+        [tentativeMasternodeList setObject:modifiedMasternode forKey:data];
+    }
+    
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList atBlockHash:blockHash onChain:chain];
+}
+
+-(UInt256)merkleRoot {
+    if (uint256_is_zero(_merkleRoot)) {
+        NSArray * proTxHashes = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
+        for (NSData * proTxHash in proTxHashes) {
+            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+            [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+        }
+        
+        self.merkleRoot = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
+    }
+    return _merkleRoot;
 }
 
 
@@ -150,6 +190,13 @@ inline static int ceil_log2(int x)
 
 -(uint64_t)masternodeCount {
     return [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
+}
+
+-(uint32_t)height {
+    if (!self.knownHeight) {
+        self.knownHeight = [self.chain heightForBlockHash:self.blockHash];
+    }
+    return self.knownHeight;
 }
 
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and

@@ -135,6 +135,7 @@
 
 - (BOOL)verifySignature {
     DSQuorumEntry * quorumEntry = [self intendedQuorum];
+    if (!quorumEntry) return NO;
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
