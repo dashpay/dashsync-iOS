@@ -14,6 +14,7 @@
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSMasternodeListEntity
 
@@ -35,6 +36,13 @@
         [quorumEntriesArray addObject:quorumEntry];
     }
     return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 onChain:self.block.chain.chain];
+}
+
++ (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
+    NSArray * masternodeLists = [self objectsMatching:@"(block.chain == %@)",chainEntity];
+    for (DSMasternodeListEntity * masternodeList in masternodeLists) {
+        [chainEntity.managedObjectContext deleteObject:masternodeList];
+    }
 }
 
 @end

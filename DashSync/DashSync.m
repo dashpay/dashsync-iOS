@@ -16,6 +16,7 @@
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
+#import "DSMasternodeListEntity+CoreDataClass.h"
 
 @interface DashSync ()
 
@@ -127,6 +128,7 @@
         [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
         [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
         [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
         [chainManager resetSyncCountInfo:DSSyncCountInfo_List];
         [chainManager.masternodeManager wipeMasternodeInfo];

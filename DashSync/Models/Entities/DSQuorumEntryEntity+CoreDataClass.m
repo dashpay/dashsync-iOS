@@ -99,8 +99,8 @@
 
 + (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
     NSArray * hashesToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
-    for (DSQuorumEntryEntity * QuorumEntryEntity in hashesToDelete) {
-        [chainEntity.managedObjectContext deleteObject:QuorumEntryEntity];
+    for (DSQuorumEntryEntity * quorumEntryEntity in hashesToDelete) {
+        [chainEntity.managedObjectContext deleteObject:quorumEntryEntity];
     }
 }
 
