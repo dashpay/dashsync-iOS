@@ -10,7 +10,7 @@
 #import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
 
-@class DSChainEntity, DSQuorumCommitmentTransactionEntity,DSChain,DSPotentialQuorumEntry,DSMerkleBlockEntity,DSQuorumEntry;
+@class DSChainEntity, DSQuorumCommitmentTransactionEntity,DSChain,DSQuorumEntry,DSMerkleBlockEntity,DSQuorumEntry;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,9 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) UInt768 allCommitmentAggregatedSignature;
 @property (nonatomic, readonly) DSQuorumEntry * quorumEntry;
 
-+ (instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry;
++ (instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry;
 
-- (void)setAttributesFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *)block;
+- (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *)block;
 
 + (void)deleteHavingQuorumHashes:(NSArray*)quorumHashes onChain:(DSChainEntity*)chainEntity;
 + (DSQuorumEntryEntity* _Nullable)quorumEntryForHash:(NSData*)quorumEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;

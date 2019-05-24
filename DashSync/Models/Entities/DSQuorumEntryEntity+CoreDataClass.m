@@ -10,21 +10,21 @@
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
-#import "DSPotentialQuorumEntry.h"
+#import "DSQuorumEntry.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
 #import "NSMutableData+Dash.h"
 #import "DSQuorumEntry.h"
 
 @implementation DSQuorumEntryEntity
 
-+(instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry {
++(instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry {
     DSMerkleBlockEntity * block = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(potentialQuorumEntry.quorumHash)];
     DSQuorumEntryEntity * quorumEntryEntity = [DSQuorumEntryEntity managedObject];
     [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
     return quorumEntryEntity;
 }
 
-- (void)setAttributesFromPotentialQuorumEntry:(DSPotentialQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *) block {
+- (void)setAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *) block {
     self.verified = !!block && potentialQuorumEntry.verified;
     self.block = block;
     self.quorumHash = potentialQuorumEntry.quorumHash;
@@ -118,9 +118,7 @@
 }
 
 -(DSQuorumEntry*)quorumEntry {
-    DSQuorumEntry * quorumEntry = [[DSQuorumEntry alloc] init];
-    quorumEntry.quorumHash = self.quorumHash;
-    quorumEntry.quorumPublicKey = self.quorumPublicKey;
+    DSQuorumEntry * quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey commitmentHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
     return quorumEntry;
 }
 

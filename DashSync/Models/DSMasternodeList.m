@@ -12,6 +12,7 @@
 #import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSQuorumEntry.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the
@@ -50,44 +51,60 @@ inline static int ceil_log2(int x)
 
 @interface DSMasternodeList()
 
-@property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
+@property (nonatomic,strong) NSMutableDictionary<NSData*,DSSimplifiedMasternodeEntry*> *mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash;
 @property (nonatomic,strong) DSChain * chain;
 @property (nonatomic,assign) UInt256 blockHash;
-@property (nonatomic,assign) UInt256 merkleRoot;
+@property (nonatomic,assign) UInt256 masternodeMerkleRoot;
+@property (nonatomic,assign) UInt256 quorumMerkleRoot;
 @property (nonatomic,assign) uint32_t knownHeight;
+@property (nonatomic,strong) NSMutableDictionary <NSNumber*,NSMutableDictionary<NSData*,DSQuorumEntry*>*> * mQuorums;
 
 @end
 
 @implementation DSMasternodeList
 
-+(instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
-    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
++(instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntries:(NSArray<DSQuorumEntry*>*)quorumEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
+    NSMutableDictionary * masternodeDictionary = [NSMutableDictionary dictionary];
     for (DSSimplifiedMasternodeEntry * entry in simplifiedMasternodeEntries) {
-        [dictionary setObject:entry forKey:uint256_data(entry.providerRegistrationTransactionHash).reverse];
+        [masternodeDictionary setObject:entry forKey:uint256_data(entry.providerRegistrationTransactionHash).reverse];
     }
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:dictionary atBlockHash:blockHash onChain:chain];
+    NSMutableDictionary * quorumDictionary = [NSMutableDictionary dictionary];
+    for (DSQuorumEntry * entry in quorumEntries) {
+        NSMutableDictionary * quorumDictionaryForType = [quorumDictionary objectForKey:@(entry.llmqType)];
+        if (!quorumDictionaryForType) {
+            quorumDictionaryForType = [NSMutableDictionary dictionary];
+            [quorumDictionary setObject:quorumDictionaryForType forKey:@(entry.llmqType)];
+        }
+        [quorumDictionaryForType setObject:entry forKey:uint256_data(entry.quorumHash)];
+    }
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:masternodeDictionary quorumEntriesDictionary:quorumDictionary atBlockHash:blockHash onChain:chain];
 }
 
-+(instancetype)masternodeListWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:simplifiedMasternodeEntries atBlockHash:blockHash onChain:chain];
++(instancetype)masternodeListWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntriesDictionary:(NSDictionary<NSNumber*,NSDictionary<NSData*,DSQuorumEntry*>*>*)quorumEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:simplifiedMasternodeEntries quorumEntriesDictionary:quorumEntries  atBlockHash:blockHash onChain:chain];
 }
 
--(instancetype)initWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
+-(instancetype)initWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntriesDictionary:(NSDictionary<NSNumber*,NSDictionary<NSData*,DSQuorumEntry*>*>*)quorumEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
     NSParameterAssert(chain);
     
     if (! (self = [super init])) return nil;
-    self.merkleRoot = UINT256_ZERO;
+    self.masternodeMerkleRoot = UINT256_ZERO;
+    self.quorumMerkleRoot = UINT256_ZERO;
     self.knownHeight = 0;
     self.chain = chain;
     self.blockHash = blockHash;
-    self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [simplifiedMasternodeEntries mutableCopy];
+    self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [simplifiedMasternodeEntries mutableCopy];
+    self.mQuorums = [NSMutableDictionary dictionary];
+    for (NSNumber * number in quorumEntries) {
+        [self.mQuorums setObject:[[quorumEntries objectForKey:number] mutableCopy] forKey:number];
+    }
     return self;
 }
 
-+(instancetype)masternodeListAtBlockHash:(UInt256)blockHash fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodes modifiedMasternodes:(NSDictionary*)modifiedMasternodes onChain:(DSChain*)chain {
-    NSMutableDictionary * tentativeMasternodeList = baseMasternodeList?[baseMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy]:[NSMutableDictionary dictionary];
++(instancetype)masternodeListAtBlockHash:(UInt256)blockHash fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodeHashes modifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums removedQuorumHashesByType:(NSDictionary*)removedQuorumHashesByType onChain:(DSChain*)chain {
+    NSMutableDictionary * tentativeMasternodeList = baseMasternodeList?[baseMasternodeList.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy]:[NSMutableDictionary dictionary];
     
-    [tentativeMasternodeList removeObjectsForKeys:removedMasternodes];
+    [tentativeMasternodeList removeObjectsForKeys:removedMasternodeHashes];
     [tentativeMasternodeList addEntriesFromDictionary:addedMasternodes];
     for (NSData * data in modifiedMasternodes) {
         DSSimplifiedMasternodeEntry * oldMasternodeEntry = tentativeMasternodeList[data];
@@ -97,12 +114,24 @@ inline static int ceil_log2(int x)
         [tentativeMasternodeList setObject:modifiedMasternode forKey:data];
     }
     
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList atBlockHash:blockHash onChain:chain];
+    NSMutableDictionary * tentativeQuorumList = baseMasternodeList?[baseMasternodeList.mQuorums mutableCopy]:[NSMutableDictionary dictionary];
+    
+    for (NSNumber * quorumType in tentativeQuorumList) {
+        NSMutableDictionary * quorumsOfType = tentativeQuorumList[quorumType];
+        if (removedQuorumHashesByType[quorumType]) {
+            [quorumsOfType removeObjectsForKeys:removedQuorumHashesByType[quorumType]];
+        }
+        if (addedQuorums[quorumType]) {
+            [quorumsOfType addEntriesFromDictionary:addedQuorums];
+        }
+    }
+    
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList quorumEntriesDictionary:tentativeQuorumList atBlockHash:blockHash onChain:chain];
 }
 
--(UInt256)merkleRoot {
-    if (uint256_is_zero(_merkleRoot)) {
-        NSArray * proTxHashes = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+-(UInt256)masternodeMerkleRoot {
+    if (uint256_is_zero(_masternodeMerkleRoot)) {
+        NSArray * proTxHashes = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
         proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
             UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
             UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
@@ -111,21 +140,40 @@ inline static int ceil_log2(int x)
         
         NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
         for (NSData * proTxHash in proTxHashes) {
-            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
             [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
         }
         
-        self.merkleRoot = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
+        self.masternodeMerkleRoot = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
     }
-    return _merkleRoot;
+    return _masternodeMerkleRoot;
+}
+
+-(UInt256)quorumMerkleRoot {
+    if (uint256_is_zero(_quorumMerkleRoot)) {
+        NSMutableArray * llmqCommitmentHashes = [NSMutableArray array];
+        for (NSNumber * number in self.mQuorums) {
+            for (DSQuorumEntry * quorumEntry in [self.mQuorums[number] allValues]) {
+                [llmqCommitmentHashes addObject:uint256_data(quorumEntry.commitmentHash)];
+            }
+        }
+        NSArray * sortedLlmqHashes = [llmqCommitmentHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = uint256_reverse([(NSData*)obj1 UInt256]);
+            UInt256 hash2 = uint256_reverse([(NSData*)obj2 UInt256]);
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+    
+        self.quorumMerkleRoot = [[NSData merkleRootFromHashes:sortedLlmqHashes] UInt256];
+    }
+    return _quorumMerkleRoot;
 }
 
 
 -(DSMutableOrderedDataKeyDictionary*)calculateScores:(UInt256)modifier {
     NSMutableDictionary <NSData*,id>* scores = [NSMutableDictionary dictionary];
     
-    for (NSData * registrationTransactionHash in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
+    for (NSData * registrationTransactionHash in self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
         if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
             continue;
         }
@@ -154,8 +202,8 @@ inline static int ceil_log2(int x)
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {
     NSMutableDictionary <NSData*,id>* scoreDictionary = [NSMutableDictionary dictionary];
-    for (NSData * registrationTransactionHash in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
+    for (NSData * registrationTransactionHash in self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
         UInt256 score = [self masternodeScore:simplifiedMasternodeEntry quorumHash:quorumHash];
         if (uint256_is_zero(score)) continue;
         scoreDictionary[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
@@ -166,7 +214,7 @@ inline static int ceil_log2(int x)
         return uint256_sup(hash1, hash2)?NSOrderedAscending:NSOrderedDescending;
     }];
     NSMutableArray * masternodes = [NSMutableArray array];
-    NSUInteger maxCount = MIN(quorumCount, self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
+    NSUInteger maxCount = MIN(quorumCount, self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
     for (int i = 0; i<maxCount;i++) {
         NSData * score = [scores objectAtIndex:i];
         DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
@@ -174,22 +222,34 @@ inline static int ceil_log2(int x)
             [masternodes addObject:masternode];
         } else {
             maxCount++;
-            if (maxCount > self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count) break;
+            if (maxCount > self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count) break;
         }
     }
     return masternodes;
 }
 
 -(NSArray*)simplifiedMasternodeEntries {
-    return self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues;
+    return self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allValues;
 }
 
 -(NSArray*)reversedRegistrationTransactionHashes {
-    return self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys;
+    return self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.allKeys;
 }
 
 -(uint64_t)masternodeCount {
-    return [self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
+    return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
+}
+
+-(NSDictionary*)quorums {
+    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+    for (NSNumber * number in self.mQuorums) {
+        [dictionary setObject:[[self.mQuorums objectForKey:number] copy] forKey:number];
+    }
+    return [dictionary copy];
+}
+
+-(NSDictionary*)simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash {
+    return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash copy];
 }
 
 -(uint32_t)height {
@@ -209,7 +269,7 @@ inline static int ceil_log2(int x)
     
     (*flagIdx)++;
     
-    if (! flag || depth == ceil_log2((int)_simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count)) {
+    if (! flag || depth == ceil_log2((int)_mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count)) {
         UInt256 hash = [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
         
         (*hashIdx)++;

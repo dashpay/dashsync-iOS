@@ -2,7 +2,7 @@
 //  DSMasternodeListEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 5/20/19.
+//  Created by Sam Westrich on 5/23/19.
 //
 //
 
@@ -14,7 +14,8 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSMasternodeListEntity"];
 }
 
-@dynamic masternodes;
 @dynamic block;
+@dynamic masternodes;
+@dynamic quorums;
 
 @end
