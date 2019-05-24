@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSQuorumTableViewCell : UITableViewCell
 @property (strong, nonatomic) IBOutlet UILabel *quorumHashLabel;
 @property (strong, nonatomic) IBOutlet UILabel *heightLabel;
+@property (strong, nonatomic) IBOutlet UILabel *verifiedLabel;
 
 @end
 

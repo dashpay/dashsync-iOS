@@ -405,13 +405,14 @@
         [modifiedMasternodes setObject:addedOrModifiedMasternodes[data] forKey:data];
     }
     
-    NSMutableDictionary * tentativeQuorumList = [baseMasternodeList.quorums mutableCopy];
     NSMutableArray * quorumsForDeletion = [@[] mutableCopy];
     
     NSMutableDictionary * deletedQuorums = [NSMutableDictionary dictionary];
     NSMutableDictionary * addedQuorums = [NSMutableDictionary dictionary];
     
     BOOL quorumsActive = (peer.version >= 70214);
+    
+    BOOL validQuorums = TRUE;
     
     if (quorumsActive) {
         if (length - offset < 1) return;
@@ -449,7 +450,10 @@
             DSMasternodeList * quorumMasternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(potentialQuorumEntry.quorumHash)];
             
             if (quorumMasternodeList) {
-                [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList];
+                validQuorums &= [potentialQuorumEntry validateWithMasternodeList:quorumMasternodeList];
+                if (!validQuorums) {
+                    DSDLog(@"Invalid Quorum Found");
+                }
             } else {
                 if ([self heightForBlockHash:potentialQuorumEntry.quorumHash]) {
                     [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
@@ -517,7 +521,7 @@
     
     BOOL validCoinbase = [coinbaseVerificationMerkleBlock isMerkleTreeValid];
     
-    if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid) {
+    if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
         DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
         //yay this is the correct masternode list verified deterministically for the given block
         [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:addedOrModifiedMasternodes.allValues];
@@ -538,8 +542,8 @@
                 if (!simplifiedMasternodeEntryEntity) {
                     simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
                     [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry onChain:chainEntity];
-                    [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
                 }
+                [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
             }
             for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];

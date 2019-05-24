@@ -194,6 +194,11 @@
     if ([self.signersBitset trueBitsCount] < [self quorumThreshold]) return NO;
     if ([self.validMembersBitset trueBitsCount] < [self quorumThreshold]) return NO;
     
+    //todo do the last things
+    
+    self.verified = YES;
+    
+    return YES;
     
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     

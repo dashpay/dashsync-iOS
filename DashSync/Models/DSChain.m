@@ -1569,7 +1569,7 @@ static dispatch_once_t devnetToken = 0;
     
     if (block.height > self.estimatedBlockHeight) {
         _bestEstimatedBlockHeight = block.height;
-        
+        [self saveBlocks];
         [self.chainManager chain:self wasExtendedWithBlock:block fromPeer:peer];
         
         // notify that transaction confirmations may have changed

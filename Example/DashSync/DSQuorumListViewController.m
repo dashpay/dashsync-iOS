@@ -142,6 +142,7 @@
     DSQuorumEntryEntity *quorumEntryEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
 
     cell.quorumHashLabel.text = uint256_hex(quorumEntryEntity.quorumHash);
+    cell.verifiedLabel.text = quorumEntryEntity.verified?@"Yes":@"No";
     if (quorumEntryEntity.block) {
         cell.heightLabel.text = [NSString stringWithFormat:@"%d", quorumEntryEntity.block.height];
     } else {
