@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 quorumVerificationVectorHash;
 @property (nonatomic, readonly) UInt768 allCommitmentAggregatedSignature;
 @property (nonatomic, readonly) int32_t signersCount;
-@property (nonatomic, readonly) int16_t llmqType;
+@property (nonatomic, readonly) DSLLMQType llmqType;
 @property (nonatomic, readonly) int32_t validMembersCount;
 @property (nonatomic, readonly) NSData * signersBitset;
 @property (nonatomic, readonly) NSData * validMembersBitset;
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(BOOL)validateWithMasternodeList:(DSMasternodeList*)dictionary;
 
--(instancetype)initWithVersion:(uint16_t)version quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain;
+-(instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain;
 
 -(UInt256)orderingHashForRequestID:(UInt256)requestID;
 

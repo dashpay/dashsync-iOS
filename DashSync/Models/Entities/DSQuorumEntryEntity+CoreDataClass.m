@@ -118,7 +118,7 @@
 }
 
 -(DSQuorumEntry*)quorumEntry {
-    DSQuorumEntry * quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey commitmentHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
+    DSQuorumEntry * quorumEntry = [[DSQuorumEntry alloc] initWithVersion:self.version type:self.llmqType quorumHash:self.quorumHash quorumPublicKey:self.quorumPublicKey commitmentHash:self.commitmentHash verified:self.verified onChain:self.chain.chain];
     return quorumEntry;
 }
 

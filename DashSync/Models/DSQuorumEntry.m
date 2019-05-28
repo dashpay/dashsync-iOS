@@ -25,7 +25,7 @@
 @property (nonatomic, assign) UInt256 quorumVerificationVectorHash;
 @property (nonatomic, assign) UInt768 allCommitmentAggregatedSignature;
 @property (nonatomic, assign) int32_t signersCount;
-@property (nonatomic, assign) int16_t llmqType;
+@property (nonatomic, assign) DSLLMQType llmqType;
 @property (nonatomic, assign) int32_t validMembersCount;
 @property (nonatomic, strong) NSData * signersBitset;
 @property (nonatomic, strong) NSData * validMembersBitset;
@@ -110,9 +110,10 @@
     return self;
 }
 
--(instancetype)initWithVersion:(uint16_t)version quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain {
+-(instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain {
     if (!(self = [super init])) return nil;
     
+    self.llmqType = type;
     self.version = version;
     self.quorumHash = quorumHash;
     self.quorumPublicKey = quorumPublicKey;
