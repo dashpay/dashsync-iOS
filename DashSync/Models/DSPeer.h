@@ -89,6 +89,8 @@ typedef NS_ENUM(uint32_t,DSInvType) {
 #define MSG_REJECT      @"reject"      // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 #define MSG_SENDHEADERS @"sendheaders" // BIP130: https://github.com/bitcoin/bips/blob/master/bip-0130.mediawiki
 #define MSG_FEEFILTER   @"feefilter"   // BIP133: https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
+#define MSG_SENDDSQ     @"senddsq" //version 14
+#define MSQ_SENDCMPCT   @"sendcmpct" //version 12.3
 
 //Dash specific
 
