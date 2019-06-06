@@ -31,6 +31,7 @@
         DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
         self.transaction = transactionEntity;
         self.quorum = instantSendTransactionLock.intendedQuorum.matchingQuorumEntryEntity;
+        NSAssert(self.quorum, @"quorum must be present");
     }];
     
     return self;

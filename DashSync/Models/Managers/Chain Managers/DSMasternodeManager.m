@@ -93,6 +93,11 @@
     return [self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)];
 }
 
+-(DSMasternodeList*)masternodeListAtBlockHeight:(uint32_t)blockHeight {
+    DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:8];
+    return [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+}
+
 -(void)setUp {
     [self loadMasternodeLists];
     [self loadLocalMasternodes];
@@ -132,6 +137,18 @@
         [self dequeueMasternodeListRequest];
     }
     
+}
+
+-(void)getRecentMasternodeList:(NSUInteger)blocksAgo {
+    @synchronized (self.masternodeListRetrievalQueue) {
+        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
+        DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        self.lastQueriedBlockHash = merkleBlock.blockHash;
+        [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:merkleBlock.blockHash]];
+        if (emptyRequestQueue) {
+            [self dequeueMasternodeListRequest];
+        }
+    }
 }
 
 -(void)getCurrentMasternodeList {
@@ -474,7 +491,7 @@
             //This is the current one, get more previous masternode lists we need to verify quorums
             
             [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
-            [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
+            [neededMasternodeLists addObject:uint256_data(self.chain.lastBlock.blockHash)]; //also get the current one again
             [self getMasternodeListsForBlockHashes:neededMasternodeLists];
             return;
         }
@@ -635,8 +652,10 @@
 
 // MARK: - Quorums
 
--(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID {
-    NSArray * quorumsForIS = [self.currentMasternodeList.quorums[@(1)] allValues];
+-(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
+    DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
+    DSMasternodeList * masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+    NSArray * quorumsForIS = [masternodeList.quorums[@(1)] allValues];
     UInt256 lowestValue = UINT256_MAX;
     DSQuorumEntry * firstQuorum = nil;
     for (DSQuorumEntry * quorumEntry in quorumsForIS) {

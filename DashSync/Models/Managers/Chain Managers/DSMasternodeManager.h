@@ -70,9 +70,11 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSLocalMasternode * _Nullable)localMasternodeUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath;
 
--(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
+-(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset;
 
 -(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
+
+-(DSMasternodeList*)masternodeListAtBlockHeight:(uint32_t)blockHeight;
 
 @end
 

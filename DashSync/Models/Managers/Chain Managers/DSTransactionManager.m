@@ -1109,9 +1109,11 @@
 }
 
 - (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
-    NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
+    //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
 
     [instantSendTransactionLock verifySignature];
+    
+    [instantSendTransactionLock save];
     
     //[self checkLocksForTransactionHash:instantSendTransactionLock.transactionHash forInput:transactionOutput];
 }

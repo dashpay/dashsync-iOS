@@ -230,7 +230,7 @@
 }
 
 -(DSQuorumEntryEntity*)matchingQuorumEntryEntity {
-    return [DSQuorumEntryEntity anyObjectMatching:@"quorumPublicKeyData",uint384_data(self.quorumPublicKey)];
+    return [DSQuorumEntryEntity anyObjectMatching:@"quorumPublicKeyData == %@",uint384_data(self.quorumPublicKey)];
 }
 
 - (UInt256)orderingHashForRequestID:(UInt256)requestID {

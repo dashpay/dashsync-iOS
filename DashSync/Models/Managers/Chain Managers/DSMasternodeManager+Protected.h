@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Protected)
 
+-(void)getRecentMasternodeList:(NSUInteger)blocksAgo;
+
 -(void)getCurrentMasternodeList;
 
 -(void)getMasternodeListsForBlockHashes:(NSArray*)blockHashes;

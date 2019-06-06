@@ -1281,6 +1281,16 @@ static dispatch_once_t devnetToken = 0;
     return 0;
 }
 
+- (DSMerkleBlock *)blockFromChainTip:(NSUInteger)blocksAgo {
+    DSMerkleBlock *b = self.lastBlock;
+    NSUInteger count = 0;
+    while (b && b.height > 0 && count < blocksAgo) {
+        b = self.blocks[uint256_obj(b.prevBlock)];
+        count++;
+    }
+    return b;
+}
+
 - (DSMerkleBlock *)lastBlock
 {
     if (! _lastBlock) {
