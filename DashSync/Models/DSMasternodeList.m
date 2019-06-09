@@ -244,6 +244,14 @@ inline static int ceil_log2(int x)
     return [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash count];
 }
 
+-(NSUInteger)quorumsCount {
+    NSUInteger count = 0;
+    for (NSNumber * type in self.mQuorums) {
+        count += self.mQuorums[type].count;
+    }
+    return count;
+}
+
 -(NSDictionary*)quorums {
     NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     for (NSNumber * number in self.mQuorums) {

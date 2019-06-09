@@ -50,6 +50,9 @@
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
+@property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
+@property (nonatomic, assign) BOOL instantSendReceived;
+@property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 
 @end
 
@@ -678,6 +681,12 @@
 
 -(void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock {
     self.instantSendReceived = instantSendLock.signatureVerified;
+    self.hasUnverifiedInstantSendLock = (instantSendLock && !instantSendLock.signatureVerified);
+    if (self.hasUnverifiedInstantSendLock) {
+        self.instantSendLockAwaitingProcessing = instantSendLock;
+    } else {
+        self.instantSendLockAwaitingProcessing = nil;
+    }
     if (!instantSendLock.saved) {
         [instantSendLock save];
     }

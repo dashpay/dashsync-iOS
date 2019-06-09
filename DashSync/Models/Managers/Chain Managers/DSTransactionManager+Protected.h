@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeUnrelayedTransactionsFromPeer:(DSPeer*)peer;
 - (void)updateTransactionsBloomFilter;
 - (void)clearTransactionsBloomFilter;
+- (void)checkInstantSendLocksWaitingForQuorums;
 
 @end
 

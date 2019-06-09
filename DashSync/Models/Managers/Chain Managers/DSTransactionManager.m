@@ -66,6 +66,7 @@
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChainManager * chainManager;
 @property (nonatomic, strong) NSMutableArray * removeUnrelayedTransactionsLocalRequests;
+@property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForQuorums;
 
 @end
 
@@ -82,6 +83,7 @@
     self.nonFalsePositiveTransactions = [NSMutableSet set];
     self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
+    self.instantSendLocksWaitingForQuorums = [NSMutableDictionary dictionary];
     [self recreatePublishedTransactionList];
     return self;
 }
@@ -184,6 +186,9 @@
     for (DSWallet * wallet in self.chain.wallets) {
         for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
             [self addTransactionToPublishList:tx]; // also populate the tx publish list
+            if (tx.hasUnverifiedInstantSendLock) {
+                [self.instantSendLocksWaitingForQuorums setObject:tx.instantSendLockAwaitingProcessing forKey:uint256_data(tx.txHash)];
+            }
         }
     }
 }
@@ -1111,11 +1116,38 @@
 - (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
     //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
 
-    [instantSendTransactionLock verifySignature];
-    
+    BOOL verified = [instantSendTransactionLock verifySignature];
     [instantSendTransactionLock save];
     
-    //[self checkLocksForTransactionHash:instantSendTransactionLock.transactionHash forInput:transactionOutput];
+    DSTransaction * transaction = nil;
+    DSWallet * wallet = nil;
+    DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+    
+    if (account && transaction) {
+        [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
+    }
+    
+    if (!verified && !instantSendTransactionLock.intendedQuorum) {
+        //the quorum hasn't been retrieved yet
+        [self.instantSendLocksWaitingForQuorums setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+    }
+}
+
+- (void)checkInstantSendLocksWaitingForQuorums {
+    for (DSInstantSendTransactionLock * instantSendTransactionLock in self.instantSendLocksWaitingForQuorums) {
+        BOOL verified = [instantSendTransactionLock verifySignature];
+        if (verified) {
+            [instantSendTransactionLock save];
+            DSTransaction * transaction = nil;
+            DSWallet * wallet = nil;
+            DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+            
+            if (account && transaction) {
+                [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
+            }
+            [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
+        }
+    }
 }
 
 

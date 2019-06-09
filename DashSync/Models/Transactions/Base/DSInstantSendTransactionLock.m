@@ -135,7 +135,10 @@
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
     DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
-    if (!quorumEntry) return NO;
+    if (!quorumEntry) {
+        DSDLog(@"no quorum entry found");
+        return NO;
+    }
     UInt384 publicKey = quorumEntry.quorumPublicKey;
     DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
     UInt256 signId = [self signIDForQuorumEntry:quorumEntry];

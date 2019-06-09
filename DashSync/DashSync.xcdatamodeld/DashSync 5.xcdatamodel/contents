@@ -132,7 +132,7 @@
     <entity name="DSInstantSendLockEntity" representedClassName="DSInstantSendLockEntity" syncable="YES">
         <attribute name="signature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="validSignature" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="quorum" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="instantSendLocks" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+        <relationship name="quorum" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="instantSendLocks" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
         <relationship name="transaction" maxCount="1" deletionRule="Nullify" destinationEntity="DSTransactionEntity" inverseName="instantSendLock" inverseEntity="DSTransactionEntity" syncable="YES"/>
     </entity>
     <entity name="DSLocalMasternodeEntity" representedClassName="DSLocalMasternodeEntity" syncable="YES">

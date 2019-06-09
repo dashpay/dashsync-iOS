@@ -65,7 +65,6 @@
 @property (nonatomic,assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSMasternodeList*>* masternodeListsByBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,NSNumber*>* masternodeListsBlockHashHeights;
-@property (nonatomic,strong) NSMutableDictionary<NSNumber*,NSMutableDictionary<NSData*,NSData*>*> *quorumsBlockHashToCommitmentHashDictionary;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableArray <NSData*>* masternodeListRetrievalQueue;
 
@@ -82,7 +81,6 @@
     _masternodeListRetrievalQueue = [NSMutableArray array];
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _masternodeListsBlockHashHeights = [NSMutableDictionary dictionary];
-    _quorumsBlockHashToCommitmentHashDictionary = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     self.managedObjectContext = [NSManagedObject context];
     self.lastQueriedBlockHash = UINT256_ZERO;
@@ -207,7 +205,6 @@
 -(void)wipeMasternodeInfo {
     [self.masternodeListsByBlockHash removeAllObjects];
     [self.localMasternodesDictionaryByRegistrationTransactionHash removeAllObjects];
-    [self.quorumsBlockHashToCommitmentHashDictionary removeAllObjects];
 }
 
 -(void)loadMasternodeLists {
@@ -427,7 +424,7 @@
     NSMutableDictionary * deletedQuorums = [NSMutableDictionary dictionary];
     NSMutableDictionary * addedQuorums = [NSMutableDictionary dictionary];
     
-    BOOL quorumsActive = (peer.version >= 70214);
+    BOOL quorumsActive = (coinbaseTransaction.version >= 2);
     
     BOOL validQuorums = TRUE;
     
@@ -603,8 +600,19 @@
         
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         
+        //check for instant send locks that were awaiting a quorum
+        
+        if (![self.masternodeListRetrievalQueue count]) {
+        
+            [self.chain.chainManager.transactionManager checkWaitingInstantSendLocksAgainstMasternodeList:masternodeList];
+        }
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            
+            if (quorumsActive && (addedQuorums.count || quorumsForDeletion.count)) {
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            }
         });
     } else {
         [self issueWithMasternodeListFromPeer:peer];
@@ -616,12 +624,8 @@
     return [self.currentMasternodeList masternodeCount];
 }
 
--(NSUInteger)quorumsCount {
-    NSUInteger count = 0;
-    for (NSNumber * type in self.quorumsBlockHashToCommitmentHashDictionary) {
-        count += self.quorumsBlockHashToCommitmentHashDictionary[type].count;
-    }
-    return count;
+-(NSUInteger)activeQuorumsCount {
+    return self.currentMasternodeList.quorums.count;
 }
 
 -(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
