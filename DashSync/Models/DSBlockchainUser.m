@@ -571,6 +571,31 @@
                         [DSContactEntity saveContext];
                     }
                 }
+            } else {
+                //todo revisit this (especially if associatedBlockchainUserRegistrationTransaction is needed)
+                if (uint256_eq(registrationTransactionHash, self.registrationTransactionHash) && !self.ownContact) {
+                    DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
+                    NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
+                    contact.associatedBlockchainUserRegistrationTransaction = blockchainUserRegistrationTransactionEntity;
+                    contact.username = self.username;
+                    self.ownContact = contact;
+                    if (saveReturnedProfile) {
+                        [DSContactEntity saveContext];
+                    }
+                } else if ([self.wallet blockchainUserForRegistrationHash:registrationTransactionHash]) {
+                    //this means we are fetching a contact for another blockchain user on the device
+                    DSBlockchainUser * blockchainUser = [self.wallet blockchainUserForRegistrationHash:registrationTransactionHash];
+                    if (!blockchainUser.ownContact) {
+                        DSBlockchainUserRegistrationTransactionEntity * blockchainUserRegistrationTransactionEntity = [DSBlockchainUserRegistrationTransactionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
+                        NSAssert(blockchainUserRegistrationTransactionEntity, @"blockchainUserRegistrationTransactionEntity must exist");
+                        contact.associatedBlockchainUserRegistrationTransaction = blockchainUserRegistrationTransactionEntity;
+                        contact.username = blockchainUser.username;
+                        blockchainUser.ownContact = contact;
+                        if (saveReturnedProfile) {
+                            [DSContactEntity saveContext];
+                        }
+                    }
+                }
             }
             
             if (completion) {

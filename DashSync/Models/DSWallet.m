@@ -209,7 +209,7 @@
                     //both contacts are on device
                     
                     //check to see if both blockchain users are on device
-                    DSBlockchainUser * senderBlockchainUser = [self.mBlockchainUsers objectForKey:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash];
+                    DSBlockchainUser * senderBlockchainUser = [self.mBlockchainUsers objectForKey:friendRequest.sourceContact.associatedBlockchainUserRegistrationHash];
                     
                     NSAssert(senderBlockchainUser != blockchainUser, @"These need to be different");
                     
