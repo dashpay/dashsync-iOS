@@ -207,7 +207,16 @@
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
                 if (fundsDerivationPath) {
                     //both contacts are on device
-                    [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                    
+                    //check to see if both blockchain users are on device
+                    DSBlockchainUser * senderBlockchainUser = [self.mBlockchainUsers objectForKey:friendRequest.destinationContact.associatedBlockchainUserRegistrationHash];
+                    
+                    NSAssert(senderBlockchainUser != blockchainUser, @"These need to be different");
+                    
+                    if (!senderBlockchainUser) {
+                        //both contacts are on device, but not both blockchain users
+                        [account addOutgoingDerivationPath:fundsDerivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
+                    }
                 } else {
                     DSDerivationPathEntity * derivationPathEntity = friendRequest.derivationPath;
                     
