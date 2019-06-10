@@ -19,7 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSHTTPDashVesCCOperation : DSHTTPOperation
+@interface DSHTTPVesLocalBitcoinsOperation : DSHTTPOperation
 
 @property (readonly, strong, nonatomic, nullable) NSNumber *vesPrice;
 
