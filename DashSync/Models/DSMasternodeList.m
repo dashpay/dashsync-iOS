@@ -63,7 +63,7 @@ inline static int ceil_log2(int x)
 
 @implementation DSMasternodeList
 
-+(instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntries:(NSArray<DSQuorumEntry*>*)quorumEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
++(instancetype)masternodeListWithSimplifiedMasternodeEntries:(NSArray<DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntries:(NSArray<DSQuorumEntry*>*)quorumEntries atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight onChain:(DSChain*)chain {
     NSMutableDictionary * masternodeDictionary = [NSMutableDictionary dictionary];
     for (DSSimplifiedMasternodeEntry * entry in simplifiedMasternodeEntries) {
         [masternodeDictionary setObject:entry forKey:uint256_data(entry.providerRegistrationTransactionHash).reverse];
@@ -77,20 +77,20 @@ inline static int ceil_log2(int x)
         }
         [quorumDictionaryForType setObject:entry forKey:uint256_data(entry.quorumHash)];
     }
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:masternodeDictionary quorumEntriesDictionary:quorumDictionary atBlockHash:blockHash onChain:chain];
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:masternodeDictionary quorumEntriesDictionary:quorumDictionary atBlockHash:blockHash atBlockHeight:(uint32_t)blockHeight onChain:chain];
 }
 
-+(instancetype)masternodeListWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntriesDictionary:(NSDictionary<NSNumber*,NSDictionary<NSData*,DSQuorumEntry*>*>*)quorumEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:simplifiedMasternodeEntries quorumEntriesDictionary:quorumEntries  atBlockHash:blockHash onChain:chain];
++(instancetype)masternodeListWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntriesDictionary:(NSDictionary<NSNumber*,NSDictionary<NSData*,DSQuorumEntry*>*>*)quorumEntries atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight onChain:(DSChain*)chain {
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:simplifiedMasternodeEntries quorumEntriesDictionary:quorumEntries  atBlockHash:blockHash atBlockHeight:(uint32_t)blockHeight onChain:chain];
 }
 
--(instancetype)initWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntriesDictionary:(NSDictionary<NSNumber*,NSDictionary<NSData*,DSQuorumEntry*>*>*)quorumEntries atBlockHash:(UInt256)blockHash onChain:(DSChain*)chain {
+-(instancetype)initWithSimplifiedMasternodeEntriesDictionary:(NSDictionary<NSData*,DSSimplifiedMasternodeEntry*>*)simplifiedMasternodeEntries quorumEntriesDictionary:(NSDictionary<NSNumber*,NSDictionary<NSData*,DSQuorumEntry*>*>*)quorumEntries atBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight onChain:(DSChain*)chain {
     NSParameterAssert(chain);
     
     if (! (self = [super init])) return nil;
     self.masternodeMerkleRoot = UINT256_ZERO;
     self.quorumMerkleRoot = UINT256_ZERO;
-    self.knownHeight = 0;
+    self.knownHeight = blockHeight;
     self.chain = chain;
     self.blockHash = blockHash;
     self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [simplifiedMasternodeEntries mutableCopy];
@@ -101,7 +101,7 @@ inline static int ceil_log2(int x)
     return self;
 }
 
-+(instancetype)masternodeListAtBlockHash:(UInt256)blockHash fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodeHashes modifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums removedQuorumHashesByType:(NSDictionary*)removedQuorumHashesByType onChain:(DSChain*)chain {
++(instancetype)masternodeListAtBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodeHashes modifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums removedQuorumHashesByType:(NSDictionary*)removedQuorumHashesByType onChain:(DSChain*)chain {
     NSMutableDictionary * tentativeMasternodeList = baseMasternodeList?[baseMasternodeList.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy]:[NSMutableDictionary dictionary];
     
     [tentativeMasternodeList removeObjectsForKeys:removedMasternodeHashes];
@@ -130,7 +130,7 @@ inline static int ceil_log2(int x)
         }
     }
     
-    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList quorumEntriesDictionary:tentativeQuorumList atBlockHash:blockHash onChain:chain];
+    return [[self alloc] initWithSimplifiedMasternodeEntriesDictionary:tentativeMasternodeList quorumEntriesDictionary:tentativeQuorumList atBlockHash:blockHash atBlockHeight:blockHeight onChain:chain];
 }
 
 -(UInt256)masternodeMerkleRoot {

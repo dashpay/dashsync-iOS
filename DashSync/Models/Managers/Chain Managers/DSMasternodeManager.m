@@ -49,7 +49,7 @@
 #import "DSMasternodeListEntity+CoreDataClass.h"
 #import "DSQuorumEntry.h"
 #import "DSMasternodeList.h"
-#import "DSTransactionManager.h"
+#import "DSTransactionManager+Protected.h"
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
@@ -129,6 +129,14 @@
         UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
         DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
         [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (![self.masternodeListRetrievalQueue count]) return;
+            UInt256 timeoutBlockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
+            if (uint256_eq(timeoutBlockHash, blockHash)) {
+                //timeout
+                [self dequeueMasternodeListRequest];
+            }
+        });
     } else {
         DSDLog(@"Missing block (%@)",uint256_reverse_hex(blockHash));
         [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
@@ -141,6 +149,10 @@
     @synchronized (self.masternodeListRetrievalQueue) {
         BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blocksAgo];
+        if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
+            //we are asking for the same as the last one
+            return;
+        }
         self.lastQueriedBlockHash = merkleBlock.blockHash;
         [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:merkleBlock.blockHash]];
         if (emptyRequestQueue) {
@@ -151,6 +163,10 @@
 
 -(void)getCurrentMasternodeList {
     @synchronized (self.masternodeListRetrievalQueue) {
+        if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(self.chain.lastBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
+            //we are asking for the same as the last one
+            return;
+        }
         self.lastQueriedBlockHash = self.chain.lastBlock.blockHash;
         BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:self.chain.lastBlock.blockHash]];
@@ -218,7 +234,7 @@
         for (DSMasternodeListEntity * masternodeListEntity in masternodeListEntities) {
             DSMasternodeList * masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool];
             [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
-            [self.masternodeListsBlockHashHeights setObject:@([self.chain heightForBlockHash:masternodeList.blockHash]) forKey:uint256_data(masternodeList.blockHash)];
+            [self.masternodeListsBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:uint256_data(masternodeList.blockHash)];
             [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
             [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
             DSDLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries",masternodeList.height,uint256_hex(masternodeList.blockHash),(unsigned long)masternodeList.simplifiedMasternodeEntries.count);
@@ -424,7 +440,7 @@
     NSMutableDictionary * deletedQuorums = [NSMutableDictionary dictionary];
     NSMutableDictionary * addedQuorums = [NSMutableDictionary dictionary];
     
-    BOOL quorumsActive = (coinbaseTransaction.version >= 2);
+    BOOL quorumsActive = (coinbaseTransaction.coinbaseTransactionVersion >= 2);
     
     BOOL validQuorums = TRUE;
     
@@ -494,7 +510,7 @@
         }
     }
     
-    DSMasternodeList * masternodeList = [DSMasternodeList masternodeListAtBlockHash:blockHash fromBaseMasternodeList:baseMasternodeList addedMasternodes:addedMasternodes removedMasternodeHashes:deletedMasternodeHashes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums removedQuorumHashesByType:deletedQuorums onChain:self.chain];
+    DSMasternodeList * masternodeList = [DSMasternodeList masternodeListAtBlockHash:blockHash atBlockHeight:[self.chain heightForBlockHash:blockHash] fromBaseMasternodeList:baseMasternodeList addedMasternodes:addedMasternodes removedMasternodeHashes:deletedMasternodeHashes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums removedQuorumHashesByType:deletedQuorums onChain:self.chain];
     
     BOOL rootMNListValid = uint256_eq(coinbaseTransaction.merkleRootMNList, masternodeList.masternodeMerkleRoot);
     
@@ -604,7 +620,7 @@
         
         if (![self.masternodeListRetrievalQueue count]) {
         
-            [self.chain.chainManager.transactionManager checkWaitingInstantSendLocksAgainstMasternodeList:masternodeList];
+            [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{

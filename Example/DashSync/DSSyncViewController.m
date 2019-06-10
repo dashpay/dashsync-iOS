@@ -150,7 +150,7 @@
                                                                                  }];
     
     
-    self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
+    self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSQuorumListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                          NSLog(@"update masternode broadcast count");
@@ -435,12 +435,13 @@
 }
 
 -(void)updateMasternodeList {
-        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager.currentMasternodeList masternodeCount]];
-        self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager.currentMasternodeList masternodeCount]];
+    self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
+    self.masternodeListUpdatedLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.chainManager.masternodeManager.currentMasternodeList.height];
 }
 
 -(void)updateQuorumsList {
-    self.quorumCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager quorumsCount]];
+    self.quorumCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager activeQuorumsCount]];
 }
 
 -(void)updateWalletCount {

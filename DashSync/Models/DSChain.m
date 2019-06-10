@@ -1278,7 +1278,13 @@ static dispatch_once_t devnetToken = 0;
         }
         b = self.blocks[uint256_obj(b.prevBlock)];
     }
-    return 0;
+    for (DSCheckpoint * checkpoint in self.checkpoints) {
+        if (uint256_eq(checkpoint.checkpointHash, blockhash)) {
+            return checkpoint.height;
+        }
+    }
+    DSDLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)",uint256_reverse_hex(blockhash));
+    return UINT32_MAX;
 }
 
 - (DSMerkleBlock *)blockFromChainTip:(NSUInteger)blocksAgo {

@@ -227,10 +227,15 @@
     
     uint32_t ipAddress = CFSwapInt32HostToBig(peerEntity.address);
     char s[INET6_ADDRSTRLEN];
-    [self.peerManager setTrustedPeerHost:[NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), peerEntity.port]];
-    if (self.peerManager.connected) {
-        [self.peerManager disconnect];
-        [self.peerManager connect];
+    NSString * trustedPeerHost = [NSString stringWithFormat:@"%s:%d", inet_ntop(AF_INET, &ipAddress, s, sizeof(s)), peerEntity.port];
+    if ([[self.peerManager trustedPeerHost] isEqualToString:trustedPeerHost]) {
+        [self.peerManager removeTrustedPeerHost];
+    } else {
+        [self.peerManager setTrustedPeerHost:trustedPeerHost];
+        if (self.peerManager.connected) {
+            [self.peerManager disconnect];
+            [self.peerManager connect];
+        }
     }
 }
 

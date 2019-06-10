@@ -570,7 +570,12 @@
 #if MESSAGE_LOGGING
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
     [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,[self.chain heightForBlockHash:((NSData*)obj).UInt256]]];
+        uint32_t knownHeight = [self.chain heightForBlockHash:((NSData*)obj).UInt256];
+        if (knownHeight == UINT32_MAX) {
+            [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height unknown)",((NSData*)obj).reverse.hexString]];
+        } else {
+            [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,knownHeight]];
+        }
     }];
     DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
 #if MESSAGE_CONTENT_LOGGING
