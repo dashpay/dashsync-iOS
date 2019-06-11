@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)getMasternodeListsForBlockHashes:(NSArray*)blockHashes;
 
+-(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash;
+
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 @end

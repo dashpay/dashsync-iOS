@@ -305,6 +305,14 @@
     }
 }
 
+-(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash {
+    @synchronized (self.masternodeListRetrievalQueue) {
+        //this is for debugging purposes only
+        [self.masternodeListRetrievalQueue addObject:uint256_data(blockHash)];
+        [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
+    }
+}
+
 // MARK: - Deterministic Masternode List Sync
 
 #define LOG_MASTERNODE_DIFF 0
