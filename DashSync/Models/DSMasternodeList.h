@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
 
+-(BOOL)validateQuorumsWithMasternodeLists:(NSDictionary*)masternodeLists;
+
 @end
 
 NS_ASSUME_NONNULL_END

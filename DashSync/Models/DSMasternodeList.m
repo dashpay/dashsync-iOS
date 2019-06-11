@@ -294,4 +294,16 @@ inline static int ceil_log2(int x)
     return branch(left, right);
 }
 
+-(BOOL)validateQuorumsWithMasternodeLists:(NSDictionary*)masternodeLists {
+    for (DSQuorumEntry * quorum in self.quorums) {
+        BOOL verified = quorum.verified;
+        if (!verified) {
+            DSMasternodeList * quorumMasternodeList = [masternodeLists objectForKey:uint256_data(quorum.quorumHash)];
+            BOOL valid = [quorum validateWithMasternodeList:quorumMasternodeList];
+            if (!valid) return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 @end
