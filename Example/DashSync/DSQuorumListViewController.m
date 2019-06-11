@@ -108,10 +108,20 @@
 
 -(NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     id<NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-    if ([[sectionInfo name] integerValue]) {
-        return @"My Masternodes";
-    } else {
-        return @"Masternodes";
+    switch ([[sectionInfo name] integerValue]) {
+        case DSLLMQType_50_60:
+            return @"1 Hour Quorums";
+            break;
+        case DSLLMQType_400_60:
+            return @"Day Quorums";
+            break;
+        case DSLLMQType_400_85:
+            return @"2 Day Quorums";
+            break;
+            
+        default:
+            return @"Unknown Quorum Type";
+            break;
     }
 }
 

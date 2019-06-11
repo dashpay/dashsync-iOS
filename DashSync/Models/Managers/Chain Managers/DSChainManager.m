@@ -190,7 +190,7 @@
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
-    [self.masternodeManager getRecentMasternodeList:8];
+    [self.masternodeManager getCurrentMasternodeList];
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
