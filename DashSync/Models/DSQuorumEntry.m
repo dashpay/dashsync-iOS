@@ -241,4 +241,10 @@
     return [data SHA256_2];
 }
 
+
+-(NSString*)debugDescription {
+    uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" - %u",height]];
+}
+
 @end
