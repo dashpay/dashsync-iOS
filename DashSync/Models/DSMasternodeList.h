@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) uint32_t height;
 @property (nonatomic,readonly) UInt256 masternodeMerkleRoot;
 @property (nonatomic,readonly) UInt256 quorumMerkleRoot;
-@property (nonatomic,readonly) UInt256 quorumsCount;
+@property (nonatomic,readonly) NSUInteger quorumsCount;
 @property (nonatomic,readonly) uint64_t masternodeCount;
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSArray * reversedRegistrationTransactionHashes;

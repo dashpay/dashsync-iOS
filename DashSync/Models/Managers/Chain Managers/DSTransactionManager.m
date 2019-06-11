@@ -67,6 +67,7 @@
 @property (nonatomic, readonly) DSChainManager * chainManager;
 @property (nonatomic, strong) NSMutableArray * removeUnrelayedTransactionsLocalRequests;
 @property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForQuorums;
+@property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForTransactions;
 
 @end
 
@@ -84,6 +85,7 @@
     self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
     self.instantSendLocksWaitingForQuorums = [NSMutableDictionary dictionary];
+    self.instantSendLocksWaitingForTransactions = [NSMutableDictionary dictionary];
     [self recreatePublishedTransactionList];
     return self;
 }
@@ -904,6 +906,13 @@
         [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
     }
     
+    DSInstantSendTransactionLock * transactionLockReceivedEarlier = [self.instantSendLocksWaitingForTransactions objectForKey:uint256_data(transaction.txHash)];
+    
+    if (transactionLockReceivedEarlier) {
+        [transaction setInstantSendReceivedWithInstantSendLock:transactionLockReceivedEarlier];
+        [transactionLockReceivedEarlier save];
+    }
+    
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (!syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
@@ -1117,7 +1126,6 @@
     //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
 
     BOOL verified = [instantSendTransactionLock verifySignature];
-    [instantSendTransactionLock save];
     
     DSTransaction * transaction = nil;
     DSWallet * wallet = nil;
@@ -1125,6 +1133,9 @@
     
     if (account && transaction) {
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
+        [instantSendTransactionLock save];
+    } else {
+        [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
     }
     
     if (!verified && !instantSendTransactionLock.intendedQuorum) {

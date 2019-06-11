@@ -19,8 +19,25 @@
 
 +(instancetype)quorumEntryEntityFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry {
     DSMerkleBlockEntity * block = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(potentialQuorumEntry.quorumHash)];
-    DSQuorumEntryEntity * quorumEntryEntity = [DSQuorumEntryEntity managedObject];
-    [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+    DSQuorumEntryEntity * quorumEntryEntity = nil;
+    if (block) {
+        quorumEntryEntity = [[block.quorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)]] anyObject];
+        if (!quorumEntryEntity) {
+            quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+        } else {
+            [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+        }
+    } else {
+        quorumEntryEntity = [DSQuorumEntryEntity anyObjectMatching:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)];
+        if (!quorumEntryEntity) {
+            quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+        } else {
+            [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+        }
+    }
+    
     return quorumEntryEntity;
 }
 
@@ -40,6 +57,15 @@
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
     self.commitmentHash = potentialQuorumEntry.commitmentHash;
     self.chain = potentialQuorumEntry.chain.chainEntity;
+}
+
+-(void)updateAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *) block {
+    if (!self.verified) {
+        self.verified = !!block && potentialQuorumEntry.verified;
+    }
+    if (!self.block) {
+        self.block = block;
+    }
 }
 
 -(UInt256)quorumHash {

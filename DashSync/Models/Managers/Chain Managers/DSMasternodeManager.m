@@ -98,7 +98,7 @@
     NSNumber * cachedHeightNumber = [self.masternodeListsBlockHashHeights objectForKey:uint256_data(blockhash)];
     if (cachedHeightNumber) return [cachedHeightNumber intValue];
     uint32_t chainHeight = [self.chain heightForBlockHash:blockhash];
-    if (chainHeight) [self.masternodeListsBlockHashHeights setObject:@(chainHeight) forKey:uint256_data(blockhash)];
+    if (chainHeight != UINT32_MAX) [self.masternodeListsBlockHashHeights setObject:@(chainHeight) forKey:uint256_data(blockhash)];
     return chainHeight;
 }
 
@@ -113,7 +113,7 @@
 }
 
 -(NSUInteger)activeQuorumsCount {
-    return self.currentMasternodeList.quorums.count;
+    return self.currentMasternodeList.quorumsCount;
 }
 
 -(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntryForLocation:(UInt128)IPAddress port:(uint16_t)port {
@@ -617,6 +617,8 @@
         [DSLocalMasternodeEntity setContext:self.managedObjectContext];
         [DSAddressEntity setContext:self.managedObjectContext];
         [DSMasternodeListEntity setContext:self.managedObjectContext];
+        [DSQuorumEntryEntity setContext:self.managedObjectContext];
+        [DSMerkleBlockEntity setContext:self.managedObjectContext];
         DSChainEntity * chainEntity = self.chain.chainEntity;
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
         if (!merkleBlockEntity) return;
@@ -635,17 +637,12 @@
             DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForProviderRegistrationTransactionHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash] onChain:chainEntity];
             [simplifiedMasternodeEntryEntity updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry];
         }
-        
-        if (addedQuorums.count > 0 || quorumsForDeletion.count) {
-            //quorums
-            [DSQuorumEntryEntity setContext:self.managedObjectContext];
-            [DSMerkleBlockEntity setContext:self.managedObjectContext];
-            for (NSNumber * llmqType in addedQuorums) {
-                for (NSData * quorumHash in addedQuorums[llmqType]) {
-                    DSQuorumEntry * potentialQuorumEntry = addedQuorums[llmqType][quorumHash];
-                    DSQuorumEntryEntity * quorumEntry = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntry:potentialQuorumEntry];
-                    [masternodeListEntity addQuorumsObject:quorumEntry];
-                }
+        for (NSNumber * llmqType in masternodeList.quorums) {
+            NSDictionary * quorumsForMasternodeType = masternodeList.quorums[llmqType];
+            for (NSData * quorumHash in quorumsForMasternodeType) {
+                DSQuorumEntry * potentialQuorumEntry = quorumsForMasternodeType[quorumHash];
+                DSQuorumEntryEntity * quorumEntry = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntry:potentialQuorumEntry];
+                [masternodeListEntity addQuorumsObject:quorumEntry];
             }
         }
         chainEntity.baseBlockHash = [NSData dataWithUInt256:masternodeList.blockHash];

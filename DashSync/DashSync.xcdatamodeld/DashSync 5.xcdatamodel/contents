@@ -249,6 +249,12 @@
         <relationship name="commitmentTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumCommitmentTransactionEntity" inverseName="entry" inverseEntity="DSQuorumCommitmentTransactionEntity" syncable="YES"/>
         <relationship name="instantSendLocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSInstantSendLockEntity" inverseName="quorum" inverseEntity="DSInstantSendLockEntity" syncable="YES"/>
         <relationship name="masternodeList" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="quorums" inverseEntity="DSMasternodeListEntity" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="quorumHashData"/>
+                <index value="llmqType"/>
+            </compoundIndex>
+        </compoundIndexes>
     </entity>
     <entity name="DSShapeshiftEntity" representedClassName="DSShapeshiftEntity" syncable="YES">
         <attribute name="errorMessage" optional="YES" attributeType="String" syncable="YES"/>

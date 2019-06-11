@@ -94,10 +94,7 @@ inline static int ceil_log2(int x)
     self.chain = chain;
     self.blockHash = blockHash;
     self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash = [simplifiedMasternodeEntries mutableCopy];
-    self.mQuorums = [NSMutableDictionary dictionary];
-    for (NSNumber * number in quorumEntries) {
-        [self.mQuorums setObject:[[quorumEntries objectForKey:number] mutableCopy] forKey:number];
-    }
+    self.mQuorums = [quorumEntries mutableCopy];
     return self;
 }
 
@@ -304,6 +301,10 @@ inline static int ceil_log2(int x)
         }
     }
     return TRUE;
+}
+
+-(NSString*)debugDescription {
+    return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%u}",self.height]];
 }
 
 @end
