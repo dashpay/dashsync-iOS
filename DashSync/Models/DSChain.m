@@ -1221,7 +1221,7 @@ static dispatch_once_t devnetToken = 0;
             self.checkpointsInvertedDictionary[uint256_obj(checkpointHash)] = @(checkpoint.height);
         }
         self.delegateQueueChainEntity = [self chainEntity];
-        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:600 onChain:self.delegateQueueChainEntity]) {
+        for (DSMerkleBlockEntity *e in [DSMerkleBlockEntity lastBlocks:LLMQ_KEEP_RECENT_BLOCKS onChain:self.delegateQueueChainEntity]) {
             @autoreleasepool {
                 DSMerkleBlock *b = e.merkleBlock;
                 

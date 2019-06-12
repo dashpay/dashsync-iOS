@@ -113,8 +113,15 @@ inline static int ceil_log2(int x)
     
     NSMutableDictionary * tentativeQuorumList = baseMasternodeList?[baseMasternodeList.mQuorums mutableCopy]:[NSMutableDictionary dictionary];
     
+    //we need to do a deep mutable copy
+    for (NSNumber * quorumType in [tentativeQuorumList copy]) {
+        tentativeQuorumList[quorumType] = [tentativeQuorumList[quorumType] mutableCopy];
+    }
+    
     for (NSNumber * quorumType in addedQuorums) {
-        if (![tentativeQuorumList objectForKey:quorumType]) [tentativeQuorumList setObject:[NSMutableDictionary dictionary] forKey:quorumType];
+        if (![tentativeQuorumList objectForKey:quorumType]) {
+            [tentativeQuorumList setObject:[NSMutableDictionary dictionary] forKey:quorumType];
+        }
     }
     
     for (NSNumber * quorumType in tentativeQuorumList) {
