@@ -196,7 +196,7 @@ inline static int ceil_log2(int x)
     return rankedScores;
 }
 
--(UInt256)masternodeScore:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry quorumHash:(UInt256)quorumHash {
+-(UInt256)masternodeScore:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry modifier:(UInt256)modifier {
     NSParameterAssert(simplifiedMasternodeEntry);
     
     if (uint256_is_zero(simplifiedMasternodeEntry.confirmedHash)) {
@@ -204,15 +204,15 @@ inline static int ceil_log2(int x)
     }
     NSMutableData * data = [NSMutableData data];
     [data appendData:[NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHashHashedWithProviderRegistrationTransactionHash]];
-    [data appendData:[NSData dataWithUInt256:quorumHash]];
+    [data appendData:[NSData dataWithUInt256:modifier]];
     return data.SHA256;
 }
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumHash:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount {
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
     NSMutableDictionary <NSData*,id>* scoreDictionary = [NSMutableDictionary dictionary];
     for (NSData * registrationTransactionHash in self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
-        UInt256 score = [self masternodeScore:simplifiedMasternodeEntry quorumHash:quorumHash];
+        UInt256 score = [self masternodeScore:simplifiedMasternodeEntry modifier:quorumModifier];
         if (uint256_is_zero(score)) continue;
         scoreDictionary[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
     }
@@ -308,6 +308,10 @@ inline static int ceil_log2(int x)
         }
     }
     return TRUE;
+}
+
+-(NSString*)description {
+    return [[super description] stringByAppendingString:[NSString stringWithFormat:@" {%u}",self.height]];
 }
 
 -(NSString*)debugDescription {

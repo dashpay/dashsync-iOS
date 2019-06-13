@@ -102,7 +102,6 @@
     DSChainEntity * chainEntity = chain.chainEntity;
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
     [DSAddressEntity deleteAddressesOnChain:chainEntity];
-    [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
     [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
     [chain wipeBlockchainInfo];
     [DSTransactionEntity saveContext];
@@ -130,7 +129,6 @@
         [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
         [DSMasternodeListEntity deleteAllOnChain:chainEntity];
         DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-        [chainManager resetSyncCountInfo:DSSyncCountInfo_List];
         [chainManager.masternodeManager wipeMasternodeInfo];
         [DSSimplifiedMasternodeEntryEntity saveContext];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];

@@ -39,6 +39,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSDate+Utils.h"
 #import "DashSync.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 #define SYNC_STARTHEIGHT_KEY @"SYNC_STARTHEIGHT"
 
@@ -133,11 +134,13 @@
 -(void)disconnectedRescan {
     
     DSChainEntity * chainEntity = self.chain.chainEntity;
-    [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-    [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
-    [self.chain wipeBlockchainInfo];
-    [self.chain wipeMasternodes];
-    [DSTransactionEntity saveContext];
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
+        [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+        [self.chain wipeBlockchainInfo];
+        [DSTransactionEntity saveContext];
+    }];
     
     if (![self.chain isMainnet]) {
         [self.chain.chainManager.peerManager removeTrustedPeerHost];
@@ -147,8 +150,11 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        
     });
     
     self.syncStartHeight = self.chain.lastBlockHeight;
@@ -220,16 +226,7 @@
 }
 
 -(void)setCount:(uint32_t)count forSyncCountInfo:(DSSyncCountInfo)syncCountInfo {
-    //    if (syncCountInfo ==  DSSyncCountInfo_List || syncCountInfo == DSSyncCountInfo_GovernanceObject) {
-    //        NSString * storageKey = [NSString stringWithFormat:@"%@_%@_%d",self.chain.uniqueID,SYNC_COUNT_INFO,syncCountInfo];
-    //        [[NSUserDefaults standardUserDefaults] setInteger:count forKey:storageKey];
-    //        [self.syncCountInfo setObject:@(count) forKey:@(syncCountInfo)];
-    //    }
     switch (syncCountInfo) {
-        case DSSyncCountInfo_List:
-            self.chain.totalMasternodeCount = count;
-            [self.chain save];
-            break;
         case DSSyncCountInfo_GovernanceObject:
             self.chain.totalGovernanceObjectsCount = count;
             [self.chain save];

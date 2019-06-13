@@ -69,6 +69,8 @@
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
+#import "DSMasternodeListEntity+CoreDataProperties.h"
+#import "DSQuorumEntryEntity+CoreDataProperties.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; } checkpoint;
 
@@ -1049,23 +1051,17 @@ static dispatch_once_t devnetToken = 0;
     [self.chainManager chainWasWiped:self];
 }
 
--(void)wipeMasternodes {
-    NSManagedObjectContext * context = [DSChainEntity context];
-    [context performBlockAndWait:^{
-        [DSChainEntity setContext:context];
-        [DSSimplifiedMasternodeEntryEntity setContext:context];
-        [DSLocalMasternodeEntity setContext:context];
-        DSChainEntity * chainEntity = self.chainEntity;
-        [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
-        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-        [self.chainManager resetSyncCountInfo:DSSyncCountInfo_List];
-        [self.chainManager.masternodeManager wipeMasternodeInfo];
-        [DSSimplifiedMasternodeEntryEntity saveContext];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",self.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
-        });
-    }];
+-(void)wipeMasternodesInContext:(NSManagedObjectContext*)context {
+    [DSChainEntity setContext:context];
+    [DSSimplifiedMasternodeEntryEntity setContext:context];
+    [DSLocalMasternodeEntity setContext:context];
+    DSChainEntity * chainEntity = self.chainEntity;
+    [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
+    [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+    [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+    [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    [self.chainManager.masternodeManager wipeMasternodeInfo];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",self.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
 }
 
 -(void)wipeWalletsAndDerivatives {

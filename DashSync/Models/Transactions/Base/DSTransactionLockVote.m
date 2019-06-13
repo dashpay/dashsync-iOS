@@ -165,7 +165,7 @@
 -(NSArray<DSSimplifiedMasternodeEntry*>*)intendedQuorum {
     if (!self.masternode) return nil;
     DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
-    return [masternodeManager.currentMasternodeList masternodesForQuorumHash:self.quorumModifierHash quorumCount:10];
+    return [masternodeManager.currentMasternodeList masternodesForQuorumModifier:self.quorumModifierHash quorumCount:10];
 }
 
 -(void)save {

@@ -48,6 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(UInt256)orderingHashForRequestID:(UInt256)requestID;
 
++(uint32_t)quorumSizeForType:(DSLLMQType)type;
+
 @end
 
 NS_ASSUME_NONNULL_END

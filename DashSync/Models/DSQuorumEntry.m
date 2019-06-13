@@ -195,15 +195,11 @@
     if ([self.signersBitset trueBitsCount] < [self quorumThreshold]) return NO;
     if ([self.validMembersBitset trueBitsCount] < [self quorumThreshold]) return NO;
     
-    //todo do the last things
-    
-    self.verified = YES;
-    
     return YES;
     
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     
-    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumHash:self.llmqQuorumHash quorumCount:50];
+    NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType]];
     NSMutableArray * publicKeyArray = [NSMutableArray array];
     uint32_t i = 0;
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
@@ -239,6 +235,23 @@
     [data appendUInt256:self.quorumHash];
     [data appendUInt256:requestID];
     return [data SHA256_2];
+}
+
++(uint32_t)quorumSizeForType:(DSLLMQType)type {
+    switch (type) {
+        case DSLLMQType_5_60:
+            return 5;
+        case DSLLMQType_50_60:
+            return 50;
+        case DSLLMQType_400_60:
+            return 400;
+        case DSLLMQType_400_85:
+            return 400;
+        default:
+            NSAssert(FALSE, @"Unknown quorum type");
+            return 50;
+            break;
+    }
 }
 
 -(NSString*)description {

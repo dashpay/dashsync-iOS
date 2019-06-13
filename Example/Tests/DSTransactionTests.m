@@ -298,7 +298,7 @@
     XCTAssertEqualObjects([NSData dataWithUInt256:score], @"7125cd3de730475accb2cad7d0f09e4258b7fec5f7e5fa0ae3ca7f1d373a910c".hexToData);
     NSLog(@"Score %@",[NSData dataWithUInt256:score].hexString);
     
-    NSArray * quorum = [chainManager.masternodeManager masternodesForQuorumHash:@"3b3f11ecb0b38814dca71cd93e620c808ffe2dadbfcca1b446a8590900000000".hexToData.UInt256 quorumCount:10];
+    NSArray * quorum = [chainManager.masternodeManager masternodesForTransactionLockQuorumHash:@"3b3f11ecb0b38814dca71cd93e620c808ffe2dadbfcca1b446a8590900000000".hexToData.UInt256 quorumCount:10];
     
     NSArray * desiredQuorum = @[@"35.161.101.35:19999",@"52.50.208.53:20049",@"52.50.208.53:20021",@"52.50.208.53:20017",@"140.82.59.51:10003",@"63.33.238.85:20006",@"173.61.30.231:19018",@"18.202.52.170:20016",@"173.61.30.231:19012",@"18.202.52.170:20004"];
     

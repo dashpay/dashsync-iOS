@@ -1145,7 +1145,8 @@
 }
 
 - (void)checkInstantSendLocksWaitingForQuorums {
-    for (DSInstantSendTransactionLock * instantSendTransactionLock in self.instantSendLocksWaitingForQuorums) {
+    for (NSData * transactionHashData in self.instantSendLocksWaitingForQuorums) {
+        DSInstantSendTransactionLock * instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
         BOOL verified = [instantSendTransactionLock verifySignature];
         if (verified) {
             [instantSendTransactionLock save];
