@@ -317,6 +317,11 @@
 
 #define LOG_MASTERNODE_DIFF 0
 
+-(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSMerkleBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSMutableDictionary * addedMasternodes, NSMutableDictionary * modifiedMasternodes, NSMutableDictionary * addedQuorums, NSArray * neededMissingMasternodeLists))completion {
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList knownMasternodeLists:self.masternodeListsByBlockHash lastBlock:lastBlock onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return [self heightForBlockHash:blockHash];
+    } completion:completion];
+}
 
 +(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList knownMasternodeLists:(NSDictionary*)knownMasternodeLists lastBlock:(DSMerkleBlock*)lastBlock onChain:(DSChain*)chain blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSMutableDictionary * addedMasternodes, NSMutableDictionary * modifiedMasternodes, NSMutableDictionary * addedQuorums, NSArray * neededMissingMasternodeLists))completion {
     
@@ -589,9 +594,7 @@
         return;
     }
     
-    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList knownMasternodeLists:self.masternodeListsByBlockHash lastBlock:lastBlock onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return [self heightForBlockHash:blockHash];
-    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSMutableDictionary *addedMasternodes, NSMutableDictionary *modifiedMasternodes, NSMutableDictionary *addedQuorums, NSArray *neededMissingMasternodeLists) {
+    [self processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList lastBlock:lastBlock completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSMutableDictionary *addedMasternodes, NSMutableDictionary *modifiedMasternodes, NSMutableDictionary *addedQuorums, NSArray *neededMissingMasternodeLists) {
         
         
         if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
