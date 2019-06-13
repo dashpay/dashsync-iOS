@@ -573,7 +573,6 @@
     if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && !uint256_is_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
-        [self dequeueMasternodeListRequest];
         DSDLog(@"No base masternode list");
         return;
     };
@@ -586,7 +585,6 @@
     
     if (!lastBlock) {
         [self issueWithMasternodeListFromPeer:peer];
-        [self dequeueMasternodeListRequest];
         DSDLog(@"Last Block missing");
         return;
     }
@@ -640,7 +638,6 @@
             }
         } else {
             [self issueWithMasternodeListFromPeer:peer];
-            [self dequeueMasternodeListRequest];
         }
         
     }];
@@ -717,20 +714,25 @@
     NSArray * faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
     
     if (faultyPeers.count == MAX_FAULTY_DML_PEERS) {
+        DSDLog(@"Exceeded max failures for masternode list, starting from scratch");
         //no need to remove local masternodes
         [self.masternodeListRetrievalQueue removeAllObjects];
         
         NSManagedObjectContext * context = [NSManagedObject context];
         [context performBlockAndWait:^{
             [DSMasternodeListEntity setContext:context];
+            [DSSimplifiedMasternodeEntryEntity setContext:context];
+            [DSQuorumEntryEntity setContext:context];
             DSChainEntity * chainEntity = peer.chain.chainEntity;
             [DSMasternodeListEntity deleteAllOnChain:chainEntity];
             [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+            [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
         }];
         
         [self.masternodeListsByBlockHash removeAllObjects];
-        
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        
+        [self getCurrentMasternodeList];
     } else {
         
         if (!faultyPeers) {
@@ -741,6 +743,7 @@
             }
         }
         [[NSUserDefaults standardUserDefaults] setObject:faultyPeers forKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
+        [self dequeueMasternodeListRequest];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDiffValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
