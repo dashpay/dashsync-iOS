@@ -68,6 +68,7 @@
 @property (nonatomic,strong) NSMutableDictionary<NSData*,NSNumber*>* cachedBlockHashHeights;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableArray <NSData*>* masternodeListRetrievalQueue;
+@property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 
 @end
 
@@ -230,8 +231,9 @@
         UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
         DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
         [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
             if (![self.masternodeListRetrievalQueue count]) return;
+            DSDLog(@"TimedOut");
             UInt256 timeoutBlockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
             if (uint256_eq(timeoutBlockHash, blockHash)) {
                 //timeout
@@ -267,8 +269,19 @@
     }
 }
 
--(void)getCurrentMasternodeList {
+-(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay {
     @synchronized (self.masternodeListRetrievalQueue) {
+        if (safetyDelay) {
+            //the safety delay checks to see if this was called in the last n seconds.
+            self.timeIntervalForMasternodeRetrievalSafetyDelay = [[NSDate date] timeIntervalSince1970];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+                NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
+                if (timeElapsed > safetyDelay) {
+                    [self getCurrentMasternodeListWithSafetyDelay:0];
+                }
+            });
+            return;
+        }
         if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(self.chain.lastBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
@@ -573,8 +586,6 @@
     
     DSMasternodeList * baseMasternodeList = [self.masternodeListsByBlockHash objectForKey:uint256_data(baseBlockHash)];
     
-    DSDLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self.chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self.chain heightForBlockHash:blockHash]);
-    
     if (!baseMasternodeList && !uint256_eq(self.chain.genesisHash, baseBlockHash) && !uint256_is_zero(baseBlockHash)) {
         //this could have been deleted in the meantime, if so rerequest
         [self issueWithMasternodeListFromPeer:peer];
@@ -626,6 +637,9 @@
                 [self saveMasternodeList:masternodeList havingModifiedMasternodes:modifiedMasternodes
                             addedQuorums:addedQuorums];
                 
+                if (uint256_eq(self.lastQueriedBlockHash,blockHash)) {
+                    [self removeOldMasternodeLists];
+                }
                 
                 NSAssert([self.masternodeListRetrievalQueue containsObject:uint256_data(blockHash)], @"This should still be here");
                 [self.masternodeListRetrievalQueue removeObject:uint256_data(blockHash)];
@@ -646,7 +660,8 @@
     }];
 }
 
--(void)saveMasternodeList:(DSMasternodeList*)masternodeList havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums {
+-(BOOL)saveMasternodeList:(DSMasternodeList*)masternodeList havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums {
+    __block BOOL hasError = NO;
     [self.managedObjectContext performBlockAndWait:^{
         //masternodes
         [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
@@ -660,7 +675,6 @@
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
         NSAssert(merkleBlockEntity, @"merkle block should exist");
         NSAssert(!merkleBlockEntity.masternodeList, @"merkle block should not have a masternode list already");
-        BOOL hasError = NO;
         if (!merkleBlockEntity || merkleBlockEntity.masternodeList) hasError = YES;
         
         if (!hasError) {
@@ -688,6 +702,7 @@
                 }
             }
             chainEntity.baseBlockHash = [NSData dataWithUInt256:masternodeList.blockHash];
+            
             NSError * error = [DSSimplifiedMasternodeEntryEntity saveContext];
             hasError = !!error;
         }
@@ -700,7 +715,7 @@
             [self wipeMasternodeInfo];
             [DSSimplifiedMasternodeEntryEntity saveContext];
             dispatch_async([self peerManager].chainPeerManagerQueue, ^{
-                [self getCurrentMasternodeList];
+                [self getCurrentMasternodeListWithSafetyDelay:0];
             });
         } else {
             [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
@@ -711,6 +726,41 @@
         
         [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
+    return !hasError;
+}
+
+-(void)removeOldMasternodeLists {
+    [self.managedObjectContext performBlockAndWait:^{
+        uint32_t lastBlockHeight = self.chain.lastBlockHeight;
+        for (NSData * blockHash in [self.masternodeListsByBlockHash copy]) {
+            DSMasternodeList * masternodeList = self.masternodeListsByBlockHash[blockHash];
+            uint32_t height = self.masternodeListsByBlockHash[blockHash].height;
+            if (height == UINT32_MAX) {
+                height = [self heightForBlockHash:blockHash.UInt256];
+            }
+            if (height != UINT32_MAX) {
+                if (lastBlockHeight - height > 50) {
+                    
+                    DSMasternodeListEntity * masternodeListEntity = [DSMasternodeListEntity anyObjectMatching:@"block.blockHash = %@ && (block.usedByQuorums.@count == 0)",uint256_data(masternodeList.blockHash)];
+                    if (masternodeListEntity) {
+                        DSDLog(@"Removing masternodeList at height %u",height);
+                        DSDLog(@"quorums are %@",masternodeListEntity.block.usedByQuorums);
+                        //A quorum is on a block that can only have one masternode list.
+                        //A block can have one quorum of each type.
+                        //A quorum references the masternode list by it's block
+                        //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
+                        
+                        [self.managedObjectContext deleteObject:masternodeListEntity];
+                        [self.masternodeListsByBlockHash removeObjectForKey:blockHash];
+                        NSArray * oldUnusedQuorums = [DSQuorumEntryEntity objectsMatching:@"(usedByMasternodeLists.@count == 0)"];
+                        for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldUnusedQuorums copy]) {
+                            [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
+                        }
+                    }
+                }
+            }
+        }
+    }];
 }
 
 -(void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
@@ -735,7 +785,7 @@
         [self.masternodeListsByBlockHash removeAllObjects];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
         
-        [self getCurrentMasternodeList];
+        [self getCurrentMasternodeListWithSafetyDelay:0];
     } else {
         
         if (!faultyPeers) {

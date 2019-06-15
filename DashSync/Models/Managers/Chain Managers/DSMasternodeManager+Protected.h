@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)getRecentMasternodeList:(NSUInteger)blocksAgo;
 
--(void)getCurrentMasternodeList;
+-(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
 
 -(void)getMasternodeListsForBlockHashes:(NSArray*)blockHashes;
 

@@ -13,6 +13,8 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSQuorumEntry.h"
+#import "DSMasternodeListEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 // from https://en.bitcoin.it/wiki/Protocol_specification#Merkle_Trees
 // Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a double SHA-256, the SHA-256 hash of the

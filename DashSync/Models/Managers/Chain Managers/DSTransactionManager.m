@@ -909,6 +909,7 @@
     DSInstantSendTransactionLock * transactionLockReceivedEarlier = [self.instantSendLocksWaitingForTransactions objectForKey:uint256_data(transaction.txHash)];
     
     if (transactionLockReceivedEarlier) {
+        [self.instantSendLocksWaitingForTransactions removeObjectForKey:uint256_data(transaction.txHash)];
         [transaction setInstantSendReceivedWithInstantSendLock:transactionLockReceivedEarlier];
         [transactionLockReceivedEarlier save];
     }
@@ -1127,6 +1128,8 @@
 
     BOOL verified = [instantSendTransactionLock verifySignature];
     
+    DSDLog(@"%@:%d relayed instant send transaction lock %@", peer.host, peer.port, uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+    
     DSTransaction * transaction = nil;
     DSWallet * wallet = nil;
     DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
@@ -1146,6 +1149,7 @@
 
 - (void)checkInstantSendLocksWaitingForQuorums {
     for (NSData * transactionHashData in self.instantSendLocksWaitingForQuorums) {
+        if (self.instantSendLocksWaitingForTransactions[transactionHashData]) continue;
         DSInstantSendTransactionLock * instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
         BOOL verified = [instantSendTransactionLock verifySignature];
         if (verified) {

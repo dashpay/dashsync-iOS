@@ -21,7 +21,7 @@
     DSMerkleBlockEntity * block = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(potentialQuorumEntry.quorumHash)];
     DSQuorumEntryEntity * quorumEntryEntity = nil;
     if (block) {
-        quorumEntryEntity = [[block.quorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)]] anyObject];
+        quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)]] anyObject];
         if (!quorumEntryEntity) {
             quorumEntryEntity = [DSQuorumEntryEntity managedObject];
             [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];

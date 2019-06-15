@@ -1,8 +1,8 @@
 //
 //  DSQuorumEntryEntity+CoreDataProperties.m
-//  DashSync
+//  Dash-PLCrashReporter
 //
-//  Created by Sam Westrich on 4/25/19.
+//  Created by Sam Westrich on 6/14/19.
 //
 //
 
@@ -14,21 +14,23 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSQuorumEntryEntity"];
 }
 
+@dynamic allCommitmentAggregatedSignatureData;
+@dynamic commitmentHashData;
+@dynamic llmqType;
 @dynamic quorumHashData;
 @dynamic quorumPublicKeyData;
 @dynamic quorumThresholdSignatureData;
 @dynamic quorumVerificationVectorHashData;
-@dynamic signersCount;
-@dynamic allCommitmentAggregatedSignatureData;
-@dynamic llmqType;
-@dynamic validMembersCount;
-@dynamic commitmentTransaction;
-@dynamic chain;
 @dynamic signersBitset;
+@dynamic signersCount;
 @dynamic validMembersBitset;
-@dynamic commitmentHashData;
+@dynamic validMembersCount;
+@dynamic verified;
 @dynamic version;
 @dynamic block;
-@dynamic verified;
+@dynamic chain;
+@dynamic commitmentTransaction;
+@dynamic instantSendLocks;
+@dynamic usedByMasternodeLists;
 
 @end

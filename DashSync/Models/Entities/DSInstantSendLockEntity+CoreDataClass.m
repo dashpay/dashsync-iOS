@@ -29,6 +29,7 @@
         self.validSignature = instantSendTransactionLock.signatureVerified;
         self.signature = [NSData dataWithUInt768:instantSendTransactionLock.signature];
         DSTransactionEntity * transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(instantSendTransactionLock.transactionHash)];
+        NSAssert(transactionEntity, @"transaction must exist");
         self.transaction = transactionEntity;
         self.quorum = instantSendTransactionLock.intendedQuorum.matchingQuorumEntryEntity;//the quorum might not yet
     }];

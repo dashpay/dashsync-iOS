@@ -1,8 +1,8 @@
 //
 //  DSQuorumEntryEntity+CoreDataProperties.h
-//  DashSync
+//  Dash-PLCrashReporter
 //
-//  Created by Sam Westrich on 4/25/19.
+//  Created by Sam Westrich on 6/14/19.
 //
 //
 
@@ -15,22 +15,38 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSQuorumEntryEntity *> *)fetchRequest;
 
+@property (nonatomic, assign) DSLLMQType llmqType;
+@property (nonatomic, assign) int16_t version;
+@property (nonatomic, assign) int32_t validMembersCount;
+@property (nonatomic, assign) int32_t signersCount;
+@property (nonatomic, assign) BOOL verified;
+@property (nullable, nonatomic, retain) NSData *allCommitmentAggregatedSignatureData;
+@property (nullable, nonatomic, retain) NSData *commitmentHashData;
 @property (nullable, nonatomic, retain) NSData *quorumHashData;
 @property (nullable, nonatomic, retain) NSData *quorumPublicKeyData;
 @property (nullable, nonatomic, retain) NSData *quorumThresholdSignatureData;
 @property (nullable, nonatomic, retain) NSData *quorumVerificationVectorHashData;
-@property (nonatomic, assign) int32_t signersCount;
-@property (nonatomic, assign) BOOL verified;
-@property (nullable, nonatomic, retain) NSData *allCommitmentAggregatedSignatureData;
-@property (nonatomic, assign) DSLLMQType llmqType;
-@property (nonatomic, assign) int16_t version;
-@property (nonatomic, assign) int32_t validMembersCount;
-@property (nullable, nonatomic, retain) NSData * signersBitset;
-@property (nullable, nonatomic, retain) NSData * validMembersBitset;
-@property (nullable, nonatomic, retain) DSQuorumCommitmentTransactionEntity *commitmentTransaction;
+@property (nullable, nonatomic, retain) NSData *signersBitset;
+@property (nullable, nonatomic, retain) NSData *validMembersBitset;
+@property (nullable, nonatomic, retain) DSMerkleBlockEntity *block;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
-@property (nullable, nonatomic, retain) NSData *commitmentHashData;
-@property (nonatomic, retain) DSMerkleBlockEntity * block;
+@property (nullable, nonatomic, retain) DSQuorumCommitmentTransactionEntity *commitmentTransaction;
+@property (nullable, nonatomic, retain) NSSet<DSInstantSendLockEntity *> *instantSendLocks;
+@property (nullable, nonatomic, retain) NSSet<DSMasternodeListEntity *> *usedByMasternodeLists;
+
+@end
+
+@interface DSQuorumEntryEntity (CoreDataGeneratedAccessors)
+
+- (void)addInstantSendLocksObject:(DSInstantSendLockEntity *)value;
+- (void)removeInstantSendLocksObject:(DSInstantSendLockEntity *)value;
+- (void)addInstantSendLocks:(NSSet<DSInstantSendLockEntity *> *)values;
+- (void)removeInstantSendLocks:(NSSet<DSInstantSendLockEntity *> *)values;
+
+- (void)addUsedByMasternodeListsObject:(DSMasternodeListEntity *)value;
+- (void)removeUsedByMasternodeListsObject:(DSMasternodeListEntity *)value;
+- (void)addUsedByMasternodeLists:(NSSet<DSMasternodeListEntity *> *)values;
+- (void)removeUsedByMasternodeLists:(NSSet<DSMasternodeListEntity *> *)values;
 
 @end
 

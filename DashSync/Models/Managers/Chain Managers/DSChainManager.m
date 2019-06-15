@@ -196,7 +196,7 @@
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
-    [self.masternodeManager getCurrentMasternodeList];
+    [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
@@ -216,7 +216,7 @@
 }
 
 -(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer {
-    [self.masternodeManager getCurrentMasternodeList];
+    [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];
 }
 
 // MARK: - Count Info

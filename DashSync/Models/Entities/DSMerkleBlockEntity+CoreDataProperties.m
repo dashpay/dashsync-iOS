@@ -27,6 +27,6 @@
 @dynamic version;
 @dynamic chain;
 @dynamic masternodeList;
-@dynamic quorums;
+@dynamic usedByQuorums;
 
 @end

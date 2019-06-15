@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int32_t version;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSMasternodeListEntity *masternodeList;
-@property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *quorums;
+@property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *usedByQuorums;
 
 @end
 
