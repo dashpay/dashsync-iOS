@@ -135,12 +135,14 @@
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
     DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
-    if (quorumEntry) {
+    if (quorumEntry && quorumEntry.verified) {
         UInt384 publicKey = quorumEntry.quorumPublicKey;
         DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
         UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
         DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString);
         self.signatureVerified = [blsKey verify:signId signature:self.signature];
+    } else if (quorumEntry) {
+        DSDLog(@"quorum entry found but is not yet verified");
     } else {
         DSDLog(@"no quorum entry found");
     }

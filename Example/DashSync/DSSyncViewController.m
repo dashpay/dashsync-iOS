@@ -358,6 +358,7 @@
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
     }]];
     

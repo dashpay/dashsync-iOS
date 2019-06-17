@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSQuorumCommitmentTransactionEntity *commitmentTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSInstantSendLockEntity *> *instantSendLocks;
-@property (nullable, nonatomic, retain) NSSet<DSMasternodeListEntity *> *usedByMasternodeLists;
+@property (nullable, nonatomic, retain) NSSet<DSMasternodeListEntity *> *referencedByMasternodeLists;
 
 @end
 

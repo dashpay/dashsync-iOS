@@ -31,6 +31,6 @@
 @dynamic chain;
 @dynamic commitmentTransaction;
 @dynamic instantSendLocks;
-@dynamic usedByMasternodeLists;
+@dynamic referencedByMasternodeLists;
 
 @end

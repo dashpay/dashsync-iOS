@@ -153,7 +153,7 @@
     <entity name="DSMasternodeListEntity" representedClassName="DSMasternodeListEntity" syncable="YES">
         <relationship name="block" maxCount="1" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="masternodeList" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="masternodes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="masternodeLists" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
-        <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="usedByMasternodeLists" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
+        <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="referencedByMasternodeLists" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
     </entity>
     <entity name="DSMerkleBlockEntity" representedClassName="DSMerkleBlockEntity" syncable="YES">
         <attribute name="blockHash" attributeType="Binary" indexed="YES" syncable="YES"/>
@@ -248,7 +248,7 @@
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="quorums" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="commitmentTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSQuorumCommitmentTransactionEntity" inverseName="entry" inverseEntity="DSQuorumCommitmentTransactionEntity" syncable="YES"/>
         <relationship name="instantSendLocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSInstantSendLockEntity" inverseName="quorum" inverseEntity="DSInstantSendLockEntity" syncable="YES"/>
-        <relationship name="usedByMasternodeLists" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="quorums" inverseEntity="DSMasternodeListEntity" indexed="YES" syncable="YES"/>
+        <relationship name="referencedByMasternodeLists" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSMasternodeListEntity" inverseName="quorums" inverseEntity="DSMasternodeListEntity" indexed="YES" syncable="YES"/>
         <compoundIndexes>
             <compoundIndex>
                 <index value="quorumHashData"/>

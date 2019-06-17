@@ -67,7 +67,7 @@
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSMasternodeList*>* masternodeListsByBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,NSNumber*>* cachedBlockHashHeights;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
-@property (nonatomic,strong) NSMutableArray <NSData*>* masternodeListRetrievalQueue;
+@property (nonatomic,strong) NSMutableOrderedSet <NSData*>* masternodeListRetrievalQueue;
 @property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
 
 @end
@@ -80,7 +80,7 @@
     
     if (! (self = [super init])) return nil;
     _chain = chain;
-    _masternodeListRetrievalQueue = [NSMutableArray array];
+    _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
@@ -220,6 +220,12 @@
 
 -(void)dequeueMasternodeListRequest {
     if (![self.masternodeListRetrievalQueue count]) return;
+    if (self.peerManager.downloadPeer.status != DSPeerStatus_Connected) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+            [self dequeueMasternodeListRequest];
+        });
+        return;
+    }
     UInt256 blockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
     
     //we should check the associated block still exists
@@ -329,6 +335,7 @@
 // MARK: - Deterministic Masternode List Sync
 
 #define LOG_MASTERNODE_DIFF 0
+#define TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF 0
 
 -(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSMerkleBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSMutableDictionary * addedMasternodes, NSMutableDictionary * modifiedMasternodes, NSMutableDictionary * addedQuorums, NSArray * neededMissingMasternodeLists))completion {
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList knownMasternodeLists:self.masternodeListsByBlockHash lastBlock:lastBlock onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
@@ -551,7 +558,18 @@
     
     BOOL validCoinbase = [coinbaseVerificationMerkleBlock isMerkleTreeValid];
     
+#if TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF
+    //test random errors
+    uint32_t chance = 20; //chance is 1/10
+    
+    completion((arc4random_uniform(chance) != 0) && foundCoinbase,(arc4random_uniform(chance) != 0) && validCoinbase,(arc4random_uniform(chance) != 0) && rootMNListValid,(arc4random_uniform(chance) != 0) && rootQuorumListValid,(arc4random_uniform(chance) != 0) && validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
+#else
+    
+    //normal completion
     completion(foundCoinbase,validCoinbase,rootMNListValid,rootQuorumListValid,validQuorums, masternodeList, addedMasternodes, modifiedMasternodes, addedQuorums, neededMasternodeLists);
+    
+#endif
+    
     
 }
 
@@ -634,8 +652,12 @@
                     self.masternodeListAwaitingQuorumValidation = nil;
                 }
                 
-                [self saveMasternodeList:masternodeList havingModifiedMasternodes:modifiedMasternodes
-                            addedQuorums:addedQuorums];
+                if (!self.masternodeListsByBlockHash[uint256_data(blockHash)]) {
+                    //in rare race conditions this might already exist
+                    [self saveMasternodeList:masternodeList havingModifiedMasternodes:modifiedMasternodes
+                                addedQuorums:addedQuorums];
+                }
+                
                 
                 if (uint256_eq(self.lastQueriedBlockHash,blockHash)) {
                     [self removeOldMasternodeLists];
@@ -654,6 +676,11 @@
                 }
             }
         } else {
+            if (!foundCoinbase) DSDLog(@"Did not find coinbase at height %u",[self heightForBlockHash:blockHash]);
+            if (!validCoinbase) DSDLog(@"Coinbase not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!rootMNListValid) DSDLog(@"rootMNListValid not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!rootQuorumListValid) DSDLog(@"rootQuorumListValid not valid at height %u",[self heightForBlockHash:blockHash]);
+            if (!validQuorums) DSDLog(@"validQuorums not valid at height %u",[self heightForBlockHash:blockHash]);
             [self issueWithMasternodeListFromPeer:peer];
         }
         
@@ -752,8 +779,35 @@
                         
                         [self.managedObjectContext deleteObject:masternodeListEntity];
                         [self.masternodeListsByBlockHash removeObjectForKey:blockHash];
-                        NSArray * oldUnusedQuorums = [DSQuorumEntryEntity objectsMatching:@"(usedByMasternodeLists.@count == 0)"];
-                        for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldUnusedQuorums copy]) {
+                        
+                        //Now we should delete old quorums
+                        //To do this, first get the last 24 active masternode lists
+                        //Then check for quorums not referenced by them, and delete those
+                        
+                        NSArray<DSMasternodeListEntity *> * recentMasternodeLists = [DSMasternodeListEntity objectsSortedBy:@"block.height" ascending:NO offset:0 limit:10];
+                        
+                        uint32_t oldestBlockHeight = MIN(recentMasternodeLists[9].block.height,lastBlockHeight - 24);
+                        
+                        NSArray * oldQuorums = [DSQuorumEntryEntity objectsMatching:@"ALL referencedByMasternodeList.block.height < %u",oldestBlockHeight];
+                        
+//                        NSArray * allQuorums = [DSQuorumEntryEntity allObjects];
+//                        for (DSQuorumEntryEntity * quorum in allQuorums) {
+//
+//                            NSArray * sortedMasternodeLists = [quorum.referencedByMasternodeLists sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"block.height" ascending:YES]]];
+//                            DSDLog(@"quorum %@ at height %u USED BY",quorum,quorum.block.height);
+//                            for (DSMasternodeListEntity * masternodeList in sortedMasternodeLists) {
+//                                DSDLog(@"masternodeList at height %u",masternodeList.block.height);
+//                                if (masternodeList.block.height == 118272) {
+//                                    DSDLog(@"%@ - %@ - %lu USED BY QUORUMS",masternodeList,masternodeList.block,(unsigned long)masternodeList.block.usedByQuorums.count);
+//                                    for (DSQuorumEntryEntity * quorumEntryEntity in masternodeList.block.usedByQuorums) {
+//                                        DSDLog(@"quorumEntryEntity %@ at height %u",quorumEntryEntity,quorumEntryEntity.block.height);
+//
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        NSArray * oldUnusedQuorums = [DSQuorumEntryEntity objectsMatching:@"(usedByMasternodeLists.@count == 0)"];
+                        for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldQuorums copy]) {
                             [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
                         }
                     }
@@ -764,6 +818,9 @@
 }
 
 -(void)issueWithMasternodeListFromPeer:(DSPeer *)peer {
+    
+    [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
+    
     NSArray * faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
     
     if (faultyPeers.count == MAX_FAULTY_DML_PEERS) {
@@ -801,7 +858,6 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDiffValidationErrorNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
     });
-    [self.peerManager peerMisbehaving:peer errorMessage:@"Issue with Deterministic Masternode list"];
 }
 
 // MARK: - Quorums
