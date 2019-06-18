@@ -50,6 +50,7 @@
 #import "DSQuorumEntry.h"
 #import "DSMasternodeList.h"
 #import "DSTransactionManager+Protected.h"
+#import "NSString+Bitcoin.h"
 
 #define REQUEST_MASTERNODE_BROADCAST_COUNT 500
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
@@ -93,6 +94,10 @@
 
 -(DSPeerManager*)peerManager {
     return self.chain.chainManager.peerManager;
+}
+
+-(NSArray*)orderedMasternodeLists {
+    return [[self.masternodeListsByBlockHash allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES]]];
 }
 
 -(uint32_t)heightForBlockHash:(UInt256)blockhash {
@@ -213,6 +218,7 @@
             closestMasternodeList = self.masternodeListsByBlockHash[blockHashData];
         }
     }
+    if (closestMasternodeList.height < 1088640 && blockHeight >= 1088640) return nil;
     return closestMasternodeList;
 }
 
@@ -788,7 +794,7 @@
                         
                         uint32_t oldestBlockHeight = MIN(recentMasternodeLists[9].block.height,lastBlockHeight - 24);
                         
-                        NSArray * oldQuorums = [DSQuorumEntryEntity objectsMatching:@"ALL referencedByMasternodeList.block.height < %u",oldestBlockHeight];
+                        //NSArray * oldQuorums = [DSQuorumEntryEntity objectsMatching:@"ALL referencedByMasternodeLists.block.height < %@",@(oldestBlockHeight)];
                         
 //                        NSArray * allQuorums = [DSQuorumEntryEntity allObjects];
 //                        for (DSQuorumEntryEntity * quorum in allQuorums) {
@@ -807,9 +813,9 @@
 //                            }
 //                        }
 //                        NSArray * oldUnusedQuorums = [DSQuorumEntryEntity objectsMatching:@"(usedByMasternodeLists.@count == 0)"];
-                        for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldQuorums copy]) {
-                            [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
-                        }
+                        //for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldQuorums copy]) {
+                        //    [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
+                        //}
                     }
                 }
             }

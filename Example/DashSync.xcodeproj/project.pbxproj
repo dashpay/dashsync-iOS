@@ -134,6 +134,8 @@
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
+		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
+		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
 		FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */; };
 		FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */; };
 		FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */; };
@@ -388,6 +390,10 @@
 		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
 		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
+		FBE155F922B931FA009CA817 /* DSMasternodeListsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListsViewController.h; sourceTree = "<group>"; };
+		FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListsViewController.m; sourceTree = "<group>"; };
+		FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListTableViewCell.h; sourceTree = "<group>"; };
+		FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListTableViewCell.m; sourceTree = "<group>"; };
 		FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Masternodes.storyboard; sourceTree = "<group>"; };
 		FBEB7E8D220EEA7B0013F619 /* DSRegisterMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterMasternodeViewController.h; sourceTree = "<group>"; };
 		FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterMasternodeViewController.m; sourceTree = "<group>"; };
@@ -681,6 +687,8 @@
 				FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */,
 				FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */,
 				FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */,
+				FBE155F922B931FA009CA817 /* DSMasternodeListsViewController.h */,
+				FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -790,6 +798,8 @@
 				FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */,
 				FB44D623228C774800354A4D /* DSQuorumTableViewCell.h */,
 				FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */,
+				FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */,
+				FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1136,6 +1146,7 @@
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
+				FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */,
 				FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */,
 				2A3B3EB720F893F4002962FB /* SwitcherFormCellModel.m in Sources */,
 				FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */,
@@ -1177,6 +1188,7 @@
 				FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
+				FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */,
 				FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */,
 				FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,

@@ -84,6 +84,11 @@
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
 
+#import "DSMasternodeList.h"
+#import "DSMasternodeListEntity+CoreDataProperties.h"
+#import "DSQuorumEntryEntity+CoreDataProperties.h"
+#import "DSQuorumEntry.h"
+
 #import "DSNetworking.h"
 
 NS_ASSUME_NONNULL_BEGIN
