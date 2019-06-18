@@ -93,13 +93,11 @@
 }
 
 + (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChain:(DSChainEntity*)chainEntity {
-    NSArray * objects = [self objectsMatching:@"(chain == %@) && (providerRegistrationTransactionHash == %@)",chainEntity,providerRegistrationTransactionHash];
-    return [objects firstObject];
+    return [self anyObjectMatching:@"(providerRegistrationTransactionHash == %@) && (chain == %@)",providerRegistrationTransactionHash,chainEntity];
 }
 
 + (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity*)chainEntity {
-    NSArray * objects = [self objectsMatching:@"(chain == %@) && (simplifiedMasternodeEntryHash == %@)",chainEntity,simplifiedMasternodeEntryHash];
-    return [objects firstObject];
+    return [self anyObjectMatching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)",simplifiedMasternodeEntryHash,chainEntity];
 }
 
 - (DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
