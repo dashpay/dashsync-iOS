@@ -1287,6 +1287,17 @@ static dispatch_once_t devnetToken = 0;
     return UINT32_MAX;
 }
 
+- (DSMerkleBlock *)blockAtHeight:(uint32_t)height {
+    DSMerkleBlock *b = self.lastBlock;
+    NSUInteger count = 0;
+    while (b && b.height > height) {
+        b = self.blocks[uint256_obj(b.prevBlock)];
+        count++;
+    }
+    if (b.height != height) return nil;
+    return b;
+}
+
 - (DSMerkleBlock *)blockFromChainTip:(NSUInteger)blocksAgo {
     DSMerkleBlock *b = self.lastBlock;
     NSUInteger count = 0;

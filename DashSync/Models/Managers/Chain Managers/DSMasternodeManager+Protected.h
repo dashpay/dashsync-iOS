@@ -33,10 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
 
--(void)getMasternodeListsForBlockHashes:(NSArray*)blockHashes;
-
--(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash;
-
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 -(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSMerkleBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSMutableDictionary * addedMasternodes, NSMutableDictionary * modifiedMasternodes, NSMutableDictionary * addedQuorums, NSArray * neededMissingMasternodeLists))completion;

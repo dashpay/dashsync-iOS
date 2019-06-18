@@ -330,6 +330,20 @@
     }
 }
 
+-(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight previousBlockHeight:(uint32_t)previousBlockHeight error:(NSError**)error {
+    DSMerkleBlock * merkleBlock = [self.chain blockAtHeight:blockHeight];
+    if (!merkleBlock) {
+        *error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Unknown block"}];
+        return;
+    }
+    DSMerkleBlock * previousMerkleBlock = previousBlockHeight?[self.chain blockAtHeight:previousBlockHeight]:nil;
+    if (previousBlockHeight && !previousMerkleBlock) {
+        *error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Unknown previous block"}];
+        return;
+    }
+    [self getMasternodeListForBlockHash:merkleBlock.blockHash previousBlockHash:previousMerkleBlock.blockHash];
+}
+
 -(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash {
     @synchronized (self.masternodeListRetrievalQueue) {
         //this is for debugging purposes only

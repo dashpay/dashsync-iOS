@@ -196,7 +196,10 @@
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
-    [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
+        // make sure we care about masternode lists
+        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+    }
 }
 
 -(void)chain:(DSChain*)chain badBlockReceivedFromPeer:(DSPeer*)peer {
@@ -216,7 +219,11 @@
 }
 
 -(void)chain:(DSChain*)chain wasExtendedWithBlock:(DSMerkleBlock*)merkleBlock fromPeer:(DSPeer*)peer {
-    [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];
+    if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
+        // make sure we care about masternode lists
+        [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:3];
+    }
+    
 }
 
 // MARK: - Count Info

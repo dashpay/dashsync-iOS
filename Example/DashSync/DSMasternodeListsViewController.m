@@ -13,9 +13,13 @@
 #import "DSRegisterMasternodeViewController.h"
 #import "DSMasternodeDetailViewController.h"
 #import "DSMasternodeViewController.h"
+#import "BRBubbleView.h"
 
 @interface DSMasternodeListsViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
+@property (strong, nonatomic) IBOutlet UITextField *previousBlockHeightTextField;
+@property (strong, nonatomic) IBOutlet UITextField *blockHeightTextField;
+@property (strong, nonatomic) IBOutlet UIButton *fetchButton;
 
 @end
 
@@ -33,7 +37,7 @@
 #pragma mark - Automation KVO
 
 -(NSManagedObjectContext*)managedObjectContext {
-    return [NSManagedObject context];
+    return [NSManagedObject mainContext];
 }
 
 - (NSFetchedResultsController *)fetchedResultsController
@@ -134,10 +138,44 @@
 }
 
 
+// Override to support conditional editing of the table view.
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    // Return NO if you do not want the specified item to be editable.
+    return YES;
+}
+
+
+// Override to support editing the table view.
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        // Delete the row from the data source
+        [self.tableView beginUpdates];
+        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        [masternodeListEntity deleteObject];
+        [DSMasternodeListEntity saveMainContext];
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView endUpdates];
+    }
+}
+
+
 -(void)configureCell:(DSMasternodeListTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
     DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.heightLabel.text = [NSString stringWithFormat:@"%u",masternodeListEntity.block.height];
     cell.countLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)masternodeListEntity.masternodes.count];
+}
+
+-(IBAction)fetchMasternodeList:(id)sender {
+    uint32_t previousBlockHeight = self.previousBlockHeightTextField.text?[self.previousBlockHeightTextField.text intValue]:0;
+    uint32_t blockHeight = self.blockHeightTextField.text?[self.blockHeightTextField.text intValue]:0;
+    
+    NSError * error = nil;
+    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight previousBlockHeight:previousBlockHeight error:&error];
+    if (error) {
+        [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
+                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                               popOutAfterDelay:2.0]];
+    }
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -150,4 +188,5 @@
         masternodeViewController.masternodeList = masternodeList;
     }
 }
+
 @end

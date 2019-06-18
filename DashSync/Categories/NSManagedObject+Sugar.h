@@ -69,6 +69,10 @@
 // it to the persistent store coordinator for the application
 + (NSManagedObjectContext *)context;
 
++ (NSManagedObjectContext *)mainContext;
+
++ (NSError*)saveMainContext;
+
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
 + (void)setContext:(NSManagedObjectContext *)context;
 

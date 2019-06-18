@@ -230,6 +230,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
+- (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
+
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
 - (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
