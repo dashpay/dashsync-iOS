@@ -602,19 +602,11 @@
     
 }
 
-
-
+#define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
-    NSUInteger chunkSize = 4096;
-    NSUInteger chunks = ceilf(((float)message.length)/chunkSize);
-    for (int i = 0;i<chunks;) {
-        NSInteger lengthLeft = message.length - i*chunkSize;
-        if (lengthLeft < 0) continue;
-        DSDLog(@"Logging masternode DIFF message chunk %d %@",i,[message subdataWithRange:NSMakeRange(i*chunkSize, MIN(lengthLeft, chunkSize))].hexString);
-        i++;
-    }
+    DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
     DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
 #endif
     
