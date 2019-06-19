@@ -782,8 +782,6 @@
             }
             NSDictionary * indexedKnownSimplifiedMasternodeEntryEntities = [NSDictionary dictionaryWithObjects:knownSimplifiedMasternodeEntryEntities forKeys:indexedEntities];
             
-            DSDLog(@"Start Save");
-            
             NSMutableSet <NSString*> * votingAddressStrings = [NSMutableSet set];
             NSMutableSet <NSString*> * operatorAddressStrings = [NSMutableSet set];
             NSMutableSet <NSData*> * providerRegistrationTransactionHashes = [NSMutableSet set];
@@ -799,7 +797,6 @@
             NSDictionary<NSData *,DSLocalMasternodeEntity *> * localMasternodes = [DSLocalMasternodeEntity findLocalMasternodesAndIndexForProviderRegistrationHashes:providerRegistrationTransactionHashes];
             
             for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
-                if (i % 100 == 0) DSDLog(@"MN %@",@(i));
                 
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
                 if (!simplifiedMasternodeEntryEntity) {

@@ -149,7 +149,7 @@
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                         NSLog(@"update masternode broadcast count");
+                                                                                         NSLog(@"update masternode list");
                                                                                          [self updateKnownMasternodes];
                                                                                      }
                                                                                  }];
@@ -158,7 +158,7 @@
     self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSQuorumListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                         NSLog(@"update masternode broadcast count");
+                                                                                         NSLog(@"update quorums");
                                                                                          [self updateQuorumsList];
                                                                                      }
                                                                                  }];
