@@ -2,7 +2,7 @@
 //  DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 7/19/18.
+//  Created by Sam Westrich on 6/19/19.
 //
 //
 
@@ -11,24 +11,25 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSLocalMasternodeEntity;
-
 @interface DSSimplifiedMasternodeEntryEntity (CoreDataProperties)
 
 + (NSFetchRequest<DSSimplifiedMasternodeEntryEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
-@property (nullable, nonatomic, retain) NSData *confirmedHash;
 @property (nonatomic, assign) uint64_t address; //it's really on 32 bits but unsigned
 @property (nonatomic, assign) uint16_t port;
-@property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
-@property (nullable, nonatomic, retain) NSDictionary *previousOperatorBLSPublicKeys; //keys are last block used
-@property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nonatomic, assign) Boolean isValid;
+@property (nullable, nonatomic, retain) NSData *confirmedHash;
+@property (nullable, nonatomic, retain) NSData *keyIDVoting;
+@property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
+@property (nullable, nonatomic, retain) NSObject *previousOperatorBLSPublicKeys;
+@property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 @property (nullable, nonatomic, retain) NSData *simplifiedMasternodeEntryHash;
-@property (nullable, nonatomic, retain) DSChainEntity *chain;
-@property (nullable, nonatomic, retain) DSLocalMasternodeEntity * localMasternode;
 @property (nullable, nonatomic, retain) NSOrderedSet<DSAddressEntity *> *addresses;
+@property (nullable, nonatomic, retain) DSChainEntity *chain;
+@property (nullable, nonatomic, retain) NSSet<DSGovernanceVoteEntity *> *governanceVotes;
+@property (nullable, nonatomic, retain) DSLocalMasternodeEntity *localMasternode;
+@property (nullable, nonatomic, retain) NSSet<DSMasternodeListEntity *> *masternodeLists;
+@property (nullable, nonatomic, retain) NSSet<DSTransactionLockVoteEntity *> *transactionLockVotes;
 
 @end
 
@@ -44,6 +45,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeAddressesObject:(DSAddressEntity *)value;
 - (void)addAddresses:(NSOrderedSet<DSAddressEntity *> *)values;
 - (void)removeAddresses:(NSOrderedSet<DSAddressEntity *> *)values;
+
+- (void)addGovernanceVotesObject:(DSGovernanceVoteEntity *)value;
+- (void)removeGovernanceVotesObject:(DSGovernanceVoteEntity *)value;
+- (void)addGovernanceVotes:(NSSet<DSGovernanceVoteEntity *> *)values;
+- (void)removeGovernanceVotes:(NSSet<DSGovernanceVoteEntity *> *)values;
+
+- (void)addMasternodeListsObject:(DSMasternodeListEntity *)value;
+- (void)removeMasternodeListsObject:(DSMasternodeListEntity *)value;
+- (void)addMasternodeLists:(NSSet<DSMasternodeListEntity *> *)values;
+- (void)removeMasternodeLists:(NSSet<DSMasternodeListEntity *> *)values;
+
+- (void)addTransactionLockVotesObject:(DSTransactionLockVoteEntity *)value;
+- (void)removeTransactionLockVotesObject:(DSTransactionLockVoteEntity *)value;
+- (void)addTransactionLockVotes:(NSSet<DSTransactionLockVoteEntity *> *)values;
+- (void)removeTransactionLockVotes:(NSSet<DSTransactionLockVoteEntity *> *)values;
 
 @end
 
