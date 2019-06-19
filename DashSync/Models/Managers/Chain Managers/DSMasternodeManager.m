@@ -203,11 +203,6 @@
     return [self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)];
 }
 
--(DSMasternodeList*)masternodeListAtBlockHeight:(uint32_t)blockHeight {
-    DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:8];
-    return [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
-}
-
 -(DSMasternodeList*)masternodeListBeforeBlockHash:(UInt256)blockHash {
     uint32_t minDistance = UINT32_MAX;
     uint32_t blockHeight = [self heightForBlockHash:blockHash];

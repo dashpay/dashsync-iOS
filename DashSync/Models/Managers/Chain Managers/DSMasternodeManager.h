@@ -76,8 +76,6 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
 
--(DSMasternodeList*)masternodeListAtBlockHeight:(uint32_t)blockHeight;
-
 -(void)getMasternodeListsForBlockHashes:(NSOrderedSet*)blockHashes;
 
 -(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight previousBlockHeight:(uint32_t)previousBlockHeight error:(NSError**)error;
