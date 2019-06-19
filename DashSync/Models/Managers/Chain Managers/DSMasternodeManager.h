@@ -42,6 +42,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) NSUInteger simplifiedMasternodeEntryCount;
 @property (nonatomic,readonly) NSUInteger localMasternodesCount;
 @property (nonatomic,readonly) NSUInteger activeQuorumsCount;
+@property (nonatomic,assign) BOOL testingMasternodeListRetrieval;
 @property (nonatomic,readonly) NSArray * orderedMasternodeLists;
 @property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 

@@ -86,6 +86,7 @@
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
+    _testingMasternodeListRetrieval = NO;
     self.managedObjectContext = [NSManagedObject context];
     self.lastQueriedBlockHash = UINT256_ZERO;
     self.processingMasternodeListBlockHash = UINT256_ZERO;
@@ -245,7 +246,7 @@
         UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
         DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
         [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
             if (![self.masternodeListRetrievalQueue count]) return;
             UInt256 timeoutBlockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
             if (uint256_eq(timeoutBlockHash, blockHash) && !uint256_eq(self.processingMasternodeListBlockHash, blockHash)) {
@@ -634,6 +635,11 @@
     if (length - offset < 32) return;
     UInt256 blockHash = [message UInt256AtOffset:offset];
     offset += 32;
+    
+    if ([self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)]) {
+        //we already have this
+        return; //no need to do anything more
+    }
     
     DSDLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self.chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self.chain heightForBlockHash:blockHash]);
     
