@@ -9,13 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity,DSSimplifiedMasternodeEntry,DSAddressEntity;
+@class DSChainEntity,DSSimplifiedMasternodeEntry,DSAddressEntity,DSLocalMasternodeEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSSimplifiedMasternodeEntryEntity : NSManagedObject
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry;
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>* _Nullable)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>* _Nullable)localMasternodes onChain:(DSChainEntity*)chainEntity;
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry * _Nonnull)simplifiedMasternodeEntry onChain:(DSChainEntity* _Nullable)chainEntity;
 + (void)deleteHavingProviderTransactionHashes:(NSArray*)providerTransactionHashes onChain:(DSChainEntity* _Nonnull)chainEntity;
 + (DSSimplifiedMasternodeEntryEntity* _Nullable)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity* _Nonnull)chainEntity;

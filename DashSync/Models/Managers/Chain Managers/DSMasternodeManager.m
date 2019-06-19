@@ -363,7 +363,7 @@
 
 // MARK: - Deterministic Masternode List Sync
 
-#define LOG_MASTERNODE_DIFF 1
+
 #define TEST_RANDOM_ERROR_IN_MASTERNODE_DIFF 0
 
 -(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSMerkleBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSMutableDictionary * addedMasternodes, NSMutableDictionary * modifiedMasternodes, NSMutableDictionary * addedQuorums, NSArray * neededMissingMasternodeLists))completion {
@@ -602,12 +602,24 @@
     
 }
 
+#define LOG_MASTERNODE_DIFF 0 && DEBUG
+#define SAVE_MASTERNODE_DIFF_TO_FILE 0 && DEBUG
+#define SAVE_MASTERNODE_DIFF_TO_FILE_LOCATION
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
     DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
     DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
+#endif
+    
+#if SAVE_MASTERNODE_DIFF_TO_FILE
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"ML.dat"];
+    
+    // Save it into file system
+    [message writeToFile:dataPath atomically:YES];
 #endif
     
     NSUInteger length = message.length;
@@ -713,17 +725,39 @@
 }
 
 -(BOOL)saveMasternodeList:(DSMasternodeList*)masternodeList havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums {
+    NSError * error = nil;
+    [DSMasternodeManager saveMasternodeList:masternodeList toChain:self.chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:self.managedObjectContext error:&error];
+    if (error) {
+        [self.masternodeListRetrievalQueue removeAllObjects];
+        [self wipeMasternodeInfo];
+        dispatch_async([self peerManager].chainPeerManagerQueue, ^{
+            [self getCurrentMasternodeListWithSafetyDelay:0];
+        });
+        return NO;
+    } else {
+        [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        });
+        return YES;
+    }
+    
+}
+
++(void)saveMasternodeList:(DSMasternodeList*)masternodeList toChain:(DSChain*)chain havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     __block BOOL hasError = NO;
-    [self.managedObjectContext performBlockAndWait:^{
+    [context performBlockAndWait:^{
         //masternodes
-        [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
-        [DSChainEntity setContext:self.managedObjectContext];
-        [DSLocalMasternodeEntity setContext:self.managedObjectContext];
-        [DSAddressEntity setContext:self.managedObjectContext];
-        [DSMasternodeListEntity setContext:self.managedObjectContext];
-        [DSQuorumEntryEntity setContext:self.managedObjectContext];
-        [DSMerkleBlockEntity setContext:self.managedObjectContext];
-        DSChainEntity * chainEntity = self.chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity setContext:context];
+        [DSChainEntity setContext:context];
+        [DSLocalMasternodeEntity setContext:context];
+        [DSAddressEntity setContext:context];
+        [DSMasternodeListEntity setContext:context];
+        [DSQuorumEntryEntity setContext:context];
+        [DSMerkleBlockEntity setContext:context];
+        DSChainEntity * chainEntity = chain.chainEntity;
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
         NSAssert(merkleBlockEntity, @"merkle block should exist");
         NSAssert(!merkleBlockEntity.masternodeList, @"merkle block should not have a masternode list already");
@@ -733,15 +767,46 @@
             DSMasternodeListEntity * masternodeListEntity = [DSMasternodeListEntity managedObject];
             masternodeListEntity.block = merkleBlockEntity;
             uint32_t i = 0;
-            for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
-                if (i % 100 == 0) DSDLog(@"MN %@",@(i));
-                DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForProviderRegistrationTransactionHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash] onChain:chainEntity];
-                if (!simplifiedMasternodeEntryEntity) {
-                    simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
-                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry onChain:chainEntity];
+            
+            NSUInteger knownSimplifiedMasternodeEntryEntityCount = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"chain == %@",chain.chainEntity];
+            
+            DSDLog(@"Start Save");
+            
+            if (knownSimplifiedMasternodeEntryEntityCount) {
+            
+                for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
+                    if (i % 100 == 0) DSDLog(@"MN %@",@(i));
+                    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity simplifiedMasternodeEntryForProviderRegistrationTransactionHash:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash] onChain:chainEntity];
+                    if (!simplifiedMasternodeEntryEntity) {
+                        simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
+                        [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry onChain:chainEntity];
+                    }
+                    [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
+                    i++;
                 }
-                [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
-                i++;
+                
+            } else {
+                NSMutableSet <NSString*> * votingAddressStrings = [NSMutableSet set];
+                NSMutableSet <NSString*> * operatorAddressStrings = [NSMutableSet set];
+                NSMutableSet <NSData*> * providerRegistrationTransactionHashes = [NSMutableSet set];
+                for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
+                    [votingAddressStrings addObject:simplifiedMasternodeEntry.votingAddress];
+                    [operatorAddressStrings addObject:simplifiedMasternodeEntry.operatorAddress];
+                    [providerRegistrationTransactionHashes addObject:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+                }
+                
+                //this is the initial list sync so lets speed things up a little bit with some optimizations
+                NSDictionary<NSString*,DSAddressEntity*>* votingAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain*)chain];
+                NSDictionary<NSString*,DSAddressEntity*>* operatorAddresses = [DSAddressEntity findAddressesAndIndexIn:votingAddressStrings onChain:(DSChain*)chain];
+                NSDictionary<NSData *,DSLocalMasternodeEntity *> * localMasternodes = [DSLocalMasternodeEntity findLocalMasternodesAndIndexForProviderRegistrationHashes:providerRegistrationTransactionHashes];
+                
+                for (DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry in masternodeList.simplifiedMasternodeEntries) {
+                    //if (i % 100 == 0) DSDLog(@"MN %@",@(i));
+                    DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [DSSimplifiedMasternodeEntryEntity managedObject];
+                    [simplifiedMasternodeEntryEntity setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:operatorAddresses knownVotingAddresses:votingAddresses localMasternodes:localMasternodes onChain:chainEntity];
+                    [masternodeListEntity addMasternodesObject:simplifiedMasternodeEntryEntity];
+                    i++;
+                }
             }
             for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
@@ -762,26 +827,13 @@
             hasError = !!error;
         }
         if (hasError) {
-            [self.masternodeListRetrievalQueue removeAllObjects];
-            chainEntity.baseBlockHash = uint256_data(self.chain.genesisHash);
+            chainEntity.baseBlockHash = uint256_data(chain.genesisHash);
             [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
             [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
             [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-            [self wipeMasternodeInfo];
             [DSSimplifiedMasternodeEntryEntity saveContext];
-            dispatch_async([self peerManager].chainPeerManagerQueue, ^{
-                [self getCurrentMasternodeListWithSafetyDelay:0];
-            });
-        } else {
-            [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
         }
     }];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-    });
-    return !hasError;
 }
 
 -(void)removeOldMasternodeLists {

@@ -136,6 +136,7 @@
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
 		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
 		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
+		FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */; };
 		FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */; };
 		FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */; };
 		FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */; };
@@ -394,6 +395,7 @@
 		FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListsViewController.m; sourceTree = "<group>"; };
 		FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListTableViewCell.h; sourceTree = "<group>"; };
 		FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListTableViewCell.m; sourceTree = "<group>"; };
+		FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeList1088800.dat; sourceTree = "<group>"; };
 		FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Masternodes.storyboard; sourceTree = "<group>"; };
 		FBEB7E8D220EEA7B0013F619 /* DSRegisterMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterMasternodeViewController.h; sourceTree = "<group>"; };
 		FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterMasternodeViewController.m; sourceTree = "<group>"; };
@@ -597,6 +599,7 @@
 				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
 				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
 				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
+				FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */,
 				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
@@ -1033,6 +1036,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */,
 				6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

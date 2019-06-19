@@ -48,6 +48,10 @@
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChain:(DSChainEntity*)chainEntity {
+    [self setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil onChain:chainEntity];
+}
+
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)localMasternodes onChain:(DSChainEntity*)chainEntity {
     self.providerRegistrationTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     self.confirmedHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHash];
     self.address = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
@@ -61,18 +65,40 @@
     } else {
         self.chain = chainEntity;
     }
-    DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    
+    
+    DSLocalMasternodeEntity * localMasternode = nil;
+    if (localMasternodes) {
+        localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    } else {
+        localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    }
+    
     self.localMasternode = localMasternode;
     
     NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
     NSString * votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
     
-    DSAddressEntity * operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    DSAddressEntity * operatorAddressEntity = nil;
+    
+    if (knownOperatorAddresses) {
+        operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
+    } else {
+        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    }
+    
     if (operatorAddressEntity) {
         [self addAddressesObject:operatorAddressEntity];
     }
     
-    DSAddressEntity * votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    DSAddressEntity * votingAddressEntity = nil;
+    
+    if (knownVotingAddresses) {
+        votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
+    } else {
+        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    }
+    
     if (votingAddressEntity) {
         [self addAddressesObject:votingAddressEntity];
     }

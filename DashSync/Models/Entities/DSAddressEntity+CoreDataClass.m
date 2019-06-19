@@ -68,12 +68,29 @@
 }
 
 +(DSAddressEntity*)findAddressMatching:(NSString*)address onChain:(DSChain*)chain {
+#if (0 && DEBUG) //this is for testing
     NSArray <DSAddressEntity *>* addressEntities = [DSAddressEntity objectsMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
     if ([addressEntities count]) {
         NSAssert([addressEntities count] == 1, @"addresses should not be duplicates");
         return [addressEntities firstObject];
     }
     return nil;
+#else
+    return [DSAddressEntity anyObjectMatching:@"address == %@ && derivationPath.chain == %@",address,chain.chainEntity];
+#endif
+}
+
++(NSArray<DSAddressEntity*>*)findAddressesIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain {
+    return [DSAddressEntity objectsMatching:@"address IN %@ && derivationPath.chain == %@",addresses,chain.chainEntity];
+}
+
++(NSDictionary<NSString*,DSAddressEntity*>*)findAddressesAndIndexIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain {
+    NSArray * addressEntities = [self findAddressesIn:addresses onChain:chain];
+    NSMutableArray * addressStringsOfEntities = [NSMutableArray array];
+    for (DSAddressEntity * addressEntity in addressEntities) {
+        [addressStringsOfEntities addObject:addressEntity.address];
+    }
+    return [NSDictionary dictionaryWithObjects:addressEntities forKeys:addressStringsOfEntities];
 }
 
 + (void)deleteAddressesOnChain:(DSChainEntity*)chainEntity {

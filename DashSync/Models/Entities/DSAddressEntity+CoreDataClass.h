@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(uint64_t)outAmount;
 +(DSAddressEntity*)addressMatching:(NSString*)address onChain:(DSChain*)chain; //gets created if not found
 +(DSAddressEntity*)findAddressMatching:(NSString*)address onChain:(DSChain*)chain; //does not get created if not found
++(NSArray<DSAddressEntity*>*)findAddressesIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain;
++(NSDictionary<NSString*,DSAddressEntity*>*)findAddressesAndIndexIn:(NSSet<NSString*>*)addresses onChain:(DSChain*)chain;
 +(void)deleteAddressesOnChain:(DSChainEntity*)chainEntity;
 
 @end

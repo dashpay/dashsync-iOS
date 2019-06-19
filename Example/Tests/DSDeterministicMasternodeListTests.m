@@ -23,7 +23,11 @@
 
 #import <DashSync/DSMasternodeList.h>
 #import <DashSync/DSQuorumEntry.h>
-
+#import <DashSync/DSMasternodeManager+Protected.h>
+#import <DashSync/NSManagedObject+Sugar.h>
+#import <DashSync/DSSimplifiedMasternodeEntryEntity+CoreDataClass.h>
+#import <DashSync/DSQuorumEntryEntity+CoreDataClass.h>
+#import <DashSync/DSMasternodeListEntity+CoreDataClass.h>
 
 @interface DSDeterministicMasternodeListTests : XCTestCase
     
@@ -673,6 +677,55 @@
     XCTAssert([coinbaseVerificationMerkleBlock isMerkleTreeValid],@"Coinbase is not part of the valid merkle tree");
 }
 
+
+-(void)testMainnetMasternodeSaving {
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *filePath = [bundle pathForResource:@"MasternodeList1088800" ofType:@"dat"];
+    NSData * message = [NSData dataWithContentsOfFile:filePath];
+    
+    DSChain * chain = [DSChain mainnet];
+    
+    NSUInteger length = message.length;
+    NSUInteger offset = 0;
+    
+    if (length - offset < 32) return;
+    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    if (length - offset < 32) return;
+    UInt256 blockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self.chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self.chain heightForBlockHash:blockHash]);
+    
+    XCTAssert(uint256_eq(self.chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
+    
+    
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil knownMasternodeLists:@{} lastBlock:nil onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return UINT32_MAX;
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSMutableDictionary * _Nonnull addedMasternodes, NSMutableDictionary * _Nonnull modifiedMasternodes, NSMutableDictionary * _Nonnull addedQuorums, NSArray * _Nonnull neededMissingMasternodeLists) {
+        XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
+        //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
+        XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
+        XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
+        XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash]);
+        
+        if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
+            NSLog(@"Valid masternode list found at height %u",[chain heightForBlockHash:blockHash]);
+            //yay this is the correct masternode list verified deterministically for the given block
+            NSError * error = nil;
+            NSManagedObjectContext * context = [NSManagedObject context];
+            [context performBlockAndWait:^{
+                DSChainEntity * chainEntity = chain.chainEntity;
+                [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+                [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+                [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+            }];
+            [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
+        }
+        
+    }];
+}
     
 @end
 
