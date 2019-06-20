@@ -93,6 +93,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) UInt256 checkpointHash;
 @property (nonatomic, assign) uint32_t timestamp;
 @property (nonatomic, assign) uint32_t target;
+@property (nonatomic, strong) NSString * masternodeListName;
 
 @end
 
@@ -229,6 +230,10 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
+
+- (DSCheckpoint* _Nullable)checkpointForBlockHash:(UInt256)blockHash;
+
+- (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
 - (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
 
