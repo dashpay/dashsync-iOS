@@ -96,7 +96,7 @@
         <scene sceneID="gb6-FU-nhJ">
             <objects>
                 <tableViewController storyboardIdentifier="MasternodeListsIdentifier" title="Masternode Lists" id="Udd-Io-dOb" customClass="DSMasternodeListsViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="80" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="uuW-fv-bC5">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="86" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="uuW-fv-bC5">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -148,15 +148,15 @@
                             </constraints>
                         </view>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MasternodeListTableViewCellIdentifier" rowHeight="93" id="6zZ-al-RTs" userLabel="MasternodeTableViewCell" customClass="DSMasternodeListTableViewCell">
-                                <rect key="frame" x="0.0" y="156" width="414" height="93"/>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MasternodeListTableViewCellIdentifier" rowHeight="86" id="6zZ-al-RTs" userLabel="MasternodeTableViewCell" customClass="DSMasternodeListTableViewCell">
+                                <rect key="frame" x="0.0" y="156" width="414" height="86"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6zZ-al-RTs" id="PUd-WG-UTJ">
-                                    <rect key="frame" x="0.0" y="0.0" width="414" height="92.5"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="85.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Height" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K8j-l3-AGE">
-                                            <rect key="frame" x="16" y="16" width="51" height="21"/>
+                                            <rect key="frame" x="85.5" y="16" width="51" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -168,7 +168,7 @@
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Count" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v3Y-LY-BbO">
-                                            <rect key="frame" x="16" y="45" width="46.5" height="21"/>
+                                            <rect key="frame" x="85.5" y="45" width="46.5" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -179,23 +179,38 @@
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
                                         </label>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qkS-pV-yNp">
+                                            <rect key="frame" x="16" y="16" width="53.5" height="53.5"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="qkS-pV-yNp" secondAttribute="height" multiplier="1:1" id="D4W-uS-ceG"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                            <state key="normal" title="?"/>
+                                            <connections>
+                                                <action selector="requestingValidation:" destination="6zZ-al-RTs" eventType="touchUpInside" id="eko-hO-IZj"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="K8j-l3-AGE" firstAttribute="top" secondItem="PUd-WG-UTJ" secondAttribute="top" constant="16" id="53i-kk-efY"/>
+                                        <constraint firstAttribute="bottom" secondItem="qkS-pV-yNp" secondAttribute="bottom" constant="16" id="Irj-Tz-LwY"/>
                                         <constraint firstItem="v3Y-LY-BbO" firstAttribute="leading" secondItem="K8j-l3-AGE" secondAttribute="leading" id="LPN-w6-clV"/>
+                                        <constraint firstItem="qkS-pV-yNp" firstAttribute="top" secondItem="PUd-WG-UTJ" secondAttribute="top" constant="16" id="Lg8-Vf-cpr"/>
                                         <constraint firstItem="v3Y-LY-BbO" firstAttribute="top" secondItem="K8j-l3-AGE" secondAttribute="bottom" constant="8" id="PEO-UW-TzU"/>
+                                        <constraint firstItem="K8j-l3-AGE" firstAttribute="leading" secondItem="qkS-pV-yNp" secondAttribute="trailing" constant="16" id="SkA-tD-HpY"/>
                                         <constraint firstAttribute="trailing" secondItem="CeC-i4-0EZ" secondAttribute="trailing" constant="16" id="TWJ-fK-T5s"/>
                                         <constraint firstItem="OCe-c0-rWi" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="v3Y-LY-BbO" secondAttribute="trailing" constant="10" id="Tm5-vX-SHd"/>
                                         <constraint firstItem="CeC-i4-0EZ" firstAttribute="top" secondItem="PUd-WG-UTJ" secondAttribute="top" constant="16" id="a5V-pA-ceY"/>
                                         <constraint firstItem="OCe-c0-rWi" firstAttribute="top" secondItem="CeC-i4-0EZ" secondAttribute="bottom" constant="8" id="p2i-aI-aQt"/>
                                         <constraint firstItem="OCe-c0-rWi" firstAttribute="trailing" secondItem="CeC-i4-0EZ" secondAttribute="trailing" id="pbe-Vq-zFp"/>
                                         <constraint firstItem="CeC-i4-0EZ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="K8j-l3-AGE" secondAttribute="trailing" constant="10" id="snh-4b-z3R"/>
-                                        <constraint firstItem="K8j-l3-AGE" firstAttribute="leading" secondItem="PUd-WG-UTJ" secondAttribute="leading" constant="16" id="trQ-AW-riT"/>
+                                        <constraint firstItem="qkS-pV-yNp" firstAttribute="leading" secondItem="PUd-WG-UTJ" secondAttribute="leading" constant="16" id="yzN-qQ-HMI"/>
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
                                     <outlet property="countLabel" destination="OCe-c0-rWi" id="xYa-22-NVN"/>
                                     <outlet property="heightLabel" destination="CeC-i4-0EZ" id="k2R-y7-vBJ"/>
+                                    <outlet property="validButton" destination="qkS-pV-yNp" id="X4c-mf-R7F"/>
                                     <segue destination="b7t-hg-JQ5" kind="show" identifier="MasternodeListSegue" id="TbJ-Db-IdL"/>
                                 </connections>
                             </tableViewCell>

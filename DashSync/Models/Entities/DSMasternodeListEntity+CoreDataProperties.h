@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSMerkleBlockEntity *block;
 @property (nullable, nonatomic, retain) NSSet<DSSimplifiedMasternodeEntryEntity *> *masternodes;
 @property (nullable, nonatomic, retain) NSSet<DSQuorumEntryEntity *> *quorums;
+@property (nullable, nonatomic, retain) NSData *masternodeListMerkleRoot;
+@property (nullable, nonatomic, retain) NSData *quorumListMerkleRoot;
 
 @end
 

@@ -448,9 +448,11 @@
     
     DSMasternodeList *baseMasternodeList = nil;
     DSMerkleBlock *lastBlock = nil;
-    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList knownMasternodeLists:@{} lastBlock:lastBlock onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+        return nil;
+    } lastBlock:lastBlock onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
         return UINT32_MAX;
-    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSMutableDictionary * _Nonnull addedMasternodes, NSMutableDictionary * _Nonnull modifiedMasternodes, NSMutableDictionary * _Nonnull addedQuorums, NSArray * _Nonnull neededMissingMasternodeLists) {
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         
         NSArray * proTxHashes = masternodeList.reversedRegistrationTransactionHashes;
         proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
@@ -701,9 +703,11 @@
     XCTAssert(uint256_eq(self.chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
     
     
-    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil knownMasternodeLists:@{} lastBlock:nil onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+        return nil; //no known previous lists
+    } lastBlock:nil onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
         return UINT32_MAX;
-    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSMutableDictionary * _Nonnull addedMasternodes, NSMutableDictionary * _Nonnull modifiedMasternodes, NSMutableDictionary * _Nonnull addedQuorums, NSArray * _Nonnull neededMissingMasternodeLists) {
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
         XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
@@ -725,6 +729,11 @@
         }
         
     }];
+}
+
+-(void)testMasternodeListLoading {
+    DSChain * chain = [DSChain mainnet];
+    [chain chainManager];
 }
     
 @end

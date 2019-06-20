@@ -43,7 +43,10 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) NSUInteger localMasternodesCount;
 @property (nonatomic,readonly) NSUInteger activeQuorumsCount;
 @property (nonatomic,assign) BOOL testingMasternodeListRetrieval;
-@property (nonatomic,readonly) NSArray * orderedMasternodeLists;
+@property (nonatomic,readonly) NSArray * recentMasternodeLists;
+@property (nonatomic,readonly) NSUInteger knownMasternodeListsCount;
+@property (nonatomic,readonly) uint32_t earliestMasternodeListBlockHeight;
+@property (nonatomic,readonly) uint32_t lastMasternodeListBlockHeight;
 @property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 
 -(instancetype _Nonnull)initWithChain:(DSChain* _Nonnull)chain NS_DESIGNATED_INITIALIZER;
@@ -55,6 +58,8 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;
 
 -(void)wipeMasternodeInfo;
+
+-(void)reloadMasternodeLists;
 
 -(BOOL)hasMasternodeAtLocation:(UInt128)IPAddress port:(uint32_t)port;
 
@@ -76,13 +81,17 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
 
+-(void)getRecentMasternodeList:(NSUInteger)blocksAgo;
+
+-(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
+
 -(void)getMasternodeListsForBlockHashes:(NSOrderedSet*)blockHashes;
 
 -(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight previousBlockHeight:(uint32_t)previousBlockHeight error:(NSError**)error;
 
 -(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash;
 
-+(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList knownMasternodeLists:(NSDictionary*)knownMasternodeLists lastBlock:(DSMerkleBlock* _Nullable)lastBlock onChain:(DSChain*)chain blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion;
++(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList masternodeListLookup:(DSMasternodeList*(^)(UInt256 blockHash))masternodeListLookup lastBlock:(DSMerkleBlock* _Nullable)lastBlock onChain:(DSChain*)chain blockHeightLookup:(uint32_t(^)(UInt256 blockHash))blockHeightLookup completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion;
 
 @end
 

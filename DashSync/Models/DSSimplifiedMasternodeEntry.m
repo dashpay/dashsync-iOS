@@ -194,4 +194,8 @@
     return [DSKey addressWithPublicKeyData:[NSData dataWithUInt384:self.operatorPublicKey] forChain:self.chain];
 }
 
+-(NSString*)description {
+    return [[super description] stringByAppendingString:[NSString stringWithFormat:@"%@ {valid:%@}",self.host,@(self.isValid)]];
+}
+
 @end

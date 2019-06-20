@@ -8,10 +8,11 @@
 
 #import <UIKit/UIKit.h>
 #import <DashSync/DashSync.h>
+#import "DSMasternodeListTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSMasternodeListsViewController : UITableViewController<NSFetchedResultsControllerDelegate>
+@interface DSMasternodeListsViewController : UITableViewController<NSFetchedResultsControllerDelegate,DSMasternodeListTableViewCellDelegate>
 
 @property (nonatomic,strong) DSChain * chain;
 

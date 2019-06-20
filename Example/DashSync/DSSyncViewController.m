@@ -447,12 +447,11 @@
 }
 
 -(void)updateMasternodeLists {
-    NSArray * orderedMasternodeLists = self.chainManager.masternodeManager.orderedMasternodeLists;
-    DSMasternodeList * firstMasternodeList = [orderedMasternodeLists firstObject];
-    DSMasternodeList * lastMasternodeList = [orderedMasternodeLists lastObject];
-    self.masternodeListsCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[orderedMasternodeLists count]];
-    self.earliestMasternodeListLabel.text = firstMasternodeList?[NSString stringWithFormat:@"%u",[firstMasternodeList height]]:@"None";
-    self.lastMasternodeListLabel.text = lastMasternodeList?[NSString stringWithFormat:@"%u",[lastMasternodeList height]]:@"None";
+    uint32_t earliestHeight = self.chainManager.masternodeManager.earliestMasternodeListBlockHeight;
+    uint32_t lastHeight = self.chainManager.masternodeManager.lastMasternodeListBlockHeight;
+    self.masternodeListsCountLabel.text = [NSString stringWithFormat:@"%lu",self.chainManager.masternodeManager.knownMasternodeListsCount];
+    self.earliestMasternodeListLabel.text = (earliestHeight != UINT32_MAX)?[NSString stringWithFormat:@"%u",earliestHeight]:@"None";
+    self.lastMasternodeListLabel.text = (lastHeight != UINT32_MAX)?[NSString stringWithFormat:@"%u",lastHeight]:@"None";
 }
 
 

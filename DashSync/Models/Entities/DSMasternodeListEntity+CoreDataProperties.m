@@ -17,5 +17,7 @@
 @dynamic block;
 @dynamic masternodes;
 @dynamic quorums;
+@dynamic masternodeListMerkleRoot;
+@dynamic quorumListMerkleRoot;
 
 @end

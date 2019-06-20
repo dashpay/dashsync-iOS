@@ -100,11 +100,18 @@ inline static int ceil_log2(int x)
     return self;
 }
 
+#define LOG_DIFFS_BETWEEN_MASTERNODE_LISTS 1
+
 +(instancetype)masternodeListAtBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodeHashes modifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums removedQuorumHashesByType:(NSDictionary*)removedQuorumHashesByType onChain:(DSChain*)chain {
     NSMutableDictionary * tentativeMasternodeList = baseMasternodeList?[baseMasternodeList.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash mutableCopy]:[NSMutableDictionary dictionary];
     
     [tentativeMasternodeList removeObjectsForKeys:removedMasternodeHashes];
     [tentativeMasternodeList addEntriesFromDictionary:addedMasternodes];
+    
+#if LOG_DIFFS_BETWEEN_MASTERNODE_LISTS
+    DSDLog(@"MNDiff: %lu added, %lu removed, %lu modified ",(unsigned long)addedMasternodes.count,(unsigned long)removedMasternodeHashes.count,(unsigned long)modifiedMasternodes.count);
+#endif
+    
     for (NSData * data in modifiedMasternodes) {
         DSSimplifiedMasternodeEntry * oldMasternodeEntry = tentativeMasternodeList[data];
         //the masternode has changed

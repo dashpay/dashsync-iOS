@@ -20,6 +20,7 @@
 @property (strong, nonatomic) IBOutlet UITextField *previousBlockHeightTextField;
 @property (strong, nonatomic) IBOutlet UITextField *blockHeightTextField;
 @property (strong, nonatomic) IBOutlet UIButton *fetchButton;
+@property (strong, nonatomic) NSMutableDictionary <NSData*,NSNumber*> * validMerkleRootDictionary;
 
 @end
 
@@ -27,6 +28,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    _validMerkleRootDictionary = [NSMutableDictionary dictionary];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -131,7 +133,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     DSMasternodeListTableViewCell *cell = (DSMasternodeListTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"MasternodeListTableViewCellIdentifier" forIndexPath:indexPath];
-    
+    cell.masternodeListCellDelegate = self;
     // Configure the cell...
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
@@ -153,6 +155,7 @@
         DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
         [masternodeListEntity deleteObject];
         [DSMasternodeListEntity saveMainContext];
+        [self.chain.chainManager.masternodeManager reloadMasternodeLists];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];
     }
@@ -163,12 +166,14 @@
     DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.heightLabel.text = [NSString stringWithFormat:@"%u",masternodeListEntity.block.height];
     cell.countLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)masternodeListEntity.masternodes.count];
+    NSNumber * valid = [self.validMerkleRootDictionary objectForKey:masternodeListEntity.block.blockHash];
+    [cell.validButton setTitle:valid?([valid boolValue]?@"V":@"X"):@"?" forState:UIControlStateNormal];
 }
 
 -(IBAction)fetchMasternodeList:(id)sender {
     uint32_t previousBlockHeight = self.previousBlockHeightTextField.text?[self.previousBlockHeightTextField.text intValue]:0;
     uint32_t blockHeight = self.blockHeightTextField.text?[self.blockHeightTextField.text intValue]:0;
-    
+
     NSError * error = nil;
     [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight previousBlockHeight:previousBlockHeight error:&error];
     if (error) {
@@ -176,6 +181,15 @@
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                popOutAfterDelay:2.0]];
     }
+}
+
+-(void)masternodeListTableViewCellRequestsValidation:(DSMasternodeListTableViewCell *)tableViewCell {
+    NSIndexPath * indexPath = [self.tableView indexPathForCell:tableViewCell];
+    DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    DSMasternodeList * masternodeList = [self.chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListEntity.block.blockHash.UInt256];
+    BOOL equal = uint256_eq(masternodeListEntity.masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
+    [self.validMerkleRootDictionary setObject:@(equal) forKey:uint256_data(masternodeList.blockHash)];
+    [tableViewCell.validButton setTitle:(equal?@"V":@"X") forState:UIControlStateNormal];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

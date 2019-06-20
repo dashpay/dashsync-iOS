@@ -151,6 +151,8 @@
         <relationship name="simplifiedMasternodeEntry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="localMasternode" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
     </entity>
     <entity name="DSMasternodeListEntity" representedClassName="DSMasternodeListEntity" syncable="YES">
+        <attribute name="masternodeListMerkleRoot" attributeType="Binary" syncable="YES"/>
+        <attribute name="quorumListMerkleRoot" attributeType="Binary" syncable="YES"/>
         <relationship name="block" maxCount="1" deletionRule="Nullify" destinationEntity="DSMerkleBlockEntity" inverseName="masternodeList" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="masternodes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSSimplifiedMasternodeEntryEntity" inverseName="masternodeLists" inverseEntity="DSSimplifiedMasternodeEntryEntity" syncable="YES"/>
         <relationship name="quorums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSQuorumEntryEntity" inverseName="referencedByMasternodeLists" inverseEntity="DSQuorumEntryEntity" syncable="YES"/>
@@ -411,7 +413,7 @@
         <element name="DSGovernanceVoteHashEntity" positionX="-896.94921875" positionY="127.3359375" width="128" height="120"/>
         <element name="DSInstantSendLockEntity" positionX="-2322" positionY="-81" width="128" height="105"/>
         <element name="DSLocalMasternodeEntity" positionX="-2313" positionY="-72" width="128" height="240"/>
-        <element name="DSMasternodeListEntity" positionX="-2322" positionY="-81" width="128" height="90"/>
+        <element name="DSMasternodeListEntity" positionX="-2322" positionY="-81" width="128" height="120"/>
         <element name="DSMerkleBlockEntity" positionX="-1531.69921875" positionY="-232.9921875" width="128" height="255"/>
         <element name="DSPeerEntity" positionX="-1676.0546875" positionY="54.0078125" width="128" height="195"/>
         <element name="DSProviderRegistrationTransactionEntity" positionX="-2322" positionY="-81" width="128" height="225"/>

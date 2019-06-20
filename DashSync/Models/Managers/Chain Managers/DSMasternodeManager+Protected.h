@@ -29,15 +29,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSMasternodeManager (Protected)
 
--(void)getRecentMasternodeList:(NSUInteger)blocksAgo;
-
--(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
-
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)masternodeDiffMessage;
 
 -(void)processMasternodeDiffMessage:(NSData*)message baseMasternodeList:(DSMasternodeList*)baseMasternodeList lastBlock:(DSMerkleBlock*)lastBlock completion:(void (^)(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * masternodeList, NSDictionary * addedMasternodes, NSDictionary * modifiedMasternodes, NSDictionary * addedQuorums, NSOrderedSet * neededMissingMasternodeLists))completion;
 
 +(void)saveMasternodeList:(DSMasternodeList*)masternodeList toChain:(DSChain*)chain havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums inContext:(NSManagedObjectContext*)context error:(NSError**)error;
+
+-(void)loadMasternodeLists;
+
+-(void)reloadMasternodeLists;
 
 @end
 
