@@ -1006,67 +1006,39 @@
         uint32_t lastBlockHeight = self.currentMasternodeList.height;
         NSMutableArray * masternodeListBlockHashes = [[self.masternodeListsByBlockHash allKeys] mutableCopy];
         [masternodeListBlockHashes addObjectsFromArray:[self.masternodeListsBlockHashStubs allObjects]];
-        for (NSData * blockHash in masternodeListBlockHashes) {
-            DSMasternodeList * masternodeList = self.masternodeListsByBlockHash[blockHash];
-            uint32_t height = UINT32_MAX;
-            if (masternodeList) {
-                height = self.masternodeListsByBlockHash[blockHash].height;
+        NSArray<DSMasternodeListEntity *>* masternodeListEntities = [DSMasternodeListEntity objectsMatching:@"block.height < %@ && block.blockHash IN %@ && (block.usedByQuorums.@count == 0)",@(lastBlockHeight-50),masternodeListBlockHashes];
+        BOOL removedItems = !!masternodeListEntities.count;
+        for (DSMasternodeListEntity * masternodeListEntity in [masternodeListEntities copy]) {
+            
+            DSDLog(@"Removing masternodeList at height %u",masternodeListEntity.block.height);
+            DSDLog(@"quorums are %@",masternodeListEntity.block.usedByQuorums);
+            //A quorum is on a block that can only have one masternode list.
+            //A block can have one quorum of each type.
+            //A quorum references the masternode list by it's block
+            //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
+            
+            [self.managedObjectContext deleteObject:masternodeListEntity];
+            [self.masternodeListsByBlockHash removeObjectForKey:masternodeListEntity.block.blockHash];
+            
+        }
+        if (removedItems) {
+            //Now we should delete old quorums
+            //To do this, first get the last 24 active masternode lists
+            //Then check for quorums not referenced by them, and delete those
+            
+            NSArray<DSMasternodeListEntity *> * recentMasternodeLists = [DSMasternodeListEntity objectsSortedBy:@"block.height" ascending:NO offset:0 limit:10];
+            
+            
+            uint32_t oldTime = lastBlockHeight - 24;
+            
+            uint32_t oldestBlockHeight = recentMasternodeLists.count?MIN([recentMasternodeLists lastObject].block.height,oldTime):oldTime;
+            NSArray * oldQuorums = [DSQuorumEntryEntity objectsMatching:@"chain == %@ && SUBQUERY(referencedByMasternodeLists, $masternodeList, $masternodeList.block.height > %@).@count == 0",self.chain.chainEntity,@(oldestBlockHeight)];
+            
+            for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldQuorums copy]) {
+                [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
             }
             
-            if (height == UINT32_MAX) {
-                height = [self heightForBlockHash:blockHash.UInt256];
-            }
-            if (height != UINT32_MAX) {
-                if (lastBlockHeight - height > 50) {
-                    
-                    DSMasternodeListEntity * masternodeListEntity = [DSMasternodeListEntity anyObjectMatching:@"block.blockHash = %@ && (block.usedByQuorums.@count == 0)",blockHash];
-                    if (masternodeListEntity) {
-                        DSDLog(@"Removing masternodeList at height %u",height);
-                        DSDLog(@"quorums are %@",masternodeListEntity.block.usedByQuorums);
-                        //A quorum is on a block that can only have one masternode list.
-                        //A block can have one quorum of each type.
-                        //A quorum references the masternode list by it's block
-                        //we need to check if this masternode list is being referenced by a quorum using the inverse of quorum.block.masternodeList
-                        
-                        [self.managedObjectContext deleteObject:masternodeListEntity];
-                        [self.masternodeListsByBlockHash removeObjectForKey:blockHash];
-                        
-                        //Now we should delete old quorums
-                        //To do this, first get the last 24 active masternode lists
-                        //Then check for quorums not referenced by them, and delete those
-                        
-                        NSArray<DSMasternodeListEntity *> * recentMasternodeLists = [DSMasternodeListEntity objectsSortedBy:@"block.height" ascending:NO offset:0 limit:10];
-                        
-                        
-                        uint32_t oldTime = lastBlockHeight - 24;
-                        
-                        uint32_t oldestBlockHeight = recentMasternodeLists.count?MIN([recentMasternodeLists lastObject].block.height,oldTime):oldTime;
-                        NSArray * oldQuorums = [DSQuorumEntryEntity objectsMatching:@"chain == %@ && SUBQUERY(referencedByMasternodeLists, $masternodeList, $masternodeList.block.height > %@).@count == 0",self.chain.chainEntity,@(oldestBlockHeight)];
-                        
-                        //                        NSArray * allQuorums = [DSQuorumEntryEntity allObjects];
-                        //                        for (DSQuorumEntryEntity * quorum in allQuorums) {
-                        //
-                        //                            NSArray * sortedMasternodeLists = [quorum.referencedByMasternodeLists sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"block.height" ascending:YES]]];
-                        //                            DSDLog(@"quorum %@ at height %u USED BY",quorum,quorum.block.height);
-                        //                            for (DSMasternodeListEntity * masternodeList in sortedMasternodeLists) {
-                        //                                DSDLog(@"masternodeList at height %u",masternodeList.block.height);
-                        //                                if (masternodeList.block.height == 118272) {
-                        //                                    DSDLog(@"%@ - %@ - %lu USED BY QUORUMS",masternodeList,masternodeList.block,(unsigned long)masternodeList.block.usedByQuorums.count);
-                        //                                    for (DSQuorumEntryEntity * quorumEntryEntity in masternodeList.block.usedByQuorums) {
-                        //                                        DSDLog(@"quorumEntryEntity %@ at height %u",quorumEntryEntity,quorumEntryEntity.block.height);
-                        //
-                        //                                    }
-                        //                                }
-                        //                            }
-                        //                        }
-                        //                        NSArray * oldUnusedQuorums = [DSQuorumEntryEntity objectsMatching:@"(usedByMasternodeLists.@count == 0)"];
-                        for (DSQuorumEntryEntity * unusedQuorumEntryEntity in [oldQuorums copy]) {
-                            [self.managedObjectContext deleteObject:unusedQuorumEntryEntity];
-                        }
-                        [DSQuorumEntryEntity saveContext];
-                    }
-                }
-            }
+            [DSQuorumEntryEntity saveContext];
         }
     }];
 }
