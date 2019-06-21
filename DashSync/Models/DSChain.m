@@ -1198,6 +1198,16 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
+- (DSCheckpoint* _Nullable)lastCheckpointWithMasternodeList {
+    NSSet * set = [self.checkpointsByHeightDictionary keysOfEntriesPassingTest:^BOOL(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        DSCheckpoint * checkpoint = (DSCheckpoint *)obj;
+        return (checkpoint.masternodeListName && ![checkpoint.masternodeListName isEqualToString:@""]);
+    }];
+    NSArray * numbers = [[set allObjects] sortedArrayUsingSelector: @selector(compare:)];
+    if (!numbers.count) return nil;
+    return self.checkpointsByHeightDictionary[numbers.lastObject];
+}
+
 - (DSCheckpoint*)checkpointForBlockHash:(UInt256)blockHash {
     return [self.checkpointsByHashDictionary objectForKey:uint256_data(blockHash)];
 }
@@ -1212,7 +1222,11 @@ static dispatch_once_t devnetToken = 0;
 
 - (NSMutableDictionary *)blocks
 {
-    if (_blocks.count > 0) return _blocks;
+    if (_blocks.count > 0) {
+        if (!_checkpointsByHashDictionary) _checkpointsByHashDictionary = [NSMutableDictionary dictionary];
+        if (!_checkpointsByHeightDictionary) _checkpointsByHeightDictionary = [NSMutableDictionary dictionary];
+        return _blocks;
+    }
     
     [[DSMerkleBlockEntity context] performBlockAndWait:^{
         if (self->_blocks.count > 0) return;
@@ -1240,6 +1254,16 @@ static dispatch_once_t devnetToken = 0;
     }];
     
     return _blocks;
+}
+
+-(NSMutableDictionary*)checkpointsByHashDictionary {
+    if (!_checkpointsByHashDictionary) [self blocks];
+    return _checkpointsByHashDictionary;
+}
+
+-(NSMutableDictionary*)checkpointsByHeightDictionary {
+    if (!_checkpointsByHeightDictionary) [self blocks];
+    return _checkpointsByHeightDictionary;
 }
 
 
@@ -1295,6 +1319,10 @@ static dispatch_once_t devnetToken = 0;
     }
     DSDLog(@"Requesting unknown blockhash %@ (it's probably being added asyncronously)",uint256_reverse_hex(blockhash));
     return UINT32_MAX;
+}
+
+- (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash {
+    return self.blocks[uint256_obj(blockHash)];
 }
 
 - (DSMerkleBlock *)blockAtHeight:(uint32_t)height {

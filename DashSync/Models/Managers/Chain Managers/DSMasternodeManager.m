@@ -185,7 +185,7 @@
 -(void)setUp {
     [self loadMasternodeLists];
     [self loadLocalMasternodes];
-    //[self loadFileDistributedMasternodeLists];
+    [self loadFileDistributedMasternodeLists];
 }
 
 -(void)loadLocalMasternodes {
@@ -235,24 +235,10 @@
 -(void)loadFileDistributedMasternodeLists {
     
     if (!self.currentMasternodeList) {
-        if ([self.chain isMainnet]) {
-            NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-            NSString *filePath = [bundle pathForResource:@"ML1088640" ofType:@"dat"];
-            NSData * message = [NSData dataWithContentsOfFile:filePath];
-            [self processMasternodeDiffMessage:message
-                            baseMasternodeList:nil lastBlock:nil completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
-                                NSArray * updatedSimplifiedMasternodeEntries = [addedMasternodes.allValues arrayByAddingObjectsFromArray:modifiedMasternodes.allValues];
-                                [self.chain updateAddressUsageOfSimplifiedMasternodeEntries:updatedSimplifiedMasternodeEntries];
-                                
-                                //this is now the current masternode list
-                                self.currentMasternodeList = masternodeList;
-                                
-                                [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
-                                
-                                
-                                
-                            }];
-        }
+        DSCheckpoint * checkpoint = [self.chain lastCheckpointWithMasternodeList];
+        [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
+            
+        }];
     }
 }
 
@@ -488,10 +474,22 @@
         completion(NO);
         return;
     }
+    __block DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
     NSData * message = [NSData dataWithContentsOfFile:filePath];
     [self processMasternodeDiffMessage:message
-                    baseMasternodeList:nil lastBlock:nil completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
+                    baseMasternodeList:nil lastBlock:block completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
+                        if (!foundCoinbase || !rootMNListValid || !rootQuorumListValid || !validQuorums) {
+                            completion(NO);
+                            DSDLog(@"Invalid File for block at height %u with merkleRoot %@",block.height,uint256_hex(block.merkleRoot));
+                            return;
+                        }
                         
+                        //valid Coinbase might be false if no merkle block
+                        if (block && !validCoinbase) {
+                            DSDLog(@"Invalid Coinbase for block at height %u with merkleRoot %@",block.height,uint256_hex(block.merkleRoot));
+                            completion(NO);
+                            return;
+                        }
                         [self processValidMasternodeList:masternodeList havingAddedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
                         
                     }];
@@ -740,7 +738,7 @@
 
 #define LOG_MASTERNODE_DIFF 0 && DEBUG
 #define SAVE_MASTERNODE_DIFF_TO_FILE 1 && DEBUG
-#define SAVE_MASTERNODE_DIFF_TO_FILE_LOCATION @"ML.dat"
+#define SAVE_MASTERNODE_DIFF_TO_FILE_LOCATION @"ML1.dat"
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {

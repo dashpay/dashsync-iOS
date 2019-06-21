@@ -231,11 +231,15 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
 
+- (DSCheckpoint* _Nullable)lastCheckpointWithMasternodeList;
+
 - (DSCheckpoint* _Nullable)checkpointForBlockHash:(UInt256)blockHash;
 
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
 - (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
+
+- (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
 
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
