@@ -52,10 +52,9 @@
 #import "DSTransactionManager+Protected.h"
 #import "NSString+Bitcoin.h"
 
-#define REQUEST_MASTERNODE_BROADCAST_COUNT 500
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
-#define MAX_FAULTY_DML_PEERS 5
+#define MAX_FAULTY_DML_PEERS 3
 
 
 @interface DSMasternodeManager()
@@ -497,6 +496,10 @@
                         }
                         [self processValidMasternodeList:masternodeList havingAddedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
                         
+                        if (![self.masternodeListRetrievalQueue count]) {
+                            [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                        }
+                        
                     }];
 }
 
@@ -837,6 +840,12 @@
                 [self.masternodeListRetrievalQueue removeObject:uint256_data(masternodeList.blockHash)];
                 [self dequeueMasternodeListRequest];
                 
+                //check for instant send locks that were awaiting a quorum
+                
+                if (![self.masternodeListRetrievalQueue count]) {
+                    [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
+                }
+                
                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
             }
         } else {
@@ -875,12 +884,6 @@
     
     if (uint256_eq(self.lastQueriedBlockHash,masternodeList.blockHash)) {
         [self removeOldMasternodeLists];
-    }
-    
-    //check for instant send locks that were awaiting a quorum
-    
-    if (![self.masternodeListRetrievalQueue count]) {
-        [self.chain.chainManager.transactionManager checkInstantSendLocksWaitingForQuorums];
     }
 }
 
@@ -1049,7 +1052,7 @@
     
     NSArray * faultyPeers = [[NSUserDefaults standardUserDefaults] arrayForKey:CHAIN_FAULTY_DML_MASTERNODE_PEERS];
     
-    if (faultyPeers.count == MAX_FAULTY_DML_PEERS) {
+    if (faultyPeers.count >= MAX_FAULTY_DML_PEERS) {
         DSDLog(@"Exceeded max failures for masternode list, starting from scratch");
         //no need to remove local masternodes
         [self.masternodeListRetrievalQueue removeAllObjects];
@@ -1059,10 +1062,11 @@
             [DSMasternodeListEntity setContext:context];
             [DSSimplifiedMasternodeEntryEntity setContext:context];
             [DSQuorumEntryEntity setContext:context];
-            DSChainEntity * chainEntity = peer.chain.chainEntity;
-            [DSMasternodeListEntity deleteAllOnChain:chainEntity];
-            [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+            DSChainEntity * chainEntity = self.chain.chainEntity;
             [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+            [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+            [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+            [DSMasternodeListEntity saveContext];
         }];
         
         [self.masternodeListsByBlockHash removeAllObjects];
