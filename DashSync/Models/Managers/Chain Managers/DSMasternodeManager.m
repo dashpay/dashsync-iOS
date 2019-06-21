@@ -212,9 +212,10 @@
         NSArray * masternodeListEntities = [DSMasternodeListEntity fetchObjects:fetchRequest];
         NSMutableDictionary * simplifiedMasternodeEntryPool = [NSMutableDictionary dictionary];
         NSMutableDictionary * quorumEntryPool = [NSMutableDictionary dictionary];
-        for (int i = 0; i < masternodeListEntities.count;i++) {
+        uint32_t neededMasternodeListHeight = self.chain.lastBlock.height - 23; //2*8+7
+        for (unsigned long i = masternodeListEntities.count - 1; i >= 0;i--) {
             DSMasternodeListEntity * masternodeListEntity = [masternodeListEntities objectAtIndex:i];
-            if (i>masternodeListEntities.count - 4) { //load last 3 lists
+            if ((i == masternodeListEntities.count - 1) || ((self.masternodeListsByBlockHash.count < 3) && (neededMasternodeListHeight >= masternodeListEntity.block.height))) { //either last one or there are less than 3 (we aim for 3)
                 //we only need a few in memory as new quorums will mostly be verified against recent masternode lists
                 DSMasternodeList * masternodeList = [masternodeListEntity masternodeListWithSimplifiedMasternodeEntryPool:[simplifiedMasternodeEntryPool copy] quorumEntryPool:quorumEntryPool];
                 [self.masternodeListsByBlockHash setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
@@ -222,7 +223,10 @@
                 [simplifiedMasternodeEntryPool addEntriesFromDictionary:masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash];
                 [quorumEntryPool addEntriesFromDictionary:masternodeList.quorums];
                 DSDLog(@"Loading Masternode List at height %u for blockHash %@ with %lu entries",masternodeList.height,uint256_hex(masternodeList.blockHash),(unsigned long)masternodeList.simplifiedMasternodeEntries.count);
-                self.currentMasternodeList = masternodeList;
+                if (i == masternodeListEntities.count - 1) {
+                    self.currentMasternodeList = masternodeList;
+                }
+                neededMasternodeListHeight = masternodeListEntity.block.height - 8;
             } else {
                 //just keep a stub around
                 [self.cachedBlockHashHeights setObject:@(masternodeListEntity.block.height) forKey:masternodeListEntity.block.blockHash];
@@ -805,7 +809,7 @@
     [self processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList lastBlock:lastBlock completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
         
         
-        if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
+        if (foundCoinbase && validCoinbase && /*rootMNListValid &&*/ rootQuorumListValid && validQuorums) {
             DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
