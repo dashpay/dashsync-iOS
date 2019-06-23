@@ -321,6 +321,15 @@ static NSUInteger _fetchBatchSize = 100;
             [NSManagedObject setMainContext:mainObjectContext];
             
 
+            [[NSNotificationCenter defaultCenter]
+             addObserverForName:NSManagedObjectContextDidSaveNotification
+             object:objectContext
+             queue:nil
+             usingBlock:^(NSNotification * _Nonnull note) {
+                 [mainObjectContext performBlock:^{
+                     [mainObjectContext mergeChangesFromContextDidSaveNotification:note];
+                 }];
+            }];
             
             // this will save changes to the persistent store before the application terminates
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
