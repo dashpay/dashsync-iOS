@@ -731,6 +731,119 @@
     }];
 }
 
+- (void)testMNLBug {
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *filePath = [bundle pathForResource:@"ML_at_122088" ofType:@"dat"];
+    NSData * message = [NSData dataWithContentsOfFile:filePath];
+    
+    DSChain * chain = [DSChain testnet];
+    
+    NSUInteger length = message.length;
+    NSUInteger offset = 0;
+    
+    if (length - offset < 32) return;
+    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    if (length - offset < 32) return;
+    UInt256 blockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self.chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self.chain heightForBlockHash:blockHash]);
+
+//    XCTAssert(uint256_eq(self.chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
+    
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+        return nil; //no known previous lists
+    } lastBlock:nil onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return UINT32_MAX;
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+        
+        NSData *masternodeListMerkleRoot = @"94d0af97187af3b9311c98b1cf40c9c9849df0af55dc63b097b80d4cf6c816c5".hexToData;
+        BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
+        XCTAssert(equal, @"MNList merkle root should be valid");
+        
+        XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
+//        XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
+        XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
+        XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
+        XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash]);
+        
+        if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
+            NSLog(@"Valid masternode list found at height %u",[chain heightForBlockHash:blockHash]);
+            //yay this is the correct masternode list verified deterministically for the given block
+            NSError * error = nil;
+            NSManagedObjectContext * context = [NSManagedObject context];
+            [context performBlockAndWait:^{
+                DSChainEntity * chainEntity = chain.chainEntity;
+                [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+                [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+                [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+            }];
+            [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
+        }
+        
+    }];
+}
+
+- (void)testMNLBugFromDisk {
+    NSData *blockhash = @"0000000007eec28e1459b36de6e54ac81fa2dc2b12a797ac77ee7c7f7a59148f".hexToData.reverse;
+    DSChain *chain = [DSChain testnet];
+    DSMasternodeManager *masternodeManager = chain.chainManager.masternodeManager;
+    DSMasternodeList *localMasternodeList = [masternodeManager masternodeListForBlockHash:blockhash.UInt256];
+    NSData *masternodeListMerkleRoot = @"94d0af97187af3b9311c98b1cf40c9c9849df0af55dc63b097b80d4cf6c816c5".hexToData;
+    
+    BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [localMasternodeList masternodeMerkleRoot]);
+    XCTAssert(equal, @"MNList merkle root should be valid");
+    
+    //---
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *filePath = [bundle pathForResource:@"ML_at_122088" ofType:@"dat"];
+    NSData * message = [NSData dataWithContentsOfFile:filePath];
+    
+    NSUInteger length = message.length;
+    NSUInteger offset = 0;
+    
+    if (length - offset < 32) return;
+    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    if (length - offset < 32) return;
+    UInt256 blockHash = [message UInt256AtOffset:offset];
+    offset += 32;
+    
+    NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self.chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self.chain heightForBlockHash:blockHash]);
+    
+    //    XCTAssert(uint256_eq(self.chain.genesisHash, baseBlockHash) || uint256_is_zero(baseBlockHash),@"Base block hash should be from chain origin");
+    
+    [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+        return nil; //no known previous lists
+    } lastBlock:nil onChain:self.chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
+        return UINT32_MAX;
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+        
+        BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
+        XCTAssert(equal, @"MNList merkle root should be valid");
+        
+        NSArray * localProTxHashes = [localMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        localProTxHashes = [localProTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        NSArray * proTxHashes = [masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+        proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+        }];
+        
+        XCTAssertEqual(localProTxHashes, proTxHashes);
+    }];
+}
+
 -(void)testMasternodeListLoading {
     DSChain * chain = [DSChain mainnet];
     [chain chainManager];
