@@ -142,17 +142,22 @@
 }
 
 -(UInt256)commitmentHash {
-    if (!uint256_is_zero(_commitmentHash)) {
+    if (uint256_is_zero(_commitmentHash)) {
+        _commitmentHash = [[self commitmentData] SHA256_2];
+    }
+    return _commitmentHash;
+}
+
+-(NSData*)commitmentData {
+    
         NSMutableData * data = [NSMutableData data];
         [data appendVarInt:self.llmqType];
         [data appendUInt256:self.quorumHash];
-        [data appendVarInt:self.validMembersBitset.length];
+        [data appendVarInt:self.validMembersCount];
         [data appendData:self.validMembersBitset];
         [data appendUInt384:self.quorumPublicKey];
         [data appendUInt256:self.quorumVerificationVectorHash];
-        _commitmentHash = [data SHA256_2];
-    }
-    return _commitmentHash;
+    return data;
 }
 
 -(uint32_t)quorumThreshold {
@@ -210,10 +215,6 @@
     if ([self.signersBitset trueBitsCount] < [self quorumThreshold]) return NO;
     if ([self.validMembersBitset trueBitsCount] < [self quorumThreshold]) return NO;
     
-    self.verified = YES;
-    
-    return YES;
-    
     
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     
@@ -221,20 +222,22 @@
     NSMutableArray * publicKeyArray = [NSMutableArray array];
     uint32_t i = 0;
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
-        if ([self.signersBitset bitIsTrueAtIndex:i] && [self.validMembersBitset bitIsTrueAtIndex:i]) {
+        if ([self.signersBitset bitIsTrueAtIndex:i]) {
             DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:masternodeEntry.operatorPublicKey onChain:self.chain];
             [publicKeyArray addObject:masternodePublicKey];
         }
         i++;
     }
     
-    BOOL quorumSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.quorumThresholdSignature withPublicKeys:publicKeyArray];
+    BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     
-    if (!quorumSignatureValidated) return NO;
+    if (!allCommitmentAggregatedSignatureValidated) return NO;
     
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
     
-    //todo
+    BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey];
+    
+    if (!quorumSignatureValidated) return NO;
     
     self.verified = YES;
     

@@ -330,6 +330,14 @@
     return blsSignature.Verify();
 }
 
+
++ (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature withPublicKey:(UInt384)publicKey {
+    bls::PublicKey blsPublicKey = [[[DSBLSKey alloc] initWithPublicKey:publicKey onChain:[DSChain mainnet]] blsPublicKey]; //chain won't matter
+    bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash(blsPublicKey, messageDigest.u8);
+    bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
+    return blsSignature.Verify();
+}
+
 +(BOOL)verifySecureAggregated:(UInt256)messageDigest signature:(UInt768)signature withPublicKeys:(NSArray*)publicKeys
 {
     std::vector<bls::AggregationInfo> infos;
