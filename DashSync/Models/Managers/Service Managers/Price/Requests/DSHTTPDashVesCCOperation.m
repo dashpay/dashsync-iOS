@@ -15,17 +15,17 @@
 //  limitations under the License.
 //
 
-#import "DSHTTPVesLocalBitcoinsOperation.h"
+#import "DSHTTPDashVesCCOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSHTTPVesLocalBitcoinsOperation ()
+@interface DSHTTPDashVesCCOperation ()
 
 @property (strong, nonatomic, nullable) NSNumber *vesPrice;
 
 @end
 
-@implementation DSHTTPVesLocalBitcoinsOperation
+@implementation DSHTTPDashVesCCOperation
 
 - (void)processSuccessResponse:(id)parsedData responseHeaders:(NSDictionary *)responseHeaders statusCode:(NSInteger)statusCode {
     NSParameterAssert(parsedData);
@@ -36,28 +36,15 @@ NS_ASSUME_NONNULL_BEGIN
 
         return;
     }
-    
-    NSDictionary *exchangeData = response[@"VES"];
-    if (![exchangeData isKindOfClass:NSDictionary.class]) {
+
+    NSNumber *vesPrice = response[@"VES"];
+    if (![vesPrice isKindOfClass:NSNumber.class]) {
         [self cancelWithInvalidResponse:response];
-        
+
         return;
     }
-    
-    NSString *vesPrice = nil;
-    if (exchangeData[@"avg_1h"]) {
-        vesPrice = exchangeData[@"avg_1h"];
-    }
-    else if (exchangeData[@"avg_6h"]) {
-        vesPrice = exchangeData[@"avg_6h"];
-    }
-    else if (exchangeData[@"avg_12h"]) {
-        vesPrice = exchangeData[@"avg_12h"];
-    }
-    else if (exchangeData[@"avg_24h"]) {
-        vesPrice = exchangeData[@"avg_24h"];
-    }
-    self.vesPrice = @(vesPrice.doubleValue);
+
+    self.vesPrice = vesPrice;
 
     [self finish];
 }
