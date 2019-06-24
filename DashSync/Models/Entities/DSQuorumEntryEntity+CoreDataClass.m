@@ -55,7 +55,7 @@
     self.llmqType = potentialQuorumEntry.llmqType;
     self.version = potentialQuorumEntry.version;
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
-    self.commitmentHash = potentialQuorumEntry.commitmentHash;
+    self.commitmentHash = potentialQuorumEntry.quorumEntryHash;
     self.chain = potentialQuorumEntry.chain.chainEntity;
 }
 

@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSData * validMembersBitset;
 @property (nonatomic, readonly) uint32_t length;
 @property (nonatomic, readonly, getter=toData) NSData * data;
-@property (nonatomic, readonly) UInt256 commitmentHash;
+@property (nonatomic, readonly) UInt256 quorumEntryHash;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) BOOL verified;
 @property (nonatomic, readonly) DSQuorumEntryEntity * matchingQuorumEntryEntity;

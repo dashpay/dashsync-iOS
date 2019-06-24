@@ -171,7 +171,7 @@ inline static int ceil_log2(int x)
         NSMutableArray * llmqCommitmentHashes = [NSMutableArray array];
         for (NSNumber * number in self.mQuorums) {
             for (DSQuorumEntry * quorumEntry in [self.mQuorums[number] allValues]) {
-                [llmqCommitmentHashes addObject:uint256_data(quorumEntry.commitmentHash)];
+                [llmqCommitmentHashes addObject:uint256_data(quorumEntry.quorumEntryHash)];
             }
         }
         NSArray * sortedLlmqHashes = [llmqCommitmentHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {

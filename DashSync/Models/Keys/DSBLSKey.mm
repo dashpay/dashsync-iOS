@@ -330,6 +330,20 @@
     return blsSignature.Verify();
 }
 
++(BOOL)verifySecureAggregated:(UInt256)messageDigest signature:(UInt768)signature withPublicKeys:(NSArray*)publicKeys
+{
+    std::vector<bls::AggregationInfo> infos;
+    for (DSBLSKey * key in publicKeys) {
+        bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash([key blsPublicKey], messageDigest.u8);
+        infos.push_back(aggregationInfo);
+    }
+    
+    bls::AggregationInfo aggregationInfo = bls::AggregationInfo::MergeInfos(infos);
+    bls::Signature blsSignature = bls::Signature::FromBytes(signature.u8, aggregationInfo);
+    
+    return blsSignature.Verify();
+}
+
 // MARK: - Public Key Aggregation
 
 + (bls::PublicKey)aggregatePublicKeys:(NSArray*)publicKeys {

@@ -185,7 +185,6 @@
     [self loadMasternodeLists];
     [self loadLocalMasternodes];
     [self loadFileDistributedMasternodeLists];
-    [self removeOldMasternodeLists];
 }
 
 -(void)loadLocalMasternodes {
@@ -745,23 +744,15 @@
 }
 
 #define LOG_MASTERNODE_DIFF 0 && DEBUG
-#define SAVE_MASTERNODE_DIFF_TO_FILE 1 && DEBUG
-#define SAVE_MASTERNODE_DIFF_TO_FILE_LOCATION @"ML1.dat"
+#define FETCH_NEEDED_QUORUMS (0 || !DEBUG)
+#define KEEP_OLD_QUORUMS (1 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
 #if LOG_MASTERNODE_DIFF
     DSFullLog(@"Logging masternode DIFF message %@", message.hexString);
     DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
-#endif
-    
-#if SAVE_MASTERNODE_DIFF_TO_FILE
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:SAVE_MASTERNODE_DIFF_TO_FILE_LOCATION];
-    
-    // Save it into file system
-    [message writeToFile:dataPath atomically:YES];
 #endif
     
     NSUInteger length = message.length;
@@ -775,6 +766,15 @@
     UInt256 blockHash = [message UInt256AtOffset:offset];
     offset += 32;
     
+#if SAVE_MASTERNODE_DIFF_TO_FILE
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"MNL_%@_%@.dat",@([self heightForBlockHash:baseBlockHash]),@([self heightForBlockHash:blockHash])]];
+    
+    // Save it into file system
+    [message writeToFile:dataPath atomically:YES];
+#endif
+    
     if ([self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)]) {
         //we already have this
         return; //no need to do anything more
@@ -785,7 +785,7 @@
         return; //no need to do anything more
     }
     
-    DSDLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self.chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self.chain heightForBlockHash:blockHash]);
+    DSDLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [self heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
     
     DSMasternodeList * baseMasternodeList = [self masternodeListForBlockHash:baseBlockHash];
     
@@ -817,7 +817,7 @@
             DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
-            if ([neededMissingMasternodeLists count] && uint256_eq(self.lastQueriedBlockHash,blockHash)) {
+            if (FETCH_NEEDED_QUORUMS && [neededMissingMasternodeLists count] && uint256_eq(self.lastQueriedBlockHash,blockHash)) {
                 DSDLog(@"Last masternode list is missing previous masternode lists for quorum validation");
                 
                 self.processingMasternodeListBlockHash = UINT256_ZERO;
@@ -882,7 +882,7 @@
                     addedQuorums:addedQuorums];
     }
     
-    if (uint256_eq(self.lastQueriedBlockHash,masternodeList.blockHash)) {
+    if (!KEEP_OLD_QUORUMS && uint256_eq(self.lastQueriedBlockHash,masternodeList.blockHash)) {
         [self removeOldMasternodeLists];
     }
 }

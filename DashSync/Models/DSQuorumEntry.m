@@ -29,6 +29,7 @@
 @property (nonatomic, assign) int32_t validMembersCount;
 @property (nonatomic, strong) NSData * signersBitset;
 @property (nonatomic, strong) NSData * validMembersBitset;
+@property (nonatomic, assign) UInt256 quorumEntryHash;
 @property (nonatomic, assign) UInt256 commitmentHash;
 @property (nonatomic, assign) uint32_t length;
 @property (nonatomic, strong) DSChain * chain;
@@ -101,7 +102,7 @@
     
     self.length = off - dataOffset;
     
-    self.commitmentHash = [self.toData SHA256_2];
+    self.quorumEntryHash = [self.toData SHA256_2];
     
     self.chain = chain;
     
@@ -117,7 +118,7 @@
     self.version = version;
     self.quorumHash = quorumHash;
     self.quorumPublicKey = quorumPublicKey;
-    self.commitmentHash = commitmentHash;
+    self.quorumEntryHash = commitmentHash;
     self.verified = verified;
     self.chain = chain;
     
@@ -138,6 +139,20 @@
     [data appendUInt768:self.quorumThresholdSignature];
     [data appendUInt768:self.allCommitmentAggregatedSignature];
     return data;
+}
+
+-(UInt256)commitmentHash {
+    if (!uint256_is_zero(_commitmentHash)) {
+        NSMutableData * data = [NSMutableData data];
+        [data appendVarInt:self.llmqType];
+        [data appendUInt256:self.quorumHash];
+        [data appendVarInt:self.validMembersBitset.length];
+        [data appendData:self.validMembersBitset];
+        [data appendUInt384:self.quorumPublicKey];
+        [data appendUInt256:self.quorumVerificationVectorHash];
+        _commitmentHash = [data SHA256_2];
+    }
+    return _commitmentHash;
 }
 
 -(uint32_t)quorumThreshold {
@@ -199,6 +214,7 @@
     
     return YES;
     
+    
     //The quorumSig must validate against the quorumPublicKey and the commitmentHash. As this is a recovered threshold signature, normal signature verification can be performed, without the need of the full quorum verification vector. The commitmentHash is calculated in the same way as in the commitment phase.
     
     NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType]];
@@ -211,9 +227,8 @@
         }
         i++;
     }
-    DSBLSKey * blsKey = [DSBLSKey blsKeyByAggregatingPublicKeys:publicKeyArray onChain:self.chain];
     
-    BOOL quorumSignatureValidated = [blsKey verify:self.commitmentHash signature:self.quorumThresholdSignature];
+    BOOL quorumSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.quorumThresholdSignature withPublicKeys:publicKeyArray];
     
     if (!quorumSignatureValidated) return NO;
     
