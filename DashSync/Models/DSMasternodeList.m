@@ -117,6 +117,7 @@ inline static int ceil_log2(int x)
         //the masternode has changed
         DSSimplifiedMasternodeEntry * modifiedMasternode = modifiedMasternodes[data];
         [modifiedMasternode updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:oldMasternodeEntry atBlockHash:blockHash];
+        [modifiedMasternode updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:oldMasternodeEntry atBlockHash:blockHash];
         [tentativeMasternodeList setObject:modifiedMasternode forKey:data];
     }
     
@@ -148,22 +149,35 @@ inline static int ceil_log2(int x)
 
 -(UInt256)masternodeMerkleRoot {
     if (uint256_is_zero(_masternodeMerkleRoot)) {
-        NSArray * proTxHashes = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
-        proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-            UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
-            UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
-            return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
-        }];
-        
-        NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
-        for (NSData * proTxHash in proTxHashes) {
-            DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
-            [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
-        }
-        
-        self.masternodeMerkleRoot = [[NSData merkleRootFromHashes:simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes] UInt256];
+        self.masternodeMerkleRoot = [self calculateMasternodeMerkleRoot];
     }
     return _masternodeMerkleRoot;
+}
+
+-(NSArray*)providerTxOrderedHashes {
+    NSArray * proTxHashes = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+    proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+        UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+        return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+    }];
+    return proTxHashes;
+}
+
+-(NSArray*)hashesForMerkleRoot {
+    
+    NSArray * proTxHashes = [self providerTxOrderedHashes];
+    
+    NSMutableArray * simplifiedMasternodeListByRegistrationTransactionHashHashes = [NSMutableArray array];
+    for (NSData * proTxHash in proTxHashes) {
+        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+        [simplifiedMasternodeListByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:[simplifiedMasternodeEntry simplifiedMasternodeEntryHashAtBlockHash:self.blockHash]]];
+    }
+    return simplifiedMasternodeListByRegistrationTransactionHashHashes;
+}
+
+-(UInt256)calculateMasternodeMerkleRoot {
+    return [[NSData merkleRootFromHashes:[self hashesForMerkleRoot]] UInt256];
 }
 
 -(UInt256)quorumMerkleRoot {

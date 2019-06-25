@@ -29,5 +29,6 @@
 @dynamic localMasternode;
 @dynamic masternodeLists;
 @dynamic transactionLockVotes;
+@dynamic previousSimplifiedMasternodeEntryHashes;
 
 @end

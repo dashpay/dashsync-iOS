@@ -492,185 +492,6 @@
     [self waitForExpectations:@[expectation] timeout:10];
 }
 
-- (void)testFullMasternodeListDiffMessage {
-    DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
-    NSString * hexString = @"1e4e94fc7c4385a0ada02161d252bd445da4147b1f47978aa061f00f00000000aafc611a88eaa5878f9d020d9e3916a5a779031e64723cca0cad2b13000000000100000001d64f2b26c2975a344c7b97bf24c452160c8b569263ee52b9d3db661e6b666382010103000500010000000000000000000000000000000000000000000000000000000000000000ffffffff4c0318c5010431fcff5c08fabe6d6d000000000000000000000000000000000000000000000000000000000000000001000000000000005800001e010000000d2f6e6f64655374726174756d2f000000000240230e43000000001976a914b7ce0ea9ce2010f58ba4aaa6caa76671c438e89088ac40230e43000000001976a914ee23f199773740c9ed0b78e2ede6fcb66265b91e88ac0000000046020018c50100134132c125640fd7fd77df0707d476f55c56df4abab7214614f38641abc22dfce05e919227d1202aa2b8229a465f55f9346a8058a15ee58e73b2d0f6c0388a3000000000";
-    NSData * message = [hexString hexToData];
-    
-    NSUInteger length = message.length;
-    NSUInteger offset = 0;
-    
-    if (length - offset < 32) return;
-    UInt256 baseBlockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-    
-    XCTAssertTrue(uint256_eq(baseBlockHash, UINT256_ZERO),@"Base block hash should be empty here");
-    
-    if (length - offset < 32) return;
-    UInt256 blockHash = [message UInt256AtOffset:offset];
-    offset += 32;
-    
-    if (length - offset < 4) return;
-    uint32_t totalTransactions = [message UInt32AtOffset:offset];
-    XCTAssertTrue(totalTransactions == 13,@"There should be only 13 transaction");
-    offset += 4;
-    
-    if (length - offset < 1) return;
-    
-    NSNumber * merkleHashCountLength;
-    uint64_t merkleHashCount = (NSUInteger)[message varIntAtOffset:offset length:&merkleHashCountLength]*sizeof(UInt256);
-    offset += [merkleHashCountLength unsignedLongValue];
-    
-    
-    NSData * merkleHashes = [message subdataWithRange:NSMakeRange(offset, merkleHashCount)];
-    offset += merkleHashCount;
-    
-    NSNumber * merkleFlagCountLength;
-    uint64_t merkleFlagCount = [message varIntAtOffset:offset length:&merkleFlagCountLength];
-    offset += [merkleFlagCountLength unsignedLongValue];
-    
-    
-    NSData * merkleFlags = [message subdataWithRange:NSMakeRange(offset, merkleFlagCount)];
-    offset += merkleFlagCount;
-    
-    NSData * leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
-    
-    DSCoinbaseTransaction *coinbaseTransaction = (DSCoinbaseTransaction*)[DSTransactionFactory transactionWithMessage:[message subdataWithRange:NSMakeRange(offset, message.length - offset)] onChain:devnetDRA];
-    
-    if (![coinbaseTransaction isMemberOfClass:[DSCoinbaseTransaction class]]) return;
-    offset += coinbaseTransaction.payloadOffset;
-    
-    if (length - offset < 1) return;
-    NSNumber * deletedMasternodeCountLength;
-    uint64_t deletedMasternodeCount = [message varIntAtOffset:offset length:&deletedMasternodeCountLength];
-    offset += [deletedMasternodeCountLength unsignedLongValue];
-    
-    NSMutableArray * deletedMasternodeHashes = [NSMutableArray array];
-    
-    while (deletedMasternodeCount >= 1) {
-        if (length - offset < 32) return;
-        [deletedMasternodeHashes addObject:[NSData dataWithUInt256:[message UInt256AtOffset:offset]]];
-        offset += 32;
-        deletedMasternodeCount--;
-    }
-    
-    if (length - offset < 1) return;
-    NSNumber * addedMasternodeCountLength;
-    uint64_t addedMasternodeCount = [message varIntAtOffset:offset length:&addedMasternodeCountLength];
-    offset += [addedMasternodeCountLength unsignedLongValue];
-    
-    leftOverData = [message subdataWithRange:NSMakeRange(offset, message.length - offset)];
-    NSMutableDictionary * addedOrModifiedMasternodes = [NSMutableDictionary dictionary];
-    
-    while (addedMasternodeCount >= 1) {
-        if (length - offset < [DSSimplifiedMasternodeEntry payloadLength]) return;
-        NSData * data = [message subdataWithRange:NSMakeRange(offset, [DSSimplifiedMasternodeEntry payloadLength])];
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithData:data onChain:devnetDRA];
-        [addedOrModifiedMasternodes setObject:simplifiedMasternodeEntry forKey:[NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash].reverse];
-        offset += [DSSimplifiedMasternodeEntry payloadLength];
-        addedMasternodeCount--;
-    }
-    
-    NSMutableDictionary * tentativeMasternodeList = [NSMutableDictionary dictionary];
-    
-    [tentativeMasternodeList removeObjectsForKeys:deletedMasternodeHashes];
-    [tentativeMasternodeList addEntriesFromDictionary:addedOrModifiedMasternodes];
-    
-    NSArray * proTxHashes = [tentativeMasternodeList allKeys];
-    proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
-        UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
-        return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
-    }];
-    
-    NSArray * verifyStringHashes = @[@"368d37774de9e4694b94caff82737b72b3914e70f8d34905b644491ddf4dc424",
-                                     @"6572053adbdc2d1ae4955b2c1574366d8b2f9e2734144632030e4c8327922929",
-                                     @"46cb295d8deb1ca477d0bbb714299b49cddbd13d7683adb5b45773280ed9f431",
-                                     @"6d8fd38216a9d76492fad8e72f0ba161784bcf5f888ab66daceca75db3dabfc2",
-                                     @"5192c6531b6cc9acb5d39e7724c5dd45ebbafc6ad506d43db3c94f4bc5bf842c",
-                                     @"3c692906f231771f2e1c19a15c2863a9c04b864ff2c45bd0fd46f91231a38bad",
-                                     @"aa0e74b6f56eebbf55849f7fc40bf2f163d57e0752a6f724554f6e12fd4ad3f3",
-                                     @"16e11b50a91d95a82f64283edd47b890baf8a74af3d408206111574cb8b32a16",
-                                     @"a921e6d02823147dda734f8a0bef79d2ccc94cd4e3dc06d5378cbfb051b4a124",
-                                     @"451ecdfdbb5ac685f56ec547d62174fbc5cd0b268a908d8336573b34c978ab68",
-                                     @"97855159eaadf7e3d0f6fc0b2ffdaaad2a5ffeb1e858fa88d979f3c2042132cd",
-                                     @"675ebde16c8719292812b68ed422fefc2a4f74461b6e7af20acf9b676c65082a",
-                                     @"662d6de9ed5a85646ebf9e04b63537993be345ed28ebd253c8c0bda5a325ef87",
-                                     @"535aca9cde16ebc6d6a51914b6c524044df6d6a87ec7c23c3dc7f355ff445fb5"];
-    
-    NSMutableArray * verifyHashes = [NSMutableArray array];
-    
-    for (NSString * stringHash in verifyStringHashes) {
-        [verifyHashes addObject:stringHash.hexToData.reverse];
-    }
-    
-    verifyHashes = [[verifyHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
-        UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
-        return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
-    }] mutableCopy];
-    
-    
-    XCTAssertEqualObjects(verifyHashes,proTxHashes,
-                          @"Provider transaction hashes");
-    
-    NSMutableArray * simplifiedMasternodeListHashes = [NSMutableArray array];
-    for (NSData * proTxHash in proTxHashes) {
-        DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [tentativeMasternodeList objectForKey:proTxHash];
-        [simplifiedMasternodeListHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
-    }
-    
-    NSArray * verifyStringSMLEHashes = @[@"4090e9167892b3a452891efaf8935a3fa5ebaec7db3bffe1a4073e26a8218d56",
-                                         @"d4e7a66aeda72ab6f25e2ffd6c82da297737068fb9eb795a06a42b723b27a2f1",
-                                         @"a6b1b82aa961f74eba2f3f369bdb659bb4058f8fbca79909decf11e7ddd80f4d",
-                                         @"feaaea4f2bfeb182f9590e100040fee93ddf1ebf4134b87d59012a7d188bcb76",
-                                         @"cc5de8a7dfde4b451cb9138df76fcab8adf917bf5261bc9e2736aab73cd8d19e",
-                                         @"5912f286cc9c1c86c8bc7cf97650f7b17629a085f951c30bdbd1aae5b79bc417",
-                                         @"2c341c8badd76908aba636ee87911886417f5e506c7a0d3b556055eb4c21b6a1",
-                                         @"894d469cbafc1b15e345d32815f73dbd21e73980b5362c52d7513a04466f2bbf",
-                                         @"6067d7e815f0e14435c45775ae230736a16502fcbf0c42ba55eb0f384c1fb058",
-                                         @"6b8e569016e188ebd5908edc5f3ede1fc364bf55398717eaedfa30f0c6cf8b1d",
-                                         @"dd7b6adf37b728eb8985fff094b63f92c0a07f49f60edb629b1ff87a69a95080",
-                                         @"c341516a6e4ed54d03f2ca6e946d2a2f53dcf624c1ee1822d743c3f4d85745d6",
-                                         @"ebd859627703e030150beb7f1e080ee3742d48d8387604aadf53460debb9c2c8",
-                                         @"4f87e5bd3e24b87b6894ee59e5f42f3427f7ae03106fc83c8269db0f0c49aa1c"];
-    
-    NSMutableArray * verifySMLEHashes = [NSMutableArray array];
-    
-    for (NSString * stringHash in verifyStringSMLEHashes) {
-        [verifySMLEHashes addObject:stringHash.hexToData];
-    }
-    
-    XCTAssertEqualObjects(simplifiedMasternodeListHashes,verifySMLEHashes,
-                          @"SMLE transaction hashes");
-    
-    XCTAssertEqualObjects([NSData merkleRootFromHashes:simplifiedMasternodeListHashes],[NSData dataWithUInt256:coinbaseTransaction.merkleRootMNList],
-                          @"MerkleRootEqual");
-    
-    
-    XCTAssertEqualObjects([NSData merkleRootFromHashes:simplifiedMasternodeListHashes],@"6c45528d7b8d4e7a33614a1c3806f4faf5c463f0b313aa0ece1ce12c34154a44".hexToData,
-                          @"MerkleRootEqual Value");
-    
-    //we need to check that the coinbase is in the transaction hashes we got back
-    UInt256 coinbaseHash = coinbaseTransaction.txHash;
-    BOOL foundCoinbase = FALSE;
-    for (int i = 0;i<merkleHashes.length;i+=32) {
-        UInt256 randomTransactionHash = [merkleHashes UInt256AtOffset:i];
-        if (uint256_eq(coinbaseHash, randomTransactionHash)) {
-            foundCoinbase = TRUE;
-            break;
-        }
-    }
-    
-    XCTAssert(foundCoinbase,@"The coinbase was not part of provided hashes");
-    
-    //we need to check that the merkle tree is correct
-    NSData * merkleRoot = @"ef45ec04d27938efb81184f97ceab908dbb66245c2dbffdf97b82b92bcddbd6e".hexToData;
-    DSMerkleBlock * coinbaseVerificationMerkleBlock = [[DSMerkleBlock alloc] initWithBlockHash:blockHash merkleRoot:[merkleRoot UInt256] totalTransactions:totalTransactions hashes:merkleHashes flags:merkleFlags];
-    
-    XCTAssert([coinbaseVerificationMerkleBlock isMerkleTreeValid],@"Coinbase is not part of the valid merkle tree");
-}
-
 
 -(void)testMainnetMasternodeSaving {
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -786,6 +607,14 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"MNL_0_122064" ofType:@"dat"];
     
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    }];
+    
     NSData * message = [NSData dataWithContentsOfFile:filePath];
     
     
@@ -810,7 +639,7 @@
         return nil; //no known previous lists
     } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
         return UINT32_MAX;
-    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList119064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+    } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash122064]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
         XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash122064]);
@@ -820,6 +649,9 @@
         if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
             //yay this is the correct masternode list verified deterministically for the given block
             
+            NSError * error = nil;
+            
+            [DSMasternodeManager saveMasternodeList:masternodeList122064 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
             
             NSBundle *bundle = [NSBundle bundleForClass:[self class]];
             NSString *filePath = [bundle pathForResource:@"MNL_122064_122088" ofType:@"dat"];
@@ -838,38 +670,109 @@
             
             NSLog(@"baseBlockHash %@ (%u) blockHash %@ (%u)",uint256_reverse_hex(baseBlockHash), [chain heightForBlockHash:baseBlockHash], uint256_reverse_hex(blockHash),[chain heightForBlockHash:blockHash]);
             
-            XCTAssert(uint256_eq(blockHash122064, baseBlockHash),@"Base block hash should be from block 119064");
+            XCTAssert(uint256_eq(blockHash122064, baseBlockHash),@"Base block hash should be from block 122064");
             
             
-            [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList119064 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
+            [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList122064 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
                 return nil; //no known previous lists
             } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
                 return UINT32_MAX;
-            } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull blockHash119200, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
+            } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122088, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
                 XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
                 //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
                 XCTAssert(rootMNListValid,@"rootMNListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
                 XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
                 XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash]);
                 
-//                //BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
-//                XCTAssert(equal, @"MNList merkle root should be valid");
-//
-//                NSArray * localProTxHashes = [localMasternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
-//                localProTxHashes = [localProTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-//                    UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
-//                    UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
-//                    return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
-//                }];
-//
-//                NSArray * proTxHashes = [masternodeList.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
-//                proTxHashes = [proTxHashes sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-//                    UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
-//                    UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
-//                    return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
-//                }];
+                //BOOL equal = uint256_eq(masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
+                //XCTAssert(equal, @"MNList merkle root should be valid");
+            
+                NSError * error = nil;
                 
-//                XCTAssertEqual(localProTxHashes, proTxHashes);
+                [DSMasternodeManager saveMasternodeList:masternodeList122088 toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
+                
+                [chain.chainManager.masternodeManager reloadMasternodeLists];
+                
+                DSMasternodeList * reloadedMasternodeList122088 = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeList122088.blockHash];
+                
+                DSMasternodeList * reloadedMasternodeList122064 = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeList122064.blockHash];
+                
+                DSSimplifiedMasternodeEntry * originalEntryFrom122088 = [[masternodeList122088 simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash] objectForKey:@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f".hexToData.reverse]; //this is the entry that changed
+                
+                DSSimplifiedMasternodeEntry * originalEntryFrom122064 = [[masternodeList122064 simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash] objectForKey:@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f".hexToData.reverse]; //this is the entry that changed
+                
+                //They are currently not equal
+                XCTAssertNotEqual(originalEntryFrom122088,originalEntryFrom122064,@"These should NOT be the same object (unless we changed how this worked)");
+            XCTAssertEqualObjects(originalEntryFrom122088.previousSimplifiedMasternodeEntryHashes,@{@"8f14597a7f7cee77ac97a7122bdca21fc84ae5e66db359148ec2ee0700000000".hexToData:@"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543".hexToData},@"This is what it used to be");
+                
+                XCTAssertEqualObjects(uint256_hex(originalEntryFrom122064.simplifiedMasternodeEntryHash), @"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543",@"The hash of the sme should be this");
+                
+                XCTAssertEqualObjects(uint256_hex(originalEntryFrom122088.simplifiedMasternodeEntryHash), @"e001033590361b172da9cb352f9736dbe9453c6a389068f7b76d71f9f3044d3b",@"The hash changed to this");
+                
+                DSSimplifiedMasternodeEntry * reloadedEntryFrom122064 = [[reloadedMasternodeList122064 simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash] objectForKey:@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f".hexToData.reverse]; //this is the entry that changed
+                
+                DSSimplifiedMasternodeEntry * reloadedEntryFrom122088 = [[reloadedMasternodeList122088 simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash] objectForKey:@"1bde434d4f68064d3108a09443ea45b4a6c6ac1f537a533efc36878cef2eb10f".hexToData.reverse]; //this is the entry that changed
+                
+                XCTAssertNotEqual(reloadedEntryFrom122088,reloadedEntryFrom122064,@"These should be the same object");
+                
+                XCTAssertEqualObjects(uint256_hex(reloadedEntryFrom122064.simplifiedMasternodeEntryHash), @"e001033590361b172da9cb352f9736dbe9453c6a389068f7b76d71f9f3044d3b",@"The hash should remain on this");
+                
+                XCTAssertEqualObjects(reloadedEntryFrom122064.previousSimplifiedMasternodeEntryHashes, @{@"8f14597a7f7cee77ac97a7122bdca21fc84ae5e66db359148ec2ee0700000000".hexToData: @"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543".hexToData}, @"This is what it used to be");
+
+                NSArray * localProTxHashes122088 = [masternodeList122088.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+                localProTxHashes122088 = [localProTxHashes122088 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+                    UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+                    return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+                }];
+
+                NSArray * proTxHashes122088 = [reloadedMasternodeList122088.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+                proTxHashes122088 = [proTxHashes122088 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+                    UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+                    return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+                }];
+                
+                XCTAssertEqualObjects(localProTxHashes122088, proTxHashes122088);
+                
+                NSArray * localProTxHashes122064 = [masternodeList122064.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+                localProTxHashes122064 = [localProTxHashes122064 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+                    UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+                    return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+                }];
+                
+                NSArray * proTxHashes122064 = [reloadedMasternodeList122064.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
+                proTxHashes122064 = [proTxHashes122064 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+                    UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+                    return uint256_sup(hash1, hash2)?NSOrderedDescending:NSOrderedAscending;
+                }];
+                
+                XCTAssertEqualObjects(localProTxHashes122064, proTxHashes122064);
+                
+                NSMutableArray * simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
+                for (NSData * proTxHash in localProTxHashes122064) {
+                    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [reloadedMasternodeList122064.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+                    [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+                }
+                
+                NSMutableArray * reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes = [NSMutableArray array];
+                for (NSData * proTxHash in proTxHashes122064) {
+                    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [reloadedMasternodeList122064.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash objectForKey:proTxHash];
+                    [reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes addObject:[NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash]];
+                }
+                
+               XCTAssertEqualObjects(reloadedMasternodeList122064.providerTxOrderedHashes , masternodeList122064.providerTxOrderedHashes);
+                
+                
+                XCTAssertEqualObjects(reloadedMasternodeList122064.hashesForMerkleRoot , masternodeList122064.hashesForMerkleRoot);
+                
+                XCTAssertEqualObjects(simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes, reloadedSimplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes);
+                XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122088 calculateMasternodeMerkleRoot]),uint256_data([masternodeList122088 calculateMasternodeMerkleRoot]),@"");
+                XCTAssertEqualObjects(uint256_data([reloadedMasternodeList122064 calculateMasternodeMerkleRoot]),uint256_data([masternodeList122064 calculateMasternodeMerkleRoot]),@"");
+                
+                
             }];
         }
     }];

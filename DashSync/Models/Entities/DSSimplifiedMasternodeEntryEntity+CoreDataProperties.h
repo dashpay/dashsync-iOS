@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSObject *previousOperatorBLSPublicKeys;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 @property (nullable, nonatomic, retain) NSData *simplifiedMasternodeEntryHash;
+@property (nullable, nonatomic, retain) NSObject *previousSimplifiedMasternodeEntryHashes;
 @property (nullable, nonatomic, retain) NSOrderedSet<DSAddressEntity *> *addresses;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) NSSet<DSGovernanceVoteEntity *> *governanceVotes;

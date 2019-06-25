@@ -34,6 +34,8 @@
     self.operatorBLSPublicKey = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
     self.isValid = simplifiedMasternodeEntry.isValid;
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
+    self.previousSimplifiedMasternodeEntryHashes = simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes;
+    self.previousOperatorBLSPublicKeys = simplifiedMasternodeEntry.previousOperatorPublicKeys;
 
     DSLocalMasternodeEntity * localMasternode = nil;
     if (localMasternodes) {
@@ -153,7 +155,7 @@
 
 - (DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
     UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig((uint32_t)self.address) } };
-    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:address port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self.previousOperatorBLSPublicKeys copy] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] onChain:self.chain.chain];
+    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:address port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self.previousOperatorBLSPublicKeys copy] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self.previousSimplifiedMasternodeEntryHashes copy] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 
