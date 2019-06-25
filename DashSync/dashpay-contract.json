@@ -1,5 +1,5 @@
 {
-    "name": "DashPayNativePreDemo1",
+    "name": "DashPayNativePreDemo2",
     
     "documents": {
         "profile": {
@@ -10,15 +10,18 @@
                 "unique": true
             }],
             "properties": {
-                "avatarUrl": {
+                "avatarLocation": {
                     "type": "string",
                     "format": "url"
                 },
-                "about": {
+                "aboutMe": {
+                    "type": "string"
+                },
+                "displayName": {
                     "type": "string"
                 }
             },
-            "required": ["avatarUrl", "about"],
+            "required": ["avatarLocation", "aboutMe", "displayName"],
             "additionalProperties": false
         },
         "contact": {
