@@ -38,7 +38,7 @@
     
     NSData * confirmedHashData = uint256_data(simplifiedMasternodeEntry.confirmedHash);
     
-    if ([self.confirmedHash isEqualToData:confirmedHashData]) {
+    if (![self.confirmedHash isEqualToData:confirmedHashData]) {
         self.confirmedHash = confirmedHashData;
         DSDLog(@"changing confirmedHashData to %@",confirmedHashData.hexString);
     }
