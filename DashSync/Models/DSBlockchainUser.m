@@ -440,8 +440,9 @@
     dpp.contract = contract;
     NSError *error = nil;
     DPJSONObject *data = @{
-                           @"about" :aboutme,
-                           @"avatarUrl" : avatarURLString,
+                           @"aboutMe" :aboutme,
+                           @"avatarLocation" : avatarURLString,
+                           @"displayName" : self.username,
                            };
     DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
     if (self.ownContact) {
@@ -546,8 +547,8 @@
                 
                 contact.documentScopeID = scopeID;
                 contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
-                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-                contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                contact.avatarPath = [contactDictionary objectForKey:@"avatarLocation"];
+                contact.publicMessage = [contactDictionary objectForKey:@"aboutMe"];
                 contact.associatedBlockchainUserRegistrationHash = uint256_data(registrationTransactionHash);
                 contact.chain = self.wallet.chain.chainEntity;
                 if (uint256_eq(registrationTransactionHash, self.registrationTransactionHash) && !self.ownContact) {
