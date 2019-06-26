@@ -1054,9 +1054,18 @@
 }
 
 -(void)removeOldSimplifiedMasternodeEntries {
-    if (self.currentMasternodeList) return;
+    //this serves both for cleanup, but also for initial migration
     [self.managedObjectContext performBlockAndWait:^{
-        
+        [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
+        NSArray<DSSimplifiedMasternodeEntryEntity *>* simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"masternodeLists.@count == 0"];
+        BOOL deletedSomething = FALSE;
+        for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in [simplifiedMasternodeEntryEntities copy]) {
+            [self.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
+            deletedSomething = TRUE;
+        }
+        if (deletedSomething) {
+            [DSSimplifiedMasternodeEntryEntity saveContext];
+        }
     }];
 }
 
