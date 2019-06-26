@@ -34,11 +34,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(instancetype)masternodeListAtBlockHash:(UInt256)blockHash atBlockHeight:(uint32_t)blockHeight fromBaseMasternodeList:(DSMasternodeList*)baseMasternodeList addedMasternodes:(NSDictionary*)addedMasternodes removedMasternodeHashes:(NSArray*)removedMasternodeHashes modifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums removedQuorumHashesByType:(NSDictionary*)removedQuorumHashesByType onChain:(DSChain*)chain;
 
+-(NSDictionary <NSData*,id>*)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier;
+
+-(NSArray*)scoresForQuorumModifier:(UInt256)quorumModifier;
+
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
 
 -(BOOL)validateQuorumsWithMasternodeLists:(NSDictionary*)masternodeLists;
 
 -(UInt256)calculateMasternodeMerkleRoot;
+
+-(NSDictionary*)compare:(DSMasternodeList*)other;
 
 @end
 

@@ -223,7 +223,7 @@
     uint32_t i = 0;
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
         if ([self.signersBitset bitIsTrueAtIndex:i]) {
-            DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:masternodeEntry.operatorPublicKey onChain:self.chain];
+            DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHash:masternodeList.blockHash] onChain:self.chain];
             [publicKeyArray addObject:masternodePublicKey];
         }
         i++;
@@ -231,13 +231,19 @@
     
     BOOL allCommitmentAggregatedSignatureValidated = [DSBLSKey verifySecureAggregated:self.commitmentHash signature:self.allCommitmentAggregatedSignature withPublicKeys:publicKeyArray];
     
-    if (!allCommitmentAggregatedSignatureValidated) return NO;
+    if (!allCommitmentAggregatedSignatureValidated) {
+        DSDLog(@"Issue with allCommitmentAggregatedSignatureValidated for quorum at height %u",masternodeList.height);
+        return NO;
+    }
     
     //The sig must validate against the commitmentHash and all public keys determined by the signers bitvector. This is an aggregated BLS signature verification.
     
     BOOL quorumSignatureValidated = [DSBLSKey verify:self.commitmentHash signature:self.quorumThresholdSignature withPublicKey:self.quorumPublicKey];
     
-    if (!quorumSignatureValidated) return NO;
+    if (!quorumSignatureValidated) {
+        DSDLog(@"Issue with quorumSignatureValidated");
+        return NO;
+    }
     
     self.verified = YES;
     

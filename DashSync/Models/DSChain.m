@@ -1304,6 +1304,11 @@ static dispatch_once_t devnetToken = 0;
         return checkpoint.height;
     }
     
+    DSMerkleBlock * block = [self.blocks objectForKey:uint256_obj(blockhash)];
+    if (block && (block.height != UINT32_MAX)) {
+        return block.height;
+    }
+    
     DSMerkleBlock *b = self.lastBlock;
     
     while (b && b.height > 0) {

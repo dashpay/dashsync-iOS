@@ -745,8 +745,8 @@
 
 #define LOG_MASTERNODE_DIFF 0 && DEBUG
 #define FETCH_NEEDED_QUORUMS (1 || !DEBUG)
-#define KEEP_OLD_QUORUMS (0 && DEBUG)
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define KEEP_OLD_QUORUMS (1 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
@@ -911,7 +911,7 @@
 
 +(void)saveMasternodeList:(DSMasternodeList*)masternodeList toChain:(DSChain*)chain havingModifiedMasternodes:(NSDictionary*)modifiedMasternodes addedQuorums:(NSDictionary*)addedQuorums inContext:(NSManagedObjectContext*)context error:(NSError**)error {
     __block BOOL hasError = NO;
-    [context performBlockAndWait:^{
+    [context performBlock:^{
         //masternodes
         [DSSimplifiedMasternodeEntryEntity setContext:context];
         [DSChainEntity setContext:context];
@@ -936,11 +936,10 @@
             uint32_t i = 0;
             
             NSArray<DSSimplifiedMasternodeEntryEntity*> * knownSimplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"chain == %@",chain.chainEntity];
-            NSMutableArray * indexedEntities = [NSMutableArray array];
+            NSMutableDictionary * indexedKnownSimplifiedMasternodeEntryEntities = [NSMutableDictionary dictionary];
             for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in knownSimplifiedMasternodeEntryEntities) {
-                [indexedEntities addObject:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
+                [indexedKnownSimplifiedMasternodeEntryEntities setObject:simplifiedMasternodeEntryEntity forKey:simplifiedMasternodeEntryEntity.providerRegistrationTransactionHash];
             }
-            NSDictionary * indexedKnownSimplifiedMasternodeEntryEntities = [NSDictionary dictionaryWithObjects:knownSimplifiedMasternodeEntryEntities forKeys:indexedEntities];
             
             NSMutableSet <NSString*> * votingAddressStrings = [NSMutableSet set];
             NSMutableSet <NSString*> * operatorAddressStrings = [NSMutableSet set];
@@ -971,6 +970,7 @@
             for (NSData * simplifiedMasternodeEntryHash in modifiedMasternodes) {
                 DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = modifiedMasternodes[simplifiedMasternodeEntryHash];
                 DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity = [indexedKnownSimplifiedMasternodeEntryEntities objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+                NSAssert(simplifiedMasternodeEntryEntity, @"this must be present");
                 NSSet * futureMasternodeLists = [simplifiedMasternodeEntryEntity.masternodeLists objectsPassingTest:^BOOL(DSMasternodeListEntity * _Nonnull obj, BOOL * _Nonnull stop) {
                     return (obj.block.height > masternodeList.height);
                 }];
@@ -991,6 +991,8 @@
             chainEntity.baseBlockHash = [NSData dataWithUInt256:masternodeList.blockHash];
             
             NSError * error = [DSSimplifiedMasternodeEntryEntity saveContext];
+            
+            DSDLog(@"Finished saving MNL at height %u",masternodeList.height);
             hasError = !!error;
         }
         if (hasError) {

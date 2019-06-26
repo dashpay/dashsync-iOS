@@ -21,6 +21,7 @@
 @dynamic operatorBLSPublicKey;
 @dynamic port;
 @dynamic previousOperatorBLSPublicKeys;
+@dynamic previousValidity;
 @dynamic providerRegistrationTransactionHash;
 @dynamic simplifiedMasternodeEntryHash;
 @dynamic addresses;
@@ -30,5 +31,6 @@
 @dynamic masternodeLists;
 @dynamic transactionLockVotes;
 @dynamic previousSimplifiedMasternodeEntryHashes;
+@dynamic ipv6Address;
 
 @end

@@ -116,8 +116,7 @@ inline static int ceil_log2(int x)
         DSSimplifiedMasternodeEntry * oldMasternodeEntry = tentativeMasternodeList[data];
         //the masternode has changed
         DSSimplifiedMasternodeEntry * modifiedMasternode = modifiedMasternodes[data];
-        [modifiedMasternode updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:oldMasternodeEntry atBlockHash:blockHash];
-        [modifiedMasternode updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:oldMasternodeEntry atBlockHash:blockHash];
+        [modifiedMasternode keepInfoOfPreviousEntryVersion:oldMasternodeEntry atBlockHash:blockHash];
         [tentativeMasternodeList setObject:modifiedMasternode forKey:data];
     }
     
@@ -231,7 +230,7 @@ inline static int ceil_log2(int x)
     return data.SHA256;
 }
 
--(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
+-(NSDictionary <NSData*,id>*)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier {
     NSMutableDictionary <NSData*,id>* scoreDictionary = [NSMutableDictionary dictionary];
     for (NSData * registrationTransactionHash in self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[registrationTransactionHash];
@@ -239,6 +238,21 @@ inline static int ceil_log2(int x)
         if (uint256_is_zero(score)) continue;
         scoreDictionary[[NSData dataWithUInt256:score]] = simplifiedMasternodeEntry;
     }
+    return scoreDictionary;
+}
+
+-(NSArray*)scoresForQuorumModifier:(UInt256)quorumModifier {
+    NSDictionary <NSData*,id>* scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier];
+    NSArray * scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
+        UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
+        return uint256_sup(hash1, hash2)?NSOrderedAscending:NSOrderedDescending;
+    }];
+    return scores;
+}
+
+-(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumModifier quorumCount:(NSUInteger)quorumCount {
+    NSDictionary <NSData*,id>* scoreDictionary = [self scoreDictionaryForQuorumModifier:quorumModifier];
     NSArray * scores = [[scoreDictionary allKeys] sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         UInt256 hash1 = *(UInt256*)((NSData*)obj1).bytes;
         UInt256 hash2 = *(UInt256*)((NSData*)obj2).bytes;
@@ -249,7 +263,7 @@ inline static int ceil_log2(int x)
     for (int i = 0; i<maxCount;i++) {
         NSData * score = [scores objectAtIndex:i];
         DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
-        if (masternode.isValid) {
+        if ([masternode isValidAtBlockHash:self.blockHash]) {
             [masternodes addObject:masternode];
         } else {
             maxCount++;
@@ -292,7 +306,7 @@ inline static int ceil_log2(int x)
 }
 
 -(uint32_t)height {
-    if (!self.knownHeight) {
+    if (!self.knownHeight || self.knownHeight == UINT32_MAX) {
         self.knownHeight = [self.chain heightForBlockHash:self.blockHash];
     }
     return self.knownHeight;
@@ -339,6 +353,19 @@ inline static int ceil_log2(int x)
 
 -(NSString*)debugDescription {
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%u}",self.height]];
+}
+
+-(NSDictionary*)compare:(DSMasternodeList*)other {
+    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+    for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        DSSimplifiedMasternodeEntry * theirEntry = other.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        NSDictionary * entryComparison = [ourEntry compare:theirEntry ourBlockHash:self.blockHash theirBlockHash:other.blockHash];
+        if (entryComparison.count) {
+            [dictionary setObject:entryComparison forKey:data];
+        }
+    }
+    return dictionary;
 }
 
 @end

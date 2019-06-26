@@ -19,9 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint16_t port;
 @property (nonatomic, assign) BOOL isValid;
 @property (nullable, nonatomic, retain) NSData *confirmedHash;
+@property (nullable, nonatomic, retain) NSData *ipv6Address;
 @property (nullable, nonatomic, retain) NSData *keyIDVoting;
 @property (nullable, nonatomic, retain) NSData *operatorBLSPublicKey;
 @property (nullable, nonatomic, retain) NSObject *previousOperatorBLSPublicKeys;
+@property (nullable, nonatomic, retain) NSObject *previousValidity;
 @property (nullable, nonatomic, retain) NSData *providerRegistrationTransactionHash;
 @property (nullable, nonatomic, retain) NSData *simplifiedMasternodeEntryHash;
 @property (nullable, nonatomic, retain) NSObject *previousSimplifiedMasternodeEntryHashes;
