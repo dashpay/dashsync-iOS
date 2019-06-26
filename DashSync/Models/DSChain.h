@@ -94,6 +94,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) uint32_t timestamp;
 @property (nonatomic, assign) uint32_t target;
 @property (nonatomic, strong) NSString * masternodeListName;
+@property (nonatomic, assign) UInt256 merkleRoot;
 
 @end
 
