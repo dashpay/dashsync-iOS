@@ -40,6 +40,15 @@
 }
 
 -(NSPredicate*)searchPredicate {
+    if (!self.masternodeList) {
+        return [self mainSearchPredicate];
+    } else {
+        NSPredicate * masternodeListPredicate = [NSPredicate predicateWithFormat:@"ANY masternodeLists.block.height == %@",@(self.masternodeList.height)];
+        return [NSCompoundPredicate andPredicateWithSubpredicates:@[[self mainSearchPredicate],masternodeListPredicate]];
+    }
+}
+
+-(NSPredicate*)mainSearchPredicate {
     // Get all shapeshifts that have been received by shapeshift.io or all shapeshifts that have no deposits but where we can verify a transaction has been pushed on the blockchain
     if (self.searchString && ![self.searchString isEqualToString:@""]) {
         if ([self.searchString isEqualToString:@"0"] || [self.searchString longLongValue]) {

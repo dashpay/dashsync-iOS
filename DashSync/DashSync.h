@@ -63,6 +63,7 @@
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntry.h"
+#import "DSMasternodeList.h"
 #import "DSLocalMasternode.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 
@@ -82,6 +83,11 @@
 #import "DSBlockchainUserRegistrationTransaction.h"
 #import "DSBlockchainUserResetTransaction.h"
 #import "DSBlockchainUserCloseTransaction.h"
+
+#import "DSMasternodeList.h"
+#import "DSMasternodeListEntity+CoreDataProperties.h"
+#import "DSQuorumEntryEntity+CoreDataProperties.h"
+#import "DSQuorumEntry.h"
 
 #import "DSNetworking.h"
 
@@ -103,16 +109,16 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 + (instancetype)sharedSyncController;
 
--(void)startSyncForChain:(DSChain*)chain;
--(void)stopSyncForChain:(DSChain*)chain;
+-(void)startSyncForChain:(DSChain* _Nonnull)chain;
+-(void)stopSyncForChain:(DSChain* _Nonnull)chain;
 -(void)stopSyncAllChains;
 
--(void)wipePeerDataForChain:(DSChain*)chain;
--(void)wipeBlockchainDataForChain:(DSChain*)chain;
--(void)wipeGovernanceDataForChain:(DSChain*)chain;
--(void)wipeMasternodeDataForChain:(DSChain*)chain;
--(void)wipeSporkDataForChain:(DSChain*)chain;
--(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication;
+-(void)wipePeerDataForChain:(DSChain* _Nonnull)chain;
+-(void)wipeBlockchainDataForChain:(DSChain* _Nonnull)chain;
+-(void)wipeGovernanceDataForChain:(DSChain* _Nonnull)chain;
+-(void)wipeMasternodeDataForChain:(DSChain* _Nonnull)chain;
+-(void)wipeSporkDataForChain:(DSChain* _Nonnull)chain;
+-(void)wipeWalletDataForChain:(DSChain* _Nonnull)chain forceReauthentication:(BOOL)forceReauthentication;
 
 -(uint64_t)dbSize;
 

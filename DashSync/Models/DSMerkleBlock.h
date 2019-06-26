@@ -31,6 +31,7 @@
 #define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
 #define DGW_PAST_BLOCKS_MIN 24
 #define DGW_PAST_BLOCKS_MAX 24
+#define LLMQ_KEEP_RECENT_BLOCKS (576*4 + 100)
 
 typedef union _UInt256 UInt256;
 

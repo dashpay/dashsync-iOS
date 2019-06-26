@@ -147,6 +147,7 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 
 @interface NSData (Bitcoin)
 
++ (instancetype)dataWithLLMQ:(DSLLMQ)llmq;
 + (instancetype)dataWithUInt768:(UInt768)n;
 + (instancetype)dataWithUInt512:(UInt512)n;
 + (instancetype)dataWithUInt384:(UInt384)n;
@@ -184,8 +185,10 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (UInt512)UInt512;
 - (UInt768)UInt768;
 - (DSUTXO)transactionOutpoint;
+- (DSLLMQ)llmq;
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber * _Nullable * _Nullable)length;
 - (UInt256)hashAtOffset:(NSUInteger)offset;
+- (DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset;
 - (NSString * _Nullable)stringAtOffset:(NSUInteger)offset length:(NSNumber * _Nullable * _Nullable)length;
 - (NSData *)dataAtOffset:(NSUInteger)offset length:(NSNumber * _Nullable * _Nullable)length;
 
@@ -201,6 +204,10 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (NSString*)addressFromHash160DataForChain:(DSChain*)chain;
 
 + (NSData*)scriptPubKeyForAddress:(NSString*)address forChain:(DSChain*)chain;
+
+- (uint64_t)trueBitsCount;
+
+- (BOOL)bitIsTrueAtIndex:(uint32_t)index;
 
 @end
 

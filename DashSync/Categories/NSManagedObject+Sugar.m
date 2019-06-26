@@ -30,6 +30,7 @@
 #import <objc/runtime.h>
 #import "DSTransaction.h"
 
+static const char *_mainContextKey = "mainContextKey";
 static const char *_contextKey = "contextKey";
 static const char *_storeURLKey = "storeURLKey";
 
@@ -270,10 +271,7 @@ static NSUInteger _fetchBatchSize = 100;
     return storeURL;
 }
 
-// returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
-// it to the persistent store coordinator for the application
-+ (NSManagedObjectContext *)context
-{
++(void)createContexts {
     static dispatch_once_t onceToken = 0;
     
     dispatch_once(&onceToken, ^{
@@ -284,12 +282,12 @@ static NSUInteger _fetchBatchSize = 100;
         
         NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
         NSPersistentStoreCoordinator *coordinator =
-            [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
         NSError *error = nil;
         NSURL * storeURL = [self storeURL];
         if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
-             options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
-                       NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
+                                            options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
+                                                      NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
             DSDLog(@"%s: %@", __func__, error);
 #if DEBUG
             abort();
@@ -300,31 +298,53 @@ static NSUInteger _fetchBatchSize = 100;
             }
             
             if ([coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL
-                 options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
-                           NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
+                                                options:@{NSMigratePersistentStoresAutomaticallyOption:@(YES),
+                                                          NSInferMappingModelAutomaticallyOption:@(YES)} error:&error] == nil) {
                 DSDLog(@"%s: %@", __func__, error);
                 abort(); // Forsooth, I am slain!
             }
 #endif
         }
-
+        
         if (coordinator) {
-            NSManagedObjectContext *moc = nil;
-
-            moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-            moc.persistentStoreCoordinator = coordinator;
-
+            
+            NSManagedObjectContext *objectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+            objectContext.persistentStoreCoordinator = coordinator;
+            
+            [NSManagedObject setContext:objectContext];
+            
+            NSManagedObjectContext *mainObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+            mainObjectContext.parentContext = objectContext;
+            
             objc_setAssociatedObject([NSManagedObject class], &_storeURLKey, storeURL,
                                      OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            [NSManagedObject setContext:moc];
+            [NSManagedObject setMainContext:mainObjectContext];
+            
 
+            [[NSNotificationCenter defaultCenter]
+             addObserverForName:NSManagedObjectContextDidSaveNotification
+             object:objectContext
+             queue:nil
+             usingBlock:^(NSNotification * _Nonnull note) {
+                 [mainObjectContext performBlock:^{
+                     [mainObjectContext mergeChangesFromContextDidSaveNotification:note];
+                 }];
+            }];
+            
             // this will save changes to the persistent store before the application terminates
             [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillTerminateNotification object:nil
-             queue:nil usingBlock:^(NSNotification *note) {
-                [self saveContext];
-            }];
+                                                               queue:nil usingBlock:^(NSNotification *note) {
+                                                                   [self saveContext];
+                                                               }];
         }
     });
+}
+
+// returns the managed object context for the application, or if the context doesn't already exist, creates it and binds
+// it to the persistent store coordinator for the application
++ (NSManagedObjectContext *)context
+{
+    [self createContexts];
 
     NSManagedObjectContext *context = objc_getAssociatedObject(self, &_contextKey);
 
@@ -336,6 +356,20 @@ static NSUInteger _fetchBatchSize = 100;
     return (context == (id)[NSNull null]) ? nil : context;
 }
 
++ (NSManagedObjectContext *)mainContext
+{
+    [self createContexts];
+    
+    NSManagedObjectContext *context = objc_getAssociatedObject(self, &_mainContextKey);
+    
+    if (! context && self != [NSManagedObject class]) {
+        context = [NSManagedObject mainContext];
+        [self setMainContext:context];
+    }
+    
+    return (context == (id)[NSNull null]) ? nil : context;
+}
+
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
 + (void)setContext:(NSManagedObjectContext *)context
 {
@@ -343,15 +377,21 @@ static NSUInteger _fetchBatchSize = 100;
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-// persists changes (this is called automatically for the main context when the app terminates)
-+ (void)saveContext
+// sets a different main context for NSManagedObject+Sugar methods to use for this type of entity
++ (void)setMainContext:(NSManagedObjectContext *)context
 {
-    if (! self.context.hasChanges) return;
-    
+    objc_setAssociatedObject(self, &_mainContextKey, (context ? context : [NSNull null]),
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+// persists changes (this is called automatically for the main context when the app terminates)
++ (NSError*)saveContext
+{
+    if (! self.context.hasChanges) return nil;
+    __block NSError * error = nil;
     [self.context performBlockAndWait:^{
         if (self.context.hasChanges) {
             @autoreleasepool {
-                NSError *error = nil;
                 NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
 
                 // this seems to fix unreleased temporary object IDs
@@ -368,6 +408,38 @@ static NSUInteger _fetchBatchSize = 100;
             }
         }
     }];
+    
+    return error;
+}
+
+// persists changes (this is called automatically for the main context when the app terminates)
++ (NSError*)saveMainContext
+{
+    if (! self.mainContext.hasChanges) return nil;
+    __block NSError * error = nil;
+    [self.mainContext performBlockAndWait:^{
+        if (self.mainContext.hasChanges) {
+            @autoreleasepool {
+                NSUInteger taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{}];
+                
+                // this seems to fix unreleased temporary object IDs
+                [self.mainContext obtainPermanentIDsForObjects:self.mainContext.registeredObjects.allObjects error:nil];
+                
+                if (! [self.mainContext save:&error]) { // persist changes
+                    DSDLog(@"%s: %@", __func__, error);
+#if DEBUG
+                    abort();
+#endif
+                }
+                
+                [self saveContext];
+                
+                [[UIApplication sharedApplication] endBackgroundTask:taskId];
+            }
+        }
+    }];
+    
+    return error;
 }
 
 // MARK: - entity methods

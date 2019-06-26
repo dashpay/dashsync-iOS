@@ -25,7 +25,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSChainEntity,DSMerkleBlock;
+@class DSChainEntity, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

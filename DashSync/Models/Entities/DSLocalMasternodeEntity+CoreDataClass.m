@@ -88,6 +88,15 @@
     }
 }
 
++(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)findLocalMasternodesAndIndexForProviderRegistrationHashes:(NSSet<NSData*>*)providerRegistrationHashes {
+    NSArray * localMasternodeEntities = [self objectsMatching:@"(providerRegistrationTransaction.transactionHash.txHash IN %@)",providerRegistrationHashes];
+    NSMutableArray * indexedEntities = [NSMutableArray array];
+    for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {
+        [indexedEntities addObject:localMasternodeEntity.providerRegistrationTransaction.transactionHash.txHash];
+    }
+    return [NSDictionary dictionaryWithObjects:localMasternodeEntities forKeys:indexedEntities];
+}
+
 + (void)deleteAllOnChain:(DSChainEntity*)chainEntity {
     NSArray * localMasternodeEntities = [self objectsMatching:@"(providerRegistrationTransaction.transactionHash.chain == %@)",chainEntity];
     for (DSLocalMasternodeEntity * localMasternodeEntity in localMasternodeEntities) {

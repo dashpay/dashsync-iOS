@@ -36,17 +36,17 @@ NS_ASSUME_NONNULL_BEGIN
 #define TESTNET_DAPI_STANDARD_PORT 3000
 #define DEVNET_DAPI_STANDARD_PORT 3000
 
-#define PROTOCOL_VERSION_MAINNET   70213
-#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70213
+#define PROTOCOL_VERSION_MAINNET   70215
+#define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70214
 
-#define PROTOCOL_VERSION_TESTNET   70213
-#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET  70213
+#define PROTOCOL_VERSION_TESTNET   70215
+#define DEFAULT_MIN_PROTOCOL_VERSION_TESTNET  70214
 
-#define PROTOCOL_VERSION_DEVNET   70213
-#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET  70212
+#define PROTOCOL_VERSION_DEVNET   70215
+#define DEFAULT_MIN_PROTOCOL_VERSION_DEVNET  70213
 
-#define MAX_VALID_MIN_PROTOCOL_VERSION 70214
-#define MIN_VALID_MIN_PROTOCOL_VERSION 70212
+#define MAX_VALID_MIN_PROTOCOL_VERSION 70215
+#define MIN_VALID_MIN_PROTOCOL_VERSION 70213
 
 #define DASH_MAGIC_NUMBER_TESTNET 0xffcae2ce
 #define DASH_MAGIC_NUMBER_MAINNET 0xbd6b0cbf
@@ -93,6 +93,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) UInt256 checkpointHash;
 @property (nonatomic, assign) uint32_t timestamp;
 @property (nonatomic, assign) uint32_t target;
+@property (nonatomic, strong) NSString * masternodeListName;
+@property (nonatomic, assign) UInt256 merkleRoot;
 
 @end
 
@@ -224,11 +226,23 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 //This removes all blockchain information from the chain's wallets and derivation paths
 - (void)wipeBlockchainInfo;
 
-- (void)wipeMasternodes;
+- (void)wipeMasternodesInContext:(NSManagedObjectContext*)context;
 
 - (DSBloomFilter*)bloomFilterWithFalsePositiveRate:(double)falsePositiveRate withTweak:(uint32_t)tweak;
 
 - (uint32_t)heightForBlockHash:(UInt256)blockhash;
+
+- (DSCheckpoint* _Nullable)lastCheckpointWithMasternodeList;
+
+- (DSCheckpoint* _Nullable)checkpointForBlockHash:(UInt256)blockHash;
+
+- (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
+
+- (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
+
+- (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash;
+
+- (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
 - (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 

@@ -345,14 +345,21 @@ static NSString *dateFormat(NSString *template)
         cell.amountLabel.textColor = [UIColor grayColor];
         cell.remainingAmountLabel.text = cell.remainingFiatAmountLabel.text = nil;
     }
-    else if (confirms == 0 && ! [account transactionIsVerified:tx]) {
+    else if (confirms == 0 && ! [account transactionIsVerified:tx] && !tx.instantSendReceived) {
         cell.confirmationsLabel.text = NSLocalizedString(@"unverified", nil);
     }
     else if (confirms < 6) {
-        if (confirms == 0) cell.confirmationsLabel.text = NSLocalizedString(@"0 confirmations", nil);
+        if (tx.instantSendReceived) {
+            cell.confirmationsLabel.text = nil;
+            cell.confirmationsLabel.hidden = YES;
+            cell.directionLabel.hidden = NO;
+        } else {
+            if (confirms == 0) cell.confirmationsLabel.text = NSLocalizedString(@"0 confirmations", nil);
         else if (confirms == 1) cell.confirmationsLabel.text = NSLocalizedString(@"1 confirmation", nil);
         else cell.confirmationsLabel.text = [NSString stringWithFormat:NSLocalizedString(@"%d confirmations", nil),
                                              (int)confirms];
+        }
+        
     }
     else {
         cell.confirmationsLabel.text = nil;

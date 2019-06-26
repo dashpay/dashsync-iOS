@@ -45,6 +45,7 @@
 #import "DSPriceManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionLockVote.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSSpecialTransactionsWalletHolder.h"
 #import "NSString+Dash.h"
@@ -56,7 +57,7 @@
 
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
-@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary;
+@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary; //v13 and before
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
@@ -65,6 +66,8 @@
 @property (nonatomic, readonly) DSPeerManager * peerManager;
 @property (nonatomic, readonly) DSChainManager * chainManager;
 @property (nonatomic, strong) NSMutableArray * removeUnrelayedTransactionsLocalRequests;
+@property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForQuorums;
+@property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForTransactions;
 
 @end
 
@@ -81,6 +84,8 @@
     self.nonFalsePositiveTransactions = [NSMutableSet set];
     self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
+    self.instantSendLocksWaitingForQuorums = [NSMutableDictionary dictionary];
+    self.instantSendLocksWaitingForTransactions = [NSMutableDictionary dictionary];
     [self recreatePublishedTransactionList];
     return self;
 }
@@ -171,7 +176,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:nil];
                 }
             }];
         }
@@ -183,6 +188,9 @@
     for (DSWallet * wallet in self.chain.wallets) {
         for (DSTransaction *tx in wallet.allTransactions) { // find TXOs spent within the last 100 blocks
             [self addTransactionToPublishList:tx]; // also populate the tx publish list
+            if (tx.hasUnverifiedInstantSendLock) {
+                [self.instantSendLocksWaitingForQuorums setObject:tx.instantSendLockAwaitingProcessing forKey:uint256_data(tx.txHash)];
+            }
         }
     }
 }
@@ -898,6 +906,14 @@
         [self addTransactionToPublishList:transaction]; // add valid send tx to mempool
     }
     
+    DSInstantSendTransactionLock * transactionLockReceivedEarlier = [self.instantSendLocksWaitingForTransactions objectForKey:uint256_data(transaction.txHash)];
+    
+    if (transactionLockReceivedEarlier) {
+        [self.instantSendLocksWaitingForTransactions removeObjectForKey:uint256_data(transaction.txHash)];
+        [transaction setInstantSendReceivedWithInstantSendLock:transactionLockReceivedEarlier];
+        [transactionLockReceivedEarlier save];
+    }
+    
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (!syncing && ! [self.txRelays[hash] containsObject:peer])) {
         if (! self.txRelays[hash]) self.txRelays[hash] = [NSMutableSet set];
@@ -1102,6 +1118,65 @@
     
     [self checkLocksForTransactionHash:transactionLockVote.transactionHash forInput:transactionOutput];
 }
+
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockVoteHashes {
+    
+}
+
+- (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
+    //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
+    
+    BOOL verified = [instantSendTransactionLock verifySignature];
+    
+    DSDLog(@"%@:%d relayed instant send transaction lock %@", peer.host, peer.port, uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+    
+    DSTransaction * transaction = nil;
+    DSWallet * wallet = nil;
+    DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+    
+    if (account && transaction) {
+        [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
+        [instantSendTransactionLock save];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        });
+    } else {
+        [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+    }
+    
+    if (!verified && !instantSendTransactionLock.intendedQuorum) {
+        //the quorum hasn't been retrieved yet
+        [self.instantSendLocksWaitingForQuorums setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
+    }
+}
+
+- (void)checkInstantSendLocksWaitingForQuorums {
+    BOOL modifiedTransactionLockStatus = NO;
+    for (NSData * transactionHashData in [self.instantSendLocksWaitingForQuorums copy]) {
+        if (self.instantSendLocksWaitingForTransactions[transactionHashData]) continue;
+        DSInstantSendTransactionLock * instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
+        BOOL verified = [instantSendTransactionLock verifySignature];
+        if (verified) {
+            modifiedTransactionLockStatus = YES;
+            [instantSendTransactionLock save];
+            DSTransaction * transaction = nil;
+            DSWallet * wallet = nil;
+            DSAccount * account = [self.chain accountForTransactionHash:instantSendTransactionLock.transactionHash transaction:&transaction wallet:&wallet];
+            
+            if (account && transaction) {
+                [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
+            }
+            [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
+            
+        }
+    }
+    if (modifiedTransactionLockStatus) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+        });
+    }
+}
+
 
 // MARK: Blocks
 

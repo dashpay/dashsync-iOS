@@ -82,10 +82,10 @@
 @property (nonatomic, strong) NSMutableSet *mutableConnectedPeers, *mutableMisbehavingPeers;
 @property (nonatomic, strong) DSPeer *downloadPeer, *fixedPeer;
 @property (nonatomic, assign) NSUInteger taskId, connectFailures, misbehavingCount, maxConnectCount;
-@property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
 @property (nonatomic, strong) id backgroundObserver, walletAddedObserver;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) DSPeerManagerDesiredState desiredState;
+@property (nonatomic, strong) dispatch_queue_t chainPeerManagerQueue;
 
 @end
 

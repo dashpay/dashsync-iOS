@@ -25,6 +25,9 @@
 		2A3B3EBC20F893F4002962FB /* TextFieldFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B3EA620F893F4002962FB /* TextFieldFormCellModel.m */; };
 		2A3B3EBD20F893F4002962FB /* TextFieldFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B3EA720F893F4002962FB /* TextFieldFormTableViewCell.m */; };
 		2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A3B3EB220F893F4002962FB /* BaseFormCellModel.m */; };
+		2A5C601422BFC65E00C6003F /* ML_at_122088.dat in Resources */ = {isa = PBXBuildFile; fileRef = 2A5C601322BFC65E00C6003F /* ML_at_122088.dat */; };
+		2A5C601722BFE0D100C6003F /* MNL_0_122064.dat in Resources */ = {isa = PBXBuildFile; fileRef = 2A5C601522BFE0D000C6003F /* MNL_0_122064.dat */; };
+		2A5C601822BFE0D100C6003F /* MNL_122064_122088.dat in Resources */ = {isa = PBXBuildFile; fileRef = 2A5C601622BFE0D100C6003F /* MNL_122064_122088.dat */; };
 		2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */; };
 		2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */; };
 		2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7DCCAF20DA080F0097049F /* DSWalletTests.m */; };
@@ -71,10 +74,14 @@
 		FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895A20D3035D00921B89 /* DSProposalTableViewCell.m */; };
 		FB23895E20D36EF600921B89 /* DSClaimMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */; };
 		FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */; };
+		FB3A390E22BE62D900801F39 /* MasternodeListTestnet119064.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */; };
 		FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */; };
 		FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */; };
 		FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */; };
 		FB3FF0AF222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3FF0AE222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m */; };
+		FB44D621228C73FB00354A4D /* Quorums.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB44D620228C73FB00354A4D /* Quorums.storyboard */; };
+		FB44D625228C774800354A4D /* DSQuorumTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */; };
+		FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB44D627228C77E400354A4D /* DSQuorumListViewController.m */; };
 		FB5252F320EE0A34009A2BF1 /* DSProposalCreatorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */; };
 		FB5252F620EE159B009A2BF1 /* DSAccountChooserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F520EE159B009A2BF1 /* DSAccountChooserViewController.m */; };
 		FB5252F920F2308E009A2BF1 /* DSTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB5252F820F2308E009A2BF1 /* DSTransactionsViewController.m */; };
@@ -126,10 +133,49 @@
 		FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D725221DEDE70021764A /* DSMasternodeDetailViewController.m */; };
 		FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */; };
 		FBB5D73C221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */; };
+		FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD696EB2291A1800012FF51 /* DSDataTests.m */; };
 		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
 		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
+		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
+		FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */; };
+		FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */; };
+		FBEA6ED722BE671D00CBCA77 /* DiffListTestnet119064to119200.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */; };
+		FBEA6ED922C0636A00CBCA77 /* MNL_0_122928.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */; };
+		FBEA6EDB22C0637300CBCA77 /* MNL_122928_123000.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */; };
+		FBEA6EDD22C291BB00CBCA77 /* MNL_0_1092888.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EDC22C291BB00CBCA77 /* MNL_0_1092888.dat */; };
+		FBEA6EDF22C291CB00CBCA77 /* MNL_1092888_1092916.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EDE22C291CB00CBCA77 /* MNL_1092888_1092916.dat */; };
+		FBEA6EE122C291D600CBCA77 /* MNL_1092888_1092912.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EE022C291D600CBCA77 /* MNL_1092888_1092912.dat */; };
+		FBEA6EE322C291E400CBCA77 /* MNL_1092916_1092940.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EE222C291E400CBCA77 /* MNL_1092916_1092940.dat */; };
+		FBEA6EE622C2ADD700CBCA77 /* MNL_0_1090944.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EE522C2ADD700CBCA77 /* MNL_0_1090944.dat */; };
+		FBEA6F0222C2AE0A00CBCA77 /* MNL_1092792_1092816.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EE722C2AE0700CBCA77 /* MNL_1092792_1092816.dat */; };
+		FBEA6F0322C2AE0A00CBCA77 /* MNL_1092576_1092600.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EE822C2AE0700CBCA77 /* MNL_1092576_1092600.dat */; };
+		FBEA6F0422C2AE0A00CBCA77 /* MNL_1090944_1091520.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EE922C2AE0700CBCA77 /* MNL_1090944_1091520.dat */; };
+		FBEA6F0522C2AE0A00CBCA77 /* MNL_1092456_1092480.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EEA22C2AE0700CBCA77 /* MNL_1092456_1092480.dat */; };
+		FBEA6F0622C2AE0A00CBCA77 /* MNL_1092552_1092576.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EEB22C2AE0700CBCA77 /* MNL_1092552_1092576.dat */; };
+		FBEA6F0722C2AE0A00CBCA77 /* MNL_1092600_1092624.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EEC22C2AE0700CBCA77 /* MNL_1092600_1092624.dat */; };
+		FBEA6F0822C2AE0A00CBCA77 /* MNL_1092672_1092696.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EED22C2AE0700CBCA77 /* MNL_1092672_1092696.dat */; };
+		FBEA6F0922C2AE0A00CBCA77 /* MNL_1092816_1092840.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EEE22C2AE0700CBCA77 /* MNL_1092816_1092840.dat */; };
+		FBEA6F0A22C2AE0A00CBCA77 /* MNL_1091520_1091808.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EEF22C2AE0700CBCA77 /* MNL_1091520_1091808.dat */; };
+		FBEA6F0B22C2AE0A00CBCA77 /* MNL_1092720_1092744.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF022C2AE0700CBCA77 /* MNL_1092720_1092744.dat */; };
+		FBEA6F0C22C2AE0A00CBCA77 /* MNL_1092480_1092504.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF122C2AE0700CBCA77 /* MNL_1092480_1092504.dat */; };
+		FBEA6F0D22C2AE0A00CBCA77 /* MNL_1092648_1092672.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF222C2AE0700CBCA77 /* MNL_1092648_1092672.dat */; };
+		FBEA6F0E22C2AE0A00CBCA77 /* MNL_1092744_1092768.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF322C2AE0800CBCA77 /* MNL_1092744_1092768.dat */; };
+		FBEA6F0F22C2AE0A00CBCA77 /* MNL_1092840_1092864.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF422C2AE0800CBCA77 /* MNL_1092840_1092864.dat */; };
+		FBEA6F1022C2AE0A00CBCA77 /* MNL_1092504_1092528.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF522C2AE0800CBCA77 /* MNL_1092504_1092528.dat */; };
+		FBEA6F1122C2AE0A00CBCA77 /* MNL_1091808_1092096.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF622C2AE0800CBCA77 /* MNL_1091808_1092096.dat */; };
+		FBEA6F1222C2AE0A00CBCA77 /* MNL_1092528_1092552.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF722C2AE0800CBCA77 /* MNL_1092528_1092552.dat */; };
+		FBEA6F1322C2AE0A00CBCA77 /* MNL_1092624_1092648.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF822C2AE0900CBCA77 /* MNL_1092624_1092648.dat */; };
+		FBEA6F1422C2AE0A00CBCA77 /* MNL_1092096_1092336.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EF922C2AE0900CBCA77 /* MNL_1092096_1092336.dat */; };
+		FBEA6F1522C2AE0A00CBCA77 /* MNL_1092864_1092888.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EFA22C2AE0900CBCA77 /* MNL_1092864_1092888.dat */; };
+		FBEA6F1622C2AE0A00CBCA77 /* MNL_1092336_1092360.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EFB22C2AE0900CBCA77 /* MNL_1092336_1092360.dat */; };
+		FBEA6F1722C2AE0A00CBCA77 /* MNL_1092432_1092456.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EFC22C2AE0900CBCA77 /* MNL_1092432_1092456.dat */; };
+		FBEA6F1822C2AE0A00CBCA77 /* MNL_1092360_1092384.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EFD22C2AE0A00CBCA77 /* MNL_1092360_1092384.dat */; };
+		FBEA6F1922C2AE0A00CBCA77 /* MNL_1092696_1092720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EFE22C2AE0A00CBCA77 /* MNL_1092696_1092720.dat */; };
+		FBEA6F1A22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6EFF22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat */; };
+		FBEA6F1B22C2AE0A00CBCA77 /* MNL_1092768_1092792.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6F0022C2AE0A00CBCA77 /* MNL_1092768_1092792.dat */; };
+		FBEA6F1C22C2AE0A00CBCA77 /* MNL_1092408_1092432.dat in Resources */ = {isa = PBXBuildFile; fileRef = FBEA6F0122C2AE0A00CBCA77 /* MNL_1092408_1092432.dat */; };
 		FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */; };
 		FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */; };
 		FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEB7E91220F0DE50013F619 /* DSAccountChooserTableViewCell.m */; };
@@ -139,6 +185,7 @@
 		FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBF31B6B222FD94400393301 /* Wallets.storyboard */; };
 		FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */; };
 		FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */; };
+		FBF6050C22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBF6050B22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -182,6 +229,9 @@
 		2A3B3EAA20F893F4002962FB /* BaseFormCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseFormCellModel.h; sourceTree = "<group>"; };
 		2A3B3EAB20F893F4002962FB /* FormTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormTableViewController.h; sourceTree = "<group>"; };
 		2A3B3EB220F893F4002962FB /* BaseFormCellModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseFormCellModel.m; sourceTree = "<group>"; };
+		2A5C601322BFC65E00C6003F /* ML_at_122088.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = ML_at_122088.dat; sourceTree = "<group>"; };
+		2A5C601522BFE0D000C6003F /* MNL_0_122064.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_122064.dat; sourceTree = "<group>"; };
+		2A5C601622BFE0D100C6003F /* MNL_122064_122088.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_122064_122088.dat; sourceTree = "<group>"; };
 		2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBIP39Tests.m; sourceTree = "<group>"; };
 		2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBIP32Tests.m; sourceTree = "<group>"; };
 		2A7DCCAF20DA080F0097049F /* DSWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletTests.m; sourceTree = "<group>"; };
@@ -263,6 +313,7 @@
 		FB23895D20D36EF600921B89 /* DSClaimMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSClaimMasternodeViewController.m; sourceTree = "<group>"; };
 		FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		FB2B21AA20D6FC0B000DF537 /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
+		FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeListTestnet119064.dat; sourceTree = "<group>"; };
 		FB3E970220DC21EB00D9B0CB /* DSAddressesTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressesTransactionsViewController.h; sourceTree = "<group>"; };
 		FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressesTransactionsViewController.m; sourceTree = "<group>"; };
 		FB3E970520DC245C00D9B0CB /* DSTransactionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionTableViewCell.h; sourceTree = "<group>"; };
@@ -271,6 +322,11 @@
 		FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSendAmountViewController.m; sourceTree = "<group>"; };
 		FB3FF0AD222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRevocationViewController.h; sourceTree = "<group>"; };
 		FB3FF0AE222559090059A9A5 /* DSUpdateMasternodeRevocationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRevocationViewController.m; sourceTree = "<group>"; };
+		FB44D620228C73FB00354A4D /* Quorums.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Quorums.storyboard; sourceTree = "<group>"; };
+		FB44D623228C774800354A4D /* DSQuorumTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSQuorumTableViewCell.h; sourceTree = "<group>"; };
+		FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSQuorumTableViewCell.m; sourceTree = "<group>"; };
+		FB44D626228C77E400354A4D /* DSQuorumListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSQuorumListViewController.h; sourceTree = "<group>"; };
+		FB44D627228C77E400354A4D /* DSQuorumListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSQuorumListViewController.m; sourceTree = "<group>"; };
 		FB5252F120EE0A34009A2BF1 /* DSProposalCreatorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProposalCreatorViewController.h; sourceTree = "<group>"; };
 		FB5252F220EE0A34009A2BF1 /* DSProposalCreatorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProposalCreatorViewController.m; sourceTree = "<group>"; };
 		FB5252F420EE159B009A2BF1 /* DSAccountChooserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAccountChooserViewController.h; sourceTree = "<group>"; };
@@ -371,6 +427,7 @@
 		FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeServiceViewController.m; sourceTree = "<group>"; };
 		FBB5D73A221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRegistrarViewController.h; sourceTree = "<group>"; };
 		FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRegistrarViewController.m; sourceTree = "<group>"; };
+		FBD696EB2291A1800012FF51 /* DSDataTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDataTests.m; sourceTree = "<group>"; };
 		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
 		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
 		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
@@ -378,6 +435,46 @@
 		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
 		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
+		FBE155F922B931FA009CA817 /* DSMasternodeListsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListsViewController.h; sourceTree = "<group>"; };
+		FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListsViewController.m; sourceTree = "<group>"; };
+		FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeListTableViewCell.h; sourceTree = "<group>"; };
+		FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeListTableViewCell.m; sourceTree = "<group>"; };
+		FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeList1088800.dat; sourceTree = "<group>"; };
+		FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = DiffListTestnet119064to119200.dat; sourceTree = "<group>"; };
+		FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_122928.dat; sourceTree = "<group>"; };
+		FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_122928_123000.dat; sourceTree = "<group>"; };
+		FBEA6EDC22C291BB00CBCA77 /* MNL_0_1092888.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1092888.dat; sourceTree = "<group>"; };
+		FBEA6EDE22C291CB00CBCA77 /* MNL_1092888_1092916.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092888_1092916.dat; sourceTree = "<group>"; };
+		FBEA6EE022C291D600CBCA77 /* MNL_1092888_1092912.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092888_1092912.dat; sourceTree = "<group>"; };
+		FBEA6EE222C291E400CBCA77 /* MNL_1092916_1092940.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092916_1092940.dat; sourceTree = "<group>"; };
+		FBEA6EE522C2ADD700CBCA77 /* MNL_0_1090944.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1090944.dat; sourceTree = "<group>"; };
+		FBEA6EE722C2AE0700CBCA77 /* MNL_1092792_1092816.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092792_1092816.dat; sourceTree = "<group>"; };
+		FBEA6EE822C2AE0700CBCA77 /* MNL_1092576_1092600.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092576_1092600.dat; sourceTree = "<group>"; };
+		FBEA6EE922C2AE0700CBCA77 /* MNL_1090944_1091520.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1090944_1091520.dat; sourceTree = "<group>"; };
+		FBEA6EEA22C2AE0700CBCA77 /* MNL_1092456_1092480.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092456_1092480.dat; sourceTree = "<group>"; };
+		FBEA6EEB22C2AE0700CBCA77 /* MNL_1092552_1092576.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092552_1092576.dat; sourceTree = "<group>"; };
+		FBEA6EEC22C2AE0700CBCA77 /* MNL_1092600_1092624.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092600_1092624.dat; sourceTree = "<group>"; };
+		FBEA6EED22C2AE0700CBCA77 /* MNL_1092672_1092696.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092672_1092696.dat; sourceTree = "<group>"; };
+		FBEA6EEE22C2AE0700CBCA77 /* MNL_1092816_1092840.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092816_1092840.dat; sourceTree = "<group>"; };
+		FBEA6EEF22C2AE0700CBCA77 /* MNL_1091520_1091808.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1091520_1091808.dat; sourceTree = "<group>"; };
+		FBEA6EF022C2AE0700CBCA77 /* MNL_1092720_1092744.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092720_1092744.dat; sourceTree = "<group>"; };
+		FBEA6EF122C2AE0700CBCA77 /* MNL_1092480_1092504.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092480_1092504.dat; sourceTree = "<group>"; };
+		FBEA6EF222C2AE0700CBCA77 /* MNL_1092648_1092672.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092648_1092672.dat; sourceTree = "<group>"; };
+		FBEA6EF322C2AE0800CBCA77 /* MNL_1092744_1092768.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092744_1092768.dat; sourceTree = "<group>"; };
+		FBEA6EF422C2AE0800CBCA77 /* MNL_1092840_1092864.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092840_1092864.dat; sourceTree = "<group>"; };
+		FBEA6EF522C2AE0800CBCA77 /* MNL_1092504_1092528.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092504_1092528.dat; sourceTree = "<group>"; };
+		FBEA6EF622C2AE0800CBCA77 /* MNL_1091808_1092096.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1091808_1092096.dat; sourceTree = "<group>"; };
+		FBEA6EF722C2AE0800CBCA77 /* MNL_1092528_1092552.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092528_1092552.dat; sourceTree = "<group>"; };
+		FBEA6EF822C2AE0900CBCA77 /* MNL_1092624_1092648.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092624_1092648.dat; sourceTree = "<group>"; };
+		FBEA6EF922C2AE0900CBCA77 /* MNL_1092096_1092336.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092096_1092336.dat; sourceTree = "<group>"; };
+		FBEA6EFA22C2AE0900CBCA77 /* MNL_1092864_1092888.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092864_1092888.dat; sourceTree = "<group>"; };
+		FBEA6EFB22C2AE0900CBCA77 /* MNL_1092336_1092360.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092336_1092360.dat; sourceTree = "<group>"; };
+		FBEA6EFC22C2AE0900CBCA77 /* MNL_1092432_1092456.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092432_1092456.dat; sourceTree = "<group>"; };
+		FBEA6EFD22C2AE0A00CBCA77 /* MNL_1092360_1092384.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092360_1092384.dat; sourceTree = "<group>"; };
+		FBEA6EFE22C2AE0A00CBCA77 /* MNL_1092696_1092720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092696_1092720.dat; sourceTree = "<group>"; };
+		FBEA6EFF22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092384_1092408.dat; sourceTree = "<group>"; };
+		FBEA6F0022C2AE0A00CBCA77 /* MNL_1092768_1092792.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092768_1092792.dat; sourceTree = "<group>"; };
+		FBEA6F0122C2AE0A00CBCA77 /* MNL_1092408_1092432.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1092408_1092432.dat; sourceTree = "<group>"; };
 		FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Masternodes.storyboard; sourceTree = "<group>"; };
 		FBEB7E8D220EEA7B0013F619 /* DSRegisterMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSRegisterMasternodeViewController.h; sourceTree = "<group>"; };
 		FBEB7E8E220EEA7B0013F619 /* DSRegisterMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSRegisterMasternodeViewController.m; sourceTree = "<group>"; };
@@ -393,6 +490,8 @@
 		FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSignPayloadViewController.h; sourceTree = "<group>"; };
 		FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSignPayloadViewController.m; sourceTree = "<group>"; };
 		FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderTransactionsTests.m; sourceTree = "<group>"; };
+		FBF6050A22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeHealthForListRetrievalViewController.h; sourceTree = "<group>"; };
+		FBF6050B22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSMasternodeHealthForListRetrievalViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -550,6 +649,7 @@
 				FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */,
 				FBA676332235A9620069EC2F /* Helpers.storyboard */,
 				FBA676352235AD090069EC2F /* Governance.storyboard */,
+				FB44D620228C73FB00354A4D /* Quorums.storyboard */,
 			);
 			name = "Example for DashSync";
 			path = DashSync;
@@ -569,6 +669,7 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				FB76C5A822BD7B9700DF2B29 /* MasternodeLists */,
 				6003F5BB195388D20070C39A /* Tests.m */,
 				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
 				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
@@ -580,9 +681,12 @@
 				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
 				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
 				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
+				FBE155FF22B99368009CA817 /* MasternodeList1088800.dat */,
+				2A5C601322BFC65E00C6003F /* ML_at_122088.dat */,
 				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
 				6003F5B6195388D20070C39A /* Supporting Files */,
 				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
+				FBD696EB2291A1800012FF51 /* DSDataTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -669,6 +773,8 @@
 				FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */,
 				FBF31B6D2231C53900393301 /* DSSignPayloadViewController.h */,
 				FBF31B6E2231C53900393301 /* DSSignPayloadViewController.m */,
+				FBE155F922B931FA009CA817 /* DSMasternodeListsViewController.h */,
+				FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */,
 			);
 			name = Masternodes;
 			sourceTree = "<group>";
@@ -693,6 +799,15 @@
 				FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */,
 			);
 			name = Views;
+			sourceTree = "<group>";
+		};
+		FB44D622228C753300354A4D /* Quorums */ = {
+			isa = PBXGroup;
+			children = (
+				FB44D626228C77E400354A4D /* DSQuorumListViewController.h */,
+				FB44D627228C77E400354A4D /* DSQuorumListViewController.m */,
+			);
+			name = Quorums;
 			sourceTree = "<group>";
 		};
 		FB6DC62620AB63B600E35EED /* Main */ = {
@@ -767,6 +882,10 @@
 				FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */,
 				FBAA774D222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.h */,
 				FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */,
+				FB44D623228C774800354A4D /* DSQuorumTableViewCell.h */,
+				FB44D624228C774800354A4D /* DSQuorumTableViewCell.m */,
+				FBE155FC22B954EE009CA817 /* DSMasternodeListTableViewCell.h */,
+				FBE155FD22B954EE009CA817 /* DSMasternodeListTableViewCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -810,6 +929,21 @@
 			name = Wallet;
 			sourceTree = "<group>";
 		};
+		FB76C5A822BD7B9700DF2B29 /* MasternodeLists */ = {
+			isa = PBXGroup;
+			children = (
+				FBEA6EE422C2ADC300CBCA77 /* ReorderTest */,
+				FBEA6EDC22C291BB00CBCA77 /* MNL_0_1092888.dat */,
+				FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */,
+				FBEA6ED822C0636A00CBCA77 /* MNL_0_122928.dat */,
+				2A5C601522BFE0D000C6003F /* MNL_0_122064.dat */,
+				FBEA6EDA22C0637300CBCA77 /* MNL_122928_123000.dat */,
+				2A5C601622BFE0D100C6003F /* MNL_122064_122088.dat */,
+				FBEA6ED622BE671D00CBCA77 /* DiffListTestnet119064to119200.dat */,
+			);
+			name = MasternodeLists;
+			sourceTree = "<group>";
+		};
 		FB83C2E121B7B72F0057A0EF /* Actions */ = {
 			isa = PBXGroup;
 			children = (
@@ -817,6 +951,8 @@
 				FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */,
 				FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */,
 				FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */,
+				FBF6050A22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.h */,
+				FBF6050B22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m */,
 			);
 			name = Actions;
 			sourceTree = "<group>";
@@ -851,6 +987,7 @@
 		FBB25BED20C5CD290037F5BE /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				FB44D622228C753300354A4D /* Quorums */,
 				2A1B55BC2226B15A008FED65 /* Contacts */,
 				FB83C2E121B7B72F0057A0EF /* Actions */,
 				FBB4E37D214A9EC4008040B7 /* DAPI Calls */,
@@ -888,6 +1025,44 @@
 				FBB4E382214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m */,
 			);
 			name = "DAPI Calls";
+			sourceTree = "<group>";
+		};
+		FBEA6EE422C2ADC300CBCA77 /* ReorderTest */ = {
+			isa = PBXGroup;
+			children = (
+				FBEA6EE522C2ADD700CBCA77 /* MNL_0_1090944.dat */,
+				FBEA6EE922C2AE0700CBCA77 /* MNL_1090944_1091520.dat */,
+				FBEA6EEF22C2AE0700CBCA77 /* MNL_1091520_1091808.dat */,
+				FBEA6EF622C2AE0800CBCA77 /* MNL_1091808_1092096.dat */,
+				FBEA6EF922C2AE0900CBCA77 /* MNL_1092096_1092336.dat */,
+				FBEA6EFB22C2AE0900CBCA77 /* MNL_1092336_1092360.dat */,
+				FBEA6EFD22C2AE0A00CBCA77 /* MNL_1092360_1092384.dat */,
+				FBEA6EFF22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat */,
+				FBEA6F0122C2AE0A00CBCA77 /* MNL_1092408_1092432.dat */,
+				FBEA6EFC22C2AE0900CBCA77 /* MNL_1092432_1092456.dat */,
+				FBEA6EEA22C2AE0700CBCA77 /* MNL_1092456_1092480.dat */,
+				FBEA6EF122C2AE0700CBCA77 /* MNL_1092480_1092504.dat */,
+				FBEA6EF522C2AE0800CBCA77 /* MNL_1092504_1092528.dat */,
+				FBEA6EF722C2AE0800CBCA77 /* MNL_1092528_1092552.dat */,
+				FBEA6EEB22C2AE0700CBCA77 /* MNL_1092552_1092576.dat */,
+				FBEA6EE822C2AE0700CBCA77 /* MNL_1092576_1092600.dat */,
+				FBEA6EEC22C2AE0700CBCA77 /* MNL_1092600_1092624.dat */,
+				FBEA6EF822C2AE0900CBCA77 /* MNL_1092624_1092648.dat */,
+				FBEA6EF222C2AE0700CBCA77 /* MNL_1092648_1092672.dat */,
+				FBEA6EED22C2AE0700CBCA77 /* MNL_1092672_1092696.dat */,
+				FBEA6EFE22C2AE0A00CBCA77 /* MNL_1092696_1092720.dat */,
+				FBEA6EF022C2AE0700CBCA77 /* MNL_1092720_1092744.dat */,
+				FBEA6EF322C2AE0800CBCA77 /* MNL_1092744_1092768.dat */,
+				FBEA6F0022C2AE0A00CBCA77 /* MNL_1092768_1092792.dat */,
+				FBEA6EE722C2AE0700CBCA77 /* MNL_1092792_1092816.dat */,
+				FBEA6EEE22C2AE0700CBCA77 /* MNL_1092816_1092840.dat */,
+				FBEA6EF422C2AE0800CBCA77 /* MNL_1092840_1092864.dat */,
+				FBEA6EFA22C2AE0900CBCA77 /* MNL_1092864_1092888.dat */,
+				FBEA6EDE22C291CB00CBCA77 /* MNL_1092888_1092916.dat */,
+				FBEA6EE022C291D600CBCA77 /* MNL_1092888_1092912.dat */,
+				FBEA6EE222C291E400CBCA77 /* MNL_1092916_1092940.dat */,
+			);
+			name = ReorderTest;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -955,6 +1130,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 				fr,
@@ -980,6 +1156,7 @@
 				FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */,
 				FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
+				FB44D621228C73FB00354A4D /* Quorums.storyboard in Resources */,
 				2A3B3EB920F893F4002962FB /* SwitcherFormTableViewCell.xib in Resources */,
 				2A3B3EBA20F893F4002962FB /* TextFieldFormTableViewCell.xib in Resources */,
 				71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */,
@@ -997,7 +1174,47 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBEA6F1822C2AE0A00CBCA77 /* MNL_1092360_1092384.dat in Resources */,
+				FBEA6F0822C2AE0A00CBCA77 /* MNL_1092672_1092696.dat in Resources */,
+				FBEA6EE322C291E400CBCA77 /* MNL_1092916_1092940.dat in Resources */,
+				FBEA6F0722C2AE0A00CBCA77 /* MNL_1092600_1092624.dat in Resources */,
+				FBEA6F0B22C2AE0A00CBCA77 /* MNL_1092720_1092744.dat in Resources */,
+				FBEA6F0422C2AE0A00CBCA77 /* MNL_1090944_1091520.dat in Resources */,
+				FBEA6F1122C2AE0A00CBCA77 /* MNL_1091808_1092096.dat in Resources */,
+				FBEA6F0622C2AE0A00CBCA77 /* MNL_1092552_1092576.dat in Resources */,
+				FBEA6F1722C2AE0A00CBCA77 /* MNL_1092432_1092456.dat in Resources */,
+				FBEA6F1922C2AE0A00CBCA77 /* MNL_1092696_1092720.dat in Resources */,
+				FB3A390E22BE62D900801F39 /* MasternodeListTestnet119064.dat in Resources */,
+				FBEA6F0222C2AE0A00CBCA77 /* MNL_1092792_1092816.dat in Resources */,
+				FBEA6F1022C2AE0A00CBCA77 /* MNL_1092504_1092528.dat in Resources */,
+				FBEA6F0322C2AE0A00CBCA77 /* MNL_1092576_1092600.dat in Resources */,
+				FBEA6F0922C2AE0A00CBCA77 /* MNL_1092816_1092840.dat in Resources */,
+				FBEA6F1222C2AE0A00CBCA77 /* MNL_1092528_1092552.dat in Resources */,
+				FBEA6EDF22C291CB00CBCA77 /* MNL_1092888_1092916.dat in Resources */,
+				FBEA6F1422C2AE0A00CBCA77 /* MNL_1092096_1092336.dat in Resources */,
+				FBEA6ED722BE671D00CBCA77 /* DiffListTestnet119064to119200.dat in Resources */,
+				FBEA6F1A22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat in Resources */,
+				2A5C601822BFE0D100C6003F /* MNL_122064_122088.dat in Resources */,
+				FBEA6F0F22C2AE0A00CBCA77 /* MNL_1092840_1092864.dat in Resources */,
+				FBEA6EDD22C291BB00CBCA77 /* MNL_0_1092888.dat in Resources */,
+				FBEA6EDB22C0637300CBCA77 /* MNL_122928_123000.dat in Resources */,
+				FBEA6F1C22C2AE0A00CBCA77 /* MNL_1092408_1092432.dat in Resources */,
+				2A5C601422BFC65E00C6003F /* ML_at_122088.dat in Resources */,
+				FBEA6ED922C0636A00CBCA77 /* MNL_0_122928.dat in Resources */,
+				FBEA6F1B22C2AE0A00CBCA77 /* MNL_1092768_1092792.dat in Resources */,
+				FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */,
 				6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */,
+				FBEA6F0E22C2AE0A00CBCA77 /* MNL_1092744_1092768.dat in Resources */,
+				FBEA6F0522C2AE0A00CBCA77 /* MNL_1092456_1092480.dat in Resources */,
+				FBEA6F1322C2AE0A00CBCA77 /* MNL_1092624_1092648.dat in Resources */,
+				FBEA6F0D22C2AE0A00CBCA77 /* MNL_1092648_1092672.dat in Resources */,
+				FBEA6F0C22C2AE0A00CBCA77 /* MNL_1092480_1092504.dat in Resources */,
+				2A5C601722BFE0D100C6003F /* MNL_0_122064.dat in Resources */,
+				FBEA6F1622C2AE0A00CBCA77 /* MNL_1092336_1092360.dat in Resources */,
+				FBEA6EE622C2ADD700CBCA77 /* MNL_0_1090944.dat in Resources */,
+				FBEA6EE122C291D600CBCA77 /* MNL_1092888_1092912.dat in Resources */,
+				FBEA6F0A22C2AE0A00CBCA77 /* MNL_1091520_1091808.dat in Resources */,
+				FBEA6F1522C2AE0A00CBCA77 /* MNL_1092864_1092888.dat in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1110,6 +1327,7 @@
 				FBAA7749222B241D001B3756 /* DSProviderUpdateRegistrarTransactionsViewController.m in Sources */,
 				FB763C622089AF9500CDBA57 /* DSStandaloneAddressesViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* DSSyncViewController.m in Sources */,
+				FBE155FE22B954EE009CA817 /* DSMasternodeListTableViewCell.m in Sources */,
 				FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */,
 				2A3B3EB720F893F4002962FB /* SwitcherFormCellModel.m in Sources */,
 				FBEB7E8F220EEA7B0013F619 /* DSRegisterMasternodeViewController.m in Sources */,
@@ -1143,13 +1361,16 @@
 				FB5252FC20F232C9009A2BF1 /* DSTransactionDetailViewController.m in Sources */,
 				FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */,
 				FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */,
+				FBF6050C22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,
 				2A3B3EB320F893F4002962FB /* FormTableViewController.m in Sources */,
 				FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */,
 				FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */,
+				FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
+				FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */,
 				FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */,
 				FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */,
 				FB763C522089776A00CDBA57 /* DSWalletViewController.m in Sources */,
@@ -1169,6 +1390,7 @@
 				FB6DC63320AE082400E35EED /* DSWalletInputPhraseViewController.m in Sources */,
 				FBB5D726221DEDE70021764A /* DSMasternodeDetailViewController.m in Sources */,
 				FB90D2CF20C3F4AF002B7956 /* DSAccountsDerivationPathsViewController.m in Sources */,
+				FB44D625228C774800354A4D /* DSQuorumTableViewCell.m in Sources */,
 				FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */,
 				FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */,
 				FBF31B6F2231C53900393301 /* DSSignPayloadViewController.m in Sources */,
@@ -1198,6 +1420,7 @@
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
+				FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */,
 				2A1ECBDD20D8F4BD000177D8 /* DSPaymentRequestTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

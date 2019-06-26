@@ -69,10 +69,14 @@
 // it to the persistent store coordinator for the application
 + (NSManagedObjectContext *)context;
 
++ (NSManagedObjectContext *)mainContext;
+
++ (NSError*)saveMainContext;
+
 // sets a different context for NSManagedObject+Sugar methods to use for this type of entity
 + (void)setContext:(NSManagedObjectContext *)context;
 
-+ (void)saveContext; // persists changes (this is called automatically for the main context when the app terminates)
++ (NSError*)saveContext; // persists changes (this is called automatically for the main context when the app terminates)
 
 + (NSString *)entityName; // override this if entity name differs from class name
 + (NSFetchRequest *)fetchReq;

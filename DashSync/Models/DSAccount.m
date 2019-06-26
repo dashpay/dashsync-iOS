@@ -706,7 +706,8 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         if ([self containsAddress:providerRegistrationTransaction.payoutAddress]) return YES;
     } else if ([transaction isKindOfClass:[DSProviderUpdateServiceTransaction class]]) {
         DSProviderUpdateServiceTransaction * providerUpdateServiceTransaction = (DSProviderUpdateServiceTransaction *)transaction;
-        if ([self containsAddress:providerUpdateServiceTransaction.payoutAddress]) return YES;
+        NSString * payoutAddress = providerUpdateServiceTransaction.payoutAddress;
+        if (payoutAddress && [self containsAddress:payoutAddress]) return YES;
     } else if ([transaction isKindOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
         DSProviderUpdateRegistrarTransaction * providerUpdateRegistrarTransaction = (DSProviderUpdateRegistrarTransaction *)transaction;
         if ([self containsAddress:providerUpdateRegistrarTransaction.payoutAddress]) return YES;

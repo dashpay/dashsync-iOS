@@ -43,12 +43,16 @@
 #import "DSTransactionLockVote.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
+#import "DSInstantSendTransactionLock.h"
 
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
+@property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
+@property (nonatomic, assign) BOOL instantSendReceived;
+@property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 
 @end
 
@@ -639,6 +643,8 @@
 
 // MARK: - Instant Send
 
+// v13
+
 -(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
     BOOL instantSendReceived = !!transactionLockVotes.count;
     self.transactionLockVotesDictionary = transactionLockVotes;
@@ -669,6 +675,21 @@
         [array addObjectsFromArray:votesForInput];
     }
     return array;
+}
+
+// v14
+
+-(void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock {
+    self.instantSendReceived = instantSendLock.signatureVerified;
+    self.hasUnverifiedInstantSendLock = (instantSendLock && !instantSendLock.signatureVerified);
+    if (self.hasUnverifiedInstantSendLock) {
+        self.instantSendLockAwaitingProcessing = instantSendLock;
+    } else {
+        self.instantSendLockAwaitingProcessing = nil;
+    }
+    if (!instantSendLock.saved) {
+        [instantSendLock save];
+    }
 }
 
 // MARK: - Polymorphic data

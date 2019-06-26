@@ -13,6 +13,8 @@
 #import "DSSporksViewController.h"
 #import "DSBlockchainExplorerViewController.h"
 #import "DSMasternodeViewController.h"
+#import "DSMasternodeListsViewController.h"
+#import "DSQuorumListViewController.h"
 #import "DSStandaloneDerivationPathViewController.h"
 #import "DSGovernanceObjectListViewController.h"
 #import "DSTransactionsViewController.h"
@@ -39,13 +41,17 @@
 @property (strong, nonatomic) IBOutlet UILabel *standaloneAddressesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *sporksCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *quorumCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *localMasternodesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *masternodeListUpdatedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedProposalCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivedVotesCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockchainUsersCountLabel;
 @property (strong, nonatomic) IBOutlet UILabel *receivingAddressLabel;
-@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainUsersObserver;
+@property (strong, nonatomic) IBOutlet UILabel *masternodeListsCountLabel;
+@property (strong, nonatomic) IBOutlet UILabel *earliestMasternodeListLabel;
+@property (strong, nonatomic) IBOutlet UILabel *lastMasternodeListLabel;
+@property (strong, nonatomic) id syncFinishedObserver,syncFailedObserver,balanceObserver,blocksObserver,blocksResetObserver,sporkObserver,masternodeObserver,masternodeCountObserver, chainWalletObserver,chainStandaloneDerivationPathObserver,chainSingleAddressObserver,governanceObjectCountObserver,governanceObjectReceivedCountObserver,governanceVoteCountObserver,governanceVoteReceivedCountObserver,connectedPeerConnectionObserver,peerConnectionObserver,blockchainUsersObserver,quorumObserver;
 
 - (IBAction)startSync:(id)sender;
 - (IBAction)stopSync:(id)sender;
@@ -63,8 +69,9 @@
     [self updateBalance];
     [self updateSporks];
     [self updateBlockHeight];
-    [self updateMasternodeCount];
-    [self updateMasternodeList];
+    [self updateKnownMasternodes];
+    [self updateMasternodeLists];
+    [self updateQuorumsList];
     [self updateWalletCount];
     [self updateStandaloneDerivationPathsCount];
     [self updateSingleAddressesCount];
@@ -142,17 +149,19 @@
     self.masternodeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListDidChangeNotification object:nil
                                                                                  queue:nil usingBlock:^(NSNotification *note) {
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                         NSLog(@"update masternode broadcast count");
-                                                                                         [self updateMasternodeList];
+                                                                                         NSLog(@"update masternode list");
+                                                                                         [self updateKnownMasternodes];
                                                                                      }
                                                                                  }];
-    self.masternodeCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSMasternodeListCountUpdateNotification object:nil
-                                                                                      queue:nil usingBlock:^(NSNotification *note) {
-                                                                                          if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
-                                                                                              NSLog(@"update masternode count");
-                                                                                              [self updateMasternodeCount];
-                                                                                          }
-                                                                                      }];
+    
+    
+    self.quorumObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSQuorumListDidChangeNotification object:nil
+                                                                                 queue:nil usingBlock:^(NSNotification *note) {
+                                                                                     if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
+                                                                                         NSLog(@"update quorums");
+                                                                                         [self updateQuorumsList];
+                                                                                     }
+                                                                                 }];
     self.governanceObjectCountObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSGovernanceObjectCountUpdateNotification object:nil
                                                                                             queue:nil usingBlock:^(NSNotification *note) {
                                                                                                 if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
@@ -354,6 +363,7 @@
     }]];
     
     [wipeDataAlertController addAction:[UIAlertAction actionWithTitle:@"Chain Data" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[DashSync sharedSyncController] wipeMasternodeDataForChain:self.chainManager.chain];
         [[DashSync sharedSyncController] wipeBlockchainDataForChain:self.chainManager.chain];
     }]];
     
@@ -430,13 +440,23 @@
     self.sporksCountLabel.text = [NSString stringWithFormat:@"%lu",[[self.chainManager.sporkManager.sporkDictionary allKeys] count]];
 }
 
--(void)updateMasternodeCount {
-    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%u",self.chainManager.chain.totalMasternodeCount];
+-(void)updateKnownMasternodes {
+    self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager.currentMasternodeList masternodeCount]];
+    self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
+    self.masternodeListUpdatedLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)self.chainManager.masternodeManager.currentMasternodeList.height];
 }
 
--(void)updateMasternodeList {
-        self.masternodeCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager simplifiedMasternodeEntryCount]];
-        self.localMasternodesCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager localMasternodesCount]];
+-(void)updateMasternodeLists {
+    uint32_t earliestHeight = self.chainManager.masternodeManager.earliestMasternodeListBlockHeight;
+    uint32_t lastHeight = self.chainManager.masternodeManager.lastMasternodeListBlockHeight;
+    self.masternodeListsCountLabel.text = [NSString stringWithFormat:@"%lu",self.chainManager.masternodeManager.knownMasternodeListsCount];
+    self.earliestMasternodeListLabel.text = (earliestHeight != UINT32_MAX)?[NSString stringWithFormat:@"%u",earliestHeight]:@"None";
+    self.lastMasternodeListLabel.text = (lastHeight != UINT32_MAX)?[NSString stringWithFormat:@"%u",lastHeight]:@"None";
+}
+
+
+-(void)updateQuorumsList {
+    self.quorumCountLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)[self.chainManager.masternodeManager activeQuorumsCount]];
 }
 
 -(void)updateWalletCount {
@@ -480,6 +500,12 @@
     } else if ([segue.identifier isEqualToString:@"MasternodeListSegue"]) {
         DSMasternodeViewController * masternodeViewController = (DSMasternodeViewController*)segue.destinationViewController;
         masternodeViewController.chain = self.chainManager.chain;
+    } else if ([segue.identifier isEqualToString:@"MasternodeListsSegue"]) {
+        DSMasternodeListsViewController * masternodeListsViewController = (DSMasternodeListsViewController*)segue.destinationViewController;
+        masternodeListsViewController.chain = self.chainManager.chain;
+    } else if ([segue.identifier isEqualToString:@"QuorumListSegue"]) {
+        DSQuorumListViewController * quorumListViewController = (DSQuorumListViewController*)segue.destinationViewController;
+        quorumListViewController.chain = self.chainManager.chain;
     } else if ([segue.identifier isEqualToString:@"GovernanceObjectsSegue"]) {
         DSGovernanceObjectListViewController * governanceObjectViewController = (DSGovernanceObjectListViewController*)segue.destinationViewController;
         governanceObjectViewController.chainManager = self.chainManager;

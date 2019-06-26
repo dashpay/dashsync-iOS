@@ -20,36 +20,104 @@
 @implementation DSSimplifiedMasternodeEntryEntity
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
-    char s[INET6_ADDRSTRLEN];
-    uint32_t address32 = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
-    NSString * ipAddressString = @(inet_ntop(AF_INET, &address32, s, sizeof(s)));
-    DSDLog(@"changing address to %@",ipAddressString);
-    self.address = address32;
-    self.port = simplifiedMasternodeEntry.port;
-    self.keyIDVoting = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
-    self.operatorBLSPublicKey = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
-    self.isValid = simplifiedMasternodeEntry.isValid;
+    [self updateAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil];
+}
+
+- (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)localMasternodes {
+    
+    if (!uint128_eq(self.ipv6Address.UInt128, simplifiedMasternodeEntry.address)) {
+        self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
+        char s[INET6_ADDRSTRLEN];
+        uint32_t address32 = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
+        NSString * ipAddressString = @(inet_ntop(AF_INET, &address32, s, sizeof(s)));
+        if (self.address != address32) {
+            self.address = address32;
+            DSDLog(@"changing address to %@",ipAddressString);
+        }
+    }
+    
+    NSData * confirmedHashData = uint256_data(simplifiedMasternodeEntry.confirmedHash);
+    
+    if (![self.confirmedHash isEqualToData:confirmedHashData]) {
+        self.confirmedHash = confirmedHashData;
+        DSDLog(@"changing confirmedHashData to %@",confirmedHashData.hexString);
+    }
+    
+    if (self.port != simplifiedMasternodeEntry.port) {
+        self.port = simplifiedMasternodeEntry.port;
+        DSDLog(@"changing port to %u",simplifiedMasternodeEntry.port);
+    }
+    
+    NSData * keyIDVotingData = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
+    
+    if (![self.keyIDVoting isEqualToData:keyIDVotingData]) {
+        self.keyIDVoting = keyIDVotingData;
+        DSDLog(@"changing keyIDVotingData to %@",keyIDVotingData.hexString);
+    }
+    
+    NSData * operatorPublicKeyData = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
+    
+    if (![self.operatorBLSPublicKey isEqualToData:operatorPublicKeyData]) {
+        self.operatorBLSPublicKey = operatorPublicKeyData;
+        DSDLog(@"changing operatorBLSPublicKey to %@",operatorPublicKeyData.hexString);
+    }
+    
+    if (self.isValid != simplifiedMasternodeEntry.isValid) {
+        self.isValid = simplifiedMasternodeEntry.isValid;
+        DSDLog(@"changing isValid to %@",simplifiedMasternodeEntry.isValid?@"TRUE":@"FALSE");
+    }
+    
+    
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
-    DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    self.previousSimplifiedMasternodeEntryHashes = simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes;
+    self.previousOperatorBLSPublicKeys = simplifiedMasternodeEntry.previousOperatorPublicKeys;
+    self.previousValidity = simplifiedMasternodeEntry.previousValidity;
+    
+    DSLocalMasternodeEntity * localMasternode = nil;
+    if (localMasternodes) {
+        localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    } else {
+        localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    }
+    
     self.localMasternode = localMasternode;
     
     NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
     NSString * votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
     
-    DSAddressEntity * operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    DSAddressEntity * operatorAddressEntity = nil;
+    
+    if (knownOperatorAddresses) {
+        operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
+    } else {
+        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    }
+    
     if (operatorAddressEntity) {
         [self addAddressesObject:operatorAddressEntity];
     }
     
-    DSAddressEntity * votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    DSAddressEntity * votingAddressEntity = nil;
+    
+    if (knownVotingAddresses) {
+        votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
+    } else {
+        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    }
+    
     if (votingAddressEntity) {
         [self addAddressesObject:votingAddressEntity];
     }
 }
 
 - (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry onChain:(DSChainEntity*)chainEntity {
+    [self setAttributesFromSimplifiedMasternodeEntry:simplifiedMasternodeEntry knownOperatorAddresses:nil knownVotingAddresses:nil localMasternodes:nil onChain:chainEntity];
+}
+
+- (void)setAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry knownOperatorAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownOperatorAddresses knownVotingAddresses:(NSDictionary<NSString*,DSAddressEntity*>*)knownVotingAddresses localMasternodes:(NSDictionary<NSData*,DSLocalMasternodeEntity*>*)localMasternodes onChain:(DSChainEntity*)chainEntity {
     self.providerRegistrationTransactionHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.providerRegistrationTransactionHash];
     self.confirmedHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.confirmedHash];
+    self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
     self.address = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
     self.port = simplifiedMasternodeEntry.port;
     self.keyIDVoting = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
@@ -61,18 +129,40 @@
     } else {
         self.chain = chainEntity;
     }
-    DSLocalMasternodeEntity * localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    
+    
+    DSLocalMasternodeEntity * localMasternode = nil;
+    if (localMasternodes) {
+        localMasternode = [localMasternodes objectForKey:uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    } else {
+        localMasternode = [DSLocalMasternodeEntity anyObjectMatching:@"providerRegistrationTransaction.transactionHash.txHash == %@", uint256_data(simplifiedMasternodeEntry.providerRegistrationTransactionHash)];
+    }
+    
     self.localMasternode = localMasternode;
     
     NSString * operatorAddress = [DSKey addressWithPublicKeyData:self.operatorBLSPublicKey forChain:simplifiedMasternodeEntry.chain];
     NSString * votingAddress = [self.keyIDVoting addressFromHash160DataForChain:simplifiedMasternodeEntry.chain];
     
-    DSAddressEntity * operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    DSAddressEntity * operatorAddressEntity = nil;
+    
+    if (knownOperatorAddresses) {
+        operatorAddressEntity = [knownOperatorAddresses objectForKey:operatorAddress];
+    } else {
+        operatorAddressEntity = [DSAddressEntity findAddressMatching:operatorAddress onChain:simplifiedMasternodeEntry.chain];
+    }
+    
     if (operatorAddressEntity) {
         [self addAddressesObject:operatorAddressEntity];
     }
     
-    DSAddressEntity * votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    DSAddressEntity * votingAddressEntity = nil;
+    
+    if (knownVotingAddresses) {
+        votingAddressEntity = [knownVotingAddresses objectForKey:operatorAddress];
+    } else {
+        votingAddressEntity = [DSAddressEntity findAddressMatching:votingAddress onChain:simplifiedMasternodeEntry.chain];
+    }
+    
     if (votingAddressEntity) {
         [self addAddressesObject:votingAddressEntity];
     }
@@ -93,18 +183,15 @@
 }
 
 + (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash onChain:(DSChainEntity*)chainEntity {
-    NSArray * objects = [self objectsMatching:@"(chain == %@) && (providerRegistrationTransactionHash == %@)",chainEntity,providerRegistrationTransactionHash];
-    return [objects firstObject];
+    return [self anyObjectMatching:@"(providerRegistrationTransactionHash == %@) && (chain == %@)",providerRegistrationTransactionHash,chainEntity];
 }
 
 + (DSSimplifiedMasternodeEntryEntity*)simplifiedMasternodeEntryForHash:(NSData*)simplifiedMasternodeEntryHash onChain:(DSChainEntity*)chainEntity {
-    NSArray * objects = [self objectsMatching:@"(chain == %@) && (simplifiedMasternodeEntryHash == %@)",chainEntity,simplifiedMasternodeEntryHash];
-    return [objects firstObject];
+    return [self anyObjectMatching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)",simplifiedMasternodeEntryHash,chainEntity];
 }
 
 - (DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
-    UInt128 address = { .u32 = { 0, 0, CFSwapInt32HostToBig(0xffff), CFSwapInt32HostToBig((uint32_t)self.address) } };
-    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:address port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] keyIDVoting:[self.keyIDVoting UInt160AtOffset:0] isValid:self.isValid simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256AtOffset:0] onChain:self.chain.chain];
+    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self.previousOperatorBLSPublicKeys copy] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self.previousValidity copy] simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self.previousSimplifiedMasternodeEntryHashes copy] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 

@@ -18,6 +18,7 @@
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSTransactionLockVoteEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSMasternodeList.h"
 
 @interface DSTransactionLockVote()
 
@@ -164,7 +165,7 @@
 -(NSArray<DSSimplifiedMasternodeEntry*>*)intendedQuorum {
     if (!self.masternode) return nil;
     DSMasternodeManager * masternodeManager = self.chain.chainManager.masternodeManager;
-    return [masternodeManager masternodesForQuorumHash:self.quorumModifierHash quorumCount:10];
+    return [masternodeManager.currentMasternodeList masternodesForQuorumModifier:self.quorumModifierHash quorumCount:10];
 }
 
 -(void)save {

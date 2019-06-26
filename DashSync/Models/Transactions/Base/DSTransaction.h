@@ -29,7 +29,7 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
-@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity;
+@class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock;
 
 #define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
 #define TX_FEE_PER_INPUT     10000ULL    // standard ix fee per input
@@ -62,9 +62,13 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputAddresses;
 @property (nonatomic, readonly) NSArray *outputScripts;
 
-@property (nonatomic, assign) BOOL instantSendReceived;
+@property (nonatomic, readonly) BOOL instantSendReceived;
+
+@property (nonatomic, readonly) BOOL hasUnverifiedInstantSendLock;
 
 @property (nonatomic, assign) BOOL desiresInstantSendSending;
+
+@property (nonatomic, readonly) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 
 @property (nonatomic, assign) UInt256 txHash;
 @property (nonatomic, assign) uint16_t version;
@@ -139,6 +143,8 @@ sequence:(uint32_t)sequence;
 
 //instant send
 
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes;
+-(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*, NSArray<DSTransactionLockVote *> *> *)transactionLockVotes;
+
+- (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
 
 @end

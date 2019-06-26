@@ -49,6 +49,7 @@
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSTransactionLockVote.h"
+#import "DSInstantSendTransactionLock.h"
 #import "DSSporkManager.h"
 
 #define PEER_LOGGING 1
@@ -96,7 +97,7 @@
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *knownInstantSendLockHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
@@ -244,6 +245,7 @@
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
     self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
+    self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
     
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
@@ -568,7 +570,12 @@
 #if MESSAGE_LOGGING
     NSMutableArray *locatorHexes = [NSMutableArray arrayWithCapacity:[locators count]];
     [locators enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,[self.chain heightForBlockHash:((NSData*)obj).UInt256]]];
+        uint32_t knownHeight = [self.chain heightForBlockHash:((NSData*)obj).UInt256];
+        if (knownHeight == UINT32_MAX) {
+            [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block height unknown)",((NSData*)obj).reverse.hexString]];
+        } else {
+            [locatorHexes addObject:[NSString stringWithFormat:@"%@ (block %d)",((NSData*)obj).reverse.hexString,knownHeight]];
+        }
     }];
     DSDLog(@"%@:%u %@sending getblocks with locators %@", self.host, self.port, self.peerDelegate.downloadPeer == self?@"(download peer) ":@"",locatorHexes);
 #if MESSAGE_CONTENT_LOGGING
@@ -657,20 +664,20 @@
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes blockHashes:(NSArray *)blockHashes
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
-    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         DSDLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
-              (int)txHashes.count + (int)txLockRequestHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+              (int)txHashes.count + (int)txLockRequestHashes.count + (int)instantSendLockHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
-    else if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count == 0) return;
+    else if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count + blockHashes.count == 0) return;
     
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
-    [msg appendVarInt:txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count];
+    [msg appendVarInt:txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count + instantSendLockHashes.count];
     
     for (NSValue *hash in txHashes) {
         [msg appendUInt32:DSInvType_Tx];
@@ -686,6 +693,12 @@
     
     for (NSValue *hash in txLockVoteHashes) {
         [msg appendUInt32:DSInvType_TxLockVote];
+        [hash getValue:&h];
+        [msg appendBytes:&h length:sizeof(h)];
+    }
+    
+    for (NSValue *hash in instantSendLockHashes) {
+        [msg appendUInt32:DSInvType_InstantSendLock];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -707,7 +720,6 @@
     NSMutableData *msg = [NSMutableData data];
     [msg appendUInt256:previousBlockHash];
     [msg appendUInt256:blockHash];
-    DSDLog(@"%@",msg);
     [self sendMessage:msg type:MSG_GETMNLISTDIFF];
 }
 
@@ -795,7 +807,7 @@
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
         DSDLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:nil txLockRequestHashes:nil txLockVoteHashes:nil blockHashes:self.knownBlockHashes.array];
+        [self sendGetdataMessageWithTxHashes:nil txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:self.knownBlockHashes.array];
     }
 }
 
@@ -895,6 +907,7 @@
     else if ([MSG_INV isEqual:type]) [self acceptInvMessage:message];
     else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message isIxTransaction:NO];
     else if ([MSG_IX isEqual:type]) [self acceptTxMessage:message isIxTransaction:YES];
+    else if ([MSG_ISLOCK isEqual:type]) [self acceptIslockMessage:message];
     else if ([MSG_TXLVOTE isEqual:type]) [self acceptTxlvoteMessage:message];
     else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
     else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
@@ -1073,10 +1086,14 @@
             return @"CompactBlock";
         case DSInvType_DummyCommitment:
             return @"DummyCommitment";
-        case DSInvType_DummyContribution:
-            return @"DummyContribution";
+        case DSInvType_QuorumContribution:
+            return @"QuorumContribution";
         case DSInvType_QuorumFinalCommitment:
             return @"QuorumFinalCommitment";
+        case DSInvType_ChainLockSignature:
+            return @"ChainLockSignature";
+        case DSInvType_InstantSendLock:
+            return @"InstantSendLock";
         default:
             return @"";
     }
@@ -1089,6 +1106,7 @@
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *txLockRequestHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *instantSendLockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
     NSMutableSet *governanceObjectHashes = [NSMutableSet set];
@@ -1109,7 +1127,7 @@
         DSDLog(@"Got empty Inv message");
     }
     
-    if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify)) {
+    if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote)) {
         DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message hashAtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
     }
     
@@ -1134,6 +1152,7 @@
             case DSInvType_TxLockRequest: [txLockRequestHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_DSTx: break;
             case DSInvType_TxLockVote: [txLockVoteHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_InstantSendLock : [instantSendLockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Spork: [sporkHashes addObject:[NSData dataWithUInt256:hash]]; break;
@@ -1145,7 +1164,9 @@
             case DSInvType_MasternodeBroadcast: break;
             case DSInvType_QuorumFinalCommitment: break;
             case DSInvType_DummyCommitment: break;
-            case DSInvType_DummyContribution: break;
+            case DSInvType_QuorumContribution: break;
+            case DSInvType_CompactBlock: break;
+            case DSInvType_ChainLockSignature: break;
             default:
             {
                 NSAssert(FALSE, @"inventory type not dealt with");
@@ -1229,12 +1250,29 @@
     
     [self.knownTxLockVoteHashes unionOrderedSet:txLockVoteHashes];
     
+    if (instantSendLockHashes.count > 0) {
+        for (NSValue *hash in instantSendLockHashes) {
+            UInt256 h;
+            
+            if (! [self.knownInstantSendLockHashes containsObject:hash]) continue;
+            [hash getValue:&h];
+        }
+        
+        [instantSendLockHashes minusOrderedSet:self.knownInstantSendLockHashes];
+        
+        dispatch_async(self.delegateQueue, ^{
+            if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasInstantSendLockHashes:instantSendLockHashes];
+        });
+    }
+    
+    [self.knownInstantSendLockHashes unionOrderedSet:instantSendLockHashes];
+    
     [self.knownTxHashes unionOrderedSet:txHashes];
     [self.knownTxHashes unionOrderedSet:txLockRequestHashes];
     
-    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
+    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
         [self sendGetdataMessageWithTxHashes:txHashes.array txLockRequestHashes:txLockRequestHashes.array txLockVoteHashes:txLockVoteHashes.array
-                              blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+                             instantSendLockHashes:instantSendLockHashes.array blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
@@ -1346,6 +1384,36 @@
 #if LOG_TX_LOCK_VOTES
     DSDLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
 #endif
+    
+}
+
+- (void)acceptIslockMessage:(NSData *)message
+{
+#if LOG_TX_LOCK_VOTES
+    DSDLog(@"peer relayed islock message: %@", message.hexString);
+#endif
+    if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
+        DSDLog(@"returned instant send lock message when DML not enabled: %@", message);//no error here
+        return;
+    }
+    if (![self.chain.chainManager.sporkManager llmqInstantSendEnabled]) {
+        DSDLog(@"returned instant send lock message when llmq instant send is not enabled: %@", message);//no error here
+        return;
+    }
+    DSInstantSendTransactionLock *instantSendTransactionLock = [DSInstantSendTransactionLock instantSendTransactionLockWithMessage:message onChain:self.chain];
+    
+    if (! instantSendTransactionLock) {
+        [self error:@"malformed islock message: %@", message];
+        return;
+    }
+    else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
+        [self error:@"got islock message before loading a filter"];
+        return;
+    }
+    
+    dispatch_async(self.delegateQueue, ^{
+        [self.transactionDelegate peer:self relayedInstantSendTransactionLock:instantSendTransactionLock];;
+    });
     
 }
 
@@ -1642,8 +1710,8 @@
     DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:message onChain:self.chain];
     
     if (! block.valid) {
-        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
-        return;
+//        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
+//        return;
     }
     else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
         [self error:@"got merkleblock message before loading a filter"];
@@ -1992,10 +2060,10 @@
                         if (self.msgHeader.length < HEADER_LENGTH) continue; // wait for more stream input
                     }
                     
-                    if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
-                        [self error:@"malformed message header: %@", self.msgHeader];
-                        goto reset;
-                    }
+//                    if ([self.msgHeader UInt8AtOffset:15] != 0) { // verify msg type field is null terminated
+//                        [self error:@"malformed message header: %@", self.msgHeader];
+//                        goto reset;
+//                    }
                     
                     type = @((const char *)self.msgHeader.bytes + 4);
                     length = [self.msgHeader UInt32AtOffset:16];

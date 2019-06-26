@@ -75,7 +75,7 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 - (NSData * _Nullable)sign:(UInt256)md;
 - (BOOL)verify:(UInt256)md signature:(NSData *)sig;
 
-- (NSString * _Nullable)privateKeyStringForChain:(DSChain*)chain;
+- (NSString * _Nullable)privateKeyStringForChain:(DSChain* _Nonnull)chain;
 // Pieter Wuille's compact signature encoding used for bitcoin message signing
 // to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey
 - (NSData * _Nullable)compactSign:(UInt256)md;

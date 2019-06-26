@@ -2,7 +2,7 @@
 //  DSSimplifiedMasternodeEntryEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 7/19/18.
+//  Created by Sam Westrich on 6/19/19.
 //
 //
 
@@ -14,16 +14,23 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSSimplifiedMasternodeEntryEntity"];
 }
 
-@dynamic providerRegistrationTransactionHash;
-@dynamic confirmedHash;
 @dynamic address;
-@dynamic port;
-@dynamic operatorBLSPublicKey;
-@dynamic keyIDVoting;
+@dynamic confirmedHash;
 @dynamic isValid;
+@dynamic keyIDVoting;
+@dynamic operatorBLSPublicKey;
+@dynamic port;
+@dynamic previousOperatorBLSPublicKeys;
+@dynamic previousValidity;
+@dynamic providerRegistrationTransactionHash;
 @dynamic simplifiedMasternodeEntryHash;
-@dynamic chain;
-@dynamic localMasternode;
 @dynamic addresses;
+@dynamic chain;
+@dynamic governanceVotes;
+@dynamic localMasternode;
+@dynamic masternodeLists;
+@dynamic transactionLockVotes;
+@dynamic previousSimplifiedMasternodeEntryHashes;
+@dynamic ipv6Address;
 
 @end
