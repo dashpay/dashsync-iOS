@@ -1059,11 +1059,31 @@
                 
                 DSQuorumEntry * quorum1092912 = [[[[addedQuorums allValues] firstObject] allValues] firstObject];
                 
-                //1092912 and 1092916 are the same, 1092916 is older though and is original
+                //1092912 and 1092916 are the same, 1092916 is older though and is original 1092912 is based off reloaded
                 
                 NSArray * masternodeScores1092912 = [masternodeList1092912 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
                 
                 NSArray * masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
+                
+                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
+                
+                BOOL b = [quorum1092912 validateWithMasternodeList:masternodeList1092916];
+                
+                
+                
+                NSArray * masternodesWithNoConfirmationHash1092912 = [[[NSSet setWithArray:masternodeList1092912.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                }] allObjects];
+                
+                NSArray * masternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:masternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                }] allObjects];
+                
+                NSArray * reloadedMasternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:reloadedMasternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                }] allObjects];
+                
+                //ours means reloaded
                 
                 NSDictionary * interesting = [masternodeList1092912 compare:masternodeList1092916];
                 
