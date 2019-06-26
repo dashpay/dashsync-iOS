@@ -183,6 +183,7 @@
 
 -(void)setUp {
     [self loadMasternodeLists];
+    [self removeOldSimplifiedMasternodeEntries];
     [self loadLocalMasternodes];
     [self loadFileDistributedMasternodeLists];
 }
@@ -922,6 +923,10 @@
         [DSMerkleBlockEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
+        if (!merkleBlockEntity && ([chain checkpointForBlockHash:masternodeList.blockHash])) {
+            DSCheckpoint * checkpoint = [chain checkpointForBlockHash:masternodeList.blockHash];
+            merkleBlockEntity = [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:[checkpoint merkleBlockForChain:chain] forChain:chainEntity];
+        }
         NSAssert(merkleBlockEntity, @"merkle block should exist");
         NSAssert(!merkleBlockEntity.masternodeList, @"merkle block should not have a masternode list already");
         if (!merkleBlockEntity || merkleBlockEntity.masternodeList) hasError = YES;
@@ -1045,6 +1050,13 @@
             
             [DSQuorumEntryEntity saveContext];
         }
+    }];
+}
+
+-(void)removeOldSimplifiedMasternodeEntries {
+    if (self.currentMasternodeList) return;
+    [self.managedObjectContext performBlockAndWait:^{
+        
     }];
 }
 

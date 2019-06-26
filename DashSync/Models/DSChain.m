@@ -2293,6 +2293,13 @@ static dispatch_once_t devnetToken = 0;
     return [self initWithHash:checkpointHash height:height timestamp:timestamp target:target];
 }
 
+-(DSMerkleBlock*)merkleBlockForChain:(DSChain*)chain {
+    return [[DSMerkleBlock alloc] initWithBlockHash:self.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
+                                  merkleRoot:self.merkleRoot timestamp:self.timestamp
+                                      target:self.target nonce:0 totalTransactions:0 hashes:nil
+                                       flags:nil height:self.height];
+}
+
 -(void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeUInt256:self.checkpointHash forKey:kCheckpointHashKey];
     [aCoder encodeInt32:self.height forKey:kHeightKey];
