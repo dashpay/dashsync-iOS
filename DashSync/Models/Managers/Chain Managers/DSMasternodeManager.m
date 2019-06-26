@@ -183,6 +183,7 @@
 
 -(void)setUp {
     [self loadMasternodeLists];
+    [self removeOldSimplifiedMasternodeEntries];
     [self loadLocalMasternodes];
     [self loadFileDistributedMasternodeLists];
 }
@@ -922,6 +923,10 @@
         [DSMerkleBlockEntity setContext:context];
         DSChainEntity * chainEntity = chain.chainEntity;
         DSMerkleBlockEntity * merkleBlockEntity = [DSMerkleBlockEntity anyObjectMatching:@"blockHash == %@",uint256_data(masternodeList.blockHash)];
+        if (!merkleBlockEntity && ([chain checkpointForBlockHash:masternodeList.blockHash])) {
+            DSCheckpoint * checkpoint = [chain checkpointForBlockHash:masternodeList.blockHash];
+            merkleBlockEntity = [[DSMerkleBlockEntity managedObject] setAttributesFromBlock:[checkpoint merkleBlockForChain:chain] forChain:chainEntity];
+        }
         NSAssert(merkleBlockEntity, @"merkle block should exist");
         NSAssert(!merkleBlockEntity.masternodeList, @"merkle block should not have a masternode list already");
         if (!merkleBlockEntity || merkleBlockEntity.masternodeList) hasError = YES;
@@ -1044,6 +1049,22 @@
             }
             
             [DSQuorumEntryEntity saveContext];
+        }
+    }];
+}
+
+-(void)removeOldSimplifiedMasternodeEntries {
+    //this serves both for cleanup, but also for initial migration
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
+        NSArray<DSSimplifiedMasternodeEntryEntity *>* simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"masternodeLists.@count == 0"];
+        BOOL deletedSomething = FALSE;
+        for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in [simplifiedMasternodeEntryEntities copy]) {
+            [self.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
+            deletedSomething = TRUE;
+        }
+        if (deletedSomething) {
+            [DSSimplifiedMasternodeEntryEntity saveContext];
         }
     }];
 }

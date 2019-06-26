@@ -82,7 +82,7 @@ FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotificatio
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction,DSChain;
 
 @protocol DSChainDelegate;
 
@@ -95,6 +95,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, assign) uint32_t target;
 @property (nonatomic, strong) NSString * masternodeListName;
 @property (nonatomic, assign) UInt256 merkleRoot;
+
+-(DSMerkleBlock*)merkleBlockForChain:(DSChain*)chain;
 
 @end
 
