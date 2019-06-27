@@ -100,6 +100,12 @@
     
     [self stopSyncForChain:chain];
     DSChainEntity * chainEntity = chain.chainEntity;
+    
+    // Remove these two Entities first as they used with a Deny delete rule in DSMerkleBlockEntity
+    [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+    [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    [DSTransactionEntity saveContext];
+    
     [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
     [DSAddressEntity deleteAddressesOnChain:chainEntity];
     [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
