@@ -19,7 +19,7 @@
 
 #import "DSFetchFirstFallbackPricesOperation.h"
 #import "DSFetchSecondFallbackPricesOperation.h"
-#import "DSFetchSparkPricesOperation.h"
+#import "DSFetchDashRetailPricesOperation.h"
 #import "DSNoSucceededDependenciesCondition.h"
 #import "DSFetchSparkPricesOperation.h"
 
