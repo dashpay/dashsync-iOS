@@ -331,7 +331,11 @@
     UInt256 theirSimplifiedMasternodeEntryHash = [other simplifiedMasternodeEntryHashAtBlockHash:theirBlockHash];
     
     if (!uint256_eq(ourSimplifiedMasternodeEntryHash,theirSimplifiedMasternodeEntryHash)) {
-        differences[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{@"ours":uint256_hex(ourSimplifiedMasternodeEntryHash),@"theirs":uint256_hex(theirSimplifiedMasternodeEntryHash)};
+        differences[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{@"ours":uint256_hex(ourSimplifiedMasternodeEntryHash),@"theirs":uint256_hex(theirSimplifiedMasternodeEntryHash),@"ourBlockHeight":@([self.chain heightForBlockHash:ourBlockHash]),@"theirBlockHeight":@([self.chain heightForBlockHash:theirBlockHash])};
+    }
+    
+    if (![self.previousSimplifiedMasternodeEntryHashes isEqualToDictionary:other.previousSimplifiedMasternodeEntryHashes]) {
+        differences[@"previousSimplifiedMasternodeEntryHashes"] = @{@"ours":self.previousSimplifiedMasternodeEntryHashes,@"theirs":other.previousSimplifiedMasternodeEntryHashes};
     }
     
     if (!uint256_eq(_confirmedHash, other.confirmedHash)) {

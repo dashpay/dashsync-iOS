@@ -151,6 +151,7 @@
                                                                                      if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                          NSLog(@"update masternode list");
                                                                                          [self updateKnownMasternodes];
+                                                                                         [self updateMasternodeLists];
                                                                                      }
                                                                                  }];
     

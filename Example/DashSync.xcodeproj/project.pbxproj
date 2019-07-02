@@ -69,6 +69,35 @@
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
 		FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m */; };
 		FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */; };
+		FB1BF8E922C96DF1003413C6 /* MNL_1095648_1095672.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8CD22C96DEC003413C6 /* MNL_1095648_1095672.dat */; };
+		FB1BF8EA22C96DF1003413C6 /* MNL_1095432_1095456.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8CE22C96DEC003413C6 /* MNL_1095432_1095456.dat */; };
+		FB1BF8EB22C96DF1003413C6 /* MNL_1095960_1095984.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8CF22C96DED003413C6 /* MNL_1095960_1095984.dat */; };
+		FB1BF8EC22C96DF1003413C6 /* MNL_1095480_1095504.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D022C96DED003413C6 /* MNL_1095480_1095504.dat */; };
+		FB1BF8ED22C96DF1003413C6 /* MNL_1095768_1095792.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D122C96DED003413C6 /* MNL_1095768_1095792.dat */; };
+		FB1BF8EE22C96DF1003413C6 /* MNL_1095576_1095600.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D222C96DED003413C6 /* MNL_1095576_1095600.dat */; };
+		FB1BF8EF22C96DF1003413C6 /* MNL_1095552_1095576.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D322C96DED003413C6 /* MNL_1095552_1095576.dat */; };
+		FB1BF8F022C96DF1003413C6 /* MNL_1095600_1095624.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D422C96DED003413C6 /* MNL_1095600_1095624.dat */; };
+		FB1BF8F122C96DF1003413C6 /* MNL_1095744_1095768.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D522C96DED003413C6 /* MNL_1095744_1095768.dat */; };
+		FB1BF8F222C96DF1003413C6 /* MNL_1094400_1094976.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D622C96DED003413C6 /* MNL_1094400_1094976.dat */; };
+		FB1BF8F322C96DF1003413C6 /* MNL_1095672_1095696.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D722C96DED003413C6 /* MNL_1095672_1095696.dat */; };
+		FB1BF8F422C96DF1003413C6 /* MNL_1095264_1095432.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D822C96DEE003413C6 /* MNL_1095264_1095432.dat */; };
+		FB1BF8F522C96DF1003413C6 /* MNL_1095504_1095528.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8D922C96DEE003413C6 /* MNL_1095504_1095528.dat */; };
+		FB1BF8F622C96DF1003413C6 /* MNL_1095720_1095744.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8DA22C96DEE003413C6 /* MNL_1095720_1095744.dat */; };
+		FB1BF8F722C96DF1003413C6 /* MNL_1095984_1096003.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8DB22C96DEE003413C6 /* MNL_1095984_1096003.dat */; };
+		FB1BF8F822C96DF1003413C6 /* MNL_1093824_1094400.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8DC22C96DEE003413C6 /* MNL_1093824_1094400.dat */; };
+		FB1BF8F922C96DF1003413C6 /* MNL_1095528_1095552.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8DD22C96DEF003413C6 /* MNL_1095528_1095552.dat */; };
+		FB1BF8FA22C96DF1003413C6 /* MNL_1095696_1095720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8DE22C96DEF003413C6 /* MNL_1095696_1095720.dat */; };
+		FB1BF8FB22C96DF1003413C6 /* MNL_1095456_1095480.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8DF22C96DEF003413C6 /* MNL_1095456_1095480.dat */; };
+		FB1BF8FC22C96DF1003413C6 /* MNL_1095624_1095648.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E022C96DEF003413C6 /* MNL_1095624_1095648.dat */; };
+		FB1BF8FD22C96DF1003413C6 /* MNL_1095840_1095864.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E122C96DF0003413C6 /* MNL_1095840_1095864.dat */; };
+		FB1BF8FE22C96DF1003413C6 /* MNL_1094976_1095264.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E222C96DF0003413C6 /* MNL_1094976_1095264.dat */; };
+		FB1BF8FF22C96DF1003413C6 /* MNL_1095888_1095912.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E322C96DF0003413C6 /* MNL_1095888_1095912.dat */; };
+		FB1BF90022C96DF1003413C6 /* MNL_1095912_1095936.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E422C96DF0003413C6 /* MNL_1095912_1095936.dat */; };
+		FB1BF90122C96DF1003413C6 /* MNL_1095864_1095888.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E522C96DF0003413C6 /* MNL_1095864_1095888.dat */; };
+		FB1BF90222C96DF1003413C6 /* MNL_1095816_1095840.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E622C96DF0003413C6 /* MNL_1095816_1095840.dat */; };
+		FB1BF90322C96DF1003413C6 /* MNL_1095936_1095960.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E722C96DF1003413C6 /* MNL_1095936_1095960.dat */; };
+		FB1BF90422C96DF1003413C6 /* MNL_1095792_1095816.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8E822C96DF1003413C6 /* MNL_1095792_1095816.dat */; };
+		FB1BF90622C96E0D003413C6 /* MNL_0_1093824.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF90522C96E0D003413C6 /* MNL_0_1093824.dat */; };
 		FB20ABDF2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */; };
 		FB23895820D2EC2600921B89 /* DSGovernanceObjectListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895720D2EC2600921B89 /* DSGovernanceObjectListViewController.m */; };
 		FB23895B20D3035D00921B89 /* DSProposalTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB23895A20D3035D00921B89 /* DSProposalTableViewCell.m */; };
@@ -303,6 +332,35 @@
 		FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathViewController.m; sourceTree = "<group>"; };
 		FB12FEEB20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSStandaloneDerivationPathKeyInputViewController.h; sourceTree = "<group>"; };
 		FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathKeyInputViewController.m; sourceTree = "<group>"; };
+		FB1BF8CD22C96DEC003413C6 /* MNL_1095648_1095672.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095648_1095672.dat; sourceTree = "<group>"; };
+		FB1BF8CE22C96DEC003413C6 /* MNL_1095432_1095456.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095432_1095456.dat; sourceTree = "<group>"; };
+		FB1BF8CF22C96DED003413C6 /* MNL_1095960_1095984.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095960_1095984.dat; sourceTree = "<group>"; };
+		FB1BF8D022C96DED003413C6 /* MNL_1095480_1095504.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095480_1095504.dat; sourceTree = "<group>"; };
+		FB1BF8D122C96DED003413C6 /* MNL_1095768_1095792.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095768_1095792.dat; sourceTree = "<group>"; };
+		FB1BF8D222C96DED003413C6 /* MNL_1095576_1095600.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095576_1095600.dat; sourceTree = "<group>"; };
+		FB1BF8D322C96DED003413C6 /* MNL_1095552_1095576.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095552_1095576.dat; sourceTree = "<group>"; };
+		FB1BF8D422C96DED003413C6 /* MNL_1095600_1095624.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095600_1095624.dat; sourceTree = "<group>"; };
+		FB1BF8D522C96DED003413C6 /* MNL_1095744_1095768.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095744_1095768.dat; sourceTree = "<group>"; };
+		FB1BF8D622C96DED003413C6 /* MNL_1094400_1094976.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1094400_1094976.dat; sourceTree = "<group>"; };
+		FB1BF8D722C96DED003413C6 /* MNL_1095672_1095696.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095672_1095696.dat; sourceTree = "<group>"; };
+		FB1BF8D822C96DEE003413C6 /* MNL_1095264_1095432.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095264_1095432.dat; sourceTree = "<group>"; };
+		FB1BF8D922C96DEE003413C6 /* MNL_1095504_1095528.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095504_1095528.dat; sourceTree = "<group>"; };
+		FB1BF8DA22C96DEE003413C6 /* MNL_1095720_1095744.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095720_1095744.dat; sourceTree = "<group>"; };
+		FB1BF8DB22C96DEE003413C6 /* MNL_1095984_1096003.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095984_1096003.dat; sourceTree = "<group>"; };
+		FB1BF8DC22C96DEE003413C6 /* MNL_1093824_1094400.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1093824_1094400.dat; sourceTree = "<group>"; };
+		FB1BF8DD22C96DEF003413C6 /* MNL_1095528_1095552.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095528_1095552.dat; sourceTree = "<group>"; };
+		FB1BF8DE22C96DEF003413C6 /* MNL_1095696_1095720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095696_1095720.dat; sourceTree = "<group>"; };
+		FB1BF8DF22C96DEF003413C6 /* MNL_1095456_1095480.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095456_1095480.dat; sourceTree = "<group>"; };
+		FB1BF8E022C96DEF003413C6 /* MNL_1095624_1095648.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095624_1095648.dat; sourceTree = "<group>"; };
+		FB1BF8E122C96DF0003413C6 /* MNL_1095840_1095864.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095840_1095864.dat; sourceTree = "<group>"; };
+		FB1BF8E222C96DF0003413C6 /* MNL_1094976_1095264.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1094976_1095264.dat; sourceTree = "<group>"; };
+		FB1BF8E322C96DF0003413C6 /* MNL_1095888_1095912.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095888_1095912.dat; sourceTree = "<group>"; };
+		FB1BF8E422C96DF0003413C6 /* MNL_1095912_1095936.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095912_1095936.dat; sourceTree = "<group>"; };
+		FB1BF8E522C96DF0003413C6 /* MNL_1095864_1095888.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095864_1095888.dat; sourceTree = "<group>"; };
+		FB1BF8E622C96DF0003413C6 /* MNL_1095816_1095840.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095816_1095840.dat; sourceTree = "<group>"; };
+		FB1BF8E722C96DF1003413C6 /* MNL_1095936_1095960.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095936_1095960.dat; sourceTree = "<group>"; };
+		FB1BF8E822C96DF1003413C6 /* MNL_1095792_1095816.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095792_1095816.dat; sourceTree = "<group>"; };
+		FB1BF90522C96E0D003413C6 /* MNL_0_1093824.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1093824.dat; sourceTree = "<group>"; };
 		FB20ABDD2228417C00DD2FF2 /* DSReclaimMasternodeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSReclaimMasternodeViewController.h; sourceTree = "<group>"; };
 		FB20ABDE2228417C00DD2FF2 /* DSReclaimMasternodeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSReclaimMasternodeViewController.m; sourceTree = "<group>"; };
 		FB23895620D2EC2600921B89 /* DSGovernanceObjectListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSGovernanceObjectListViewController.h; sourceTree = "<group>"; };
@@ -779,6 +837,42 @@
 			name = Masternodes;
 			sourceTree = "<group>";
 		};
+		FB1BF8CC22C96DCF003413C6 /* AdvancedReorderTest */ = {
+			isa = PBXGroup;
+			children = (
+				FB1BF90522C96E0D003413C6 /* MNL_0_1093824.dat */,
+				FB1BF8DC22C96DEE003413C6 /* MNL_1093824_1094400.dat */,
+				FB1BF8D622C96DED003413C6 /* MNL_1094400_1094976.dat */,
+				FB1BF8E222C96DF0003413C6 /* MNL_1094976_1095264.dat */,
+				FB1BF8D822C96DEE003413C6 /* MNL_1095264_1095432.dat */,
+				FB1BF8CE22C96DEC003413C6 /* MNL_1095432_1095456.dat */,
+				FB1BF8DF22C96DEF003413C6 /* MNL_1095456_1095480.dat */,
+				FB1BF8D022C96DED003413C6 /* MNL_1095480_1095504.dat */,
+				FB1BF8D922C96DEE003413C6 /* MNL_1095504_1095528.dat */,
+				FB1BF8DD22C96DEF003413C6 /* MNL_1095528_1095552.dat */,
+				FB1BF8D322C96DED003413C6 /* MNL_1095552_1095576.dat */,
+				FB1BF8D222C96DED003413C6 /* MNL_1095576_1095600.dat */,
+				FB1BF8D422C96DED003413C6 /* MNL_1095600_1095624.dat */,
+				FB1BF8E022C96DEF003413C6 /* MNL_1095624_1095648.dat */,
+				FB1BF8CD22C96DEC003413C6 /* MNL_1095648_1095672.dat */,
+				FB1BF8D722C96DED003413C6 /* MNL_1095672_1095696.dat */,
+				FB1BF8DE22C96DEF003413C6 /* MNL_1095696_1095720.dat */,
+				FB1BF8DA22C96DEE003413C6 /* MNL_1095720_1095744.dat */,
+				FB1BF8D522C96DED003413C6 /* MNL_1095744_1095768.dat */,
+				FB1BF8D122C96DED003413C6 /* MNL_1095768_1095792.dat */,
+				FB1BF8E822C96DF1003413C6 /* MNL_1095792_1095816.dat */,
+				FB1BF8E622C96DF0003413C6 /* MNL_1095816_1095840.dat */,
+				FB1BF8E122C96DF0003413C6 /* MNL_1095840_1095864.dat */,
+				FB1BF8E522C96DF0003413C6 /* MNL_1095864_1095888.dat */,
+				FB1BF8E322C96DF0003413C6 /* MNL_1095888_1095912.dat */,
+				FB1BF8E422C96DF0003413C6 /* MNL_1095912_1095936.dat */,
+				FB1BF8E722C96DF1003413C6 /* MNL_1095936_1095960.dat */,
+				FB1BF8CF22C96DED003413C6 /* MNL_1095960_1095984.dat */,
+				FB1BF8DB22C96DEE003413C6 /* MNL_1095984_1096003.dat */,
+			);
+			name = AdvancedReorderTest;
+			sourceTree = "<group>";
+		};
 		FB23895520D2EBE800921B89 /* Governance */ = {
 			isa = PBXGroup;
 			children = (
@@ -932,6 +1026,7 @@
 		FB76C5A822BD7B9700DF2B29 /* MasternodeLists */ = {
 			isa = PBXGroup;
 			children = (
+				FB1BF8CC22C96DCF003413C6 /* AdvancedReorderTest */,
 				FBEA6EE422C2ADC300CBCA77 /* ReorderTest */,
 				FBEA6EDC22C291BB00CBCA77 /* MNL_0_1092888.dat */,
 				FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */,
@@ -1179,42 +1274,71 @@
 				FBEA6EE322C291E400CBCA77 /* MNL_1092916_1092940.dat in Resources */,
 				FBEA6F0722C2AE0A00CBCA77 /* MNL_1092600_1092624.dat in Resources */,
 				FBEA6F0B22C2AE0A00CBCA77 /* MNL_1092720_1092744.dat in Resources */,
+				FB1BF8FF22C96DF1003413C6 /* MNL_1095888_1095912.dat in Resources */,
+				FB1BF8F022C96DF1003413C6 /* MNL_1095600_1095624.dat in Resources */,
+				FB1BF90122C96DF1003413C6 /* MNL_1095864_1095888.dat in Resources */,
+				FB1BF90622C96E0D003413C6 /* MNL_0_1093824.dat in Resources */,
 				FBEA6F0422C2AE0A00CBCA77 /* MNL_1090944_1091520.dat in Resources */,
 				FBEA6F1122C2AE0A00CBCA77 /* MNL_1091808_1092096.dat in Resources */,
+				FB1BF90022C96DF1003413C6 /* MNL_1095912_1095936.dat in Resources */,
+				FB1BF90422C96DF1003413C6 /* MNL_1095792_1095816.dat in Resources */,
+				FB1BF8FE22C96DF1003413C6 /* MNL_1094976_1095264.dat in Resources */,
 				FBEA6F0622C2AE0A00CBCA77 /* MNL_1092552_1092576.dat in Resources */,
 				FBEA6F1722C2AE0A00CBCA77 /* MNL_1092432_1092456.dat in Resources */,
 				FBEA6F1922C2AE0A00CBCA77 /* MNL_1092696_1092720.dat in Resources */,
+				FB1BF8F822C96DF1003413C6 /* MNL_1093824_1094400.dat in Resources */,
+				FB1BF8F522C96DF1003413C6 /* MNL_1095504_1095528.dat in Resources */,
 				FB3A390E22BE62D900801F39 /* MasternodeListTestnet119064.dat in Resources */,
 				FBEA6F0222C2AE0A00CBCA77 /* MNL_1092792_1092816.dat in Resources */,
 				FBEA6F1022C2AE0A00CBCA77 /* MNL_1092504_1092528.dat in Resources */,
+				FB1BF8EB22C96DF1003413C6 /* MNL_1095960_1095984.dat in Resources */,
 				FBEA6F0322C2AE0A00CBCA77 /* MNL_1092576_1092600.dat in Resources */,
+				FB1BF8EF22C96DF1003413C6 /* MNL_1095552_1095576.dat in Resources */,
+				FB1BF8EE22C96DF1003413C6 /* MNL_1095576_1095600.dat in Resources */,
 				FBEA6F0922C2AE0A00CBCA77 /* MNL_1092816_1092840.dat in Resources */,
+				FB1BF8F122C96DF1003413C6 /* MNL_1095744_1095768.dat in Resources */,
+				FB1BF8ED22C96DF1003413C6 /* MNL_1095768_1095792.dat in Resources */,
+				FB1BF8FD22C96DF1003413C6 /* MNL_1095840_1095864.dat in Resources */,
 				FBEA6F1222C2AE0A00CBCA77 /* MNL_1092528_1092552.dat in Resources */,
 				FBEA6EDF22C291CB00CBCA77 /* MNL_1092888_1092916.dat in Resources */,
 				FBEA6F1422C2AE0A00CBCA77 /* MNL_1092096_1092336.dat in Resources */,
 				FBEA6ED722BE671D00CBCA77 /* DiffListTestnet119064to119200.dat in Resources */,
+				FB1BF8EC22C96DF1003413C6 /* MNL_1095480_1095504.dat in Resources */,
+				FB1BF8FA22C96DF1003413C6 /* MNL_1095696_1095720.dat in Resources */,
 				FBEA6F1A22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat in Resources */,
 				2A5C601822BFE0D100C6003F /* MNL_122064_122088.dat in Resources */,
 				FBEA6F0F22C2AE0A00CBCA77 /* MNL_1092840_1092864.dat in Resources */,
+				FB1BF8FC22C96DF1003413C6 /* MNL_1095624_1095648.dat in Resources */,
+				FB1BF8F622C96DF1003413C6 /* MNL_1095720_1095744.dat in Resources */,
+				FB1BF8EA22C96DF1003413C6 /* MNL_1095432_1095456.dat in Resources */,
+				FB1BF90222C96DF1003413C6 /* MNL_1095816_1095840.dat in Resources */,
 				FBEA6EDD22C291BB00CBCA77 /* MNL_0_1092888.dat in Resources */,
 				FBEA6EDB22C0637300CBCA77 /* MNL_122928_123000.dat in Resources */,
+				FB1BF8F722C96DF1003413C6 /* MNL_1095984_1096003.dat in Resources */,
 				FBEA6F1C22C2AE0A00CBCA77 /* MNL_1092408_1092432.dat in Resources */,
 				2A5C601422BFC65E00C6003F /* ML_at_122088.dat in Resources */,
+				FB1BF90322C96DF1003413C6 /* MNL_1095936_1095960.dat in Resources */,
 				FBEA6ED922C0636A00CBCA77 /* MNL_0_122928.dat in Resources */,
 				FBEA6F1B22C2AE0A00CBCA77 /* MNL_1092768_1092792.dat in Resources */,
 				FBE1560022B99368009CA817 /* MasternodeList1088800.dat in Resources */,
 				6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */,
+				FB1BF8E922C96DF1003413C6 /* MNL_1095648_1095672.dat in Resources */,
+				FB1BF8FB22C96DF1003413C6 /* MNL_1095456_1095480.dat in Resources */,
 				FBEA6F0E22C2AE0A00CBCA77 /* MNL_1092744_1092768.dat in Resources */,
 				FBEA6F0522C2AE0A00CBCA77 /* MNL_1092456_1092480.dat in Resources */,
+				FB1BF8F422C96DF1003413C6 /* MNL_1095264_1095432.dat in Resources */,
 				FBEA6F1322C2AE0A00CBCA77 /* MNL_1092624_1092648.dat in Resources */,
 				FBEA6F0D22C2AE0A00CBCA77 /* MNL_1092648_1092672.dat in Resources */,
 				FBEA6F0C22C2AE0A00CBCA77 /* MNL_1092480_1092504.dat in Resources */,
 				2A5C601722BFE0D100C6003F /* MNL_0_122064.dat in Resources */,
+				FB1BF8F322C96DF1003413C6 /* MNL_1095672_1095696.dat in Resources */,
 				FBEA6F1622C2AE0A00CBCA77 /* MNL_1092336_1092360.dat in Resources */,
 				FBEA6EE622C2ADD700CBCA77 /* MNL_0_1090944.dat in Resources */,
 				FBEA6EE122C291D600CBCA77 /* MNL_1092888_1092912.dat in Resources */,
 				FBEA6F0A22C2AE0A00CBCA77 /* MNL_1091520_1091808.dat in Resources */,
 				FBEA6F1522C2AE0A00CBCA77 /* MNL_1092864_1092888.dat in Resources */,
+				FB1BF8F922C96DF1003413C6 /* MNL_1095528_1095552.dat in Resources */,
+				FB1BF8F222C96DF1003413C6 /* MNL_1094400_1094976.dat in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

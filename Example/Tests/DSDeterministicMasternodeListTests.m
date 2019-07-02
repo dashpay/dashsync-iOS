@@ -541,43 +541,43 @@
                         XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRoot]),uint256_data([masternodeListNew calculateMasternodeMerkleRoot]),@"");
                         
                     } else {
-                    DSMasternodeList * masternodeListNew = masternodeList;
-                    
-                    DSMasternodeList * masternodeListOld = nextBaseMasternodList;
-                    
-                    [chain.chainManager.masternodeManager reloadMasternodeLists]; //simulate that we turned off the phone
-                    
-                    
-                    DSMasternodeList * reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
-                    
-                    DSMasternodeList * reloadedMasternodeListOld = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListOld.blockHash];
-                    
-                    NSDictionary * comparisonOld = [masternodeListOld compare:reloadedMasternodeListOld];
-                    
-                    NSDictionary * comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew];
-                    
-                    if (![reloadedMasternodeListOld.hashesForMerkleRoot isEqualToArray:masternodeListOld.hashesForMerkleRoot]) {
-                        NSMutableSet * reloadedSet = [NSMutableSet setWithArray:reloadedMasternodeListOld.hashesForMerkleRoot];
-                        NSMutableSet * originalSet = [NSMutableSet setWithArray:masternodeListOld.hashesForMerkleRoot];
-                        NSMutableSet * intersection = [reloadedSet mutableCopy];
-                        [intersection intersectSet:originalSet];
-                        NSMutableSet * missing = [originalSet mutableCopy];
-                        [missing minusSet:intersection];
-                        NSMutableSet * appeared = [reloadedSet mutableCopy];
-                        [appeared minusSet:intersection];
-                        NSLog(@"here");
-                    }
-                    
-                    XCTAssertEqualObjects(reloadedMasternodeListNew.providerTxOrderedHashes , masternodeListNew.providerTxOrderedHashes);
-                    
-                    XCTAssertEqualObjects(reloadedMasternodeListOld.providerTxOrderedHashes , masternodeListOld.providerTxOrderedHashes);
-                    
-                    
-                    
-                    XCTAssertEqualObjects(reloadedMasternodeListOld.hashesForMerkleRoot , masternodeListOld.hashesForMerkleRoot);
-                    
-                    XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRoot]),uint256_data([masternodeListNew calculateMasternodeMerkleRoot]),@"");
-                    XCTAssertEqualObjects(uint256_data([reloadedMasternodeListOld calculateMasternodeMerkleRoot]),uint256_data([masternodeListOld calculateMasternodeMerkleRoot]),@"");
+                        DSMasternodeList * masternodeListNew = masternodeList;
+                        
+                        DSMasternodeList * masternodeListOld = nextBaseMasternodList;
+                        
+                        [chain.chainManager.masternodeManager reloadMasternodeLists]; //simulate that we turned off the phone
+                        
+                        
+                        DSMasternodeList * reloadedMasternodeListNew = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListNew.blockHash];
+                        
+                        DSMasternodeList * reloadedMasternodeListOld = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListOld.blockHash];
+                        
+                        NSDictionary * comparisonOld = [masternodeListOld compare:reloadedMasternodeListOld];
+                        
+                        NSDictionary * comparisonNew = [masternodeListNew compare:reloadedMasternodeListNew];
+                        
+                        if (![reloadedMasternodeListOld.hashesForMerkleRoot isEqualToArray:masternodeListOld.hashesForMerkleRoot]) {
+                            NSMutableSet * reloadedSet = [NSMutableSet setWithArray:reloadedMasternodeListOld.hashesForMerkleRoot];
+                            NSMutableSet * originalSet = [NSMutableSet setWithArray:masternodeListOld.hashesForMerkleRoot];
+                            NSMutableSet * intersection = [reloadedSet mutableCopy];
+                            [intersection intersectSet:originalSet];
+                            NSMutableSet * missing = [originalSet mutableCopy];
+                            [missing minusSet:intersection];
+                            NSMutableSet * appeared = [reloadedSet mutableCopy];
+                            [appeared minusSet:intersection];
+                            NSLog(@"here");
+                        }
+                        
+                        XCTAssertEqualObjects(reloadedMasternodeListNew.providerTxOrderedHashes , masternodeListNew.providerTxOrderedHashes);
+                        
+                        XCTAssertEqualObjects(reloadedMasternodeListOld.providerTxOrderedHashes , masternodeListOld.providerTxOrderedHashes);
+                        
+                        
+                        
+                        XCTAssertEqualObjects(reloadedMasternodeListOld.hashesForMerkleRoot , masternodeListOld.hashesForMerkleRoot);
+                        
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListNew calculateMasternodeMerkleRoot]),uint256_data([masternodeListNew calculateMasternodeMerkleRoot]),@"");
+                        XCTAssertEqualObjects(uint256_data([reloadedMasternodeListOld calculateMasternodeMerkleRoot]),uint256_data([masternodeListOld calculateMasternodeMerkleRoot]),@"");
                     }
                 }
                 
@@ -590,7 +590,6 @@
                 
             }
             dispatch_semaphore_signal(sem);
-            NSLog(@"finished %@",file);
         }];
         dispatch_semaphore_wait(sem, 100000);
         if (stop) {
@@ -898,10 +897,39 @@
     }];
     [chain.chainManager.masternodeManager reloadMasternodeLists];
     NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
-
+    
     
     [self loadMasternodeListsForFiles:files baseMasternodeList:nil withReload:NO onChain:chain inContext:context completion:^(NSDictionary * masternodeLists) {
         
+    }];
+}
+
+-(void)testMNLReloadAgain {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456"/*, @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720", @"MNL_1095720_1095744", @"MNL_1095744_1095768", @"MNL_1095768_1095792", @"MNL_1095792_1095816", @"MNL_1095816_1095840", @"MNL_1095840_1095864", @"MNL_1095864_1095888", @"MNL_1095888_1095912", @"MNL_1095912_1095936", @"MNL_1095936_1095960", @"MNL_1095960_1095984", @"MNL_1095984_1096003"*/];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withReload:NO onChain:chain inContext:context completion:^(NSDictionary * masternodeLists) {
+        [chain.chainManager.masternodeManager reloadMasternodeLists];
+        for (NSData * masternodeListBlockHash in masternodeLists) {
+            NSLog(@"Testing masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
+            DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
+            DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+            if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot])) {
+                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList];
+                NSLog(@"%@",comparisonResult);
+            }
+            XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
+        }
     }];
 }
 
@@ -1065,27 +1093,27 @@
                 
                 NSArray * masternodeScores1092916 = [masternodeList1092916 scoresForQuorumModifier:quorum1092912.llmqQuorumHash];
                 
-//                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
-//
-//                BOOL b = [quorum1092912 validateWithMasternodeList:masternodeList1092916];
-//
-//
+                //                BOOL a = [quorum1092912 validateWithMasternodeList:masternodeList1092912];
+                //
+                //                BOOL b = [quorum1092912 validateWithMasternodeList:masternodeList1092916];
+                //
+                //
                 
-//                NSArray * masternodesWithNoConfirmationHash1092912 = [[[NSSet setWithArray:masternodeList1092912.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
-//                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
-//                }] allObjects];
-//                
-//                NSArray * masternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:masternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
-//                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
-//                }] allObjects];
-//                
-//                NSArray * reloadedMasternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:reloadedMasternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
-//                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
-//                }] allObjects];
+                //                NSArray * masternodesWithNoConfirmationHash1092912 = [[[NSSet setWithArray:masternodeList1092912.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                //                }] allObjects];
+                //
+                //                NSArray * masternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:masternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                //                }] allObjects];
+                //
+                //                NSArray * reloadedMasternodesWithNoConfirmationHash1092916 = [[[NSSet setWithArray:reloadedMasternodeList1092916.simplifiedMasternodeEntries] objectsPassingTest:^BOOL(id  _Nonnull obj, BOOL * _Nonnull stop) {
+                //                    return uint256_is_zero(((DSSimplifiedMasternodeEntry*)obj).confirmedHash);
+                //                }] allObjects];
                 
                 //ours means reloaded
                 
-//                NSDictionary * interesting = [masternodeList1092912 compare:masternodeList1092916];
+                //                NSDictionary * interesting = [masternodeList1092912 compare:masternodeList1092916];
                 
                 XCTAssertEqualObjects(masternodeScores1092912,masternodeScores1092916,@"These should be the same");
                 
@@ -1094,17 +1122,17 @@
                 NSArray<DSSimplifiedMasternodeEntry*> * masternodes1092916 = [masternodeList1092916 masternodesForQuorumModifier:quorum1092912.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:quorum1092912.llmqType]];
                 
                 XCTAssertEqualObjects(masternodes1092912,masternodes1092916,@"These should be the same");
-//                NSMutableArray * publicKeyArray = [NSMutableArray array];
-//                uint32_t i = 0;
-//                for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
-//                    if ([self.signersBitset bitIsTrueAtIndex:i]) {
-//                        DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHash:masternodeList.blockHash] onChain:self.chain];
-//                        [publicKeyArray addObject:masternodePublicKey];
-//                    }
-//                    i++;
-//                }
-//                [addedQuorums[0] val]
-//
+                //                NSMutableArray * publicKeyArray = [NSMutableArray array];
+                //                uint32_t i = 0;
+                //                for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
+                //                    if ([self.signersBitset bitIsTrueAtIndex:i]) {
+                //                        DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHash:masternodeList.blockHash] onChain:self.chain];
+                //                        [publicKeyArray addObject:masternodePublicKey];
+                //                    }
+                //                    i++;
+                //                }
+                //                [addedQuorums[0] val]
+                //
                 
                 NSError * error = nil;
                 

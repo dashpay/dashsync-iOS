@@ -35,7 +35,7 @@
         }
         [quorumEntriesArray addObject:quorumEntry];
     }
-    return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 atBlockHeight:self.block.height onChain:self.block.chain.chain];
+    return [DSMasternodeList masternodeListWithSimplifiedMasternodeEntries:masternodeEntriesArray quorumEntries:quorumEntriesArray atBlockHash:self.block.blockHash.UInt256 atBlockHeight:self.block.height withMasternodeMerkleRootHash:self.masternodeListMerkleRoot.UInt256 withQuorumMerkleRootHash:self.quorumListMerkleRoot.UInt256 onChain:self.block.chain.chain];
 }
 
 + (void)deleteAllOnChain:(DSChainEntity*)chainEntity {

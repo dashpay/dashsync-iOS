@@ -14,6 +14,7 @@
 #import "DSMasternodeDetailViewController.h"
 #import "DSMasternodeViewController.h"
 #import "BRBubbleView.h"
+#import "DSMerkleBlock.h"
 
 @interface DSMasternodeListsViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
@@ -163,16 +164,18 @@
 
 
 -(void)configureCell:(DSMasternodeListTableViewCell*)cell atIndexPath:(NSIndexPath *)indexPath {
-    DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.heightLabel.text = [NSString stringWithFormat:@"%u",masternodeListEntity.block.height];
-    cell.countLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)masternodeListEntity.masternodes.count];
-    NSNumber * valid = [self.validMerkleRootDictionary objectForKey:masternodeListEntity.block.blockHash];
-    [cell.validButton setTitle:valid?([valid boolValue]?@"V":@"X"):@"?" forState:UIControlStateNormal];
+    if (cell) {
+        DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        cell.heightLabel.text = [NSString stringWithFormat:@"%u",masternodeListEntity.block.height];
+        cell.countLabel.text = [NSString stringWithFormat:@"%lu",(unsigned long)masternodeListEntity.masternodes.count];
+        NSNumber * valid = [self.validMerkleRootDictionary objectForKey:masternodeListEntity.block.blockHash];
+        [cell.validButton setTitle:valid?([valid boolValue]?@"V":@"X"):@"?" forState:UIControlStateNormal];
+    }
 }
 
 -(IBAction)fetchMasternodeList:(id)sender {
-    uint32_t previousBlockHeight = self.previousBlockHeightTextField.text?[self.previousBlockHeightTextField.text intValue]:0;
-    uint32_t blockHeight = self.blockHeightTextField.text?[self.blockHeightTextField.text intValue]:0;
+    uint32_t previousBlockHeight = (![self.previousBlockHeightTextField.text isEqualToString:@""])?[self.previousBlockHeightTextField.text intValue]:0;
+    uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""])?[self.blockHeightTextField.text intValue]:self.chain.lastBlock.height;
 
     NSError * error = nil;
     [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight previousBlockHeight:previousBlockHeight error:&error];
@@ -183,6 +186,10 @@
     }
 }
 
+-(IBAction)reloadList:(id)sender {
+    [self.chain.chainManager.masternodeManager reloadMasternodeLists];
+}
+
 -(void)masternodeListTableViewCellRequestsValidation:(DSMasternodeListTableViewCell *)tableViewCell {
     NSIndexPath * indexPath = [self.tableView indexPathForCell:tableViewCell];
     DSMasternodeListEntity *masternodeListEntity = [self.fetchedResultsController objectAtIndexPath:indexPath];
@@ -190,6 +197,9 @@
     BOOL equal = uint256_eq(masternodeListEntity.masternodeListMerkleRoot.UInt256, [masternodeList masternodeMerkleRoot]);
     [self.validMerkleRootDictionary setObject:@(equal) forKey:uint256_data(masternodeList.blockHash)];
     [tableViewCell.validButton setTitle:(equal?@"V":@"X") forState:UIControlStateNormal];
+    if (!equal) {
+        DSDLog(@"The merkle roots are not equal, from disk we have <%@> calculated we have <%@>",masternodeListEntity.masternodeListMerkleRoot.hexString,uint256_hex([masternodeList masternodeMerkleRoot]));
+    }
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

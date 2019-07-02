@@ -54,7 +54,7 @@
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
-#define MAX_FAULTY_DML_PEERS 3
+#define MAX_FAULTY_DML_PEERS 2
 
 
 @interface DSMasternodeManager()
@@ -747,7 +747,7 @@
 #define LOG_MASTERNODE_DIFF 0 && DEBUG
 #define FETCH_NEEDED_QUORUMS 1
 #define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
@@ -778,11 +778,13 @@
     
     if ([self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)]) {
         //we already have this
+        DSDLog(@"We already this masternodeList %@ (%u)",uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
         return; //no need to do anything more
     }
     
     if ([self.masternodeListsBlockHashStubs containsObject:uint256_data(blockHash)]) {
         //we already have this
+        DSDLog(@"We already have a stub for %@ (%u)",uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
         return; //no need to do anything more
     }
     
@@ -814,7 +816,7 @@
     [self processMasternodeDiffMessage:message baseMasternodeList:baseMasternodeList lastBlock:lastBlock completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList *masternodeList, NSDictionary *addedMasternodes, NSDictionary *modifiedMasternodes, NSDictionary *addedQuorums, NSOrderedSet *neededMissingMasternodeLists) {
         
         
-        if (foundCoinbase && validCoinbase && /*rootMNListValid &&*/ rootQuorumListValid && validQuorums) {
+        if (foundCoinbase && validCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
             DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
