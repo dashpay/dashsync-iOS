@@ -119,6 +119,7 @@
     self.quorumHash = quorumHash;
     self.quorumPublicKey = quorumPublicKey;
     self.quorumEntryHash = commitmentHash;
+    DSDLog(@"Quorum %u is %u verified at %d",self.llmqType,verified,[chain heightForBlockHash:quorumHash]);
     self.verified = verified;
     self.chain = chain;
     
@@ -190,7 +191,10 @@
 
 -(BOOL)validateWithMasternodeList:(DSMasternodeList*)masternodeList {
     
-    if (!masternodeList) return NO;
+    if (!masternodeList) {
+        DSDLog(@"Trying to validate a quorum without a masternode list");
+        return NO;
+    }
     
     //The quorumHash must match the current DKG session
     //todo

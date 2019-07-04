@@ -90,30 +90,36 @@
     [self stopSyncForChain:chain];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager removeTrustedPeerHost];
     [[[DSChainsManager sharedInstance] chainManagerForChain:chain].peerManager clearPeers];
-    DSChainEntity * chainEntity = chain.chainEntity;
-    [DSPeerEntity deletePeersForChain:chainEntity];
-    [DSPeerEntity saveContext];
+    NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSPeerEntity deletePeersForChain:chainEntity];
+        [DSPeerEntity saveContext];
+        }];
 }
 
 -(void)wipeBlockchainDataForChain:(DSChain*)chain {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    DSChainEntity * chainEntity = chain.chainEntity;
-    [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
-    [DSAddressEntity deleteAddressesOnChain:chainEntity];
-    [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
-    [chain wipeBlockchainInfo];
-    [DSTransactionEntity saveContext];
-    [chain reloadDerivationPaths];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
-    });
+    NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
+        [DSAddressEntity deleteAddressesOnChain:chainEntity];
+        [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+        [chain wipeBlockchainInfo];
+        [DSTransactionEntity saveContext];
+        [chain reloadDerivationPaths];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlocksDidChangeNotification object:nil];
+        });
+    }];
 }
 
--(void)wipeMasternodeDataForChain:(DSChain*)chain {
+-(void)wipeMasternodeDataForChain:(DSChain*)chain reloadCheckpoints:(BOOL)reloadCheckpoints {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
@@ -132,6 +138,9 @@
         [chainManager.masternodeManager wipeMasternodeInfo];
         [DSSimplifiedMasternodeEntryEntity saveContext];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
+        if (reloadCheckpoints) {
+            [chainManager.masternodeManager loadFileDistributedMasternodeLists];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
@@ -143,35 +152,41 @@
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    DSChainEntity * chainEntity = chain.chainEntity;
-    [DSSporkEntity deleteSporksOnChain:chainEntity];
-    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-    [chainManager.sporkManager wipeSporkInfo];
-    [DSSporkEntity saveContext];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-    });
+    NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSporkEntity deleteSporksOnChain:chainEntity];
+        DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
+        [chainManager.sporkManager wipeSporkInfo];
+        [DSSporkEntity saveContext];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSSporkListDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+        });
+    }];
 }
 
 -(void)wipeGovernanceDataForChain:(DSChain*)chain {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
-    DSChainEntity * chainEntity = chain.chainEntity;
-    [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
-    [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
-    DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
-    [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObject];
-    [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
-    [chainManager.governanceSyncManager wipeGovernanceInfo];
-    [DSGovernanceObjectHashEntity saveContext];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-    });
+    NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSGovernanceObjectHashEntity deleteHashesOnChain:chainEntity];
+        [DSGovernanceVoteHashEntity deleteHashesOnChain:chainEntity];
+        DSChainManager * chainManager = [[DSChainsManager sharedInstance] chainManagerForChain:chain];
+        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObject];
+        [chainManager resetSyncCountInfo:DSSyncCountInfo_GovernanceObjectVote];
+        [chainManager.governanceSyncManager wipeGovernanceInfo];
+        [DSGovernanceObjectHashEntity saveContext];
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_GOVERANCE_OBJECTS]];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVotesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceObjectCountUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSGovernanceVoteCountUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+        });
+    }];
 }
 
 -(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication {
@@ -186,18 +201,18 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
     } else {
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
-        if (authenticatedOrSuccess) {
-            [chain wipeWalletsAndDerivatives];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneAddressesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-                [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
-            });
-        }
-    }];
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+            if (authenticatedOrSuccess) {
+                [chain wipeWalletsAndDerivatives];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneAddressesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainWalletsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
+                });
+            }
+        }];
     }
-
+    
 }
 
 -(uint64_t)dbSize {

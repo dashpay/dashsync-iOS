@@ -682,6 +682,8 @@
                 
                 if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
                     [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                } else {
+                    DSDLog(@"Quorum masternode list not found and block not available");
                 }
             }
             

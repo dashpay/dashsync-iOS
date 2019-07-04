@@ -263,7 +263,7 @@
             [[DashSync sharedSyncController] wipePeerDataForChain:chain];
             [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
             [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
-            [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain];
+            [[DashSync sharedSyncController] wipeMasternodeDataForChain:chain reloadCheckpoints:NO];
             [[DashSync sharedSyncController] wipeGovernanceDataForChain:chain];
             [[DashSync sharedSyncController] wipeWalletDataForChain:chain forceReauthentication:NO]; //this takes care of blockchain info as well;
             [self.knownDevnetChains removeObject:chain];
