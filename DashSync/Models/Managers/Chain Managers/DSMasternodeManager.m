@@ -88,7 +88,7 @@
     _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _masternodeListsBlockHashStubs = [NSMutableSet set];
-    _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set]
+    _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     _testingMasternodeListRetrieval = NO;
