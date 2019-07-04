@@ -116,7 +116,7 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 -(void)wipePeerDataForChain:(DSChain* _Nonnull)chain;
 -(void)wipeBlockchainDataForChain:(DSChain* _Nonnull)chain;
 -(void)wipeGovernanceDataForChain:(DSChain* _Nonnull)chain;
--(void)wipeMasternodeDataForChain:(DSChain* _Nonnull)chain reloadCheckpoints:(BOOL)reloadCheckpoints;
+-(void)wipeMasternodeDataForChain:(DSChain* _Nonnull)chain;
 -(void)wipeSporkDataForChain:(DSChain* _Nonnull)chain;
 -(void)wipeWalletDataForChain:(DSChain* _Nonnull)chain forceReauthentication:(BOOL)forceReauthentication;
 

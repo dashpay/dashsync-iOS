@@ -1065,6 +1065,8 @@ static dispatch_once_t devnetToken = 0;
     [DSChainEntity setContext:context];
     [DSSimplifiedMasternodeEntryEntity setContext:context];
     [DSLocalMasternodeEntity setContext:context];
+    [DSQuorumEntryEntity setContext:context];
+    [DSMasternodeListEntity setContext:context];
     DSChainEntity * chainEntity = self.chainEntity;
     [DSLocalMasternodeEntity deleteAllOnChain:chainEntity];
     [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];

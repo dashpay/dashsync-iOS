@@ -73,6 +73,7 @@
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableOrderedSet <NSData*>* masternodeListRetrievalQueue;
 @property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
+@property (nonatomic,assign) uint16_t timedOutAttempt;
 @property (nonatomic,strong) NSDictionary <NSData*,NSString*>* fileDistributedMasternodeLists; //string is the path
 
 @end
@@ -95,6 +96,7 @@
     self.managedObjectContext = [NSManagedObject context];
     self.lastQueriedBlockHash = UINT256_ZERO;
     self.processingMasternodeListBlockHash = UINT256_ZERO;
+    _timedOutAttempt = 0;
     return self;
 }
 
@@ -310,7 +312,7 @@
 
 -(void)dequeueMasternodeListRequest {
     if (![self.masternodeListRetrievalQueue count]) return;
-    if (self.peerManager.downloadPeer.status != DSPeerStatus_Connected) {
+    if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
             [self dequeueMasternodeListRequest];
         });
@@ -333,12 +335,14 @@
                 UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
                 DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
                 [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
                     if (![self.masternodeListRetrievalQueue count]) return;
+                    self.timedOutAttempt++;
                     UInt256 timeoutBlockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
                     if (uint256_eq(timeoutBlockHash, blockHash) && !uint256_eq(self.processingMasternodeListBlockHash, blockHash)) {
                         DSDLog(@"TimedOut");
                         //timeout
+                        [self.peerManager.downloadPeer disconnect];
                         [self dequeueMasternodeListRequest];
                     }
                 });
@@ -428,11 +432,7 @@
         for (NSData * blockHash in orderedBlockHashes) {
             DSDLog(@"adding retrieval of masternode list at height %u to queue (%@)",[self  heightForBlockHash:blockHash.UInt256],blockHash.reverse.hexString);
         }
-        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self.masternodeListRetrievalQueue addObjectsFromArray:orderedBlockHashes];
-        if (emptyRequestQueue) {
-            [self dequeueMasternodeListRequest];
-        }
     }
 }
 
@@ -456,6 +456,7 @@
     if (uint256_is_zero(previousBlockHash)) {
         //this is safe
         [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:uint256_data(blockHash)]];
+        [self dequeueMasternodeListRequest];
         return;
     }
     @synchronized (self.masternodeListRetrievalQueue) {
@@ -764,6 +765,8 @@
     DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
 #endif
     
+    self.timedOutAttempt = 0;
+    
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     
@@ -786,7 +789,7 @@
     
     if ([self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)]) {
         //we already have this
-        DSDLog(@"We already this masternodeList %@ (%u)",uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
+        DSDLog(@"We already have this masternodeList %@ (%u)",uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
         return; //no need to do anything more
     }
     
@@ -841,6 +844,7 @@
                 NSMutableOrderedSet * neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
                 [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
+                [self dequeueMasternodeListRequest];
             } else {
                 [self processValidMasternodeList:masternodeList havingAddedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
                 

@@ -119,7 +119,7 @@
     }];
 }
 
--(void)wipeMasternodeDataForChain:(DSChain*)chain reloadCheckpoints:(BOOL)reloadCheckpoints {
+-(void)wipeMasternodeDataForChain:(DSChain*)chain {
     NSParameterAssert(chain);
     
     [self stopSyncForChain:chain];
@@ -138,9 +138,6 @@
         [chainManager.masternodeManager wipeMasternodeInfo];
         [DSSimplifiedMasternodeEntryEntity saveContext];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[NSString stringWithFormat:@"%@_%@",chain.uniqueID,LAST_SYNCED_MASTERNODE_LIST]];
-        if (reloadCheckpoints) {
-            [chainManager.masternodeManager loadFileDistributedMasternodeLists];
-        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
