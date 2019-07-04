@@ -260,10 +260,11 @@ inline static int ceil_log2(int x)
     }];
     NSMutableArray * masternodes = [NSMutableArray array];
     NSUInteger maxCount = MIN(quorumCount, self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
+    DSMerkleBlock * block = [self.chain blockForBlockHash:self.blockHash];
     for (int i = 0; i<maxCount;i++) {
         NSData * score = [scores objectAtIndex:i];
         DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
-        if ([masternode isValidAtBlockHash:self.blockHash]) {
+        if ([masternode isValidAtBlock:block]) {
             [masternodes addObject:masternode];
         } else {
             maxCount++;
@@ -355,14 +356,27 @@ inline static int ceil_log2(int x)
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%u}",self.height]];
 }
 
+-(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other {
+    return [self compare:other usingOurString:@"current" usingTheirString:@"previous"];
+}
+
+
 -(NSDictionary*)compare:(DSMasternodeList*)other {
+    return [self compare:other usingOurString:@"ours" usingTheirString:@"theirs"];
+}
+
+-(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs {
     NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
         DSSimplifiedMasternodeEntry * ourEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
         DSSimplifiedMasternodeEntry * theirEntry = other.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
-        NSDictionary * entryComparison = [ourEntry compare:theirEntry ourBlockHash:self.blockHash theirBlockHash:other.blockHash];
-        if (entryComparison.count) {
-            [dictionary setObject:entryComparison forKey:data];
+        if (ourEntry && theirEntry) {
+            NSDictionary * entryComparison = [ourEntry compare:theirEntry ourBlockHash:self.blockHash theirBlockHash:other.blockHash usingOurString:ours usingTheirString:theirs];
+            if (entryComparison.count) {
+                [dictionary setObject:entryComparison forKey:data];
+            }
+        } else if (ourEntry) {
+            [dictionary setObject:@{@"absent":uint256_hex(ourEntry.providerRegistrationTransactionHash)} forKey:data];
         }
     }
     return dictionary;

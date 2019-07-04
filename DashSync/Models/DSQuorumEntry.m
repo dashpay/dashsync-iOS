@@ -221,9 +221,10 @@
     NSArray<DSSimplifiedMasternodeEntry*> * masternodes = [masternodeList masternodesForQuorumModifier:self.llmqQuorumHash quorumCount:[DSQuorumEntry quorumSizeForType:self.llmqType]];
     NSMutableArray * publicKeyArray = [NSMutableArray array];
     uint32_t i = 0;
+    DSMerkleBlock * block = [self.chain blockForBlockHash:masternodeList.blockHash];
     for (DSSimplifiedMasternodeEntry * masternodeEntry in masternodes) {
         if ([self.signersBitset bitIsTrueAtIndex:i]) {
-            DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlockHash:masternodeList.blockHash] onChain:self.chain];
+            DSBLSKey * masternodePublicKey = [DSBLSKey blsKeyWithPublicKey:[masternodeEntry operatorPublicKeyAtBlock:block] onChain:self.chain];
             [publicKeyArray addObject:masternodePublicKey];
         }
         i++;

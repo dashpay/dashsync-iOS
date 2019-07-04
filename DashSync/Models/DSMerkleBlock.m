@@ -75,7 +75,20 @@ inline static int ceil_log2(int x)
 @interface DSMerkleBlock ()
 
 @property (nonatomic, assign) UInt256 blockHash;
+@property (nonatomic, assign) uint32_t version;
+@property (nonatomic, assign) UInt256 prevBlock;
+@property (nonatomic, assign) UInt256 merkleRoot;
+@property (nonatomic, assign) uint32_t timestamp; // time interval since unix epoch
+@property (nonatomic, assign) uint32_t target;
+@property (nonatomic, assign) uint32_t nonce;
+@property (nonatomic, assign) uint32_t totalTransactions;
+@property (nonatomic, strong) NSData *hashes;
+@property (nonatomic, strong) NSData *flags;
 @property (nonatomic, strong) DSChain * chain;
+@property (nonatomic, strong) NSArray *txHashes; // the matched tx hashes in the block
+@property (nonatomic, assign, getter = isValid) BOOL valid;
+@property (nonatomic, assign, getter = isMerkleTreeValid) BOOL merkleTreeValid;
+@property (nonatomic, strong, getter = toData) NSData *data;
 
 @end
 
@@ -406,6 +419,30 @@ inline static int ceil_log2(int x)
 - (BOOL)isEqual:(id)obj
 {
     return self == obj || ([obj isKindOfClass:[DSMerkleBlock class]] && uint256_eq([obj blockHash], _blockHash));
+}
+
+-(NSString*)description {
+    return [NSString stringWithFormat:@"Block H:%u - <%@>",self.height,uint256_hex(self.blockHash)];
+}
+
+-(id)copyWithZone:(NSZone *)zone {
+    DSMerkleBlock * copy = [[[self class] alloc] init];
+    copy.blockHash = self.blockHash;
+    copy.height = self.height;
+    copy.version = self.version;
+    copy.prevBlock = self.prevBlock;
+    copy.merkleRoot = self.merkleRoot;
+    copy.timestamp = self.timestamp;
+    copy.target = self.target;
+    copy.nonce = self.nonce;
+    copy.totalTransactions = self.totalTransactions;
+    copy.hashes = [self.hashes copyWithZone:zone];
+    copy.txHashes = [self.txHashes copyWithZone:zone];
+    copy.flags = [self.flags copyWithZone:zone];
+    copy.valid = self.valid;
+    copy.merkleTreeValid = self.isMerkleTreeValid;
+    copy.data = [self.data copyWithZone:zone];
+    return copy;
 }
 
 @end

@@ -46,6 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSDictionary*)compare:(DSMasternodeList*)other;
 
+-(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other;
+
+-(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
+
 @end
 
 NS_ASSUME_NONNULL_END

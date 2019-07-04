@@ -11,6 +11,7 @@
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
+#import "DSMerkleBlock.h"
 #import "DSMutableOrderedDataKeyDictionary.h"
 #import <arpa/inet.h>
 #import "DSWallet.h"
@@ -28,9 +29,9 @@
 @property(nonatomic,assign) BOOL isValid;
 @property(nonatomic,strong) DSChain * chain;
 @property(nonatomic,strong) DSBLSKey * operatorPublicBLSKey;
-@property(nonatomic,strong) NSMutableDictionary * mPreviousOperatorPublicKeys;
-@property(nonatomic,strong) NSMutableDictionary * mPreviousValidity;
-@property(nonatomic,strong) NSMutableDictionary * mPreviousSimplifiedMasternodeEntryHashes;
+@property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSData*> * mPreviousOperatorPublicKeys;
+@property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSNumber*> * mPreviousValidity;
+@property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSData*> * mPreviousSimplifiedMasternodeEntryHashes;
 
 @end
 
@@ -58,7 +59,7 @@
     return [[self alloc] initWithMessage:data onChain:chain];
 }
 
-+(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary *)previousValidity simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary *)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
++(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary <DSMerkleBlock*,NSData*>*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary <DSMerkleBlock*,NSData*>*)previousValidity simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary <DSMerkleBlock*,NSData*>*)previousSimplifiedMasternodeEntryHashes onChain:(DSChain *)chain {
     DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [[DSSimplifiedMasternodeEntry alloc] init];
     simplifiedMasternodeEntry.providerRegistrationTransactionHash = providerRegistrationTransactionHash;
     simplifiedMasternodeEntry.confirmedHash = confirmedHash;
@@ -118,38 +119,40 @@
 }
 
 -(void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash {
-    [self updatePreviousValidity:masternodeEntry atBlockHash:blockHash];
-    [self updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlockHash:blockHash];
-    [self updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlockHash:blockHash];
+    DSMerkleBlock * block = [self.chain blockForBlockHash:blockHash];
+    [self updatePreviousValidity:masternodeEntry atBlock:block];
+    [self updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
+    [self updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:masternodeEntry atBlock:block];
 }
 
--(void)updatePreviousValidity:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlockHash:(UInt256)blockHash {
+-(void)updatePreviousValidity:(DSSimplifiedMasternodeEntry *)masternodeEntry atBlock:(DSMerkleBlock*)block {
     if (!uint256_eq(self.providerRegistrationTransactionHash,masternodeEntry.providerRegistrationTransactionHash)) return;
     self.mPreviousValidity = [masternodeEntry.previousValidity mutableCopy];
     if (masternodeEntry.isValid != self.isValid) {
         //we changed validity
         DSDLog(@"Changed validity from %u to %u on %@",masternodeEntry.isValid, self.isValid,uint256_hex(self.providerRegistrationTransactionHash));
-        [self.mPreviousValidity setObject:@(masternodeEntry.isValid) forKey:uint256_data(blockHash)];
+        [self.mPreviousValidity setObject:@(masternodeEntry.isValid) forKey:block];
     }
 }
 
--(void)updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash {
+-(void)updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlock:(DSMerkleBlock*)block {
     if (!uint256_eq(self.providerRegistrationTransactionHash,masternodeEntry.providerRegistrationTransactionHash)) return;
     self.mPreviousOperatorPublicKeys = [masternodeEntry.previousOperatorPublicKeys mutableCopy];
     if (!uint384_eq(masternodeEntry.operatorPublicKey,self.operatorPublicKey)) {
         //the operator public key changed
         DSDLog(@"Changed sme operator keys from %@ to %@ on %@",uint384_hex(masternodeEntry.operatorPublicKey), uint384_hex(self.operatorPublicKey),uint256_hex(self.providerRegistrationTransactionHash));
-        [self.mPreviousOperatorPublicKeys setObject:uint384_data(masternodeEntry.operatorPublicKey) forKey:uint256_data(blockHash)];
+        [self.mPreviousOperatorPublicKeys setObject:uint384_data(masternodeEntry.operatorPublicKey) forKey:block];
     }
 }
 
--(void)updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash {
+-(void)updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlock:(DSMerkleBlock*)block {
+    NSAssert(masternodeEntry, @"Masternode entry must be present");
     if (!uint256_eq(self.providerRegistrationTransactionHash,masternodeEntry.providerRegistrationTransactionHash)) return;
     self.mPreviousSimplifiedMasternodeEntryHashes = [masternodeEntry.previousSimplifiedMasternodeEntryHashes mutableCopy];
     if (!uint256_eq(masternodeEntry.simplifiedMasternodeEntryHash,self.simplifiedMasternodeEntryHash)) {
         //the hashes changed
         DSDLog(@"Changed sme hashes from %@ to %@ on %@",uint256_hex(masternodeEntry.simplifiedMasternodeEntryHash),uint256_hex(self.simplifiedMasternodeEntryHash),uint256_hex(self.providerRegistrationTransactionHash));
-        [self.mPreviousSimplifiedMasternodeEntryHashes setObject:uint256_data(masternodeEntry.simplifiedMasternodeEntryHash) forKey:uint256_data(blockHash)];
+        [self.mPreviousSimplifiedMasternodeEntryHashes setObject:uint256_data(masternodeEntry.simplifiedMasternodeEntryHash) forKey:block];
     }
 }
 
@@ -165,52 +168,106 @@
     return [self.mPreviousSimplifiedMasternodeEntryHashes copy];
 }
 
+
+-(BOOL)isValidAtBlock:(DSMerkleBlock*)merkleBlock {
+    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
+        NSAssert(NO,@"Merkle Block should be set");
+        return self.isValid;
+    }
+    if (![self.previousValidity count]) return self.isValid;
+    return [self isValidAtBlockHeight:merkleBlock.height];
+}
+
 -(BOOL)isValidAtBlockHash:(UInt256)blockHash {
-    if (![self.mPreviousValidity count]) return self.isValid;
+    if (![self.previousValidity count]) return self.isValid;
     uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
-    NSDictionary <NSData*,NSNumber*> * previousValidity = self.previousValidity;
-    uint32_t usedHeight = 0;
+    return [self isValidAtBlockHeight:blockHeight];
+}
+
+-(BOOL)isValidAtBlockHeight:(uint32_t)blockHeight {
+    if (![self.mPreviousValidity count]) return self.isValid;
+    NSAssert(blockHeight != UINT32_MAX, @"block height should be set");
+    if (blockHeight == UINT32_MAX) {
+        return self.isValid;
+    }
+    NSDictionary <DSMerkleBlock*,NSNumber*> * previousValidity = self.previousValidity;
+    uint32_t minDistance = UINT32_MAX;
     BOOL isValid = self.isValid;
-    for (NSData * block in previousValidity) {
-        uint32_t height = [self.chain heightForBlockHash:block.UInt256];
-        if (blockHeight < height && height > usedHeight) {
-            usedHeight = height;
-            DSDLog(@"Using %@ instead of %@ for list <%@> at block height %u",previousValidity[block].boolValue?@"YES":@"NO",isValid?@"YES":@"NO",uint256_hex(blockHash), blockHeight);
-            isValid = previousValidity[block].boolValue;
+    for (DSMerkleBlock * previousBlock in previousValidity) {
+        if (previousBlock.height <= blockHeight) continue;
+        uint32_t distance = previousBlock.height - blockHeight;
+        if (distance < minDistance) {
+            minDistance = distance;
+            DSDLog(@"Validity : Using %@ instead of %@ for list at block height %u",previousValidity[previousBlock].boolValue?@"YES":@"NO",isValid?@"YES":@"NO", blockHeight);
+            isValid = [previousValidity[previousBlock] boolValue];
         }
     }
     return isValid;
 }
 
+-(UInt256)simplifiedMasternodeEntryHashAtBlock:(DSMerkleBlock*)merkleBlock {
+    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
+        NSAssert(NO,@"Merkle Block should be set");
+        return self.simplifiedMasternodeEntryHash;
+    }
+    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    return [self simplifiedMasternodeEntryHashAtBlockHeight:merkleBlock.height];
+}
+
 -(UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash {
     if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
     uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
-    NSDictionary <NSData*,NSData*> * previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
-    uint32_t usedHeight = 0;
+    return [self simplifiedMasternodeEntryHashAtBlockHeight:blockHeight];
+}
+
+-(UInt256)simplifiedMasternodeEntryHashAtBlockHeight:(uint32_t)blockHeight {
+    if (![self.mPreviousSimplifiedMasternodeEntryHashes count]) return self.simplifiedMasternodeEntryHash;
+    NSAssert(blockHeight != UINT32_MAX, @"block height should be set");
+    if (blockHeight == UINT32_MAX) {
+        return self.simplifiedMasternodeEntryHash;
+    }
+    NSDictionary <DSMerkleBlock*,NSData*> * previousSimplifiedMasternodeEntryHashes = self.previousSimplifiedMasternodeEntryHashes;
+    uint32_t minDistance = UINT32_MAX;
     UInt256 usedSimplifiedMasternodeEntryHash = self.simplifiedMasternodeEntryHash;
-    for (NSData * block in previousSimplifiedMasternodeEntryHashes) {
-        uint32_t height = [self.chain heightForBlockHash:block.UInt256];
-        if (blockHeight < height && height > usedHeight) {
-            usedHeight = height;
-            DSDLog(@"Using %@ instead of %@ for list <%@> at block height %u",uint256_hex(previousSimplifiedMasternodeEntryHashes[block].UInt256),uint256_hex(usedSimplifiedMasternodeEntryHash),uint256_hex(blockHash), blockHeight);
-            usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[block].UInt256;
+    for (DSMerkleBlock * previousBlock in previousSimplifiedMasternodeEntryHashes) {
+        if (previousBlock.height <= blockHeight) continue;
+        uint32_t distance = previousBlock.height - blockHeight;
+        if (distance < minDistance) {
+            minDistance = distance;
+            DSDLog(@"SME Hash : Using %@ instead of %@ for list at block height %u",uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256),uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
         }
     }
     return usedSimplifiedMasternodeEntryHash;
 }
 
+-(UInt384)operatorPublicKeyAtBlock:(DSMerkleBlock*)merkleBlock {
+    if (!merkleBlock || merkleBlock.height == UINT32_MAX) {
+        NSAssert(NO,@"Merkle Block should be set");
+        return self.operatorPublicKey;
+    }
+    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    return [self operatorPublicKeyAtBlockHeight:merkleBlock.height];
+}
+
 -(UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash {
     if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
     uint32_t blockHeight = [self.chain heightForBlockHash:blockHash];
-    NSDictionary <NSData*,NSData*> * previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
-    uint32_t usedHeight = 0;
+    return [self operatorPublicKeyAtBlockHeight:blockHeight];
+}
+
+-(UInt384)operatorPublicKeyAtBlockHeight:(uint32_t)blockHeight {
+    if (![self.mPreviousOperatorPublicKeys count]) return self.operatorPublicKey;
+    NSDictionary <DSMerkleBlock*,NSData*> * previousOperatorPublicKeyAtBlockHashes = self.previousOperatorPublicKeys;
+    uint32_t minDistance = UINT32_MAX;
     UInt384 usedPreviousOperatorPublicKeyAtBlockHash = self.operatorPublicKey;
-    for (NSData * block in previousOperatorPublicKeyAtBlockHashes) {
-        uint32_t height = [self.chain heightForBlockHash:block.UInt256];
-        if (blockHeight < height && height > usedHeight) {
-            usedHeight = height;
-            DSDLog(@"Using %@ instead of %@ for list at block height %u",uint256_hex(previousOperatorPublicKeyAtBlockHashes[block].UInt256),uint384_hex(usedPreviousOperatorPublicKeyAtBlockHash),blockHeight);
-            usedPreviousOperatorPublicKeyAtBlockHash = previousOperatorPublicKeyAtBlockHashes[block].UInt384;
+    for (DSMerkleBlock * previousBlock in previousOperatorPublicKeyAtBlockHashes) {
+        if (previousBlock.height <= blockHeight) continue;
+        uint32_t distance = previousBlock.height - blockHeight;
+        if (distance < minDistance) {
+            minDistance = distance;
+            DSDLog(@"OperatorKey : Using %@ instead of %@ for list at block height %u",uint384_hex(previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384),uint384_hex(usedPreviousOperatorPublicKeyAtBlockHash), blockHeight);
+            usedPreviousOperatorPublicKeyAtBlockHash = previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384;
         }
     }
     return usedPreviousOperatorPublicKeyAtBlockHash;
@@ -300,46 +357,63 @@
     }
 }
 
-
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash {
+    return [self compare:other ourBlockHash:ourBlockHash theirBlockHash:theirBlockHash usingOurString:@"ours" usingTheirString:@"theirs"];
+}
+
+-(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs {
     NSMutableDictionary * differences = [NSMutableDictionary dictionary];
     
+    if (!ours) ours = @"ours";
+    if (!theirs) theirs = @"theirs";
+    
     if (!uint128_eq(_address, other.address)) {
-        differences[@"address"] = @{@"ours":uint128_data(_address),@"theirs":uint128_data(other.address)};
+        differences[@"address"] = @{ours:uint128_data(_address),theirs:uint128_data(other.address)};
     }
     
     if (_port != other.port) {
-        differences[@"port"] = @{@"ours":@(_port),@"theirs":@(other.port)};
+        differences[@"port"] = @{ours:@(_port),theirs:@(other.port)};
     }
     
-    if (!uint384_eq(_operatorPublicKey, other.operatorPublicKey)) {
-        differences[@"operatorPublicKey"] = @{@"ours":uint384_data(_operatorPublicKey),@"theirs":uint384_data(other.operatorPublicKey)};
+    UInt384 ourOperatorPublicKeyAtBlockHash = [self operatorPublicKeyAtBlockHash:ourBlockHash];
+    UInt384 theirOperatorPublicKeyAtBlockHash = [other operatorPublicKeyAtBlockHash:theirBlockHash];
+    
+    if (!uint384_eq(ourOperatorPublicKeyAtBlockHash, theirOperatorPublicKeyAtBlockHash)) {
+        differences[@"operatorPublicKey"] = @{ours:uint384_data(ourOperatorPublicKeyAtBlockHash),theirs:uint384_data(theirOperatorPublicKeyAtBlockHash)};
     }
     
     if (!uint160_eq(_keyIDVoting, other.keyIDVoting)) {
-        differences[@"keyIDVoting"] = @{@"ours":uint160_data(_keyIDVoting),@"theirs":uint160_data(other.keyIDVoting)};
+        differences[@"keyIDVoting"] = @{ours:uint160_data(_keyIDVoting),theirs:uint160_data(other.keyIDVoting)};
     }
     
     BOOL ourIsValid = [self isValidAtBlockHash:ourBlockHash];
     BOOL theirIsValid = [other isValidAtBlockHash:theirBlockHash];
     
     if (ourIsValid != theirIsValid) {
-        differences[@"isValid"] = @{@"ours":ourIsValid?@"YES":@"NO",@"theirs":theirIsValid?@"YES":@"NO"};
+        differences[@"isValid"] = @{ours:ourIsValid?@"YES":@"NO",theirs:theirIsValid?@"YES":@"NO"};
     }
     
     UInt256 ourSimplifiedMasternodeEntryHash = [self simplifiedMasternodeEntryHashAtBlockHash:ourBlockHash];
     UInt256 theirSimplifiedMasternodeEntryHash = [other simplifiedMasternodeEntryHashAtBlockHash:theirBlockHash];
     
     if (!uint256_eq(ourSimplifiedMasternodeEntryHash,theirSimplifiedMasternodeEntryHash)) {
-        differences[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{@"ours":uint256_hex(ourSimplifiedMasternodeEntryHash),@"theirs":uint256_hex(theirSimplifiedMasternodeEntryHash),@"ourBlockHeight":@([self.chain heightForBlockHash:ourBlockHash]),@"theirBlockHeight":@([self.chain heightForBlockHash:theirBlockHash])};
+        differences[@"simplifiedMasternodeEntryHashAtBlockHash"] = @{ours:uint256_hex(ourSimplifiedMasternodeEntryHash),theirs:uint256_hex(theirSimplifiedMasternodeEntryHash),@"ourBlockHeight":@([self.chain heightForBlockHash:ourBlockHash]),@"theirBlockHeight":@([self.chain heightForBlockHash:theirBlockHash])};
     }
     
     if (![self.previousSimplifiedMasternodeEntryHashes isEqualToDictionary:other.previousSimplifiedMasternodeEntryHashes]) {
-        differences[@"previousSimplifiedMasternodeEntryHashes"] = @{@"ours":self.previousSimplifiedMasternodeEntryHashes,@"theirs":other.previousSimplifiedMasternodeEntryHashes};
+        differences[@"previousSimplifiedMasternodeEntryHashes"] = @{ours:self.previousSimplifiedMasternodeEntryHashes,theirs:other.previousSimplifiedMasternodeEntryHashes};
+    }
+    
+    if (![self.previousValidity isEqualToDictionary:other.previousValidity]) {
+        differences[@"previousValidity"] = @{ours:self.previousValidity,theirs:other.previousValidity};
+    }
+    
+    if (![self.previousOperatorPublicKeys isEqualToDictionary:other.previousOperatorPublicKeys]) {
+        differences[@"previousOperatorPublicKeys"] = @{ours:self.previousOperatorPublicKeys,theirs:other.previousOperatorPublicKeys};
     }
     
     if (!uint256_eq(_confirmedHash, other.confirmedHash)) {
-        differences[@"confirmedHash"] = @{@"ours":uint256_data(_confirmedHash),@"theirs":uint256_data(other.confirmedHash)};
+        differences[@"confirmedHash"] = @{ours:uint256_data(_confirmedHash),theirs:uint256_data(other.confirmedHash)};
     }
     
     return differences;

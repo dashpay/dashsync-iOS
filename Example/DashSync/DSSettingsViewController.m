@@ -33,6 +33,15 @@
         };
         [items addObject:cellModel];
     }
+    
+    {
+        SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Use MNL Checkpoints"];
+        cellModel.on = options.useCheckpointMasternodeLists;
+        cellModel.didChangeValueBlock = ^(SwitcherFormCellModel *_Nonnull cellModel) {
+            options.useCheckpointMasternodeLists = cellModel.on;
+        };
+        [items addObject:cellModel];
+    }
 
     {
         SwitcherFormCellModel *cellModel = [[SwitcherFormCellModel alloc] initWithTitle:@"Retrieve Price Info"];

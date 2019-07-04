@@ -14,6 +14,7 @@
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSAddressEntity+CoreDataClass.h"
+#import "DSMerkleBlock.h"
 #import "DSKey.h"
 #include <arpa/inet.h>
 
@@ -69,9 +70,9 @@
     
     
     self.simplifiedMasternodeEntryHash = [NSData dataWithUInt256:simplifiedMasternodeEntry.simplifiedMasternodeEntryHash];
-    self.previousSimplifiedMasternodeEntryHashes = simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes;
-    self.previousOperatorBLSPublicKeys = simplifiedMasternodeEntry.previousOperatorPublicKeys;
-    self.previousValidity = simplifiedMasternodeEntry.previousValidity;
+    self.previousSimplifiedMasternodeEntryHashes = [self blockHashDictionaryFromMerkleBlockDictionary:simplifiedMasternodeEntry.previousSimplifiedMasternodeEntryHashes];
+    self.previousOperatorBLSPublicKeys = [self blockHashDictionaryFromMerkleBlockDictionary:simplifiedMasternodeEntry.previousOperatorPublicKeys];
+    self.previousValidity = [self blockHashDictionaryFromMerkleBlockDictionary:simplifiedMasternodeEntry.previousValidity];
     
     DSLocalMasternodeEntity * localMasternode = nil;
     if (localMasternodes) {
@@ -190,8 +191,31 @@
     return [self anyObjectMatching:@"(simplifiedMasternodeEntryHash == %@) && (chain == %@)",simplifiedMasternodeEntryHash,chainEntity];
 }
 
+-(NSDictionary<DSMerkleBlock*,id>*)merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData*,id>*)blockHashDictionary {
+    NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
+    DSChain * chain = self.chain.chain;
+    for (NSData * blockHash in blockHashDictionary) {
+        DSMerkleBlock * block = [chain blockForBlockHash:blockHash.UInt256];
+        if (block) {
+            [rDictionary setObject:blockHashDictionary[blockHash] forKey:block];
+        }
+    }
+    return rDictionary;
+}
+
+-(NSDictionary<NSData*,id>*)blockHashDictionaryFromMerkleBlockDictionary:(NSDictionary<DSMerkleBlock*,id>*)blockHashDictionary {
+    NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
+    for (DSMerkleBlock * merkleBlock in blockHashDictionary) {
+        NSData * blockHash = uint256_data(merkleBlock.blockHash);
+        if (blockHash) {
+            [rDictionary setObject:blockHashDictionary[merkleBlock] forKey:blockHash];
+        }
+    }
+    return rDictionary;
+}
+
 - (DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry {
-    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self.previousOperatorBLSPublicKeys copy] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self.previousValidity copy] simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self.previousSimplifiedMasternodeEntryHashes copy] onChain:self.chain.chain];
+    DSSimplifiedMasternodeEntry * simplifiedMasternodeEntry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:[self.providerRegistrationTransactionHash UInt256] confirmedHash:[self.confirmedHash UInt256] address:self.ipv6Address.UInt128 port:self.port operatorBLSPublicKey:[self.operatorBLSPublicKey UInt384] previousOperatorBLSPublicKeys:[self merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *,NSData *> *)self.previousOperatorBLSPublicKeys] keyIDVoting:[self.keyIDVoting UInt160] isValid:self.isValid previousValidity:[self merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *,NSData *> *)self.previousValidity] simplifiedMasternodeEntryHash:[self.simplifiedMasternodeEntryHash UInt256] previousSimplifiedMasternodeEntryHashes:[self merkleBlockDictionaryFromBlockHashDictionary:(NSDictionary<NSData *,NSData *> *)self.previousSimplifiedMasternodeEntryHashes] onChain:self.chain.chain];
     return simplifiedMasternodeEntry;
 }
 

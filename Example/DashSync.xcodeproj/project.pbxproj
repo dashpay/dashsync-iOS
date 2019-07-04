@@ -127,6 +127,8 @@
 		FB83C2E021B7B6D70057A0EF /* Actions.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */; };
 		FB83C2E421B7B7560057A0EF /* DSActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */; };
 		FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */; };
+		FB89F2D722CC875800CD0232 /* MNL_0_1094976.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */; };
+		FB89F2D922CD82EB00CD0232 /* MNL_0_1095720.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */; };
 		FB90D2B420BD2BDD002B7956 /* DSSporksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */; };
 		FB90D2B720BD2CFA002B7956 /* DSSporkTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2B620BD2CFA002B7956 /* DSSporkTableViewCell.m */; };
 		FB90D2C620C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB90D2C520C3ED7C002B7956 /* DSStandaloneDerivationPathTableViewCell.m */; };
@@ -419,6 +421,8 @@
 		FB83C2E321B7B7560057A0EF /* DSActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSActionsViewController.m; sourceTree = "<group>"; };
 		FB83C2E521B91A8D0057A0EF /* DSTransactionFloodingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionFloodingViewController.h; sourceTree = "<group>"; };
 		FB83C2E621B91A8D0057A0EF /* DSTransactionFloodingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionFloodingViewController.m; sourceTree = "<group>"; };
+		FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1094976.dat; sourceTree = "<group>"; };
+		FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_0_1095720.dat; sourceTree = "<group>"; };
 		FB90D2B220BD2BDD002B7956 /* DSSporksViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporksViewController.h; sourceTree = "<group>"; };
 		FB90D2B320BD2BDD002B7956 /* DSSporksViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSporksViewController.m; sourceTree = "<group>"; };
 		FB90D2B520BD2CFA002B7956 /* DSSporkTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSSporkTableViewCell.h; sourceTree = "<group>"; };
@@ -840,6 +844,8 @@
 		FB1BF8CC22C96DCF003413C6 /* AdvancedReorderTest */ = {
 			isa = PBXGroup;
 			children = (
+				FB89F2D822CD82EB00CD0232 /* MNL_0_1095720.dat */,
+				FB89F2D622CC875800CD0232 /* MNL_0_1094976.dat */,
 				FB1BF90522C96E0D003413C6 /* MNL_0_1093824.dat */,
 				FB1BF8DC22C96DEE003413C6 /* MNL_1093824_1094400.dat */,
 				FB1BF8D622C96DED003413C6 /* MNL_1094400_1094976.dat */,
@@ -1290,6 +1296,7 @@
 				FB1BF8F522C96DF1003413C6 /* MNL_1095504_1095528.dat in Resources */,
 				FB3A390E22BE62D900801F39 /* MasternodeListTestnet119064.dat in Resources */,
 				FBEA6F0222C2AE0A00CBCA77 /* MNL_1092792_1092816.dat in Resources */,
+				FB89F2D722CC875800CD0232 /* MNL_0_1094976.dat in Resources */,
 				FBEA6F1022C2AE0A00CBCA77 /* MNL_1092504_1092528.dat in Resources */,
 				FB1BF8EB22C96DF1003413C6 /* MNL_1095960_1095984.dat in Resources */,
 				FBEA6F0322C2AE0A00CBCA77 /* MNL_1092576_1092600.dat in Resources */,
@@ -1305,6 +1312,7 @@
 				FBEA6ED722BE671D00CBCA77 /* DiffListTestnet119064to119200.dat in Resources */,
 				FB1BF8EC22C96DF1003413C6 /* MNL_1095480_1095504.dat in Resources */,
 				FB1BF8FA22C96DF1003413C6 /* MNL_1095696_1095720.dat in Resources */,
+				FB89F2D922CD82EB00CD0232 /* MNL_0_1095720.dat in Resources */,
 				FBEA6F1A22C2AE0A00CBCA77 /* MNL_1092384_1092408.dat in Resources */,
 				2A5C601822BFE0D100C6003F /* MNL_122064_122088.dat in Resources */,
 				FBEA6F0F22C2AE0A00CBCA77 /* MNL_1092840_1092864.dat in Resources */,

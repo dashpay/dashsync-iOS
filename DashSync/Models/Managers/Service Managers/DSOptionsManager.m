@@ -16,6 +16,7 @@
 @dynamic syncMasternodeListInterval;
 @dynamic syncType;
 @dynamic retrievePriceInfo;
+@dynamic useCheckpointMasternodeLists;
 
 + (instancetype)sharedInstance {
     static DSOptionsManager *_sharedInstance = nil;
@@ -28,6 +29,7 @@
 
 - (instancetype)init {
     NSDictionary *defaults = @{
+        @"useCheckpointMasternodeLists":@YES,
         @"keepHeaders" : @NO,
         @"shouldSyncFromHeight":@NO,
         @"smartOutputs":@YES,

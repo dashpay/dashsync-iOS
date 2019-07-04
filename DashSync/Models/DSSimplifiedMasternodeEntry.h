@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSChain,DSSimplifiedMasternodeEntryEntity,DSWallet;
+@class DSChain,DSSimplifiedMasternodeEntryEntity,DSWallet,DSMerkleBlock;
 
 @interface DSSimplifiedMasternodeEntry : NSObject
 
@@ -35,26 +35,25 @@
 
 +(instancetype)simplifiedMasternodeEntryWithData:(NSData*)data onChain:(DSChain*)chain;
 
-+(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary*)previousValidity simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary*)previousSimplifiedMasternodeEntryHashes onChain:(DSChain*)chain;
++(instancetype)simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:(UInt256)providerRegistrationTransactionHash confirmedHash:(UInt256)confirmedHash address:(UInt128)address port:(uint16_t)port operatorBLSPublicKey:(UInt384)operatorBLSPublicKey previousOperatorBLSPublicKeys:(NSDictionary <DSMerkleBlock*,NSData*>*)previousOperatorBLSPublicKeys keyIDVoting:(UInt160)keyIDVoting isValid:(BOOL)isValid previousValidity:(NSDictionary <DSMerkleBlock*,NSData*>*)previousValidity simplifiedMasternodeEntryHash:(UInt256)simplifiedMasternodeEntryHash previousSimplifiedMasternodeEntryHashes:(NSDictionary <DSMerkleBlock*,NSData*>*)previousSimplifiedMasternodeEntryHashes onChain:(DSChain*)chain;
 
 -(BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest;
 
-
--(void)updatePreviousValidity:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash;
-
--(void)updatePreviousOperatorPublicKeysFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry  atBlockHash:(UInt256)blockHash;
-
--(void)updatePreviousSimplifiedMasternodeEntryHashesFromPreviousSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash;
-
 -(void)keepInfoOfPreviousEntryVersion:(DSSimplifiedMasternodeEntry*)masternodeEntry atBlockHash:(UInt256)blockHash;
+
+-(UInt256)simplifiedMasternodeEntryHashAtBlock:(DSMerkleBlock*)merkleBlock;
 
 -(UInt256)simplifiedMasternodeEntryHashAtBlockHash:(UInt256)blockHash;
 
+-(UInt384)operatorPublicKeyAtBlock:(DSMerkleBlock*)merkleBlock;
+
 -(UInt384)operatorPublicKeyAtBlockHash:(UInt256)blockHash;
+
+-(BOOL)isValidAtBlock:(DSMerkleBlock*)merkleBlock;
 
 -(BOOL)isValidAtBlockHash:(UInt256)blockHash;
 
--(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash;
+-(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other ourBlockHash:(UInt256)ourBlockHash theirBlockHash:(UInt256)theirBlockHash usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
 
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other atBlockHash:(UInt256)blockHash;
 

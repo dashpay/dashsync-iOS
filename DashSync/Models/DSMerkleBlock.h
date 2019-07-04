@@ -31,13 +31,13 @@
 #define BLOCK_UNKNOWN_HEIGHT      INT32_MAX
 #define DGW_PAST_BLOCKS_MIN 24
 #define DGW_PAST_BLOCKS_MAX 24
-#define LLMQ_KEEP_RECENT_BLOCKS (576*4 + 100)
+#define LLMQ_KEEP_RECENT_BLOCKS 100000//(576*4 + 100)
 
 typedef union _UInt256 UInt256;
 
 @class DSChain;
 
-@interface DSMerkleBlock : NSObject
+@interface DSMerkleBlock : NSObject <NSCopying>
 
 @property (nonatomic, readonly) UInt256 blockHash;
 @property (nonatomic, readonly) uint32_t version;

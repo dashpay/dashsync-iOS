@@ -19,6 +19,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSMerkleBlock.h"
+#import "DSOptionsManager.h"
 #import <arpa/inet.h>
 
 #import <DashSync/DSMasternodeList.h>
@@ -492,7 +493,7 @@
     [self waitForExpectations:@[expectation] timeout:10];
 }
 
--(void)loadMasternodeListsForFiles:(NSArray*)files baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList withReload:(BOOL)reloading onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context completion:(void (^)(NSDictionary*))completion {
+-(void)loadMasternodeListsForFiles:(NSArray*)files baseMasternodeList:(DSMasternodeList* _Nullable)baseMasternodeList withSave:(BOOL)save withReload:(BOOL)reloading onChain:(DSChain*)chain inContext:(NSManagedObjectContext*)context completion:(void (^)(BOOL success, NSDictionary* masternodeLists))completion {
     //doing this none recursively for profiler
     __block DSMasternodeList * nextBaseMasternodList = baseMasternodeList;
     __block NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
@@ -525,10 +526,17 @@
             XCTAssert(rootQuorumListValid,@"rootQuorumListValid not valid at height %u",[chain heightForBlockHash:blockHash]);
             XCTAssert(validQuorums,@"validQuorums not valid at height %u",[chain heightForBlockHash:blockHash]);
             
+            
+//            if (nextBaseMasternodList) {
+//                NSLog(@"Changes between lists are %@",[masternodeList compare:nextBaseMasternodList]);
+//            }
+            
             if (foundCoinbase && rootMNListValid && rootQuorumListValid && validQuorums) {
                 NSError * error = nil;
                 
-                [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
+                if (reloading || save) {
+                    [DSMasternodeManager saveMasternodeList:masternodeList toChain:chain havingModifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums inContext:context error:&error];
+                }
                 
                 if (reloading) {
                     
@@ -583,9 +591,11 @@
                 
                 [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
                 
+                
                 nextBaseMasternodList = masternodeList;
                 
             } else {
+                [dictionary setObject:masternodeList forKey:uint256_data(masternodeList.blockHash)];
                 stop = TRUE;
                 
             }
@@ -593,11 +603,11 @@
         }];
         dispatch_semaphore_wait(sem, 100000);
         if (stop) {
-            completion(nil);
+            completion(NO,dictionary);
             return;
         }
     }
-    completion(dictionary);
+    completion(YES,dictionary);
 }
 
 -(void)testMainnetMasternodeSaving {
@@ -899,14 +909,16 @@
     NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
     
     
-    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withReload:NO onChain:chain inContext:context completion:^(NSDictionary * masternodeLists) {
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
         
     }];
 }
 
--(void)testMNLReloadAgain {
+-(void)testMNLChaining {
     DSChain * chain = [DSChain mainnet];
     __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
     [chain chainManager];
     [context performBlockAndWait:^{
         DSChainEntity * chainEntity = chain.chainEntity;
@@ -915,21 +927,87 @@
         [DSMasternodeListEntity deleteAllOnChain:chainEntity];
     }];
     [chain.chainManager.masternodeManager reloadMasternodeLists];
-    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456"/*, @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720", @"MNL_1095720_1095744", @"MNL_1095744_1095768", @"MNL_1095768_1095792", @"MNL_1095792_1095816", @"MNL_1095816_1095840", @"MNL_1095840_1095864", @"MNL_1095864_1095888", @"MNL_1095888_1095912", @"MNL_1095912_1095936", @"MNL_1095936_1095960", @"MNL_1095960_1095984", @"MNL_1095984_1096003"*/];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976"];
     
     
-    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withReload:NO onChain:chain inContext:context completion:^(NSDictionary * masternodeLists) {
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success1, NSDictionary * masternodeLists1) {
+        [self loadMasternodeListsForFiles:@[@"MNL_0_1094976"] baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success2, NSDictionary * masternodeLists2) {
+            NSData * block1094976Hash = [[masternodeLists2 allKeys] firstObject];
+            DSMasternodeList * chainedMasternodeList = [masternodeLists1 objectForKey:block1094976Hash];
+            DSMasternodeList * nonChainedMasternodeList = [masternodeLists2 objectForKey:block1094976Hash];
+                if (!uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot])) {
+                    NSDictionary * comparisonResult = [chainedMasternodeList compare:nonChainedMasternodeList usingOurString:@"chained" usingTheirString:@"non chained"];
+                    NSLog(@"%@",comparisonResult);
+                }
+                XCTAssert(uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
+            
+            [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+        }];
+    }];
+}
+
+-(void)testMNLDeepChaining {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720"];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success1, NSDictionary * masternodeLists1) {
+        [self loadMasternodeListsForFiles:@[@"MNL_0_1095720"] baseMasternodeList:nil withSave:NO withReload:NO onChain:chain inContext:context completion:^(BOOL success2, NSDictionary * masternodeLists2) {
+            NSData * block1095720Hash = [[masternodeLists2 allKeys] firstObject];
+            DSMasternodeList * chainedMasternodeList = [masternodeLists1 objectForKey:block1095720Hash];
+            DSMasternodeList * nonChainedMasternodeList = [masternodeLists2 objectForKey:block1095720Hash];
+            if (!uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot])) {
+                NSDictionary * comparisonResult = [chainedMasternodeList compare:nonChainedMasternodeList usingOurString:@"chained" usingTheirString:@"non chained"];
+                NSLog(@"%@",comparisonResult);
+            }
+            XCTAssert(uint256_eq([chainedMasternodeList masternodeMerkleRoot], [nonChainedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
+            
+            [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+        }];
+    }];
+}
+
+-(void)testMNLReloadAgain {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1093824", @"MNL_1093824_1094400", @"MNL_1094400_1094976", @"MNL_1094976_1095264", @"MNL_1095264_1095432", @"MNL_1095432_1095456", @"MNL_1095456_1095480", @"MNL_1095480_1095504", @"MNL_1095504_1095528", @"MNL_1095528_1095552", @"MNL_1095552_1095576", @"MNL_1095576_1095600", @"MNL_1095600_1095624", @"MNL_1095624_1095648", @"MNL_1095648_1095672", @"MNL_1095672_1095696", @"MNL_1095696_1095720", @"MNL_1095720_1095744", @"MNL_1095744_1095768", @"MNL_1095768_1095792", @"MNL_1095792_1095816", @"MNL_1095816_1095840", @"MNL_1095840_1095864", @"MNL_1095864_1095888", @"MNL_1095888_1095912", @"MNL_1095912_1095936", @"MNL_1095936_1095960", @"MNL_1095960_1095984", @"MNL_1095984_1096003"];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
         [chain.chainManager.masternodeManager reloadMasternodeLists];
         for (NSData * masternodeListBlockHash in masternodeLists) {
             NSLog(@"Testing masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
             DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
             DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
             if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot])) {
-                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList];
+                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded"];
                 NSLog(@"%@",comparisonResult);
             }
             XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
         }
+        
+        [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
     }];
 }
 
@@ -946,7 +1024,7 @@
     [chain.chainManager.masternodeManager reloadMasternodeLists];
     NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
     
-    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withReload:NO onChain:chain inContext:context completion:^(NSDictionary * masternodeLists) {
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
         DSMasternodeList * masternodeList1092916 = [masternodeLists objectForKey:@"1f5364916bbcca323972a34566cc1d415b691de30bde44b41200000000000000".hexToData];
         
         DSMasternodeList * masternodeList1092888 = [masternodeLists objectForKey:@"61a87d10f303aefcf9e77592a86dcd3adeed1f133ca2d3bc1d00000000000000".hexToData];
