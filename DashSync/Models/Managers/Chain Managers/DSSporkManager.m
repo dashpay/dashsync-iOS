@@ -95,7 +95,7 @@
 
 -(BOOL)instantSendAutoLocks {
     DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork16InstantSendAutoLocks)];
-    if (!instantSendSpork) return FALSE;//assume false
+    if (!instantSendSpork) return TRUE;//assume true
     return instantSendSpork.value <= self.chain.lastBlockHeight;
 }
 
@@ -107,19 +107,19 @@
 
 -(BOOL)deterministicMasternodeListEnabled {
     DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork15DeterministicMasternodesEnabled)];
-    if (!dmlSpork) return FALSE;//assume false
+    if (!dmlSpork) return TRUE;//assume true
     return dmlSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)llmqInstantSendEnabled {
     DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork20InstantSendLLMQBased)];
-    if (!dmlSpork) return FALSE;//assume false
+    if (!dmlSpork) return TRUE;//assume true
     return dmlSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)quorumDKGEnabled {
     DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork17QuorumDKGEnabled)];
-    if (!dmlSpork) return FALSE;//assume false
+    if (!dmlSpork) return TRUE;//assume true
     return dmlSpork.value <= self.chain.lastBlockHeight;
 }
 
@@ -251,6 +251,7 @@
 
 -(void)wipeSporkInfo {
     _sporkDictionary = [NSMutableDictionary dictionary];
+    [self stopGettingSporks];
 }
 
 @end

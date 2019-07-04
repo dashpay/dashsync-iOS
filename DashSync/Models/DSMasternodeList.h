@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
+#import "DSQuorumEntry.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) UInt256 masternodeMerkleRoot;
 @property (nonatomic,readonly) UInt256 quorumMerkleRoot;
 @property (nonatomic,readonly) NSUInteger quorumsCount;
+@property (nonatomic,readonly) NSUInteger validQuorumsCount;
 @property (nonatomic,readonly) uint64_t masternodeCount;
 @property (nonatomic,readonly) DSChain * chain;
 @property (nonatomic,readonly) NSArray * reversedRegistrationTransactionHashes;
@@ -37,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSDictionary <NSData*,id>*)scoreDictionaryForQuorumModifier:(UInt256)quorumModifier;
 
 -(NSArray*)scoresForQuorumModifier:(UInt256)quorumModifier;
+
+-(NSUInteger)validQuorumsCountOfType:(DSLLMQType)type;
+
+-(NSUInteger)quorumsCountOfType:(DSLLMQType)type;
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
 
