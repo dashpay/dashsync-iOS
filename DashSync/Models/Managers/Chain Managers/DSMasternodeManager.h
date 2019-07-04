@@ -53,6 +53,8 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(void)setUp;
 
+-(void)loadFileDistributedMasternodeLists;
+
 //-(void)addMasternodePrivateKey:(NSString*)privateKey atAddress:(NSString*)address;
 
 -(DSSimplifiedMasternodeEntry*)masternodeHavingProviderRegistrationTransactionHash:(NSData*)providerRegistrationTransactionHash;

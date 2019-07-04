@@ -64,6 +64,7 @@
 @property (nonatomic,strong) DSMasternodeList * currentMasternodeList;
 @property (nonatomic,strong) DSMasternodeList * masternodeListAwaitingQuorumValidation;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic,strong) NSMutableSet * masternodeListQueriesNeedingQuorumsValidated;
 @property (nonatomic,assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (nonatomic,assign) UInt256 processingMasternodeListBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSMasternodeList*>* masternodeListsByBlockHash;
@@ -72,6 +73,7 @@
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSLocalMasternode*> *localMasternodesDictionaryByRegistrationTransactionHash;
 @property (nonatomic,strong) NSMutableOrderedSet <NSData*>* masternodeListRetrievalQueue;
 @property (nonatomic,assign) NSTimeInterval timeIntervalForMasternodeRetrievalSafetyDelay;
+@property (nonatomic,assign) uint16_t timedOutAttempt;
 @property (nonatomic,strong) NSDictionary <NSData*,NSString*>* fileDistributedMasternodeLists; //string is the path
 
 @end
@@ -87,12 +89,14 @@
     _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _masternodeListsBlockHashStubs = [NSMutableSet set];
+    _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set];
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     _testingMasternodeListRetrieval = NO;
     self.managedObjectContext = [NSManagedObject context];
     self.lastQueriedBlockHash = UINT256_ZERO;
     self.processingMasternodeListBlockHash = UINT256_ZERO;
+    _timedOutAttempt = 0;
     return self;
 }
 
@@ -308,7 +312,7 @@
 
 -(void)dequeueMasternodeListRequest {
     if (![self.masternodeListRetrievalQueue count]) return;
-    if (self.peerManager.downloadPeer.status != DSPeerStatus_Connected) {
+    if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
             [self dequeueMasternodeListRequest];
         });
@@ -331,12 +335,14 @@
                 UInt256 previousBlockHash = [self closestKnownBlockHashForBlockHash:blockHash];
                 DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
                 [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(60 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * (self.timedOutAttempt + 1) * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
                     if (![self.masternodeListRetrievalQueue count]) return;
+                    self.timedOutAttempt++;
                     UInt256 timeoutBlockHash = [self.masternodeListRetrievalQueue objectAtIndex:0].UInt256;
                     if (uint256_eq(timeoutBlockHash, blockHash) && !uint256_eq(self.processingMasternodeListBlockHash, blockHash)) {
                         DSDLog(@"TimedOut");
                         //timeout
+                        [self.peerManager.downloadPeer disconnect];
                         [self dequeueMasternodeListRequest];
                     }
                 });
@@ -372,6 +378,7 @@
             return;
         }
         self.lastQueriedBlockHash = merkleBlock.blockHash;
+        [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(merkleBlock.blockHash)];
         [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:merkleBlock.blockHash]];
         if (emptyRequestQueue) {
             [self dequeueMasternodeListRequest];
@@ -405,6 +412,7 @@
             return;
         }
         self.lastQueriedBlockHash = self.chain.lastBlock.blockHash;
+        [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(self.chain.lastBlock.blockHash)];
         DSDLog(@"Get current masternode list %u",self.chain.lastBlock.height);
         BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:self.chain.lastBlock.blockHash]];
@@ -424,11 +432,7 @@
         for (NSData * blockHash in orderedBlockHashes) {
             DSDLog(@"adding retrieval of masternode list at height %u to queue (%@)",[self  heightForBlockHash:blockHash.UInt256],blockHash.reverse.hexString);
         }
-        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self.masternodeListRetrievalQueue addObjectsFromArray:orderedBlockHashes];
-        if (emptyRequestQueue) {
-            [self dequeueMasternodeListRequest];
-        }
     }
 }
 
@@ -448,9 +452,11 @@
 
 -(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash {
     self.lastQueriedBlockHash = blockHash;
+    [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(blockHash)];
     if (uint256_is_zero(previousBlockHash)) {
         //this is safe
         [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:uint256_data(blockHash)]];
+        [self dequeueMasternodeListRequest];
         return;
     }
     @synchronized (self.masternodeListRetrievalQueue) {
@@ -682,6 +688,8 @@
                 
                 if (blockHeightLookup(potentialQuorumEntry.quorumHash) != UINT32_MAX) {
                     [neededMasternodeLists addObject:uint256_data(potentialQuorumEntry.quorumHash)];
+                } else {
+                    DSDLog(@"Quorum masternode list not found and block not available");
                 }
             }
             
@@ -757,6 +765,8 @@
     DSDLog(@"Logging masternode DIFF message hash %@",[NSData dataWithUInt256:message.SHA256].hexString);
 #endif
     
+    self.timedOutAttempt = 0;
+    
     NSUInteger length = message.length;
     NSUInteger offset = 0;
     
@@ -779,7 +789,7 @@
     
     if ([self.masternodeListsByBlockHash objectForKey:uint256_data(blockHash)]) {
         //we already have this
-        DSDLog(@"We already this masternodeList %@ (%u)",uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
+        DSDLog(@"We already have this masternodeList %@ (%u)",uint256_reverse_hex(blockHash),[self heightForBlockHash:blockHash]);
         return; //no need to do anything more
     }
     
@@ -821,7 +831,7 @@
             DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
-            if (FETCH_NEEDED_QUORUMS && [neededMissingMasternodeLists count] && uint256_eq(self.lastQueriedBlockHash,blockHash)) {
+            if (FETCH_NEEDED_QUORUMS && [neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
                 DSDLog(@"Last masternode list is missing previous masternode lists for quorum validation");
                 
                 self.processingMasternodeListBlockHash = UINT256_ZERO;
@@ -834,6 +844,7 @@
                 NSMutableOrderedSet * neededMasternodeLists = [neededMissingMasternodeLists mutableCopy];
                 [neededMasternodeLists addObject:uint256_data(blockHash)]; //also get the current one again
                 [self getMasternodeListsForBlockHashes:neededMasternodeLists];
+                [self dequeueMasternodeListRequest];
             } else {
                 [self processValidMasternodeList:masternodeList havingAddedMasternodes:addedMasternodes modifiedMasternodes:modifiedMasternodes addedQuorums:addedQuorums];
                 

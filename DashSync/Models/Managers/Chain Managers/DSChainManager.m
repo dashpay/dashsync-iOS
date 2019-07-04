@@ -138,6 +138,8 @@
         [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
         [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+        [self.masternodeManager wipeMasternodeInfo];
+        [self.masternodeManager loadFileDistributedMasternodeLists];
         [self.chain wipeBlockchainInfo];
         [DSTransactionEntity saveContext];
     }];
