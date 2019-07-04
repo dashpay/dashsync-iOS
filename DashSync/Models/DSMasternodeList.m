@@ -294,6 +294,31 @@ inline static int ceil_log2(int x)
     return count;
 }
 
+-(NSUInteger)quorumsCountOfType:(DSLLMQType)type  {
+    return self.mQuorums[@(type)].count;
+}
+
+-(NSUInteger)validQuorumsCount {
+    NSUInteger count = 0;
+    for (NSNumber * type in self.mQuorums) {
+        for (NSData * quorumHashData in self.mQuorums[type]) {
+            DSQuorumEntry * quorum = self.mQuorums[type][quorumHashData];
+            if (quorum.verified) count++;
+        }
+    }
+    return count;
+}
+
+-(NSUInteger)validQuorumsCountOfType:(DSLLMQType)type {
+    NSUInteger count = 0;
+    for (NSData * quorumHashData in self.mQuorums[@(type)]) {
+        DSQuorumEntry * quorum = self.mQuorums[@(type)][quorumHashData];
+        if (quorum.verified) count++;
+    }
+    return count;
+}
+
+
 -(NSDictionary*)quorums {
     NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     for (NSNumber * number in self.mQuorums) {

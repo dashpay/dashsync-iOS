@@ -64,6 +64,7 @@
 @property (nonatomic,strong) DSMasternodeList * currentMasternodeList;
 @property (nonatomic,strong) DSMasternodeList * masternodeListAwaitingQuorumValidation;
 @property (nonatomic,strong) NSManagedObjectContext * managedObjectContext;
+@property (nonatomic,strong) NSMutableSet * masternodeListQueriesNeedingQuorumsValidated;
 @property (nonatomic,assign) UInt256 lastQueriedBlockHash; //last by height, not by time queried
 @property (nonatomic,assign) UInt256 processingMasternodeListBlockHash;
 @property (nonatomic,strong) NSMutableDictionary<NSData*,DSMasternodeList*>* masternodeListsByBlockHash;
@@ -87,6 +88,7 @@
     _masternodeListRetrievalQueue = [NSMutableOrderedSet orderedSet];
     _masternodeListsByBlockHash = [NSMutableDictionary dictionary];
     _masternodeListsBlockHashStubs = [NSMutableSet set];
+    _masternodeListQueriesNeedingQuorumsValidated = [NSMutableSet set]
     _cachedBlockHashHeights = [NSMutableDictionary dictionary];
     _localMasternodesDictionaryByRegistrationTransactionHash = [NSMutableDictionary dictionary];
     _testingMasternodeListRetrieval = NO;
@@ -372,6 +374,7 @@
             return;
         }
         self.lastQueriedBlockHash = merkleBlock.blockHash;
+        [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(merkleBlock.blockHash)];
         [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:merkleBlock.blockHash]];
         if (emptyRequestQueue) {
             [self dequeueMasternodeListRequest];
@@ -405,6 +408,7 @@
             return;
         }
         self.lastQueriedBlockHash = self.chain.lastBlock.blockHash;
+        [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(self.chain.lastBlock.blockHash)];
         DSDLog(@"Get current masternode list %u",self.chain.lastBlock.height);
         BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self.masternodeListRetrievalQueue addObject:[NSData dataWithUInt256:self.chain.lastBlock.blockHash]];
@@ -448,6 +452,7 @@
 
 -(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash {
     self.lastQueriedBlockHash = blockHash;
+    [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(blockHash)];
     if (uint256_is_zero(previousBlockHash)) {
         //this is safe
         [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:uint256_data(blockHash)]];
@@ -823,7 +828,7 @@
             DSDLog(@"Valid masternode list found at height %u",[self heightForBlockHash:blockHash]);
             //yay this is the correct masternode list verified deterministically for the given block
             
-            if (FETCH_NEEDED_QUORUMS && [neededMissingMasternodeLists count] && uint256_eq(self.lastQueriedBlockHash,blockHash)) {
+            if (FETCH_NEEDED_QUORUMS && [neededMissingMasternodeLists count] && [self.masternodeListQueriesNeedingQuorumsValidated containsObject:uint256_data(blockHash)]) {
                 DSDLog(@"Last masternode list is missing previous masternode lists for quorum validation");
                 
                 self.processingMasternodeListBlockHash = UINT256_ZERO;
