@@ -58,6 +58,15 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic, readonly) NSTimeInterval lockoutWaitTime;
 
 + (instancetype)sharedInstance;
+
+
+/**
+ Set PIN without presenting any UI to the user.
+
+ @return Returns NO in case of failure
+ */
+- (BOOL)setPin:(NSString *)pin;
+
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
 - (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinIfNeededWithCompletion:(void (^ _Nullable)(BOOL needed, BOOL success))completion; // prompts the user to set his pin if he has never set one before

@@ -305,6 +305,22 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 // MARK: - Pin
 
+- (BOOL)setPin:(NSString *)pin {
+    NSParameterAssert(pin);
+    if (!pin) {
+        return NO;
+    }
+    
+    NSError *error = nil;
+    BOOL hasPin = hasKeychainData(PIN_KEY, &error);
+    NSAssert(!hasPin, @"Pin already set");
+    if (hasPin) {
+        return NO;
+    }
+    
+    return setKeychainString(pin, PIN_KEY, NO);
+}
+
 - (UITextField *)pinField
 {
     if (_pinField) return _pinField;
