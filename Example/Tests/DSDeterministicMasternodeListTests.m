@@ -910,7 +910,7 @@
     
     
     [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
-        
+        XCTAssert(masternodeLists.count == 29, @"There should be 25 masternode lists");
     }];
 }
 

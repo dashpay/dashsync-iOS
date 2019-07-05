@@ -16,6 +16,14 @@
 #import <arpa/inet.h>
 #import "DSWallet.h"
 
+#define LOG_SMNE_CHANGES 0
+
+#if LOG_SMNE_CHANGES
+#define DSDSMNELog(s, ...) DSDLog(s, ##__VA_ARGS__)
+#else
+#define DSDSMNELog(s, ...)
+#endif
+
 @interface DSSimplifiedMasternodeEntry()
 
 @property(nonatomic,assign) UInt256 providerRegistrationTransactionHash;
@@ -130,7 +138,7 @@
     self.mPreviousValidity = [masternodeEntry.previousValidity mutableCopy];
     if (masternodeEntry.isValid != self.isValid) {
         //we changed validity
-        DSDLog(@"Changed validity from %u to %u on %@",masternodeEntry.isValid, self.isValid,uint256_hex(self.providerRegistrationTransactionHash));
+        DSDSMNELog(@"Changed validity from %u to %u on %@",masternodeEntry.isValid, self.isValid,uint256_hex(self.providerRegistrationTransactionHash));
         [self.mPreviousValidity setObject:@(masternodeEntry.isValid) forKey:block];
     }
 }
@@ -140,7 +148,7 @@
     self.mPreviousOperatorPublicKeys = [masternodeEntry.previousOperatorPublicKeys mutableCopy];
     if (!uint384_eq(masternodeEntry.operatorPublicKey,self.operatorPublicKey)) {
         //the operator public key changed
-        DSDLog(@"Changed sme operator keys from %@ to %@ on %@",uint384_hex(masternodeEntry.operatorPublicKey), uint384_hex(self.operatorPublicKey),uint256_hex(self.providerRegistrationTransactionHash));
+        DSDSMNELog(@"Changed sme operator keys from %@ to %@ on %@",uint384_hex(masternodeEntry.operatorPublicKey), uint384_hex(self.operatorPublicKey),uint256_hex(self.providerRegistrationTransactionHash));
         [self.mPreviousOperatorPublicKeys setObject:uint384_data(masternodeEntry.operatorPublicKey) forKey:block];
     }
 }
@@ -151,7 +159,7 @@
     self.mPreviousSimplifiedMasternodeEntryHashes = [masternodeEntry.previousSimplifiedMasternodeEntryHashes mutableCopy];
     if (!uint256_eq(masternodeEntry.simplifiedMasternodeEntryHash,self.simplifiedMasternodeEntryHash)) {
         //the hashes changed
-        DSDLog(@"Changed sme hashes from %@ to %@ on %@",uint256_hex(masternodeEntry.simplifiedMasternodeEntryHash),uint256_hex(self.simplifiedMasternodeEntryHash),uint256_hex(self.providerRegistrationTransactionHash));
+        DSDSMNELog(@"Changed sme hashes from %@ to %@ on %@",uint256_hex(masternodeEntry.simplifiedMasternodeEntryHash),uint256_hex(self.simplifiedMasternodeEntryHash),uint256_hex(self.providerRegistrationTransactionHash));
         [self.mPreviousSimplifiedMasternodeEntryHashes setObject:uint256_data(masternodeEntry.simplifiedMasternodeEntryHash) forKey:block];
     }
 }
@@ -198,7 +206,7 @@
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDLog(@"Validity : Using %@ instead of %@ for list at block height %u",previousValidity[previousBlock].boolValue?@"YES":@"NO",isValid?@"YES":@"NO", blockHeight);
+            DSDSMNELog(@"Validity : Using %@ instead of %@ for list at block height %u",previousValidity[previousBlock].boolValue?@"YES":@"NO",isValid?@"YES":@"NO", blockHeight);
             isValid = [previousValidity[previousBlock] boolValue];
         }
     }
@@ -234,7 +242,7 @@
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDLog(@"SME Hash : Using %@ instead of %@ for list at block height %u",uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256),uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
+            DSDSMNELog(@"SME Hash : Using %@ instead of %@ for list at block height %u",uint256_hex(previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256),uint256_hex(usedSimplifiedMasternodeEntryHash), blockHeight);
             usedSimplifiedMasternodeEntryHash = previousSimplifiedMasternodeEntryHashes[previousBlock].UInt256;
         }
     }
@@ -266,7 +274,7 @@
         uint32_t distance = previousBlock.height - blockHeight;
         if (distance < minDistance) {
             minDistance = distance;
-            DSDLog(@"OperatorKey : Using %@ instead of %@ for list at block height %u",uint384_hex(previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384),uint384_hex(usedPreviousOperatorPublicKeyAtBlockHash), blockHeight);
+            DSDSMNELog(@"OperatorKey : Using %@ instead of %@ for list at block height %u",uint384_hex(previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384),uint384_hex(usedPreviousOperatorPublicKeyAtBlockHash), blockHeight);
             usedPreviousOperatorPublicKeyAtBlockHash = previousOperatorPublicKeyAtBlockHashes[previousBlock].UInt384;
         }
     }
@@ -421,11 +429,6 @@
 
 -(NSDictionary*)compare:(DSSimplifiedMasternodeEntry*)other atBlockHash:(UInt256)blockHash {
     return [self compare:other ourBlockHash:blockHash theirBlockHash:blockHash];
-//    @property(nonatomic,assign) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
-//    @property(nonatomic,assign) UInt256 simplifiedMasternodeEntryHash;
-
-//    @property(nonatomic,strong) NSMutableDictionary * mPreviousOperatorPublicKeys;
-//    @property(nonatomic,strong) NSMutableDictionary * mPreviousSimplifiedMasternodeEntryHashes;
 }
 
 @end
