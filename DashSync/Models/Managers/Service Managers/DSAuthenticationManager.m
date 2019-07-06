@@ -314,7 +314,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSError *error = nil;
     BOOL hasPin = hasKeychainData(PIN_KEY, &error);
     NSAssert(!hasPin, @"Pin already set");
-    if (hasPin) {
+    if (hasPin || error) {
         return NO;
     }
     
