@@ -18,6 +18,16 @@
 #import "DSKey.h"
 #include <arpa/inet.h>
 
+#define LOG_SMNE_CHANGES 0
+
+#if LOG_SMNE_CHANGES
+#define DSDSMNELog(s, ...) DSDLog(s, ##__VA_ARGS__)
+#else
+#define DSDSMNELog(s, ...)
+#endif
+
+ //DSDLog(s, ##__VA_ARGS__)
+
 @implementation DSSimplifiedMasternodeEntryEntity
 
 - (void)updateAttributesFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry *)simplifiedMasternodeEntry {
@@ -28,12 +38,13 @@
     
     if (!uint128_eq(self.ipv6Address.UInt128, simplifiedMasternodeEntry.address)) {
         self.ipv6Address = uint128_data(simplifiedMasternodeEntry.address);
-        char s[INET6_ADDRSTRLEN];
         uint32_t address32 = CFSwapInt32BigToHost(simplifiedMasternodeEntry.address.u32[3]);
-        NSString * ipAddressString = @(inet_ntop(AF_INET, &address32, s, sizeof(s)));
         if (self.address != address32) {
             self.address = address32;
-            DSDLog(@"changing address to %@",ipAddressString);
+#if LOG_SMNE_CHANGES
+            char s[INET6_ADDRSTRLEN];
+#endif
+            DSDSMNELog(@"changing address to %@",@(inet_ntop(AF_INET, &address32, s, sizeof(s))));
         }
     }
     
@@ -41,31 +52,31 @@
     
     if (![self.confirmedHash isEqualToData:confirmedHashData]) {
         self.confirmedHash = confirmedHashData;
-        DSDLog(@"changing confirmedHashData to %@",confirmedHashData.hexString);
+        DSDSMNELog(@"changing confirmedHashData to %@",confirmedHashData.hexString);
     }
     
     if (self.port != simplifiedMasternodeEntry.port) {
         self.port = simplifiedMasternodeEntry.port;
-        DSDLog(@"changing port to %u",simplifiedMasternodeEntry.port);
+        DSDSMNELog(@"changing port to %u",simplifiedMasternodeEntry.port);
     }
     
     NSData * keyIDVotingData = [NSData dataWithUInt160:simplifiedMasternodeEntry.keyIDVoting];
     
     if (![self.keyIDVoting isEqualToData:keyIDVotingData]) {
         self.keyIDVoting = keyIDVotingData;
-        DSDLog(@"changing keyIDVotingData to %@",keyIDVotingData.hexString);
+        DSDSMNELog(@"changing keyIDVotingData to %@",keyIDVotingData.hexString);
     }
     
     NSData * operatorPublicKeyData = [NSData dataWithUInt384:simplifiedMasternodeEntry.operatorPublicKey];
     
     if (![self.operatorBLSPublicKey isEqualToData:operatorPublicKeyData]) {
         self.operatorBLSPublicKey = operatorPublicKeyData;
-        DSDLog(@"changing operatorBLSPublicKey to %@",operatorPublicKeyData.hexString);
+        DSDSMNELog(@"changing operatorBLSPublicKey to %@",operatorPublicKeyData.hexString);
     }
     
     if (self.isValid != simplifiedMasternodeEntry.isValid) {
         self.isValid = simplifiedMasternodeEntry.isValid;
-        DSDLog(@"changing isValid to %@",simplifiedMasternodeEntry.isValid?@"TRUE":@"FALSE");
+        DSDSMNELog(@"changing isValid to %@",simplifiedMasternodeEntry.isValid?@"TRUE":@"FALSE");
     }
     
     
