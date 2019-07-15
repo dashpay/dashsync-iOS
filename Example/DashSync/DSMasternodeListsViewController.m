@@ -18,7 +18,6 @@
 
 @interface DSMasternodeListsViewController ()
 @property (nonatomic,strong) NSFetchedResultsController * fetchedResultsController;
-@property (strong, nonatomic) IBOutlet UITextField *previousBlockHeightTextField;
 @property (strong, nonatomic) IBOutlet UITextField *blockHeightTextField;
 @property (strong, nonatomic) IBOutlet UIButton *fetchButton;
 @property (strong, nonatomic) NSMutableDictionary <NSData*,NSNumber*> * validMerkleRootDictionary;
@@ -174,11 +173,24 @@
 }
 
 -(IBAction)fetchMasternodeList:(id)sender {
-    uint32_t previousBlockHeight = (![self.previousBlockHeightTextField.text isEqualToString:@""])?[self.previousBlockHeightTextField.text intValue]:0;
     uint32_t blockHeight = (![self.blockHeightTextField.text isEqualToString:@""])?[self.blockHeightTextField.text intValue]:self.chain.lastBlock.height;
 
     NSError * error = nil;
-    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight previousBlockHeight:previousBlockHeight error:&error];
+    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight error:&error];
+    if (error) {
+        [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
+                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
+                               popOutAfterDelay:2.0]];
+    }
+}
+
+-(IBAction)fetchNextMasternodeList:(id)sender {
+    int32_t lastKnownBlockHeight = self.chain.chainManager.masternodeManager.currentMasternodeList.height;
+    if (lastKnownBlockHeight + 24 > self.chain.lastBlock.height) return;
+    uint32_t blockHeight = lastKnownBlockHeight + 24;
+    
+    NSError * error = nil;
+    [self.chain.chainManager.masternodeManager getMasternodeListForBlockHeight:blockHeight error:&error];
     if (error) {
         [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
