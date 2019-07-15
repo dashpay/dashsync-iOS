@@ -1011,6 +1011,39 @@
     }];
 }
 
+-(void)testQuorumIssue {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1098624", @"MNL_1098624_1098648", @"MNL_1098648_1098672", @"MNL_1098672_1098696", @"MNL_1098696_1098720", @"MNL_1098720_1098744", @"MNL_1098744_1098768", @"MNL_1098768_1098792", @"MNL_1098792_1098816", @"MNL_1098816_1098840", @"MNL_1098840_1098864", @"MNL_1098864_1098888", @"MNL_1098888_1098912", @"MNL_1098912_1098936", @"MNL_1098936_1098960", @"MNL_1098960_1098984", @"MNL_1098984_1099008"];
+    
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
+        [chain.chainManager.masternodeManager reloadMasternodeLists];
+        for (NSData * masternodeListBlockHash in masternodeLists) {
+            NSLog(@"Testing masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
+            DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
+            DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+            if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot])) {
+                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded"];
+                NSLog(@"%@",comparisonResult);
+            }
+            XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
+        }
+        
+        [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+    }];
+}
+
 - (void)testMNLSavingAndRetrievingInIncorrectOrderFromDisk {
     DSChain * chain = [DSChain mainnet];
     __block NSManagedObjectContext * context = [NSManagedObject context];

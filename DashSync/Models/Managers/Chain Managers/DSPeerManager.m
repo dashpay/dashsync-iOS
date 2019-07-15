@@ -252,7 +252,7 @@
         NSTimeInterval now = [NSDate timeIntervalSince1970];
         NSMutableArray *peers = [NSMutableArray arrayWithObject:[NSMutableArray array]];
         NSArray * dnsSeeds = [self dnsSeeds];
-        if (_peers.count < PEER_MAX_CONNECTIONS || ((DSPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*24*60*60 < now) {
+        if (_peers.count < PEER_MAX_CONNECTIONS || ((DSPeer *)_peers[PEER_MAX_CONNECTIONS - 1]).timestamp + 3*DAY_TIME_INTERVAL < now) {
             while (peers.count < dnsSeeds.count) [peers addObject:[NSMutableArray array]];
         }
         
@@ -279,7 +279,7 @@
                             else continue;
                             
                             uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-                            NSTimeInterval age = 3*24*60*60 + arc4random_uniform(4*24*60*60); // add between 3 and 7 days
+                            NSTimeInterval age = 3*DAY_TIME_INTERVAL + arc4random_uniform(4*DAY_TIME_INTERVAL); // add between 3 and 7 days
                             
                             [peers[i] addObject:[[DSPeer alloc] initWithAddress:addr port:port onChain:self.chain
                                                                       timestamp:(i > 0 ? now - age : now)

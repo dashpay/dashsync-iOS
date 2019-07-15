@@ -890,6 +890,13 @@
 			name = Governance;
 			sourceTree = "<group>";
 		};
+		FB27C5FF22DC2DF3002808C4 /* QuorumIssue */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = QuorumIssue;
+			sourceTree = "<group>";
+		};
 		FB2B21A820D6FBF4000DF537 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -1032,6 +1039,7 @@
 		FB76C5A822BD7B9700DF2B29 /* MasternodeLists */ = {
 			isa = PBXGroup;
 			children = (
+				FB27C5FF22DC2DF3002808C4 /* QuorumIssue */,
 				FB1BF8CC22C96DCF003413C6 /* AdvancedReorderTest */,
 				FBEA6EE422C2ADC300CBCA77 /* ReorderTest */,
 				FBEA6EDC22C291BB00CBCA77 /* MNL_0_1092888.dat */,
