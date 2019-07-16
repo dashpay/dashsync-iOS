@@ -143,6 +143,7 @@
 }
 
 -(uint32_t)heightForBlockHash:(UInt256)blockhash {
+    if (uint256_is_zero(blockhash)) return 0;
     NSNumber * cachedHeightNumber = [self.cachedBlockHashHeights objectForKey:uint256_data(blockhash)];
     if (cachedHeightNumber) return [cachedHeightNumber intValue];
     uint32_t chainHeight = [self.chain heightForBlockHash:blockhash];
@@ -399,7 +400,7 @@
                     UInt256 previousMasternodeInQueueBlockHash = (pos?[masternodeListsToRetrieve objectAtIndex:pos -1].UInt256:UINT256_ZERO);
                     uint32_t previousMasternodeAlreadyKnownHeight = [self heightForBlockHash:previousMasternodeAlreadyKnownBlockHash];
                     uint32_t previousMasternodeInQueueHeight = (pos?[self heightForBlockHash:previousMasternodeInQueueBlockHash]:UINT32_MAX);
-                    UInt256 previousBlockHash = (previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash);
+                    UInt256 previousBlockHash = pos?(previousMasternodeAlreadyKnownHeight > previousMasternodeInQueueHeight? previousMasternodeAlreadyKnownBlockHash : previousMasternodeInQueueBlockHash):previousMasternodeAlreadyKnownBlockHash;
                     
                     DSDLog(@"Requesting masternode list and quorums from %u to %u (%@ to %@)",[self heightForBlockHash:previousBlockHash],[self heightForBlockHash:blockHash], uint256_reverse_hex(previousBlockHash), uint256_reverse_hex(blockHash));
                     NSAssert(([self heightForBlockHash:previousBlockHash] != UINT32_MAX) || uint256_is_zero(previousBlockHash),@"This block height should be known");
@@ -494,38 +495,22 @@
     }
 }
 
--(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight previousBlockHeight:(uint32_t)previousBlockHeight error:(NSError**)error {
+-(void)getMasternodeListForBlockHeight:(uint32_t)blockHeight error:(NSError**)error {
     DSMerkleBlock * merkleBlock = [self.chain blockAtHeight:blockHeight];
     if (!merkleBlock) {
         *error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Unknown block"}];
         return;
     }
-    DSMerkleBlock * previousMerkleBlock = previousBlockHeight?[self.chain blockAtHeight:previousBlockHeight]:nil;
-    if (previousBlockHeight && !previousMerkleBlock) {
-        *error = [NSError errorWithDomain:@"DashSync" code:600 userInfo:@{NSLocalizedDescriptionKey:@"Unknown previous block"}];
-        return;
-    }
-    [self getMasternodeListForBlockHash:merkleBlock.blockHash previousBlockHash:previousMerkleBlock.blockHash];
+    [self getMasternodeListForBlockHash:merkleBlock.blockHash];
 }
 
--(void)getMasternodeListForBlockHash:(UInt256)blockHash previousBlockHash:(UInt256)previousBlockHash {
+-(void)getMasternodeListForBlockHash:(UInt256)blockHash {
     self.lastQueriedBlockHash = blockHash;
     [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(blockHash)];
-    if (uint256_is_zero(previousBlockHash)) {
-        //this is safe
-        [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:uint256_data(blockHash)]];
-        [self dequeueMasternodeListRequest];
-        return;
-    }
-    @synchronized (self.masternodeListRetrievalQueue) {
-        //this is for debugging purposes only
-        [self addToMasternodeRetrievalQueue:uint256_data(blockHash)];
-        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
-        if (emptyRequestQueue) {
-            [self.peerManager.downloadPeer sendGetMasternodeListFromPreviousBlockHash:previousBlockHash forBlockHash:blockHash];
-            [self.masternodeListsInRetrieval addObject:uint256_data(blockHash)];
-        }
-    }
+    //this is safe
+    [self getMasternodeListsForBlockHashes:[NSOrderedSet orderedSetWithObject:uint256_data(blockHash)]];
+    [self dequeueMasternodeListRequest];
+
 }
 
 // MARK: - Deterministic Masternode List Sync
@@ -815,7 +800,7 @@
 #define LOG_MASTERNODE_DIFF 0 && DEBUG
 #define FETCH_NEEDED_QUORUMS 1
 #define KEEP_OLD_QUORUMS 0
-#define SAVE_MASTERNODE_DIFF_TO_FILE (0 && DEBUG)
+#define SAVE_MASTERNODE_DIFF_TO_FILE (1 && DEBUG)
 #define DSFullLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String])
 
 -(void)peer:(DSPeer *)peer relayedMasternodeDiffMessage:(NSData*)message {
