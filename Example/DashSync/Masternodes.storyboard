@@ -104,23 +104,18 @@
                             <rect key="frame" x="0.0" y="0.0" width="414" height="128"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
-                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Previous" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="eRK-1Y-m3c">
-                                    <rect key="frame" x="18" y="66" width="100" height="30"/>
+                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Height" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dQo-Za-hlA">
+                                    <rect key="frame" x="20" y="66" width="100" height="30"/>
                                     <constraints>
-                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="l18-YD-HNf"/>
+                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="d4r-7M-91l"/>
+                                        <constraint firstAttribute="height" constant="30" id="rMI-Zl-cbt"/>
                                     </constraints>
                                     <nil key="textColor"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                     <textInputTraits key="textInputTraits"/>
                                 </textField>
-                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Height" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dQo-Za-hlA">
-                                    <rect key="frame" x="138" y="66" width="100" height="30"/>
-                                    <nil key="textColor"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                    <textInputTraits key="textInputTraits"/>
-                                </textField>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JDY-ep-WIe">
-                                    <rect key="frame" x="258" y="66" width="39" height="30"/>
+                                    <rect key="frame" x="140" y="66" width="39" height="30"/>
                                     <state key="normal" title="Fetch"/>
                                     <connections>
                                         <action selector="fetchMasternodeList:" destination="Udd-Io-dOb" eventType="touchUpInside" id="CEJ-G1-0uL"/>
@@ -133,10 +128,17 @@
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jxv-8V-6LE">
-                                    <rect key="frame" x="317" y="66" width="47" height="30"/>
+                                    <rect key="frame" x="199" y="66" width="47" height="30"/>
                                     <state key="normal" title="Reload"/>
                                     <connections>
                                         <action selector="reloadList:" destination="Udd-Io-dOb" eventType="touchUpInside" id="2gF-yj-Ec9"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Sxx-Zd-E6X">
+                                    <rect key="frame" x="264" y="66" width="32" height="30"/>
+                                    <state key="normal" title="Next"/>
+                                    <connections>
+                                        <action selector="fetchNextMasternodeList:" destination="Udd-Io-dOb" eventType="touchUpInside" id="9wJ-Dc-UUH"/>
                                     </connections>
                                 </button>
                             </subviews>
@@ -144,16 +146,14 @@
                             <constraints>
                                 <constraint firstItem="JDY-ep-WIe" firstAttribute="bottom" secondItem="dQo-Za-hlA" secondAttribute="bottom" id="3V5-8Q-Wvg"/>
                                 <constraint firstItem="jxv-8V-6LE" firstAttribute="firstBaseline" secondItem="JDY-ep-WIe" secondAttribute="firstBaseline" id="3Xm-jK-s8r"/>
-                                <constraint firstItem="eRK-1Y-m3c" firstAttribute="top" secondItem="ewZ-O0-iTj" secondAttribute="bottom" constant="22" id="8w7-a4-CsE"/>
+                                <constraint firstItem="Sxx-Zd-E6X" firstAttribute="firstBaseline" secondItem="jxv-8V-6LE" secondAttribute="firstBaseline" id="GNm-X0-Yrb"/>
+                                <constraint firstItem="dQo-Za-hlA" firstAttribute="leading" secondItem="IYT-Wc-cWa" secondAttribute="leading" constant="20" id="KRY-3O-MHs"/>
                                 <constraint firstItem="JDY-ep-WIe" firstAttribute="leading" secondItem="dQo-Za-hlA" secondAttribute="trailing" constant="20" id="LQc-6I-oO6"/>
                                 <constraint firstItem="ewZ-O0-iTj" firstAttribute="top" secondItem="IYT-Wc-cWa" secondAttribute="top" constant="23" id="OT8-js-pML"/>
-                                <constraint firstItem="eRK-1Y-m3c" firstAttribute="leading" secondItem="ewZ-O0-iTj" secondAttribute="leading" id="YLG-tP-EyO"/>
+                                <constraint firstItem="dQo-Za-hlA" firstAttribute="top" secondItem="ewZ-O0-iTj" secondAttribute="bottom" constant="22" id="VnZ-gv-EcY"/>
                                 <constraint firstItem="jxv-8V-6LE" firstAttribute="leading" secondItem="JDY-ep-WIe" secondAttribute="trailing" constant="20" id="fLl-UI-qD8"/>
-                                <constraint firstItem="eRK-1Y-m3c" firstAttribute="top" secondItem="dQo-Za-hlA" secondAttribute="top" id="feA-K3-YEr"/>
-                                <constraint firstItem="eRK-1Y-m3c" firstAttribute="height" secondItem="dQo-Za-hlA" secondAttribute="height" id="m7u-su-DK7"/>
                                 <constraint firstItem="ewZ-O0-iTj" firstAttribute="leading" secondItem="IYT-Wc-cWa" secondAttribute="leading" constant="18" id="ndn-ag-2nB"/>
-                                <constraint firstItem="eRK-1Y-m3c" firstAttribute="width" secondItem="dQo-Za-hlA" secondAttribute="width" id="qPp-Sp-QEO"/>
-                                <constraint firstItem="dQo-Za-hlA" firstAttribute="leading" secondItem="eRK-1Y-m3c" secondAttribute="trailing" constant="20" id="wIp-Ht-y7m"/>
+                                <constraint firstItem="Sxx-Zd-E6X" firstAttribute="leading" secondItem="jxv-8V-6LE" secondAttribute="trailing" constant="18" id="voq-wu-93d"/>
                             </constraints>
                         </view>
                         <prototypes>
@@ -233,7 +233,6 @@
                     <connections>
                         <outlet property="blockHeightTextField" destination="dQo-Za-hlA" id="UPB-Es-Uhh"/>
                         <outlet property="fetchButton" destination="JDY-ep-WIe" id="68l-5a-OlU"/>
-                        <outlet property="previousBlockHeightTextField" destination="eRK-1Y-m3c" id="eJS-EI-HMW"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dga-K4-0kI" userLabel="First Responder" sceneMemberID="firstResponder"/>

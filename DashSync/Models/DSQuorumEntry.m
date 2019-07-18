@@ -105,7 +105,6 @@
     self.quorumEntryHash = [self.toData SHA256_2];
     
     self.chain = chain;
-    
     self.verified = FALSE;
     
     return self;
@@ -119,7 +118,6 @@
     self.quorumHash = quorumHash;
     self.quorumPublicKey = quorumPublicKey;
     self.quorumEntryHash = commitmentHash;
-    DSDLog(@"Quorum %u is %u verified at %d",self.llmqType,verified,[chain heightForBlockHash:quorumHash]);
     self.verified = verified;
     self.chain = chain;
     

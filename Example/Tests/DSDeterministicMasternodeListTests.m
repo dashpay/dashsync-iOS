@@ -502,6 +502,8 @@
         NSString *filePath = [bundle pathForResource:file ofType:@"dat"];
         NSData * message = [NSData dataWithContentsOfFile:filePath];
         
+        XCTAssert(message.length,@"File must exist for file %@",file);
+        
         NSUInteger length = message.length;
         NSUInteger offset = 0;
         
@@ -516,7 +518,11 @@
         __block dispatch_semaphore_t sem = dispatch_semaphore_create(0);
         
         [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nextBaseMasternodList masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
-            return nil; //no known previous lists
+            if (save && reloading) {
+                return [chain.chainManager.masternodeManager masternodeListForBlockHash:blockHash];
+            } else {
+                return [dictionary objectForKey:uint256_data(blockHash)]; //no known previous lists
+            }
         } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
             return UINT32_MAX;
         } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
@@ -820,7 +826,7 @@
                 
                 //They are currently not equal
                 XCTAssertNotEqual(originalEntryFrom122088,originalEntryFrom122064,@"These should NOT be the same object (unless we changed how this worked)");
-                XCTAssertEqualObjects(originalEntryFrom122088.previousSimplifiedMasternodeEntryHashes,@{@"8f14597a7f7cee77ac97a7122bdca21fc84ae5e66db359148ec2ee0700000000".hexToData:@"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543".hexToData},@"This is what it used to be");
+                XCTAssertEqualObjects([originalEntryFrom122088.previousSimplifiedMasternodeEntryHashes allValues],@[@"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543".hexToData],@"This is what it used to be");
                 
                 XCTAssertEqualObjects(uint256_hex(originalEntryFrom122064.simplifiedMasternodeEntryHash), @"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543",@"The hash of the sme should be this");
                 
@@ -834,7 +840,7 @@
                 
                 XCTAssertEqualObjects(uint256_hex(reloadedEntryFrom122064.simplifiedMasternodeEntryHash), @"e001033590361b172da9cb352f9736dbe9453c6a389068f7b76d71f9f3044d3b",@"The hash should remain on this");
                 
-                XCTAssertEqualObjects(reloadedEntryFrom122064.previousSimplifiedMasternodeEntryHashes, @{@"8f14597a7f7cee77ac97a7122bdca21fc84ae5e66db359148ec2ee0700000000".hexToData: @"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543".hexToData}, @"This is what it used to be");
+                XCTAssertEqualObjects([reloadedEntryFrom122064.previousSimplifiedMasternodeEntryHashes allValues], @[ @"14d8f2de996a2515815abeb8f111a3ffe8582443ce7a43a8399c1a1c86c65543".hexToData], @"This is what it used to be");
                 
                 NSArray * localProTxHashes122088 = [masternodeList122088.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash allKeys];
                 localProTxHashes122088 = [localProTxHashes122088 sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
@@ -910,7 +916,7 @@
     
     
     [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
-        
+        XCTAssert(masternodeLists.count == 29, @"There should be 25 masternode lists");
     }];
 }
 
@@ -1006,6 +1012,39 @@
             }
             XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
         }
+        
+        [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
+    }];
+}
+
+-(void)testQuorumIssue {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
+    [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:NO];
+    [chain chainManager];
+    [context performBlockAndWait:^{
+        DSChainEntity * chainEntity = chain.chainEntity;
+        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+    }];
+    [chain.chainManager.masternodeManager reloadMasternodeLists];
+    NSArray * files = @[@"MNL_0_1096704", @"MNL_1096704_1097280", @"MNL_1097280_1097856", @"MNL_1097856_1098144", @"MNL_1098144_1098432", @"MNL_1098432_1098456", @"MNL_1098456_1098480", @"MNL_1098480_1098504", @"MNL_1098504_1098528", @"MNL_1098528_1098552", @"MNL_1098552_1098576", @"MNL_1098576_1098600", @"MNL_1098600_1098624", @"MNL_1098624_1098648", @"MNL_1098648_1098672", @"MNL_1098672_1098696", @"MNL_1098696_1098720", @"MNL_1098720_1098744", @"MNL_1098744_1098768", @"MNL_1098768_1098792", @"MNL_1098792_1098816", @"MNL_1098816_1098840", @"MNL_1098840_1098864", @"MNL_1098864_1098888", @"MNL_1098888_1098912", @"MNL_1098912_1098936", @"MNL_1098936_1098960", @"MNL_1098960_1098984", @"MNL_1098984_1099008"];
+    
+    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:YES onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
+        [chain.chainManager.masternodeManager reloadMasternodeLists];
+//        for (NSData * masternodeListBlockHash in masternodeLists) {
+//            NSLog(@"Testing quorum of masternode list at height %u",[chain heightForBlockHash:masternodeListBlockHash.UInt256]);
+//            DSMasternodeList * originalMasternodeList = [masternodeLists objectForKey:masternodeListBlockHash];
+//            DSMasternodeList * reloadedMasternodeList = [chain.chainManager.masternodeManager masternodeListForBlockHash:masternodeListBlockHash.UInt256];
+//            if (!uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot])) {
+//                NSDictionary * comparisonResult = [originalMasternodeList compare:reloadedMasternodeList usingOurString:@"original" usingTheirString:@"reloaded"];
+//                NSLog(@"%@",comparisonResult);
+//            }
+//            XCTAssert(uint256_eq([reloadedMasternodeList masternodeMerkleRoot], [reloadedMasternodeList calculateMasternodeMerkleRoot]),@"These should be equal");
+//            //reloadedMasternodeList.quorums
+//        }
         
         [[DSOptionsManager sharedInstance] setUseCheckpointMasternodeLists:useCheckpointMasternodeLists];
     }];
