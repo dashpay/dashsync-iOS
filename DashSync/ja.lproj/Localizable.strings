@@ -99,7 +99,7 @@
 "enter old passcode" = "現在のパスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
-"Error from payment request server %@" = "Error from payment request server %@";
+"Error from payment request server %@" = "支払い要求サーバーからのエラー %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "Dash取引署名時エラー";
