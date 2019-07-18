@@ -137,11 +137,15 @@
 }
 
 - (NSSet *)connectedPeers {
-    return [self.mutableConnectedPeers copy];
+    @synchronized (self.mutableConnectedPeers) {
+        return [self.mutableConnectedPeers copy];
+    }
 }
 
 - (NSSet *)misbehavingPeers {
-    return [self.mutableMisbehavingPeers copy];
+    @synchronized (self.mutableMisbehavingPeers) {
+        return [self.mutableMisbehavingPeers copy];
+    }
 }
 
 // MARK: - Managers
@@ -352,20 +356,21 @@
 
 - (void)peerMisbehaving:(DSPeer *)peer errorMessage:(NSString*)errorMessage
 {
-    peer.misbehaving++;
-    [self.peers removeObject:peer];
-    [self.mutableMisbehavingPeers addObject:peer];
-    
-    if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
-        self.misbehavingCount = 0;
-        [self.mutableMisbehavingPeers removeAllObjects];
-        [DSPeerEntity deleteAllObjects];
-        _peers = nil;
+    @synchronized (self.mutableMisbehavingPeers) {
+        peer.misbehaving++;
+        [self.peers removeObject:peer];
+        [self.mutableMisbehavingPeers addObject:peer];
+        if (++self.misbehavingCount >= self.chain.peerMisbehavingThreshold) { // clear out stored peers so we get a fresh list from DNS for next connect
+            self.misbehavingCount = 0;
+            [self.mutableMisbehavingPeers removeAllObjects];
+            [DSPeerEntity deleteAllObjects];
+            _peers = nil;
+        }
+        
+        [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
+                                                  userInfo:@{NSLocalizedDescriptionKey:errorMessage}]];
+        [self connect];
     }
-    
-    [peer disconnectWithError:[NSError errorWithDomain:@"DashSync" code:500
-                                              userInfo:@{NSLocalizedDescriptionKey:errorMessage}]];
-    [self connect];
 }
 
 - (void)sortPeers
@@ -607,7 +612,7 @@
             });
         }
         
-        @synchronized (self.connectedPeers) {
+        @synchronized (self.mutableConnectedPeers) {
             [self.mutableConnectedPeers minusSet:[self.connectedPeers objectsPassingTest:^BOOL(id obj, BOOL *stop) {
                 return ([obj status] == DSPeerStatus_Disconnected) ? YES : NO;
             }]];
@@ -622,7 +627,7 @@
         if (peers.count > 100) [peers removeObjectsInRange:NSMakeRange(100, peers.count - 100)];
         
         if (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
-            @synchronized (self.connectedPeers) {
+            @synchronized (self.mutableConnectedPeers) {
                 NSTimeInterval earliestWalletCreationTime = self.chain.earliestWalletCreationTime;;
                 while (peers.count > 0 && self.connectedPeers.count < self.maxConnectCount) {
                     // pick a random peer biased towards peers with more recent timestamps
@@ -851,7 +856,9 @@
         [self syncStopped];
         
         // clear out stored peers so we get a fresh list from DNS on next connect attempt
-        [self.mutableMisbehavingPeers removeAllObjects];
+        @synchronized (self.mutableMisbehavingPeers) {
+            [self.mutableMisbehavingPeers removeAllObjects];
+        }
         [DSPeerEntity deleteAllObjects];
         _peers = nil;
         
