@@ -60,6 +60,8 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 + (instancetype)sharedInstance;
 
 
+- (BOOL)hasPin;
+
 /**
  Set PIN without presenting any UI to the user.
 

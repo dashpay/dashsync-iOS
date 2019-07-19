@@ -305,6 +305,17 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 // MARK: - Pin
 
+- (BOOL)hasPin {
+    NSError *error = nil;
+    BOOL hasPin = hasKeychainData(PIN_KEY, &error);
+    if (error) {
+        // don't allow to set pin if there was an error
+        return YES;
+    }
+    
+    return hasPin;
+}
+
 - (BOOL)setPin:(NSString *)pin {
     NSParameterAssert(pin);
     if (!pin) {
