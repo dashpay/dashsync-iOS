@@ -78,6 +78,7 @@
 
 @property (copy, nonatomic) NSArray <DSCurrencyPriceObject *> *prices;
 @property (copy, nonatomic) NSDictionary <NSString *, DSCurrencyPriceObject *> *pricesByCode;
+@property (nonatomic, copy) NSString *lastPriceSourceInfo;
 
 @end
 
@@ -252,7 +253,7 @@
     [self performSelector:@selector(updatePrices) withObject:nil afterDelay:TICKER_REFRESH_TIME];
     
     __weak typeof(self) weakSelf = self;
-    DSOperation *priceOperation = [DSPriceOperationProvider fetchPrices:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices) {
+    DSOperation *priceOperation = [DSPriceOperationProvider fetchPrices:^(NSArray<DSCurrencyPriceObject *> * _Nullable prices, NSString *priceSource) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -265,6 +266,8 @@
                 pricesByCode[priceObject.code] = priceObject;
                 plainPricesByCode[priceObject.code] = priceObject.price;
             }
+            
+            strongSelf.lastPriceSourceInfo = priceSource;
             
             [[NSUserDefaults standardUserDefaults] setObject:plainPricesByCode forKey:PRICESBYCODE_KEY];
             

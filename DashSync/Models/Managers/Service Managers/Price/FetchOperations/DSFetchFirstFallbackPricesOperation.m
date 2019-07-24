@@ -36,13 +36,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DSHTTPBitcoinAvgOperation *bitcoinAvgOperation;
 @property (strong, nonatomic) DSHTTPDashCasaOperation *dashCasaOperation;
 
-@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
+@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource);
 
 @end
 
 @implementation DSFetchFirstFallbackPricesOperation
 
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable))completion {
+- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource))completion {
     self = [super initWithOperations:nil];
     if (self) {
         {
@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (errors.count > 0) {
-        self.fetchCompletion(nil);
+        self.fetchCompletion(nil, [self.class priceSourceInfo]);
 
         return;
     }
@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSNumber *dashrateNumber = self.dashCasaOperation.dashrate;
 
     if (!pricesByCode || dashBtcPrice < DBL_EPSILON || !dashrateNumber) {
-        self.fetchCompletion(nil);
+        self.fetchCompletion(nil, [self.class priceSourceInfo]);
 
         return;
     }
@@ -134,7 +134,11 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    self.fetchCompletion([prices copy]);
+    self.fetchCompletion([prices copy], [self.class priceSourceInfo]);
+}
+
++ (NSString *)priceSourceInfo {
+    return @"cryptocompare.com, bitcoinaverage.com, dash.casa";
 }
 
 @end
