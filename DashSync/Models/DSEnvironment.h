@@ -7,11 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DSLogger.h"
+
 #define DSLocalizedString(key, comment) \
 [[DSEnvironment sharedInstance].resourceBundle localizedStringForKey:(key) value:@"" table:nil]
 
 #ifdef DEBUG
-#define DSDLog(s, ...) NSLog(s, ##__VA_ARGS__)
+#define DSDLog(s, ...) DSLogVerbose(s, ##__VA_ARGS__)
 #else
 #define DSDLog(s, ...)
 #endif
