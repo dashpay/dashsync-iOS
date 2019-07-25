@@ -27,13 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic) DSHTTPDashRetailOperation *dashRetailOperation;
 
-@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
+@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource);
 
 @end
 
 @implementation DSFetchDashRetailPricesOperation
 
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable))completion {
+- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource))completion {
     self = [super initWithOperations:nil];
     if (self) {
         HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:DASHRETAIL_TICKER_URL]
@@ -57,7 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSArray<DSCurrencyPriceObject *> *prices = self.dashRetailOperation.prices;
-    self.fetchCompletion(prices);
+    self.fetchCompletion(prices, [self.class priceSourceInfo]);
+}
+
++ (NSString *)priceSourceInfo {
+    return @"dashretail.org";
 }
 
 @end

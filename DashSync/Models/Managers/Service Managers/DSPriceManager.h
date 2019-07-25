@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, readonly) NSNumber * localCurrencyDashPrice;
 @property (readonly, copy, nonatomic) NSDictionary <NSString *, NSString *> *currenciesByCode;
 @property (nullable, readonly, copy, nonatomic) NSArray <DSCurrencyPriceObject *> *prices;
+@property (nullable, readonly, nonatomic, copy) NSString *lastPriceSourceInfo;
 
 + (instancetype)sharedInstance;
 
