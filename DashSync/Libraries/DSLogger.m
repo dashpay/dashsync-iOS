@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSLogger
 
-+ (BOOL)shouldLogHTTPRequests {
+- (BOOL)shouldLogHTTPRequests {
 #ifdef DEBUG
     return NO;
 #else
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif /* DEBUG */
 }
 
-+ (BOOL)shouldLogHTTPResponses {
+- (BOOL)shouldLogHTTPResponses {
 #ifdef DEBUG
     return NO;
 #else

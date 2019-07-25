@@ -35,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSLogger : NSObject
 
-@property (readonly, nonatomic, assign, class) BOOL shouldLogHTTPRequests;
-@property (readonly, nonatomic, assign, class) BOOL shouldLogHTTPResponses;
+@property (readonly, nonatomic, assign) BOOL shouldLogHTTPRequests;
+@property (readonly, nonatomic, assign) BOOL shouldLogHTTPResponses;
 
 + (instancetype)sharedInstance;
 
