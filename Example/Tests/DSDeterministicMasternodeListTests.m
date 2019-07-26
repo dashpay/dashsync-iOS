@@ -26,6 +26,7 @@
 #import <DashSync/DSQuorumEntry.h>
 #import <DashSync/DSMasternodeManager+Protected.h>
 #import <DashSync/NSManagedObject+Sugar.h>
+#import <DashSync/DSSimplifiedMasternodeEntry.h>
 #import <DashSync/DSSimplifiedMasternodeEntryEntity+CoreDataClass.h>
 #import <DashSync/DSQuorumEntryEntity+CoreDataClass.h>
 #import <DashSync/DSMasternodeListEntity+CoreDataClass.h>
@@ -898,6 +899,48 @@
                 
             }];
         }
+    }];
+}
+
+-(void)testSimplifiedMasternodeEntriesDeletion {
+    DSChain * chain = [DSChain mainnet];
+    __block NSManagedObjectContext * context = [NSManagedObject context];
+    [context performBlockAndWait:^{
+        [DSSimplifiedMasternodeEntryEntity setContext:context];
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSLog(@"Deleting %lu objects",(unsigned long)count);
+    }];
+    [[chain.chainManager masternodeManager] setUp];
+    [context performBlockAndWait:^{
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSLog(@"has %lu objects",(unsigned long)count);
+    }];
+
+    [context performBlockAndWait:^{
+        [DSSimplifiedMasternodeEntryEntity setContext:context];
+        UInt256 hash = UINT256_ZERO;
+        DSChainEntity * chainEntity = chain.chainEntity;
+        for (int i = 0; i<1000;i++) {
+            hash = [NSData dataWithUInt256:hash].SHA256;
+            UInt256 confirmedHash = [NSData dataWithUInt256:hash].SHA256;
+            UInt128 address = UINT128_ZERO;
+            *address.u16 = i;
+            DSSimplifiedMasternodeEntry * entry = [DSSimplifiedMasternodeEntry simplifiedMasternodeEntryWithProviderRegistrationTransactionHash:hash confirmedHash:confirmedHash address:address port:9999 operatorBLSPublicKey:UINT384_ZERO previousOperatorBLSPublicKeys:@{} keyIDVoting:UINT160_ZERO isValid:YES previousValidity:@{}  simplifiedMasternodeEntryHash:UINT256_ZERO previousSimplifiedMasternodeEntryHashes:@{} onChain:chain];
+            DSSimplifiedMasternodeEntryEntity * managedObject = [DSSimplifiedMasternodeEntryEntity managedObject];
+            [managedObject setAttributesFromSimplifiedMasternodeEntry:entry onChain:chainEntity];
+        }
+        [DSSimplifiedMasternodeEntryEntity saveContext];
+    }];
+    
+    [context performBlockAndWait:^{
+        [DSSimplifiedMasternodeEntryEntity setContext:context];
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSLog(@"Deleting %lu objects",(unsigned long)count);
+    }];
+    [[chain.chainManager masternodeManager] setUp];
+    [context performBlockAndWait:^{
+        NSUInteger count = [DSSimplifiedMasternodeEntryEntity countObjectsMatching:@"masternodeLists.@count == 0"];
+        NSLog(@"has %lu objects",(unsigned long)count);
     }];
 }
 

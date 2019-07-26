@@ -1114,15 +1114,22 @@
 
 -(void)removeOldSimplifiedMasternodeEntries {
     //this serves both for cleanup, but also for initial migration
+    
     [self.managedObjectContext performBlockAndWait:^{
         [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
-        NSFetchRequest *request = [DSSimplifiedMasternodeEntryEntity fetchReq];
-        request.predicate = [NSPredicate predicateWithFormat:@"masternodeLists.@count == 0"];
-        NSBatchDeleteRequest * batchDeleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:request];
-        NSError * error = nil;
-        [self.managedObjectContext executeRequest:batchDeleteRequest error:&error];
-        if (error) {
-            DSDLog(@"Error deleting old masternode entries");
+        NSArray<DSSimplifiedMasternodeEntryEntity *>* simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"masternodeLists.@count == 0"];
+        BOOL deletedSomething = FALSE;
+        NSUInteger deletionCount = 0;
+        for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in [simplifiedMasternodeEntryEntities copy]) {
+            [self.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
+            deletedSomething = TRUE;
+            deletionCount++;
+            if ((deletionCount % 3000) == 0) {
+                [DSSimplifiedMasternodeEntryEntity saveContext];
+            }
+        }
+        if (deletedSomething) {
+            [DSSimplifiedMasternodeEntryEntity saveContext];
         }
     }];
 }
