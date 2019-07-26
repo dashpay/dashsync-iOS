@@ -99,7 +99,7 @@
 "enter old passcode" = "eski şifreyi giriniz";
 
 /* No comment provided by engineer. */
-"Error from payment request server %@" = "Error from payment request server %@";
+"Error from payment request server %@" = "Ödeme talebi sunucusundan hata %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "dash işlem kaydı hatası";

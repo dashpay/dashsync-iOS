@@ -99,7 +99,7 @@
 "enter old passcode" = "digite a senha antiga";
 
 /* No comment provided by engineer. */
-"Error from payment request server %@" = "Error from payment request server %@";
+"Error from payment request server %@" = "Erro do servidor de solicitação de pagamento %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "erro na assinatura da transação dash";

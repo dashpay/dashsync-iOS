@@ -1,6 +1,6 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
+" and " = " και";
 
 /* No comment provided by engineer. */
 ", " = ", ";
@@ -12,7 +12,7 @@
 "\n%d attempts remaining\n" = "\n%d προσπάθειες που απομένουν\n";
 
 /* No comment provided by engineer. */
-"\n(local requested amount: %@)" = "\n(local requested amount: %@)";
+"\n(local requested amount: %@)" = "\n(τοπικό ποσό που ζητήθηκε: %@)";
 
 /* No comment provided by engineer. */
 "\n1 attempt remaining\n" = "\n1 προσπάθεια απομένει\n";
@@ -21,37 +21,37 @@
 "\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nΗ ΔΙΕΥΘΥΝΣΗ ΕΧΕΙ ΗΔΗ ΧΡΗΣΙΜΟΠΟΙΗΘΕΙ\nΟι dash διευθύνσεις προορίζονται μόνο για μία χρήση\n\nΗ επαναλαμβανόμενη χρήση της μειώνει το απόρρητο για εσάς όσο και για τον παραλήπτη και μπορεί να οδηγήσει σε απώλεια εάν ο παραλήπτης δεν ελέγχει άμεσα την διεύθυνση";
 
 /* No comment provided by engineer. */
-"\nnetwork fee +%@ (%@)" = "\nαμοιβή δικτύου +%1$@ (%2$@)";
+"\nnetwork fee +%@ (%@)" = "\nτέλος δικτύου +%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nno attempts remaining" = "\nno attempts remaining";
+"\nno attempts remaining" = "\nδεν απομένουν προσπάθειες";
 
 /* No comment provided by engineer. */
 "\ntry again in %d %@" = " \nΔοκιμάστε ξανά σε %1$d %2$@";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
+"Are you sure you would like to reclaim this masternode?" = "Είστε σίγουροι ότι θέλετε να ανακτήσετε αυτό το masternode;";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register a masternode at %@:%d?" = "Are you sure you would like to register a masternode at %1$@:%2$d?";
+"Are you sure you would like to register a masternode at %@:%d?" = "Είστε σίγουροι ότι θέλετε να καταχωρήσετε ένα masternode στο %1$@:%2$d;";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Are you sure you would like to register the username %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Είστε σίγουροι ότι θέλετε να καταχωρήσετε το όνομα χρήστη %1$@ και να ξοδέψετε %2$@ σε credits?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to reset this user?" = "Are you sure you would like to reset this user?";
+"Are you sure you would like to reset this user?" = "Είστε σίγουροι ότι θέλετε να επαναφέρετε αυτόν τον χρήστη;";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to topup %@ and spend %@ on credits?" = "Are you sure you would like to topup %1$@ and spend %2$@ on credits?";
+"Are you sure you would like to topup %@ and spend %@ on credits?" = "Είστε σίγουροι ότι θέλετε να φορτίσετε %1$@ και να ξοδέψετε %2$@ σε credits;";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to update this masternode to %@:%d?" = "Are you sure you would like to update this masternode to %1$@:%2$d?";
+"Are you sure you would like to update this masternode to %@:%d?" = "Είστε σίγουροι ότι θέλετε να ενημερώσετε αυτό το masternode στο %1$@:%2$d;";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to update this masternode to pay to %@?" = "Are you sure you would like to update this masternode to pay to %@?";
+"Are you sure you would like to update this masternode to pay to %@?" = "Είστε σίγουροι ότι θέλετε να ενημερώσετε αυτό το masternode να πληρώσει στο %@;";
 
 /* No comment provided by engineer. */
 "bad password, try again" = "εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
@@ -72,22 +72,22 @@
 "choose passcode for %@" = "επιλέξτε κωδικό πρόσβασης για το %@";
 
 /* No comment provided by engineer. */
-"Confirm" = "Confirm";
+"Confirm" = "Επιβεβαίωση";
 
 /* No comment provided by engineer. */
 "connect timeout" = "λήξη χρονικού ορίου";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "δεν μπορούσα να προβώ σε πληρωμή";
+"couldn't make payment" = "δεν μπόρεσε να γίνει η πληρωμή";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "Οι πληρωμές Bitcoin δεν μπορεί να είναι μικρότερες από %@";
+"dash payments can't be less than %@" = "Οι dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "Η συναλλαγή dash δεν έχει υπογραφεί";
+"dash transaction not signed" = "Η dash συναλλαγή δεν έχει υπογραφεί";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "Η συναλλαγή εξόδου Bitcoin δεν μπορεί να είναι μικρότερη από %@";
+"dash transaction outputs can't be less than %@" = "Οι έξοδοι της dash συναλλαγής δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
@@ -99,10 +99,10 @@
 "enter old passcode" = "εισάγετε τον παλιό κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
-"Error from payment request server %@" = "Error from payment request server %@";
+"Error from payment request server %@" = "Σφάλμα από διακομιστή του αιτήματος πληρωμής %@";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "σφάλμα υπογραφής συναλλαγής dash";
+"error signing dash transaction" = "σφάλμα υπογραφής dash συναλλαγής ";
 
 /* No comment provided by engineer. */
 "error signing transaction" = "σφάλμα υπογραφής συναλλαγής";
@@ -117,34 +117,34 @@
 "ignore" = "παράβλεψη";
 
 /* No comment provided by engineer. */
-"instant payment" = "instant payment";
+"instant payment" = "άμεση πληρωμή";
 
 /* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
+"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Το InstantSend απαιτεί αρκετές εισόδους με 6 επιβεβαιώσεις, να σταλθεί ούτως ή άλλως ως απλή συναλλαγή;";
 
 /* No comment provided by engineer. */
 "insufficient funds" = "ανεπαρκή χρήματα";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "ανεπαρκή χρηματοδότηση για την αμοιβή του δικτύου dash";
+"insufficient funds for dash network fee" = "ανεπαρκή χρήματα για την αμοιβή του δικτύου dash";
 
 /* No comment provided by engineer. */
-"Internal Error" = "Internal Error";
+"Internal Error" = "Εσωτερικό σφάλμα";
 
 /* No comment provided by engineer. */
-"Invalid DAPI Response" = "Invalid DAPI Response";
+"Invalid DAPI Response" = "Μη έγκυρη απόκριση DAPI";
 
 /* No comment provided by engineer. */
-"Invalid Params" = "Invalid Params";
+"Invalid Params" = "Μη έγκυρες Παράμετροι";
 
 /* No comment provided by engineer. */
-"Invalid Request" = "Invalid Request";
+"Invalid Request" = "Μη έγκυρο Αίτημα";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
 
 /* No comment provided by engineer. */
-"Method Not Found" = "Method Not Found";
+"Method Not Found" = "Η Μέθοδος Δεν Βρέθηκε";
 
 /* No comment provided by engineer. */
 "minute" = "λεπτό";
@@ -168,7 +168,7 @@
 "ok" = "Εντάξει";
 
 /* No comment provided by engineer. */
-"Parse Error" = "Parse Error";
+"Parse Error" = "Σφάλμα Ανάλυσης";
 
 /* No comment provided by engineer. */
 "passcode" = "κωδικός πρόσβασης";
@@ -192,13 +192,13 @@
 "recovery phrase doesn't match" = "δεν ταιριάζει η φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "μειώση του ποσού πληρωμής κατά\n%1$@ (%2$@)?";
+"reduce payment amount by\n%@ (%@)?" = "μείωση του ποσού πληρωμής κατά\n%1$@ (%2$@);";
 
 /* No comment provided by engineer. */
 "request expired" = "το αίτημα έληξε";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+"requested network \"%@\" not currently in use" = "Το ζητούμενο δίκτυο \"%@\" δεν χρησιμοποιείται προς το παρόν";
 
 /* No comment provided by engineer. */
 "rescan" = "επανάληψη της σάρωσης";
@@ -207,19 +207,19 @@
 "reset" = "επαναφορά";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
+"retry" = "επανάληψη";
 
 /* No comment provided by engineer. */
-"second" = "second";
+"second" = "δευτερόλεπτο";
 
 /* No comment provided by engineer. */
-"seconds" = "seconds";
+"seconds" = "δευτερόλεπτα";
 
 /* No comment provided by engineer. */
 "send" = "αποστολή";
 
 /* No comment provided by engineer. */
-"Server Error" = "Server Error";
+"Server Error" = "Σφάλμα διακομιστή!";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -234,13 +234,13 @@
 "this private key is empty" = "αυτό το ιδιωτικό κλειδί είναι άδειο";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
+"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Αυτό το αίτημα απαιτεί άμεση πληρωμή αλλά δεν έχετε αρκετές εισόδους με 6 επιβεβαιώσεις που απαιτούνται από το InstantSend, μπορείτε να ζητήσετε από τον έμπορο να δεχτεί μια κανονική συναλλαγή ή να περιμένει λίγα λεπτά.";
 
 /* No comment provided by engineer. */
 "transaction canceled, network timeout" = "η συναλλαγή ακυρώθηκε, λήξη χρονικού ορίου δικτύου";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "οι αμοιβή δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
+"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Το τέλος δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
 
 /* No comment provided by engineer. */
 "transaction rejected" = "η συναλλαγή απορρίφθηκε";
@@ -249,10 +249,10 @@
 "unexpected response from %@" = "απρόσμενη απάντηση από %@";
 
 /* No comment provided by engineer. */
-"Unknown Error" = "Unknown Error";
+"Unknown Error" = "Άγνωστο Σφάλμα";
 
 /* No comment provided by engineer. */
-"Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
+"Unknown JSON-RPC Response" = "Άγνωστη απόκριση JSON-RPC";
 
 /* No comment provided by engineer. */
 "unrecognized address" = "μη αναγνωρισμένη διεύθυνση";
@@ -264,7 +264,7 @@
 "untrusted certificate" = "μη αξιόπιστο πιστοποιητικό";
 
 /* Updating Price */
-"Updating Price" = "Updating Price";
+"Updating Price" = "Ανανέωση Τιμής";
 
 /* No comment provided by engineer. */
 "verify passcode" = "επιβεβαιώστε τον κωδικό πρόσβασης";
@@ -279,4 +279,4 @@
 "wipe" = "εκκαθάριση";
 
 /* No comment provided by engineer. */
-"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Το πορτοφόλι σας μπορεί να είναι εκτός συγχρονισμού. Αυτό μπορεί συχνά να διορθωθεί με την επανεξέταση των μπλόκ συναλλαγών.";
+"Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Το πορτοφόλι σας μπορεί να είναι εκτός συγχρονισμού.\n Αυτό μπορεί συχνά να διορθωθεί με την επανασάρωση των μπλόκ συναλλαγών.";
