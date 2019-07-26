@@ -60,6 +60,10 @@ NS_ASSUME_NONNULL_BEGIN
             NSError *_Nullable error = nil;
             id _Nullable parsedData = [self parseResponse:response.body statusCode:response.statusCode request:httpRequest error:&error];
             NSAssert((!error && parsedData) || (error && !parsedData), nil); // sanity check
+            
+            if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
+                DSLogInfo(@">> Response OK: %@, error: %@", parsedData, error);
+            }
 
             // store server timestamp
             [[DSAuthenticationManager sharedInstance] updateSecureTimeFromResponseIfNeeded:response.responseHeaders];
@@ -69,14 +73,32 @@ NS_ASSUME_NONNULL_BEGIN
             }
         }
         else {
+            NSError *error = nil;
+            if (cancelled) {
+                error = [NSError errorWithDomain:NSURLErrorDomain
+                                            code:NSURLErrorCancelled
+                                        userInfo:nil];
+            }
+            else {
+                error = response.error;
+            }
+            
+            if ([DSLogger sharedInstance].shouldLogHTTPResponses) {
+                id parsedData = response.body ?
+                    [NSJSONSerialization JSONObjectWithData:response.body
+                                                    options:httpRequest.jsonReadingOptions
+                                                      error:nil]
+                    : nil;
+                
+                DSLogInfo(@">> Response Failed: %@, error: %@", parsedData, error);
+            }
+            
             if (completion) {
                 if (cancelled) {
-                    completion(nil, nil, HTTPResponseStatusCode_Invalid, [NSError errorWithDomain:NSURLErrorDomain
-                                                                                             code:NSURLErrorCancelled
-                                                                                         userInfo:nil]);
+                    completion(nil, nil, HTTPResponseStatusCode_Invalid, error);
                 }
                 else {
-                    completion(nil, response.responseHeaders, response.statusCode, response.error);
+                    completion(nil, response.responseHeaders, response.statusCode, error);
                 }
             }
         }

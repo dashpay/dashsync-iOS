@@ -1,7 +1,11 @@
 PODS:
   - bls-signatures-pod (0.2.9)
+  - CocoaLumberjack (3.5.3):
+    - CocoaLumberjack/Core (= 3.5.3)
+  - CocoaLumberjack/Core (3.5.3)
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
+    - CocoaLumberjack (= 3.5.3)
     - secp256k1_dash (= 0.1.2)
   - DSJSONSchemaValidation (2.0.5)
   - ios-dpp (0.0.1):
@@ -21,6 +25,7 @@ DEPENDENCIES:
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - bls-signatures-pod
+    - CocoaLumberjack
     - DSJSONSchemaValidation
     - KVO-MVVM
     - secp256k1_dash
@@ -42,7 +47,8 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
-  DashSync: 04d9aab4ff9ae446993e943b716e296a6f57ceea
+  CocoaLumberjack: 2f44e60eb91c176d471fdba43b9e3eae6a721947
+  DashSync: 2188f146abb87d32f1b7c76a5d050716a11e5e57
   DSJSONSchemaValidation: a0d791d3c8a4801cb3c72f3c8701342e2cb66f58
   ios-dpp: 5193ef55546e5cc3ce1ef5ad831f084a07731dc1
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
@@ -52,4 +58,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: b09554bb9c6dde4448a8af3373e4cebe69d01959
 
-COCOAPODS: 1.7.2
+COCOAPODS: 1.7.5
