@@ -99,7 +99,7 @@
 "enter old passcode" = "nhập mật khẩu cũ";
 
 /* No comment provided by engineer. */
-"Error from payment request server %@" = "Error from payment request server %@";
+"Error from payment request server %@" = "Lỗi từ máy chủ yêu cầu thanh toán %@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "lỗi khi ký giao dịch dash";
