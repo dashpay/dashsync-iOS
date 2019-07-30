@@ -19,34 +19,41 @@
 
 #import "DSFetchFirstFallbackPricesOperation.h"
 #import "DSFetchSecondFallbackPricesOperation.h"
-#import "DSFetchSparkPricesOperation.h"
+#import "DSFetchDashRetailPricesOperation.h"
 #import "DSNoSucceededDependenciesCondition.h"
+#import "DSFetchSparkPricesOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSPriceOperationProvider
 
-+ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable prices))completion {
-    void (^mainThreadCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable prices) = ^(NSArray<DSCurrencyPriceObject *> *_Nullable prices) {
++ (DSOperation *)fetchPrices:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource))completion {
+    void (^mainThreadCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource) = ^(NSArray<DSCurrencyPriceObject *> *_Nullable prices, NSString *priceSource) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            completion(prices);
+            completion(prices, priceSource);
         });
     };
 
     DSNoSucceededDependenciesCondition *condition = [DSNoSucceededDependenciesCondition new];
 
-    DSOperation *operation1 = [[DSFetchSparkPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
-
-    DSOperation *operation2 = [[DSFetchFirstFallbackPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+    DSOperation *operation1 = [[DSFetchDashRetailPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+    
+    DSOperation *operation2 = [[DSFetchSparkPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
     [operation2 addCondition:condition];
     [operation2 addDependency:operation1];
 
-    DSOperation *operation3 = [[DSFetchSecondFallbackPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+    DSOperation *operation3 = [[DSFetchFirstFallbackPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
     [operation3 addCondition:condition];
     [operation3 addDependency:operation1];
     [operation3 addDependency:operation2];
 
-    DSGroupOperation *aggregateOperation = [DSGroupOperation operationWithOperations:@[ operation1, operation2, operation3 ]];
+    DSOperation *operation4 = [[DSFetchSecondFallbackPricesOperation alloc] initOperationWithCompletion:mainThreadCompletion];
+    [operation4 addCondition:condition];
+    [operation4 addDependency:operation1];
+    [operation4 addDependency:operation2];
+    [operation4 addDependency:operation3];
+
+    DSGroupOperation *aggregateOperation = [DSGroupOperation operationWithOperations:@[ operation1, operation2, operation3, operation4 ]];
 
     return aggregateOperation;
 }

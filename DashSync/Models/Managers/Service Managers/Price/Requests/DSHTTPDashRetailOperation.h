@@ -15,17 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSHTTPOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSOperation;
 @class DSCurrencyPriceObject;
 
-@protocol DSFetchPricesOperation <NSObject>
+@interface DSHTTPDashRetailOperation : DSHTTPOperation
 
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource))completion;
-+ (NSString *)priceSourceInfo;
+@property (readonly, copy, nonatomic, nullable) NSArray<DSCurrencyPriceObject *> *prices;
 
 @end
 

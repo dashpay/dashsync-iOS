@@ -15,17 +15,12 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSFetchPricesOperation.h"
+#import "DSGroupOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSOperation;
-@class DSCurrencyPriceObject;
-
-@protocol DSFetchPricesOperation <NSObject>
-
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource))completion;
-+ (NSString *)priceSourceInfo;
+@interface DSFetchDashRetailPricesOperation : DSGroupOperation <DSFetchPricesOperation>
 
 @end
 

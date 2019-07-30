@@ -19,7 +19,7 @@
 
 #import "DSCurrencyPriceObject.h"
 #import "DSHTTPBitPayOperation.h"
-#import "DSHTTPDashCasaOperation.h"
+#import "DSHTTPVesLocalBitcoinsOperation.h"
 #import "DSHTTPDashCentralOperation.h"
 #import "DSHTTPPoloniexOperation.h"
 
@@ -28,22 +28,22 @@ NS_ASSUME_NONNULL_BEGIN
 #define BITPAY_TICKER_URL @"https://bitpay.com/rates"
 #define POLONIEX_TICKER_URL @"https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_DASH&depth=1"
 #define DASHCENTRAL_TICKER_URL @"https://www.dashcentral.org/api/v1/public"
-#define DASHCASA_TICKER_URL @"http://dash.casa/api/?cur=VES"
+#define LOCALBITCOINS_TICKER_URL @"https://localbitcoins.com/bitcoinaverage/ticker-all-currencies/"
 
 @interface DSFetchSecondFallbackPricesOperation ()
 
 @property (strong, nonatomic) DSHTTPBitPayOperation *bitPayOperation;
 @property (strong, nonatomic) DSHTTPPoloniexOperation *poloniexOperation;
 @property (strong, nonatomic) DSHTTPDashCentralOperation *dashcentralOperation;
-@property (strong, nonatomic) DSHTTPDashCasaOperation *dashCasaOperation;
+@property (strong, nonatomic) DSHTTPVesLocalBitcoinsOperation *vesLocalBitcoinsOperation;
 
-@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable);
+@property (copy, nonatomic) void (^fetchCompletion)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource);
 
 @end
 
 @implementation DSFetchSecondFallbackPricesOperation
 
-- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable))completion {
+- (DSOperation *)initOperationWithCompletion:(void (^)(NSArray<DSCurrencyPriceObject *> *_Nullable, NSString *priceSource))completion {
     self = [super initWithOperations:nil];
     if (self) {
         {
@@ -80,13 +80,13 @@ NS_ASSUME_NONNULL_BEGIN
             [self addOperation:operation];
         }
         {
-            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:DASHCASA_TICKER_URL]
+            HTTPRequest *request = [HTTPRequest requestWithURL:[NSURL URLWithString:LOCALBITCOINS_TICKER_URL]
                                                         method:HTTPRequestMethod_GET
                                                     parameters:nil];
             request.timeout = 30.0;
             request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
-            DSHTTPDashCasaOperation *operation = [[DSHTTPDashCasaOperation alloc] initWithRequest:request];
-            _dashCasaOperation = operation;
+            DSHTTPVesLocalBitcoinsOperation *operation = [[DSHTTPVesLocalBitcoinsOperation alloc] initWithRequest:request];
+            _vesLocalBitcoinsOperation = operation;
             [self addOperation:operation];
         }
 
@@ -104,7 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self.bitPayOperation cancel];
         [self.poloniexOperation cancel];
         [self.dashcentralOperation cancel];
-        [self.dashCasaOperation cancel];
+        [self.vesLocalBitcoinsOperation cancel];
     }
 }
 
@@ -114,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (errors.count > 0) {
-        self.fetchCompletion(nil);
+        self.fetchCompletion(nil, [self.class priceSourceInfo]);
 
         return;
     }
@@ -123,17 +123,17 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *currencyPrices = self.bitPayOperation.currencyPrices;
     NSNumber *poloniexPriceNumber = self.poloniexOperation.lastTradePriceNumber;
     NSNumber *dashcentralPriceNumber = self.dashcentralOperation.btcDashPrice;
-    NSNumber *dashcasaPrice = self.dashCasaOperation.dashrate;
+    NSNumber *vesPrice = self.vesLocalBitcoinsOperation.vesPrice;
 
 
     // not enough data to build prices
     if (!currencyCodes ||
         !currencyPrices ||
         !(poloniexPriceNumber || dashcentralPriceNumber) ||
-        !dashcasaPrice ||
+        !vesPrice ||
         currencyCodes.count != currencyPrices.count) {
 
-        self.fetchCompletion(nil);
+        self.fetchCompletion(nil, [self.class priceSourceInfo]);
 
         return;
     }
@@ -154,7 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (dashBtcPrice < DBL_EPSILON) {
-        self.fetchCompletion(nil);
+        self.fetchCompletion(nil, [self.class priceSourceInfo]);
 
         return;
     }
@@ -163,7 +163,7 @@ NS_ASSUME_NONNULL_BEGIN
     for (NSString *code in currencyCodes) {
         double price = 0.0;
         if ([code isEqualToString:@"VES"]) {
-            price = dashcasaPrice.doubleValue;
+            price = vesPrice.doubleValue * dashBtcPrice;
         }
         else {
             NSUInteger index = [currencyCodes indexOfObject:code];
@@ -179,7 +179,11 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    self.fetchCompletion([prices copy]);
+    self.fetchCompletion([prices copy], [self.class priceSourceInfo]);
+}
+
++ (NSString *)priceSourceInfo {
+    return @"bitpay.com, poloniex.com, dashcentral.org, localbitcoins.com";
 }
 
 @end
