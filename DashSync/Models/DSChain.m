@@ -1636,6 +1636,10 @@ static dispatch_once_t devnetToken = 0;
     //DSDLog(@"%@:%d added block at height %d target %x blockHash: %@", peer.host, peer.port,
     //      block.height,block.target, blockHash);
     
+    if (checkpoint && checkpoint == [self lastCheckpointWithMasternodeList]) {
+        [self.chainManager.masternodeManager loadFileDistributedMasternodeLists];
+    }
+    
     if (syncDone) { // chain download is complete
         [self saveBlocks];
         [self.chainManager chainFinishedSyncingTransactionsAndBlocks:self fromPeer:peer onMainChain:onMainChain];
