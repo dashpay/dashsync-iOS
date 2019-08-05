@@ -190,9 +190,14 @@
         _pricesByCode = [pricesByCode copy];
     }
     
-    NSString * potentialLocalCurrencyCode = [defaults stringForKey:LOCAL_CURRENCY_CODE_KEY];
+    NSString * userCurrencyCode = [defaults stringForKey:LOCAL_CURRENCY_CODE_KEY];
     
-    self.localCurrencyCode = (potentialLocalCurrencyCode) ? potentialLocalCurrencyCode : [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode];
+    NSString *systemCurrencyCode = [NSLocale currentLocale].currencyCode;
+    if (_pricesByCode[systemCurrencyCode] == nil) {
+        // if we don't have currency in our plist fallback to default
+        systemCurrencyCode = DEFAULT_CURRENCY_CODE;
+    }
+    self.localCurrencyCode = (userCurrencyCode) ? userCurrencyCode : systemCurrencyCode;
     
     return self;
 }
@@ -231,7 +236,7 @@
     [[NSDecimalNumber decimalNumberWithDecimal:self.localCurrencyDashPrice.decimalValue]
      decimalNumberByMultiplyingBy:(id)[NSDecimalNumber numberWithLongLong:MAX_MONEY/DUFFS]];
     
-    if ([self.localCurrencyCode isEqual:[[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode]]) {
+    if ([self.localCurrencyCode isEqual:[NSLocale currentLocale].currencyCode]) {
         [defs removeObjectForKey:LOCAL_CURRENCY_CODE_KEY];
     }
     else {
