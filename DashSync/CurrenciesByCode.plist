@@ -48,6 +48,8 @@
 	<string>Bhutanese Ngultrum</string>
 	<key>BWP</key>
 	<string>Botswanan Pula</string>
+	<key>BYN</key>
+	<string>Belarusian Ruble</string>
 	<key>BZD</key>
 	<string>Belize Dollar</string>
 	<key>CAD</key>
@@ -104,8 +106,6 @@
 	<string>Guinean Franc</string>
 	<key>GTQ</key>
 	<string>Guatemalan Quetzal</string>
-	<key>GUSD</key>
-	<string>Gemini US Dollar</string>
 	<key>GYD</key>
 	<string>Guyanaese Dollar</string>
 	<key>HKD</key>
@@ -212,8 +212,6 @@
 	<string>Omani Rial</string>
 	<key>PAB</key>
 	<string>Panamanian Balboa</string>
-	<key>PAX</key>
-	<string>Paxos Standard USD</string>
 	<key>PEN</key>
 	<string>Peruvian Nuevo Sol</string>
 	<key>PGK</key>
@@ -288,8 +286,6 @@
 	<string>Ugandan Shilling</string>
 	<key>USD</key>
 	<string>US Dollar</string>
-	<key>USDC</key>
-	<string>Circle USD Coin</string>
 	<key>UYU</key>
 	<string>Uruguayan Peso</string>
 	<key>UZS</key>
