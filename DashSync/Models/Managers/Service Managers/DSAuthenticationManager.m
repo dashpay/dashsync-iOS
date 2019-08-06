@@ -867,7 +867,6 @@ replacementString:(NSString *)string
                                              [[DashSync sharedSyncController] wipeBlockchainDataForChain:chain];
                                              [[DashSync sharedSyncController] wipeSporkDataForChain:chain];
                                              [chain unregisterAllWallets];
-                                             [chain.chainManager.masternodeManager loadFileDistributedMasternodeLists];
                                          }
                                          [self removePin];
                                      }];

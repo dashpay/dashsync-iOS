@@ -99,7 +99,7 @@
 "enter old passcode" = "เข้าสู่รหัสเก่า";
 
 /* No comment provided by engineer. */
-"Error from payment request server %@" = "Error from payment request server %@";
+"Error from payment request server %@" = "ข้อผิดพลาดจากเซิร์ฟเวอร์คำขอชำระเงิน%@";
 
 /* No comment provided by engineer. */
 "error signing dash transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม dash";

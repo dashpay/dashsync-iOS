@@ -250,9 +250,11 @@
     if (![[DSOptionsManager sharedInstance] useCheckpointMasternodeLists]) return;
     if (!self.currentMasternodeList) {
         DSCheckpoint * checkpoint = [self.chain lastCheckpointWithMasternodeList];
-        [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
-            
-        }];
+        if (self.chain.lastBlockHeight >= checkpoint.height) {
+            [self processRequestFromFileForBlockHash:checkpoint.checkpointHash completion:^(BOOL success) {
+                
+            }];
+        }
     }
 }
 
@@ -1114,13 +1116,19 @@
 
 -(void)removeOldSimplifiedMasternodeEntries {
     //this serves both for cleanup, but also for initial migration
+    
     [self.managedObjectContext performBlockAndWait:^{
         [DSSimplifiedMasternodeEntryEntity setContext:self.managedObjectContext];
         NSArray<DSSimplifiedMasternodeEntryEntity *>* simplifiedMasternodeEntryEntities = [DSSimplifiedMasternodeEntryEntity objectsMatching:@"masternodeLists.@count == 0"];
         BOOL deletedSomething = FALSE;
+        NSUInteger deletionCount = 0;
         for (DSSimplifiedMasternodeEntryEntity * simplifiedMasternodeEntryEntity in [simplifiedMasternodeEntryEntities copy]) {
             [self.managedObjectContext deleteObject:simplifiedMasternodeEntryEntity];
             deletedSomething = TRUE;
+            deletionCount++;
+            if ((deletionCount % 3000) == 0) {
+                [DSSimplifiedMasternodeEntryEntity saveContext];
+            }
         }
         if (deletedSomething) {
             [DSSimplifiedMasternodeEntryEntity saveContext];
