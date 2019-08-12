@@ -374,6 +374,8 @@
     
     XCTAssertEqualObjects(publicKey,publicKey2,@"the public keys must match");
     
+    XCTAssertEqualObjects(publicKey,@"aa".hexToData,@"the public must match the correct value");
+    
 }
 
 -(void)testDashpayDerivation {
