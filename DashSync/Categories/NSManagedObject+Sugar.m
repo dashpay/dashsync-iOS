@@ -135,7 +135,7 @@ static NSUInteger _fetchBatchSize = 100;
     NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
-    return [self fetchObjectsFromRequest:request inContext:context];
+    return [self fetchObjects:request inContext:context];
 }
 
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args
