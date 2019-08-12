@@ -120,7 +120,7 @@ static NSUInteger _fetchBatchSize = 100;
     NSFetchRequest *request = self.fetchReq;
     
     request.predicate = [NSPredicate predicateWithFormat:predicateFormat arguments:args];
-    return [self fetchObjects:request inContext:context];
+    return [self fetchObjectsFromRequest:request inContext:context];
 }
 
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args
@@ -133,7 +133,7 @@ static NSUInteger _fetchBatchSize = 100;
 
 + (instancetype)anyObjectMatching:(NSString *)predicateFormat arguments:(va_list)args inContext:(NSManagedObjectContext*)context
 {
-    NSArray * array = [self objectsMatching:predicateFormat arguments:args context:context];
+    NSArray * array = [self objectsMatching:predicateFormat arguments:args inContext:context];
     if ([array count]) {
         return [array objectAtIndex:0];
     } else return nil;

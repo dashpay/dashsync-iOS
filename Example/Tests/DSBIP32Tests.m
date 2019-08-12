@@ -354,10 +354,10 @@
     NSData * parentPublicKey = parentSecret.publicKeyData;
     
     UInt256 derivation = ((UInt256){.u64 = {
-        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-        (uint64_t)arc4random_uniform(UINT32_MAX - 1),
+        5,
+        12,
+        15,
+        1337,
     }});
     
     CKDpriv256(&secret, &chain, derivation,NO);
