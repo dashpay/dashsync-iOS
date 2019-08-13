@@ -40,7 +40,7 @@
         @"syncType" : @(DSSyncType_Default),
     };
 
-    self = [super initWithDefaults:defaults];
+    self = [super initWithUserDefaults:nil defaults:defaults];
     if (self) {
     }
     return self;
@@ -55,7 +55,7 @@
         self.syncFromHeight = 0;
         self.shouldSyncFromHeight = TRUE;
     }
-    else if ([[self userDefaults] objectForKey:key]) {
+    else if ([self.userDefaults objectForKey:key]) {
         uint32_t height = self.syncFromHeight;
         if (height == 0) {
             [[self userDefaults] removeObjectForKey:key];
@@ -66,7 +66,7 @@
 
 - (BOOL)syncFromGenesis {
     NSString *key = @"syncFromHeight";
-    id syncFromHeight = [[self userDefaults] objectForKey:key];
+    id syncFromHeight = [self.userDefaults objectForKey:key];
     if (syncFromHeight) {
         return !self.syncFromHeight && self.shouldSyncFromHeight;
     }

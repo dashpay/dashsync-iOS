@@ -23,9 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDynamicOptions : NSObject
 
-- (instancetype)initWithDefaults:(NSDictionary<NSString *, id> *_Nullable)defaults NS_DESIGNATED_INITIALIZER;
+@property (readonly, strong, nonatomic) NSUserDefaults *userDefaults;
 
-- (NSUserDefaults *)userDefaults;
+- (instancetype)initWithUserDefaults:(NSUserDefaults *_Nullable)userDefaults
+                            defaults:(NSDictionary<NSString *, id> *_Nullable)defaults NS_DESIGNATED_INITIALIZER;
+
 - (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName;
 
 @end
