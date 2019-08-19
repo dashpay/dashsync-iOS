@@ -49,12 +49,15 @@ enum {
 @implementation DSDynamicOptions
 
 - (instancetype)init {
-    return [self initWithDefaults:nil];
+    return [self initWithUserDefaults:nil defaults:nil];
 }
 
-- (instancetype)initWithDefaults:(NSDictionary<NSString *, id> *_Nullable)defaults {
+- (instancetype)initWithUserDefaults:(NSUserDefaults *_Nullable)userDefaults
+                            defaults:(NSDictionary<NSString *, id> *_Nullable)defaults {
     self = [super init];
     if (self) {
+        _userDefaults = userDefaults ?: [NSUserDefaults standardUserDefaults];
+        
         if (defaults) {
             NSMutableDictionary *mutableDefaults = [NSMutableDictionary dictionaryWithCapacity:defaults.count];
             for (NSString *key in defaults) {
@@ -62,8 +65,7 @@ enum {
                 NSString *transformedKey = [self defaultsKeyForPropertyName:key];
                 mutableDefaults[transformedKey] = value;
             }
-            NSUserDefaults *userDefaults = [self userDefaults];
-            [userDefaults registerDefaults:mutableDefaults];
+            [_userDefaults registerDefaults:mutableDefaults];
         }
 
         _private_keyBySelector = [NSMutableDictionary dictionary];
@@ -174,10 +176,6 @@ enum {
     return self;
 }
 
-- (NSUserDefaults *)userDefaults {
-    return [NSUserDefaults standardUserDefaults];
-}
-
 - (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName {
     return propertyName;
 }
@@ -192,74 +190,74 @@ enum {
 
 static long long longLongGetter(DSDynamicOptions *self, SEL _cmd) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     return [[userDefaults objectForKey:key] longLongValue];
 }
 
 static void longLongSetter(DSDynamicOptions *self, SEL _cmd, long long value) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
     NSNumber *object = [NSNumber numberWithLongLong:value];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     [userDefaults setObject:object forKey:key];
 }
 
 static BOOL boolGetter(DSDynamicOptions *self, SEL _cmd) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     return [userDefaults boolForKey:key];
 }
 
 static void boolSetter(DSDynamicOptions *self, SEL _cmd, BOOL value) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     [userDefaults setBool:value forKey:key];
 }
 
 static NSInteger integerGetter(DSDynamicOptions *self, SEL _cmd) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     return [userDefaults integerForKey:key];
 }
 
 static void integerSetter(DSDynamicOptions *self, SEL _cmd, NSInteger value) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     [userDefaults setInteger:value forKey:key];
 }
 
 static float floatGetter(DSDynamicOptions *self, SEL _cmd) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     return [userDefaults floatForKey:key];
 }
 
 static void floatSetter(DSDynamicOptions *self, SEL _cmd, float value) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     [userDefaults setFloat:value forKey:key];
 }
 
 static double doubleGetter(DSDynamicOptions *self, SEL _cmd) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     return [userDefaults doubleForKey:key];
 }
 
 static void doubleSetter(DSDynamicOptions *self, SEL _cmd, double value) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     [userDefaults setDouble:value forKey:key];
 }
 
 static id objectGetter(DSDynamicOptions *self, SEL _cmd) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     return [userDefaults objectForKey:key];
 }
 
 static void objectSetter(DSDynamicOptions *self, SEL _cmd, id object) {
     NSString *key = [self private_defaultsKeyForSelector:_cmd];
-    NSUserDefaults *userDefaults = [self userDefaults];
+    NSUserDefaults *userDefaults = self.userDefaults;
     if (object) {
         [userDefaults setObject:object forKey:key];
     }
