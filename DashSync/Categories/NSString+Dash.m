@@ -35,7 +35,15 @@
 #import "DSDerivationPath.h"
 #import "DSECDSAKey.h"
 
+static NSString *DashCurrencySymbolAssetName = nil;
+
 @implementation NSString (Dash)
+
++ (void)setDashCurrencySymbolAssetName:(NSString *)imageName {
+    NSParameterAssert(imageName);
+    NSAssert([UIImage imageNamed:imageName], @"Dash currency symbol asset doesn't exist");
+    DashCurrencySymbolAssetName = imageName;
+}
 
 // NOTE: It's important here to be permissive with scriptSig (spends) and strict with scriptPubKey (receives). If we
 // miss a receive transaction, only that transaction's funds are missed, however if we accept a receive transaction that
@@ -225,10 +233,12 @@
 }
 
 +(NSAttributedString*)dashSymbolAttributedStringWithTintColor:(UIColor*)color forDashSymbolSize:(CGSize)dashSymbolSize {
+    NSAssert(DashCurrencySymbolAssetName, @"Provide Dash currency symbol asset by calling setDashCurrencySymbolAssetName:");
+    
     NSTextAttachment *dashSymbol = [[NSTextAttachment alloc] init];
     
     dashSymbol.bounds = CGRectMake(0, 0, dashSymbolSize.width, dashSymbolSize.height);
-    dashSymbol.image = [[UIImage imageNamed:@"Dash-Light"] ds_imageWithTintColor:color];
+    dashSymbol.image = [[UIImage imageNamed:DashCurrencySymbolAssetName] ds_imageWithTintColor:color];
     return [NSAttributedString attributedStringWithAttachment:dashSymbol];
 }
 
