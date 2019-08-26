@@ -48,6 +48,8 @@
 
 @interface NSString (Dash)
 
++ (void)setDashCurrencySymbolAssetName:(NSString *)imageName;
+
 + (NSString *)addressWithScriptPubKey:(NSData *)script onChain:(DSChain*)chain;
 + (NSString *)addressWithScriptSig:(NSData *)script onChain:(DSChain*)chain;
 
