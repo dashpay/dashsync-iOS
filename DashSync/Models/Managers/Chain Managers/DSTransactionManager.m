@@ -447,15 +447,19 @@
         address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"", addr];
     }
     
+    NSString *name = protoReq.commonName;
+    NSString *memo = protoReq.details.memo;
+    BOOL isSecure = (valid && ! [protoReq.pkiType isEqual:@"none"]);
+    NSString *localCurrency = protoReq.requestedFiatAmountCurrencyCode;
     NSString *suggestedPrompt = [[DSAuthenticationManager sharedInstance] promptForAmount:amount
                                                                                       fee:fee
                                                                                   address:address
-                                                                                     name:protoReq.commonName
-                                                                                     memo:protoReq.details.memo
-                                                                                 isSecure:(valid && ! [protoReq.pkiType isEqual:@"none"])
+                                                                                     name:name
+                                                                                     memo:memo
+                                                                                 isSecure:isSecure
                                                                              errorMessage:@""
-                                                                            localCurrency:protoReq.requestedFiatAmountCurrencyCode];
-    if (transactionCreationCompletion(tx,suggestedPrompt,amount)) {
+                                                                            localCurrency:localCurrency];
+    if (transactionCreationCompletion(tx,suggestedPrompt,amount, fee, address, name, memo, isSecure, localCurrency)) {
         CFRunLoopPerformBlock([[NSRunLoop mainRunLoop] getCFRunLoop], kCFRunLoopCommonModes, ^{
             [self signAndPublishTransaction:tx createdFromProtocolRequest:protoReq fromAccount:account toAddress:address withPrompt:suggestedPrompt forAmount:amount requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
         });
