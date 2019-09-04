@@ -15,25 +15,21 @@
 //  limitations under the License.
 //
 
-#import "DWNumberKeyboardInputViewAudioFeedback.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DWNumberKeyboardInputViewAudioFeedback
+@class DSPinField;
 
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.05];
-    }
-    return self;
-}
+@interface DSPinInputStepView : UIView
 
-#pragma mark - UIInputViewAudioFeedback
+@property (readonly, nonatomic, strong) DSPinField *pinField;
 
-- (BOOL)enableInputClicksWhenVisible {
-    return YES;
-}
+@property (nullable, nonatomic, copy) NSString *titleText;
+@property (nullable, nonatomic, copy) NSString *messageText;
+
+- (instancetype)init NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
 

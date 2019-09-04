@@ -15,14 +15,19 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSBasePinViewController.h"
+
+#import "DSAuthenticationManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- Fake input view to make `[[UIDevice currentDevice] playInputClick]` works
- */
-@interface DWNumberKeyboardInputViewAudioFeedback : UIView <UIInputViewAudioFeedback>
+@interface DSRequestPinViewController : DSBasePinViewController
+
+- (instancetype)initWihtAuthPrompt:(nullable NSString *)authPrompt
+                    alertIfLockout:(BOOL)alertIfLockout
+                        completion:(PinCompletionBlock)completion;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

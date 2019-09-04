@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,14 +19,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DSStyle)
+@class DSSinglePagePinViewController;
 
-+ (UIColor *)ds_dashBlueColor;
+@protocol DSSinglePagePinViewControllerDelegate <NSObject>
 
-+ (UIColor *)ds_labelColor;
+- (void)singlePagePinViewController:(DSSinglePagePinViewController *)controller
+              didFinishInputWithPin:(NSString *)pinText;
 
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
+@end
+
+@interface DSSinglePagePinViewController : UIViewController
+
+@property (nullable, nonatomic, copy) NSString *titleText;
+@property (nullable, nonatomic, copy) NSString *messageText;
+
+@property (nullable, nonatomic, weak) id<DSSinglePagePinViewControllerDelegate> delegate;
+
+- (void)clearAndShakePin;
 
 @end
 

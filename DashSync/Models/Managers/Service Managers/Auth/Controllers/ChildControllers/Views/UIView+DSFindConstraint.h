@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,14 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DSStyle)
+@interface UIView (DSFindConstraint)
 
-+ (UIColor *)ds_dashBlueColor;
-
-+ (UIColor *)ds_labelColor;
-
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
+- (nullable NSLayoutConstraint *)ds_findContraintForAttribute:(NSLayoutAttribute)attribute;
 
 @end
 

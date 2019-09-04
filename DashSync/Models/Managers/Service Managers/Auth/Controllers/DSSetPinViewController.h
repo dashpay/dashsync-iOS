@@ -15,35 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DSBasePinViewController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPinField;
+@interface DSSetPinViewController : DSBasePinViewController
 
-typedef NS_ENUM(NSUInteger, DWPinFieldStyle) {
-    DWPinFieldStyle_Default, // 50pt field size
-    DWPinFieldStyle_Small,   // 44pt
-};
-
-@protocol DWPinFieldDelegate <NSObject>
-
-- (void)pinFieldDidFinishInput:(DWPinField *)pinField;
-
-@end
-
-@interface DWPinField : UIView <UITextInput>
-
-@property (nullable, nonatomic, weak) id<DWPinFieldDelegate> delegate;
-@property (readonly, nonatomic, copy) NSString *text;
-
-- (void)clear;
-
-- (instancetype)initWithStyle:(DWPinFieldStyle)style;
-
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)initWithCompletion:(void (^)(BOOL success))completion;
 
 @end
 

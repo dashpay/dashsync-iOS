@@ -19,30 +19,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPinField;
+@interface UIView (DSAnimations)
 
-typedef NS_ENUM(NSUInteger, DWPinInputStepViewStyle) {
-    /// To use within regular screen
-    DWPinInputStepViewStyle_Default,
-    /// To use within alert
-    DWPinInputStepViewStyle_Alert,
-};
-
-@interface DWPinInputStepView : UIView
-
-@property (readonly, nonatomic, strong) DWPinField *pinField;
-
-/**
- Default is UIFontTextStyleHeadline
- */
-@property (nonatomic, strong) UIFont *titleFont;
-@property (nullable, nonatomic, copy) NSString *titleText;
-
-- (instancetype)initWithStyle:(DWPinInputStepViewStyle)style;
-
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (void)ds_shakeViewWithCompletion:(void (^)(void))completion;
+- (void)ds_shakeView;
 
 @end
 

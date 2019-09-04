@@ -40,7 +40,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 
 @class DSWallet,DSChain,DSTransaction;
 
-@interface DSAuthenticationManager : NSObject <UITextFieldDelegate>
+@interface DSAuthenticationManager : NSObject
 
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
@@ -60,7 +60,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 + (instancetype)sharedInstance;
 
 
-- (BOOL)hasPin;
+- (BOOL)hasPin:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 
 /**
  Set PIN without presenting any UI to the user.

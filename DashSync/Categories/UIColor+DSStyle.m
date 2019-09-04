@@ -36,7 +36,7 @@ static inline UIColor *ColorFromHEX(NSUInteger hexValue) {
     return ColorFromHEX(0x008DE4);
 }
 
-+ (UIColor *)ds_darkTitleColor {
++ (UIColor *)ds_labelColor {
     return [UIColor blackColor];
 }
 

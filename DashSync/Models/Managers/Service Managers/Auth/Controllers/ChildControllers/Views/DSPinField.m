@@ -15,15 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DWPinField.h"
+#import "DSPinField.h"
 
-#import "DWNumberKeyboardInputViewAudioFeedback.h"
+#import "DSAuthenticationManager+Private.h"
 #import "UIColor+DSStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO: pin length should be defined in DSAuthenticationManager
-static NSUInteger const PIN_FIELDS_COUNT = 4;
+static NSUInteger const PIN_FIELDS_COUNT = PIN_LENGTH;
 
 static CGFloat const PIN_FIELD_SIZE_DEFAULT = 50.0;
 static CGFloat const PIN_FIELD_SIZE_SMALL = 44.0;
@@ -54,7 +53,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
     return layer;
 }
 
-@interface DWPinField ()
+@interface DSPinField ()
 
 @property (readonly, nonatomic, assign) CGFloat fieldSize;
 @property (readonly, nonatomic, strong) NSMutableArray<NSString *> *value;
@@ -66,14 +65,17 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 
 @end
 
-@implementation DWPinField
+@implementation DSPinField
 
-- (instancetype)initWithStyle:(DWPinFieldStyle)style {
+@synthesize keyboardType;
+
+- (instancetype)initWithStyle:(DSPinFieldStyle)style {
     self = [super initWithFrame:CGRectZero];
     if (self) {
-        _fieldSize = style == DWPinFieldStyle_Default ? PIN_FIELD_SIZE_DEFAULT : PIN_FIELD_SIZE_SMALL;
+        _fieldSize = style == DSPinFieldStyle_Default ? PIN_FIELD_SIZE_DEFAULT : PIN_FIELD_SIZE_SMALL;
 
         _value = [NSMutableArray array];
+        _inputEnabled = YES;
 
         _supportedCharacters = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
 
@@ -133,13 +135,6 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
     return YES;
 }
 
-- (nullable UIView *)inputView {
-    CGRect inputViewRect = CGRectMake(0.0, 0.0, CGRectGetWidth([UIScreen mainScreen].bounds), 1.0);
-    DWNumberKeyboardInputViewAudioFeedback *inputView =
-        [[DWNumberKeyboardInputViewAudioFeedback alloc] initWithFrame:inputViewRect];
-    return inputView;
-}
-
 #pragma mark - UIKeyInput
 
 - (BOOL)hasText {
@@ -147,6 +142,10 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (void)deleteBackward {
+    if (self.inputEnabled == NO) {
+        return;
+    }
+
     NSUInteger count = self.value.count;
     if (count > 0) {
         [self.value removeLastObject];
@@ -162,6 +161,10 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (void)insertText:(NSString *)text {
+    if (self.inputEnabled == NO) {
+        return;
+    }
+
     // validate input if user has a hardware keyboard
     if (![self isInputStringValid:text]) {
         return;
@@ -182,7 +185,11 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
     dotLayer.opacity = 1.0;
 
     if (self.value.count == PIN_FIELDS_COUNT) {
-        [self.delegate pinFieldDidFinishInput:self];
+        // report to delegate when animation completes
+        const CFTimeInterval animationDuration = [CATransaction animationDuration];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(animationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.delegate pinFieldDidFinishInput:self];
+        });
     }
 }
 

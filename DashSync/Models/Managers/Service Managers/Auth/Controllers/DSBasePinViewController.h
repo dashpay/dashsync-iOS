@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,18 +15,22 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import <DWAlertController/DWAlertController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DSStyle)
+@interface DSBasePinViewController : DWAlertController
 
-+ (UIColor *)ds_dashBlueColor;
+@property (nonatomic, assign) BOOL alertIfLockout;
 
-+ (UIColor *)ds_labelColor;
+- (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin;
 
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
+- (void)pinVerificationDidFail;
+- (void)pinVerificationDidFinishWithAuthenticated:(BOOL)authenticated
+                                        cancelled:(BOOL)cancelled
+                                    shouldLockOut:(BOOL)shouldLockOut NS_REQUIRES_SUPER;
+
++ (NSString *)defaultTitle;
 
 @end
 

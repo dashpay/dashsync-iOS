@@ -10,7 +10,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSWallet.h"
 #import "DSAccount.h"
-#import "DSAuthenticationManager+Private.h"
+#import "DSAuthenticationManager+UpdateSecureTime.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSChainsManager.h"
 #import "NSMutableData+Dash.h"
