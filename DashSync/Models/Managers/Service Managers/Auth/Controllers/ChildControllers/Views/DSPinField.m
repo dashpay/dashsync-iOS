@@ -19,6 +19,7 @@
 
 #import "DSAuthenticationManager+Private.h"
 #import "UIColor+DSStyle.h"
+#import "NSMutableData+Dash.h" // SecureAllocator()
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -56,7 +57,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 @interface DSPinField ()
 
 @property (readonly, nonatomic, assign) CGFloat fieldSize;
-@property (readonly, nonatomic, strong) NSMutableArray<NSString *> *value;
+@property (nullable, nonatomic, strong) NSMutableArray<NSString *> *value;
 
 @property (readonly, nonatomic, strong) NSCharacterSet *supportedCharacters;
 
@@ -68,18 +69,26 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 @implementation DSPinField
 
 @synthesize keyboardType;
+@synthesize autocorrectionType;
+@synthesize secureTextEntry;
+@synthesize textContentType;
 
 - (instancetype)initWithStyle:(DSPinFieldStyle)style {
     self = [super initWithFrame:CGRectZero];
     if (self) {
         _fieldSize = style == DSPinFieldStyle_Default ? PIN_FIELD_SIZE_DEFAULT : PIN_FIELD_SIZE_SMALL;
 
-        _value = [NSMutableArray array];
+        _value = CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(),
+                                                        4,
+                                                        &kCFTypeArrayCallBacks));
         _inputEnabled = YES;
 
         _supportedCharacters = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
 
         self.userInteractionEnabled = NO;
+        self.secureTextEntry = YES;
+        self.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.textContentType = nil;
 
         // hide any assistant items on the iPad
         UITextInputAssistantItem *inputAssistantItem = self.inputAssistantItem;
@@ -108,6 +117,10 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
     return self;
 }
 
+- (void)dealloc {
+    self.value = nil;
+}
+
 - (CGSize)intrinsicContentSize {
     const NSUInteger count = PIN_FIELDS_COUNT;
     return CGSizeMake(self.fieldSize * count + PADDING * (count - 1), self.fieldSize);
@@ -126,6 +139,18 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 
         CALayer *dotLayer = self.dotLayers[i];
         dotLayer.opacity = 0.0;
+    }
+}
+
+// Important notice:
+// An instance of `DSPinField` stays in memory because private class `UIKBAutofillController` keeps
+// a reference to it until new `UITextInput` will become first responder (checked upon iOS 12).
+// Clean up pin from memory once window's gone.
+- (void)willMoveToWindow:(nullable UIWindow *)newWindow {
+    [super willMoveToWindow:newWindow];
+    
+    if (newWindow == nil) {
+        [self clear];
     }
 }
 
