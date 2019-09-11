@@ -414,6 +414,21 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 // MARK: - Authentication
 
+- (BOOL)isBiometricAuthenticationAllowed {
+    LAContext *context = [[LAContext alloc] init];
+    NSError *error = nil;
+    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] == NO) {
+        DSDLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
+        
+        return NO;
+    }
+    
+    NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
+    
+    return (pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSince1970] &&
+            [self getFailCount:nil] == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0);
+}
+
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
     NSParameterAssert(wallet);
     
@@ -439,12 +454,8 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         return;
     }
     if (touchId) {
-        NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
-        LAContext *context = [[LAContext alloc] init];
-        NSError *error = nil;
-        if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSince1970] &&
-            [self getFailCount:nil] == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
+        if ([self isBiometricAuthenticationAllowed]) {
+            LAContext *context = [[LAContext alloc] init];
             
             void(^localAuthBlock)(void) = ^{
                 [self performLocalAuthenticationSynchronously:context
@@ -491,8 +502,6 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             }
         }
         else {
-            DSDLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
-            
             [self authenticateWithPrompt:authprompt
                               andTouchId:NO
                           alertIfLockout:alertIfLockout
@@ -511,7 +520,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     [DSEventManager saveEvent:@"wallet_manager:touchid_auth"];
     
     __block NSInteger result = 0;
-    context.localizedFallbackTitle = DSLocalizedString(@"passcode", nil);
+    context.localizedFallbackTitle = DSLocalizedString(@"Passcode", nil);
     [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
             localizedReason:(prompt.length > 0 ? prompt : @" ")
                       reply:^(BOOL success, NSError *error) {
