@@ -3,19 +3,19 @@
 " and " = " và ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         tổng số %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d lần thử còn lại\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(số lượng yêu cầu ở địa phương: 1%@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 lần thử còn lại\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     số lượng %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "huỷ bỏ";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "hãy chọn mật khẩu cho %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Xác thực";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "hết thời hạn kết nối";
@@ -96,7 +99,7 @@
 "double spend" = "tiêu lặp";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "nhập mật khẩu cũ";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Lỗi từ máy chủ yêu cầu thanh toán %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Lỗi đọc tham số";
 
 /* No comment provided by engineer. */
-"passcode" = "mật khẩu";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "mật khẩu cho %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "mật khẩu";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "thông tin về người nhận chưa được xác nhận";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "cụm từ phục hồi";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Lỗi máy chủ";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Mạng thử nghiệm";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Đang cập nhật giá";
-
-/* No comment provided by engineer. */
-"verify passcode" = "kiểm tra mật khẩu";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ví bị tắt";

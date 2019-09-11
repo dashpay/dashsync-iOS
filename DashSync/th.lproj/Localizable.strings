@@ -3,19 +3,19 @@
 " and " = " และ ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ",";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nยอดรวม %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่ \n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(จำนวนที่ขอในบริเวณท้องถิ่น : %@ )";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 พยายามที่เหลืออยู่ \n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "เลือกรหัสผ่านสำหรับ %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "หมดเวลาเชื่อมต่อ";
@@ -96,7 +99,7 @@
 "double spend" = "จ่ายเงินสองเท่า";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "เข้าสู่รหัสเก่า";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "ข้อผิดพลาดจากเซิร์ฟเวอร์คำขอชำระเงิน%@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "รหัสการเข้าถึง";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "รหัสการเข้าถึงสำหรับ %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "รหัสผ่าน";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "เอกลักษณ์ของผู้รับเงินไม่ได้รับการรับรอง";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "วลีกู้คืน";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "อัพเดตราคา";
-
-/* No comment provided by engineer. */
-"verify passcode" = "ยืนยันรหัสผ่าน";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ปิดใช้งาน wallet";

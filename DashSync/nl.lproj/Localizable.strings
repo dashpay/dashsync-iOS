@@ -3,19 +3,19 @@
 " and " = " en ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         totaal %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nnog %d pogingen\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(lokaal verzocht bedrag: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nnog 1 poging\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "annuleer";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "kies toegangscode voor %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Bevestig";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "verbindingstime-out";
@@ -96,7 +99,7 @@
 "double spend" = "dubbel uitgegeven";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "voer oude toegangscode i";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Fout van server voor betalingsverzoeken %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Parserfout";
 
 /* No comment provided by engineer. */
-"passcode" = "toegangscode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "toegangscode voor %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "wachtwoord";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "de betaler-identiteit is niet gecertificeerd";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "herstelzin";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Serverfout";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Bezig met bijwerken van prijs";
-
-/* No comment provided by engineer. */
-"verify passcode" = "verifieer toegangscode";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portemonnee uitgeschakeld";

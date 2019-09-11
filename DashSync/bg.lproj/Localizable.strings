@@ -3,19 +3,19 @@
 " and " = " и ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n       общо %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d оставащи опита\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(локална заявка за сума: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 оставащ опит\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     количество %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "отказ";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "избор на парола за %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Потвърди";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "таймаут на връзката";
@@ -96,7 +99,7 @@
 "double spend" = "двойно похарчени";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "въведете старата парола";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Грешка от изискващият плащане сървър %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Грешка при анализа";
 
 /* No comment provided by engineer. */
-"passcode" = "парола";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "парола за %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "парола";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "идентичността на подателя не е сертифицирана";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "фраза за възстановяване";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Сървърна грешка";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Тестова мрежа";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Актуализиране на цената";
-
-/* No comment provided by engineer. */
-"verify passcode" = "провери парола";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "изключен портфейл";

@@ -3,19 +3,19 @@
 " and " = " και";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         σύνολο %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d προσπάθειες που απομένουν\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(τοπικό ποσό που ζητήθηκε: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 προσπάθεια απομένει\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "άκυρο";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "επιλέξτε κωδικό πρόσβασης για το %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "λήξη χρονικού ορίου";
@@ -96,7 +99,7 @@
 "double spend" = "διπλό ξόδεμα";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "εισάγετε τον παλιό κωδικό πρόσβασης";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Σφάλμα από διακομιστή του αιτήματος πληρωμής %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Σφάλμα Ανάλυσης";
 
 /* No comment provided by engineer. */
-"passcode" = "κωδικός πρόσβασης";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "κωδικός πρόσβασης για το %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "κωδικός πρόσβασης";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "φράση ανάκτησης";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Σφάλμα διακομιστή!";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Ανανέωση Τιμής";
-
-/* No comment provided by engineer. */
-"verify passcode" = "επιβεβαιώστε τον κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "το πορτοφόλι απενεργοποιήθηκε";

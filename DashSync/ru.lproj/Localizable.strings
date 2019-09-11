@@ -3,19 +3,19 @@
 " and " = " и ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nИтого: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(в местной валюте: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nОсталась 1 попытка\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nСумма: %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "Отменить";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "Придумайте код доступа для %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Подтвердить";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "Время ожидания подключения";
@@ -96,7 +99,7 @@
 "double spend" = "Двойное расходование";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "Введите старый пароль";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ошибка платёжного сервера %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Ошибка обработки";
 
 /* No comment provided by engineer. */
-"passcode" = "Код доступа";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "Код доступа для %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "Пароль";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "Сертификат личности получателя некорректен";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "Фраза восстановления";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Ошибка сервера";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Тестовая сеть";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Обновление цены";
-
-/* No comment provided by engineer. */
-"verify passcode" = "Подтвердите код";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "Кошелёк отключен";

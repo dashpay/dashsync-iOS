@@ -3,19 +3,19 @@
 " and " = "また";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         合計 %1$@ （%2$@）";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n残り %d 回だけ試すことができます\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n（ローカルな請求金額: %@）";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n残り 1 回だけ試すことができます\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     送金額 %1$@ （%2$@）";
@@ -69,10 +69,13 @@
 "cancel" = "キャンセル";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@ のパスコードを\nご指定下さい";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "承認";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "接続タイムアウト";
@@ -96,7 +99,7 @@
 "double spend" = "二重支払い";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "現在のパスコードを\nご入力下さい";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "支払い要求サーバーからのエラー %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "パースエラー";
 
 /* No comment provided by engineer. */
-"passcode" = "パスコード";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@のパスコード";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "パスワード";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "支払先のIDが認証されていません";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "復元フレーズ";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "サーバーエラー";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "テストネット";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "価格のアップデート中";
-
-/* No comment provided by engineer. */
-"verify passcode" = "もう一度パスコードを\nご入力下さい";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "ウォレット無効";

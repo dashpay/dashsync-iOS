@@ -3,19 +3,19 @@
 " and " = " et ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         total %@ (%@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d tentatives restantes\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(montant local demandé : %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 tentative restante\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     montant %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "annuler";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "choisissez un code d'accès pour %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirmer";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "expiration de la connexion";
@@ -96,7 +99,7 @@
 "double spend" = "double dépense";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "tapez l'ancien code d'accès";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Erreur sur le serveur de requête de paiement %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Erreur d'analyse";
 
 /* No comment provided by engineer. */
-"passcode" = "code d'accès";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "code d'accès pour %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "mot de passe";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "l'identité du bénéficiaire n'est pas certifiée";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "phrase de récupération";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Erreur de serveur";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Réseau de test";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "prix en cours de mise à jour";
-
-/* No comment provided by engineer. */
-"verify passcode" = "vérifiez le code d'accès";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portefeuille désactivé";

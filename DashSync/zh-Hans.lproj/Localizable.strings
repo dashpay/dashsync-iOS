@@ -3,19 +3,19 @@
 " and " = "和";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = "，";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n      总额%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n还剩%d次尝试机会\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(本地请求金额: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n      金额%1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "取消";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "选择%@的密码";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "连接超时";
@@ -96,7 +99,7 @@
 "double spend" = "双重花费";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "输入旧密码";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error from payment request server %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "密码";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@的密码";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "密码";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "payee identity isn't certified";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "recovery phrase";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "更新价格";
-
-/* No comment provided by engineer. */
-"verify passcode" = "验证密码";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "钱包被禁用";

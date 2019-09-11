@@ -3,19 +3,19 @@
 " and " = " oraz ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         suma %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\npozostało %d prób\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "(żądana ilość: 1%@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\npozostała jedna próba\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     kwota %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "anuluj";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "ustal hasło dla %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Potwierdź";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "nieudana próba połączenia";
@@ -96,7 +99,7 @@
 "double spend" = "podwójny wydatek";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "wprowadź stare hasło";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Błąd z serwera żądań płatności %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Błąd analizy";
 
 /* No comment provided by engineer. */
-"passcode" = "PIN";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "PIN dla %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "hasło";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "tożsamość odbiorcy nie jest certyfikowana";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "fraza odzyskiwania danych";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Błąd serwera";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Aktualizacja Ceny";
-
-/* No comment provided by engineer. */
-"verify passcode" = "potwierdź hasło";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "portfel wyłączony";

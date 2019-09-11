@@ -3,19 +3,19 @@
 " and " = " and ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d attempts remaining\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     amount %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "cancel";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "choose passcode for %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "connect timeout";
@@ -96,7 +99,7 @@
 "double spend" = "double spend";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "enter old passcode";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error from payment request server %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "passcode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "passcode for %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "password";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "payee identity isn't certified";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "recovery phrase";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Updating Price";
-
-/* No comment provided by engineer. */
-"verify passcode" = "verify passcode";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "wallet disabled";

@@ -3,19 +3,19 @@
 " and " = " ve ";
 
 /* No comment provided by engineer. */
+"%d attempts remaining\n" = "%d attempts remaining\n";
+
+/* No comment provided by engineer. */
 ", " = ", ";
+
+/* No comment provided by engineer. */
+"1 attempt remaining\n" = "1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         toplam %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d deneme hakkı kaldı\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(yerel istenilen miktar: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 deneme hakkı kaldı\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     miktar %1$@ (%2$@)";
@@ -69,10 +69,13 @@
 "cancel" = "iptal";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@ için şifre seçin";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Onayla";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "bağlantı zaman aşımı";
@@ -96,7 +99,7 @@
 "double spend" = "çift ödeme";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "eski şifreyi giriniz";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ödeme talebi sunucusundan hata %@";
@@ -171,10 +174,7 @@
 "Parse Error" = "İşleme .Hatası";
 
 /* No comment provided by engineer. */
-"passcode" = "şifre";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@ için şifre";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "şifre";
@@ -184,6 +184,9 @@
 
 /* No comment provided by engineer. */
 "payee identity isn't certified" = "alacaklı kimliği onaylı değil";
+
+/* No comment provided by engineer. */
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
 "recovery phrase" = "kurtarma cümlesi";
@@ -220,6 +223,9 @@
 
 /* No comment provided by engineer. */
 "Server Error" = "Sunucu Hatası";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -265,9 +271,6 @@
 
 /* Updating Price */
 "Updating Price" = "Fiyat Güncelleniyor";
-
-/* No comment provided by engineer. */
-"verify passcode" = "şifreyi doğrulayın";
 
 /* No comment provided by engineer. */
 "wallet disabled" = "cüzdan devre dışı";
