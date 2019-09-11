@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIColor *)ds_labelColor;
 
 + (UIColor *)ds_pinBackgroundColor;
++ (UIColor *)ds_pinLockScreenBackgroundColor;
 + (UIColor *)ds_pinInputDotColor;
 
 @end

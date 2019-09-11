@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DSPinFieldStyle) {
     DSPinFieldStyle_Default, // 50pt field size
+    DSPinFieldStyle_DefaultWhite, // 50pt field size, white bg
     DSPinFieldStyle_Small,   // 44pt
 };
 
