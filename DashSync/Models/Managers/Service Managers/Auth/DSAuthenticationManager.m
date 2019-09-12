@@ -429,6 +429,75 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             [self getFailCount:nil] == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0);
 }
 
+- (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
+                                       completion:(PinCompletionBlock)completion {
+    [self authenticateUsingBiometricsOnlyWithPrompt:prompt
+                                shouldFallbackToPin:NO
+                                     alertIfLockout:NO
+                                         completion:completion];
+}
+
+- (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
+                              shouldFallbackToPin:(BOOL)shouldFallbackToPin
+                                   alertIfLockout:(BOOL)alertIfLockout
+                                       completion:(PinCompletionBlock)completion {
+    NSAssert(self.usesAuthentication, @"Authentication is not configured");
+    
+    if (!self.usesAuthentication) { //if we don't have authentication
+        completion(YES, NO);
+        return;
+    }
+    
+    NSAssert([self isBiometricAuthenticationAllowed],
+             @"Check if biometrics allowed using `isBiometricAuthenticationAllowed` method before calling this method");
+    
+    LAContext *context = [[LAContext alloc] init];
+    
+    void(^localAuthBlock)(void) = ^{
+        [self performLocalAuthenticationSynchronously:context
+                                               prompt:prompt
+                                           completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
+                                               if (shouldFallbackToPin && shouldTryAnotherMethod) {
+                                                   [self authenticateWithPrompt:prompt
+                                                                     andTouchId:NO
+                                                                 alertIfLockout:alertIfLockout
+                                                                     completion:completion];
+                                               }
+                                               else {
+                                                   completion(authenticated, NO);
+                                               }
+                                           }];
+    };
+    
+    BOOL shouldPreprompt = NO;
+    if (@available(iOS 11.0, *)) {
+        if (context.biometryType == LABiometryTypeFaceID) {
+            shouldPreprompt = YES;
+        }
+    }
+    if (prompt && shouldPreprompt) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
+                                                                       message:prompt
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"Cancel", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:^(UIAlertAction * action) {
+                                                                 completion(NO, YES);
+                                                             }];
+        [alert addAction:cancelAction];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"OK", nil)
+                                                           style:UIAlertActionStyleDefault
+                                                         handler:^(UIAlertAction * action) {
+                                                             localAuthBlock();
+                                                         }];
+        [alert addAction:okAction];
+        [self presentController:alert animated:YES completion:nil];
+    }
+    else {
+        localAuthBlock();
+    }
+}
+
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
     NSParameterAssert(wallet);
     
@@ -447,59 +516,18 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 // prompts user to authenticate with touch id or passcode
-- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
-{
+- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion {
     if (!self.usesAuthentication) { //if we don't have authentication
-        completion(YES,NO);
+        completion(YES, NO);
         return;
     }
+    
     if (touchId) {
         if ([self isBiometricAuthenticationAllowed]) {
-            LAContext *context = [[LAContext alloc] init];
-            
-            void(^localAuthBlock)(void) = ^{
-                [self performLocalAuthenticationSynchronously:context
-                                                       prompt:authprompt
-                                                   completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
-                                                       if (shouldTryAnotherMethod) {
-                                                           [self authenticateWithPrompt:authprompt
-                                                                             andTouchId:NO
-                                                                         alertIfLockout:alertIfLockout
-                                                                             completion:completion];
-                                                       }
-                                                       else {
-                                                           completion(authenticated, NO);
-                                                       }
-                                                   }];
-            };
-            
-            BOOL shouldPreprompt = NO;
-            if (@available(iOS 11.0, *)) {
-                if (context.biometryType == LABiometryTypeFaceID) {
-                    shouldPreprompt = YES;
-                }
-            }
-            if (authprompt && shouldPreprompt) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
-                                                                               message:authprompt
-                                                                        preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"Cancel", nil)
-                                                                       style:UIAlertActionStyleCancel
-                                                                     handler:^(UIAlertAction * action) {
-                                                                         completion(NO, YES);
-                                                                     }];
-                [alert addAction:cancelAction];
-                UIAlertAction *okAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"ok", nil)
-                                                                   style:UIAlertActionStyleDefault
-                                                                 handler:^(UIAlertAction * action) {
-                                                                     localAuthBlock();
-                                                                 }];
-                [alert addAction:okAction];
-                [self presentController:alert animated:YES completion:nil];
-            }
-            else {
-                localAuthBlock();
-            }
+            [self authenticateUsingBiometricsOnlyWithPrompt:authprompt
+                                        shouldFallbackToPin:YES
+                                             alertIfLockout:alertIfLockout
+                                                 completion:completion];
         }
         else {
             [self authenticateWithPrompt:authprompt
