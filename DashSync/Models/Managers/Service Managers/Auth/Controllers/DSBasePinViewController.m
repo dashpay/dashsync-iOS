@@ -34,6 +34,16 @@ NS_ASSUME_NONNULL_BEGIN
     return [NSString stringWithFormat:DSLocalizedString(@"PIN for %@", nil), DISPLAY_NAME];
 }
 
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter addObserver:self
+                           selector:@selector(applicationWillResignActiveNotification)
+                               name:UIApplicationWillResignActiveNotification
+                             object:nil];
+}
+
 - (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin {
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
 
@@ -120,6 +130,11 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 }
 
+#pragma mark - Notifications
+
+- (void)applicationWillResignActiveNotification {
+    [self pinVerificationDidFinishWithAuthenticated:NO cancelled:YES shouldLockOut:NO];
+}
 
 @end
 
