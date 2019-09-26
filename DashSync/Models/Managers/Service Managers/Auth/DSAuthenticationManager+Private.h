@@ -53,6 +53,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint64_t)getFailHeight:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 - (BOOL)setFailHeight:(uint64_t)failHeight;
 
+- (void)performAuthenticationPrecheck:(void (^)(BOOL shouldContinueAuthentication,
+                                                BOOL authenticated,
+                                                BOOL shouldLockout,
+                                                NSString *_Nullable attemptsMessage))completion;
+
+- (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin
+                                     completion:(void (^)(BOOL allowedNextVerificationRound,
+                                                          BOOL authenticated,
+                                                          BOOL cancelled,
+                                                          BOOL shouldLockout))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

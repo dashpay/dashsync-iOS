@@ -18,9 +18,7 @@
 #import "DSBasePinViewController.h"
 
 #import "DSAuthenticationManager+Private.h"
-#import "DSChainsManager.h"
 #import "DSPriceManager.h"
-#import "NSDate+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
                            selector:@selector(applicationWillResignActiveNotification)
@@ -46,62 +44,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin {
     DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-
-    NSError *error = nil;
-    const uint64_t failCount = [authManager getFailCount:&error];
-    if (error) { // error reading from keychain
-        [self pinVerificationDidFinishWithAuthenticated:NO cancelled:NO shouldLockOut:NO];
-
-        return;
-    }
-
-    NSAssert(error == nil, @"Error is not handled");
-    NSString *pin = [authManager getPin:&error];
-    if (error) { // error reading from keychain
-        [self pinVerificationDidFinishWithAuthenticated:NO cancelled:NO shouldLockOut:NO];
-
-        return;
-    }
-
-    NSAssert(error == nil, @"Error is not handled");
-    // count unique attempts before checking success
-    if (![authManager.failedPins containsObject:inputPin]) {
-        [authManager setFailCount:failCount + 1];
-    }
-
-    if ([inputPin isEqual:pin]) { // successful pin attempt
-        [authManager.failedPins removeAllObjects];
-        authManager.didAuthenticate = YES;
-
-        [authManager setFailCount:0];
-        [authManager setFailHeight:0];
-
-        [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
-        [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
-                                                  forKey:PIN_UNLOCK_TIME_KEY];
-
-        [self pinVerificationDidFinishWithAuthenticated:YES cancelled:NO shouldLockOut:NO];
-
-        return;
-    }
-
-    if (![authManager.failedPins containsObject:inputPin]) {
-        [authManager.failedPins addObject:inputPin];
-
-        if (authManager.secureTime > [authManager getFailHeight:nil]) {
-            [authManager setFailHeight:authManager.secureTime];
-        }
-
-        if (failCount >= ALLOWED_FAIL_COUNT) {
-            if (self.alertIfLockout) {
-                [self pinVerificationDidFinishWithAuthenticated:NO cancelled:NO shouldLockOut:YES];
-            }
-
-            return;
-        }
-    }
-
-    [self pinVerificationDidFail];
+    [authManager
+        performPinVerificationAgainstCurrentPin:inputPin
+                                     completion:^(BOOL allowedNextVerificationRound,
+                                                  BOOL authenticated,
+                                                  BOOL cancelled,
+                                                  BOOL shouldLockout) {
+                                         if (allowedNextVerificationRound) {
+                                             [self pinVerificationDidFail];
+                                         }
+                                         else {
+                                             [self pinVerificationDidFinishWithAuthenticated:authenticated
+                                                                                   cancelled:cancelled
+                                                                               shouldLockOut:shouldLockout];
+                                         }
+                                     }];
 }
 
 - (void)pinVerificationDidFail {

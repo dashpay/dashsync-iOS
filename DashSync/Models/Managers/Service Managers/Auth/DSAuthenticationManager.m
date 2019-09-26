@@ -589,33 +589,24 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSString * message = nil;
     if (failCount < MAX_FAIL_COUNT) {
         NSTimeInterval wait = [self lockoutWaitTime];
-        NSString *unit = DSLocalizedString(@"minutes", nil);
-        
-        if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-        if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
-        
-        if (wait >= 60.0) {
-            wait /= 60.0;
-            unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
-        }
-        message = [NSString stringWithFormat:DSLocalizedString(@"\ntry again in %d %@", nil),
-                   (int)wait, unit];
+        NSString *waitString = [NSString waitTimeFromNow:wait];
+        message = [NSString stringWithFormat:DSLocalizedString(@"Try again in %@", nil), waitString];
     } else {
-        message = DSLocalizedString(@"\nno attempts remaining", nil);
+        message = DSLocalizedString(@"No attempts remaining", nil);
     }
     UIAlertController * alertController = [UIAlertController
-                                           alertControllerWithTitle:DSLocalizedString(@"wallet disabled", nil)
+                                           alertControllerWithTitle:DSLocalizedString(@"Wallet disabled", nil)
                                            message:message
                                            preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* resetButton = [UIAlertAction
-                                  actionWithTitle:DSLocalizedString(@"reset", nil)
+                                  actionWithTitle:DSLocalizedString(@"Reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
                                       [self showResetWalletWithCancelHandler:nil];
                                   }];
     if (failCount < MAX_FAIL_COUNT) {
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"ok", nil)
+                                   actionWithTitle:DSLocalizedString(@"OK", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        
@@ -625,7 +616,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         
     } else {
         UIAlertAction* wipeButton = [UIAlertAction
-                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
+                                     actionWithTitle:DSLocalizedString(@"Wipe", nil)
                                      style:UIAlertActionStyleDestructive
                                      handler:^(UIAlertAction * action) {
                                          [self.failedPins removeAllObjects];
@@ -650,94 +641,38 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 - (void)authenticatePinWithMessage:(NSString *)message
                   alertIfLockout:(BOOL)alertIfLockout
                       completion:(PinCompletionBlock)completion {
-    //authentication logic is as follows
-    //you have 3 failed attempts initially
-    //after that you get locked out once immediately with a message saying
-    //then you have 4 attempts with exponentially increasing intervals to get your password right
-    
-    [DSEventManager saveEvent:@"wallet_manager:pin_auth"];
-    
-    NSError *error = nil;
-    NSString *pin = [self getPin:&error];
-    if (error) { // error reading from keychain
-        completion(NO, NO);
-        
-        return;
-    }
-    
-    NSAssert(error == nil, @"Error is not handled");
-    
-    if (pin.length != PIN_LENGTH) {
-        [self setPinWithCompletion:^(BOOL success) {
-            completion(success, NO);
-        }];
-        
-        return;
-    }
-    
-    uint64_t failCount = [self getFailCount:&error];
-    if (error) { // error reading from keychain
-        completion(NO, NO);
-        
-        return;
-    }
-    
-    NSAssert(error == nil, @"Error is not handled");
-    
-    //// Logic explanation
-    
-    //  If we have failed 3 or more times
-    if (failCount >= MAX_FAIL_COUNT) {
-        [self userLockedOut];
-        
-        if (completion) {
-            completion(NO, NO);
-        }
-        
-        return;
-    }
-    else if (failCount >= ALLOWED_FAIL_COUNT) {
-        // When was the last time we failed?
-        uint64_t failHeight = [self getFailHeight:&error];
-        
-        if (error) { // error reading from keychain
-            completion(NO, NO);
-            
-            return;
-        }
-        
-        NSAssert(error == nil, @"Error is not handled");
-        
-#if DEBUG && SPEED_UP_WAIT_TIME
-        CGFloat lockoutTimeLeft = failHeight + pow(6, failCount - 3)*60.0/100000.0 - self.secureTime;
-#else
-        CGFloat lockoutTimeLeft = failHeight + pow(6, failCount - 3)*60.0 - self.secureTime;
-#endif
-        DSDLog(@"locked out for %f more seconds", lockoutTimeLeft);
-        
-        if (lockoutTimeLeft > 0) { // locked out
-            if (alertIfLockout) {
-                [self userLockedOut];
+    [self
+     performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
+                                     BOOL authenticated,
+                                     BOOL shouldLockout,
+                                     NSString * _Nullable attemptsMessage) {
+        if (shouldContinueAuthentication) {
+            NSString *resultMessage;
+            if (attemptsMessage != nil) {
+                resultMessage = attemptsMessage;
+                
+                if (message) {
+                    resultMessage = [resultMessage stringByAppendingFormat:@"\n%@", message];
+                }
             }
-            completion(NO, NO);
+            else {
+                resultMessage = message;
+            }
             
-            return;
+            DSRequestPinViewController *alert =
+                [[DSRequestPinViewController alloc] initWihtAuthPrompt:resultMessage
+                                                        alertIfLockout:alertIfLockout
+                                                            completion:completion];
+            [self presentController:alert animated:YES completion:nil];
         }
         else {
-            //no longer locked out, give the user a try
-            NSString *attemptsMessage = (failCount >= (MAX_FAIL_COUNT - 1)
-                ? DSLocalizedString(@"1 attempt remaining\n", nil)
-                : [NSString stringWithFormat:
-                    DSLocalizedString(@"%d attempts remaining\n", nil), MAX_FAIL_COUNT - failCount]);
-            message = [attemptsMessage stringByAppendingString:message ?: @""];
+            if (shouldLockout) {
+                [self userLockedOut];
+            }
+            
+            completion(authenticated, NO);
         }
-    }
-    
-    DSRequestPinViewController *alert =
-        [[DSRequestPinViewController alloc] initWihtAuthPrompt:message
-                                                alertIfLockout:alertIfLockout
-                                                    completion:completion];
-    [self presentController:alert animated:YES completion:nil];
+    }];
 }
 
 -(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
@@ -878,6 +813,147 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 - (BOOL)setFailHeight:(uint64_t)failHeight {
     return setKeychainInt(failHeight, PIN_FAIL_HEIGHT_KEY, NO);
+}
+
+- (void)performAuthenticationPrecheck:(void (^)(BOOL shouldContinueAuthentication,
+                                              BOOL authenticated,
+                                              BOOL shouldLockout,
+                                              NSString *_Nullable attemptsMessage))completion {
+    //authentication logic is as follows
+    //you have 3 failed attempts initially
+    //after that you get locked out once immediately with a message saying
+    //then you have 4 attempts with exponentially increasing intervals to get your password right
+
+    NSError *error = nil;
+    NSString *pin = [self getPin:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, nil);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+
+    if (pin.length != PIN_LENGTH) {
+        // backward compatibility
+        [self setPinWithCompletion:^(BOOL success) {
+            completion(NO, success, NO, nil);
+        }];
+
+        return;
+    }
+
+    uint64_t failCount = [self getFailCount:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, nil);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+
+    //// Logic explanation
+
+    NSString *attemptsMessage = nil;
+
+    //  If we have failed 3 or more times
+    if (failCount >= MAX_FAIL_COUNT) {
+        if (completion) {
+            completion(NO, NO, YES, nil);
+        }
+
+        return;
+    }
+    else if (failCount >= ALLOWED_FAIL_COUNT) {
+        // When was the last time we failed?
+        __unused uint64_t failHeight = [self getFailHeight:&error];
+
+        if (error) { // error reading from keychain
+            completion(NO, NO, NO, nil);
+
+            return;
+        }
+
+        NSAssert(error == nil, @"Error is not handled");
+
+        const CGFloat lockoutTimeLeft = [self lockoutWaitTime];
+        DSDLog(@"locked out for %f more seconds", lockoutTimeLeft);
+
+        if (lockoutTimeLeft > 0) { // locked out
+            completion(NO, NO, YES, nil);
+
+            return;
+        }
+        else {
+            //no longer locked out, give the user a try
+            attemptsMessage = [NSString localizedStringWithFormat:
+                               DSLocalizedString(@"%ld attempt(s) remaining", @"#bc-ignore!"),
+                               MAX_FAIL_COUNT - failCount];
+        }
+    }
+
+    completion(YES, NO, NO, attemptsMessage);
+}
+
+
+- (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin
+                                     completion:(void (^)(BOOL allowedNextVerificationRound,
+                                                          BOOL authenticated,
+                                                          BOOL cancelled,
+                                                          BOOL shouldLockout))completion {
+    NSError *error = nil;
+    const uint64_t failCount = [self getFailCount:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, NO);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+    NSString *pin = [self getPin:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, NO);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+    // count unique attempts before checking success
+    if (![self.failedPins containsObject:inputPin]) {
+        [self setFailCount:failCount + 1];
+    }
+
+    if ([inputPin isEqual:pin]) { // successful pin attempt
+        [self.failedPins removeAllObjects];
+        self.didAuthenticate = YES;
+
+        [self setFailCount:0];
+        [self setFailHeight:0];
+
+        [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
+        [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
+                                                  forKey:PIN_UNLOCK_TIME_KEY];
+
+        completion(NO, YES, NO, NO);
+
+        return;
+    }
+
+    if (![self.failedPins containsObject:inputPin]) {
+        [self.failedPins addObject:inputPin];
+
+        if (self.secureTime > [self getFailHeight:nil]) {
+            [self setFailHeight:self.secureTime];
+        }
+
+        if (failCount >= ALLOWED_FAIL_COUNT) {
+            completion(NO, NO, NO, YES);
+
+            return;
+        }
+    }
+
+    completion(YES, NO, NO, NO);
 }
 
 #pragma mark - Notifications

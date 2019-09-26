@@ -1,17 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " 그리고 ";
-
-/* No comment provided by engineer. */
-"%d attempts remaining\n" = "%d attempts remaining\n";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
-"1 attempt remaining\n" = "1 attempt remaining\n";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         합계 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\n더이상 시도할 수 없습니다.";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "이 마스터노드를 정말로 되돌리시겠습니까?";
@@ -111,12 +93,6 @@
 "error signing transaction" = "거래 서명 중 오류 발생";
 
 /* No comment provided by engineer. */
-"hour" = "시간";
-
-/* No comment provided by engineer. */
-"hours" = "시간";
-
-/* No comment provided by engineer. */
 "ignore" = "무시";
 
 /* No comment provided by engineer. */
@@ -150,13 +126,10 @@
 "Method Not Found" = "메소드를 찾을 수 없음";
 
 /* No comment provided by engineer. */
-"minute" = "분";
-
-/* No comment provided by engineer. */
-"minutes" = "분";
-
-/* No comment provided by engineer. */
 "missing certificate" = "인증서를 찾을 수 없습니다";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "피어를 찾을 수 없습니다";
@@ -210,16 +183,10 @@
 "rescan" = "재스캔";
 
 /* No comment provided by engineer. */
-"reset" = "초기화";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "재시도";
-
-/* No comment provided by engineer. */
-"second" = "초";
-
-/* No comment provided by engineer. */
-"seconds" = "초";
 
 /* No comment provided by engineer. */
 "send" = "보내기";
@@ -255,6 +222,9 @@
 "transaction rejected" = "거래가 거부됨";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "%@에서 예상치 못한 응답";
 
 /* No comment provided by engineer. */
@@ -276,13 +246,16 @@
 "Updating Price" = "가격 업데이트중";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "지갑 사용 정지됨";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";
 
 /* No comment provided by engineer. */
 "wipe" = "지우기";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "지갑이 동기화 되지 않은 것 같습니다.\n일반적인 경우, 블록체인을 재스캔하면 해결할 수 있습니다.";

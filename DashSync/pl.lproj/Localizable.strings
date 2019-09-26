@@ -1,17 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " oraz ";
-
-/* No comment provided by engineer. */
-"%d attempts remaining\n" = "%d attempts remaining\n";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
-"1 attempt remaining\n" = "1 attempt remaining\n";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         suma %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nprowizje sieci +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nbrak pozostałych prób";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nspróbuj ponownie za %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Czy jesteś pewien ze chcesz odzyskać ego masternoda?";
@@ -111,12 +93,6 @@
 "error signing transaction" = "błąd podczas podpisywania transakcji";
 
 /* No comment provided by engineer. */
-"hour" = "godzina";
-
-/* No comment provided by engineer. */
-"hours" = "godziny";
-
-/* No comment provided by engineer. */
 "ignore" = "ignoruj";
 
 /* No comment provided by engineer. */
@@ -150,13 +126,10 @@
 "Method Not Found" = "Metoda nieznaleziona";
 
 /* No comment provided by engineer. */
-"minute" = "minuta";
-
-/* No comment provided by engineer. */
-"minutes" = "minuty";
-
-/* No comment provided by engineer. */
 "missing certificate" = "brak certyfikatu";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "nie znaleziono węzłów sieci";
@@ -210,16 +183,10 @@
 "rescan" = "ponownie zeskanuj";
 
 /* No comment provided by engineer. */
-"reset" = "resetuj";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "spróbuj ponownie";
-
-/* No comment provided by engineer. */
-"second" = "sekunda";
-
-/* No comment provided by engineer. */
-"seconds" = "sekundy";
 
 /* No comment provided by engineer. */
 "send" = "wyślij";
@@ -255,6 +222,9 @@
 "transaction rejected" = "transakcja odrzucona";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "niespodziewana odpowiedź od %@";
 
 /* No comment provided by engineer. */
@@ -276,13 +246,16 @@
 "Updating Price" = "Aktualizacja Ceny";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "portfel wyłączony";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "UWAGA";
 
 /* No comment provided by engineer. */
 "wipe" = "wyczyść";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Twój portfel może nie być zsynchronizowany.\nTo często można naprawić przez ponowne przeskanowanie łańcucha bloków.";

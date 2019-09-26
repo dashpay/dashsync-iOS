@@ -1,17 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = " และ ";
-
-/* No comment provided by engineer. */
-"%d attempts remaining\n" = "%d attempts remaining\n";
-
-/* No comment provided by engineer. */
-", " = ",";
-
-/* No comment provided by engineer. */
-"1 attempt remaining\n" = "1 attempt remaining\n";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nยอดรวม %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nไม่สามารถพยายามได้อีก";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nลองเข้าอีกครั้ง %1$d%2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "คุณแน่ใจหรือไม่ว่าต้องการเรียกคืนโหมดนี้อีกครั้ง?";
@@ -111,12 +93,6 @@
 "error signing transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม ";
 
 /* No comment provided by engineer. */
-"hour" = "ชั่วโมง";
-
-/* No comment provided by engineer. */
-"hours" = "ชั่วโมง";
-
-/* No comment provided by engineer. */
 "ignore" = "เพิกเฉย";
 
 /* No comment provided by engineer. */
@@ -150,13 +126,10 @@
 "Method Not Found" = "ไม่พบวิธี";
 
 /* No comment provided by engineer. */
-"minute" = "นาที";
-
-/* No comment provided by engineer. */
-"minutes" = "นาที";
-
-/* No comment provided by engineer. */
 "missing certificate" = "ไม่พบใบรับรอง";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "ไม่มีผู้ปล่อย";
@@ -210,16 +183,10 @@
 "rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
-"reset" = "รีเซ็ต";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "ลองใหม่อีกครั้ง";
-
-/* No comment provided by engineer. */
-"second" = "ที่สอง";
-
-/* No comment provided by engineer. */
-"seconds" = "ที่สอง";
 
 /* No comment provided by engineer. */
 "send" = "ส่ง";
@@ -255,6 +222,9 @@
 "transaction rejected" = "การทำธุรกรรมถูกปฏิเสธ";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "การตอบสนองที่ไม่คาดคิดจาก %@";
 
 /* No comment provided by engineer. */
@@ -276,13 +246,16 @@
 "Updating Price" = "อัพเดตราคา";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "ปิดใช้งาน wallet";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
 
 /* No comment provided by engineer. */
 "wipe" = "ลบล้าง";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "wallet ของคุณ อาจไม่ได้รับการซิงค์ ซึ่งมักจะสามารถแก้ไขได้โดยการสแกน blockchain ใหม่";

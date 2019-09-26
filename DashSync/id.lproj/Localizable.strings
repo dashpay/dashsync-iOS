@@ -1,17 +1,5 @@
 
 /* No comment provided by engineer. */
-" and " = "dan";
-
-/* No comment provided by engineer. */
-"%d attempts remaining\n" = "%d attempts remaining\n";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
-"1 attempt remaining\n" = "1 attempt remaining\n";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nbiaya jaringan +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\ntidak ada upaya yang tersisa";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\ncoba lagi dalam %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Anda yakin ingin mengklaim kembali masternode ini?";
@@ -111,12 +93,6 @@
 "error signing transaction" = "kesalahan menandatangani transaksi";
 
 /* No comment provided by engineer. */
-"hour" = "jam";
-
-/* No comment provided by engineer. */
-"hours" = "jam";
-
-/* No comment provided by engineer. */
 "ignore" = "abaikan";
 
 /* No comment provided by engineer. */
@@ -150,13 +126,10 @@
 "Method Not Found" = "Metode Tidak Ditemukan";
 
 /* No comment provided by engineer. */
-"minute" = "menit";
-
-/* No comment provided by engineer. */
-"minutes" = "menit";
-
-/* No comment provided by engineer. */
 "missing certificate" = "sertifikat hilang";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "tidak ada peer ditemukan";
@@ -210,16 +183,10 @@
 "rescan" = "memindai ulang";
 
 /* No comment provided by engineer. */
-"reset" = "atur ulang";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "mencoba kembali";
-
-/* No comment provided by engineer. */
-"second" = "detik";
-
-/* No comment provided by engineer. */
-"seconds" = "detik";
 
 /* No comment provided by engineer. */
 "send" = "kirim";
@@ -255,6 +222,9 @@
 "transaction rejected" = "transaksi ditolak";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "respons tak terduga dari %@";
 
 /* No comment provided by engineer. */
@@ -276,13 +246,16 @@
 "Updating Price" = "Memperbarui Harga";
 
 /* No comment provided by engineer. */
-"wallet disabled" = "dompet dinonaktifkan";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "PERINGATAN";
 
 /* No comment provided by engineer. */
 "wipe" = "menghapus";
+
+/* No comment provided by engineer. */
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Dompet anda mungkin tidak sinkron.\nIni dapat diperbaiki dengan memindai ulang blockchain.";

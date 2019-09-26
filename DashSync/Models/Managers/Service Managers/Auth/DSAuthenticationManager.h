@@ -48,8 +48,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic, readonly) BOOL shouldUseAuthentication; //true if the app should use authentication once it is set up
 @property (nonatomic, readonly) BOOL usesAuthentication; //true if the app uses authentication and it is set up
 @property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
-@property (nonatomic ,readonly) BOOL lockedOut;
-@property (nullable, nonatomic, copy) NSDictionary * userAccount; // client api user id and auth token
+
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 /**
  Secure time was updated by HTTP response since app starts
