@@ -7,17 +7,36 @@
 
 #import "UIWindow+DSUtils.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation UIWindow (DSUtils)
 
--(UIViewController*)ds_presentingViewController {
-    UIViewController *topController = [self rootViewController];
-    while (topController.presentedViewController && ![topController.presentedViewController isKindOfClass:[UIAlertController class]]) {
-        topController = topController.presentedViewController;
-    }
-    if ([topController isKindOfClass:[UINavigationController class]]) {
-        topController = ((UINavigationController*)topController).topViewController;
-    }
-    return topController;
+- (UIViewController *)ds_presentingViewController {
+    UIViewController *controller = [self rootViewController];
+    return [self ds_topViewControllerWithRootViewController:controller];
 }
 
+#pragma mark - Private
+
+- (UIViewController *)ds_topViewControllerWithRootViewController:(UIViewController *)rootViewController {
+    if ([rootViewController isKindOfClass:UITabBarController.class]) {
+        UITabBarController *tabBarController = (UITabBarController *)rootViewController;
+        return [self ds_topViewControllerWithRootViewController:tabBarController.selectedViewController];
+    }
+    else if ([rootViewController isKindOfClass:UINavigationController.class]) {
+        UINavigationController *navigationController = (UINavigationController *)rootViewController;
+        return [self ds_topViewControllerWithRootViewController:navigationController.visibleViewController];
+    }
+    else if (rootViewController.presentedViewController) {
+        UIViewController *presentedViewController = rootViewController.presentedViewController;
+        return [self ds_topViewControllerWithRootViewController:presentedViewController];
+    }
+    else {
+        return rootViewController;
+    }
+}
+
+
 @end
+
+NS_ASSUME_NONNULL_END

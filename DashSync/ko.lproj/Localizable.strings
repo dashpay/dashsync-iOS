@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "복원 문구";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";
-
-/* No comment provided by engineer. */
-"wipe" = "지우기";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

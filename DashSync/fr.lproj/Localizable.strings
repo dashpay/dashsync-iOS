@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "phrase de récupération";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "la phrase de récupération ne correspond pas";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "réduire le montant du paiement de\n%1$@ (%2$@) ?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "AVERTISSEMENT";
-
-/* No comment provided by engineer. */
-"wipe" = "effacer";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

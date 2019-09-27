@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "วลีกู้คืน";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
-
-/* No comment provided by engineer. */
-"wipe" = "ลบล้าง";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

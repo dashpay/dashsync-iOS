@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "herstelzin";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "de herstelzin komt niet overeen";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";
-
-/* No comment provided by engineer. */
-"wipe" = "wis";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

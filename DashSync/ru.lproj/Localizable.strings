@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "Фраза восстановления";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "Фраза восстановления не подходит";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "Уменьшить сумму платежа на\n%1$@ (%2$@)?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
-
-/* No comment provided by engineer. */
-"wipe" = "Стереть";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

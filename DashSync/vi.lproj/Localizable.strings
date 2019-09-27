@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "cụm từ phục hồi";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "cụm từ phục hồi không đúng";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "giảm số lượng thanh toán theo\n%1$@ (%2$@)?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "CẢNH BÁO";
-
-/* No comment provided by engineer. */
-"wipe" = "xoá sạch";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

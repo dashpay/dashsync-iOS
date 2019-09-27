@@ -36,22 +36,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 #endif /* DEBUG && _ */
 
-@interface DSAuthenticationManager () <UITextFieldDelegate>
+@interface DSAuthenticationManager ()
 
 @property (nonatomic, strong) NSMutableSet *failedPins;
-@property (nullable, nonatomic, strong) UIAlertController *resetAlertController;
 @property (nonatomic, assign) BOOL usesAuthentication;
 @property (nonatomic, assign) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
 @property (nonatomic, assign) BOOL secureTimeUpdated;
 
 - (void)userLockedOut;
 
-// Low level
+// Low Level
+- (BOOL)setupNewPin:(NSString *)pin;
+
 - (nullable NSString *)getPin:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 - (uint64_t)getFailCount:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 - (BOOL)setFailCount:(uint64_t)failCount;
 - (uint64_t)getFailHeight:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 - (BOOL)setFailHeight:(uint64_t)failHeight;
+
+- (void)removePinForced;
 
 - (void)performAuthenticationPrecheck:(void (^)(BOOL shouldContinueAuthentication,
                                                 BOOL authenticated,

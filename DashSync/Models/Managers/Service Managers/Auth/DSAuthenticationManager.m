@@ -44,6 +44,7 @@
 #import "DSMerkleBlock.h"
 #import "DSRequestPinViewController.h"
 #import "DSSetPinViewController.h"
+#import "DSRecoveryViewController.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -271,43 +272,16 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     return wait;
 }
 
--(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    [self showResetWalletWithWipeHandler:nil cancelHandler:resetCancelHandlerBlock];
-}
-
--(void)showResetWalletWithWipeHandler:(ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"recovery phrase", nil) message:nil
-                                                                       preferredStyle:UIAlertControllerStyleAlert];
-    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-        textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        textField.returnKeyType = UIReturnKeyDone;
-        textField.font = [UIFont systemFontOfSize:15.0];
-        textField.delegate = self;
-    }];
-    
-    if (resetWipeHandlerBlock) {
-        UIAlertAction* wipeButton = [UIAlertAction
-                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
-                                     style:UIAlertActionStyleDestructive
-                                     handler:^(UIAlertAction * action) {
-                                         if (resetWipeHandlerBlock) {
-                                             resetWipeHandlerBlock();
-                                         }
-                                     }];
-        [alertController addAction:wipeButton];
+- (void)resetWalletWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion {
+    if (![DSRecoveryViewController canRecoverWallet]) {
+        completion(NO);
+        
+        return;
     }
     
-    UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                       if (resetCancelHandlerBlock) {
-                                           resetCancelHandlerBlock();
-                                       }
-                                   }];
-    [alertController addAction:cancelButton];
-    [self presentController:alertController animated:YES completion:nil];
-    self.resetAlertController = alertController;
+    DSRecoveryViewController *controller = [[DSRecoveryViewController alloc] initWithWipeHandler:wipeHandler
+                                                                                      completion:completion];
+    [self presentController:controller animated:YES completion:nil];
 }
 
 -(void)setPinIfNeededWithCompletion:(void (^)(BOOL needed, BOOL success))completion {
@@ -350,66 +324,6 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
     self.didAuthenticate = NO;
     self.usesAuthentication = NO;
-}
-
-// MARK: - UITextFieldDelegate
-
--(BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-    if (!textField.secureTextEntry) { //not the pin
-        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            NSString *phrase = [[DSBIP39Mnemonic sharedInstance] cleanupPhrase:textField.text];
-            
-            if (! [phrase isEqual:textField.text]) textField.text = phrase;
-            DSChain * chain = [[DSChainsManager sharedInstance] mainnetManager].chain;
-            if (chain.wallets.count > 1) {
-                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
-                }];
-                return TRUE; //todo find a way to handle when there are more that one wallet
-            }
-            
-            NSData * oldData = nil;
-            if (chain.wallets.count) {
-                DSWallet * wallet = [chain.wallets objectAtIndex:0];
-                oldData = [[wallet accountWithNumber:0] bip44DerivationPath].extendedPublicKey;
-            }
-            
-            if (!oldData) {
-                oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, nil);
-            }
-            
-            if (!oldData) {
-                oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
-            }
-            
-            NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
-                                                                                   normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:[DSChain mainnet] storeSeedPhrase:NO isTransient:YES];
-            DSAccount * transientAccount = [transientWallet accountWithNumber:0];
-            DSDerivationPath * transientDerivationPath = [transientAccount bip44DerivationPath];
-            NSData * transientExtendedPublicKey = transientDerivationPath.extendedPublicKey;
-            
-            if (transientExtendedPublicKey && ![transientExtendedPublicKey isEqual:oldData] && ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]) {
-                self.resetAlertController.title = DSLocalizedString(@"recovery phrase doesn't match", nil);
-                [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:DSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            } else {
-                if (oldData) {
-                    [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
-                }
-                setKeychainData(nil, SPEND_LIMIT_KEY, NO);
-                setKeychainData(nil, PIN_KEY, NO);
-                setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
-                setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
-                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    [self setPinWithCompletion:^(BOOL success) {
-                        
-                    }];
-                }];
-            }
-        }
-    }
-    return TRUE;
 }
 
 // MARK: - Authentication
@@ -602,7 +516,9 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                   actionWithTitle:DSLocalizedString(@"Reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
-                                      [self showResetWalletWithCancelHandler:nil];
+                                        [self resetWalletWithWipeHandler:nil completion:^(BOOL success) {
+                                            // NOP
+                                        }];
                                   }];
     if (failCount < MAX_FAIL_COUNT) {
         UIAlertAction* okButton = [UIAlertAction
@@ -741,6 +657,25 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 #pragma mark - Low Level
 
+- (BOOL)setupNewPin:(NSString *)pin {
+    NSParameterAssert(pin);
+    if (!pin) {
+        return NO;
+    }
+    
+    BOOL success = [self setPin:pin];
+    if (!success) {
+        return NO;
+    }
+    
+    self.usesAuthentication = YES;
+    self.didAuthenticate = YES;
+    [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
+                                              forKey:PIN_UNLOCK_TIME_KEY];
+    
+    return YES;
+}
+
 - (BOOL)hasPin:(NSError *_Nullable __autoreleasing *_Nullable)outError {
     NSError *error = nil;
     BOOL hasPin = hasKeychainData(PIN_KEY, &error);
@@ -813,6 +748,13 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 - (BOOL)setFailHeight:(uint64_t)failHeight {
     return setKeychainInt(failHeight, PIN_FAIL_HEIGHT_KEY, NO);
+}
+
+- (void)removePinForced {
+    setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+    setKeychainData(nil, PIN_KEY, NO);
+    setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+    setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
 }
 
 - (void)performAuthenticationPrecheck:(void (^)(BOOL shouldContinueAuthentication,
@@ -969,8 +911,8 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 -(void)presentController:(UIViewController *)controller
                 animated:(BOOL)animated
               completion:(void (^_Nullable)(void))completion {
-    UIViewController *presentingController =
-        [[[UIApplication sharedApplication] keyWindow] ds_presentingViewController];
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    UIViewController *presentingController = [window ds_presentingViewController];
     NSParameterAssert(presentingController);
     [presentingController presentViewController:controller animated:animated completion:completion];
 }

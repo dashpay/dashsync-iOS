@@ -76,19 +76,23 @@ NS_ASSUME_NONNULL_BEGIN
 
         self.alertIfLockout = YES;
 
-        __weak typeof(self) weakSelf = self;
-        DWAlertAction *cancelAction = [DWAlertAction
-            actionWithTitle:DSLocalizedString(@"Cancel", nil)
-                      style:DWAlertActionStyleCancel
-                    handler:^(DWAlertAction *_Nonnull action) {
-                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                        if (!strongSelf) {
-                            return;
-                        }
+        DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+        BOOL hasPin = [authManager hasPin:nil];
+        if (hasPin) {
+            __weak typeof(self) weakSelf = self;
+            DWAlertAction *cancelAction = [DWAlertAction
+                actionWithTitle:DSLocalizedString(@"Cancel", nil)
+                          style:DWAlertActionStyleCancel
+                        handler:^(DWAlertAction *_Nonnull action) {
+                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                            if (!strongSelf) {
+                                return;
+                            }
 
-                        [strongSelf cancel];
-                    }];
-        [self addAction:cancelAction];
+                            [strongSelf cancel];
+                        }];
+            [self addAction:cancelAction];
+        }
     }
     return self;
 }
@@ -127,12 +131,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *secondPin = inputPin;
         if ([firstPin isEqualToString:secondPin]) {
             DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-            [authManager setPin:secondPin];
-
-            authManager.usesAuthentication = YES;
-            authManager.didAuthenticate = YES;
-            [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
-                                                      forKey:PIN_UNLOCK_TIME_KEY];
+            [authManager setupNewPin:secondPin];
 
             [self doneSuccess:YES];
         }

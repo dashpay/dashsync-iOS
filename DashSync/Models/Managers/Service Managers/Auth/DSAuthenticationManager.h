@@ -33,9 +33,6 @@ typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
-typedef void (^ResetCancelHandlerBlock)(void);
-typedef void (^ResetWipeHandlerBlock)(void);
-
 extern NSString *const DSApplicationTerminationRequestNotification;
 
 @class DSWallet,DSChain,DSTransaction;
@@ -61,13 +58,6 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 
 - (BOOL)hasPin:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 
-/**
- Set PIN without presenting any UI to the user.
-
- @return Returns NO in case of failure
- */
-- (BOOL)setPin:(NSString *)pin;
-
 - (BOOL)isBiometricAuthenticationAllowed;
 
 - (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
@@ -88,7 +78,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 
 -(void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
 
--(void)showResetWalletWithWipeHandler:(_Nullable ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
+- (void)resetWalletWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion;
 
 @end
 

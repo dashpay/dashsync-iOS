@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "復元フレーズ";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "復元フレーズが一致しません";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "警告";
-
-/* No comment provided by engineer. */
-"wipe" = "完全削除";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

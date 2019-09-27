@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.pinView.pinField clear];
     [self.pinView.pinField ds_shakeView];
 
-    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
+    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
     [self.feedbackGenerator prepare];
 }
 

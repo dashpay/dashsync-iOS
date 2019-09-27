@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "kurtarma cümlesi";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "kurtarma cümlesi eşleşmiyor";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@) ile ödeme miktarı düşürülsün mü?";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "UYARI";
-
-/* No comment provided by engineer. */
-"wipe" = "sil";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";

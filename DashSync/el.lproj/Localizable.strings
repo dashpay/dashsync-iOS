@@ -165,10 +165,7 @@
 "PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "φράση ανάκτησης";
-
-/* No comment provided by engineer. */
-"recovery phrase doesn't match" = "δεν ταιριάζει η φράση ανάκτησης";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "μείωση του ποσού πληρωμής κατά\n%1$@ (%2$@);";
@@ -250,9 +247,6 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";
-
-/* No comment provided by engineer. */
-"wipe" = "εκκαθάριση";
 
 /* No comment provided by engineer. */
 "Wipe" = "Wipe";
