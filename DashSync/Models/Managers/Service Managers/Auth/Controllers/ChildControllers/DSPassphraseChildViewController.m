@@ -66,6 +66,23 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     }
 
     DSChain *chain = [[DSChainsManager sharedInstance] mainnetManager].chain;
+    
+    if (![chain hasAWallet]) {
+        chain = [[DSChainsManager sharedInstance] testnetManager].chain;
+        if (![chain hasAWallet]) {
+            for (DSChain * devnetChain in [[DSChainsManager sharedInstance] devnetChains]) {
+                if ([devnetChain hasAWallet]) {
+                    chain = devnetChain;
+                    break;
+                }
+            }
+            if (![chain hasAWallet]) {
+                [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
+                [self.feedbackGenerator prepare];
+                return;
+            }
+        }
+    }
 
     NSData *oldData = nil;
     if (chain.wallets.count) {
@@ -82,7 +99,7 @@ static CGFloat const TEXTVIEW_HEIGHT = 120.0;
     }
 
     NSData *seed = [bip39Mnemonic deriveKeyFromPhrase:[bip39Mnemonic normalizePhrase:phrase] withPassphrase:nil];
-    DSWallet *transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:[DSChain mainnet] storeSeedPhrase:NO isTransient:YES];
+    DSWallet *transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:chain storeSeedPhrase:NO isTransient:YES];
     DSAccount *transientAccount = [transientWallet accountWithNumber:0];
     DSDerivationPath *transientDerivationPath = [transientAccount bip44DerivationPath];
     NSData *transientExtendedPublicKey = transientDerivationPath.extendedPublicKey;

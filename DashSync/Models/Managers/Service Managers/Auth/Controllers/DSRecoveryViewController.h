@@ -21,8 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSRecoveryViewController : DWAlertController
 
-+ (BOOL)canRecoverWallet;
-
 - (instancetype)initWithWipeHandler:(void (^_Nullable)(void))wipeHandler completion:(void (^)(BOOL success))completion;
 
 @end

@@ -78,7 +78,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 
 - (void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
 
-- (void)resetWalletWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion;
+- (void)resetAllWalletsWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion;
 
 @end
 

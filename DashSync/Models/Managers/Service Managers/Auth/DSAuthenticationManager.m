@@ -272,8 +272,8 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     return wait;
 }
 
-- (void)resetWalletWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion {
-    if (![DSRecoveryViewController canRecoverWallet]) {
+- (void)resetAllWalletsWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion {
+    if (![[DSChainsManager sharedInstance] hasAWallet]) {
         completion(NO);
         
         return;
@@ -516,7 +516,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                   actionWithTitle:DSLocalizedString(@"Reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
-                                        [self resetWalletWithWipeHandler:nil completion:^(BOOL success) {
+                                        [self resetAllWalletsWithWipeHandler:nil completion:^(BOOL success) {
                                             // NOP
                                         }];
                                   }];

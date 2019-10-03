@@ -33,14 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSRecoveryViewController
 
-+ (BOOL)canRecoverWallet {
-    // TODO: find a way to handle when there are more that one wallet
-    DSChain *chain = [[DSChainsManager sharedInstance] mainnetManager].chain;
-    return (chain.wallets.count == 1);
-}
-
 - (instancetype)initWithWipeHandler:(void (^_Nullable)(void))wipeHandler completion:(void (^)(BOOL success))completion {
-    NSAssert([self.class canRecoverWallet], @"Check pre-condition before use");
+    NSAssert([[DSChainsManager sharedInstance] hasAWallet], @"Check pre-condition before use");
 
     DSPassphraseChildViewController *passphraseController = [[DSPassphraseChildViewController alloc] init];
 
@@ -67,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         if (wipeHandler) {
             DWAlertAction *wipeAction = [DWAlertAction
-                actionWithTitle:DSLocalizedString(@"OK", nil)
+                actionWithTitle:DSLocalizedString(@"Wipe", nil)
                           style:DWAlertActionStyleDefault
                         handler:^(DWAlertAction *_Nonnull action) {
                             __strong typeof(weakSelf) strongSelf = weakSelf;
