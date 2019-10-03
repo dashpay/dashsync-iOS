@@ -46,6 +46,9 @@ CF_IMPLICIT_BRIDGING_DISABLED
 + (NSMutableData *)secureDataWithCapacity:(NSUInteger)capacity;
 + (NSMutableData *)secureDataWithData:(NSData *)data;
 
++ (NSMutableString *)secureString;
++ (NSMutableString *)secureStringWithLength:(NSUInteger)length;
+
 + (size_t)sizeOfVarInt:(uint64_t)i;
 
 - (void)appendUInt8:(uint8_t)i;
