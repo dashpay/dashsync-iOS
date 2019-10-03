@@ -31,9 +31,9 @@ static CGFloat const PIN_FIELD_SIZE_SMALL = 44.0;
 static CGFloat const PIN_DOT_SIZE = 9.0;
 static CGFloat const PADDING = 10.0;
 
-static CALayer *PinFieldLayer() {
+static CALayer *PinFieldLayer(UIColor *color) {
     CALayer *layer = [CALayer layer];
-    layer.backgroundColor = [UIColor ds_pinBackgroundColor].CGColor;
+    layer.backgroundColor = color.CGColor;
     layer.cornerRadius = 8.0;
     layer.masksToBounds = YES;
 
@@ -57,6 +57,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 @interface DSPinField ()
 
 @property (readonly, nonatomic, assign) CGFloat fieldSize;
+@property (readonly, nonatomic, strong) UIColor *emptyFieldColor;
 @property (nullable, nonatomic, strong) NSMutableArray<NSString *> *value;
 
 @property (readonly, nonatomic, strong) NSCharacterSet *supportedCharacters;
@@ -76,7 +77,22 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 - (instancetype)initWithStyle:(DSPinFieldStyle)style {
     self = [super initWithFrame:CGRectZero];
     if (self) {
-        _fieldSize = style == DSPinFieldStyle_Default ? PIN_FIELD_SIZE_DEFAULT : PIN_FIELD_SIZE_SMALL;
+        _fieldSize = style == DSPinFieldStyle_Small ? PIN_FIELD_SIZE_SMALL : PIN_FIELD_SIZE_DEFAULT;
+        UIColor *emptyFieldColor = nil;
+        switch (style) {
+            case DSPinFieldStyle_Default:
+            case DSPinFieldStyle_Small: {
+                emptyFieldColor = [UIColor ds_pinBackgroundColor];
+                
+                break;
+            }
+            case DSPinFieldStyle_DefaultWhite: {
+                emptyFieldColor = [UIColor ds_pinLockScreenBackgroundColor];
+                
+                break;
+            }
+        }
+        _emptyFieldColor = emptyFieldColor;
 
         _value = CFBridgingRelease(CFArrayCreateMutable(SecureAllocator(),
                                                         4,
@@ -99,7 +115,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
         NSMutableArray<CALayer *> *backgroundLayers = [NSMutableArray array];
         NSMutableArray<CALayer *> *dotLayers = [NSMutableArray array];
         for (NSUInteger i = 0; i < PIN_FIELDS_COUNT; i++) {
-            CALayer *backgroundLayer = PinFieldLayer();
+            CALayer *backgroundLayer = PinFieldLayer(emptyFieldColor);
             backgroundLayer.frame = CGRectMake(x, 0.0, _fieldSize, _fieldSize);
             [self.layer addSublayer:backgroundLayer];
             [backgroundLayers addObject:backgroundLayer];
@@ -127,7 +143,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (NSString *)text {
-    return [self.value componentsJoinedByString:@""];
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)self.value, (__bridge CFStringRef)@""));
 }
 
 - (void)clear {
@@ -135,7 +151,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 
     for (NSUInteger i = 0; i < PIN_FIELDS_COUNT; i++) {
         CALayer *backgroundLayer = self.backgroundLayers[i];
-        backgroundLayer.backgroundColor = [UIColor ds_pinBackgroundColor].CGColor;
+        backgroundLayer.backgroundColor = self.emptyFieldColor.CGColor;
 
         CALayer *dotLayer = self.dotLayers[i];
         dotLayer.opacity = 0.0;
@@ -178,7 +194,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
         NSUInteger index = count - 1;
 
         CALayer *backgroundLayer = self.backgroundLayers[index];
-        backgroundLayer.backgroundColor = [UIColor ds_pinBackgroundColor].CGColor;
+        backgroundLayer.backgroundColor = self.emptyFieldColor.CGColor;
 
         CALayer *dotLayer = self.dotLayers[index];
         dotLayer.opacity = 0.0;

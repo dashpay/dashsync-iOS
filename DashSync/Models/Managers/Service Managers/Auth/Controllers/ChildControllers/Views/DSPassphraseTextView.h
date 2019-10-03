@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,15 +19,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DSStyle)
-
-+ (UIColor *)ds_dashBlueColor;
-
-+ (UIColor *)ds_labelColor;
-
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinLockScreenBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
+@interface DSPassphraseTextView : UITextView
 
 @end
 

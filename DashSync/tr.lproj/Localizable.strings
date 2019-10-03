@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " ve ";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         toplam %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d deneme hakkı kaldı\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(yerel istenilen miktar: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 deneme hakkı kaldı\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     miktar %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nağ ücreti +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\ndeneme hakkı kalmadı";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@ içinde tekrar deneyin";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Bu anadüğümün sahipliğini tekrar almak istediğinize emin misiniz?";
@@ -69,10 +51,13 @@
 "cancel" = "iptal";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@ için şifre seçin";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Onayla";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "bağlantı zaman aşımı";
@@ -96,7 +81,7 @@
 "double spend" = "çift ödeme";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "eski şifreyi giriniz";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ödeme talebi sunucusundan hata %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "işlem kaydı hatası";
-
-/* No comment provided by engineer. */
-"hour" = "saat";
-
-/* No comment provided by engineer. */
-"hours" = "saat";
 
 /* No comment provided by engineer. */
 "ignore" = "yoksay";
@@ -147,13 +126,10 @@
 "Method Not Found" = "Metod Bulunamadı";
 
 /* No comment provided by engineer. */
-"minute" = "dakika";
-
-/* No comment provided by engineer. */
-"minutes" = "dakika";
-
-/* No comment provided by engineer. */
 "missing certificate" = "eksik sertifika";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "eşler bulunamadı";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "dash ağına bağlı değil";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "tamam";
 
 /* No comment provided by engineer. */
 "Parse Error" = "İşleme .Hatası";
 
 /* No comment provided by engineer. */
-"passcode" = "şifre";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@ için şifre";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "şifre";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "alacaklı kimliği onaylı değil";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "kurtarma cümlesi";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "kurtarma cümlesi eşleşmiyor";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@) ile ödeme miktarı düşürülsün mü?";
@@ -204,22 +180,19 @@
 "rescan" = "yeniden tara";
 
 /* No comment provided by engineer. */
-"reset" = "sıfırla";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "tekrar dene";
-
-/* No comment provided by engineer. */
-"second" = "saniye";
-
-/* No comment provided by engineer. */
-"seconds" = "saniye";
 
 /* No comment provided by engineer. */
 "send" = "gönder";
 
 /* No comment provided by engineer. */
 "Server Error" = "Sunucu Hatası";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -246,6 +219,9 @@
 "transaction rejected" = "işlem reddedildi";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "%@'den beklenmeyen yanıt";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "Fiyat Güncelleniyor";
 
 /* No comment provided by engineer. */
-"verify passcode" = "şifreyi doğrulayın";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "cüzdan devre dışı";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "UYARI";
 
 /* No comment provided by engineer. */
-"wipe" = "sil";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Cüzdanınız eşitlenmemiş olabilir.\nBlok zincirini yeniden taratmak bunu sık sık düzeltebilir.";

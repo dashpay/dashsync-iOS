@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " and ";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         total %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d attempts remaining\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(local requested amount: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 attempt remaining\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     amount %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwork fee +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nno attempts remaining";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\ntry again in %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
@@ -69,10 +51,13 @@
 "cancel" = "cancel";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "choose passcode for %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "connect timeout";
@@ -96,7 +81,7 @@
 "double spend" = "double spend";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "enter old passcode";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error from payment request server %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "error signing transaction";
-
-/* No comment provided by engineer. */
-"hour" = "hour";
-
-/* No comment provided by engineer. */
-"hours" = "hours";
 
 /* No comment provided by engineer. */
 "ignore" = "ignore";
@@ -147,13 +126,10 @@
 "Method Not Found" = "Method Not Found";
 
 /* No comment provided by engineer. */
-"minute" = "minute";
-
-/* No comment provided by engineer. */
-"minutes" = "minutes";
-
-/* No comment provided by engineer. */
 "missing certificate" = "missing certificate";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "no peers found";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "not connected to the dash network";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "ok";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "passcode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "passcode for %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "password";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "payee identity isn't certified";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "recovery phrase doesn't match";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
@@ -204,22 +180,19 @@
 "rescan" = "rescan";
 
 /* No comment provided by engineer. */
-"reset" = "reset";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "retry";
-
-/* No comment provided by engineer. */
-"second" = "second";
-
-/* No comment provided by engineer. */
-"seconds" = "seconds";
 
 /* No comment provided by engineer. */
 "send" = "send";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -246,6 +219,9 @@
 "transaction rejected" = "transaction rejected";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "unexpected response from %@";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "Updating Price";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verify passcode";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "wallet disabled";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
-"wipe" = "wipe";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain.";

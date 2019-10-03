@@ -95,9 +95,19 @@ CFAllocatorRef SecureAllocator()
     return [self secureDataWithCapacity:0];
 }
 
++ (NSMutableString *)secureString
+{
+    return [self secureStringWithLength:0];
+}
+
 + (NSMutableData *)secureDataWithCapacity:(NSUInteger)aNumItems
 {
     return CFBridgingRelease(CFDataCreateMutable(SecureAllocator(), aNumItems));
+}
+
++ (NSMutableString *)secureStringWithLength:(NSUInteger)length
+{
+    return CFBridgingRelease(CFStringCreateMutable(SecureAllocator(), length));
 }
 
 + (NSMutableData *)secureDataWithLength:(NSUInteger)length

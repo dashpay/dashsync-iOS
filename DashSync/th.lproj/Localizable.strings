@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " และ ";
-
-/* No comment provided by engineer. */
-", " = ",";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nยอดรวม %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่ \n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(จำนวนที่ขอในบริเวณท้องถิ่น : %@ )";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 พยายามที่เหลืออยู่ \n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nไม่สามารถพยายามได้อีก";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nลองเข้าอีกครั้ง %1$d%2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "คุณแน่ใจหรือไม่ว่าต้องการเรียกคืนโหมดนี้อีกครั้ง?";
@@ -69,10 +51,13 @@
 "cancel" = "ยกเลิก";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "เลือกรหัสผ่านสำหรับ %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "หมดเวลาเชื่อมต่อ";
@@ -96,7 +81,7 @@
 "double spend" = "จ่ายเงินสองเท่า";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "เข้าสู่รหัสเก่า";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "ข้อผิดพลาดจากเซิร์ฟเวอร์คำขอชำระเงิน%@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม ";
-
-/* No comment provided by engineer. */
-"hour" = "ชั่วโมง";
-
-/* No comment provided by engineer. */
-"hours" = "ชั่วโมง";
 
 /* No comment provided by engineer. */
 "ignore" = "เพิกเฉย";
@@ -147,13 +126,10 @@
 "Method Not Found" = "ไม่พบวิธี";
 
 /* No comment provided by engineer. */
-"minute" = "นาที";
-
-/* No comment provided by engineer. */
-"minutes" = "นาที";
-
-/* No comment provided by engineer. */
 "missing certificate" = "ไม่พบใบรับรอง";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "ไม่มีผู้ปล่อย";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "ไม่ได้เชื่อมต่อกับเครือข่าย dash";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "โอเค";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "รหัสการเข้าถึง";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "รหัสการเข้าถึงสำหรับ %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "รหัสผ่าน";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "เอกลักษณ์ของผู้รับเงินไม่ได้รับการรับรอง";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "วลีกู้คืน";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
@@ -204,22 +180,19 @@
 "rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
-"reset" = "รีเซ็ต";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "ลองใหม่อีกครั้ง";
-
-/* No comment provided by engineer. */
-"second" = "ที่สอง";
-
-/* No comment provided by engineer. */
-"seconds" = "ที่สอง";
 
 /* No comment provided by engineer. */
 "send" = "ส่ง";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -246,6 +219,9 @@
 "transaction rejected" = "การทำธุรกรรมถูกปฏิเสธ";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "การตอบสนองที่ไม่คาดคิดจาก %@";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "อัพเดตราคา";
 
 /* No comment provided by engineer. */
-"verify passcode" = "ยืนยันรหัสผ่าน";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ปิดใช้งาน wallet";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
 
 /* No comment provided by engineer. */
-"wipe" = "ลบล้าง";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "wallet ของคุณ อาจไม่ได้รับการซิงค์ ซึ่งมักจะสามารถแก้ไขได้โดยการสแกน blockchain ใหม่";

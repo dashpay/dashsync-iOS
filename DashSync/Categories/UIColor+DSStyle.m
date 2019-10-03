@@ -44,6 +44,10 @@ static inline UIColor *ColorFromHEX(NSUInteger hexValue) {
     return ColorFromHEX(0xD8D8D8);
 }
 
++ (UIColor *)ds_pinLockScreenBackgroundColor {
+    return [UIColor whiteColor];
+}
+
 + (UIColor *)ds_pinInputDotColor {
     return [UIColor whiteColor];
 }

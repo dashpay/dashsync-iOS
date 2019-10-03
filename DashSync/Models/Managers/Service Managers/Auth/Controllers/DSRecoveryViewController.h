@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -15,19 +15,13 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+#import "DWAlertController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DSStyle)
+@interface DSRecoveryViewController : DWAlertController
 
-+ (UIColor *)ds_dashBlueColor;
-
-+ (UIColor *)ds_labelColor;
-
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinLockScreenBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
+- (instancetype)initWithWipeHandler:(void (^_Nullable)(void))wipeHandler completion:(void (^)(BOOL success))completion;
 
 @end
 

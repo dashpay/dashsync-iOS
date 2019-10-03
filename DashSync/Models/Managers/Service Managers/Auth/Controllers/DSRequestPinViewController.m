@@ -90,9 +90,11 @@ NS_ASSUME_NONNULL_BEGIN
     self.completion = nil;
     NSParameterAssert(completion);
 
+    const BOOL alertIfLockout = self.alertIfLockout;
+
     [self dismissViewControllerAnimated:YES
                              completion:^{
-                                 if (shouldLockOut) {
+                                 if (alertIfLockout && shouldLockOut) {
                                      DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
                                      [authManager userLockedOut];
                                  }

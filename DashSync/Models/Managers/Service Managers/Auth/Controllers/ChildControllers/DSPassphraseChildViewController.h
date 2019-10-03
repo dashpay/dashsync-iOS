@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrew Podkovyrin
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
@@ -19,15 +19,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface UIColor (DSStyle)
+@class DSPassphraseChildViewController;
 
-+ (UIColor *)ds_dashBlueColor;
+@protocol DSPassphraseChildViewControllerDelegate <NSObject>
 
-+ (UIColor *)ds_labelColor;
+- (void)passphraseChildViewControllerDidVerifySeedPhrase:(DSPassphraseChildViewController *)controller;
 
-+ (UIColor *)ds_pinBackgroundColor;
-+ (UIColor *)ds_pinLockScreenBackgroundColor;
-+ (UIColor *)ds_pinInputDotColor;
+@end
+
+@interface DSPassphraseChildViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DSPassphraseChildViewControllerDelegate> delegate;
+
+- (void)verifySeedPharse;
 
 @end
 

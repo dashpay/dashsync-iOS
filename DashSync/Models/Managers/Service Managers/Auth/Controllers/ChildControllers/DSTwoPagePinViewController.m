@@ -163,7 +163,7 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     [pinView.pinField clear];
     [pinView.pinField ds_shakeViewWithCompletion:completion];
 
-    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeSuccess];
+    [self.feedbackGenerator notificationOccurred:UINotificationFeedbackTypeError];
     [self.feedbackGenerator prepare];
 }
 

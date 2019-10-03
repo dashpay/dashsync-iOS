@@ -44,6 +44,7 @@
 #import "DSMerkleBlock.h"
 #import "DSRequestPinViewController.h"
 #import "DSSetPinViewController.h"
+#import "DSRecoveryViewController.h"
 
 static NSString *sanitizeString(NSString *s)
 {
@@ -271,43 +272,16 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     return wait;
 }
 
--(void)showResetWalletWithCancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    [self showResetWalletWithWipeHandler:nil cancelHandler:resetCancelHandlerBlock];
-}
-
--(void)showResetWalletWithWipeHandler:(ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(ResetCancelHandlerBlock)resetCancelHandlerBlock {
-    UIAlertController * alertController = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"recovery phrase", nil) message:nil
-                                                                       preferredStyle:UIAlertControllerStyleAlert];
-    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
-        textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        textField.returnKeyType = UIReturnKeyDone;
-        textField.font = [UIFont systemFontOfSize:15.0];
-        textField.delegate = self;
-    }];
-    
-    if (resetWipeHandlerBlock) {
-        UIAlertAction* wipeButton = [UIAlertAction
-                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
-                                     style:UIAlertActionStyleDestructive
-                                     handler:^(UIAlertAction * action) {
-                                         if (resetWipeHandlerBlock) {
-                                             resetWipeHandlerBlock();
-                                         }
-                                     }];
-        [alertController addAction:wipeButton];
+- (void)resetAllWalletsWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion {
+    if (![[DSChainsManager sharedInstance] hasAWallet]) {
+        completion(NO);
+        
+        return;
     }
     
-    UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                       if (resetCancelHandlerBlock) {
-                                           resetCancelHandlerBlock();
-                                       }
-                                   }];
-    [alertController addAction:cancelButton];
-    [self presentController:alertController animated:YES completion:nil];
-    self.resetAlertController = alertController;
+    DSRecoveryViewController *controller = [[DSRecoveryViewController alloc] initWithWipeHandler:wipeHandler
+                                                                                      completion:completion];
+    [self presentController:controller animated:YES completion:nil];
 }
 
 -(void)setPinIfNeededWithCompletion:(void (^)(BOOL needed, BOOL success))completion {
@@ -352,67 +326,91 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     self.usesAuthentication = NO;
 }
 
-// MARK: - UITextFieldDelegate
+// MARK: - Authentication
 
--(BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-    if (!textField.secureTextEntry) { //not the pin
-        @autoreleasepool { // @autoreleasepool ensures sensitive data will be dealocated immediately
-            NSString *phrase = [[DSBIP39Mnemonic sharedInstance] cleanupPhrase:textField.text];
-            
-            if (! [phrase isEqual:textField.text]) textField.text = phrase;
-            DSChain * chain = [[DSChainsManager sharedInstance] mainnetManager].chain;
-            if (chain.wallets.count > 1) {
-                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
-                }];
-                return TRUE; //todo find a way to handle when there are more that one wallet
-            }
-            
-            NSData * oldData = nil;
-            if (chain.wallets.count) {
-                DSWallet * wallet = [chain.wallets objectAtIndex:0];
-                oldData = [[wallet accountWithNumber:0] bip44DerivationPath].extendedPublicKey;
-            }
-            
-            if (!oldData) {
-                oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V1, nil);
-            }
-            
-            if (!oldData) {
-                oldData = getKeychainData(EXTENDED_0_PUBKEY_KEY_BIP44_V0, nil);
-            }
-            
-            NSData * seed = [[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:[[DSBIP39Mnemonic sharedInstance]
-                                                                                   normalizePhrase:phrase] withPassphrase:nil];
-            DSWallet * transientWallet = [DSWallet standardWalletWithSeedPhrase:phrase setCreationDate:[NSDate timeIntervalSince1970] forChain:[DSChain mainnet] storeSeedPhrase:NO isTransient:YES];
-            DSAccount * transientAccount = [transientWallet accountWithNumber:0];
-            DSDerivationPath * transientDerivationPath = [transientAccount bip44DerivationPath];
-            NSData * transientExtendedPublicKey = transientDerivationPath.extendedPublicKey;
-            
-            if (transientExtendedPublicKey && ![transientExtendedPublicKey isEqual:oldData] && ![[transientDerivationPath deprecatedIncorrectExtendedPublicKeyFromSeed:seed] isEqual:oldData]) {
-                self.resetAlertController.title = DSLocalizedString(@"recovery phrase doesn't match", nil);
-                [self.resetAlertController performSelector:@selector(setTitle:)
-                                                withObject:DSLocalizedString(@"recovery phrase", nil) afterDelay:3.0];
-            } else {
-                if (oldData) {
-                    [[DSVersionManager sharedInstance] clearKeychainWalletOldData];
-                }
-                setKeychainData(nil, SPEND_LIMIT_KEY, NO);
-                setKeychainData(nil, PIN_KEY, NO);
-                setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
-                setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
-                [self.resetAlertController dismissViewControllerAnimated:TRUE completion:^{
-                    [self setPinWithCompletion:^(BOOL success) {
-                        
-                    }];
-                }];
-            }
-        }
+- (BOOL)isBiometricAuthenticationAllowed {
+    LAContext *context = [[LAContext alloc] init];
+    NSError *error = nil;
+    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] == NO) {
+        DSDLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
+        
+        return NO;
     }
-    return TRUE;
+    
+    NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
+    
+    return (pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSince1970] &&
+            [self getFailCount:nil] == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0);
 }
 
-// MARK: - Authentication
+- (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
+                                       completion:(PinCompletionBlock)completion {
+    [self authenticateUsingBiometricsOnlyWithPrompt:prompt
+                                shouldFallbackToPin:NO
+                                     alertIfLockout:NO
+                                         completion:completion];
+}
+
+- (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
+                              shouldFallbackToPin:(BOOL)shouldFallbackToPin
+                                   alertIfLockout:(BOOL)alertIfLockout
+                                       completion:(PinCompletionBlock)completion {
+    NSAssert(self.usesAuthentication, @"Authentication is not configured");
+    
+    if (!self.usesAuthentication) { //if we don't have authentication
+        completion(YES, NO);
+        return;
+    }
+    
+    NSAssert([self isBiometricAuthenticationAllowed],
+             @"Check if biometrics allowed using `isBiometricAuthenticationAllowed` method before calling this method");
+    
+    LAContext *context = [[LAContext alloc] init];
+    
+    void(^localAuthBlock)(void) = ^{
+        [self performLocalAuthenticationSynchronously:context
+                                               prompt:prompt
+                                           completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
+                                               if (shouldFallbackToPin && shouldTryAnotherMethod) {
+                                                   [self authenticateWithPrompt:prompt
+                                                                     andTouchId:NO
+                                                                 alertIfLockout:alertIfLockout
+                                                                     completion:completion];
+                                               }
+                                               else {
+                                                   completion(authenticated, NO);
+                                               }
+                                           }];
+    };
+    
+    BOOL shouldPreprompt = NO;
+    if (@available(iOS 11.0, *)) {
+        if (context.biometryType == LABiometryTypeFaceID) {
+            shouldPreprompt = YES;
+        }
+    }
+    if (prompt && shouldPreprompt) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
+                                                                       message:prompt
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"Cancel", nil)
+                                                               style:UIAlertActionStyleCancel
+                                                             handler:^(UIAlertAction * action) {
+                                                                 completion(NO, YES);
+                                                             }];
+        [alert addAction:cancelAction];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"OK", nil)
+                                                           style:UIAlertActionStyleDefault
+                                                         handler:^(UIAlertAction * action) {
+                                                             localAuthBlock();
+                                                         }];
+        [alert addAction:okAction];
+        [self presentController:alert animated:YES completion:nil];
+    }
+    else {
+        localAuthBlock();
+    }
+}
 
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion {
     NSParameterAssert(wallet);
@@ -432,67 +430,20 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 // prompts user to authenticate with touch id or passcode
-- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion;
-{
+- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion {
     if (!self.usesAuthentication) { //if we don't have authentication
-        completion(YES,NO);
+        completion(YES, NO);
         return;
     }
+    
     if (touchId) {
-        NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
-        LAContext *context = [[LAContext alloc] init];
-        NSError *error = nil;
-        if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error] &&
-            pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSince1970] &&
-            [self getFailCount:nil] == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0) {
-            
-            void(^localAuthBlock)(void) = ^{
-                [self performLocalAuthenticationSynchronously:context
-                                                       prompt:authprompt
-                                                   completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
-                                                       if (shouldTryAnotherMethod) {
-                                                           [self authenticateWithPrompt:authprompt
-                                                                             andTouchId:NO
-                                                                         alertIfLockout:alertIfLockout
-                                                                             completion:completion];
-                                                       }
-                                                       else {
-                                                           completion(authenticated, NO);
-                                                       }
-                                                   }];
-            };
-            
-            BOOL shouldPreprompt = NO;
-            if (@available(iOS 11.0, *)) {
-                if (context.biometryType == LABiometryTypeFaceID) {
-                    shouldPreprompt = YES;
-                }
-            }
-            if (authprompt && shouldPreprompt) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Confirm", nil)
-                                                                               message:authprompt
-                                                                        preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"Cancel", nil)
-                                                                       style:UIAlertActionStyleCancel
-                                                                     handler:^(UIAlertAction * action) {
-                                                                         completion(NO, YES);
-                                                                     }];
-                [alert addAction:cancelAction];
-                UIAlertAction *okAction = [UIAlertAction actionWithTitle:DSLocalizedString(@"ok", nil)
-                                                                   style:UIAlertActionStyleDefault
-                                                                 handler:^(UIAlertAction * action) {
-                                                                     localAuthBlock();
-                                                                 }];
-                [alert addAction:okAction];
-                [self presentController:alert animated:YES completion:nil];
-            }
-            else {
-                localAuthBlock();
-            }
+        if ([self isBiometricAuthenticationAllowed]) {
+            [self authenticateUsingBiometricsOnlyWithPrompt:authprompt
+                                        shouldFallbackToPin:YES
+                                             alertIfLockout:alertIfLockout
+                                                 completion:completion];
         }
         else {
-            DSDLog(@"[LAContext canEvaluatePolicy:] %@", error.localizedDescription);
-            
             [self authenticateWithPrompt:authprompt
                               andTouchId:NO
                           alertIfLockout:alertIfLockout
@@ -511,7 +462,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     [DSEventManager saveEvent:@"wallet_manager:touchid_auth"];
     
     __block NSInteger result = 0;
-    context.localizedFallbackTitle = DSLocalizedString(@"passcode", nil);
+    context.localizedFallbackTitle = DSLocalizedString(@"Passcode", nil);
     [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
             localizedReason:(prompt.length > 0 ? prompt : @" ")
                       reply:^(BOOL success, NSError *error) {
@@ -552,33 +503,26 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSString * message = nil;
     if (failCount < MAX_FAIL_COUNT) {
         NSTimeInterval wait = [self lockoutWaitTime];
-        NSString *unit = DSLocalizedString(@"minutes", nil);
-        
-        if (wait > pow(6, failCount - 3)) wait = pow(6, failCount - 3); // we don't have secureTime yet
-        if (wait < 2.0) wait = 1.0, unit = DSLocalizedString(@"minute", nil);
-        
-        if (wait >= 60.0) {
-            wait /= 60.0;
-            unit = (wait < 2.0) ? DSLocalizedString(@"hour", nil) : DSLocalizedString(@"hours", nil);
-        }
-        message = [NSString stringWithFormat:DSLocalizedString(@"\ntry again in %d %@", nil),
-                   (int)wait, unit];
+        NSString *waitString = [NSString waitTimeFromNow:wait];
+        message = [NSString stringWithFormat:DSLocalizedString(@"Try again in %@", nil), waitString];
     } else {
-        message = DSLocalizedString(@"\nno attempts remaining", nil);
+        message = DSLocalizedString(@"No attempts remaining", nil);
     }
     UIAlertController * alertController = [UIAlertController
-                                           alertControllerWithTitle:DSLocalizedString(@"wallet disabled", nil)
+                                           alertControllerWithTitle:DSLocalizedString(@"Wallet disabled", nil)
                                            message:message
                                            preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* resetButton = [UIAlertAction
-                                  actionWithTitle:DSLocalizedString(@"reset", nil)
+                                  actionWithTitle:DSLocalizedString(@"Reset", nil)
                                   style:UIAlertActionStyleDefault
                                   handler:^(UIAlertAction * action) {
-                                      [self showResetWalletWithCancelHandler:nil];
+                                        [self resetAllWalletsWithWipeHandler:nil completion:^(BOOL success) {
+                                            // NOP
+                                        }];
                                   }];
     if (failCount < MAX_FAIL_COUNT) {
         UIAlertAction* okButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"ok", nil)
+                                   actionWithTitle:DSLocalizedString(@"OK", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        
@@ -588,7 +532,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         
     } else {
         UIAlertAction* wipeButton = [UIAlertAction
-                                     actionWithTitle:DSLocalizedString(@"wipe", nil)
+                                     actionWithTitle:DSLocalizedString(@"Wipe", nil)
                                      style:UIAlertActionStyleDestructive
                                      handler:^(UIAlertAction * action) {
                                          [self.failedPins removeAllObjects];
@@ -613,94 +557,38 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 - (void)authenticatePinWithMessage:(NSString *)message
                   alertIfLockout:(BOOL)alertIfLockout
                       completion:(PinCompletionBlock)completion {
-    //authentication logic is as follows
-    //you have 3 failed attempts initially
-    //after that you get locked out once immediately with a message saying
-    //then you have 4 attempts with exponentially increasing intervals to get your password right
-    
-    [DSEventManager saveEvent:@"wallet_manager:pin_auth"];
-    
-    NSError *error = nil;
-    NSString *pin = [self getPin:&error];
-    if (error) { // error reading from keychain
-        completion(NO, NO);
-        
-        return;
-    }
-    
-    NSAssert(error == nil, @"Error is not handled");
-    
-    if (pin.length != PIN_LENGTH) {
-        [self setPinWithCompletion:^(BOOL success) {
-            completion(success, NO);
-        }];
-        
-        return;
-    }
-    
-    uint64_t failCount = [self getFailCount:&error];
-    if (error) { // error reading from keychain
-        completion(NO, NO);
-        
-        return;
-    }
-    
-    NSAssert(error == nil, @"Error is not handled");
-    
-    //// Logic explanation
-    
-    //  If we have failed 3 or more times
-    if (failCount >= MAX_FAIL_COUNT) {
-        [self userLockedOut];
-        
-        if (completion) {
-            completion(NO, NO);
-        }
-        
-        return;
-    }
-    else if (failCount >= ALLOWED_FAIL_COUNT) {
-        // When was the last time we failed?
-        uint64_t failHeight = [self getFailHeight:&error];
-        
-        if (error) { // error reading from keychain
-            completion(NO, NO);
-            
-            return;
-        }
-        
-        NSAssert(error == nil, @"Error is not handled");
-        
-#if DEBUG && SPEED_UP_WAIT_TIME
-        CGFloat lockoutTimeLeft = failHeight + pow(6, failCount - 3)*60.0/100000.0 - self.secureTime;
-#else
-        CGFloat lockoutTimeLeft = failHeight + pow(6, failCount - 3)*60.0 - self.secureTime;
-#endif
-        DSDLog(@"locked out for %f more seconds", lockoutTimeLeft);
-        
-        if (lockoutTimeLeft > 0) { // locked out
-            if (alertIfLockout) {
-                [self userLockedOut];
+    [self
+     performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
+                                     BOOL authenticated,
+                                     BOOL shouldLockout,
+                                     NSString * _Nullable attemptsMessage) {
+        if (shouldContinueAuthentication) {
+            NSString *resultMessage;
+            if (attemptsMessage != nil) {
+                resultMessage = attemptsMessage;
+                
+                if (message) {
+                    resultMessage = [resultMessage stringByAppendingFormat:@"\n%@", message];
+                }
             }
-            completion(NO, NO);
+            else {
+                resultMessage = message;
+            }
             
-            return;
+            DSRequestPinViewController *alert =
+                [[DSRequestPinViewController alloc] initWihtAuthPrompt:resultMessage
+                                                        alertIfLockout:alertIfLockout
+                                                            completion:completion];
+            [self presentController:alert animated:YES completion:nil];
         }
         else {
-            //no longer locked out, give the user a try
-            NSString *attemptsMessage = (failCount >= (MAX_FAIL_COUNT - 1)
-                ? DSLocalizedString(@"1 attempt remaining\n", nil)
-                : [NSString stringWithFormat:
-                    DSLocalizedString(@"%d attempts remaining\n", nil), MAX_FAIL_COUNT - failCount]);
-            message = [attemptsMessage stringByAppendingString:message ?: @""];
+            if (shouldLockout) {
+                [self userLockedOut];
+            }
+            
+            completion(authenticated, NO);
         }
-    }
-    
-    DSRequestPinViewController *alert =
-        [[DSRequestPinViewController alloc] initWihtAuthPrompt:message
-                                                alertIfLockout:alertIfLockout
-                                                    completion:completion];
-    [self presentController:alert animated:YES completion:nil];
+    }];
 }
 
 -(void)requestKeyPasswordForSweepCompletion:(void (^_Nonnull)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^_Nonnull)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^_Nonnull)(void))cancel {
@@ -768,6 +656,25 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 #pragma mark - Low Level
+
+- (BOOL)setupNewPin:(NSString *)pin {
+    NSParameterAssert(pin);
+    if (!pin) {
+        return NO;
+    }
+    
+    BOOL success = [self setPin:pin];
+    if (!success) {
+        return NO;
+    }
+    
+    self.usesAuthentication = YES;
+    self.didAuthenticate = YES;
+    [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
+                                              forKey:PIN_UNLOCK_TIME_KEY];
+    
+    return YES;
+}
 
 - (BOOL)hasPin:(NSError *_Nullable __autoreleasing *_Nullable)outError {
     NSError *error = nil;
@@ -843,6 +750,154 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     return setKeychainInt(failHeight, PIN_FAIL_HEIGHT_KEY, NO);
 }
 
+- (void)removePinForced {
+    setKeychainData(nil, SPEND_LIMIT_KEY, NO);
+    setKeychainData(nil, PIN_KEY, NO);
+    setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
+    setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
+}
+
+- (void)performAuthenticationPrecheck:(void (^)(BOOL shouldContinueAuthentication,
+                                              BOOL authenticated,
+                                              BOOL shouldLockout,
+                                              NSString *_Nullable attemptsMessage))completion {
+    //authentication logic is as follows
+    //you have 3 failed attempts initially
+    //after that you get locked out once immediately with a message saying
+    //then you have 4 attempts with exponentially increasing intervals to get your password right
+
+    NSError *error = nil;
+    NSString *pin = [self getPin:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, nil);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+
+    if (pin.length != PIN_LENGTH) {
+        // backward compatibility
+        [self setPinWithCompletion:^(BOOL success) {
+            completion(NO, success, NO, nil);
+        }];
+
+        return;
+    }
+
+    uint64_t failCount = [self getFailCount:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, nil);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+
+    //// Logic explanation
+
+    NSString *attemptsMessage = nil;
+
+    //  If we have failed 3 or more times
+    if (failCount >= MAX_FAIL_COUNT) {
+        if (completion) {
+            completion(NO, NO, YES, nil);
+        }
+
+        return;
+    }
+    else if (failCount >= ALLOWED_FAIL_COUNT) {
+        // When was the last time we failed?
+        __unused uint64_t failHeight = [self getFailHeight:&error];
+
+        if (error) { // error reading from keychain
+            completion(NO, NO, NO, nil);
+
+            return;
+        }
+
+        NSAssert(error == nil, @"Error is not handled");
+
+        const CGFloat lockoutTimeLeft = [self lockoutWaitTime];
+        DSDLog(@"locked out for %f more seconds", lockoutTimeLeft);
+
+        if (lockoutTimeLeft > 0) { // locked out
+            completion(NO, NO, YES, nil);
+
+            return;
+        }
+        else {
+            //no longer locked out, give the user a try
+            attemptsMessage = [NSString localizedStringWithFormat:
+                               DSLocalizedString(@"%ld attempt(s) remaining", @"#bc-ignore!"),
+                               MAX_FAIL_COUNT - failCount];
+        }
+    }
+
+    completion(YES, NO, NO, attemptsMessage);
+}
+
+
+- (void)performPinVerificationAgainstCurrentPin:(NSString *)inputPin
+                                     completion:(void (^)(BOOL allowedNextVerificationRound,
+                                                          BOOL authenticated,
+                                                          BOOL cancelled,
+                                                          BOOL shouldLockout))completion {
+    NSError *error = nil;
+    const uint64_t failCount = [self getFailCount:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, NO);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+    NSString *pin = [self getPin:&error];
+    if (error) { // error reading from keychain
+        completion(NO, NO, NO, NO);
+
+        return;
+    }
+
+    NSAssert(error == nil, @"Error is not handled");
+    // count unique attempts before checking success
+    if (![self.failedPins containsObject:inputPin]) {
+        [self setFailCount:failCount + 1];
+    }
+
+    if ([inputPin isEqual:pin]) { // successful pin attempt
+        [self.failedPins removeAllObjects];
+        self.didAuthenticate = YES;
+
+        [self setFailCount:0];
+        [self setFailHeight:0];
+
+        [[DSChainsManager sharedInstance] resetSpendingLimitsIfAuthenticated];
+        [[NSUserDefaults standardUserDefaults] setDouble:[NSDate timeIntervalSince1970]
+                                                  forKey:PIN_UNLOCK_TIME_KEY];
+
+        completion(NO, YES, NO, NO);
+
+        return;
+    }
+
+    if (![self.failedPins containsObject:inputPin]) {
+        [self.failedPins addObject:inputPin];
+
+        if (self.secureTime > [self getFailHeight:nil]) {
+            [self setFailHeight:self.secureTime];
+        }
+
+        if (failCount >= ALLOWED_FAIL_COUNT) {
+            completion(NO, NO, NO, YES);
+
+            return;
+        }
+    }
+
+    completion(YES, NO, NO, NO);
+}
+
 #pragma mark - Notifications
 
 - (void)applicationDidEnterBackgroundNotification {
@@ -856,8 +911,8 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 -(void)presentController:(UIViewController *)controller
                 animated:(BOOL)animated
               completion:(void (^_Nullable)(void))completion {
-    UIViewController *presentingController =
-        [[[UIApplication sharedApplication] keyWindow] ds_presentingViewController];
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    UIViewController *presentingController = [window ds_presentingViewController];
     NSParameterAssert(presentingController);
     [presentingController presentViewController:controller animated:animated completion:completion];
 }
