@@ -72,13 +72,13 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 - (void)requestKeyPasswordForSweepCompletion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^)(void))cancel;
 - (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString * _Nullable)name memo:(NSString * _Nullable)memo isSecure:(BOOL)isSecure errorMessage:(NSString * _Nullable)errorMessage localCurrency:(NSString * _Nullable)localCurrency;
 
--(void)badKeyPasswordForSweepCompletion:(void (^)(void))completion cancel:(void (^)(void))cancel;
+- (void)badKeyPasswordForSweepCompletion:(void (^)(void))completion cancel:(void (^)(void))cancel;
 
--(void)deauthenticate;
+- (void)deauthenticate;
 
--(void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
+- (void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
 
-- (void)resetWalletWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion;
+- (void)resetAllWalletsWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion;
 
 @end
 

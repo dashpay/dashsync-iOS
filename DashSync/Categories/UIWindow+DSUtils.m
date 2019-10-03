@@ -21,14 +21,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (UIViewController *)ds_topViewControllerWithRootViewController:(UIViewController *)rootViewController {
     if ([rootViewController isKindOfClass:UITabBarController.class]) {
         UITabBarController *tabBarController = (UITabBarController *)rootViewController;
+        if (!tabBarController.selectedViewController || (tabBarController.selectedViewController == tabBarController)) {
+            return tabBarController;
+        }
         return [self ds_topViewControllerWithRootViewController:tabBarController.selectedViewController];
     }
     else if ([rootViewController isKindOfClass:UINavigationController.class]) {
         UINavigationController *navigationController = (UINavigationController *)rootViewController;
+        if (!navigationController.visibleViewController || (navigationController.visibleViewController == navigationController)) {
+            return navigationController;
+        }
         return [self ds_topViewControllerWithRootViewController:navigationController.visibleViewController];
     }
     else if (rootViewController.presentedViewController) {
         UIViewController *presentedViewController = rootViewController.presentedViewController;
+        if (presentedViewController == rootViewController) return presentedViewController;
         return [self ds_topViewControllerWithRootViewController:presentedViewController];
     }
     else {
