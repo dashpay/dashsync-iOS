@@ -1,5 +1,5 @@
 //  
-//  Created by Andrew Podkovyrin
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -17,6 +17,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "DSBLSKey.h"
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wunused-function"
@@ -28,10 +30,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBLSIESEncryptedData : NSObject
+@interface DSBLSKey (Private)
 
-- (nullable NSData *)encryptWithPeerPublicKey:(bls::PublicKey)peerPubKey data:(NSData *)data;
-- (nullable NSData *)decryptData:(NSData *)data secretKey:(bls::PrivateKey&)secretKey;
+-(bls::ExtendedPublicKey)blsExtendedPublicKey;
+
+-(bls::PrivateKey)blsPrivateKey;
+-(bls::PublicKey)blsPublicKey;
 
 @end
 

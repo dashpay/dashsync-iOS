@@ -15,7 +15,8 @@
 //  limitations under the License.
 //
 
-#import "DSBLSIESEncryptedData.h"
+#import "NSData+BLSEncryption.h"
+#import "DSBLSKey+Private.h"
 
 #import <CommonCrypto/CommonCryptor.h>
 
@@ -24,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
                                        NSData *data,
                                        const void *key,
-                                       size_t keyLength,
                                        const void *iv) {
     
     size_t bufferSize = [data length] + kCCBlockSizeAES128;
@@ -32,10 +32,10 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     
     size_t encryptedSize = 0;
     CCCryptorStatus cryptStatus = CCCrypt(operation,
-                                          kCCAlgorithmAES128,
+                                          kCCAlgorithmAES,
                                           kCCOptionPKCS7Padding,
                                           key,
-                                          keyLength,
+                                          kCCKeySizeAES256,
                                           iv,
                                           data.bytes,
                                           data.length,
@@ -56,60 +56,45 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     }
 }
 
-@interface DSBLSIESEncryptedData () {
-    unsigned char _iv[16];
-    bls::PublicKey *ephemeralPubKey;
-}
+@implementation NSData (BLSEncryption)
 
-@end
-
-@implementation DSBLSIESEncryptedData
-
-- (nullable NSData *)encryptWithPeerPublicKey:(bls::PublicKey)peerPubKey data:(NSData *)data {
-    if (data == nil) {
-        return data;
+- (nullable NSData *)encryptWithSecretKey:(DSBLSKey*)secretKey forPeerWithPublicKey:(DSBLSKey*)peerPubKey {
+    
+    unsigned char iv[kCCBlockSizeAES128]; //16
+    for (int i = 0; i < sizeof(iv); i++) {
+        iv[i] = arc4random_uniform(UCHAR_MAX - 1);
     }
     
-    unsigned char randomBuffer[32];
-    for (int i = 0; i < sizeof(randomBuffer); i++) {
-        randomBuffer[i] = arc4random_uniform(UCHAR_MAX - 1);
-    }
-    
-    bls::PrivateKey secretKey = bls::PrivateKey::FromSeed(randomBuffer, sizeof(randomBuffer));
-    bls::PublicKey publicKey = secretKey.GetPublicKey();
-    ephemeralPubKey = &publicKey;
-    [self generateIV];
-    
-    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey, peerPubKey);
+    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
     
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
     
-    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, data, (uint8_t *)symKey.data(), 32, _iv);
+    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), iv);
     
-    return resultData;
+    NSMutableData * finalData = [NSMutableData dataWithBytes:iv length:16];
+    [finalData appendData:resultData];
+    return finalData;
 }
 
-- (nullable NSData *)decryptData:(NSData *)data secretKey:(bls::PrivateKey&)secretKey {
-    if (!data) {
+- (nullable NSData *)decryptWithSecretKey:(DSBLSKey*)secretKey fromPeerWithPublicKey:(DSBLSKey*)peerPubKey {
+    if (self.length < kCCBlockSizeAES128) {
         return nil;
     }
     
-    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey, *ephemeralPubKey);
+    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
     std::vector<uint8_t> symKey = pk.Serialize();
     symKey.resize(32);
     
-    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, data, (uint8_t *)symKey.data(), 32, _iv);
+    unsigned char iv[kCCBlockSizeAES128];
+    
+    [self getBytes:iv length:kCCBlockSizeAES128];
+    
+    NSData *encryptedData = [self subdataWithRange:NSMakeRange(kCCBlockSizeAES128, self.length - kCCBlockSizeAES128)];
+    
+    NSData *resultData = AES256EncryptDecrypt(kCCDecrypt, encryptedData, (uint8_t *)symKey.data(), iv);
     
     return resultData;
-}
-
-#pragma mark - Private
-
-- (void)generateIV {
-    for (int i = 0; i < sizeof(_iv); i++) {
-        _iv[i] = arc4random_uniform(UCHAR_MAX - 1);
-    }
 }
 
 @end

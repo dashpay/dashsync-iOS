@@ -17,8 +17,8 @@
 
 #import <XCTest/XCTest.h>
 
-#import <DashSync/DSBLSIESEncryptedData.h>
-#import <DashSync/DSBLSKey.h>
+#import <DashSync/NSData+BLSEncryption.h>
+#import "DSBLSKey+Private.h"
 #import <DashSync/DSChain.h>
 
 @interface DSBLSIESEncryptedDataTests : XCTestCase
@@ -28,22 +28,27 @@
 @implementation DSBLSIESEncryptedDataTests
 
 - (void)testEncryptionAndDecryption {
-    uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    NSData *seedData = [NSData dataWithBytes:seed length:10];
-    DSBLSKey *keyPair = [DSBLSKey blsKeyWithPrivateKeyFromSeed:seedData onChain:[DSChain mainnet]];
+    uint8_t aliceSeed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    NSData *aliceSeedData = [NSData dataWithBytes:aliceSeed length:10];
+    DSBLSKey *aliceKeyPair = [DSBLSKey blsKeyWithPrivateKeyFromSeed:aliceSeedData onChain:[DSChain mainnet]];
+    
+    uint8_t bobSeed[10] = {10, 9, 8, 7, 6, 6, 7, 8, 9, 10};
+    NSData *bobSeedData = [NSData dataWithBytes:bobSeed length:10];
+    DSBLSKey *bobKeyPair = [DSBLSKey blsKeyWithPrivateKeyFromSeed:bobSeedData onChain:[DSChain mainnet]];
+    
 
-    bls::PublicKey blsPublicKey = bls::PublicKey::FromBytes(keyPair.publicKey.u8);
-    
-    DSBLSIESEncryptedData *encryptedData = [[DSBLSIESEncryptedData alloc] init];
-    
-    NSString *secret = @"my little secret";
+    NSString *secret = @"my little secret is a pony that never sleeps";
     NSData *data = [secret dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *encrypted = [encryptedData encryptWithPeerPublicKey:blsPublicKey data:data];
-    XCTAssertNotNil(encrypted);
+    //Alice is sending to Bob
+    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPeerWithPublicKey:bobKeyPair];
+    XCTAssertNotNil(encryptedData);
     
-    bls::PrivateKey secretKey = bls::PrivateKey::FromBytes(keyPair.secretKey.u8);
-    NSData *decrypted = [encryptedData decryptData:encrypted secretKey:secretKey];
+    //Bob is receiving from Alice
+    NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPeerWithPublicKey:aliceKeyPair];
     XCTAssertNotNil(decrypted);
+    NSString * decryptedSecret = [[NSString alloc] initWithData:decrypted encoding:NSUTF8StringEncoding];
+    XCTAssertEqualObjects(secret,decryptedSecret,@"they should be the same string");
+
 }
 
 @end
