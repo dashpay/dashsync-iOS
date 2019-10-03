@@ -73,6 +73,18 @@ static CGFloat const VERTICAL_PADDING = 10.0; // same as in DWSeedWordModel+DWLa
     return originalRect;
 }
 
+// Important notice:
+// An instance of `DSPassphraseTextView` stays in memory because private class `UIKBAutofillController` keeps
+// a reference to it until new `UITextInput` will become first responder (checked upon iOS 12).
+// Clean up pin from memory once window's gone.
+- (void)willMoveToWindow:(nullable UIWindow *)newWindow {
+    [super willMoveToWindow:newWindow];
+    
+    if (newWindow == nil) {
+        self.text = @"";
+    }
+}
+
 #pragma mark - NSLayoutManagerDelegate
 
 - (CGFloat)layoutManager:(NSLayoutManager *)layoutManager
