@@ -143,9 +143,7 @@ static CALayer *PinDotLayer(CGFloat fieldSize) {
 }
 
 - (NSString *)text {
-    @autoreleasepool {
-        return CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (CFStringRef)[self.value componentsJoinedByString:@""]));
-    }
+    return CFBridgingRelease(CFStringCreateByCombiningStrings(SecureAllocator(), (__bridge CFArrayRef)self.value, (__bridge CFStringRef)@""));
 }
 
 - (void)clear {
