@@ -17,29 +17,24 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
-#import <ios-dpp/DashPlatformProtocol.h>
+
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser,DSAccount,DSBlockchainUserRegistrationTransaction,DSFriendRequestEntity;
+@class DSContactEntity;
 
 @interface DSPotentialContact : NSObject
 
-@property (nonatomic, readonly) DSAccount* account;
-@property (nonatomic, readonly) NSString * username;
-@property (nonatomic, readonly) DSBlockchainUser * blockchainUserOwner; //this is the holder of the contacts, not the destination
-@property (nonatomic, assign) UInt256 contactBlockchainUserRegistrationTransactionHash;
-@property (nonatomic, strong) NSData * incomingExtendedPublicKey;
-@property (nonatomic, assign) UInt384 contactEncryptionPublicKey;
+@property (nonatomic, copy) NSString * username;
+@property (nonatomic, copy) NSString * avatarPath;
+@property (nonatomic, copy) NSString * publicMessage;
+@property (nonatomic, assign) UInt256 associatedBlockchainUserRegistrationTransactionHash;
 
--(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account;
+-(instancetype)initWithUsername:(NSString*)username;
 
--(DSFriendRequestEntity*)outgoingFriendRequest;
--(DSFriendRequestEntity*)incomingFriendRequest;
+-(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage;
 
--(void)storeExtendedPublicKey;
-
--(DPDocument*)contactRequestDocument;
+-(instancetype)initWithContactEntity:(DSContactEntity*)contactEntity;
 
 @end
 

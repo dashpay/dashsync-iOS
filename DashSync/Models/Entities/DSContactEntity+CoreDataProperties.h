@@ -15,19 +15,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSContactEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, copy) NSNumber *blockHeight;
+@property (nonatomic, assign) uint32_t blockHeight;
+@property (nonatomic, assign) uint32_t documentRevision;
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
+@property (nullable, nonatomic, copy) NSString *documentScopeID;
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
-@property (nullable, nonatomic, retain) NSData *blockchainUserRegistrationHash;
+@property (nullable, nonatomic, retain) NSData *associatedBlockchainUserRegistrationHash;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
-@property (nullable, nonatomic, retain) DSAccountEntity *account;
-@property (nullable, nonatomic, retain) DSDerivationPathEntity *derivationPath;
-@property (nullable, nonatomic, retain) DSBlockchainUserRegistrationTransactionEntity *ownerBlockchainUserRegistrationTransaction;
+@property (nullable, nonatomic, retain) DSBlockchainUserRegistrationTransactionEntity *associatedBlockchainUserRegistrationTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSContactEntity *> *friends;
 @property (nullable, nonatomic, retain) DSTransitionEntity *profileTransition;
+@property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
 

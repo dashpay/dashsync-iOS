@@ -23,19 +23,51 @@
 
 @interface DSIncomingFundsDerivationPath()
 
-@property (nonatomic, strong) NSMutableArray *externalAddresses;
+@property (nonatomic,strong) NSMutableArray *externalAddresses;
+
+@property (nonatomic,assign) UInt256 contactSourceBlockchainUserRegistrationTransactionHash;
+@property (nonatomic,assign) UInt256 contactDestinationBlockchainUserRegistrationTransactionHash;
+@property (nonatomic,assign) BOOL externalDerivationPath;
 
 @end
 
 @implementation DSIncomingFundsDerivationPath
 
-+ (instancetype)contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:(UInt256)blockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
++ (instancetype)contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
+    NSAssert(!uint256_eq(sourceBlockchainUserRegistrationTransactionHash,destinationBlockchainUserRegistrationTransactionHash), @"source and destination must be different");
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber), blockchainUserRegistrationTransactionHash};
-    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber), sourceBlockchainUserRegistrationTransactionHash,destinationBlockchainUserRegistrationTransactionHash};
+    BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES,NO,NO};
     //todo full uint256 derivation
-    DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:6 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
+    DSIncomingFundsDerivationPath * derivationPath = [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:7 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFunds onChain:chain];
     
+    derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
+    derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
+    
+    return derivationPath;
+}
+
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash onChain:(DSChain*)chain {
+    UInt256 indexes[] = {};
+    BOOL hardenedIndexes[] = {};
+    DSIncomingFundsDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
+    derivationPath.extendedPublicKey = extendedPublicKey;
+    
+    derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
+    derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
+    derivationPath.externalDerivationPath = TRUE;
+    return derivationPath;
+}
+
++ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString*)extendedPublicKeyUniqueId withDestinationBlockchainUserRegistrationTransactionHash:(UInt256) destinationBlockchainUserRegistrationTransactionHash sourceBlockchainUserRegistrationTransactionHash:(UInt256) sourceBlockchainUserRegistrationTransactionHash onChain:(DSChain*)chain {
+    UInt256 indexes[] = {};
+    BOOL hardenedIndexes[] = {};
+    DSIncomingFundsDerivationPath * derivationPath = [[self alloc] initWithIndexes:indexes hardened:hardenedIndexes length:0 type:DSDerivationPathType_ViewOnlyFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_ContactBasedFundsExternal onChain:chain]; //we are going to assume this is only ecdsa for now
+    derivationPath.standaloneExtendedPublicKeyUniqueID = extendedPublicKeyUniqueId;
+    
+    derivationPath.contactSourceBlockchainUserRegistrationTransactionHash = sourceBlockchainUserRegistrationTransactionHash;
+    derivationPath.contactDestinationBlockchainUserRegistrationTransactionHash = destinationBlockchainUserRegistrationTransactionHash;
+    derivationPath.externalDerivationPath = TRUE;
     return derivationPath;
 }
 
@@ -46,6 +78,11 @@
     self.externalAddresses = [NSMutableArray array];
     
     return self;
+}
+
+-(void)storeExternalDerivationPathExtendedPublicKeyToKeyChain {
+    NSAssert(self.extendedPublicKey != nil,@"the extended public key must exist");
+    setKeychainData(self.extendedPublicKey, self.standaloneExtendedPublicKeyLocationString, NO);
 }
 
 -(void)reloadAddresses {
@@ -85,6 +122,10 @@
     }
 }
 
+-(NSUInteger)accountNumber {
+    return [self indexAtPosition:[self length] - 3].u64[0] & ~BIP32_HARD;
+}
+
 // MARK: - Derivation Path Addresses
 
 - (void)registerTransactionAddress:(NSString * _Nonnull)address {
@@ -96,12 +137,19 @@
     }
 }
 
+
+
+-(NSString*)createIdentifierForDerivationPath {
+    return [NSString stringWithFormat:@"%@-%@-%@",[NSData dataWithUInt256:_contactSourceBlockchainUserRegistrationTransactionHash].shortHexString,[NSData dataWithUInt256:_contactDestinationBlockchainUserRegistrationTransactionHash].shortHexString,[NSData dataWithUInt256:[[self extendedPublicKey] SHA256]].shortHexString];
+}
+
 // Wallets are composed of chains of addresses. Each chain is traversed until a gap of a certain number of addresses is
 // found that haven't been used in any transactions. This method returns an array of <gapLimit> unused addresses
 // following the last used address in the chain. The internal chain is used for change addresses and the external chain
 // for receive addresses.
 - (NSArray *)registerAddressesWithGapLimit:(NSUInteger)gapLimit
 {
+    NSAssert(self.account, @"Account must be set");
     if (!self.account.wallet.isTransient) {
         NSAssert(self.addressesLoaded, @"addresses must be loaded before calling this function");
     }
@@ -136,32 +184,42 @@
         if (i > 0) [a removeObjectsInRange:NSMakeRange(0, i)];
         if (a.count >= gapLimit) return [a subarrayWithRange:NSMakeRange(0, gapLimit)];
         
-        while (a.count < gapLimit) { // generate new addresses up to gapLimit
+        NSUInteger upperLimit = gapLimit;
+        while (a.count < upperLimit) { // generate new addresses up to gapLimit
             NSData *pubKey = [self publicKeyDataAtIndex:n];
-            NSString *addr = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
+            NSString *address = [[DSECDSAKey keyWithPublicKey:pubKey] addressForChain:self.chain];
             
-            if (! addr) {
+            if (! address) {
                 DSDLog(@"error generating keys");
                 return nil;
             }
             
+            
+            __block BOOL isUsed = FALSE;
+            
             if (!self.account.wallet.isTransient) {
-                [self.moc performBlock:^{ // store new address in core data
+                [self.moc performBlockAndWait:^{ // store new address in core data
                     [DSDerivationPathEntity setContext:self.moc];
                     DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
                     DSAddressEntity *e = [DSAddressEntity managedObject];
                     e.derivationPath = derivationPathEntity;
-                    NSAssert([addr isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
-                    e.address = addr;
+                    NSAssert([address isValidDashAddressOnChain:self.chain], @"the address is being saved to the wrong derivation path");
+                    e.address = address;
                     e.index = n;
                     e.internal = NO;
                     e.standalone = NO;
+                    NSArray * outputs = [DSTxOutputEntity objectsMatching:@"address == %@",address];
+                    [e addUsedInOutputs:[NSSet setWithArray:outputs]];
+                    if (outputs.count) isUsed = TRUE;
                 }];
             }
-            
-            [self.mAllAddresses addObject:addr];
-            [self.externalAddresses addObject:addr];
-            [a addObject:addr];
+            if (isUsed) {
+                [self.mUsedAddresses addObject:address];
+                upperLimit++;
+            }
+            [self.mAllAddresses addObject:address];
+            [self.externalAddresses addObject:address];
+            [a addObject:address];
             n++;
         }
         
@@ -212,6 +270,17 @@
 - (NSString *)privateKeyStringAtIndex:(uint32_t)n fromSeed:(NSData *)seed
 {
     return seed ? [self serializedPrivateKeys:@[@(n)] fromSeed:seed].lastObject : nil;
+}
+
+- (NSArray *)privateKeys:(NSArray *)n fromSeed:(NSData *)seed
+{
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSNumber * index in n) {
+        NSUInteger indexes[] = {index.unsignedIntValue};
+        [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:1]];
+    }
+    
+    return [self privateKeysAtIndexPaths:mArray fromSeed:seed];
 }
 
 - (NSArray *)serializedPrivateKeys:(NSArray *)n fromSeed:(NSData *)seed

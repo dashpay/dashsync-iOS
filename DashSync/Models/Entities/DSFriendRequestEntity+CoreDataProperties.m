@@ -14,11 +14,11 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSFriendRequestEntity"];
 }
 
-@dynamic sourceBlockchainUserRegistrationTransactionHash;
-@dynamic destinationBlockchainUserRegistrationTransactionHash;
 @dynamic destinationContact;
 @dynamic sourceContact;
 @dynamic transition;
-@dynamic extendedPublicKey;
+@dynamic derivationPath;
+@dynamic account;
+@dynamic friendshipIdentifier;
 
 @end

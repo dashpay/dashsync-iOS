@@ -15,17 +15,18 @@
 }
 
 @dynamic blockHeight;
+@dynamic documentRevision;
+@dynamic documentScopeID;
 @dynamic username;
-@dynamic blockchainUserRegistrationHash;
+@dynamic associatedBlockchainUserRegistrationHash;
 @dynamic publicMessage;
-@dynamic account;
-@dynamic derivationPath;
-@dynamic ownerBlockchainUserRegistrationTransaction;
+@dynamic associatedBlockchainUserRegistrationTransaction;
 @dynamic outgoingRequests;
 @dynamic incomingRequests;
 @dynamic profileTransition;
 @dynamic friends;
 @dynamic encryptionPublicKey;
 @dynamic avatarPath;
+@dynamic chain;
 
 @end

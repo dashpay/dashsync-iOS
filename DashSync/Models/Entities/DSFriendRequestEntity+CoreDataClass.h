@@ -9,11 +9,13 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSContactEntity, DSTransitionEntity;
+@class DSContactEntity, DSTransitionEntity,DSDerivationPathEntity,DSAccountEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSFriendRequestEntity : NSManagedObject
+
+-(NSData*)finalizeWithFriendshipIdentifier;
 
 @end
 

@@ -61,7 +61,7 @@
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static const NSString * transitionCellIdentifier = @"TransitionCell";
+    static NSString * transitionCellIdentifier = @"TransitionCell";
     DSTransitionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:transitionCellIdentifier forIndexPath:indexPath];
     
     DSTransition * transition = [self.transitions objectAtIndex:indexPath.row];

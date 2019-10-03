@@ -101,11 +101,15 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 + (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString *)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain * )chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
++ (DSWallet* _Nullable)transientWalletWithDerivedKeyData:(NSData*)derivedData forChain:(DSChain*)chain;
 
 -(instancetype)initWithUniqueID:(NSString*)uniqueID forChain:(DSChain*)chain;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
+
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)accountsBaseDerivationPathsContainAddress:(NSString *)address;
 
 - (DSAccount* _Nullable)accountForAddress:(NSString *)address;
 

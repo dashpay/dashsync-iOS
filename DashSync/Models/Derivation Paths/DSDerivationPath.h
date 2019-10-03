@@ -29,8 +29,14 @@
 #import "DSDerivationPath.h"
 #import "DSUInt256IndexPath.h"
 #import "DSChain.h"
+#import "DSECDSAKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+extern void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
+extern void CKDpriv256(UInt256 *k, UInt256 *c, UInt256 i, BOOL hardened);
+extern void CKDpub(DSECPoint *K, UInt256 *c, uint32_t i);
+extern void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened);
 
 typedef void (^TransactionValidityCompletionBlock)(BOOL signedTransaction, BOOL cancelled);
 
@@ -67,6 +73,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_ProviderOwnerKeys = 7,
     DSDerivationPathReference_ContactBasedFunds = 8,
     DSDerivationPathReference_ContactBasedFundsRoot = 9,
+    DSDerivationPathReference_ContactBasedFundsExternal = 10
 };
 
 @interface DSDerivationPath : DSUInt256IndexPath{
@@ -173,6 +180,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 //you can set wallet unique Id to nil if you don't wish to store the extended Public Key
 - (NSData * _Nullable)generateExtendedPublicKeyFromParentDerivationPath:(DSDerivationPath*)parentDerivationPath storeUnderWalletUniqueId:(NSString* _Nullable)walletUniqueId;
 
+//sometimes we need to store the public key but not at generation time, use this method for that
+- (BOOL)storeExtendedPublicKeyUnderWalletUniqueId:(NSString* _Nonnull)walletUniqueId;
+
 + (NSString * _Nullable)serializedPrivateMasterFromSeed:(NSData * _Nullable)seed forChain:(DSChain*)chain;
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth
@@ -190,6 +200,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
 - (NSData * _Nullable)deserializedExtendedPublicKey:(NSString *)extendedPublicKeyString;
 
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath;
+
+- (NSArray *)privateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed;
 
 - (NSArray *)serializedPrivateKeysAtIndexPaths:(NSArray*)indexPaths fromSeed:(NSData *)seed;
 

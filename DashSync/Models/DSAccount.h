@@ -31,12 +31,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialContact;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction,DSPotentialFriendship;
 
 @interface DSAccount : NSObject
 
 // BIP 43 derivation paths
 @property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * fundDerivationPaths;
+
+@property (nullable, nonatomic, readonly) NSArray<DSDerivationPath *> * outgoingFundDerivationPaths;
 
 @property (nullable, nonatomic, strong) DSFundsDerivationPath * defaultDerivationPath;
 
@@ -80,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSArray * internalAddresses;
 
 // all the contacts for an account
-@property (nonatomic, readonly) NSArray <DSPotentialContact*> * _Nonnull contacts;
+@property (nonatomic, readonly) NSArray <DSPotentialFriendship*> * _Nonnull contacts;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
@@ -92,11 +94,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)removeDerivationPath:(DSDerivationPath*)derivationPath;
 
--(void)removeDerivationPathForContactWithIdentifier:(NSData*)contactIdentifier;
+-(DSIncomingFundsDerivationPath*)derivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)removeIncomingDerivationPathForFriendshipWithIdentifier:(NSData*)friendshipIdentifier;
 
 -(void)addDerivationPath:(DSDerivationPath*)derivationPath;
 
--(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forContactIdentifier:(NSData*)contactIdentifier;
+-(void)addIncomingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
+
+-(void)addOutgoingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath forFriendshipIdentifier:(NSData*)friendshipIdentifier;
 
 -(void)addDerivationPathsFromArray:(NSArray<DSDerivationPath *> *)derivationPaths;
 
@@ -111,8 +117,14 @@ NS_ASSUME_NONNULL_BEGIN
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)baseDerivationPathsContainAddress:(NSString *)address;
+
 // the high level (hardened) derivation path containing the address
--(DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+- (DSDerivationPath*)derivationPathContainingAddress:(NSString *)address;
+
+// the high level (hardened) derivation path containing the address that is external to the wallet, basically a friend's address
+- (DSIncomingFundsDerivationPath*)externalDerivationPathContainingAddress:(NSString *)address;
 
 - (BOOL)transactionAddressAlreadySeenInOutputs:(NSString *)address;
 
@@ -196,8 +208,6 @@ NS_ASSUME_NONNULL_BEGIN
 // transaction that will sweep the balance into wallet (doesn't publish the tx)
 - (void)sweepPrivateKey:(NSString *)privKey withFee:(BOOL)fee
              completion:(void (^ _Nonnull)(DSTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
-
--(void)contactForBlockchainUser:(DSBlockchainUser*)blockchainUser;
 
 @end
 

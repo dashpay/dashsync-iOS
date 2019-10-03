@@ -36,5 +36,6 @@
 @dynamic publicKeyIdentifier;
 @dynamic syncBlockHeight;
 @dynamic account;
+@dynamic friendRequest;
 
 @end

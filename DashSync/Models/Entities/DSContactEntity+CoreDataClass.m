@@ -23,7 +23,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DashPlatformProtocol+DashSync.h"
 #import "NSData+Bitcoin.h"
-#import "DSPotentialContact.h"
+#import "DSPotentialFriendship.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
@@ -31,58 +31,18 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSDAPIClient+RegisterDashPayContract.h"
 #import "NSData+Bitcoin.h"
+#import "DSDerivationPathEntity+CoreDataClass.h"
+#import "NSManagedObject+Sugar.h"
 
 @implementation DSContactEntity
 
-- (instancetype)setAttributesFromPotentialContact:(DSPotentialContact *)potentialContact {
-    [self.managedObjectContext performBlockAndWait:^{
-        self.username = potentialContact.username;
-        self.account = [DSAccountEntity accountEntityForWalletUniqueID:potentialContact.account.wallet.uniqueID index:potentialContact.account.accountNumber];
++(void)deleteContactsOnChain:(DSChainEntity*)chainEntity {
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        NSArray * contactsToDelete = [self objectsMatching:@"(chain == %@)",chainEntity];
+        for (DSContactEntity * contact in contactsToDelete) {
+            [chainEntity.managedObjectContext deleteObject:contact];
+        }
     }];
-    
-    return self;
-}
-
-
-
--(DPDocument*)contactRequestDocumentCreatedByBlockchainUser:(DSBlockchainUser*)blockchainUser {
-    NSParameterAssert(blockchainUser);
-    NSAssert(!uint256_is_zero(self.blockchainUserRegistrationHash.UInt256), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
-    DSWallet * wallet = blockchainUser.wallet;
-    NSAssert(wallet, @"the blockchain user must be associated to a wallet");
-    DashPlatformProtocol * dpp = [DashPlatformProtocol sharedInstance];
-    dpp.userId = uint256_reverse_hex(blockchainUser.registrationTransactionHash);
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
-    dpp.contract = contract;
-    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:wallet.chain];
-    DSAccount * account = [wallet accountWithNumber:self.account.index];
-    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
-    
-    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
-    //DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.blockchainUserOwner.wallet.chain];
-    
-    NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
-    NSError *error = nil;
-    DPJSONObject *data = @{
-                           @"toUserId" : self.blockchainUserRegistrationHash.reverse.hexString,
-                           @"publicKey" : [fundsDerivationPathForContact.extendedPublicKey base64EncodedStringWithOptions:0],
-                           };
-    
-    
-    DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
-    NSAssert(error == nil, @"Failed to build a contact");
-    return contact;
-}
-
-
--(void)storeExtendedPublicKeyInWallet:(DSWallet*)wallet {
-    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.blockchainUserRegistrationHash.UInt256 forAccountNumber:self.account.index onChain:wallet.chain];
-    DSAccount * account =[wallet accountWithNumber:self.account.index];
-    DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
-    
-    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:wallet.uniqueID];
 }
 
 @end

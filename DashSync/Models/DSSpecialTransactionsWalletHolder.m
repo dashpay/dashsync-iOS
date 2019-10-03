@@ -119,30 +119,63 @@
     }
 }
 
-- (void)registerTransaction:(DSTransaction*)transaction {
+- (BOOL)registerTransaction:(DSTransaction*)transaction {
+    BOOL added = FALSE;
     if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
-        [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+        if (![self.providerRegistrationTransactions objectForKey:uint256_data(transaction.txHash)]) {
+            [self.providerRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSProviderUpdateServiceTransaction class]]) {
-        [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+        if (![self.providerUpdateServiceTransactions objectForKey:uint256_data(transaction.txHash)]) {
+            [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
+        if (![self.providerUpdateRegistrarTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSProviderUpdateRevocationTransaction class]]) {
+        if (![self.providerUpdateRevocationTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+        if (![self.blockchainUserRegistrationTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.blockchainUserRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSBlockchainUserResetTransaction class]]) {
+        if (![self.blockchainUserResetTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.blockchainUserResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSBlockchainUserCloseTransaction class]]) {
+        if (![self.blockchainUserCloseTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.blockchainUserCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSBlockchainUserTopupTransaction class]]) {
+        if (![self.blockchainUserTopupTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.blockchainUserTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else if ([transaction isMemberOfClass:[DSTransition class]]) {
+        if (![self.transitions objectForKey:uint256_data(transaction.txHash)]) {
         [self.transitions setObject:transaction forKey:uint256_data(transaction.txHash)];
+            added = TRUE;
+        }
     } else {
         NSAssert(FALSE,@"unknown transaction type being registered");
-        return;
+        return NO;
     }
-    [transaction saveInitial];
+    if (added) {
+        [transaction saveInitial];
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 -(void)loadTransactions {

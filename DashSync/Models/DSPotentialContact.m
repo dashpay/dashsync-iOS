@@ -16,119 +16,44 @@
 //
 
 #import "DSPotentialContact.h"
-#import "DSAccount.h"
-#import "DSWallet.h"
-#import "DSDerivationPathFactory.h"
-#import "DSFundsDerivationPath.h"
-#import "DashPlatformProtocol+DashSync.h"
-#import "DSFriendRequestEntity+CoreDataClass.h"
+#import "BigIntTypes.h"
 #import "DSContactEntity+CoreDataClass.h"
-#import "NSManagedObject+Sugar.h"
-#import "DSDAPIClient+RegisterDashPayContract.h"
-#import "DSBLSKey.h"
-#import "DSIncomingFundsDerivationPath.h"
-
-@interface DSPotentialContact()
-
-@property (nonatomic, strong) DSAccount* account;
-@property (nonatomic, strong) DSBlockchainUser * blockchainUserOwner;
-@property (nonatomic, copy) NSString * username;
-
-@end
+#import "NSData+Bitcoin.h"
 
 @implementation DSPotentialContact
 
--(instancetype)initWithUsername:(NSString*)username blockchainUserOwner:(DSBlockchainUser*)blockchainUserOwner account:(DSAccount*)account {
-    if (!(self = [super init])) return nil;
-    self.username = username;
-    self.account = account;
-    self.blockchainUserOwner = blockchainUserOwner;
-    self.contactBlockchainUserRegistrationTransactionHash = UINT256_ZERO;
+-(instancetype)initWithUsername:(NSString*)username {
+    self = [super init];
+    if (self) {
+        _username = username;
+        _associatedBlockchainUserRegistrationTransactionHash = UINT256_ZERO;
+    }
     return self;
 }
 
--(DPDocument*)contactRequestDocument {
-    NSAssert(!uint256_is_zero(self.contactBlockchainUserRegistrationTransactionHash), @"the contactBlockchainUserRegistrationTransactionHash must be set before making a friend request");
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    dpp.userId = uint256_reverse_hex(self.blockchainUserOwner.registrationTransactionHash);
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
-    dpp.contract = contract;
-    
-    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
-    DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
-    
-    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
-    DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.blockchainUserOwner.wallet.chain];
-    
-    NSAssert(fundsDerivationPathForContact.extendedPublicKey, @"Problem creating extended public key for potential contact?");
-    NSError *error = nil;
-    DPJSONObject *data = @{
-                           @"toUserId" : uint256_reverse_hex(self.contactBlockchainUserRegistrationTransactionHash),
-                           @"publicKey" : [fundsDerivationPathForContact.extendedPublicKey base64EncodedStringWithOptions:0],
-                           };
-    
-    
-    DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
-    NSAssert(error == nil, @"Failed to build a contact");
-    return contact;
-}
-
--(void)storeExtendedPublicKey {
-    DSIncomingFundsDerivationPath * fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                                             contactBasedDerivationPathForBlockchainUserRegistrationTransactionHash:self.contactBlockchainUserRegistrationTransactionHash forAccountNumber:self.account.accountNumber onChain:self.account.wallet.chain];
-    DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
-    
-    [fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:self.account.wallet.uniqueID];
-}
-
-
--(DSFriendRequestEntity*)outgoingFriendRequest {
-    DSContactEntity * contactEntity = [DSContactEntity managedObject];
-    
-    [contactEntity setAttributesFromPotentialContact:self];
-    
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
-    friendRequestEntity.sourceContact = self.blockchainUserOwner.ownContact;
-    friendRequestEntity.destinationContact = contactEntity;
-    friendRequestEntity.sourceBlockchainUserRegistrationTransactionHash = self.blockchainUserOwner.registrationTransactionHashData;
-    friendRequestEntity.destinationBlockchainUserRegistrationTransactionHash = contactEntity.blockchainUserRegistrationHash;
-    return friendRequestEntity;
-}
-
--(DSFriendRequestEntity*)incomingFriendRequest {
-    DSContactEntity * contactEntity = [DSContactEntity managedObject];
-    
-    [contactEntity setAttributesFromPotentialContact:self];
-    
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
-    friendRequestEntity.sourceContact = contactEntity;
-    friendRequestEntity.destinationContact = self.blockchainUserOwner.ownContact;
-    friendRequestEntity.sourceBlockchainUserRegistrationTransactionHash = contactEntity.blockchainUserRegistrationHash;
-    friendRequestEntity.destinationBlockchainUserRegistrationTransactionHash = self.blockchainUserOwner.registrationTransactionHashData;
-    friendRequestEntity.extendedPublicKey = self.incomingExtendedPublicKey;
-    return friendRequestEntity;
-}
-
--(BOOL)isEqual:(id)object {
-    if (self == object) {
-        return TRUE;
+-(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage {
+    self = [super init];
+    if (self) {
+        _username = username;
+        _avatarPath = avatarPath;
+        _publicMessage = publicMessage;
+        _associatedBlockchainUserRegistrationTransactionHash = UINT256_ZERO;
     }
-    
-    if (![object isKindOfClass:[self class]]) {
-        return FALSE;
-    }
-    
-    if ([self.username isEqualToString:((DSPotentialContact*)object).username] &&
-        self.account.accountNumber == ((DSPotentialContact*)object).account.accountNumber) {
-        return TRUE;
-    }
-    
-    return FALSE;
+    return self;
 }
 
-- (NSUInteger)hash {
-    return self.username.hash ^ self.account.accountNumber;
+-(instancetype)initWithContactEntity:(DSContactEntity*)contactEntity {
+    self = [self initWithUsername:contactEntity.username avatarPath:contactEntity.avatarPath publicMessage:contactEntity.publicMessage];
+    if (self) {
+        _associatedBlockchainUserRegistrationTransactionHash = contactEntity.associatedBlockchainUserRegistrationHash.UInt256;
+    }
+    return self;
 }
+
+-(NSString*)debugDescription {
+    return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainUserRegistrationTransactionHash)];
+}
+
+
 
 @end

@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
                                              userInfo:nil];
             }
             for (NSUInteger i =0;i<length;i++) {
-                _indexes[i] = ((UInt256) { .u64 = { 0, 0, 0, indexes[1] } });
+                _indexes[i] = ((UInt256) { .u64 = { indexes[i], 0, 0, 0 } });
             }
         }
     }

@@ -18,5 +18,6 @@
 @dynamic walletUniqueID;
 @dynamic transactionOutputs;
 @dynamic derivationPaths;
+@dynamic chain;
 
 @end

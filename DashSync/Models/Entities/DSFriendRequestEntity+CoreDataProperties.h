@@ -15,12 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSFriendRequestEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *sourceBlockchainUserRegistrationTransactionHash;
-@property (nullable, nonatomic, retain) NSData *destinationBlockchainUserRegistrationTransactionHash;
-@property (nullable, nonatomic, retain) DSContactEntity *destinationContact;
-@property (nullable, nonatomic, retain) DSContactEntity *sourceContact;
+@property (nonnull, nonatomic, retain) DSContactEntity *destinationContact;
+@property (nonnull, nonatomic, retain) DSContactEntity *sourceContact;
 @property (nullable, nonatomic, retain) DSTransitionEntity *transition;
-@property (nullable, nonatomic, retain) NSData *extendedPublicKey;
+@property (nonnull, nonatomic, retain) DSDerivationPathEntity *derivationPath;
+@property (nonnull, nonatomic, retain) DSAccountEntity *account;
+@property (nonnull, nonatomic, retain) NSData * friendshipIdentifier;
 
 @end
 
