@@ -61,10 +61,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
     else {
         [controller setSecondPageVisible];
-        controller.firstTitleText = NSLocalizedString(@"Confirm PIN", nil);
+        controller.firstTitleText = DSLocalizedString(@"Confirm PIN", nil);
     }
 
-    controller.secondTitleText = NSLocalizedString(@"Set PIN", nil);
+    controller.secondTitleText = DSLocalizedString(@"Set PIN", nil);
 
     self = [super initWithContentController:controller];
     if (self) {
@@ -175,7 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         [controller switchFromFirstToSecondAnimation:DSTwoPagePinAnimationDirection_Forward
                                           completion:^{
-                                              controller.firstTitleText = NSLocalizedString(@"Confirm PIN", nil);
+                                              controller.firstTitleText = DSLocalizedString(@"Confirm PIN", nil);
                                               controller.firstMessageText = nil;
                                               [controller firstClear];
 
