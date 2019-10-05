@@ -163,6 +163,23 @@
     [self.peerManager connect];
 }
 
+-(void)disconnectedRescanOfMasternodeListsAndQuorums {
+    
+    DSChainEntity * chainEntity = self.chain.chainEntity;
+    [chainEntity.managedObjectContext performBlockAndWait:^{
+        [self.chain wipeMasternodesInContext:chainEntity.managedObjectContext];//masternodes and quorums must go first
+        [self.masternodeManager wipeMasternodeInfo];
+        [DSTransactionEntity saveContext];
+    }];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSMasternodeListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSQuorumListDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self}];
+        
+    });
+    [self.peerManager connect];
+}
+
 // rescans blocks and transactions after earliestKeyTime, a new random download peer is also selected due to the
 // possibility that a malicious node might lie by omitting transactions that match the bloom filter
 - (void)rescan
@@ -175,6 +192,18 @@
         }];
     }
 }
+
+- (void)rescanMasternodeListsAndQuorums
+{
+    if (!self.peerManager.connected) {
+        [self disconnectedRescanOfMasternodeListsAndQuorums];
+    } else {
+        [self.peerManager disconnectDownloadPeerWithCompletion:^(BOOL success) {
+            [self disconnectedRescanOfMasternodeListsAndQuorums];
+        }];
+    }
+}
+
 
 // MARK: - DSChainDelegate
 
