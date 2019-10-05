@@ -1138,7 +1138,7 @@
         [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
         [instantSendTransactionLock save];
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSTransactionManagerNotificationTransactionKey:transaction, DSTransactionManagerNotificationTransactionChangesKey:@{DSTransactionManagerNotificationInstantSendTransactionLockKey:instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey:@(verified)}}];
         });
     } else {
         [self.instantSendLocksWaitingForTransactions setObject:instantSendTransactionLock forKey:uint256_data(instantSendTransactionLock.transactionHash)];
@@ -1151,13 +1151,11 @@
 }
 
 - (void)checkInstantSendLocksWaitingForQuorums {
-    BOOL modifiedTransactionLockStatus = NO;
     for (NSData * transactionHashData in [self.instantSendLocksWaitingForQuorums copy]) {
         if (self.instantSendLocksWaitingForTransactions[transactionHashData]) continue;
         DSInstantSendTransactionLock * instantSendTransactionLock = self.instantSendLocksWaitingForQuorums[transactionHashData];
         BOOL verified = [instantSendTransactionLock verifySignature];
         if (verified) {
-            modifiedTransactionLockStatus = YES;
             [instantSendTransactionLock save];
             DSTransaction * transaction = nil;
             DSWallet * wallet = nil;
@@ -1167,13 +1165,10 @@
                 [transaction setInstantSendReceivedWithInstantSendLock:instantSendTransactionLock];
             }
             [self.instantSendLocksWaitingForQuorums removeObjectForKey:uint256_data(instantSendTransactionLock.transactionHash)];
-            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSTransactionManagerNotificationTransactionKey:transaction, DSTransactionManagerNotificationTransactionChangesKey:@{DSTransactionManagerNotificationInstantSendTransactionLockKey:instantSendTransactionLock, DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey:@(verified)}}];
+            });
         }
-    }
-    if (modifiedTransactionLockStatus) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-        });
     }
 }
 

@@ -14,8 +14,8 @@
 
 @interface DSTransactionFloodingViewController ()
 
-@property (nonatomic,assign) NSUInteger alreadySentCount;
-@property (nonatomic,assign) BOOL choosingDestinationAccount;
+@property (nonatomic, assign) NSUInteger alreadySentCount;
+@property (nonatomic, assign) BOOL choosingDestinationAccount;
 @property (nonatomic, strong) DSAccount * fundingAccount;
 @property (nonatomic, strong) DSAccount * destinationAccount;
 @property (nonatomic, strong) NSMutableArray * addresses;
@@ -23,12 +23,16 @@
 
 @property (nonatomic, strong) IBOutlet UILabel * fundingAccountIdentifierLabel;
 @property (nonatomic, strong) IBOutlet UILabel * destinationAccountIdentifierLabel;
+@property (nonatomic, strong) IBOutlet UILabel * failedISCountLabel;
+@property (nonatomic, strong) IBOutlet UILabel * succeededISCountLabel;
 
 @property (nonatomic, strong) IBOutlet UITextField * transactionCountTextField;
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem * startFloodingButton;
 
-@property (strong, nonatomic) id blocksObserver;
+@property (strong, nonatomic) id blocksObserver, txStatusObserver;
+
+@property (strong, nonatomic) NSMutableDictionary * transactionLockDictionary;
 
 @end
 
@@ -38,6 +42,26 @@
     [super viewDidLoad];
     self.alreadySentCount = 0;
     self.startFloodingButton.enabled = FALSE;
+    self.transactionLockDictionary = [NSMutableDictionary dictionary];
+    
+    if (! self.txStatusObserver) {
+        self.txStatusObserver =
+        [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil
+                                                           queue:nil usingBlock:^(NSNotification *note) {
+            DSTransaction *tx = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionKey];
+            if (tx) {
+                NSDictionary * changes = [note.userInfo objectForKey:DSTransactionManagerNotificationTransactionChangesKey];
+                if (changes) {
+                    NSNumber * verified = [changes objectForKey:DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey];
+                    NSNumber * previouslyVerifiedValue = [self.transactionLockDictionary objectForKey:uint256_data(tx.txHash)];
+                    if (!previouslyVerifiedValue || ![previouslyVerifiedValue isEqualToNumber:verified]) {
+                        [self.transactionLockDictionary setObject:verified forKey:uint256_data(tx.txHash)];
+                        [self updateISCounts];
+                    }
+                }
+            }
+        }];
+    }
     
     self.blocksObserver =
     [[NSNotificationCenter defaultCenter] addObserverForName:DSChainNewChainTipBlockNotification object:nil
@@ -58,6 +82,17 @@
 
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self.blocksObserver];
+}
+
+-(void)updateISCounts {
+    uint32_t successCount = 0;
+    uint32_t failCount = 0;
+    for (NSNumber * number in [self.transactionLockDictionary allValues]) {
+        successCount += [number boolValue];
+        failCount += ![number boolValue];
+    }
+    self.succeededISCountLabel.text = [NSString stringWithFormat:@"%d",successCount];
+    self.failedISCountLabel.text = [NSString stringWithFormat:@"%d",failCount];
 }
 
 -(void)insufficientFundsForTransaction:(DSTransaction *)tx forAmount:(uint64_t)requestedSendAmount {
@@ -193,13 +228,11 @@
                         sent = YES;
                         tx.timestamp = [NSDate timeIntervalSince1970];
                         [self.fundingAccount registerTransaction:tx];
-                        [self.view addSubview:[[[BRBubbleView viewWithText:NSLocalizedString(@"sent!", nil)
-                                                                    center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
-                                               popOutAfterDelay:2.0]];
                         self.transactionCountTextField.text = [NSString stringWithFormat:@"%ld",[self.transactionCountTextField.text integerValue] - 1];
                         self.alreadySentCount++;
-                        [self send:nil];
-                        
+                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue()  , ^{
+                            [self send:nil];
+                        });
                     }
                     
                     waiting = NO;

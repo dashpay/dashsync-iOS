@@ -36,6 +36,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerSyncFailedNotific
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionStatusDidChangeNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerTransactionReceivedNotification;
 
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTransactionKey;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationTransactionChangesKey;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockKey;
+FOUNDATION_EXPORT NSString* _Nonnull const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey;
+
+
 typedef NS_ENUM(NSUInteger, DSRequestingAdditionalInfo) {
     DSRequestingAdditionalInfo_Amount = 1,
     DSRequestingAdditionalInfo_CancelOrChangeAmount = 2

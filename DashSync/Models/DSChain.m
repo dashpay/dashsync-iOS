@@ -85,7 +85,8 @@ static checkpoint testnet_checkpoint_array[] = {
     {       19500, "000000000735c41ba5948fbe6c791d5e28b02e3eff5ea4ac7fecf6d07c488edf", 1546803426, 0x1c0daf28u, "", "" }, //important for testInstantSendReceiveTransaction
     {       28000, "000000000204f318ee830af7416def9e45cef5507401fcc27a9627cbc28bb689", 1547961658, 0x1c0cd81bu, "", "" },
     {       50000, "0000000000d737f4b6f0fcd10ecd2f59e5e4f9409b1afae5fb50604510a2551f", 1550935893, 0x1c00e933u, "", "" },
-    {      100000, "000000008650f09124958e7352f844f9c15705171ac38ee6668534c5c238b916", 1558052383, 0x1d00968du, "", "" }
+    {      100000, "000000008650f09124958e7352f844f9c15705171ac38ee6668534c5c238b916", 1558052383, 0x1d00968du, "", "" },
+    {      180000, "000000000175f718920ecebd54765faee973975511415f1dd1ef12194518675b", 1569211090, 0x1c025786u, "", "" }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -1881,13 +1882,6 @@ static dispatch_once_t devnetToken = 0;
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
-    if (isInstant) {
-        if ([self canUseAutoLocksWithInputCount:inputCount]) {
-            return standardFee;
-        } else {
-            return TX_FEE_PER_INPUT*inputCount;
-        }
-    } else {
         
 #if (!!FEE_PER_KB_URL)
         uint64_t fee = ((size*self.feePerByte + 99)/100)*100; // fee using feePerByte, rounded up to nearest 100 satoshi
@@ -1895,8 +1889,6 @@ static dispatch_once_t devnetToken = 0;
 #else
         return standardFee;
 #endif
-        
-    }
 }
 
 // outputs below this amount are uneconomical due to fees
@@ -1905,18 +1897,6 @@ static dispatch_once_t devnetToken = 0;
     uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerByte + MIN_FEE_PER_B - 1)/MIN_FEE_PER_B;
     
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
-}
-
-- (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount
-{
-    const NSInteger AutoLocksMaximumInputCount = 4;
-    DSSporkManager * sporkManager = [self chainManager].sporkManager;
-    if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= AutoLocksMaximumInputCount) {
-        return YES;
-    }
-    else {
-        return NO;
-    }
 }
 
 - (BOOL)isEqual:(id)obj
