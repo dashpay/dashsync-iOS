@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " y";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\ntotal %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d intentos restantes\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(Cantidad local solicitada: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n queda un intento\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nno hay más intentos disponibles";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\ninténtalo de nuevo %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "¿Estás seguro de que quieres recuperar este masternode?";
@@ -69,10 +51,13 @@
 "cancel" = "cancelar";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "seleccionar código de acceso para %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirmar";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "tiempo de conexión excedido";
@@ -96,7 +81,7 @@
 "double spend" = "gasto duplicado";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "introduce el Código de acceso antiguo";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error del servidor de solicitud de pagos %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "error en la firma de transacción";
-
-/* No comment provided by engineer. */
-"hour" = "hora";
-
-/* No comment provided by engineer. */
-"hours" = "horas";
 
 /* No comment provided by engineer. */
 "ignore" = "ignorar";
@@ -147,13 +126,10 @@
 "Method Not Found" = "Método no encontrado";
 
 /* No comment provided by engineer. */
-"minute" = "minuto";
-
-/* No comment provided by engineer. */
-"minutes" = "minutos";
-
-/* No comment provided by engineer. */
 "missing certificate" = "certificado no encontrado";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "no se encontraron pares";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "no conectado a la red dash";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "de acuerdo";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Error de análisis";
 
 /* No comment provided by engineer. */
-"passcode" = "código de acceso";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "código de acceso para %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "contraseña";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "identidad del beneficiario no certificada";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "frase de recuperación";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "la frase de recuperación no coincide";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "¿reducir la suma a pagar por\n%1$@ (%2$@)?";
@@ -204,22 +180,19 @@
 "rescan" = "escanear de nuevo";
 
 /* No comment provided by engineer. */
-"reset" = "reiniciar";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "reintentar";
-
-/* No comment provided by engineer. */
-"second" = "segundo";
-
-/* No comment provided by engineer. */
-"seconds" = "segundos";
 
 /* No comment provided by engineer. */
 "send" = "Enviar";
 
 /* No comment provided by engineer. */
 "Server Error" = "Error de servidor";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Red de prueba";
@@ -246,6 +219,9 @@
 "transaction rejected" = "transacción rechazada";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "respuesta inesperada de %@";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "Actualizando Precio";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verificar código de acceso";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "cartera inhabilitada";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "ADVERTENCIA";
 
 /* No comment provided by engineer. */
-"wipe" = "borrar";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Su cartera puede estar desincronizada.\nCon frecuencia se puede solucionar escaneando de nuevo la cadena de bloques.";

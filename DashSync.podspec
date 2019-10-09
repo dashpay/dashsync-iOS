@@ -31,6 +31,7 @@ Pod::Spec.new do |s|
   s.dependency 'secp256k1_dash', '0.1.2'
   s.dependency 'bls-signatures-pod', '0.2.9'
   s.dependency 'CocoaLumberjack', '3.5.3'
+  s.dependency 'DWAlertController', '0.1.0'
   s.prefix_header_contents = '#import "DSEnvironment.h"'
   
 end

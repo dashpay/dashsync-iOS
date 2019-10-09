@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = "和";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n總額 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n尚餘 %d次嘗試機會\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(本地請求金額: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n尚餘 1 次嘗試機會\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n金額 %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n網絡費用 +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nno attempts remaining";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n在 %1$d %2$@ 後重試";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
@@ -69,10 +51,13 @@
 "cancel" = "取消";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "選擇 %@ 的驗證碼";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirm";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "連接超時";
@@ -96,7 +81,7 @@
 "double spend" = "雙花";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "輸入舊的驗證碼 ";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error from payment request server %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "簽署交易時發生錯誤";
-
-/* No comment provided by engineer. */
-"hour" = "小時";
-
-/* No comment provided by engineer. */
-"hours" = "小時";
 
 /* No comment provided by engineer. */
 "ignore" = "ignore";
@@ -147,13 +126,10 @@
 "Method Not Found" = "Method Not Found";
 
 /* No comment provided by engineer. */
-"minute" = "分鐘";
-
-/* No comment provided by engineer. */
-"minutes" = "分鐘";
-
-/* No comment provided by engineer. */
 "missing certificate" = "缺少認證";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "沒有找到節點";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "未連接到達世幣網絡";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "確定";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "驗證碼";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@ 的驗證碼";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "密碼";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "payee identity isn't certified";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "恢復詞組不符";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
@@ -204,22 +180,19 @@
 "rescan" = "重新掃瞄";
 
 /* No comment provided by engineer. */
-"reset" = "重置";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "retry";
-
-/* No comment provided by engineer. */
-"second" = "秒";
-
-/* No comment provided by engineer. */
-"seconds" = "秒";
 
 /* No comment provided by engineer. */
 "send" = "send";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -246,6 +219,9 @@
 "transaction rejected" = "交易被拒絕";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "從 %@ 傳來的意外回應";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "正在更新價格";
 
 /* No comment provided by engineer. */
-"verify passcode" = "審核驗證碼";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "錢包被禁用";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
-"wipe" = "wipe";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的錢包可能不同步。\n這通常可以通過重新掃描區塊鏈來修復。";

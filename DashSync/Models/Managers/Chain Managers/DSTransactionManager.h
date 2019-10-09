@@ -56,7 +56,7 @@ typedef void (^DSTransactionChallengeBlock)(NSString * challengeTitle, NSString 
 
 typedef void (^DSTransactionErrorNotificationBlock)(NSString * _Nullable errorTitle, NSString * _Nullable errorMessage,BOOL shouldCancel);
 
-typedef BOOL (^DSTransactionCreationCompletionBlock)(DSTransaction *tx, NSString * prompt, uint64_t amount); //return is whether we should continue automatically
+typedef BOOL (^DSTransactionCreationCompletionBlock)(DSTransaction *tx, NSString *prompt, uint64_t amount, NSArray<NSString *> *addresses, BOOL isSecure); //return is whether we should continue automatically
 
 typedef BOOL (^DSTransactionSigningCompletionBlock)(DSTransaction * tx, NSError * _Nullable error, BOOL cancelled); //return is whether we should continue automatically
 

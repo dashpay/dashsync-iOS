@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " и ";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nИтого: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(в местной валюте: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nОсталась 1 попытка\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nСумма: %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nКомиссия сети: +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nпопыток больше нет";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nПопробуйте ещё раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Вы уверены, что хотите использовать эту мастерноду?";
@@ -69,10 +51,13 @@
 "cancel" = "Отменить";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "Придумайте код доступа для %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Подтвердить";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "Время ожидания подключения";
@@ -96,7 +81,7 @@
 "double spend" = "Двойное расходование";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "Введите старый пароль";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ошибка платёжного сервера %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "Ошибка подписания транзакции";
-
-/* No comment provided by engineer. */
-"hour" = "час";
-
-/* No comment provided by engineer. */
-"hours" = "часов";
 
 /* No comment provided by engineer. */
 "ignore" = "Игнорировать";
@@ -147,13 +126,10 @@
 "Method Not Found" = "Метод не найден";
 
 /* No comment provided by engineer. */
-"minute" = "минута";
-
-/* No comment provided by engineer. */
-"minutes" = "минуты";
-
-/* No comment provided by engineer. */
 "missing certificate" = "Отсутствует сертификат";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "Узлы не найдены";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "Нет подключения к сети Dash";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "ок";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Ошибка обработки";
 
 /* No comment provided by engineer. */
-"passcode" = "Код доступа";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "Код доступа для %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "Пароль";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "Сертификат личности получателя некорректен";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "Фраза восстановления";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "Фраза восстановления не подходит";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "Уменьшить сумму платежа на\n%1$@ (%2$@)?";
@@ -204,22 +180,19 @@
 "rescan" = "Повторное сканирование";
 
 /* No comment provided by engineer. */
-"reset" = "Сбросить";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "повторить";
-
-/* No comment provided by engineer. */
-"second" = "секунда";
-
-/* No comment provided by engineer. */
-"seconds" = "секунды";
 
 /* No comment provided by engineer. */
 "send" = "Отправить";
 
 /* No comment provided by engineer. */
 "Server Error" = "Ошибка сервера";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Тестовая сеть";
@@ -246,6 +219,9 @@
 "transaction rejected" = "Транзакция отклонена";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "Неожиданный ответ от %@";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "Обновление цены";
 
 /* No comment provided by engineer. */
-"verify passcode" = "Подтвердите код";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "Кошелёк отключен";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
-"wipe" = "Стереть";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелёк рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";

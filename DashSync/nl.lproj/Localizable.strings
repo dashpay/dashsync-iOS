@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " en ";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         totaal %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nnog %d pogingen\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(lokaal verzocht bedrag: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nnog 1 poging\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\ngeen pogingen meer";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nprobeer opnieuw over %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Weet je zeker dat je deze masternode wilt terugvorderen?";
@@ -69,10 +51,13 @@
 "cancel" = "annuleer";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "kies toegangscode voor %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Bevestig";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "verbindingstime-out";
@@ -96,7 +81,7 @@
 "double spend" = "dubbel uitgegeven";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "voer oude toegangscode i";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Fout van server voor betalingsverzoeken %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "fout bij het ondertekenen van de transactie";
-
-/* No comment provided by engineer. */
-"hour" = "uur";
-
-/* No comment provided by engineer. */
-"hours" = "uur";
 
 /* No comment provided by engineer. */
 "ignore" = "negeer";
@@ -147,13 +126,10 @@
 "Method Not Found" = "Methode niet gevonden";
 
 /* No comment provided by engineer. */
-"minute" = "minuut";
-
-/* No comment provided by engineer. */
-"minutes" = "minuten";
-
-/* No comment provided by engineer. */
 "missing certificate" = "certificaat ontbreekt";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "geen peers gevonden";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "niet verbonden met het dash-netwerk";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "oké";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parserfout";
 
 /* No comment provided by engineer. */
-"passcode" = "toegangscode";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "toegangscode voor %@";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "wachtwoord";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "de betaler-identiteit is niet gecertificeerd";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "herstelzin";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "de herstelzin komt niet overeen";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "bedrag verminderen met\n%1$@ (%2$@)?";
@@ -204,22 +180,19 @@
 "rescan" = "scan opnieuw";
 
 /* No comment provided by engineer. */
-"reset" = "herstel";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "probeer opnieuw";
-
-/* No comment provided by engineer. */
-"second" = "seconde";
-
-/* No comment provided by engineer. */
-"seconds" = "seconden";
 
 /* No comment provided by engineer. */
 "send" = "verstuur";
 
 /* No comment provided by engineer. */
 "Server Error" = "Serverfout";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -246,6 +219,9 @@
 "transaction rejected" = "transactie geweigerd";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "onverwacht antwoord van %@";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "Bezig met bijwerken van prijs";
 
 /* No comment provided by engineer. */
-"verify passcode" = "verifieer toegangscode";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "portemonnee uitgeschakeld";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";
 
 /* No comment provided by engineer. */
-"wipe" = "wis";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Je portemonnee is mogelijk niet gesynchroniseerd.\nDit kan vaak worden opgelost door de blockchain opnieuw te scannen.";

@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = "また";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         合計 %1$@ （%2$@）";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n残り %d 回だけ試すことができます\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n（ローカルな請求金額: %@）";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n残り 1 回だけ試すことができます\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     送金額 %1$@ （%2$@）";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nネットワーク手数料 +%1$@ （%2$@）";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "もう試すことはできません";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@ でもう一度お試しください。";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "本当にこのマスターノードをリクレイムしてもよろしいでしょうか？";
@@ -69,10 +51,13 @@
 "cancel" = "キャンセル";
 
 /* No comment provided by engineer. */
-"choose passcode for %@" = "%@ のパスコードを\nご指定下さい";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "承認";
+
+/* No comment provided by engineer. */
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
 "connect timeout" = "接続タイムアウト";
@@ -96,7 +81,7 @@
 "double spend" = "二重支払い";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "現在のパスコードを\nご入力下さい";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "支払い要求サーバーからのエラー %@";
@@ -106,12 +91,6 @@
 
 /* No comment provided by engineer. */
 "error signing transaction" = "取引署名時エラー";
-
-/* No comment provided by engineer. */
-"hour" = "時間";
-
-/* No comment provided by engineer. */
-"hours" = "時間";
 
 /* No comment provided by engineer. */
 "ignore" = "無視する";
@@ -147,13 +126,10 @@
 "Method Not Found" = "メソッドが見つかりません";
 
 /* No comment provided by engineer. */
-"minute" = "分";
-
-/* No comment provided by engineer. */
-"minutes" = "分";
-
-/* No comment provided by engineer. */
 "missing certificate" = "証明書が見つかりません";
+
+/* No comment provided by engineer. */
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
 "no peers found" = "通信相手が見つかりませんでした。";
@@ -165,16 +141,16 @@
 "not connected to the dash network" = "Dashネットワークに接続されていません。";
 
 /* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
 "ok" = "OK";
 
 /* No comment provided by engineer. */
 "Parse Error" = "パースエラー";
 
 /* No comment provided by engineer. */
-"passcode" = "パスコード";
-
-/* No comment provided by engineer. */
-"passcode for %@" = "%@のパスコード";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
 "password" = "パスワード";
@@ -186,10 +162,10 @@
 "payee identity isn't certified" = "支払先のIDが認証されていません";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "復元フレーズ";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "復元フレーズが一致しません";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
@@ -204,22 +180,19 @@
 "rescan" = "再スキャン";
 
 /* No comment provided by engineer. */
-"reset" = "リセット";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
 "retry" = "もう１回試す";
-
-/* No comment provided by engineer. */
-"second" = "秒";
-
-/* No comment provided by engineer. */
-"seconds" = "秒";
 
 /* No comment provided by engineer. */
 "send" = "送金する";
 
 /* No comment provided by engineer. */
 "Server Error" = "サーバーエラー";
+
+/* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "テストネット";
@@ -246,6 +219,9 @@
 "transaction rejected" = "取引が拒否されました";
 
 /* No comment provided by engineer. */
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
 "unexpected response from %@" = "%@ から予期しない応答";
 
 /* No comment provided by engineer. */
@@ -267,16 +243,13 @@
 "Updating Price" = "価格のアップデート中";
 
 /* No comment provided by engineer. */
-"verify passcode" = "もう一度パスコードを\nご入力下さい";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ウォレット無効";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "警告";
 
 /* No comment provided by engineer. */
-"wipe" = "完全削除";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "あなたのウォレットが同期されていない可能性があります。\nブロックチェーンの再スキャンを行うと直ることが大半です。";

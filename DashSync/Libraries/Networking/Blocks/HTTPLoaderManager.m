@@ -17,7 +17,7 @@
 
 #import "HTTPLoaderManager.h"
 
-#import "DSAuthenticationManager+Private.h"
+#import "DSAuthenticationManager+UpdateSecureTime.h"
 #import "HTTPLoaderFactory.h"
 #import "HTTPLoaderOperation.h"
 #import "HTTPRequest.h"

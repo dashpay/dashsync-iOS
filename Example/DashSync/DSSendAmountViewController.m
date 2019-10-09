@@ -90,7 +90,7 @@
             [alert addAction:cancelButton]; //cancel should always be on the left
             [alert addAction:ignoreButton];
             [self presentViewController:alert animated:YES completion:nil];
-        } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount) {
+        } transactionCreationCompletion:^BOOL(DSTransaction *tx, NSString *prompt, uint64_t amount, NSArray<NSString *> *addresses, BOOL isSecure) {
             return TRUE; //just continue and let Dash Sync do it's thing
         } signedCompletion:^BOOL(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL cancelled) {
             if (cancelled) {

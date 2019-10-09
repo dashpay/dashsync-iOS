@@ -52,6 +52,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 -(instancetype _Nonnull)init NS_UNAVAILABLE;
 
 -(instancetype _Nonnull)initWithChain:(DSChain* _Nonnull)chain NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 -(void)setUp;
 
