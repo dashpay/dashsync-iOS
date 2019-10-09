@@ -1170,6 +1170,10 @@
         DSDLog(@"No masternode list found yet");
         return nil;
     }
+    if (merkleBlock.height - masternodeList.height > 24) {
+        DSDLog(@"Masternode list is too old");
+        return nil;
+    }
     return [masternodeList quorumEntryForInstantSendRequestID:requestID];
 }
 
