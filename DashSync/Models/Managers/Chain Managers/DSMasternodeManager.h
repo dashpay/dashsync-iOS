@@ -83,7 +83,7 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 -(DSMasternodeList*)masternodeListForBlockHash:(UInt256)blockHash;
 
--(void)getRecentMasternodeList:(NSUInteger)blocksAgo;
+-(void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay;
 
 -(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay;
 

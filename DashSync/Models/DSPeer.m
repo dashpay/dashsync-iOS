@@ -908,7 +908,6 @@
     else if ([MSG_TX isEqual:type]) [self acceptTxMessage:message isIxTransaction:NO];
     else if ([MSG_IX isEqual:type]) [self acceptTxMessage:message isIxTransaction:YES];
     else if ([MSG_ISLOCK isEqual:type]) [self acceptIslockMessage:message];
-    else if ([MSG_TXLVOTE isEqual:type]) [self acceptTxlvoteMessage:message];
     else if ([MSG_HEADERS isEqual:type]) [self acceptHeadersMessage:message];
     else if ([MSG_GETADDR isEqual:type]) [self acceptGetaddrMessage:message];
     else if ([MSG_GETDATA isEqual:type]) [self acceptGetdataMessage:message];
@@ -1355,37 +1354,7 @@
     
 }
 
-- (void)acceptTxlvoteMessage:(NSData *)message
-{
-#if LOG_TX_LOCK_VOTES
-    DSDLog(@"peer relayed txlvote message: %@", message.hexString);
-#endif
-    if (![self.chain.chainManager.sporkManager deterministicMasternodeListEnabled]) {
-#if LOG_TX_LOCK_VOTES
-        DSDLog(@"returned transaction lock message when DML not enabled: %@", message);//no error here
-#endif
-        return;
-    }
-    DSTransactionLockVote *transactionLockVote = [DSTransactionLockVote transactionLockVoteWithMessage:message onChain:self.chain];
-    
-    if (! transactionLockVote) {
-        [self error:@"malformed txlvote message: %@", message];
-        return;
-    }
-    else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
-        [self error:@"got txlvote message before loading a filter"];
-        return;
-    }
-    
-    dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self relayedTransactionLockVote:transactionLockVote];;
-    });
-    
-#if LOG_TX_LOCK_VOTES
-    DSDLog(@"%@:%u got txlvote %@ MN %@", self.host, self.port, uint256_data(transactionLockVote.transactionHash).hexString,uint256_data(transactionLockVote.masternodeProviderTransactionHash).hexString);
-#endif
-    
-}
+
 
 - (void)acceptIslockMessage:(NSData *)message
 {
