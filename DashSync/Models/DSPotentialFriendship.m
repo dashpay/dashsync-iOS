@@ -29,6 +29,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSPotentialContact.h"
+#import "NSData+BLSEncryption.h"
 
 @interface DSPotentialFriendship()
 
@@ -37,6 +38,7 @@
 @property (nonatomic, strong) DSPotentialContact * destinationContact;
 @property (nonatomic, strong) DSIncomingFundsDerivationPath * fundsDerivationPathForContact;
 @property (nonatomic, strong) NSData * extendedPublicKey;
+@property (nonatomic, strong) NSData * encryptedExtendedPublicKey;
 
 @end
 
@@ -59,6 +61,14 @@
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
+    __weak typeof(self) weakSelf = self;
+    [self.sourceBlockchainUser encryptData:self.extendedPublicKey forRecipientKey:self.contactEncryptionPublicKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        strongSelf.encryptedExtendedPublicKey = encryptedData;
+    }];
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     return self.fundsDerivationPathForContact;
 }
@@ -75,9 +85,11 @@
     
     NSAssert(self.extendedPublicKey, @"Problem creating extended public key for potential contact?");
     NSError *error = nil;
+    
+    
     DPJSONObject *data = @{
                            @"toUserId" : uint256_reverse_hex(self.destinationContact.associatedBlockchainUserRegistrationTransactionHash),
-                           @"publicKey" : [self.extendedPublicKey base64EncodedStringWithOptions:0],
+                           @"publicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
                            };
     
     

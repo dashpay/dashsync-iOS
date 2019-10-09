@@ -40,6 +40,7 @@
 #import "DSBlockchainUserRegistrationTransactionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPotentialContact.h"
+#import "NSData+BLSEncryption.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 
@@ -327,14 +328,35 @@
             return;
         }
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self.wallet];
-        DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-        NSLog(@"%@",uint160_hex(privateKey.publicKeyData.hash160));
-        
-        NSLog(@"%@",uint160_hex(self.blockchainUserRegistrationTransaction.pubkeyHash));
+        DSBLSKey * privateKey = (DSBLSKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
+//        NSLog(@"%@",uint160_hex(privateKey.publicKeyData.hash160));
+//
+//        NSLog(@"%@",uint160_hex(self.blockchainUserRegistrationTransaction.pubkeyHash));
         NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainUserRegistrationTransaction.pubkeyHash),@"Keys aren't ok");
         [transition signPayloadWithKey:privateKey];
         completion(YES);
     }];
+}
+
+-(BOOL)verifySignature:(UInt768)signature forMessageDigest:(UInt256)messageDigest {
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self.wallet];
+    NSData * publicKeyData = [derivationPath publicKeyDataAtIndex:self.index];
+    DSBLSKey * publicKey = [DSBLSKey blsKeyWithPublicKey:publicKeyData.UInt384 onChain:self.wallet.chain];
+    return [publicKey verify:messageDigest signature:signature];
+}
+
+-(void)encryptData:(NSData*)data forRecipientKey:(UInt384)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion {
+        [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData* _Nullable seed, BOOL cancelled) {
+            if (!seed) {
+                completion(nil);
+                return;
+            }
+            DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:self.wallet];
+            DSBLSKey * privateKey = (DSBLSKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
+            DSBLSKey * publicRecipientKey = [DSBLSKey blsKeyWithPublicKey:recipientPublicKey onChain:self.wallet.chain];
+            NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:publicRecipientKey];
+            completion(encryptedData);
+        }];
 }
 
 -(NSString*)debugDescription {
