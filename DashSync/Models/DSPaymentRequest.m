@@ -214,7 +214,7 @@
         [q addObject:[@"currency=" stringByAppendingString:[self.requestedFiatCurrencyCode stringByAddingPercentEncodingWithAllowedCharacters:charset]]];
         
         if (self.requestedFiatCurrencyAmount > 0) {
-            [q addObject:[@"local=" stringByAppendingString:@(self.requestedFiatCurrencyAmount).stringValue]];
+            [q addObject:[NSString stringWithFormat:@"local=%.02f", self.requestedFiatCurrencyAmount]];
         }
     }
 
