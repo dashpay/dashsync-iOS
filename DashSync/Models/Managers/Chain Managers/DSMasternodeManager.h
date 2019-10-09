@@ -49,8 +49,6 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 @property (nonatomic,readonly) uint32_t lastMasternodeListBlockHeight;
 @property (nonatomic,readonly) DSMasternodeList * currentMasternodeList;
 
--(instancetype _Nonnull)init NS_UNAVAILABLE;
-
 -(instancetype _Nonnull)initWithChain:(DSChain* _Nonnull)chain NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
