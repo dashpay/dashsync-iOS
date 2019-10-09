@@ -37,6 +37,7 @@
 		2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */; };
 		2AE125EE223B9B0600379C6F /* DSOutgoingContactsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125ED223B9B0600379C6F /* DSOutgoingContactsTableViewController.m */; };
 		2AE125F4223BD14B00379C6F /* DSIncomingContactsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AE125F3223BD14B00379C6F /* DSIncomingContactsTableViewController.m */; };
+		2AF7296E22789C5C001D2D21 /* DSBLSIESEncryptedDataTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2AF7296C22789C56001D2D21 /* DSBLSIESEncryptedDataTests.mm */; };
 		2AF8A93C2283539800F8C72D /* DSFetchedResultsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A93B2283539800F8C72D /* DSFetchedResultsTableViewController.m */; };
 		2AF8A943228434CA00F8C72D /* DSContactTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AF8A941228434CA00F8C72D /* DSContactTransactionTableViewCell.m */; };
 		2AF8A944228434CA00F8C72D /* DSContactTransactionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AF8A942228434CA00F8C72D /* DSContactTransactionTableViewCell.xib */; };
@@ -216,6 +217,7 @@
 		2AE125ED223B9B0600379C6F /* DSOutgoingContactsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSOutgoingContactsTableViewController.m; sourceTree = "<group>"; };
 		2AE125F2223BD14B00379C6F /* DSIncomingContactsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSIncomingContactsTableViewController.h; sourceTree = "<group>"; };
 		2AE125F3223BD14B00379C6F /* DSIncomingContactsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSIncomingContactsTableViewController.m; sourceTree = "<group>"; };
+		2AF7296C22789C56001D2D21 /* DSBLSIESEncryptedDataTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DSBLSIESEncryptedDataTests.mm; sourceTree = "<group>"; };
 		2AF8A93A2283539800F8C72D /* DSFetchedResultsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSFetchedResultsTableViewController.h; sourceTree = "<group>"; };
 		2AF8A93B2283539800F8C72D /* DSFetchedResultsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSFetchedResultsTableViewController.m; sourceTree = "<group>"; };
 		2AF8A940228434CA00F8C72D /* DSContactTransactionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactTransactionTableViewCell.h; sourceTree = "<group>"; };
@@ -655,6 +657,7 @@
 		6003F5B5195388D20070C39A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				2AF7296C22789C56001D2D21 /* DSBLSIESEncryptedDataTests.mm */,
 				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
 				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
 				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
@@ -1306,6 +1309,7 @@
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
+				2AF7296E22789C5C001D2D21 /* DSBLSIESEncryptedDataTests.mm in Sources */,
 				2A90EDAA2268C15D00D95B6B /* DSUInt256IndexPathTests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
