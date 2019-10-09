@@ -421,11 +421,9 @@
     [self startTimeOutObserver];
 }
 
--(void)getRecentMasternodeList:(NSUInteger)blocksAgo {
+-(void)getRecentMasternodeList:(NSUInteger)blocksAgo withSafetyDelay:(uint32_t)safetyDelay {
     @synchronized (self.masternodeListRetrievalQueue) {
-        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blocksAgo];
-        DSDLog(@"Get recent masternode list %u",merkleBlock.height);
         if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(merkleBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
             //we are asking for the same as the last one
             return;
@@ -438,8 +436,11 @@
             DSDLog(@"Already have that masternode list in stub %u",merkleBlock.height);
             return;
         }
+        
         self.lastQueriedBlockHash = merkleBlock.blockHash;
         [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(merkleBlock.blockHash)];
+        DSDLog(@"Getting masternode list %u",merkleBlock.height);
+        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
         [self addToMasternodeRetrievalQueue:uint256_data(merkleBlock.blockHash)];
         if (emptyRequestQueue) {
             [self dequeueMasternodeListRequest];
@@ -448,38 +449,17 @@
 }
 
 -(void)getCurrentMasternodeListWithSafetyDelay:(uint32_t)safetyDelay {
-    @synchronized (self.masternodeListRetrievalQueue) {
-        if (safetyDelay) {
-            //the safety delay checks to see if this was called in the last n seconds.
-            self.timeIntervalForMasternodeRetrievalSafetyDelay = [[NSDate date] timeIntervalSince1970];
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
-                NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
-                if (timeElapsed > safetyDelay) {
-                    [self getCurrentMasternodeListWithSafetyDelay:0];
-                }
-            });
-            return;
-        }
-        if ([self.masternodeListRetrievalQueue lastObject] && uint256_eq(self.chain.lastBlock.blockHash, [self.masternodeListRetrievalQueue lastObject].UInt256)) {
-            //we are asking for the same as the last one
-            return;
-        }
-        if ([self.masternodeListsByBlockHash.allKeys containsObject:uint256_data(self.chain.lastBlock.blockHash)]) {
-            DSDLog(@"Already have that masternode list %u",self.chain.lastBlock.height);
-            return;
-        }
-        if ([self.masternodeListsBlockHashStubs containsObject:uint256_data(self.chain.lastBlock.blockHash)]) {
-            DSDLog(@"Already have that masternode list in stub %u",self.chain.lastBlock.height);
-            return;
-        }
-        self.lastQueriedBlockHash = self.chain.lastBlock.blockHash;
-        [self.masternodeListQueriesNeedingQuorumsValidated addObject:uint256_data(self.chain.lastBlock.blockHash)];
-        DSDLog(@"Get current masternode list %u",self.chain.lastBlock.height);
-        BOOL emptyRequestQueue = ![self.masternodeListRetrievalQueue count];
-        [self addToMasternodeRetrievalQueue:uint256_data(self.chain.lastBlock.blockHash)];
-        if (emptyRequestQueue) {
-            [self dequeueMasternodeListRequest];
-        }
+    if (safetyDelay) {
+        //the safety delay checks to see if this was called in the last n seconds.
+        self.timeIntervalForMasternodeRetrievalSafetyDelay = [[NSDate date] timeIntervalSince1970];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(safetyDelay * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{
+            NSTimeInterval timeElapsed = [[NSDate date] timeIntervalSince1970] - self.timeIntervalForMasternodeRetrievalSafetyDelay;
+            if (timeElapsed > safetyDelay) {
+                [self getCurrentMasternodeListWithSafetyDelay:0];
+            }
+        });
+    } else {
+        [self getRecentMasternodeList:0 withSafetyDelay:safetyDelay];
     }
 }
 
@@ -1190,17 +1170,11 @@
         DSDLog(@"No masternode list found yet");
         return nil;
     }
-    NSArray * quorumsForIS = [masternodeList.quorums[@(1)] allValues];
-    UInt256 lowestValue = UINT256_MAX;
-    DSQuorumEntry * firstQuorum = nil;
-    for (DSQuorumEntry * quorumEntry in quorumsForIS) {
-        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
-        if (uint256_sup(lowestValue, orderingHash)) {
-            lowestValue = orderingHash;
-            firstQuorum = quorumEntry;
-        }
+    if (merkleBlock.height - masternodeList.height > 24) {
+        DSDLog(@"Masternode list is too old");
+        return nil;
     }
-    return firstQuorum;
+    return [masternodeList quorumEntryForInstantSendRequestID:requestID];
 }
 
 // MARK: - Local Masternodes

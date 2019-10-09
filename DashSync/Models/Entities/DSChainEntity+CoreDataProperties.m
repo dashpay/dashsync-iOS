@@ -43,6 +43,5 @@
 @dynamic totalGovernanceObjectsCount;
 @dynamic simplifiedMasternodeEntries;
 @dynamic baseBlockHash;
-@dynamic transactionLockVotes;
 
 @end

@@ -39,6 +39,36 @@
 
 @implementation DSQuorumEntry
 
+- (id)copyWithZone:(NSZone *)zone
+{
+    DSQuorumEntry * copy = [[[self class] alloc] init];
+
+    if (copy) {
+        // Copy NSObject subclasses
+        [copy setSignersBitset:self.signersBitset];
+        [copy setValidMembersBitset:self.validMembersBitset];
+
+        // Set primitives
+        [copy setVersion:self.version];
+        [copy setQuorumHash:self.quorumHash];
+        [copy setQuorumPublicKey:self.quorumPublicKey];
+        [copy setQuorumThresholdSignature:self.quorumThresholdSignature];
+        [copy setQuorumVerificationVectorHash:self.quorumVerificationVectorHash];
+        [copy setAllCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature];
+        [copy setSignersCount:self.signersCount];
+        [copy setLlmqType:self.llmqType];
+        [copy setValidMembersCount:self.validMembersCount];
+        [copy setQuorumEntryHash:self.quorumEntryHash];
+        [copy setCommitmentHash:self.commitmentHash];
+        [copy setLength:self.length];
+        
+        [copy setChain:self.chain];
+        
+        
+    }
+
+    return copy;
+}
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain {
     return [[DSQuorumEntry alloc] initWithMessage:data dataOffset:dataOffset
@@ -290,6 +320,16 @@
 -(NSString*)debugDescription {
     uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" - %u",height]];
+}
+
+-(BOOL)isEqual:(id)object {
+    if (self == object) return YES;
+    if (![object isKindOfClass:[DSQuorumEntry class]]) return NO;
+    return uint256_eq(self.quorumEntryHash, ((DSQuorumEntry*)object).quorumEntryHash);
+}
+
+-(NSUInteger)hash {
+    return [uint256_data(self.quorumEntryHash) hash];
 }
 
 @end

@@ -1362,38 +1362,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return (amount > fee) ? amount - fee : 0;
 }
 
-// MARK: = Autolocks
-
-- (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount
-{
-    const uint64_t confirmationCount = self.wallet.chain.ixPreviousConfirmationsNeeded;
-    
-    DSUTXO o;
-    DSTransaction *tx;
-    NSUInteger inputCount = 0;
-    uint64_t amount = 0;
-    
-    for (NSValue *output in self.utxos) {
-        [output getValue:&o];
-        tx = self.allTx[uint256_obj(o.hash)];
-        if (o.n >= tx.outputAmounts.count) continue;
-        if (confirmationCount && (tx.blockHeight >= (self.blockHeight - confirmationCount))) continue;
-        inputCount++;
-        amount += [tx.outputAmounts[o.n] unsignedLongLongValue];
-        
-        if (amount >= requiredAmount) {
-            break;
-        }
-    }
-    
-    if (amount < requiredAmount) {
-        return NO;
-    }
-    
-    DSChain *chain = self.wallet.chain;
-    return [chain canUseAutoLocksWithInputCount:inputCount];
-}
-
 // MARK: - Private Key Sweeping
 
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction

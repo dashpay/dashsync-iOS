@@ -96,9 +96,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend returnInputCount:(uint32_t* _Nullable)rInputCount;
 
-// true if AutoLocks enabled and can be used with provided amount
-- (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount;
-
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
 

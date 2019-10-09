@@ -59,6 +59,8 @@ FOUNDATION_EXPORT NSString* const DSChainManagerNotificationChainKey;
 
 - (void)rescan;
 
+- (void)rescanMasternodeListsAndQuorums;
+
 @end
 
 NS_ASSUME_NONNULL_END

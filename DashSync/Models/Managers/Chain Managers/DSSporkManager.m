@@ -93,12 +93,6 @@
     return instantSendSpork.value <= self.chain.lastBlockHeight;
 }
 
--(BOOL)instantSendAutoLocks {
-    DSSpork * instantSendSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork16InstantSendAutoLocks)];
-    if (!instantSendSpork) return TRUE;//assume true
-    return instantSendSpork.value <= self.chain.lastBlockHeight;
-}
-
 -(BOOL)sporksUpdatedSignatures {
     DSSpork * updateSignatureSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork6NewSigs)];
     if (!updateSignatureSpork) return FALSE;//assume false
