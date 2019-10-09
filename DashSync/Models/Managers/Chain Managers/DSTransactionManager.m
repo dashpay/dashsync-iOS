@@ -44,7 +44,6 @@
 #import "DSAuthenticationManager.h"
 #import "DSPriceManager.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "DSTransactionLockVote.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSMasternodeManager+Protected.h"
 #import "DSSpecialTransactionsWalletHolder.h"
@@ -58,7 +57,6 @@
 
 @property (nonatomic, strong) NSMutableDictionary *txRelays, *txRequests;
 @property (nonatomic, strong) NSMutableDictionary *publishedTx, *publishedCallback;
-@property (nonatomic, strong) NSMutableDictionary *transactionLockVoteDictionary; //v13 and before
 @property (nonatomic, strong) NSMutableSet *nonFalsePositiveTransactions;
 @property (nonatomic, strong) DSBloomFilter *bloomFilter;
 @property (nonatomic, assign) uint32_t filterUpdateHeight;
@@ -83,7 +81,6 @@
     self.publishedTx = [NSMutableDictionary dictionary];
     self.publishedCallback = [NSMutableDictionary dictionary];
     self.nonFalsePositiveTransactions = [NSMutableSet set];
-    self.transactionLockVoteDictionary = [NSMutableDictionary dictionary];
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
     self.instantSendLocksWaitingForQuorums = [NSMutableDictionary dictionary];
     self.instantSendLocksWaitingForTransactions = [NSMutableDictionary dictionary];
@@ -177,7 +174,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil blockHashes:nil];
                 }
             }];
         }
@@ -963,14 +960,9 @@
 
 // MARK: Transaction Issues
 
-- (void)peer:(DSPeer *)peer relayedNotFoundMessagesWithTransactionHashes:(NSArray *)txHashes transactionLockRequestHashes:(NSArray *)transactionLockRequestHashes andBlockHashes:(NSArray *)blockhashes
+- (void)peer:(DSPeer *)peer relayedNotFoundMessagesWithTransactionHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
 {
     for (NSValue *hash in txHashes) {
-        [self.txRelays[hash] removeObject:peer];
-        [self.txRequests[hash] removeObject:peer];
-    }
-    
-    for (NSValue *hash in transactionLockRequestHashes) {
         [self.txRelays[hash] removeObject:peer];
         [self.txRequests[hash] removeObject:peer];
     }
@@ -1024,89 +1016,6 @@
 }
 
 // MARK: Instant Send
-
--(BOOL)checkAllLocksForTransaction:(DSTransaction*)transaction {
-    DSDLog(@"Checking all locks for transaction %@",uint256_data(transaction.txHash).hexString);
-    NSValue *transactionHashValue = uint256_obj(transaction.txHash);
-    if (!transaction.inputHashes || !transaction.inputHashes.count) return NO;
-    NSMutableDictionary * lockVotes = [NSMutableDictionary dictionary];
-    
-    for (uint32_t inputIndex = 0;inputIndex < [transaction.inputHashes count];inputIndex++) {
-        NSValue * transactionOutputValue = transaction.inputHashes[inputIndex];
-        uint32_t outputIndex = [transaction.inputIndexes[inputIndex] unsignedIntValue];
-        UInt256 outputHash;
-        [transactionOutputValue getValue:&outputHash];
-        NSValue * transactionOutputUTXO = dsutxo_obj(((DSUTXO) { outputHash, outputIndex }));
-        if (self.transactionLockVoteDictionary[transactionHashValue][transactionOutputUTXO][IX_INPUT_LOCKED_KEY]) {
-            BOOL lockFailed = ![self.transactionLockVoteDictionary[transactionHashValue][transactionOutputUTXO][IX_INPUT_LOCKED_KEY] boolValue];
-            if (lockFailed) return NO; //sanity check
-            
-        } else {
-            return NO;
-        }
-        NSMutableDictionary * inputLockVotesDictionary = [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputUTXO] mutableCopy];
-        [inputLockVotesDictionary removeObjectForKey:IX_INPUT_LOCKED_KEY];
-        
-        lockVotes[transactionOutputUTXO] = [NSArray arrayWithArray:inputLockVotesDictionary.allValues];
-    }
-    [transaction setInstantSendReceivedWithTransactionLockVotes:lockVotes];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter]
-         postNotificationName:DSTransactionManagerTransactionStatusDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-    });
-    return YES;
-}
-
--(void)checkLocksForTransactionHash:(UInt256)transactionHash forInput:(DSUTXO)transactionOutput {
-    //first check to see if transaction is known
-    DSTransaction * transaction = nil;
-    DSWallet * wallet = nil;
-    DSAccount * account = [self.chain accountForTransactionHash:transactionHash transaction:&transaction wallet:&wallet];
-    if (account && transaction) {
-        //transaction and account are known
-        NSValue *transactionHashValue = uint256_obj(transactionHash);
-        NSValue *transactionOutputValue = dsutxo_obj(transactionOutput);
-        if (self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY]) {
-            BOOL lockFailed = ![self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] boolValue];
-            if (lockFailed) return; //sanity check
-            //this input is alredy locked, let's check other inputs to see if they are locked as well
-            [self checkAllLocksForTransaction:transaction];
-            
-        } else if ([self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count] > 5) {
-            //there are over 6 votes already, check to see that the votes are coming from the right masternodes
-            DSDLog(@"We have enough lock votes (%u)",(uint32_t)[self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count]);
-            int yesVotes = 0;
-            int noVotes = 0;//these might not be no votes, but they are a no for the masternode (might be an signature error)
-            for (NSObject * value in [self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] copy]) {
-                if ([value isEqual:IX_INPUT_LOCKED_KEY]) continue;
-                DSTransactionLockVote * lockVote = self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][value];
-                DSSimplifiedMasternodeEntry * masternode = [self.masternodeManager masternodeHavingProviderRegistrationTransactionHash:uint256_data(lockVote.masternodeProviderTransactionHash).reverse];
-                if (!masternode) {
-                    DSDLog(@"No known masternode");
-                    continue;
-                }
-                if (!lockVote.quorumVerified) {
-                    DSDLog(@"We got a lock vote from the wrong quorum");
-                    DSDLog(@"Masternode %@ not in intended Quorum %@ with quorum modifier hash %@",lockVote.masternode,lockVote.intendedQuorum,[NSData dataWithUInt256:lockVote.quorumModifierHash].hexString);
-                }
-                DSDLog(@"signature is %@",lockVote.signatureVerified?@"verified":@"not good");
-                if (lockVote.signatureVerified && lockVote.quorumVerified) yesVotes++;
-                else noVotes++;
-                if (yesVotes > 5) { // 6 or more
-                    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @YES;
-                    [self checkAllLocksForTransaction:transaction];
-                } else if (noVotes > 4) { // 5 or more
-                    self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue][IX_INPUT_LOCKED_KEY] = @NO;
-                }
-            }
-        } else {
-            DSDLog(@"There were only %u lock votes, waiting for more.",(uint32_t)[self.transactionLockVoteDictionary[transactionHashValue][transactionOutputValue] count]);
-        }
-    } else {
-        DSDLog(@"No account or transaction found for transaction lock!");
-    }
-}
-
 
 - (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockVoteHashes {
     

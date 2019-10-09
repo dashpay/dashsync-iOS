@@ -48,7 +48,6 @@
 #import "NSDate+Utils.h"
 #import "DSPeerEntity+CoreDataClass.h"
 #import "DSChainManager.h"
-#import "DSTransactionLockVote.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSSporkManager.h"
 
@@ -97,7 +96,7 @@
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownTxLockVoteHashes, *knownInstantSendLockHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownInstantSendLockHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
@@ -244,7 +243,6 @@
     self.sentFilter = self.sentGetaddr = self.sentGetdataTxBlocks = self.sentGetdataMasternode = self.sentMempool = self.sentGetblocks = self.sentGetdataGovernance = self.sentGetdataGovernanceVotes = NO ;
     self.needsFilterUpdate = NO;
     self.knownTxHashes = [NSMutableOrderedSet orderedSet];
-    self.knownTxLockVoteHashes = [NSMutableOrderedSet orderedSet];
     self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
     
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
@@ -664,35 +662,23 @@
     [self sendMessage:msg type:MSG_GETDATA];
 }
 
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes txLockRequestHashes:(NSArray *)txLockRequestHashes txLockVoteHashes:(NSArray *)txLockVoteHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes
 {
     if (!([[DSOptionsManager sharedInstance] syncType] & DSSyncType_GetsNewBlocks)) return;
-    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
+    if (txHashes.count + instantSendLockHashes.count + blockHashes.count > MAX_GETDATA_HASHES) { // limit total hash count to MAX_GETDATA_HASHES
         DSDLog(@"%@:%u couldn't send getdata, %u is too many items, max is %u", self.host, self.port,
-              (int)txHashes.count + (int)txLockRequestHashes.count + (int)instantSendLockHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
+              (int)txHashes.count + (int)instantSendLockHashes.count + (int)blockHashes.count, MAX_GETDATA_HASHES);
         return;
     }
-    else if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count + blockHashes.count == 0) return;
+    else if (txHashes.count + instantSendLockHashes.count + blockHashes.count == 0) return;
     
     NSMutableData *msg = [NSMutableData data];
     UInt256 h;
     
-    [msg appendVarInt:txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + blockHashes.count + instantSendLockHashes.count];
+    [msg appendVarInt:txHashes.count + blockHashes.count + instantSendLockHashes.count];
     
     for (NSValue *hash in txHashes) {
         [msg appendUInt32:DSInvType_Tx];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-    
-    for (NSValue *hash in txLockRequestHashes) {
-        [msg appendUInt32:DSInvType_TxLockRequest];
-        [hash getValue:&h];
-        [msg appendBytes:&h length:sizeof(h)];
-    }
-    
-    for (NSValue *hash in txLockVoteHashes) {
-        [msg appendUInt32:DSInvType_TxLockVote];
         [hash getValue:&h];
         [msg appendBytes:&h length:sizeof(h)];
     }
@@ -807,7 +793,7 @@
     if (i != NSNotFound) {
         [self.knownBlockHashes removeObjectsInRange:NSMakeRange(0, i)];
         DSDLog(@"%@:%u re-requesting %u blocks", self.host, self.port, (int)self.knownBlockHashes.count);
-        [self sendGetdataMessageWithTxHashes:nil txLockRequestHashes:nil txLockVoteHashes:nil instantSendLockHashes:nil blockHashes:self.knownBlockHashes.array];
+        [self sendGetdataMessageWithTxHashes:nil instantSendLockHashes:nil blockHashes:self.knownBlockHashes.array];
     }
 }
 
@@ -1103,8 +1089,6 @@
     NSNumber * l = nil;
     NSUInteger count = (NSUInteger)[message varIntAtOffset:0 length:&l];
     NSMutableOrderedSet *txHashes = [NSMutableOrderedSet orderedSet];
-    NSMutableOrderedSet *txLockRequestHashes = [NSMutableOrderedSet orderedSet];
-    NSMutableOrderedSet *txLockVoteHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *instantSendLockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableOrderedSet *blockHashes = [NSMutableOrderedSet orderedSet];
     NSMutableSet *sporkHashes = [NSMutableSet set];
@@ -1148,9 +1132,9 @@
         
         switch (type) {
             case DSInvType_Tx: [txHashes addObject:uint256_obj(hash)]; break;
-            case DSInvType_TxLockRequest: [txLockRequestHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_TxLockRequest: [txHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_DSTx: break;
-            case DSInvType_TxLockVote: [txLockVoteHashes addObject:uint256_obj(hash)]; break;
+            case DSInvType_TxLockVote: break;
             case DSInvType_InstantSendLock : [instantSendLockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Block: [blockHashes addObject:uint256_obj(hash)]; break;
             case DSInvType_Merkleblock: [blockHashes addObject:uint256_obj(hash)]; break;
@@ -1174,11 +1158,11 @@
         }
     }
     
-    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count + txLockRequestHashes.count > 0) && !onlyPrivateSendTransactions) {
+    if ([self.chain syncsBlockchain] && !self.sentFilter && ! self.sentMempool && ! self.sentGetblocks && (txHashes.count + instantSendLockHashes.count > 0) && !onlyPrivateSendTransactions) {
         [self error:@"got tx inv message before loading a filter"];
         return;
     }
-    else if (txHashes.count + txLockRequestHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
+    else if (txHashes.count + instantSendLockHashes.count > 10000) { // this was happening on testnet, some sort of DOS/spam attack?
         DSDLog(@"%@:%u too many transactions, disconnecting", self.host, self.port);
         [self disconnect]; // disconnecting seems to be the easiest way to mitigate it
         return;
@@ -1217,38 +1201,6 @@
         [txHashes minusOrderedSet:self.knownTxHashes];
     }
     
-    if ([txLockRequestHashes intersectsOrderedSet:self.knownTxHashes]) { // remove transactions we already have
-        for (NSValue *hash in txLockRequestHashes) {
-            UInt256 h;
-            
-            if (! [self.knownTxHashes containsObject:hash]) continue;
-            [hash getValue:&h];
-            
-            dispatch_async(self.delegateQueue, ^{
-                if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransaction:h transactionIsRequestingInstantSendLock:YES];
-            });
-        }
-        
-        [txLockRequestHashes minusOrderedSet:self.knownTxHashes];
-    }
-    
-    if (txLockVoteHashes.count > 0) {
-        for (NSValue *hash in txLockVoteHashes) {
-            UInt256 h;
-            
-            if (! [self.knownTxLockVoteHashes containsObject:hash]) continue;
-            [hash getValue:&h];
-        }
-        
-        [txLockVoteHashes minusOrderedSet:self.knownTxLockVoteHashes];
-        
-        dispatch_async(self.delegateQueue, ^{
-            if (self->_status == DSPeerStatus_Connected) [self.transactionDelegate peer:self hasTransactionLockVoteHashes:txLockVoteHashes];
-        });
-    }
-    
-    [self.knownTxLockVoteHashes unionOrderedSet:txLockVoteHashes];
-    
     if (instantSendLockHashes.count > 0) {
         for (NSValue *hash in instantSendLockHashes) {
             UInt256 h;
@@ -1267,11 +1219,9 @@
     [self.knownInstantSendLockHashes unionOrderedSet:instantSendLockHashes];
     
     [self.knownTxHashes unionOrderedSet:txHashes];
-    [self.knownTxHashes unionOrderedSet:txLockRequestHashes];
     
-    if (txHashes.count + txLockRequestHashes.count + txLockVoteHashes.count + instantSendLockHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
-        [self sendGetdataMessageWithTxHashes:txHashes.array txLockRequestHashes:txLockRequestHashes.array txLockVoteHashes:txLockVoteHashes.array
-                             instantSendLockHashes:instantSendLockHashes.array blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
+    if (txHashes.count + instantSendLockHashes.count > 0 || (! self.needsFilterUpdate && blockHashes.count > 0)) {
+        [self sendGetdataMessageWithTxHashes:txHashes.array instantSendLockHashes:instantSendLockHashes.array blockHashes:(self.needsFilterUpdate) ? nil : blockHashes.array];
     }
     
     // to improve chain download performance, if we received 500 block hashes, we request the next 500 block hashes
@@ -1280,7 +1230,7 @@
                                    andHashStop:UINT256_ZERO];
     }
     
-    if (self.mempoolTransactionCompletion && (txHashes.count + txLockRequestHashes.count + governanceObjectHashes.count + sporkHashes.count > 0)) {
+    if (self.mempoolTransactionCompletion && (txHashes.count + governanceObjectHashes.count + sporkHashes.count > 0)) {
         self.mempoolRequestTime = [NSDate timeIntervalSince1970]; // this will cancel the mempool timeout
         DSDLog(@"[DSPeer] got mempool tx inv messages %@",self.host);
         __block MempoolCompletionBlock completion = self.mempoolTransactionCompletion;
@@ -1619,7 +1569,7 @@
     }
     
     dispatch_async(self.delegateQueue, ^{
-        [self.transactionDelegate peer:self relayedNotFoundMessagesWithTransactionHashes:txHashes transactionLockRequestHashes:txLockRequestHashes andBlockHashes:blockHashes];
+        [self.transactionDelegate peer:self relayedNotFoundMessagesWithTransactionHashes:txHashes andBlockHashes:blockHashes];
     });
 }
 

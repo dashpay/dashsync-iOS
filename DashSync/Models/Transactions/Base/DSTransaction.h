@@ -93,8 +93,6 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
-@property (nonatomic, readonly) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
-@property (nonatomic, readonly) NSArray<DSTransactionLockVote*>* transactionLockVotes;
 @property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
@@ -142,8 +140,6 @@ sequence:(uint32_t)sequence;
 - (BOOL)saveInitial; //returns if the save took place
 
 //instant send
-
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*, NSArray<DSTransactionLockVote *> *> *)transactionLockVotes;
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
 

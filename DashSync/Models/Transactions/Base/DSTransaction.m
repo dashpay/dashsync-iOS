@@ -40,7 +40,6 @@
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSTransactionEntity+CoreDataClass.h"
-#import "DSTransactionLockVote.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
@@ -49,7 +48,6 @@
 
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) BOOL saved; //don't trust this
-@property (nonatomic, strong) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
 @property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 @property (nonatomic, assign) BOOL instantSendReceived;
 @property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
@@ -642,40 +640,6 @@
 }
 
 // MARK: - Instant Send
-
-// v13
-
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>*)transactionLockVotes {
-    BOOL instantSendReceived = !!transactionLockVotes.count;
-    self.transactionLockVotesDictionary = transactionLockVotes;
-    for (NSValue * key in transactionLockVotes) {
-        NSUInteger inputLockVotes = 0;
-        NSArray * lockVotesForInput = transactionLockVotes[key];
-        for (DSTransactionLockVote * transactionLockVote in lockVotesForInput) {
-            if (transactionLockVote.quorumVerified && transactionLockVote.signatureVerified) {
-                [transactionLockVote save]; //only save the good ones
-                inputLockVotes++;
-            } else {
-                DSDLog(@"A transaction lock vote was bad");
-            }
-        }
-        BOOL inputLocked = inputLockVotes > 5;
-        if (!inputLocked) {
-            DSDLog(@"The input could not be locked");
-        }
-        instantSendReceived &= inputLocked;
-    }
-    self.instantSendReceived = instantSendReceived;
-}
-
--(NSArray*)transactionLockVotes {
-    NSMutableArray * array = [NSMutableArray array];
-    for (NSValue * key in self.transactionLockVotesDictionary) {
-        NSArray * votesForInput = self.transactionLockVotesDictionary[key];
-        [array addObjectsFromArray:votesForInput];
-    }
-    return array;
-}
 
 // v14
 
