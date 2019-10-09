@@ -323,6 +323,7 @@
 }
 
 -(BOOL)isEqual:(id)object {
+    if (self == object) return YES;
     if (![object isKindOfClass:[DSQuorumEntry class]]) return NO;
     return uint256_eq(self.quorumEntryHash, ((DSQuorumEntry*)object).quorumEntryHash);
 }
