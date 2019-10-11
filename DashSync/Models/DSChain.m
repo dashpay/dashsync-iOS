@@ -1321,7 +1321,9 @@ static dispatch_once_t devnetToken = 0;
         if (uint256_eq(b.blockHash, blockhash)) {
             return b.height;
         }
-        b = self.blocks[uint256_obj(b.prevBlock)];
+        UInt256 prevBlock = b.prevBlock;
+        NSValue * prevBlockValue = uint256_obj(prevBlock);
+        b = self.blocks[prevBlockValue];
     }
     for (DSCheckpoint * checkpoint in self.checkpoints) {
         if (uint256_eq(checkpoint.checkpointHash, blockhash)) {
