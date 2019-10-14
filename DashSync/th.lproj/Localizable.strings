@@ -225,6 +225,9 @@
 "unexpected response from %@" = "การตอบสนองที่ไม่คาดคิดจาก %@";
 
 /* No comment provided by engineer. */
+"unknown address" = "unknown address";
+
+/* No comment provided by engineer. */
 "Unknown Error" = "Unknown Error";
 
 /* No comment provided by engineer. */

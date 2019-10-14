@@ -225,6 +225,9 @@
 "unexpected response from %@" = "%@에서 예상치 못한 응답";
 
 /* No comment provided by engineer. */
+"unknown address" = "unknown address";
+
+/* No comment provided by engineer. */
 "Unknown Error" = "알 수 없는 오류";
 
 /* No comment provided by engineer. */

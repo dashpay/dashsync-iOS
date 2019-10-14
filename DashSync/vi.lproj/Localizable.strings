@@ -225,6 +225,9 @@
 "unexpected response from %@" = "phản hồi không mong đợi từ %@";
 
 /* No comment provided by engineer. */
+"unknown address" = "unknown address";
+
+/* No comment provided by engineer. */
 "Unknown Error" = "Lỗi không xác định";
 
 /* No comment provided by engineer. */
