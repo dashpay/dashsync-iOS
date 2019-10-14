@@ -225,6 +225,9 @@
 "unexpected response from %@" = "απρόσμενη απάντηση από %@";
 
 /* No comment provided by engineer. */
+"unknown address" = "unknown address";
+
+/* No comment provided by engineer. */
 "Unknown Error" = "Άγνωστο Σφάλμα";
 
 /* No comment provided by engineer. */

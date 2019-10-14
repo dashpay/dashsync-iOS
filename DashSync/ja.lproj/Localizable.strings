@@ -225,6 +225,9 @@
 "unexpected response from %@" = "%@ から予期しない応答";
 
 /* No comment provided by engineer. */
+"unknown address" = "unknown address";
+
+/* No comment provided by engineer. */
 "Unknown Error" = "未知のエラー";
 
 /* No comment provided by engineer. */

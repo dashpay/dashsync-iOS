@@ -225,6 +225,9 @@
 "unexpected response from %@" = "risposta inaspettata da %@";
 
 /* No comment provided by engineer. */
+"unknown address" = "unknown address";
+
+/* No comment provided by engineer. */
 "Unknown Error" = "Errore sconosciuto";
 
 /* No comment provided by engineer. */
