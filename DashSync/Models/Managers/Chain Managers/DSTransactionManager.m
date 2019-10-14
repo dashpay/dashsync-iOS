@@ -279,7 +279,7 @@
             if (rescan) {
                 [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_rejected_rescan"];
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:DSLocalizedString(@"transaction rejected", nil)
+                                             alertControllerWithTitle:DSLocalizedString(@"Transaction rejected", nil)
                                              message:DSLocalizedString(@"Your wallet may be out of sync.\n"
                                                                        "This can often be fixed by rescanning the blockchain.", nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
@@ -361,8 +361,8 @@
     
     BOOL requestsInstantSend = protoReq.requestsInstantSend;
     
-    if (! valid && [protoReq.errorMessage isEqual:DSLocalizedString(@"request expired", nil)]) {
-        errorNotificationBlock(DSLocalizedString(@"bad payment request", nil),protoReq.errorMessage,YES);
+    if (! valid && [protoReq.errorMessage isEqual:DSLocalizedString(@"Request expired", nil)]) {
+        errorNotificationBlock(DSLocalizedString(@"Bad payment request", nil),protoReq.errorMessage,YES);
         return;
     }
     
@@ -382,8 +382,8 @@
     NSString *address = [NSString addressWithScriptPubKey:protoReq.details.outputScripts.firstObject onChain:chain];
     if (!acceptInternalAddress && [wallet containsAddress:address]) {
         NSString * challengeTitle = DSLocalizedString(@"WARNING", nil);
-        NSString * challengeMessage = DSLocalizedString(@"this payment address is already in your wallet", nil);
-        NSString * challengeAction = DSLocalizedString(@"ignore", nil);
+        NSString * challengeMessage = DSLocalizedString(@"This payment address is already in your wallet", nil);
+        NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
         challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:acceptUncertifiedPayee requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         return;
     }
@@ -392,14 +392,14 @@
         NSString * challengeMessage = DSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
                                                         "re-use reduces privacy for both you and the recipient and can result in loss if "
                                                         "the recipient doesn't directly control the address", nil);
-        NSString * challengeAction = DSLocalizedString(@"ignore", nil);
+        NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
         challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:YES addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:acceptUncertifiedPayee requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         return;
     } else if (protoReq.errorMessage.length > 0 && protoReq.commonName.length > 0 &&
                !acceptUncertifiedPayee) {
-        NSString * challengeTitle = DSLocalizedString(@"payee identity isn't certified", nil);
+        NSString * challengeTitle = DSLocalizedString(@"Payee identity isn't certified", nil);
         NSString * challengeMessage = protoReq.errorMessage;
-        NSString * challengeAction = DSLocalizedString(@"ignore", nil);
+        NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
         challenge(challengeTitle,challengeMessage,challengeAction,^{[self confirmProtocolRequest:protoReq forAmount:requestedAmount fromAccount:account acceptInternalAddress:acceptInternalAddress acceptReusingAddress:acceptReusingAddress addressIsFromPasteboard:addressIsFromPasteboard acceptUncertifiedPayee:YES requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];}, ^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         
         return;
@@ -409,12 +409,12 @@
         return;
     }
     else if (amount < TX_MIN_OUTPUT_AMOUNT) {
-        errorNotificationBlock(DSLocalizedString(@"couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"dash payments can't be less than %@", nil),
+        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"dash payments can't be less than %@", nil),
                                                                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
         return;
     }
     else if (outputTooSmall) {
-        errorNotificationBlock(DSLocalizedString(@"couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"dash transaction outputs can't be less than %@",
+        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"dash transaction outputs can't be less than %@",
                                                                                                                              nil), [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
         return;
     }
