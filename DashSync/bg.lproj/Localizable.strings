@@ -39,7 +39,7 @@
 "bad password, try again" = "грешна парола, опитайте отново";
 
 /* No comment provided by engineer. */
-"bad payment request" = "грешна заявка за плащане";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
 "bad payment request URL" = "грешна заявка за плащане URL";
@@ -63,7 +63,7 @@
 "connect timeout" = "таймаут на връзката";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "не може да се направи плащане";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "Dash плащането не може да бъде по-малко от %@";
@@ -93,7 +93,7 @@
 "error signing transaction" = "грешно подписана транзакция";
 
 /* No comment provided by engineer. */
-"ignore" = "игнорирай";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
 "instant payment" = "instant payment";
@@ -159,7 +159,7 @@
 "password protected key" = "защитен с парола ключ";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "идентичността на подателя не е сертифицирана";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN for %@";
@@ -169,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "намаляване сумата на плащането от\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
 "request expired" = "изтекло искане";
@@ -198,7 +201,7 @@
 "Testnet" = "Тестова мрежа";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "този адрес за плащане е вече в твоя портфейл";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "този частен ключ е вече в твоя портфейл";
@@ -217,6 +220,9 @@
 
 /* No comment provided by engineer. */
 "transaction rejected" = "отхвърлена транзакция";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
 "Try again in %@" = "Try again in %@";
