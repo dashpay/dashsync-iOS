@@ -39,7 +39,7 @@
 "bad password, try again" = "sai mật khẩu, hãy thử lại";
 
 /* No comment provided by engineer. */
-"bad payment request" = "yêu cầu thanh toán không đúng";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
 "bad payment request URL" = "địa chỉ URL của yêu cầu thanh toán không đúng";
@@ -63,7 +63,7 @@
 "connect timeout" = "hết thời hạn kết nối";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "không thể thực hiện thanh toán";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "số dash thanh toán không thể nhỏ hơn %@";
@@ -93,7 +93,7 @@
 "error signing transaction" = "lỗi khi ký giao dịch";
 
 /* No comment provided by engineer. */
-"ignore" = "bỏ qua";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
 "instant payment" = "giao dịch tức thời";
@@ -159,7 +159,7 @@
 "password protected key" = "khoá được bảo vệ bởi mật khẩu";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "thông tin về người nhận chưa được xác nhận";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN for %@";
@@ -169,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "giảm số lượng thanh toán theo\n%1$@ (%2$@)?";
+
+/* No comment provided by engineer. */
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
 "request expired" = "yêu cầu đã hết hạn";
@@ -198,7 +201,7 @@
 "Testnet" = "Mạng thử nghiệm";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "địa chỉ thanh toán này đã có trong ví của bạn";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "khoá riêng này đã có trong ví của bạn";
@@ -217,6 +220,9 @@
 
 /* No comment provided by engineer. */
 "transaction rejected" = "giao dịch bị từ chối";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
 "Try again in %@" = "Try again in %@";

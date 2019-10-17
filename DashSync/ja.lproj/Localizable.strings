@@ -39,7 +39,7 @@
 "bad password, try again" = "パスワードが正しくないので、もう一度ご入力ください。";
 
 /* No comment provided by engineer. */
-"bad payment request" = "正しくない支払い請求";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
 "bad payment request URL" = "正しくない支払い請求URL";
@@ -63,7 +63,7 @@
 "connect timeout" = "接続タイムアウト";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "支払いを完了できませんでした";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
 "dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
@@ -93,7 +93,7 @@
 "error signing transaction" = "取引署名時エラー";
 
 /* No comment provided by engineer. */
-"ignore" = "無視する";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
 "instant payment" = "即時支払い";
@@ -159,7 +159,7 @@
 "password protected key" = "パスワード保護された鍵";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "支払先のIDが認証されていません";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN for %@";
@@ -169,6 +169,9 @@
 
 /* No comment provided by engineer. */
 "reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
+
+/* No comment provided by engineer. */
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
 "request expired" = "リクエストの有効期限切れました。";
@@ -198,7 +201,7 @@
 "Testnet" = "テストネット";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "このペイメントアドレスは既にあなたのウォレットに含まれています";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
 "this private key is already in your wallet" = "この秘密鍵は既にあなたのウォレットに含まれています";
@@ -217,6 +220,9 @@
 
 /* No comment provided by engineer. */
 "transaction rejected" = "取引が拒否されました";
+
+/* No comment provided by engineer. */
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
 "Try again in %@" = "Try again in %@";
