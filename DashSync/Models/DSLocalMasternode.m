@@ -42,6 +42,8 @@
 @property(nonatomic,assign) uint32_t ownerWalletIndex;
 @property(nonatomic,assign) uint32_t votingWalletIndex;
 @property(nonatomic,assign) uint32_t holdingWalletIndex;
+@property(nonatomic,strong) NSMutableIndexSet * previousOperatorWalletIndexes;
+@property(nonatomic,strong) NSMutableIndexSet * previousVotingWalletIndexes;
 @property(nonatomic,assign) DSLocalMasternodeStatus status;
 @property(nonatomic,strong) DSProviderRegistrationTransaction * providerRegistrationTransaction;
 @property(nonatomic,strong) NSMutableArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
@@ -73,6 +75,8 @@
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
+    self.previousOperatorWalletIndexes = [NSMutableIndexSet indexSet];
+    self.previousVotingWalletIndexes = [NSMutableIndexSet indexSet];
     return self;
 }
 
@@ -91,6 +95,8 @@
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
+    self.previousOperatorWalletIndexes = [NSMutableIndexSet indexSet];
+    self.previousVotingWalletIndexes = [NSMutableIndexSet indexSet];
     return self;
 }
 
@@ -119,6 +125,8 @@
     self.providerUpdateRegistrarTransactions = [NSMutableArray array];
     self.providerUpdateServiceTransactions = [NSMutableArray array];
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
+    self.previousOperatorWalletIndexes = [NSMutableIndexSet indexSet];
+    self.previousVotingWalletIndexes = [NSMutableIndexSet indexSet];
     self.status = DSLocalMasternodeStatus_Registered; //because it comes from a transaction already
     return self;
 }
@@ -438,6 +446,33 @@
 -(void)updateWithUpdateRegistrarTransaction:(DSProviderUpdateRegistrarTransaction*)providerUpdateRegistrarTransaction save:(BOOL)save {
     if (![_providerUpdateRegistrarTransactions containsObject:providerUpdateRegistrarTransaction]) {
         [_providerUpdateRegistrarTransactions addObject:providerUpdateRegistrarTransaction];
+        
+        DSAuthenticationKeysDerivationPath * providerOperatorKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerOperatorKeysDerivationPathForWallet:self.operatorKeysWallet];
+        
+        uint32_t operatorNewWalletIndex = (uint32_t)[providerOperatorKeysDerivationPath indexOfKnownAddress:providerUpdateRegistrarTransaction.operatorAddress];
+        if (self.operatorWalletIndex != operatorNewWalletIndex) {
+            if (self.operatorWalletIndex != UINT32_MAX && ![self.previousOperatorWalletIndexes containsIndex:self.operatorWalletIndex]) {
+                [self.previousOperatorWalletIndexes addIndex:self.operatorWalletIndex];
+            }
+            if ([self.previousOperatorWalletIndexes containsIndex:operatorNewWalletIndex]) {
+                [self.previousOperatorWalletIndexes removeIndex:operatorNewWalletIndex];
+            }
+            self.operatorWalletIndex = operatorNewWalletIndex;
+        }
+        
+        DSAuthenticationKeysDerivationPath * providerVotingKeysDerivationPath = [DSAuthenticationKeysDerivationPath providerVotingKeysDerivationPathForWallet:self.votingKeysWallet];
+        
+        uint32_t votingNewWalletIndex = (uint32_t)[providerVotingKeysDerivationPath indexOfKnownAddress:providerUpdateRegistrarTransaction.votingAddress];
+        if (self.votingWalletIndex != votingNewWalletIndex) {
+            if (self.votingWalletIndex != UINT32_MAX && ![self.previousVotingWalletIndexes containsIndex:self.votingWalletIndex]) {
+                [self.previousVotingWalletIndexes addIndex:self.votingWalletIndex];
+            }
+            if ([self.previousVotingWalletIndexes containsIndex:votingNewWalletIndex]) {
+                [self.previousVotingWalletIndexes removeIndex:votingNewWalletIndex];
+            }
+            self.votingWalletIndex = votingNewWalletIndex;
+        }
+        
         if (save) {
             [self save];
         }
