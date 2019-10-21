@@ -1317,14 +1317,17 @@ static dispatch_once_t devnetToken = 0;
     
     DSMerkleBlock *b = self.lastBlock;
     
-    while (b && b.height > 0) {
-        if (uint256_eq(b.blockHash, blockhash)) {
-            return b.height;
+    @synchronized (self.blocks) {
+        while (b && b.height > 0) {
+            if (uint256_eq(b.blockHash, blockhash)) {
+                return b.height;
+            }
+            UInt256 prevBlock = b.prevBlock;
+            NSValue * prevBlockValue = uint256_obj(prevBlock);
+            b = self.blocks[prevBlockValue];
         }
-        UInt256 prevBlock = b.prevBlock;
-        NSValue * prevBlockValue = uint256_obj(prevBlock);
-        b = self.blocks[prevBlockValue];
     }
+    
     for (DSCheckpoint * checkpoint in self.checkpoints) {
         if (uint256_eq(checkpoint.checkpointHash, blockhash)) {
             return checkpoint.height;
@@ -1516,20 +1519,22 @@ static dispatch_once_t devnetToken = 0;
     block.height = prev.height + 1;
     txTime = block.timestamp/2 + prev.timestamp/2;
     
-    if ((block.height % 1000) == 0) { //free up some memory from time to time
-        [self saveBlocks];
-        DSMerkleBlock *b = block;
-        
-        for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
-            b = self.blocks[uint256_obj(b.prevBlock)];
+    @synchronized (self.blocks) {
+        if ((block.height % 1000) == 0) { //free up some memory from time to time
+            [self saveBlocks];
+            DSMerkleBlock *b = block;
+            
+            for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
+                b = self.blocks[uint256_obj(b.prevBlock)];
+            }
+            NSMutableArray * blocksToRemove = [NSMutableArray array];
+            while (b) { // free up some memory
+                [blocksToRemove addObject:uint256_obj(b.blockHash)];
+                b = self.blocks[uint256_obj(b.prevBlock)];
+            }
+            [self.blocks removeObjectsForKeys:blocksToRemove];
+            //DSDLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
         }
-        NSMutableArray * blocksToRemove = [NSMutableArray array];
-        while (b) { // free up some memory
-            [blocksToRemove addObject:uint256_obj(b.blockHash)];
-            b = self.blocks[uint256_obj(b.prevBlock)];
-        }
-        [self.blocks removeObjectsForKeys:blocksToRemove];
-        //DSDLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
     }
     
     // verify block difficulty if block is past last checkpoint
@@ -1562,8 +1567,9 @@ static dispatch_once_t devnetToken = 0;
         if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
             DSDLog(@"adding block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
-        
-        self.blocks[blockHash] = block;
+        @synchronized (self.blocks) {
+            self.blocks[blockHash] = block;
+        }
         self.lastBlock = block;
         [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
         peer.currentBlockHeight = block.height; //might be download peer instead
@@ -1575,7 +1581,9 @@ static dispatch_once_t devnetToken = 0;
             DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
         
-        self.blocks[blockHash] = block;
+        @synchronized (self.blocks) {
+            self.blocks[blockHash] = block;
+        }
         
         DSMerkleBlock *b = self.lastBlock;
         
@@ -1602,7 +1610,9 @@ static dispatch_once_t devnetToken = 0;
         }
         
         DSDLog(@"chain fork to height %d", block.height);
-        self.blocks[blockHash] = block;
+        @synchronized (self.blocks) {
+            self.blocks[blockHash] = block;
+        }
         if (block.height <= self.lastBlockHeight) return TRUE; // if fork is shorter than main chain, ignore it for now
         
         NSMutableArray *txHashes = [NSMutableArray array];
