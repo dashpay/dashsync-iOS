@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSWallet,DSAccount, DSTransaction,DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderUpdateRevocationTransaction,DSBLSKey,DSECDSAKey;
+@class DSChain,DSWallet,DSAccount, DSTransaction,DSProviderRegistrationTransaction,DSProviderUpdateServiceTransaction,DSProviderUpdateRegistrarTransaction,DSProviderUpdateRevocationTransaction,DSBLSKey,DSECDSAKey;
 
 typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
     DSLocalMasternodeStatus_New = 0,
@@ -22,6 +22,8 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 
 @property(nonatomic,readonly) UInt128 ipAddress;
 @property(nonatomic,readonly) NSString * ipAddressString;
+@property(nonatomic,readonly) NSString * ipAddressAndPortString;
+@property(nonatomic,readonly) NSString * ipAddressAndIfNonstandardPortString;
 @property(nonatomic,readonly) uint16_t port;
 @property(nonatomic,readonly) DSWallet * operatorKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t operatorWalletIndex; //the derivation path index of keys
@@ -31,6 +33,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) uint32_t votingWalletIndex;
 @property(nonatomic,readonly) DSWallet * holdingKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t holdingWalletIndex;
+@property(nonatomic,readonly) DSChain * chain;
 @property(nonatomic,readonly) NSString* payoutAddress;
 @property(nonatomic,readonly) BOOL noLocalWallet;
 @property(nonatomic,readonly) DSProviderRegistrationTransaction * providerRegistrationTransaction;

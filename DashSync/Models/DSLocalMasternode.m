@@ -143,10 +143,45 @@
     return _ipAddress;
 }
 
+-(DSChain*)chain {
+    if (self.providerRegistrationTransaction) {
+        return self.providerRegistrationTransaction.chain;
+    }
+    if (self.operatorKeysWallet) {
+        return self.operatorKeysWallet.chain;
+    }
+    if (self.ownerKeysWallet) {
+        return self.ownerKeysWallet.chain;
+    }
+    if (self.votingKeysWallet) {
+        return self.votingKeysWallet.chain;
+    }
+    if (self.holdingKeysWallet) {
+        return self.holdingKeysWallet.chain;
+    }
+    
+    NSAssert(NO, @"A chain should have been found at this point");
+    
+    return nil;
+}
+
 -(NSString*)ipAddressString {
     char s[INET6_ADDRSTRLEN];
     NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
     return ipAddressString;
+}
+
+-(NSString*)ipAddressAndPortString {
+    return [NSString stringWithFormat:@"%@:%d",self.ipAddressString,self.port];
+}
+
+-(NSString*)ipAddressAndIfNonstandardPortString {
+    DSChain * chain = self.chain;
+    if (chain.isMainnet && self.port == self.providerRegistrationTransaction.chain.standardPort) {
+        return self.ipAddressString;
+    } else {
+        return self.ipAddressAndPortString;
+    }
 }
 
 -(uint16_t)port {
