@@ -33,6 +33,8 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) uint32_t votingWalletIndex;
 @property(nonatomic,readonly) DSWallet * holdingKeysWallet; //only if this is contained in the wallet.
 @property(nonatomic,readonly) uint32_t holdingWalletIndex;
+@property(nonatomic,readonly) NSMutableIndexSet * previousOperatorWalletIndexes; //previously used operator indexes
+@property(nonatomic,readonly) NSMutableIndexSet * previousVotingWalletIndexes; //previously used voting indexes
 @property(nonatomic,readonly) DSChain * chain;
 @property(nonatomic,readonly) NSString* payoutAddress;
 @property(nonatomic,readonly) BOOL noLocalWallet;

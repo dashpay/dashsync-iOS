@@ -1275,7 +1275,35 @@
                 break;
         }
     }
+    
     return nil;
+}
+
+-(NSArray<DSLocalMasternode*>*)localMasternodesPreviouslyUsingIndex:(uint32_t)index atDerivationPath:(DSDerivationPath*)derivationPath {
+    NSParameterAssert(derivationPath);
+    if (derivationPath.reference == DSDerivationPathReference_ProviderFunds || derivationPath.reference == DSDerivationPathReference_ProviderOwnerKeys) {
+        return nil;
+    }
+    
+    NSMutableArray * localMasternodes = [NSMutableArray array];
+    
+    for (DSLocalMasternode * localMasternode in self.localMasternodesDictionaryByRegistrationTransactionHash.allValues) {
+        switch (derivationPath.reference) {
+            case DSDerivationPathReference_ProviderOperatorKeys:
+                if (localMasternode.operatorKeysWallet == derivationPath.wallet && [localMasternode.previousOperatorWalletIndexes containsIndex:index]) {
+                    [localMasternodes addObject:localMasternode];
+                }
+                break;
+            case DSDerivationPathReference_ProviderVotingKeys:
+                if (localMasternode.votingKeysWallet == derivationPath.wallet && [localMasternode.previousVotingWalletIndexes containsIndex:index]) {
+                    [localMasternodes addObject:localMasternode];
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return [localMasternodes copy];
 }
 
 -(NSUInteger)localMasternodesCount {
