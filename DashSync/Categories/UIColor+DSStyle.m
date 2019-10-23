@@ -36,8 +36,17 @@ static inline UIColor *ColorFromHEX(NSUInteger hexValue) {
     return ColorFromHEX(0x008DE4);
 }
 
-+ (UIColor *)ds_labelColor {
-    return [UIColor blackColor];
++ (UIColor *)ds_labelColorForMode:(DSAppearanceMode)appearanceMode {    
+    if (@available(iOS 13.0, *)) {
+        return [UIColor labelColor];
+    } else {
+        if (appearanceMode == DSAppearanceMode_Dark) {
+            return [UIColor whiteColor];
+        }
+        else {
+            return [UIColor blackColor];
+        }
+    }
 }
 
 + (UIColor *)ds_pinBackgroundColor {
@@ -50,6 +59,19 @@ static inline UIColor *ColorFromHEX(NSUInteger hexValue) {
 
 + (UIColor *)ds_pinInputDotColor {
     return [UIColor whiteColor];
+}
+
++ (UIColor *)ds_passphraseBackgroundColorForMode:(DSAppearanceMode)appearanceMode {
+    if (@available(iOS 13.0, *)) {
+        return [UIColor systemBackgroundColor];
+    } else {
+        if (appearanceMode == DSAppearanceMode_Dark) {
+            return [UIColor blackColor];
+        }
+        else {
+            return [UIColor whiteColor];
+        }
+    }
 }
 
 @end

@@ -48,7 +48,7 @@ static CGFloat const VERTICAL_PADDING = 10.0; // same as in DWSeedWordModel+DWLa
 }
 
 - (void)passphraseTextView_setup {
-    self.backgroundColor = [UIColor whiteColor];
+    self.backgroundColor = [UIColor ds_passphraseBackgroundColorForMode:DSAppearanceMode_Automatic];
     self.layer.cornerRadius = CORNER_RADIUS;
     self.layer.masksToBounds = YES;
     self.layoutManager.delegate = self;
