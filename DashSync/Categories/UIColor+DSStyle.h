@@ -19,15 +19,28 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// for iOS 12 or lower Dark Mode is not supported for now (since it requires it's manual support)
+
+typedef NS_ENUM (NSInteger, DSAppearanceMode) {
+    /// Follows Dark Mode setting on iOS 13, uses the light appearance mode on iOS 12 or lower
+    DSAppearanceMode_Automatic,
+    /// The light appearance mode
+    DSAppearanceMode_Light,
+    /// The dark appearance mode
+    DSAppearanceMode_Dark,
+};
+
 @interface UIColor (DSStyle)
 
 + (UIColor *)ds_dashBlueColor;
 
-+ (UIColor *)ds_labelColor;
++ (UIColor *)ds_labelColorForMode:(DSAppearanceMode)appearanceMode;
 
 + (UIColor *)ds_pinBackgroundColor;
 + (UIColor *)ds_pinLockScreenBackgroundColor;
 + (UIColor *)ds_pinInputDotColor;
+
++ (UIColor *)ds_passphraseBackgroundColorForMode:(DSAppearanceMode)appearanceMode;
 
 @end
 
