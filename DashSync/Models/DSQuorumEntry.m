@@ -34,6 +34,7 @@
 @property (nonatomic, assign) uint32_t length;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) BOOL verified;
+@property (nonatomic, assign) BOOL saved;
 
 @end
 
@@ -150,6 +151,7 @@
     self.quorumEntryHash = commitmentHash;
     self.verified = verified;
     self.chain = chain;
+    self.saved = TRUE;
     
     return self;
 }

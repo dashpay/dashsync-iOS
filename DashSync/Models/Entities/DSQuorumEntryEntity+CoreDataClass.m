@@ -23,16 +23,24 @@
     if (block) {
         quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)]] anyObject];
         if (!quorumEntryEntity) {
-            quorumEntryEntity = [DSQuorumEntryEntity managedObject];
-            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
+                return nil;
+            } else {
+                quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+                [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            }
         } else {
             [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
         }
     } else {
         quorumEntryEntity = [DSQuorumEntryEntity anyObjectMatching:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)];
         if (!quorumEntryEntity) {
-            quorumEntryEntity = [DSQuorumEntryEntity managedObject];
-            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
+                return nil;
+            } else {
+                quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+                [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            }
         } else {
             [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
         }
