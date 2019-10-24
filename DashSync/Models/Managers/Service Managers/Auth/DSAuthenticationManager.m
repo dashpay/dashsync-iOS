@@ -597,20 +597,20 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSParameterAssert(completion);
     NSParameterAssert(cancel);
     
-    UIAlertController * alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:DSLocalizedString(@"Password protected key", nil) message:nil preferredStyle:UIAlertControllerStyleAlert];
     [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
         textField.secureTextEntry = true;
         textField.returnKeyType = UIReturnKeyDone;
-        textField.placeholder = DSLocalizedString(@"password", nil);
+        textField.placeholder = DSLocalizedString(@"Password", nil);
     }];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:DSLocalizedString(@"Cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        cancel();
                                    }];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:DSLocalizedString(@"ok", nil)
+                               actionWithTitle:DSLocalizedString(@"OK", nil)
                                style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {
                                    NSString *password = alert.textFields[0].text;
@@ -627,25 +627,25 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSParameterAssert(cancel);
     
     UIAlertController * alert = [UIAlertController
-                                 alertControllerWithTitle:DSLocalizedString(@"password protected key", nil)
-                                 message:DSLocalizedString(@"bad password, try again", nil)
+                                 alertControllerWithTitle:DSLocalizedString(@"Password protected key", nil)
+                                 message:DSLocalizedString(@"Bad password, try again", nil)
                                  preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:DSLocalizedString(@"cancel", nil)
+                                   actionWithTitle:DSLocalizedString(@"Cancel", nil)
                                    style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        if (cancel) completion();
                                        
                                    }];
     UIAlertAction* okButton = [UIAlertAction
-                               actionWithTitle:DSLocalizedString(@"ok", nil)
+                               actionWithTitle:DSLocalizedString(@"OK", nil)
                                style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {
                                    if (completion) completion();
                                }];
     [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
         textField.secureTextEntry = true;
-        textField.placeholder = @"password";
+        textField.placeholder = @"Password";
         textField.clearButtonMode = UITextFieldViewModeWhileEditing;
         textField.borderStyle = UITextBorderStyleRoundedRect;
         textField.returnKeyType = UIReturnKeyDone;

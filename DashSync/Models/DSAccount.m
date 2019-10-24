@@ -1549,12 +1549,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSString * address = [key addressForChain:self.wallet.chain];
     if (! address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                        DSLocalizedString(@"not a valid private key", nil)}]);
+                                                                                        DSLocalizedString(@"Not a valid private key", nil)}]);
         return;
     }
     if ([self.wallet containsAddress:address]) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                        DSLocalizedString(@"this private key is already in your wallet", nil)}]);
+                                                                                        DSLocalizedString(@"This private key is already in your wallet", nil)}]);
         return;
     }
     
@@ -1580,7 +1580,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         if (balance == 0) {
             completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"this private key is empty", nil)}]);
+                                                                                            DSLocalizedString(@"This private key is empty", nil)}]);
             return;
         }
         
@@ -1589,7 +1589,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
             completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"transaction fees would cost more than the funds available on this "
+                                                                                            DSLocalizedString(@"Transaction fees would cost more than the funds available on this "
                                                                                                               "private key (due to tiny \"dust\" deposits)",nil)}]);
             return;
         }
@@ -1598,7 +1598,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         
         if (! [tx signWithSerializedPrivateKeys:@[privKey]]) {
             completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                            DSLocalizedString(@"error signing transaction", nil)}]);
+                                                                                            DSLocalizedString(@"Error signing transaction", nil)}]);
             return;
         }
         

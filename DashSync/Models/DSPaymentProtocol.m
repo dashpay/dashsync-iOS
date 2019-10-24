@@ -424,8 +424,8 @@ typedef enum : NSUInteger {
 
         // kSecTrustResultUnspecified indicates a positive result that wasn't decided by the user
         if (trustResult != kSecTrustResultUnspecified && trustResult != kSecTrustResultProceed) {
-            _errorMessage = (certs.count > 0) ? DSLocalizedString(@"untrusted certificate", nil) :
-                            DSLocalizedString(@"missing certificate", nil);
+            _errorMessage = (certs.count > 0) ? DSLocalizedString(@"Untrusted certificate", nil) :
+                            DSLocalizedString(@"Missing certificate", nil);
 
             if (trust) {
                 for (NSDictionary *property in CFBridgingRelease(SecTrustCopyProperties(trust))) {
@@ -459,7 +459,7 @@ typedef enum : NSUInteger {
 
         if (status != errSecSuccess) {
             if (status == errSecUnimplemented) {
-                _errorMessage = DSLocalizedString(@"unsupported signature type", nil);
+                _errorMessage = DSLocalizedString(@"Unsupported signature type", nil);
                 DSDLog(@"%@", _errorMessage);
             }
             else {
@@ -476,7 +476,7 @@ typedef enum : NSUInteger {
     }
 
     if (r && self.details.expires >= 1 && [NSDate timeIntervalSince1970] > self.details.expires) {
-        _errorMessage = DSLocalizedString(@"request expired", nil);
+        _errorMessage = DSLocalizedString(@"Request expired", nil);
         r = NO;
     }
 

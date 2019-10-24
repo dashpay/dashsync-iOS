@@ -36,19 +36,16 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "本当に %@に支払いをするためにこのマスターノードをアップデートしてもよろしいですか？";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "パスワードが正しくないので、もう一度ご入力ください。";
+"Bad password, try again" = "Bad password, try again";
 
 /* No comment provided by engineer. */
 "Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "正しくない支払い請求URL";
+"Bad payment request URL" = "Bad payment request URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "正しくない支払いURL";
-
-/* No comment provided by engineer. */
-"cancel" = "キャンセル";
+"Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancel";
@@ -60,25 +57,25 @@
 "Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"connect timeout" = "接続タイムアウト";
+"Connect timeout" = "Connect timeout";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "Dashの送金は %@ 以上でないと送れません";
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "取引が署名されていません";
+"Dash transaction not signed" = "Dash transaction not signed";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "Dashの取引出力は %@ 以上でないといけません";
+"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"double spend" = "二重支払い";
+"Double spend" = "Double spend";
 
 /* No comment provided by engineer. */
 "Enter old PIN" = "Enter old PIN";
@@ -87,25 +84,25 @@
 "Error from payment request server %@" = "支払い要求サーバーからのエラー %@";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "Dash取引署名時エラー";
+"Error signing dash transaction" = "Error signing dash transaction";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "取引署名時エラー";
+"Error signing transaction" = "Error signing transaction";
 
 /* No comment provided by engineer. */
 "Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"instant payment" = "即時支払い";
+"Instant payment" = "Instant payment";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時送金［インスタントセンド］には十分な入金と6回の承認が必要ですが、通常の取引の送金方法としていつもご利用されますか？";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "残高不足";
+"Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "Dashネットワーク手数料を含めると残高が足りません";
+"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "内部エラー";
@@ -126,25 +123,22 @@
 "Method Not Found" = "メソッドが見つかりません";
 
 /* No comment provided by engineer. */
-"missing certificate" = "証明書が見つかりません";
+"Missing certificate" = "Missing certificate";
 
 /* No comment provided by engineer. */
 "No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
-"no peers found" = "通信相手が見つかりませんでした。";
+"No peers found" = "No peers found";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "有効な秘密鍵ではありません";
+"Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "Dashネットワークに接続されていません。";
+"Not connected to the dash network" = "Not connected to the dash network";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
-
-/* No comment provided by engineer. */
-"ok" = "OK";
 
 /* No comment provided by engineer. */
 "Parse Error" = "パースエラー";
@@ -153,10 +147,10 @@
 "Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
-"password" = "パスワード";
+"Password" = "Password";
 
 /* No comment provided by engineer. */
-"password protected key" = "パスワード保護された鍵";
+"Password protected key" = "Password protected key";
 
 /* No comment provided by engineer. */
 "Payee identity isn't certified" = "Payee identity isn't certified";
@@ -168,28 +162,25 @@
 "Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "%1$@ (%2$@)\n上記の分だけ送金額減らしますか？";
+"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
 "Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
-"request expired" = "リクエストの有効期限切れました。";
+"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "要求されたネットワーク「%@」は現在使用中ではありません ";
-
-/* No comment provided by engineer. */
-"rescan" = "再スキャン";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"retry" = "もう１回試す";
+"Retry" = "Retry";
 
 /* No comment provided by engineer. */
-"send" = "送金する";
+"Send" = "Send";
 
 /* No comment provided by engineer. */
 "Server Error" = "サーバーエラー";
@@ -204,22 +195,19 @@
 "This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "この秘密鍵は既にあなたのウォレットに含まれています";
+"This private key is already in your wallet" = "This private key is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is empty" = "この秘密鍵は承認済み残高がありません";
+"This private key is empty" = "This private key is empty";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "この請求には即時支払いが必要ですが、あなたには即時送金［インスタントセンド］に必要な6回の承認と十分な入金がありません。お店に通常の送金を受け入れるか聞くか、数分間待ってください。";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "取引はキャンセルされました、\nネットワークタイムアウトがありました";
+"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "この秘密鍵にある残高が通常手数料より小さいので送れません。";
-
-/* No comment provided by engineer. */
-"transaction rejected" = "取引が拒否されました";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
 "Transaction rejected" = "Transaction rejected";
@@ -228,7 +216,7 @@
 "Try again in %@" = "Try again in %@";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "%@ から予期しない応答";
+"Unexpected response from %@" = "Unexpected response from %@";
 
 /* No comment provided by engineer. */
 "unknown address" = "unknown address";
@@ -240,13 +228,13 @@
 "Unknown JSON-RPC Response" = "未知のJSON-RPCリスポンス";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "認識されないアドレス";
+"Unrecognized address" = "Unrecognized address";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "サポートされていない署名の種類";
+"Unsupported signature type" = "Unsupported signature type";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "信頼されていない証明書";
+"Untrusted certificate" = "Untrusted certificate";
 
 /* Updating Price */
 "Updating Price" = "価格のアップデート中";
