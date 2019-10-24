@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
   s.libraries = 'bz2', 'sqlite3'
   s.resource_bundles = {'DashSync' => ['DashSync/*.xcdatamodeld', 'DashSync/*.plist', 'DashSync/*.lproj', 'DashSync/MasternodeLists/*.dat']}
   
-  s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData'
+  s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData', 'BackgroundTasks'
   s.compiler_flags = '-Wno-comma'
   s.dependency 'secp256k1_dash', '0.1.2'
   s.dependency 'bls-signatures-pod', '0.2.9'

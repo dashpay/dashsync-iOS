@@ -122,6 +122,8 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 -(uint64_t)dbSize;
 
+- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler;
+
 @end
 
 NS_ASSUME_NONNULL_END

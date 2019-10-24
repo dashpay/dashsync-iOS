@@ -7,6 +7,7 @@
 //
 
 #import "DashSync.h"
+#import <BackgroundTasks/BackgroundTasks.h>
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 #import "NSManagedObject+Sugar.h"
@@ -40,7 +41,17 @@
     self = [super init];
     if (self) {
         // use background fetch to stay synced with the blockchain
-        [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+        if (@available(iOS 13.0, *)) {
+            [[BGTaskScheduler sharedScheduler] registerForTaskWithIdentifier:@"org.dashcore.dashsync.backgroundblocksync"
+                                                                  usingQueue:nil
+                                                               launchHandler:^(BGTask *task) {
+                [self performFetchWithCompletionHandler:^(UIBackgroundFetchResult backgroundFetchResult) {
+                    
+                }];
+            }];
+        } else {
+            [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+        }
         
         if ([[DSOptionsManager sharedInstance] retrievePriceInfo]) {
             [[DSPriceManager sharedInstance] startExchangeRateFetching];
@@ -284,12 +295,7 @@
     
     // sync events to the server
     [[DSEventManager sharedEventManager] sync];
-    
-    //    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
-    //        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
-    //        [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
-    //        [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
-    //    }
+
 }
 
 @end
