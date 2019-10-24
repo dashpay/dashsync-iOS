@@ -150,6 +150,7 @@
     self.quorumEntryHash = commitmentHash;
     self.verified = verified;
     self.chain = chain;
+    self.saved = TRUE;
     
     return self;
 }

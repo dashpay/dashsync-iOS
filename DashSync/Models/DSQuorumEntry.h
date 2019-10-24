@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 quorumEntryHash;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) BOOL verified;
+@property (nonatomic, assign) BOOL saved;
 @property (nonatomic, readonly) DSQuorumEntryEntity * matchingQuorumEntryEntity;
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;

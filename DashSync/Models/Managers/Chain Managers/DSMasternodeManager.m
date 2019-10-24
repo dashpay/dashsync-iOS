@@ -1031,7 +1031,9 @@
                 for (NSData * quorumHash in quorumsForMasternodeType) {
                     DSQuorumEntry * potentialQuorumEntry = quorumsForMasternodeType[quorumHash];
                     DSQuorumEntryEntity * quorumEntry = [DSQuorumEntryEntity quorumEntryEntityFromPotentialQuorumEntry:potentialQuorumEntry];
-                    [masternodeListEntity addQuorumsObject:quorumEntry];
+                    if (quorumEntry) {
+                        [masternodeListEntity addQuorumsObject:quorumEntry];
+                    }
                 }
             }
             chainEntity.baseBlockHash = [NSData dataWithUInt256:masternodeList.blockHash];
