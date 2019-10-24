@@ -22,28 +22,19 @@
     DSQuorumEntryEntity * quorumEntryEntity = nil;
     if (block) {
         quorumEntryEntity = [[block.usedByQuorums filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)]] anyObject];
-        if (!quorumEntryEntity) {
-            if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
-                return nil;
-            } else {
-                quorumEntryEntity = [DSQuorumEntryEntity managedObject];
-                [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
-            }
-        } else {
-            [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
-        }
     } else {
         quorumEntryEntity = [DSQuorumEntryEntity anyObjectMatching:@"quorumHashData == %@ && llmqType == %@ ",uint256_data(potentialQuorumEntry.quorumHash),@(potentialQuorumEntry.llmqType)];
-        if (!quorumEntryEntity) {
-            if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
-                return nil;
-            } else {
-                quorumEntryEntity = [DSQuorumEntryEntity managedObject];
-                [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
-            }
+    }
+    
+    if (!quorumEntryEntity) {
+        if (potentialQuorumEntry.saved) { //it was deleted in the meantime, and should be ignored
+            return nil;
         } else {
-            [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
+            quorumEntryEntity = [DSQuorumEntryEntity managedObject];
+            [quorumEntryEntity setAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
         }
+    } else {
+        [quorumEntryEntity updateAttributesFromPotentialQuorumEntry:potentialQuorumEntry onBlock:block];
     }
     
     return quorumEntryEntity;
@@ -65,6 +56,7 @@
     self.allCommitmentAggregatedSignature = potentialQuorumEntry.allCommitmentAggregatedSignature;
     self.commitmentHash = potentialQuorumEntry.quorumEntryHash;
     self.chain = potentialQuorumEntry.chain.chainEntity;
+    potentialQuorumEntry.saved = TRUE;
 }
 
 -(void)updateAttributesFromPotentialQuorumEntry:(DSQuorumEntry *)potentialQuorumEntry onBlock:(DSMerkleBlockEntity *) block {

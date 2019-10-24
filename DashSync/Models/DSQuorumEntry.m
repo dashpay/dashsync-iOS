@@ -34,7 +34,6 @@
 @property (nonatomic, assign) uint32_t length;
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, assign) BOOL verified;
-@property (nonatomic, assign) BOOL saved;
 
 @end
 
