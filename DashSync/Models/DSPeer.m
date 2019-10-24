@@ -281,7 +281,7 @@
         // after the reachablity check, the radios should be warmed up and we can set a short socket connect timeout
         [self performSelector:@selector(disconnectWithError:)
                    withObject:[NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE
-                                              userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"connect timeout", nil)}]
+                                              userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Connect timeout", nil)}]
                    afterDelay:CONNECT_TIMEOUT];
         
         [self.inputStream open];
@@ -1908,7 +1908,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         error = [NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE
-                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"connect timeout", nil)}];
+                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Connect timeout", nil)}];
     });
     return error;
 }

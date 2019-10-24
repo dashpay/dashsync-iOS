@@ -97,7 +97,7 @@
                                              DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                                              completion(nil,
                                                         [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                     [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
+                                                                                                                     [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                                                                       req.URL.host]}]);
                                              return;
                                          }
@@ -142,7 +142,7 @@
                                              DSDLog(@"Error decoding response %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                                              completion(nil, nil, nil,
                                                         [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                       [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
+                                                                                                                       [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                                                                         req.URL.host]}]);
                                              return;
                                          }
@@ -168,7 +168,7 @@
                                                  (! [utxo[@"duffs"] isKindOfClass:[NSNumber class]] && ! [utxo[@"satoshis"] isKindOfClass:[NSNumber class]] && !amount)) {
                                                  completion(nil, nil, nil,
                                                             [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                           [NSString stringWithFormat:DSLocalizedString(@"unexpected response from %@", nil),
+                                                                                                                           [NSString stringWithFormat:DSLocalizedString(@"Unexpected response from %@", nil),
                                                                                                                             req.URL.host]}]);
                                                  return;
                                              }

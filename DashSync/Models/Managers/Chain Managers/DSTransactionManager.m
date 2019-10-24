@@ -133,7 +133,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_signed"];
             completion([NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                    DSLocalizedString(@"dash transaction not signed", nil)}]);
+                                                                                    DSLocalizedString(@"Dash transaction not signed", nil)}]);
         }
         
         return;
@@ -142,7 +142,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
             completion([NSError errorWithDomain:@"DashSync" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                      DSLocalizedString(@"not connected to the dash network", nil)}]);
+                                                                                      DSLocalizedString(@"Not connected to the dash network", nil)}]);
         }
         
         return;
@@ -284,12 +284,12 @@
                                                                        "This can often be fixed by rescanning the blockchain.", nil)
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* cancelButton = [UIAlertAction
-                                               actionWithTitle:DSLocalizedString(@"ok", nil)
+                                               actionWithTitle:DSLocalizedString(@"OK", nil)
                                                style:UIAlertActionStyleCancel
                                                handler:^(UIAlertAction * action) {
                                                }];
                 UIAlertAction* rescanButton = [UIAlertAction
-                                               actionWithTitle:DSLocalizedString(@"rescan", nil)
+                                               actionWithTitle:DSLocalizedString(@"Rescan", nil)
                                                style:UIAlertActionStyleDefault
                                                handler:^(UIAlertAction * action) {
                                                    [self.chainManager rescan];
@@ -302,11 +302,11 @@
             else {
                 [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager_tx_rejected"];
                 UIAlertController * alert = [UIAlertController
-                                             alertControllerWithTitle:DSLocalizedString(@"transaction rejected", nil)
+                                             alertControllerWithTitle:DSLocalizedString(@"Transaction rejected", nil)
                                              message:@""
                                              preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction* okButton = [UIAlertAction
-                                           actionWithTitle:DSLocalizedString(@"ok", nil)
+                                           actionWithTitle:DSLocalizedString(@"OK", nil)
                                            style:UIAlertActionStyleCancel
                                            handler:^(UIAlertAction * action) {
                                            }];
@@ -334,7 +334,7 @@
     if (callback) {
         [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:tx_canceled_timeout"];
         callback([NSError errorWithDomain:@"DashSync" code:DASH_PEER_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                 DSLocalizedString(@"transaction canceled, network timeout", nil)}]);
+                                                                                                 DSLocalizedString(@"Transaction canceled, network timeout", nil)}]);
     }
 }
 
@@ -409,12 +409,12 @@
         return;
     }
     else if (amount < TX_MIN_OUTPUT_AMOUNT) {
-        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"dash payments can't be less than %@", nil),
+        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"Dash payments can't be less than %@", nil),
                                                                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
         return;
     }
     else if (outputTooSmall) {
-        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"dash transaction outputs can't be less than %@",
+        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"Dash transaction outputs can't be less than %@",
                                                                                                                              nil), [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
         return;
     }
@@ -443,7 +443,7 @@
     for (NSData *script in protoReq.details.outputScripts) {
         NSString *addr = [NSString addressWithScriptPubKey:script onChain:chain];
         
-        if (! addr) addr = DSLocalizedString(@"unrecognized address", nil);
+        if (! addr) addr = DSLocalizedString(@"Unrecognized address", nil);
         if ([address rangeOfString:addr].location != NSNotFound) continue;
         address = [address stringByAppendingFormat:@"%@%@", (address.length > 0) ? @", " : @"", addr];
     }
@@ -496,7 +496,7 @@
             
             if (!signedTransaction || ! tx.isSigned) {
                 signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
-                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"error signing dash transaction", nil)}],NO);
+                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing dash transaction", nil)}],NO);
                 return;
             }
             
@@ -562,7 +562,7 @@
     DSChain * chain = account.wallet.chain;
     if (requestedSendAmount <= account.balance && protocolRequest.requestsInstantSend && ([account maxOutputAmountWithConfirmationCount:chain.ixPreviousConfirmationsNeeded usingInstantSend:TRUE returnInputCount:nil] < requestedSendAmount)) {
         if (protocolRequest.requiresInstantSend) {
-            NSString * challengeTitle = DSLocalizedString(@"instant payment", nil);
+            NSString * challengeTitle = DSLocalizedString(@"Instant payment", nil);
             NSString * challengeMessage = DSLocalizedString(@"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.",
                                                             nil);
             void (^retryBlock) (void) = ^{
@@ -570,9 +570,9 @@
                 [self confirmProtocolRequest:protocolRequest forAmount:requestedSendAmount fromAccount:account acceptInternalAddress:YES acceptReusingAddress:YES addressIsFromPasteboard:NO acceptUncertifiedPayee:YES requestingAdditionalInfo:additionalInfoRequest presentChallenge:challenge transactionCreationCompletion:transactionCreationCompletion signedCompletion:signedCompletion publishedCompletion:publishedCompletion requestRelayCompletion:requestRelayCompletion errorNotificationBlock:errorNotificationBlock];
                 
             };
-            challenge(challengeTitle,challengeMessage,DSLocalizedString(@"retry", nil),retryBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
+            challenge(challengeTitle,challengeMessage,DSLocalizedString(@"Retry", nil),retryBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         } else {
-            NSString * challengeTitle = DSLocalizedString(@"instant payment", nil);
+            NSString * challengeTitle = DSLocalizedString(@"Instant payment", nil);
             NSString * challengeMessage = DSLocalizedString(@"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?",nil);
             
             void (^sendRegularBlock) (void) = ^{
@@ -581,7 +581,7 @@
                 
             };
             
-            challenge(challengeTitle,challengeMessage,DSLocalizedString(@"send", nil),sendRegularBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
+            challenge(challengeTitle,challengeMessage,DSLocalizedString(@"Send", nil),sendRegularBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
             return;
         }
     } else if (requestedSendAmount <= account.balance + fuzz && requestedSendAmount > 0 && !protocolRequest.details.paymentURL) {
@@ -590,8 +590,8 @@
         int64_t amount = [account maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
         
         if (amount > 0 && amount < requestedSendAmount) {
-            NSString * challengeTitle = DSLocalizedString(@"insufficient funds for dash network fee", nil);
-            NSString * challengeMessage = [NSString stringWithFormat:DSLocalizedString(@"reduce payment amount by\n%@ (%@)?", nil),
+            NSString * challengeTitle = DSLocalizedString(@"Insufficient funds for dash network fee", nil);
+            NSString * challengeMessage = [NSString stringWithFormat:DSLocalizedString(@"Reduce payment amount by\n%@ (%@)?", nil),
                                            [manager stringForDashAmount:requestedSendAmount - amount],
                                            [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]];
             
@@ -610,11 +610,11 @@
             challenge(challengeTitle,challengeMessage,reduceString,sendReducedBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         }
         else {
-            errorNotificationBlock(DSLocalizedString(@"insufficient funds for dash network fee", nil),nil,NO);
+            errorNotificationBlock(DSLocalizedString(@"Insufficient funds for dash network fee", nil),nil,NO);
         }
     }
     else {
-        errorNotificationBlock(DSLocalizedString(@"insufficient funds", nil),nil,NO);
+        errorNotificationBlock(DSLocalizedString(@"Insufficient funds", nil),nil,NO);
     }
 }
 
@@ -807,7 +807,7 @@
     if (callback && ![account transactionIsValid:transaction]) {
         [self.publishedTx removeObjectForKey:hash];
         error = [NSError errorWithDomain:@"DashSync" code:401
-                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"double spend", nil)}];
+                                userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Double spend", nil)}];
     }
     else if (transaction && ![account transactionForHash:txHash] && [account registerTransaction:transaction]) {
         [[DSTransactionEntity context] performBlock:^{
@@ -992,11 +992,11 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSWalletBalanceDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
 #if DEBUG
             UIAlertController * alert = [UIAlertController
-                                         alertControllerWithTitle:@"transaction rejected"
-                                         message:[NSString stringWithFormat:@"rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
+                                         alertControllerWithTitle:@"Transaction rejected"
+                                         message:[NSString stringWithFormat:@"Rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
                                          preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction* okButton = [UIAlertAction
-                                       actionWithTitle:@"ok"
+                                       actionWithTitle:@"OK"
                                        style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                        }];
