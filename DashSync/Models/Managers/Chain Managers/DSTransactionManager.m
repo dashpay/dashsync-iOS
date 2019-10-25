@@ -210,11 +210,13 @@
     }
     DSDLog(@"[DSTransactionManager] removing unrelayed transactions");
     NSMutableSet * transactionsSet = [NSMutableSet set];
+    NSMutableSet * specialTransactionsSet = [NSMutableSet set];
     
     NSMutableArray * transactionsToBeRemoved = [NSMutableArray array];
     
     for (DSWallet * wallet in self.chain.wallets) {
         [transactionsSet addObjectsFromArray:[wallet.specialTransactionsHolder allTransactions]];
+        [specialTransactionsSet addObjectsFromArray:[wallet.specialTransactionsHolder allTransactions]];
         for (DSAccount * account in wallet.accounts) {
             [transactionsSet addObjectsFromArray:account.allTransactions];
         }
@@ -231,13 +233,13 @@
         if (self.publishedCallback[hash] != NULL) continue;
         DSDLog(@"transaction relays count %lu, transaction requests count %lu",(unsigned long)[self.txRelays[hash] count],(unsigned long)[self.txRequests[hash] count]);
         DSAccount * account = [self.chain firstAccountThatCanContainTransaction:transaction];
-        if (!account) {
-            NSAssert(FALSE, @"This needs to be implemented for transitions, if you are here now is the time to do it.");
+        if (!account && ![specialTransactionsSet containsObject:transaction]) {
+            NSAssert(FALSE, @"This probably needs more implementation work, if you are here now is the time to do it.");
             continue;
         }
         if ([self.txRelays[hash] count] == 0 && [self.txRequests[hash] count] == 0) {
             // if this is for a transaction we sent, and it wasn't already known to be invalid, notify user of failure
-            if (! rescan && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
+            if (! rescan && account && [account amountSentByTransaction:transaction] > 0 && [account transactionIsValid:transaction]) {
                 DSDLog(@"failed transaction %@", transaction);
                 rescan = notify = YES;
                 
@@ -247,6 +249,8 @@
                     rescan = NO;
                     break;
                 }
+            } else if (!account) {
+                DSDLog(@"serious issue in masternode transaction %@", transaction);
             } else {
                 DSDLog(@"serious issue in transaction %@", transaction);
             }
@@ -732,6 +736,10 @@
         [wallet registerAddressesWithGapLimit:SEQUENCE_GAP_LIMIT_INTERNAL internal:YES];
         NSSet *addresses = [wallet.allReceiveAddresses setByAddingObjectsFromSet:wallet.allChangeAddresses];
         [allAddressesArray addObjectsFromArray:[addresses allObjects]];
+        
+        [allAddressesArray addObjectsFromArray:[wallet providerOwnerAddresses]];
+        [allAddressesArray addObjectsFromArray:[wallet providerVotingAddresses]];
+        [allAddressesArray addObjectsFromArray:[wallet providerOperatorAddresses]];
     }
     
     for (DSFundsDerivationPath * derivationPath in self.chain.standaloneDerivationPaths) {

@@ -35,6 +35,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_Sent,
     DSTransactionDirection_Received,
     DSTransactionDirection_Moved,
+    DSTransactionDirection_NotAccountFunds,
 };
 
 @class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;

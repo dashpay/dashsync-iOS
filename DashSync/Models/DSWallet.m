@@ -832,6 +832,42 @@
 
 // MARK: - Masternodes (Providers)
 
+-(NSArray*)providerOwnerAddresses {
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerOwnerKeysDerivationPathForWallet:self];
+    if (!derivationPath.hasExtendedPublicKey) return @[];
+    return [derivationPath addressesToIndex:[self unusedProviderOwnerIndex] + 10];
+}
+
+-(uint32_t)unusedProviderOwnerIndex {
+    NSArray * indexes = [_mMasternodeOwners allValues];
+    NSNumber * max = [indexes valueForKeyPath:@"@max.intValue"];
+    return max != nil ? ([max unsignedIntValue] + 1) : 0;
+}
+
+-(NSArray*)providerVotingAddresses {
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:self];
+    if (!derivationPath.hasExtendedPublicKey) return @[];
+    return [derivationPath addressesToIndex:[self unusedProviderVotingIndex] + 10];
+}
+
+-(uint32_t)unusedProviderVotingIndex {
+    NSArray * indexes = [_mMasternodeVoters allValues];
+    NSNumber * max = [indexes valueForKeyPath:@"@max.intValue"];
+    return max != nil ? ([max unsignedIntValue] + 1) : 0;
+}
+
+-(NSArray*)providerOperatorAddresses {
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:self];
+    if (!derivationPath.hasExtendedPublicKey) return @[];
+    return [derivationPath addressesToIndex:[self unusedProviderOperatorIndex] + 10];
+}
+
+-(uint32_t)unusedProviderOperatorIndex {
+    NSArray * indexes = [_mMasternodeOperators allValues];
+    NSNumber * max = [indexes valueForKeyPath:@"@max.intValue"];
+    return max != nil ? ([max unsignedIntValue] + 1) : 0;
+}
+
 - (void)registerMasternodeOperator:(DSLocalMasternode *)masternode
 {
     NSParameterAssert(masternode);

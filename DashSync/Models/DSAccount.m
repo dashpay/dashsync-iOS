@@ -1295,9 +1295,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         // sent
         return DSTransactionDirection_Sent;
     }
-    else {
+    else if (received > 0) {
         // received
         return DSTransactionDirection_Received;
+    } else {
+        // no funds moved on this account
+        return DSTransactionDirection_NotAccountFunds;
     }
 }
 

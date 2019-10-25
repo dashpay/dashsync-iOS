@@ -49,6 +49,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) NSArray * blockchainUserAddresses;
 
+@property (nonatomic, readonly) NSArray * providerOwnerAddresses;
+
+@property (nonatomic, readonly) NSArray * providerVotingAddresses;
+
+@property (nonatomic, readonly) NSArray * providerOperatorAddresses;
+
 //This is unique among all wallets and all chains
 @property (nonatomic, readonly) NSString * uniqueID;
 

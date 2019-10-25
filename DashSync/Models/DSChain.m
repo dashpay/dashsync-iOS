@@ -985,6 +985,9 @@ static dispatch_once_t devnetToken = 0;
         
         //we should also add the blockchain user public keys to the filter
         //[allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
+        [allAddresses addObjectsFromArray:[wallet providerOwnerAddresses]];
+        [allAddresses addObjectsFromArray:[wallet providerVotingAddresses]];
+        [allAddresses addObjectsFromArray:[wallet providerOperatorAddresses]];
     }
     
     for (DSFundsDerivationPath * derivationPath in self.standaloneDerivationPaths) {
