@@ -6,8 +6,10 @@ PODS:
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
     - CocoaLumberjack (= 3.6.0)
+    - DSDynamicOptions (= 0.1.0)
     - DWAlertController (= 0.2.1)
     - secp256k1_dash (= 0.1.2)
+  - DSDynamicOptions (0.1.0)
   - DSJSONSchemaValidation (2.0.5)
   - DWAlertController (0.2.1)
   - ios-dpp (0.0.1):
@@ -25,16 +27,16 @@ DEPENDENCIES:
   - KVO-MVVM (= 0.5.1)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - bls-signatures-pod
+    - CocoaLumberjack
+    - DSDynamicOptions
     - DSJSONSchemaValidation
+    - DWAlertController
     - KVO-MVVM
     - secp256k1_dash
     - tinycbor
     - TinyCborObjc
-  trunk:
-    - CocoaLumberjack
-    - DWAlertController
 
 EXTERNAL SOURCES:
   DashSync:
@@ -52,7 +54,8 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
-  DashSync: f054f28be95aba398839adb4721ba65dc3eaedf3
+  DashSync: e693cc7ede2f98ce305c0f972e1457c76b218188
+  DSDynamicOptions: 6a37eb496daee3c067e086b5b236d77707e9a3ee
   DSJSONSchemaValidation: a0d791d3c8a4801cb3c72f3c8701342e2cb66f58
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   ios-dpp: 5193ef55546e5cc3ce1ef5ad831f084a07731dc1
