@@ -72,6 +72,12 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 // all wallet transactions sorted by date, most recent first
 @property (nonatomic, readonly) NSArray * allTransactions;
 
+// all wallet transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray * coinbaseTransactions;
+
+// Does this account have any coinbase rewards
+@property (nonatomic, readonly) BOOL hasCoinbaseTransaction;
+
 // returns the first unused external address
 @property (nullable, nonatomic, readonly) NSString * receiveAddress;
 
