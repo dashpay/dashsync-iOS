@@ -109,6 +109,10 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 + (instancetype)sharedSyncController;
 
+/// Registration must be complete before the end of application:didFinishLaunchingWithOptions:
+- (void)registerBackgroundFetchOnce;
+- (void)setupDashSyncOnce;
+
 -(void)startSyncForChain:(DSChain* _Nonnull)chain;
 -(void)stopSyncForChain:(DSChain* _Nonnull)chain;
 -(void)stopSyncAllChains;

@@ -44,19 +44,17 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 
 + (instancetype)sharedSyncController
 {
-    static id singleton = nil;
-    static dispatch_once_t onceToken = 0;
-    
+    static DashSync *_sharedInstance = nil;
+    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        singleton = [self new];
+        _sharedInstance = [[self alloc] init];
     });
-    
-    return singleton;
+    return _sharedInstance;
 }
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
+- (void)registerBackgroundFetchOnce {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         // use background fetch to stay synced with the blockchain
         if (@available(iOS 13.0, *)) {
             BGTaskScheduler *taskScheduler = [BGTaskScheduler sharedScheduler];
@@ -81,26 +79,30 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         } else {
             [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
         }
-        
+    });
+}
+
+- (void)setupDashSyncOnce {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         if ([[DSOptionsManager sharedInstance] retrievePriceInfo]) {
-            [[DSPriceManager sharedInstance] startExchangeRateFetching];
-        }
-        // start the event manager
-        [[DSEventManager sharedEventManager] up];
-        
-        struct stat s;
-        self.deviceIsJailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
-        
-        // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
-        for (uint32_t count = _dyld_image_count(), i = 0; i < count && !self.deviceIsJailbroken; i++) {
-            if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) self.deviceIsJailbroken = YES;
-        }
-        
-#if TARGET_IPHONE_SIMULATOR
-        self.deviceIsJailbroken = NO;
-#endif
-    }
-    return self;
+                    [[DSPriceManager sharedInstance] startExchangeRateFetching];
+                }
+                // start the event manager
+                [[DSEventManager sharedEventManager] up];
+                
+                struct stat s;
+                self.deviceIsJailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
+                
+                // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
+                for (uint32_t count = _dyld_image_count(), i = 0; i < count && !self.deviceIsJailbroken; i++) {
+                    if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) self.deviceIsJailbroken = YES;
+                }
+                
+        #if TARGET_IPHONE_SIMULATOR
+                self.deviceIsJailbroken = NO;
+        #endif
+    });
 }
 
 -(void)startSyncForChain:(DSChain*)chain
