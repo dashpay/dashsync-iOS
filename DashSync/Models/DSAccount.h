@@ -39,6 +39,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 };
 
 @class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSCoinbaseTransaction;
 
 @interface DSAccount : NSObject
 
@@ -61,19 +62,19 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) uint64_t balance;
 
 // NSValue objects containing UTXO structs
-@property (nonatomic, readonly) NSArray * unspentOutputs;
+@property (nonatomic, readonly) NSArray <NSValue *> * unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * recentTransactions;
+@property (nonatomic, readonly) NSArray <DSTransaction *> * recentTransactions;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * recentTransactionsWithInternalOutput;
+@property (nonatomic, readonly) NSArray <DSTransaction *> * recentTransactionsWithInternalOutput;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * allTransactions;
+@property (nonatomic, readonly) NSArray <DSTransaction *> * allTransactions;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * coinbaseTransactions;
+@property (nonatomic, readonly) NSArray <DSCoinbaseTransaction *> * coinbaseTransactions;
 
 // Does this account have any coinbase rewards
 @property (nonatomic, readonly) BOOL hasCoinbaseTransaction;
@@ -85,10 +86,10 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nullable, nonatomic, readonly) NSString * changeAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSArray * externalAddresses;
+@property (nonatomic, readonly) NSArray <NSString *> * externalAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSArray * internalAddresses;
+@property (nonatomic, readonly) NSArray <NSString *> * internalAddresses;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
