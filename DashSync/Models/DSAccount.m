@@ -704,6 +704,30 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return self.transactions.array;
 }
 
+// all wallet transactions sorted by date, most recent first
+- (NSArray *)coinbaseTransactions
+{
+    NSMutableArray * coinbaseTransactions = [NSMutableArray array];
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+            [coinbaseTransactions addObject:transaction];
+        }
+    }
+    return coinbaseTransactions;
+}
+
+// Does this account have any rewards
+- (BOOL)hasCoinbaseTransaction
+{
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
 // MARK: = Existence
 
 // true if the given transaction is associated with the account (even if it hasn't been registered), false otherwise
