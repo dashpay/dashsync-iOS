@@ -70,6 +70,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
 
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
