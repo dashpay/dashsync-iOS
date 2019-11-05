@@ -77,6 +77,22 @@ static NSData *_Nullable AES256EncryptDecrypt(CCOperation operation,
     return finalData;
 }
 
+- (nullable NSData *)encryptWithSecretKey:(DSBLSKey*)secretKey forPeerWithPublicKey:(DSBLSKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector {
+    
+    unsigned char * iv = (unsigned char *)initializationVector.bytes;
+    
+    bls::PublicKey pk = bls::BLS::DHKeyExchange(secretKey.blsPrivateKey, peerPubKey.blsPublicKey);
+    
+    std::vector<uint8_t> symKey = pk.Serialize();
+    symKey.resize(32);
+    
+    NSData *resultData = AES256EncryptDecrypt(kCCEncrypt, self, (uint8_t *)symKey.data(), iv);
+    
+    NSMutableData * finalData = [NSMutableData dataWithBytes:iv length:16];
+    [finalData appendData:resultData];
+    return finalData;
+}
+
 - (nullable NSData *)decryptWithSecretKey:(DSBLSKey*)secretKey fromPeerWithPublicKey:(DSBLSKey*)peerPubKey {
     if (self.length < kCCBlockSizeAES128) {
         return nil;

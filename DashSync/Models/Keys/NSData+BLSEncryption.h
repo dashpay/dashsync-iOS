@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSData (BLSEncryption)
 
 - (nullable NSData *)encryptWithSecretKey:(DSBLSKey*)secretKey forPeerWithPublicKey:(DSBLSKey*)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSBLSKey*)secretKey forPeerWithPublicKey:(DSBLSKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector;
 - (nullable NSData *)decryptWithSecretKey:(DSBLSKey*)secretKey fromPeerWithPublicKey:(DSBLSKey*)peerPubKey;
 
 @end
