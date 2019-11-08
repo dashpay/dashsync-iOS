@@ -1,7 +1,7 @@
 [main]
 host = https://www.transifex.com
 
-[dash-ios-wallet.dashsync-localizable-strings]
+[dash-mobile-wallets.dashsync-localizable-strings]
 file_filter = DashSync/<lang>.lproj/Localizable.strings
 minimum_perc = 0
 source_file = DashSync/en.lproj/Localizable.strings
