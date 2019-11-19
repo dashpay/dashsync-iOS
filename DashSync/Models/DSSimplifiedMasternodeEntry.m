@@ -36,6 +36,9 @@
 @property(nonatomic,assign) UInt160 keyIDVoting;
 @property(nonatomic,assign) BOOL isValid;
 @property(nonatomic,strong) DSChain * chain;
+@property(null_resettable, nonatomic, copy) NSString * host;
+@property(null_resettable, nonatomic, copy) NSString * ipAddressString;
+@property(null_resettable, nonatomic, copy) NSString * portString;
 @property(nonatomic,strong) DSBLSKey * operatorPublicBLSKey;
 @property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSData*> * mPreviousOperatorPublicKeys;
 @property(nonatomic,strong) NSMutableDictionary <DSMerkleBlock*,NSNumber*> * mPreviousValidity;
@@ -310,12 +313,32 @@
 }
 
 -(NSString*)host {
+    if (_host) return _host;
+    _host = [NSString stringWithFormat:@"%@:%d",[self ipAddressString],self.port];
+    return _host;
+}
+
+-(NSString*)ipAddressString {
+    if (_ipAddressString) return _ipAddressString;
     char s[INET6_ADDRSTRLEN];
     
     if (_address.u64[0] == 0 && _address.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-        return @(inet_ntop(AF_INET, &_address.u32[3], s, sizeof(s)));
+        _ipAddressString = @(inet_ntop(AF_INET, &_address.u32[3], s, sizeof(s)));
     }
-    else return @(inet_ntop(AF_INET6, &_address, s, sizeof(s)));
+    else {
+        _ipAddressString = @(inet_ntop(AF_INET6, &_address, s, sizeof(s)));
+    }
+    return _ipAddressString;
+}
+
+-(NSString*)portString {
+    if (_portString) return _portString;
+    _portString = [NSString stringWithFormat:@"%d",self.port];
+    return _portString;
+}
+
+-(NSString*)validString {
+    return self.isValid?DSLocalizedString(@"Up", nil):DSLocalizedString(@"Down", nil);
 }
 
 -(NSString*)uniqueID {
