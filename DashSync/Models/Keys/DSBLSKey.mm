@@ -210,6 +210,11 @@
     return [NSData dataWithUInt384:self.publicKey];
 }
 
+-(NSData*)secretKeyData {
+    if (uint256_is_zero(self.secretKey)) return nil;
+    return [NSData dataWithUInt256:self.secretKey];
+}
+
 -(NSString*)secretKeyString {
     if (uint256_is_zero(self.secretKey)) return @"";
     return [NSData dataWithUInt256:self.secretKey].hexString;

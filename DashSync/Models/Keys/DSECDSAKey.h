@@ -80,6 +80,8 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 // to verify a compact signature, recover a public key from the signature and verify that it matches the signer's pubkey
 - (NSData * _Nullable)compactSign:(UInt256)md;
 
+- (BOOL)hasPrivateKey;
+
 @end
 
 NS_ASSUME_NONNULL_END

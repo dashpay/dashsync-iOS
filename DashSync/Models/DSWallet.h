@@ -37,7 +37,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 #define DUFFS           100000000LL
 #define MAX_MONEY          (21000000LL*DUFFS)
 
-@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey,DSSpecialTransactionsWalletHolder;
+@class DSChain,DSAccount,DSTransaction,DSDerivationPath,DSLocalMasternode,DSKey,DSSpecialTransactionsWalletHolder,DSBLSKey,DSECDSAKey;
 
 @interface DSWallet : NSObject
 
@@ -197,11 +197,15 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 - (void)copyForChain:(DSChain *)chain completion:(void (^ _Nonnull)(DSWallet * _Nullable copiedWallet))completion;
 
-- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode;
+- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode; //will use indexes
+- (void)registerMasternodeOperator:(DSLocalMasternode *)masternode withOperatorPublicKey:(DSBLSKey*)operatorKey; //will use defined key
 
 - (void)registerMasternodeOwner:(DSLocalMasternode *)masternode;
+- (void)registerMasternodeOwner:(DSLocalMasternode *)masternode withOwnerPrivateKey:(DSECDSAKey*)ownerKey; //will use defined key
 
 - (void)registerMasternodeVoter:(DSLocalMasternode *)masternode;
+- (void)registerMasternodeVoter:(DSLocalMasternode *)masternode withVotingKey:(DSECDSAKey*)votingKey; //will use defined key
+
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;

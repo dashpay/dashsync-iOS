@@ -29,6 +29,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "NSString+Bitcoin.h"
+#import "BigIntTypes.h"
 
 #define DASH_PUBKEY_ADDRESS      76
 #define DASH_SCRIPT_ADDRESS      16
@@ -66,6 +67,8 @@
 - (BOOL)isValidDashExtendedPublicKeyOnChain:(DSChain*)chain;
 
 -(NSInteger)indexOfCharacter:(unichar)character;
+
+-(UInt256)magicDigest;
 
 +(NSString*)waitTimeFromNow:(NSTimeInterval)wait;
 

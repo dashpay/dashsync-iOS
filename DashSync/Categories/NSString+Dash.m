@@ -270,6 +270,13 @@ static NSString *DashCurrencySymbolAssetName = nil;
     return NSNotFound;
 }
 
+-(UInt256)magicDigest {
+    NSMutableData * stringMessageData = [NSMutableData data];
+    [stringMessageData appendString:DASH_MESSAGE_MAGIC];
+    [stringMessageData appendString:self];
+    return stringMessageData.SHA256_2;
+}
+
 // MARK: time
 
 + (NSString *)waitTimeFromNow:(NSTimeInterval)wait {

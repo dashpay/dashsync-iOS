@@ -30,8 +30,11 @@
 #import "DSSporkManager.h"
 #include <arpa/inet.h>
 
+#define MASTERNODE_NAME_KEY @"MASTERNODE_NAME_KEY"
+
 @interface DSLocalMasternode()
 
+@property(nonatomic,strong) NSString * name;
 @property(nonatomic,assign) UInt128 ipAddress;
 @property(nonatomic,assign) uint16_t port;
 @property(nonatomic,strong) DSWallet * operatorKeysWallet; //only if this is contained in the wallet.
@@ -49,6 +52,8 @@
 @property(nonatomic,strong) NSMutableArray <DSProviderUpdateRegistrarTransaction*>* providerUpdateRegistrarTransactions;
 @property(nonatomic,strong) NSMutableArray <DSProviderUpdateServiceTransaction*>* providerUpdateServiceTransactions;
 @property(nonatomic,strong) NSMutableArray <DSProviderUpdateRevocationTransaction*>* providerUpdateRevocationTransactions;
+
+@property(nonatomic,readonly) DSECDSAKey * ownerPrivateKey;
 
 @end
 
@@ -77,6 +82,7 @@
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
     self.previousOperatorWalletIndexes = [NSMutableIndexSet indexSet];
     self.previousVotingWalletIndexes = [NSMutableIndexSet indexSet];
+    [self associateName];
     return self;
 }
 
@@ -97,8 +103,11 @@
     self.providerUpdateRevocationTransactions = [NSMutableArray array];
     self.previousOperatorWalletIndexes = [NSMutableIndexSet indexSet];
     self.previousVotingWalletIndexes = [NSMutableIndexSet indexSet];
+    [self associateName];
     return self;
 }
+
+
 
 -(instancetype)initWithProviderTransactionRegistration:(DSProviderRegistrationTransaction*)providerRegistrationTransaction {
     if (!(self = [super init])) return nil;
@@ -128,6 +137,7 @@
     self.previousOperatorWalletIndexes = [NSMutableIndexSet indexSet];
     self.previousVotingWalletIndexes = [NSMutableIndexSet indexSet];
     self.status = DSLocalMasternodeStatus_Registered; //because it comes from a transaction already
+    [self associateName];
     return self;
 }
 
@@ -135,6 +145,26 @@
     [self.operatorKeysWallet registerMasternodeOperator:self];
     [self.ownerKeysWallet registerMasternodeOwner:self];
     [self.votingKeysWallet registerMasternodeVoter:self];
+}
+
+-(BOOL)forceOperatorPublicKey:(DSBLSKey*)operatorPublicKey {
+    if (self.operatorWalletIndex != UINT32_MAX) return NO;
+    [self.ownerKeysWallet registerMasternodeOperator:self withOperatorPublicKey:operatorPublicKey];
+    return YES;
+}
+
+-(BOOL)forceOwnerPrivateKey:(DSECDSAKey*)ownerPrivateKey {
+    if (self.ownerWalletIndex != UINT32_MAX) return NO;
+    if (![ownerPrivateKey hasPrivateKey]) return NO;
+    [self.ownerKeysWallet registerMasternodeOwner:self withOwnerPrivateKey:ownerPrivateKey];
+    return YES;
+}
+
+//the voting key can either be private or public key
+-(BOOL)forceVotingKey:(DSECDSAKey*)votingKey {
+    if (self.votingWalletIndex != UINT32_MAX) return NO;
+    [self.ownerKeysWallet registerMasternodeVoter:self withVotingKey:votingKey];
+    return YES;
 }
 
 -(BOOL)noLocalWallet {
@@ -202,6 +232,10 @@
     return _port;
 }
 
+-(NSString*)portString {
+    return [NSString stringWithFormat:@"%d",self.port];
+}
+
 -(NSString*)payoutAddress {
     if ([self.providerUpdateRegistrarTransactions count]) {
         return [NSString addressWithScriptPubKey:[self.providerUpdateRegistrarTransactions lastObject].scriptPayout onChain:self.providerRegistrationTransaction.chain];
@@ -245,7 +279,26 @@
     return [ecdsaKey secretKeyString];
 }
 
+// MARK: - Named Masternodes
 
+-(NSString*)masternodeIdentifierForNameStorage {
+    return [NSString stringWithFormat:@"%@%@",MASTERNODE_NAME_KEY,uint256_hex(_providerRegistrationTransaction.txHash)];
+}
+
+-(void)associateName {
+    NSError * error = nil;
+    NSString * name = getKeychainString([self masternodeIdentifierForNameStorage], &error);
+    if (!error) {
+        self.name = name;
+    }
+}
+
+-(void)registerName:(NSString*)name {
+    if (![_name isEqualToString:name]) {
+        setKeychainString(name, [self masternodeIdentifierForNameStorage], NO);
+        self.name = name;
+    }
+}
 
 // MARK: - Generating Transactions
 

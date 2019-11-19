@@ -265,11 +265,19 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return &_seckey;
 }
 
+-(BOOL)hasPrivateKey {
+    return uint256_is_zero(*self.secretKey);
+}
+
 -(NSString*)secretKeyString {
     if (uint256_is_zero(*self.secretKey)) return @"";
     return [NSData dataWithUInt256:*self.secretKey].hexString;
 }
 
+-(NSData*)secretKeyData {
+    if (uint256_is_zero(*self.secretKey)) return nil;
+    return [NSData dataWithUInt256:*self.secretKey];
+}
 
 - (NSData *)sign:(UInt256)md
 {

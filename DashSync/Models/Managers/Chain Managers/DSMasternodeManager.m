@@ -1197,6 +1197,25 @@
     return localMasternode;
 }
 
+-(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inFundsWallet:(DSWallet* _Nullable)fundsWallet fundsWalletIndex:(uint32_t)fundsWalletIndex inOperatorWallet:(DSWallet* _Nullable)operatorWallet operatorWalletIndex:(uint32_t)operatorWalletIndex operatorPublicKey:(DSBLSKey*)operatorPublicKey inOwnerWallet:(DSWallet* _Nullable)ownerWallet ownerWalletIndex:(uint32_t)ownerWalletIndex ownerPrivateKey:(DSECDSAKey*)ownerPrivateKey inVotingWallet:(DSWallet* _Nullable)votingWallet votingWalletIndex:(uint32_t)votingWalletIndex votingKey:(DSECDSAKey*)votingKey {
+    
+    DSLocalMasternode * localMasternode = [[DSLocalMasternode alloc] initWithIPAddress:ipAddress onPort:port inFundsWallet:fundsWallet fundsWalletIndex:fundsWalletIndex inOperatorWallet:operatorWallet operatorWalletIndex:operatorWalletIndex inOwnerWallet:ownerWallet ownerWalletIndex:ownerWalletIndex inVotingWallet:votingWallet votingWalletIndex:votingWalletIndex];
+    
+    if (operatorWalletIndex == UINT32_MAX && operatorPublicKey) {
+        [localMasternode forceOperatorPublicKey:operatorPublicKey];
+    }
+    
+    if (ownerWalletIndex == UINT32_MAX && ownerPrivateKey) {
+        [localMasternode forceOwnerPrivateKey:ownerPrivateKey];
+    }
+    
+    if (votingWalletIndex == UINT32_MAX && votingKey) {
+        [localMasternode forceVotingKey:votingKey];
+    }
+    
+    return localMasternode;
+}
+
 -(DSLocalMasternode*)localMasternodeFromSimplifiedMasternodeEntry:(DSSimplifiedMasternodeEntry*)simplifiedMasternodeEntry claimedWithOwnerWallet:(DSWallet*)ownerWallet ownerKeyIndex:(uint32_t)ownerKeyIndex {
     NSParameterAssert(simplifiedMasternodeEntry);
     NSParameterAssert(ownerWallet);
@@ -1310,6 +1329,10 @@
 
 -(NSUInteger)localMasternodesCount {
     return [self.localMasternodesDictionaryByRegistrationTransactionHash count];
+}
+
+-(NSArray<DSLocalMasternode*>*)localMasternodes {
+    return [self.localMasternodesDictionaryByRegistrationTransactionHash allValues];
 }
 
 
