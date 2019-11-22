@@ -24,6 +24,8 @@
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSFundsDerivationPath.h"
 
+#import "DSSparseMerkleTree.h"
+
 #import "DSChainsManager.h"
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
@@ -47,6 +49,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSOptionsManager.h"
 #import "NSData+Dash.h"
+#import "NSArray+Dash.h"
 #import "NSDate+Utils.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSAddressEntity+CoreDataProperties.h"

@@ -181,6 +181,7 @@
 		FBAA774C222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774B222B24B1001B3756 /* DSProviderUpdateRegistrarTableViewCell.m */; };
 		FBAA774F222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */; };
 		FBAA7752222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */; };
+		FBAF79792385CA0200F4944E /* DSSparseMerkleTreeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */; };
 		FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */; };
 		FBB25BF320C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB25BF220C5CEE30037F5BE /* DSMerkleBlockTableViewCell.m */; };
 		FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBB4E36B2145B2D0008040B7 /* Layer2.storyboard */; };
@@ -524,6 +525,7 @@
 		FBAA774E222B24CC001B3756 /* DSProviderUpdateServiceTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateServiceTableViewCell.m; sourceTree = "<group>"; };
 		FBAA7750222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSProviderUpdateServiceTransactionsViewController.h; sourceTree = "<group>"; };
 		FBAA7751222B2963001B3756 /* DSProviderUpdateServiceTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSProviderUpdateServiceTransactionsViewController.m; sourceTree = "<group>"; };
+		FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSSparseMerkleTreeTests.m; sourceTree = "<group>"; };
 		FBB25BEE20C5CDC60037F5BE /* DSBlockchainExplorerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainExplorerViewController.h; sourceTree = "<group>"; };
 		FBB25BEF20C5CDC60037F5BE /* DSBlockchainExplorerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainExplorerViewController.m; sourceTree = "<group>"; };
 		FBB25BF120C5CEE30037F5BE /* DSMerkleBlockTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMerkleBlockTableViewCell.h; sourceTree = "<group>"; };
@@ -807,6 +809,7 @@
 				6003F5B6195388D20070C39A /* Supporting Files */,
 				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
 				FBD696EB2291A1800012FF51 /* DSDataTests.m */,
+				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1674,6 +1677,7 @@
 				2A1ECBD920D8B327000177D8 /* DSHashTests.m in Sources */,
 				2A7DCCB420DA198F0097049F /* DSPaymentProtocolTests.m in Sources */,
 				6003F5BC195388D20070C39A /* Tests.m in Sources */,
+				FBAF79792385CA0200F4944E /* DSSparseMerkleTreeTests.m in Sources */,
 				2A7DCCB020DA080F0097049F /* DSWalletTests.m in Sources */,
 				2A1ECBDB20D8B7EC000177D8 /* DSKeyTests.m in Sources */,
 				FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */,
