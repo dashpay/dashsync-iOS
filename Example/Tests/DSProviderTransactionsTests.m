@@ -19,7 +19,6 @@
 #import "DSTransactionFactory.h"
 #import "DSChainManager.h"
 #import "NSData+Dash.h"
-#import "DSTransactionLockVote.h"
 #import "DSTransactionManager.h"
 #import "DSMasternodeManager.h"
 #import "DSSporkManager.h"
