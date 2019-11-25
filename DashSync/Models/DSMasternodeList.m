@@ -353,7 +353,7 @@ inline static int ceil_log2(int x)
     (*flagIdx)++;
     
     if (! flag || depth == ceil_log2((int)_mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count)) {
-        UInt256 hash = [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
+        UInt256 hash = [simplifiedMasternodeListDictionaryByRegistrationTransactionHashHashes UInt256AtOffset:(*hashIdx)*sizeof(UInt256)];
         
         (*hashIdx)++;
         return leaf(uint256_obj(hash), flag);

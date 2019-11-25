@@ -31,6 +31,7 @@
 #import "DSChain.h"
 #import "DSSpork.h"
 #import "DSMerkleBlock.h"
+#import "DSChainLock.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Bitcoin.h"
 #import "NSData+Dash.h"
@@ -96,7 +97,7 @@
 @property (nonatomic, assign) uint64_t localNonce;
 @property (nonatomic, assign) NSTimeInterval pingStartTime, relayStartTime;
 @property (nonatomic, strong) DSMerkleBlock *currentBlock;
-@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownTxHashes, *knownInstantSendLockHashes, *currentBlockTxHashes;
+@property (nonatomic, strong) NSMutableOrderedSet *knownBlockHashes, *knownChainLockHashes, *knownTxHashes, *knownInstantSendLockHashes, *currentBlockTxHashes;
 @property (nonatomic, strong) NSMutableOrderedSet *knownGovernanceObjectHashes, *knownGovernanceObjectVoteHashes;
 @property (nonatomic, strong) NSData *lastBlockHash;
 @property (nonatomic, strong) NSMutableArray *pongHandlers;
@@ -246,6 +247,7 @@
     self.knownInstantSendLockHashes = [NSMutableOrderedSet orderedSet];
     
     self.knownBlockHashes = [NSMutableOrderedSet orderedSet];
+    self.knownChainLockHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectHashes = [NSMutableOrderedSet orderedSet];
     self.knownGovernanceObjectVoteHashes = [NSMutableOrderedSet orderedSet];
     self.currentBlock = nil;
@@ -615,6 +617,8 @@
         case DSInvType_Block:
             [self.knownBlockHashes unionOrderedSet:hashes];
             break;
+        case DSInvType_ChainLockSignature:
+            [self.knownChainLockHashes unionOrderedSet:hashes];
         default:
             break;
     }
@@ -901,6 +905,7 @@
     else if ([MSG_PING isEqual:type]) [self acceptPingMessage:message];
     else if ([MSG_PONG isEqual:type]) [self acceptPongMessage:message];
     else if ([MSG_MERKLEBLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
+    else if ([MSG_CHAINLOCK isEqual:type]) [self acceptMerkleblockMessage:message];
     else if ([MSG_REJECT isEqual:type]) [self acceptRejectMessage:message];
     else if ([MSG_FEEFILTER isEqual:type]) [self acceptFeeFilterMessage:message];
     //control
@@ -1111,14 +1116,14 @@
     }
     
     if (count > 0 && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePing) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodePaymentVote) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_MasternodeVerify) && ([message UInt32AtOffset:l.unsignedIntegerValue] != DSInvType_GovernanceObjectVote)) {
-        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message hashAtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
+        DSDLog(@"%@:%u got inv with %u item%@ (first item %@ with hash %@)", self.host, self.port, (int)count,count==1?@"":@"s",[self nameOfInvMessage:[message UInt32AtOffset:l.unsignedIntegerValue]],[NSData dataWithUInt256:[message UInt256AtOffset:l.unsignedIntegerValue + sizeof(uint32_t)]].hexString);
     }
     
     BOOL onlyPrivateSendTransactions = NO;
     
     for (NSUInteger off = l.unsignedIntegerValue; off < l.unsignedIntegerValue + 36*count; off += 36) {
         DSInvType type = [message UInt32AtOffset:off];
-        UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
+        UInt256 hash = [message UInt256AtOffset:off + sizeof(uint32_t)];
         
         if (uint256_is_zero(hash)) continue;
         
@@ -1478,7 +1483,7 @@
         
         for (NSUInteger off = l; off < l + count*36; off += 36) {
             DSInvType type = [message UInt32AtOffset:off];
-            UInt256 hash = [message hashAtOffset:off + sizeof(uint32_t)];
+            UInt256 hash = [message UInt256AtOffset:off + sizeof(uint32_t)];
             DSTransaction *transaction = nil;
             
             if (uint256_is_zero(hash)) continue;
@@ -1558,13 +1563,13 @@
     
     for (NSUInteger off = l; off < l + 36*count; off += 36) {
         if ([message UInt32AtOffset:off] == DSInvType_Tx) {
-            [txHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
+            [txHashes addObject:uint256_obj([message UInt256AtOffset:off + sizeof(uint32_t)])];
         }
         else if ([message UInt32AtOffset:off] == DSInvType_TxLockRequest) {
-            [txLockRequestHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
+            [txLockRequestHashes addObject:uint256_obj([message UInt256AtOffset:off + sizeof(uint32_t)])];
         }
         else if ([message UInt32AtOffset:off] == DSInvType_Merkleblock) {
-            [blockHashes addObject:uint256_obj([message hashAtOffset:off + sizeof(uint32_t)])];
+            [blockHashes addObject:uint256_obj([message UInt256AtOffset:off + sizeof(uint32_t)])];
         }
     }
     
@@ -1629,8 +1634,8 @@
     DSMerkleBlock *block = [DSMerkleBlock blockWithMessage:message onChain:self.chain];
     
     if (! block.valid) {
-//        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
-//        return;
+        [self error:@"invalid merkleblock: %@", uint256_obj(block.blockHash)];
+        return;
     }
     else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
         [self error:@"got merkleblock message before loading a filter"];
@@ -1653,6 +1658,30 @@
     }
 }
 
+// DIP08: https://github.com/dashpay/dips/blob/master/dip-0008.md
+- (void)acceptChainLockMessage:(NSData *)message
+{
+    
+    if (![self.chain.chainManager.sporkManager chainLocksEnabled]) {
+        DSDLog(@"returned chain lock message when chain locks are not enabled: %@", message);//no error here
+        return;
+    }
+    DSChainLock *chainLock = [DSChainLock chainLockWithMessage:message onChain:self.chain];
+    
+    if (! chainLock) {
+        [self error:@"malformed chain lock message: %@", message];
+        return;
+    }
+    else if (! self.sentFilter && ! self.sentGetdataTxBlocks) {
+        [self error:@"got chain lock message before loading a filter"];
+        return;
+    }
+    
+    dispatch_async(self.delegateQueue, ^{
+        [self.transactionDelegate peer:self relayedChainLock:chainLock];
+    });
+}
+
 // BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 - (void)acceptRejectMessage:(NSData *)message
 {
@@ -1663,7 +1692,7 @@
     uint8_t code = [message UInt8AtOffset:off++];
     NSString *reason = [message stringAtOffset:off length:&lNumber];
     l = lNumber.unsignedIntegerValue;
-    UInt256 txHash = ([MSG_TX isEqual:type] || [MSG_IX isEqual:type]) ? [message hashAtOffset:off + l] : UINT256_ZERO;
+    UInt256 txHash = ([MSG_TX isEqual:type] || [MSG_IX isEqual:type]) ? [message UInt256AtOffset:off + l] : UINT256_ZERO;
     
     DSDLog(@"%@:%u rejected %@ code: 0x%x reason: \"%@\"%@%@", self.host, self.port, type, code, reason,
           (uint256_is_zero(txHash) ? @"" : @" txid: "), (uint256_is_zero(txHash) ? @"" : uint256_obj(txHash)));

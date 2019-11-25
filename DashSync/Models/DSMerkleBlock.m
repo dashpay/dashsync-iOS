@@ -32,6 +32,7 @@
 #import "NSData+Dash.h"
 #import "DSChain.h"
 #import "NSDate+Utils.h"
+#import "DSChainLock.h"
 
 #define MAX_TIME_DRIFT    (2*60*60)     // the furthest in the future a block is allowed to be timestamped
 #define LOG_MERKLE_BLOCKS 0
@@ -82,6 +83,9 @@ inline static int ceil_log2(int x)
 @property (nonatomic, assign) uint32_t target;
 @property (nonatomic, assign) uint32_t nonce;
 @property (nonatomic, assign) uint32_t totalTransactions;
+@property (nonatomic, assign) BOOL chainLocked;
+@property (nonatomic, assign) BOOL hasUnverifiedChainLock;
+@property (nonatomic, strong) DSChainLock * chainLockAwaitingProcessing;
 @property (nonatomic, strong) NSData *hashes;
 @property (nonatomic, strong) NSData *flags;
 @property (nonatomic, strong) DSChain * chain;
@@ -110,9 +114,9 @@ inline static int ceil_log2(int x)
     
     _version = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
-    _prevBlock = [message hashAtOffset:off];
+    _prevBlock = [message UInt256AtOffset:off];
     off += sizeof(UInt256);
-    _merkleRoot = [message hashAtOffset:off];
+    _merkleRoot = [message UInt256AtOffset:off];
     off += sizeof(UInt256);
     _timestamp = [message UInt32AtOffset:off];
     off += sizeof(uint32_t);
@@ -207,32 +211,16 @@ inline static int ceil_log2(int x)
     return YES;
 }
 
-// true if merkle tree and timestamp are valid, and proof-of-work matches the stated difficulty target
+// true if merkle tree and timestamp are valid
 // NOTE: This only checks if the block difficulty matches the difficulty target in the header. It does not check if the
 // target is correct for the block's height in the chain. Use verifyDifficultyFromPreviousBlock: for that.
 - (BOOL)isValid
 {
-    // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
-    // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
-    const uint32_t maxsize = self.chain.maxProofOfWork >> 24, maxtarget = self.chain.maxProofOfWork & 0x00ffffffu;
-    const uint32_t size = _target >> 24, target = _target & 0x00ffffffu;
-    UInt256 t = UINT256_ZERO;
     if (![self isMerkleTreeValid]) return NO;
     
     // check if timestamp is too far in future
     //TODO: use estimated network time instead of system time (avoids timejacking attacks and misconfigured time)
     if (_timestamp > [NSDate timeIntervalSince1970] + MAX_TIME_DRIFT) return NO;
-    
-    // check if proof-of-work target is out of range
-    if (target == 0 || target & 0x00800000u || size > maxsize || (size == maxsize && target > maxtarget)) return NO;
-    
-    if (size > 3) *(uint32_t *)&t.u8[size - 3] = CFSwapInt32HostToLittle(target);
-    else t.u32[0] = CFSwapInt32HostToLittle(target >> (3 - size)*8);
-    
-    for (int i = sizeof(t)/sizeof(uint32_t) - 1; i >= 0; i--) { // check proof-of-work
-        if (CFSwapInt32LittleToHost(_blockHash.u32[i]) < CFSwapInt32LittleToHost(t.u32[i])) break;
-        if (CFSwapInt32LittleToHost(_blockHash.u32[i]) > CFSwapInt32LittleToHost(t.u32[i])) return NO;
-    }
     
     return YES;
 }
@@ -263,9 +251,9 @@ inline static int ceil_log2(int x)
 - (BOOL)containsTxHash:(UInt256)txHash
 {
     for (NSUInteger i = 0; i < _hashes.length/sizeof(UInt256); i += sizeof(UInt256)) {
-        DSDLog(@"transaction Hash %@",[NSData dataWithUInt256:[_hashes hashAtOffset:i]].hexString);
+        DSDLog(@"transaction Hash %@",[NSData dataWithUInt256:[_hashes UInt256AtOffset:i]].hexString);
         DSDLog(@"looking for %@",[NSData dataWithUInt256:txHash].hexString);
-        if (uint256_eq(txHash, [_hashes hashAtOffset:i])) return YES;
+        if (uint256_eq(txHash, [_hashes UInt256AtOffset:i])) return YES;
     }
     
     return NO;
@@ -387,6 +375,21 @@ inline static int ceil_log2(int x)
     return compact;
 }
 
+// v14
+
+-(void)setChainLockedWithChainLock:(DSChainLock*)chainLock {
+    self.chainLocked = chainLock.signatureVerified;
+    self.hasUnverifiedChainLock = (chainLock && !chainLock.signatureVerified);
+    if (self.hasUnverifiedChainLock) {
+        self.chainLockAwaitingProcessing = chainLock;
+    } else {
+        self.chainLockAwaitingProcessing = nil;
+    }
+    if (!chainLock.saved) {
+        [chainLock save];
+    }
+}
+
 // recursively walks the merkle tree in depth first order, calling leaf(hash, flag) for each stored hash, and
 // branch(left, right) with the result from each branch
 - (id)_walk:(int *)hashIdx :(int *)flagIdx :(int)depth :(id (^)(id, BOOL))leaf :(id (^)(id, id))branch
@@ -398,7 +401,7 @@ inline static int ceil_log2(int x)
     (*flagIdx)++;
     
     if (! flag || depth == ceil_log2(_totalTransactions)) {
-        UInt256 hash = [_hashes hashAtOffset:(*hashIdx)*sizeof(UInt256)];
+        UInt256 hash = [_hashes UInt256AtOffset:(*hashIdx)*sizeof(UInt256)];
         
         (*hashIdx)++;
         return leaf(uint256_obj(hash), flag);

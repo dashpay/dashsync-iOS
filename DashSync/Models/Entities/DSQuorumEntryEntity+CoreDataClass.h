@@ -10,7 +10,7 @@
 #import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
 
-@class DSChainEntity, DSInstantSendLockEntity, DSMasternodeListEntity, DSMerkleBlockEntity, DSQuorumCommitmentTransactionEntity, DSChain, DSQuorumEntry;
+@class DSChainEntity, DSInstantSendLockEntity, DSMasternodeListEntity, DSMerkleBlockEntity, DSQuorumCommitmentTransactionEntity, DSChain, DSQuorumEntry, DSChainLockEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

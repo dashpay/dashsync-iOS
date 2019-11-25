@@ -126,7 +126,7 @@
         off += l.unsignedIntegerValue;
         
         for (NSUInteger i = 0; i < count; i++) { // inputs
-            [self.hashes addObject:uint256_obj([message hashAtOffset:off])];
+            [self.hashes addObject:uint256_obj([message UInt256AtOffset:off])];
             off += sizeof(UInt256);
             [self.indexes addObject:@([message UInt32AtOffset:off])]; // input index
             off += sizeof(uint32_t);

@@ -40,7 +40,7 @@
 
 typedef union _UInt256 UInt256;
 
-@class DSChain;
+@class DSChain, DSChainLock;
 
 @interface DSMerkleBlock : NSObject <NSCopying>
 
@@ -85,5 +85,7 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 - (BOOL)verifyDifficultyWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
 
 - (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
+
+- (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
 
 @end
