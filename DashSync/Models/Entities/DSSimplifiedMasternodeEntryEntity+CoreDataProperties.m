@@ -29,7 +29,6 @@
 @dynamic governanceVotes;
 @dynamic localMasternode;
 @dynamic masternodeLists;
-@dynamic transactionLockVotes;
 @dynamic previousSimplifiedMasternodeEntryHashes;
 @dynamic ipv6Address;
 

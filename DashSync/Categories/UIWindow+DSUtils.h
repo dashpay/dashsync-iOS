@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIWindow (DSUtils)
 
--(UIViewController*)ds_presentingViewController;
+- (UIViewController *)ds_presentingViewController;
 
 @end
 

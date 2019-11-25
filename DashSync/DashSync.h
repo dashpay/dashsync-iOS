@@ -24,6 +24,8 @@
 #import "DSMasternodeHoldingsDerivationPath.h"
 #import "DSFundsDerivationPath.h"
 
+#import "DSSparseMerkleTree.h"
+
 #import "DSChainsManager.h"
 #import "DSChainManager.h"
 #import "DSTransactionManager.h"
@@ -47,6 +49,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSOptionsManager.h"
 #import "NSData+Dash.h"
+#import "NSArray+Dash.h"
 #import "NSDate+Utils.h"
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSAddressEntity+CoreDataProperties.h"
@@ -70,6 +73,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
+#import "DSProviderUpdateRevocationTransaction.h"
 
 #import "DSSimplifiedMasternodeEntryEntity+CoreDataProperties.h"
 #import "NSManagedObject+Sugar.h"
@@ -109,6 +113,10 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 
 + (instancetype)sharedSyncController;
 
+/// Registration must be complete before the end of application:didFinishLaunchingWithOptions:
+- (void)registerBackgroundFetchOnce;
+- (void)setupDashSyncOnce;
+
 -(void)startSyncForChain:(DSChain* _Nonnull)chain;
 -(void)stopSyncForChain:(DSChain* _Nonnull)chain;
 -(void)stopSyncAllChains;
@@ -121,6 +129,9 @@ FOUNDATION_EXPORT const unsigned char DashSyncVersionString[];
 -(void)wipeWalletDataForChain:(DSChain* _Nonnull)chain forceReauthentication:(BOOL)forceReauthentication;
 
 -(uint64_t)dbSize;
+
+- (void)scheduleBackgroundFetch;
+- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler;
 
 @end
 

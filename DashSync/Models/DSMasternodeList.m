@@ -298,6 +298,10 @@ inline static int ceil_log2(int x)
     return self.mQuorums[@(type)].count;
 }
 
+-(NSDictionary*)quorumsOfType:(DSLLMQType)type  {
+    return self.mQuorums[@(type)];
+}
+
 -(NSUInteger)validQuorumsCount {
     NSUInteger count = 0;
     for (NSNumber * type in self.mQuorums) {
@@ -405,6 +409,37 @@ inline static int ceil_log2(int x)
         }
     }
     return dictionary;
+}
+
+-(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID {
+    NSArray * quorumsForIS = [self.quorums[@(1)] allValues];
+    UInt256 lowestValue = UINT256_MAX;
+    DSQuorumEntry * firstQuorum = nil;
+    for (DSQuorumEntry * quorumEntry in quorumsForIS) {
+        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
+        if (uint256_sup(lowestValue, orderingHash)) {
+            lowestValue = orderingHash;
+            firstQuorum = quorumEntry;
+        }
+    }
+    return firstQuorum;
+}
+
+-(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID {
+    NSArray * quorumsForIS = [self.quorums[@(1)] allValues];
+    NSMutableDictionary * orderedQuorumDictionary = [NSMutableDictionary dictionary];
+    for (DSQuorumEntry * quorumEntry in quorumsForIS) {
+        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
+        [orderedQuorumDictionary setObject:uint256_data(orderingHash) forKey:quorumEntry];
+    }
+    NSArray * orderedQuorums = [orderedQuorumDictionary keysSortedByValueUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        if (uint256_sup([obj1 UInt256], [obj2 UInt256])) {
+            return NSOrderedDescending;
+        } else {
+            return NSOrderedAscending;
+        }
+    }];
+    return orderedQuorums;
 }
 
 @end

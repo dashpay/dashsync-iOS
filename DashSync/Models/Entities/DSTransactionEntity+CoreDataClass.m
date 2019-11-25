@@ -34,7 +34,6 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
-#import "DSTransactionLockVoteEntity+CoreDataClass.h"
 #import "DSInstantSendLockEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
 
@@ -132,20 +131,8 @@
             [tx addOutputScript:e.script withAddress:e.address amount:e.value];
         }
         
-        if (!self.instantSendLock) { //v13 or absent
-            NSMutableDictionary * lockVotesDictionary = [NSMutableDictionary dictionary];
-            
-            for (DSTransactionLockVoteEntity * lockVoteEntity in self.lockVotes) {
-                DSTransactionLockVote * transactionLockVote = [lockVoteEntity transactionLockVoteForChain:chain];
-                NSValue * inputOutpoint = dsutxo_obj(((DSUTXO) { lockVoteEntity.inputHash.UInt256, lockVoteEntity.inputIndex }));
-                if (!lockVotesDictionary[inputOutpoint]) lockVotesDictionary[inputOutpoint] = [NSMutableArray array];
-                [lockVotesDictionary[inputOutpoint] addObject:transactionLockVote];
-            }
-            [tx setInstantSendReceivedWithTransactionLockVotes:lockVotesDictionary];
-        } else { //14
-            DSInstantSendTransactionLock * instantSendLock = [self.instantSendLock instantSendTransactionLockForChain:chain];
-            [tx setInstantSendReceivedWithInstantSendLock:instantSendLock];
-        }
+        DSInstantSendTransactionLock * instantSendLock = [self.instantSendLock instantSendTransactionLockForChain:chain];
+        [tx setInstantSendReceivedWithInstantSendLock:instantSendLock];
     }];
     
     return tx;

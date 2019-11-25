@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " 그리고 ";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n         합계 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d회의 시도 남음\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(요청된 로컬 금액: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 회의 시도 남음\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n     금액 %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\n더이상 시도할 수 없습니다.";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n%1$d %2$@뒤에 다시 시도해주세요";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "이 마스터노드를 정말로 되돌리시겠습니까?";
@@ -54,79 +36,73 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "%@을/를 지불하기 위해 이 마스터노드를 업데이트 하시겠습니까?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "잘못된 암호입니다, 다시 시도해주세요";
+"Bad password, try again" = "Bad password, try again";
 
 /* No comment provided by engineer. */
-"bad payment request" = "잘못된 지불요청";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "잘못된 지불요청 URL";
+"Bad payment request URL" = "Bad payment request URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "잘못된 지불 URL";
+"Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
-"cancel" = "취소";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "%@를 위한 암호 설정";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "승인";
 
 /* No comment provided by engineer. */
-"connect timeout" = "접속 시간 초과";
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "지불에 실패하였습니다";
+"Connect timeout" = "Connect timeout";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "대시 지불은 %@보다 적을 수 없습니다.";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "대시 거래가 서명되지 않음";
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "대시 거래 금액은 %@보다 적을 수 없습니다.";
+"Dash transaction not signed" = "Dash transaction not signed";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "개발자 네트워크";
 
 /* No comment provided by engineer. */
-"double spend" = "이중지불";
+"Double spend" = "Double spend";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "이전 암호 입력";
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "지불 요청 서버 %@ 에 오류 발생";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "대쉬 거래 서명 중 오류 발생";
+"Error signing dash transaction" = "Error signing dash transaction";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "거래 서명 중 오류 발생";
+"Error signing transaction" = "Error signing transaction";
 
 /* No comment provided by engineer. */
-"hour" = "시간";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"hours" = "시간";
-
-/* No comment provided by engineer. */
-"ignore" = "무시";
-
-/* No comment provided by engineer. */
-"instant payment" = "즉시 지불";
+"Instant payment" = "Instant payment";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "인스턴트샌드에는 6회의 확인이 필요합니다, 그래도 정기 거래로 보내시겠습니까?";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "잔액 부족";
+"Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "대시 네트워크 수수료로 낼 잔액이 부족합니다";
+"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "내부 오류";
@@ -147,106 +123,103 @@
 "Method Not Found" = "메소드를 찾을 수 없음";
 
 /* No comment provided by engineer. */
-"minute" = "분";
+"Missing certificate" = "Missing certificate";
 
 /* No comment provided by engineer. */
-"minutes" = "분";
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
-"missing certificate" = "인증서를 찾을 수 없습니다";
+"No peers found" = "No peers found";
 
 /* No comment provided by engineer. */
-"no peers found" = "피어를 찾을 수 없습니다";
+"Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "유효한 비밀 키가 아님";
+"Not connected to the dash network" = "Not connected to the dash network";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "대시 네트워크에 연결되어 있지 않습니다.";
-
-/* No comment provided by engineer. */
-"ok" = "ok";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Parse Error" = "파스 오류";
 
 /* No comment provided by engineer. */
-"passcode" = "암호";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "%@에 대한 암호";
+"Password" = "Password";
 
 /* No comment provided by engineer. */
-"password" = "비밀번호";
+"Password protected key" = "Password protected key";
 
 /* No comment provided by engineer. */
-"password protected key" = "비밀번호로 보호되는 키";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "수취인의 신원이 인증되지 않았습니다";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "복원 문구";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "복원 문구가 일치하지 않습니다";
+"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "지불 금액을 %1$@ (%2$@) 줄이시겠습니까?";
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
-"request expired" = "요청 만료";
+"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "요청한 네트워크 \"%@\"는 현재 사용할 수 없습니다.";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"rescan" = "재스캔";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"reset" = "초기화";
+"Retry" = "Retry";
 
 /* No comment provided by engineer. */
-"retry" = "재시도";
-
-/* No comment provided by engineer. */
-"second" = "초";
-
-/* No comment provided by engineer. */
-"seconds" = "초";
-
-/* No comment provided by engineer. */
-"send" = "보내기";
+"Send" = "Send";
 
 /* No comment provided by engineer. */
 "Server Error" = "서버 오류";
 
 /* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
 "Testnet" = "테스트넷";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "이 결제 주소는 이미 당신의 지갑에 존재합니다.";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "이 비밀 키는 이미 당신의 지갑에 있습니다";
+"This private key is already in your wallet" = "This private key is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is empty" = "이 비밀 키는 잔액이 없습니다";
+"This private key is empty" = "This private key is empty";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "이 요청은 즉시 지불을 요구하고 있습니다. 그러나 귀하가 가진 인스턴트샌드가 요구하는 6회의 확인을 거친 입력값이 충분하지 않습니다. 판매자에게 일반 거래를 수락하도록 요청하거나 수 분 정도 기다려주십시오.";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "거래 취소, 네트워크 시간 초과";
+"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "거래 수수료가 이 비밀 키에 있는 잔액보다 더 들어갑니다. (아주 작은 \"dust\" 입금이 많은 경우 발생합니다)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
-"transaction rejected" = "거래가 거부됨";
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "%@에서 예상치 못한 응답";
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Unexpected response from %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "알 수 없는 오류";
@@ -255,28 +228,25 @@
 "Unknown JSON-RPC Response" = "알 수 없는 JSON-RPC 반응";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "인식할 수 없는 주소";
+"Unrecognized address" = "Unrecognized address";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "지원 되지 않는 서명 유형";
+"Unsupported signature type" = "Unsupported signature type";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "신뢰할 수 없는 인증서";
+"Untrusted certificate" = "Untrusted certificate";
 
 /* Updating Price */
 "Updating Price" = "가격 업데이트중";
 
 /* No comment provided by engineer. */
-"verify passcode" = "비밀번호 확인";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "지갑 사용 정지됨";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "경고";
 
 /* No comment provided by engineer. */
-"wipe" = "지우기";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "지갑이 동기화 되지 않은 것 같습니다.\n일반적인 경우, 블록체인을 재스캔하면 해결할 수 있습니다.";

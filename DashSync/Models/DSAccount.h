@@ -31,7 +31,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
+    DSTransactionDirection_Sent,
+    DSTransactionDirection_Received,
+    DSTransactionDirection_Moved,
+    DSTransactionDirection_NotAccountFunds,
+};
+
 @class DSFundsDerivationPath,DSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSCoinbaseTransaction;
 
 @interface DSAccount : NSObject
 
@@ -54,16 +62,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) uint64_t balance;
 
 // NSValue objects containing UTXO structs
-@property (nonatomic, readonly) NSArray * unspentOutputs;
+@property (nonatomic, readonly) NSArray <NSValue *> * unspentOutputs;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * recentTransactions;
+@property (nonatomic, readonly) NSArray <DSTransaction *> * recentTransactions;
 
 // latest 100 transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * recentTransactionsWithInternalOutput;
+@property (nonatomic, readonly) NSArray <DSTransaction *> * recentTransactionsWithInternalOutput;
 
 // all wallet transactions sorted by date, most recent first
-@property (nonatomic, readonly) NSArray * allTransactions;
+@property (nonatomic, readonly) NSArray <DSTransaction *> * allTransactions;
+
+// all wallet transactions sorted by date, most recent first
+@property (nonatomic, readonly) NSArray <DSCoinbaseTransaction *> * coinbaseTransactions;
+
+// Does this account have any coinbase rewards
+@property (nonatomic, readonly) BOOL hasCoinbaseTransaction;
 
 // returns the first unused external address
 @property (nullable, nonatomic, readonly) NSString * receiveAddress;
@@ -72,10 +86,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, readonly) NSString * changeAddress;
 
 // all previously generated external addresses
-@property (nonatomic, readonly) NSArray * externalAddresses;
+@property (nonatomic, readonly) NSArray <NSString *> * externalAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSArray * internalAddresses;
+@property (nonatomic, readonly) NSArray <NSString *> * internalAddresses;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 
@@ -96,11 +110,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend returnInputCount:(uint32_t* _Nullable)rInputCount;
 
-// true if AutoLocks enabled and can be used with provided amount
-- (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount;
-
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
+
+// true if the address is internal and is controlled by the wallet
+- (BOOL)containsInternalAddress:(NSString *)address;
+
+// true if the address is external and is controlled by the wallet
+- (BOOL)containsExternalAddress:(NSString *)address;
 
 // the high level (hardened) derivation path containing the address
 -(DSFundsDerivationPath*)derivationPathContainingAddress:(NSString *)address;
@@ -146,6 +163,9 @@ NS_ASSUME_NONNULL_BEGIN
 // true if no previous account transaction spends any of the given transaction's inputs, and no inputs are invalid
 - (BOOL)transactionIsValid:(DSTransaction *)transaction;
 
+// received, sent or moved inside an account
+- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction;
+
 // true if transaction cannot be immediately spent because of a time lock (i.e. if it or an input tx can be replaced-by-fee, via BIP125)
 - (BOOL)transactionIsPending:(DSTransaction *)transaction;
 
@@ -158,8 +178,17 @@ NS_ASSUME_NONNULL_BEGIN
 // returns the amount received by the account from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction;
 
+// returns the amount received by the account from the transaction (total outputs to receive addresses)
+- (uint64_t)amountReceivedFromTransactionOnExternalAddresses:(DSTransaction *)transaction;
+
+// returns the amount received by the account from the transaction (total outputs to change addresses)
+- (uint64_t)amountReceivedFromTransactionOnInternalAddresses:(DSTransaction *)transaction;
+
 // retuns the amount sent from the account by the trasaction (total account outputs consumed, change and fee included)
 - (uint64_t)amountSentByTransaction:(DSTransaction *)transaction;
+
+// returns the external (receive) addresses of a transaction
+- (NSArray<NSString*>*)externalAddressesOfTransaction:(DSTransaction*)transaction;
 
 // returns the fee for the given transaction if all its inputs are from wallet transactions, UINT64_MAX otherwise
 - (uint64_t)feeForTransaction:(DSTransaction *)transaction;

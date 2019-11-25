@@ -62,6 +62,7 @@
 #import "DSBIP39Mnemonic.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSTransactionFactory.h"
+#import "DSMasternodeManager.h"
 
 #define LOG_BALANCE_UPDATE 0
 
@@ -403,6 +404,26 @@
     return FALSE;
 }
 
+// true if the address is controlled by the wallet
+- (BOOL)containsInternalAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
+        if ([derivationPath containsChangeAddress:address]) return TRUE;
+    }
+    return FALSE;
+}
+
+// true if the address is controlled by the wallet
+- (BOOL)containsExternalAddress:(NSString *)address {
+    NSParameterAssert(address);
+    
+    for (DSFundsDerivationPath * derivationPath in self.derivationPaths) {
+        if ([derivationPath containsReceiveAddress:address]) return TRUE;
+    }
+    return FALSE;
+}
+
 // true if the address was previously used as an input or output in any wallet transaction
 - (BOOL)addressIsUsed:(NSString *)address {
     NSParameterAssert(address);
@@ -682,6 +703,30 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 {
     return self.transactions.array;
 }
+
+// all wallet transactions sorted by date, most recent first
+- (NSArray *)coinbaseTransactions
+{
+    NSMutableArray * coinbaseTransactions = [NSMutableArray array];
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+            [coinbaseTransactions addObject:transaction];
+        }
+    }
+    return coinbaseTransactions;
+}
+
+// Does this account have any rewards
+- (BOOL)hasCoinbaseTransaction
+{
+    for (DSTransaction * transaction in self.transactions) {
+        if ([transaction isKindOfClass:[DSCoinbaseTransaction class]]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 
 // MARK: = Existence
 
@@ -1259,7 +1304,32 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return YES;
 }
 
+// MARK: = Direction
+
+- (DSTransactionDirection)directionOfTransaction:(DSTransaction *)transaction {
+    const uint64_t sent = [self amountSentByTransaction:transaction];
+    const uint64_t received = [self amountReceivedFromTransaction:transaction];
+    const uint64_t fee = transaction.feeUsed;
+    
+    if (sent > 0 && (received + fee) == sent) {
+        // moved
+        return DSTransactionDirection_Moved;
+    }
+    else if (sent > 0) {
+        // sent
+        return DSTransactionDirection_Sent;
+    }
+    else if (received > 0) {
+        // received
+        return DSTransactionDirection_Received;
+    } else {
+        // no funds moved on this account
+        return DSTransactionDirection_NotAccountFunds;
+    }
+}
+
 // MARK: = Amounts
+
 
 // returns the amount received by the wallet from the transaction (total outputs to change and/or receive addresses)
 - (uint64_t)amountReceivedFromTransaction:(DSTransaction *)transaction
@@ -1272,6 +1342,38 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
     for (NSString *address in transaction.outputAddresses) {
         if ([self containsAddress:address]) amount += [transaction.outputAmounts[n] unsignedLongLongValue];
+        n++;
+    }
+    
+    return amount;
+}
+
+- (uint64_t)amountReceivedFromTransactionOnExternalAddresses:(DSTransaction *)transaction
+{
+    NSParameterAssert(transaction);
+    
+    uint64_t amount = 0;
+    NSUInteger n = 0;
+    
+    //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
+    for (NSString *address in transaction.outputAddresses) {
+        if ([self containsExternalAddress:address]) amount += [transaction.outputAmounts[n] unsignedLongLongValue];
+        n++;
+    }
+    
+    return amount;
+}
+
+- (uint64_t)amountReceivedFromTransactionOnInternalAddresses:(DSTransaction *)transaction
+{
+    NSParameterAssert(transaction);
+    
+    uint64_t amount = 0;
+    NSUInteger n = 0;
+    
+    //TODO: don't include outputs below TX_MIN_OUTPUT_AMOUNT
+    for (NSString *address in transaction.outputAddresses) {
+        if ([self containsInternalAddress:address]) amount += [transaction.outputAmounts[n] unsignedLongLongValue];
         n++;
     }
     
@@ -1296,6 +1398,77 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     
     return amount;
+}
+
+// MARK: = Addresses
+
+-(NSArray<NSString*>*)externalAddressesOfTransaction:(DSTransaction*)transaction {
+    
+    NSMutableArray<NSString *> *addresses = [NSMutableArray array];
+    
+    NSUInteger outputAmountIndex = 0;
+    
+    for (NSString *address in transaction.outputAddresses) {
+        NSData *script = transaction.outputScripts[outputAmountIndex];
+        
+        if (address == (id)[NSNull null]) {
+            if ([self directionOfTransaction:transaction] == DSTransactionDirection_Sent) {
+                if ([script UInt8AtOffset:0] == OP_RETURN) {
+                    UInt8 length = [script UInt8AtOffset:1];
+                    if ([script UInt8AtOffset:2] == OP_SHAPESHIFT) {
+                        NSMutableData *data = [NSMutableData data];
+                        uint8_t v = BITCOIN_PUBKEY_ADDRESS;
+                        [data appendBytes:&v length:1];
+                        NSData *addressData = [script subdataWithRange:NSMakeRange(3, length - 1)];
+                        
+                        [data appendData:addressData];
+                        [addresses addObject:[NSString base58checkWithData:data]];
+                    }
+                }
+                else {
+                    [addresses addObject:NSLocalizedString(@"unknown address", nil)];
+                }
+            }
+        }
+        else if ([transaction isKindOfClass:DSProviderRegistrationTransaction.class] && [((DSProviderRegistrationTransaction *)transaction).masternodeHoldingWallet containsHoldingAddress:address]) {
+            uint64_t sent = [self amountSentByTransaction:transaction];
+            uint64_t received = [self amountReceivedFromTransaction:transaction];
+            if (sent == 0 || received + MASTERNODE_COST + transaction.feeUsed == sent) {
+                [addresses addObject:address];
+            }
+        }
+        else {
+            DSTransactionDirection direction = [self directionOfTransaction:transaction];
+            switch (direction) {
+                case DSTransactionDirection_Sent:
+                {
+                    if (![self containsInternalAddress:address]) {
+                        [addresses addObject:address];
+                    }
+                }
+                    break;
+                case DSTransactionDirection_Received:
+                {
+                    if ([self containsAddress:address]) {
+                        [addresses addObject:address];
+                    }
+                }
+                    break;
+                case DSTransactionDirection_Moved:
+                {
+                    if ([self containsExternalAddress:address]) {
+                        [addresses addObject:address];
+                    }
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+    }
+    
+    return addresses;
 }
 
 // MARK: = Fees
@@ -1362,38 +1535,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     return (amount > fee) ? amount - fee : 0;
 }
 
-// MARK: = Autolocks
-
-- (BOOL)canUseAutoLocksForAmount:(uint64_t)requiredAmount
-{
-    const uint64_t confirmationCount = self.wallet.chain.ixPreviousConfirmationsNeeded;
-    
-    DSUTXO o;
-    DSTransaction *tx;
-    NSUInteger inputCount = 0;
-    uint64_t amount = 0;
-    
-    for (NSValue *output in self.utxos) {
-        [output getValue:&o];
-        tx = self.allTx[uint256_obj(o.hash)];
-        if (o.n >= tx.outputAmounts.count) continue;
-        if (confirmationCount && (tx.blockHeight >= (self.blockHeight - confirmationCount))) continue;
-        inputCount++;
-        amount += [tx.outputAmounts[o.n] unsignedLongLongValue];
-        
-        if (amount >= requiredAmount) {
-            break;
-        }
-    }
-    
-    if (amount < requiredAmount) {
-        return NO;
-    }
-    
-    DSChain *chain = self.wallet.chain;
-    return [chain canUseAutoLocksWithInputCount:inputCount];
-}
-
 // MARK: - Private Key Sweeping
 
 // given a private key, queries dash insight for unspent outputs and calls the completion block with a signed transaction
@@ -1435,61 +1576,61 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     NSString * address = [key addressForChain:self.wallet.chain];
     if (! address) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                        DSLocalizedString(@"not a valid private key", nil)}]);
+                                                                                        DSLocalizedString(@"Not a valid private key", nil)}]);
         return;
     }
     if ([self.wallet containsAddress:address]) {
         completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:187 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                        DSLocalizedString(@"this private key is already in your wallet", nil)}]);
+                                                                                        DSLocalizedString(@"This private key is already in your wallet", nil)}]);
         return;
     }
     
     [[DSInsightManager sharedInstance] utxosForAddresses:@[address] onChain:self.wallet.chain
                                               completion:^(NSArray *utxos, NSArray *amounts, NSArray *scripts, NSError *error) {
-                                                  DSTransaction *tx = [[DSTransaction alloc] initOnChain:self.wallet.chain];
-                                                  uint64_t balance = 0, feeAmount = 0;
-                                                  NSUInteger i = 0;
-                                                  
-                                                  if (error) {
-                                                      completion(nil, 0, error);
-                                                      return;
-                                                  }
-                                                  
-                                                  //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
-                                                  for (NSValue *output in utxos) {
-                                                      DSUTXO o;
-                                                      
-                                                      [output getValue:&o];
-                                                      [tx addInputHash:o.hash index:o.n script:scripts[i]];
-                                                      balance += [amounts[i++] unsignedLongLongValue];
-                                                  }
-                                                  
-                                                  if (balance == 0) {
-                                                      completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                      DSLocalizedString(@"this private key is empty", nil)}]);
-                                                      return;
-                                                  }
-                                                  
-                                                  // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-                                                  if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
-                                                  
-                                                  if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
-                                                      completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                      DSLocalizedString(@"transaction fees would cost more than the funds available on this "
-                                                                                                                                                        "private key (due to tiny \"dust\" deposits)",nil)}]);
-                                                      return;
-                                                  }
-                                                  
-                                                  [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
-                                                  
-                                                  if (! [tx signWithSerializedPrivateKeys:@[privKey]]) {
-                                                      completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                                                                      DSLocalizedString(@"error signing transaction", nil)}]);
-                                                      return;
-                                                  }
-                                                  
-                                                  completion(tx, feeAmount, nil);
-                                              }];
+        DSTransaction *tx = [[DSTransaction alloc] initOnChain:self.wallet.chain];
+        uint64_t balance = 0, feeAmount = 0;
+        NSUInteger i = 0;
+        
+        if (error) {
+            completion(nil, 0, error);
+            return;
+        }
+        
+        //TODO: make sure not to create a transaction larger than TX_MAX_SIZE
+        for (NSValue *output in utxos) {
+            DSUTXO o;
+            
+            [output getValue:&o];
+            [tx addInputHash:o.hash index:o.n script:scripts[i]];
+            balance += [amounts[i++] unsignedLongLongValue];
+        }
+        
+        if (balance == 0) {
+            completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"This private key is empty", nil)}]);
+            return;
+        }
+        
+        // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
+        if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+        
+        if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
+            completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"Transaction fees would cost more than the funds available on this "
+                                                                                                              "private key (due to tiny \"dust\" deposits)",nil)}]);
+            return;
+        }
+        
+        [tx addOutputAddress:self.receiveAddress amount:balance - feeAmount];
+        
+        if (! [tx signWithSerializedPrivateKeys:@[privKey]]) {
+            completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:401 userInfo:@{NSLocalizedDescriptionKey:
+                                                                                            DSLocalizedString(@"Error signing transaction", nil)}]);
+            return;
+        }
+        
+        completion(tx, feeAmount, nil);
+    }];
 }
 
 @end

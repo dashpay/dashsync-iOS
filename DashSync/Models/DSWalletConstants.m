@@ -13,6 +13,7 @@ NSString* const DSTransactionManagerSyncFinishedNotification =     @"DSTransacti
 NSString* const DSTransactionManagerSyncFailedNotification =       @"DSTransactionManagerSyncFailedNotification";
 NSString* const DSTransactionManagerTransactionStatusDidChangeNotification =         @"DSTransactionManagerTransactionStatusDidChangeNotification";
 NSString* const DSTransactionManagerTransactionReceivedNotification =         @"DSTransactionManagerTransactionReceivedNotification";
+
 NSString* const DSChainNewChainTipBlockNotification =         @"DSChainNewChainTipBlockNotification";
 NSString* const DSPeerManagerPeersDidChangeNotification =      @"DSPeerManagerPeersDidChangeNotification";
 NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeerManagerConnectedPeersDidChangeNotification";
@@ -43,3 +44,12 @@ NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
 NSString* const DSChainManagerNotificationChainKey =         @"DSChainManagerNotificationChainKey";
+
+NSString* const DSTransactionManagerNotificationTransactionKey =         @"DSTransactionManagerNotificationTransactionKey";
+NSString* const DSTransactionManagerNotificationTransactionChangesKey =         @"DSTransactionManagerNotificationTransactionChangesKey";
+
+NSString* const DSTransactionManagerNotificationInstantSendTransactionLockKey =         @"DSTransactionManagerNotificationInstantSendTransactionLockKey";
+
+NSString* const DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey =         @"DSTransactionManagerNotificationInstantSendTransactionLockVerifiedKey";
+
+NSString* const DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey =         @"DSTransactionManagerNotificationInstantSendTransactionAcceptedStatusKey";

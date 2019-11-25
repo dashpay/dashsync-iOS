@@ -112,7 +112,12 @@
                                       stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
                                       withString:@"-#"];
     self.dashFormat.currencyCode = @"DASH";
-    self.dashFormat.currencySymbol = DASH NARROW_NBSP;
+    if (@available(iOS 13.0, *)) {
+        self.dashFormat.currencySymbol = DASH;
+    }
+    else {
+        self.dashFormat.currencySymbol = DASH NARROW_NBSP;
+    }
     self.dashFormat.maximumFractionDigits = 8;
     self.dashFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.dashFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.dashFormat.maximumFractionDigits));
@@ -125,7 +130,12 @@
                                                  stringByReplacingCharactersInRange:[self.dashFormat.positiveFormat rangeOfString:@"#"]
                                                  withString:@"-#"];
     self.dashSignificantFormat.currencyCode = @"DASH";
-    self.dashSignificantFormat.currencySymbol = DASH NARROW_NBSP;
+    if (@available(iOS 13.0, *)) {
+        self.dashSignificantFormat.currencySymbol = DASH;
+    }
+    else {
+        self.dashSignificantFormat.currencySymbol = DASH NARROW_NBSP;
+    }
     self.dashSignificantFormat.usesSignificantDigits = TRUE;
     self.dashSignificantFormat.minimumSignificantDigits = 1;
     self.dashSignificantFormat.maximumSignificantDigits = 6;
@@ -141,7 +151,12 @@
                                          stringByReplacingCharactersInRange:[self.bitcoinFormat.positiveFormat rangeOfString:@"#"]
                                          withString:@"-#"];
     self.bitcoinFormat.currencyCode = @"BTC";
-    self.bitcoinFormat.currencySymbol = BTC NARROW_NBSP;
+    if (@available(iOS 13.0, *)) {
+        self.bitcoinFormat.currencySymbol = BTC;
+    }
+    else {
+        self.bitcoinFormat.currencySymbol = BTC NARROW_NBSP;
+    }
     self.bitcoinFormat.maximumFractionDigits = 8;
     self.bitcoinFormat.minimumFractionDigits = 0; // iOS 8 bug, minimumFractionDigits now has to be set after currencySymbol
     self.bitcoinFormat.maximum = @(MAX_MONEY/(int64_t)pow(10.0, self.bitcoinFormat.maximumFractionDigits));

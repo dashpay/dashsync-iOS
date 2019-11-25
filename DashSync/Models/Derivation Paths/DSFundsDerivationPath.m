@@ -224,6 +224,18 @@
     return [self.internalAddresses copy];
 }
 
+// true if the address is controlled by the wallet
+- (BOOL)containsChangeAddress:(NSString *)address
+{
+    return (address && [self.internalAddresses containsObject:address]) ? YES : NO;
+}
+
+// true if the address is controlled by the wallet
+- (BOOL)containsReceiveAddress:(NSString *)address
+{
+    return (address && [self.externalAddresses containsObject:address]) ? YES : NO;
+}
+
 -(NSArray *)usedReceiveAddresses {
     NSMutableSet *intersection = [NSMutableSet setWithArray:self.externalAddresses];
     [intersection intersectSet:self.mUsedAddresses];

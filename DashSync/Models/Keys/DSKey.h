@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSKey : NSObject
 
 @property (nullable, nonatomic, readonly) NSData *publicKeyData;
+@property (nullable, nonatomic, readonly) NSData *secretKeyData;
 @property (nonatomic, readonly) UInt160 hash160;
 @property (nonatomic,readonly) NSString * secretKeyString;
 
