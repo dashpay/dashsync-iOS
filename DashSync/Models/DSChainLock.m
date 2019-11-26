@@ -144,7 +144,7 @@
 }
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
+    DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] withBlockHeightOffset:offset];
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
         if (!self.signatureVerified) {

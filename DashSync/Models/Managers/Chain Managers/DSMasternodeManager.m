@@ -1179,6 +1179,20 @@
     return [masternodeList quorumEntryForInstantSendRequestID:requestID];
 }
 
+-(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
+    DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
+    DSMasternodeList * masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
+    if (!masternodeList) {
+        DSDLog(@"No masternode list found yet");
+        return nil;
+    }
+    if (merkleBlock.height - masternodeList.height > 24) {
+        DSDLog(@"Masternode list is too old");
+        return nil;
+    }
+    return [masternodeList quorumEntryForChainLockRequestID:requestID];
+}
+
 // MARK: - Local Masternodes
 
 -(DSLocalMasternode*)createNewMasternodeWithIPAddress:(UInt128)ipAddress onPort:(uint32_t)port inWallet:(DSWallet*)wallet {

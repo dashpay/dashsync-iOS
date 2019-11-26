@@ -12,6 +12,7 @@
 
 @property (strong, nonatomic) IBOutlet UILabel *blockHeightLabel;
 @property (strong, nonatomic) IBOutlet UILabel *blockHashLabel;
+@property (strong, nonatomic) IBOutlet UILabel *chainLockedLabel;
 @property (strong, nonatomic) IBOutlet UILabel *timestampLabel;
 
 @end

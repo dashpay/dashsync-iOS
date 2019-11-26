@@ -425,6 +425,20 @@ inline static int ceil_log2(int x)
     return firstQuorum;
 }
 
+-(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID {
+    NSArray * quorumsForChainLock = [self.quorums[@(2)] allValues];
+    UInt256 lowestValue = UINT256_MAX;
+    DSQuorumEntry * firstQuorum = nil;
+    for (DSQuorumEntry * quorumEntry in quorumsForChainLock) {
+        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
+        if (uint256_sup(lowestValue, orderingHash)) {
+            lowestValue = orderingHash;
+            firstQuorum = quorumEntry;
+        }
+    }
+    return firstQuorum;
+}
+
 -(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID {
     NSArray * quorumsForIS = [self.quorums[@(1)] allValues];
     NSMutableDictionary * orderedQuorumDictionary = [NSMutableDictionary dictionary];

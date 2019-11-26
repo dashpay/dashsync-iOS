@@ -148,6 +148,7 @@
     [dateFormatter setDateStyle:NSDateFormatterShortStyle];
     [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
     cell.timestampLabel.text = [dateFormatter stringFromDate:date];
+    cell.chainLockedLabel.text = merkleBlockEntity.chainLock?[NSString stringWithFormat:@"Yes-%@",merkleBlockEntity.chainLock.validSignature?@"Valid":@"Invalid"]:@"Unknown";
     
 }
 

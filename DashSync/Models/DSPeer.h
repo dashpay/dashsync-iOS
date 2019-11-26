@@ -195,7 +195,8 @@ typedef void (^MempoolCompletionBlock)(BOOL success, BOOL needed, BOOL interrupt
 - (void)peer:(DSPeer *)peer relayedTransaction:(DSTransaction *)transaction transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer hasTransaction:(UInt256)txHash transactionIsRequestingInstantSendLock:(BOOL)transactionIsRequestingInstantSendLock;
 - (void)peer:(DSPeer *)peer rejectedTransaction:(UInt256)txHash withCode:(uint8_t)code;
-- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockVoteHashes;
+- (void)peer:(DSPeer *)peer hasInstantSendLockHashes:(NSOrderedSet*)instantSendLockHashes;
+- (void)peer:(DSPeer *)peer hasChainLockHashes:(NSOrderedSet*)chainLockHashes;
 - (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock;
 - (void)peer:(DSPeer *)peer setFeePerByte:(uint64_t)feePerKb;
 
@@ -305,7 +306,7 @@ services:(uint64_t)services;
 - (void)sendTransactionInvMessagesForTxHashes:(NSArray *)txInvHashes txLockRequestHashes:(NSArray*)txLockRequestInvHashes;
 - (void)sendInvMessageForHashes:(NSArray *)invHashes ofType:(DSInvType)invType;
 - (void)sendGetdataMessageForTxHash:(UInt256)txHash;
-- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes;
+- (void)sendGetdataMessageWithTxHashes:(NSArray *)txHashes instantSendLockHashes:(NSArray*)instantSendLockHashes blockHashes:(NSArray *)blockHashes chainLockHashes:(NSArray *)chainLockHashes;
 - (void)sendGetdataMessageWithGovernanceObjectHashes:(NSArray<NSData*> *)governanceObjectHashes;
 - (void)sendGetdataMessageWithGovernanceVoteHashes:(NSArray<NSData*> *)governanceVoteHashes;
 - (void)sendGetMasternodeListFromPreviousBlockHash:(UInt256)previousBlockHash forBlockHash:(UInt256)blockHash;

@@ -60,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
 
+-(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID;
+
 -(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 
 @end
