@@ -1347,6 +1347,19 @@ static dispatch_once_t devnetToken = 0;
     return self.blocks[uint256_obj(blockHash)];
 }
 
+-(BOOL)blockHeightConfirmed:(uint32_t)height {
+    DSMerkleBlock *b = self.lastBlock;
+    NSUInteger count = 0;
+    BOOL confirmed = false;
+    while (b && b.height > height) {
+        b = self.blocks[uint256_obj(b.prevBlock)];
+        confirmed |= b.chainLocked;
+        count++;
+    }
+    if (b.height != height) return NO;
+    return confirmed;
+}
+
 - (DSMerkleBlock *)blockAtHeight:(uint32_t)height {
     DSMerkleBlock *b = self.lastBlock;
     NSUInteger count = 0;

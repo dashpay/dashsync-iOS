@@ -288,9 +288,9 @@
     return [DSQuorumEntryEntity anyObjectMatching:@"quorumPublicKeyData == %@",uint384_data(self.quorumPublicKey)];
 }
 
-- (UInt256)orderingHashForRequestID:(UInt256)requestID {
+- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType {
     NSMutableData * data = [NSMutableData data];
-    [data appendVarInt:1];
+    [data appendVarInt:quorumType];
     [data appendUInt256:self.quorumHash];
     [data appendUInt256:requestID];
     return [data SHA256_2];
@@ -310,6 +310,14 @@
             NSAssert(FALSE, @"Unknown quorum type");
             return 50;
             break;
+    }
+}
+
++(DSLLMQType)chainLockQuorumTypeForChain:(DSChain*)chain {
+    if ([chain isMainnet]) {
+        return DSLLMQType_400_60;
+    } else {
+        return DSLLMQType_50_60;
     }
 }
 

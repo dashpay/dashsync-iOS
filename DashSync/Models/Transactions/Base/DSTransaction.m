@@ -50,6 +50,7 @@
 @property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 @property (nonatomic, assign) BOOL instantSendReceived;
+@property (nonatomic, assign) BOOL confirmed;
 @property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 
 @end
@@ -654,6 +655,16 @@
     if (!instantSendLock.saved) {
         [instantSendLock save];
     }
+}
+
+-(BOOL)confirmed {
+    if (_confirmed) return YES; //because it can't be unconfirmed
+    if (self.blockHeight == UINT32_MAX) return NO;
+    const uint32_t lastHeight = self.chain.lastBlockHeight;
+    if (self.blockHeight > lastHeight) return NO; //maybe a reorg?
+    if (lastHeight - self.blockHeight > 6) return YES;
+    _confirmed = [self.chain blockHeightConfirmed:self.blockHeight];
+    return _confirmed;
 }
 
 // MARK: - Polymorphic data

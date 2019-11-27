@@ -162,6 +162,7 @@ inline static int ceil_log2(int x)
     _totalTransactions = totalTransactions;
     _hashes = hashes;
     _flags = flags;
+    _chainLocked = FALSE;
     return self;
 }
 
@@ -182,6 +183,7 @@ inline static int ceil_log2(int x)
     _hashes = hashes;
     _flags = flags;
     _height = height;
+    _chainLocked = FALSE;
     self.chain = chain;
     
     return self;

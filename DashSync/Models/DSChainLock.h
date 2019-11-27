@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) uint32_t height;
 @property (nonatomic, readonly) UInt256 blockHash;
+@property (nonatomic, readonly) UInt256 requestID;
 @property (nonatomic, readonly) UInt768 signature;
 @property (nonatomic, readonly) BOOL signatureVerified;
 @property (nonatomic, readonly) BOOL saved;

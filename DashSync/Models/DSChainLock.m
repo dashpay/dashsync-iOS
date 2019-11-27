@@ -68,7 +68,7 @@
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
     if (! (self = [self init])) return nil;
-    if (message.length < 80) return nil;
+    if (message.length < 132) return nil;
     NSUInteger off = 0;
     
     _height = [message UInt32AtOffset:off];
@@ -78,6 +78,8 @@
     _signature = [message UInt768AtOffset:off];
     off += sizeof(UInt768);
     self.chain = chain;
+    
+    DSDLog(@"the chain lock signature received for height %d (sig %@) (blockhash %@)",self.height,uint768_hex(_signature),uint256_hex(_blockHash));
     
     return self;
 }
@@ -104,9 +106,9 @@
     if (!uint256_is_zero(_requestID)) return _requestID;
     NSMutableData * data = [NSMutableData data];
     [data appendString:@"clsig"];
-    [data appendVarInt:self.height];
+    [data appendUInt32:self.height];
     _requestID = [data SHA256_2];
-    DSDLog(@"the chain lock request ID is %@",uint256_hex(_requestID));
+    DSDLog(@"the chain lock request ID is %@ for height %d",uint256_hex(_requestID),self.height);
     return _requestID;
 }
 
@@ -144,7 +146,7 @@
 }
 
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
-    DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] withBlockHeightOffset:offset];
+    DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForChainLockRequestID:[self requestID] forBlockHeight:self.height - offset];
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
         if (!self.signatureVerified) {
@@ -169,7 +171,7 @@
         DSDLog(@"trying with offset 16");
         return [self verifySignatureWithQuorumOffset:16];
     }
-    DSDLog(@"returning signature verified %d with offset %d",self.signatureVerified,offset);
+    DSDLog(@"returning chain lock signature verified %d with offset %d",self.signatureVerified,offset);
     return self.signatureVerified;
 }
 

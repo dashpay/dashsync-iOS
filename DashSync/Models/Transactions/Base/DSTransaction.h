@@ -63,6 +63,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputScripts;
 
 @property (nonatomic, readonly) BOOL instantSendReceived;
+@property (nonatomic, readonly) BOOL confirmed;
 
 @property (nonatomic, readonly) BOOL hasUnverifiedInstantSendLock;
 

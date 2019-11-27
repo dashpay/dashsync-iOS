@@ -412,11 +412,11 @@ inline static int ceil_log2(int x)
 }
 
 -(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID {
-    NSArray * quorumsForIS = [self.quorums[@(1)] allValues];
+    NSArray * quorumsForIS = [self.quorums[@(DSLLMQType_5_60)] allValues];
     UInt256 lowestValue = UINT256_MAX;
     DSQuorumEntry * firstQuorum = nil;
     for (DSQuorumEntry * quorumEntry in quorumsForIS) {
-        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
+        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID forQuorumType:DSLLMQType_5_60]);
         if (uint256_sup(lowestValue, orderingHash)) {
             lowestValue = orderingHash;
             firstQuorum = quorumEntry;
@@ -426,11 +426,12 @@ inline static int ceil_log2(int x)
 }
 
 -(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID {
-    NSArray * quorumsForChainLock = [self.quorums[@(2)] allValues];
+    DSLLMQType quorumType = [DSQuorumEntry chainLockQuorumTypeForChain:self.chain];
+    NSArray * quorumsForChainLock = [self.quorums[@(quorumType)] allValues];
     UInt256 lowestValue = UINT256_MAX;
     DSQuorumEntry * firstQuorum = nil;
     for (DSQuorumEntry * quorumEntry in quorumsForChainLock) {
-        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
+        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID forQuorumType:quorumType]);
         if (uint256_sup(lowestValue, orderingHash)) {
             lowestValue = orderingHash;
             firstQuorum = quorumEntry;
@@ -443,7 +444,7 @@ inline static int ceil_log2(int x)
     NSArray * quorumsForIS = [self.quorums[@(1)] allValues];
     NSMutableDictionary * orderedQuorumDictionary = [NSMutableDictionary dictionary];
     for (DSQuorumEntry * quorumEntry in quorumsForIS) {
-        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID]);
+        UInt256 orderingHash = uint256_reverse([quorumEntry orderingHashForRequestID:requestID forQuorumType:DSLLMQType_5_60]);
         [orderedQuorumDictionary setObject:uint256_data(orderingHash) forKey:quorumEntry];
     }
     NSArray * orderedQuorums = [orderedQuorumDictionary keysSortedByValueUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {

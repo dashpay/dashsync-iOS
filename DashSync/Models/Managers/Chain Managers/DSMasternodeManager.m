@@ -1181,6 +1181,15 @@
 
 -(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID withBlockHeightOffset:(uint32_t)blockHeightOffset {
     DSMerkleBlock * merkleBlock = [self.chain blockFromChainTip:blockHeightOffset];
+    return [self quorumEntryForChainLockRequestID:requestID forMerkleBlock:merkleBlock];
+}
+
+-(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID forBlockHeight:(uint32_t)blockHeight {
+    DSMerkleBlock * merkleBlock = [self.chain blockAtHeight:blockHeight];
+    return [self quorumEntryForChainLockRequestID:requestID forMerkleBlock:merkleBlock];
+}
+
+-(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID forMerkleBlock:(DSMerkleBlock*)merkleBlock {
     DSMasternodeList * masternodeList = [self masternodeListBeforeBlockHash:merkleBlock.blockHash];
     if (!masternodeList) {
         DSDLog(@"No masternode list found yet");
