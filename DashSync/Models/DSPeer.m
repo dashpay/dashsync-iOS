@@ -619,6 +619,7 @@
             break;
         case DSInvType_ChainLockSignature:
             [self.knownChainLockHashes unionOrderedSet:hashes];
+            break;
         default:
             break;
     }
