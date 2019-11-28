@@ -82,6 +82,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSData * payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
 @property (nonatomic, assign) uint32_t blockHeight;
+@property (nonatomic, readonly) uint32_t confirmations;
 @property (nonatomic, assign) NSTimeInterval timestamp; // time interval since 1970
 @property (nonatomic, readonly) size_t size; // size in bytes if signed, or estimated size assuming compact pubkey sigs
 @property (nonatomic, readonly) uint64_t standardFee;

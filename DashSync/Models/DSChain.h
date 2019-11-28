@@ -243,7 +243,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
 
 //Is there a block at the following height that is confirmed?
-- (BOOL)blockHeightConfirmed:(uint32_t)height;
+- (BOOL)blockHeightChainLocked:(uint32_t)height;
 
 - (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
 

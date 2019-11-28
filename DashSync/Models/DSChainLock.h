@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
+- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

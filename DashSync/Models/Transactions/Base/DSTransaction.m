@@ -657,13 +657,19 @@
     }
 }
 
+-(uint32_t)confirmations {
+    if (self.blockHeight == UINT32_MAX) return 0;
+    const uint32_t lastHeight = self.chain.lastBlockHeight;
+    return lastHeight - self.blockHeight;
+}
+
 -(BOOL)confirmed {
     if (_confirmed) return YES; //because it can't be unconfirmed
     if (self.blockHeight == UINT32_MAX) return NO;
     const uint32_t lastHeight = self.chain.lastBlockHeight;
-    if (self.blockHeight > lastHeight) return NO; //maybe a reorg?
+    if (self.blockHeight > self.chain.lastBlockHeight) return NO; //maybe a reorg?
     if (lastHeight - self.blockHeight > 6) return YES;
-    _confirmed = [self.chain blockHeightConfirmed:self.blockHeight];
+    _confirmed = [self.chain blockHeightChainLocked:self.blockHeight];
     return _confirmed;
 }
 

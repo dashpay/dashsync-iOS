@@ -25,6 +25,7 @@
 #import "DSMerkleBlock.h"
 #import "NSData+Bitcoin.h"
 #import "DSChainEntity+CoreDataClass.h"
+#import "DSChainLockEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChain.h"
 
@@ -79,9 +80,15 @@
         prev = (prevBlock.length == sizeof(UInt256)) ? *(const UInt256 *)prevBlock.bytes : UINT256_ZERO,
         root = (merkleRoot.length == sizeof(UInt256)) ? *(const UInt256 *)merkleRoot.bytes : UINT256_ZERO;
         
+        DSChain * chain = self.chain.chain;
+        
+        DSChainLock * chainLock = nil;
+        if (self.chainLock) {
+            chainLock = [self.chainLock chainLockForChain:chain];
+        }
         block = [[DSMerkleBlock alloc] initWithBlockHash:hash onChain:self.chain.chain version:self.version prevBlock:prev merkleRoot:root
                                                timestamp:self.timestamp target:self.target nonce:self.nonce
-                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height];
+                                       totalTransactions:self.totalTransactions hashes:self.hashes flags:self.flags height:self.height chainLock:chainLock];
     }];
     
     return block;

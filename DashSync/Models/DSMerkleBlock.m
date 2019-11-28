@@ -168,7 +168,7 @@ inline static int ceil_log2(int x)
 
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
                        merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height
+                totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height chainLock:(DSChainLock*)chainLock
 {
     if (! (self = [self init])) return nil;
     
@@ -183,7 +183,7 @@ inline static int ceil_log2(int x)
     _hashes = hashes;
     _flags = flags;
     _height = height;
-    _chainLocked = FALSE;
+    [self setChainLockedWithChainLock:chainLock];
     self.chain = chain;
     
     return self;
@@ -380,6 +380,11 @@ inline static int ceil_log2(int x)
 // v14
 
 -(void)setChainLockedWithChainLock:(DSChainLock*)chainLock {
+    if (!chainLock) {
+        self.chainLocked = FALSE;
+        self.hasUnverifiedChainLock = FALSE;
+        return;
+    }
     self.chainLocked = chainLock.signatureVerified;
     self.hasUnverifiedChainLock = (chainLock && !chainLock.signatureVerified);
     if (self.hasUnverifiedChainLock) {

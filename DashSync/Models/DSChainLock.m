@@ -93,7 +93,7 @@
     return self;
 }
 
-- (instancetype)initWithBlockHash:(UInt256)blockHash signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain {
+- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain {
     if (! (self = [self initOnChain:chain])) return nil;
     self.blockHash = blockHash;
     self.signatureVerified = signatureVerified;

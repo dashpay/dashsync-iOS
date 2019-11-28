@@ -1251,7 +1251,7 @@ static dispatch_once_t devnetToken = 0;
             self->_blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                                        merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
                                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
-                                                                                            flags:nil height:checkpoint.height];
+                                                                                            flags:nil height:checkpoint.height chainLock:nil];
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
@@ -1347,7 +1347,7 @@ static dispatch_once_t devnetToken = 0;
     return self.blocks[uint256_obj(blockHash)];
 }
 
--(BOOL)blockHeightConfirmed:(uint32_t)height {
+-(BOOL)blockHeightChainLocked:(uint32_t)height {
     DSMerkleBlock *b = self.lastBlock;
     NSUInteger count = 0;
     BOOL confirmed = false;
@@ -1409,7 +1409,7 @@ static dispatch_once_t devnetToken = 0;
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                    merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height];
+                                                                       height:self.checkpoints[i].height chainLock:nil];
                     }
                 }
             } else {
@@ -1423,7 +1423,7 @@ static dispatch_once_t devnetToken = 0;
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                    merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height];
+                                                                       height:self.checkpoints[i].height chainLock:nil];
                     }
                 }
                 if (_lastBlock) {
@@ -2315,7 +2315,7 @@ static dispatch_once_t devnetToken = 0;
     return [[DSMerkleBlock alloc] initWithBlockHash:self.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
                                   merkleRoot:self.merkleRoot timestamp:self.timestamp
                                       target:self.target nonce:0 totalTransactions:0 hashes:nil
-                                       flags:nil height:self.height];
+                                       flags:nil height:self.height chainLock:nil];
 }
 
 -(void)encodeWithCoder:(NSCoder *)aCoder {

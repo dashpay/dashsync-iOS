@@ -37,7 +37,7 @@
 
 - (DSChainLock *)chainLockForChain:(DSChain*)chain
 {
-    DSChainLock * chainLock = [[DSChainLock alloc] initWithBlockHash:self.merkleBlock.blockHash.UInt256 signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
+    DSChainLock * chainLock = [[DSChainLock alloc] initWithBlockHash:self.merkleBlock.blockHash.UInt256 signature:self.signature.UInt768 signatureVerified:TRUE quorumVerified:TRUE onChain:chain];
     
     return chainLock;
 }

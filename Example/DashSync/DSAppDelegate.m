@@ -14,6 +14,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    [NSString setDashCurrencySymbolAssetName:@"icon_dash_currency"];
     [DSLogger sharedInstance];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:TRUE];
     [DashSync sharedSyncController];
