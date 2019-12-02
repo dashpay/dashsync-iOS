@@ -261,6 +261,10 @@ inline static int ceil_log2(int x)
     NSMutableArray * masternodes = [NSMutableArray array];
     NSUInteger maxCount = MIN(quorumCount, self.mSimplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash.count);
     DSMerkleBlock * block = [self.chain blockForBlockHash:self.blockHash];
+    if (!block) {
+        DSDLog(@"Unknown block %@",uint256_reverse_hex(self.blockHash));
+        NSAssert(block, @"Block should be known");
+    }
     for (int i = 0; i<maxCount;i++) {
         NSData * score = [scores objectAtIndex:i];
         DSSimplifiedMasternodeEntry * masternode = scoreDictionary[score];
