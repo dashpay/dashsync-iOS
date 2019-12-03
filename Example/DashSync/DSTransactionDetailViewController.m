@@ -186,7 +186,7 @@
     NSInteger realSection = section;
     if ([self.transaction type] == DSTransactionType_Coinbase && section == 1) realSection++;
     switch (section) {
-        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?7:6):5;
+        case 0: return self.transaction.associatedShapeshift?(([self.transaction.associatedShapeshift.shapeshiftStatus integerValue]| eShapeshiftAddressStatus_Finished)?8:7):6;
         case 1: return (self.sent > 0) ? self.outputText.count : self.inputAddresses.count;
         case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
         case 3: {
@@ -314,7 +314,7 @@
                     if ([account transactionOutputsAreLocked:self.transaction]) {
                         cell.statusLabel.text = NSLocalizedString(@"recently mined (locked)", nil);
                     } else if (self.transaction.blockHeight != TX_UNCONFIRMED) {
-                        cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"confirmed in block #%d", nil),
+                        cell.statusLabel.text = [NSString stringWithFormat:NSLocalizedString(@"mined in block #%d", nil),
                                                  self.transaction.blockHeight, self.txDateString];
                         cell.moreInfoLabel.text = self.txDateString;
                     }
@@ -332,7 +332,29 @@
                     
                     return cell;
                 }
-                case 5:
+                    case 5:
+                    {
+                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                        
+                        [self setBackgroundForCell:cell indexPath:indexPath];
+                        cell.titleLabel.text = NSLocalizedString(@"confirmed:", nil);
+                        cell.statusLabel.text = self.transaction.confirmed?@"Yes":@"No";
+                        if (self.transaction.confirmations < 6) {
+                            BOOL chainLocked = [self.transaction.chain blockHeightChainLocked:self.transaction.blockHeight];
+                            if (chainLocked) {
+                                cell.moreInfoLabel.text = @"Using chain lock";
+                            } else {
+                                cell.moreInfoLabel.text = nil;
+                            }
+                        } else {
+                            cell.moreInfoLabel.text = @"More than 6 confirmations";
+                        }
+                        
+                        
+                        return cell;
+                    }
+                case 6:
                 {
                     DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
                     cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -348,7 +370,7 @@
                     
                     return cell;
                 }
-                case 6:
+                case 7:
                 {
                     DSTransactionAmountTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TransactionCellIdentifier"];
                     [self setBackgroundForCell:cell indexPath:indexPath];

@@ -499,6 +499,7 @@
     __block DSMasternodeList * nextBaseMasternodList = baseMasternodeList;
     __block NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     for (NSString * file in files) {
+        
         NSBundle *bundle = [NSBundle bundleForClass:[self class]];
         NSString *filePath = [bundle pathForResource:file ofType:@"dat"];
         NSData * message = [NSData dataWithContentsOfFile:filePath];
@@ -619,7 +620,7 @@
 
 -(void)testMainnetMasternodeSaving {
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSString *filePath = [bundle pathForResource:@"MasternodeList1088800" ofType:@"dat"];
+    NSString *filePath = [bundle pathForResource:@"ML1100000" ofType:@"dat"];
     NSData * message = [NSData dataWithContentsOfFile:filePath];
     
     DSChain * chain = [DSChain mainnet];
@@ -643,7 +644,7 @@
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil; //no known previous lists
     } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return UINT32_MAX;
+        return 1100000;
     } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
@@ -669,7 +670,7 @@
 }
 
 
-- (void)testMNLBug {
+- (void)testMNLSavingToDisk {
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *filePath = [bundle pathForResource:@"ML_at_122088" ofType:@"dat"];
     NSData * message = [NSData dataWithContentsOfFile:filePath];
@@ -695,7 +696,7 @@
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil; //no known previous lists
     } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return UINT32_MAX;
+        return 122088;
     } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         
         NSData *masternodeListMerkleRoot = @"94d0af97187af3b9311c98b1cf40c9c9849df0af55dc63b097b80d4cf6c816c5".hexToData;
@@ -762,7 +763,7 @@
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil; //no known previous lists
     } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return UINT32_MAX;
+        return 122064;
     } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList122064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash122064]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
@@ -944,26 +945,26 @@
     }];
 }
 
--(void)testMNLReload {
-    DSChain * chain = [DSChain mainnet];
-    __block NSManagedObjectContext * context = [NSManagedObject context];
-    [chain chainManager];
-    [context performBlockAndWait:^{
-        DSChainEntity * chainEntity = chain.chainEntity;
-        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
-        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
-        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
-    }];
-    [chain.chainManager.masternodeManager reloadMasternodeLists];
-    NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
-    
-    
-    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
-        XCTAssert(masternodeLists.count == 29, @"There should be 25 masternode lists");
-    }];
-}
+//-(void)testMNLMainnetReload {
+//    DSChain * chain = [DSChain mainnet];
+//    __block NSManagedObjectContext * context = [NSManagedObject context];
+//    [chain chainManager];
+//    [context performBlockAndWait:^{
+//        DSChainEntity * chainEntity = chain.chainEntity;
+//        [DSSimplifiedMasternodeEntryEntity deleteAllOnChain:chainEntity];
+//        [DSQuorumEntryEntity deleteAllOnChain:chainEntity];
+//        [DSMasternodeListEntity deleteAllOnChain:chainEntity];
+//    }];
+//    [chain.chainManager.masternodeManager reloadMasternodeLists];
+//    NSArray * files = @[@"MNL_0_1090944", @"MNL_1090944_1091520", @"MNL_1091520_1091808", @"MNL_1091808_1092096", @"MNL_1092096_1092336", @"MNL_1092336_1092360", @"MNL_1092360_1092384", @"MNL_1092384_1092408", @"MNL_1092408_1092432", @"MNL_1092432_1092456", @"MNL_1092456_1092480", @"MNL_1092480_1092504", @"MNL_1092504_1092528", @"MNL_1092528_1092552", @"MNL_1092552_1092576", @"MNL_1092576_1092600", @"MNL_1092600_1092624", @"MNL_1092624_1092648", @"MNL_1092648_1092672", @"MNL_1092672_1092696", @"MNL_1092696_1092720", @"MNL_1092720_1092744", @"MNL_1092744_1092768", @"MNL_1092768_1092792", @"MNL_1092792_1092816", @"MNL_1092816_1092840", @"MNL_1092840_1092864", @"MNL_1092864_1092888", @"MNL_1092888_1092916"];
+//
+//
+//    [self loadMasternodeListsForFiles:files baseMasternodeList:nil withSave:YES withReload:NO onChain:chain inContext:context completion:^(BOOL success, NSDictionary * masternodeLists) {
+//        XCTAssert(masternodeLists.count == 29, @"There should be 25 masternode lists");
+//    }];
+//}
 
--(void)testMNLChaining {
+/*-(void)testMNLChaining {
     DSChain * chain = [DSChain mainnet];
     __block NSManagedObjectContext * context = [NSManagedObject context];
     __block BOOL useCheckpointMasternodeLists = [[DSOptionsManager sharedInstance] useCheckpointMasternodeLists];
@@ -1308,7 +1309,7 @@
     
     
     
-}
+}*/
 
 -(void)testTestnetQuorumVerification {
     
@@ -1339,7 +1340,7 @@
     [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:nil masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
         return nil; //no known previous lists
     } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-        return UINT32_MAX;
+        return 122928;
     } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull masternodeList119064, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
         XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash119064]);
         //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block
@@ -1374,7 +1375,7 @@
             [DSMasternodeManager processMasternodeDiffMessage:message baseMasternodeList:masternodeList119064 masternodeListLookup:^DSMasternodeList * _Nonnull(UInt256 blockHash) {
                 return nil; //no known previous lists
             } lastBlock:nil onChain:chain blockHeightLookup:^uint32_t(UInt256 blockHash) {
-                return UINT32_MAX;
+                return 123000;
             } completion:^(BOOL foundCoinbase, BOOL validCoinbase, BOOL rootMNListValid, BOOL rootQuorumListValid, BOOL validQuorums, DSMasternodeList * _Nonnull blockHash119200, NSDictionary * _Nonnull addedMasternodes, NSDictionary * _Nonnull modifiedMasternodes, NSDictionary * _Nonnull addedQuorums, NSOrderedSet * _Nonnull neededMissingMasternodeLists) {
                 XCTAssert(foundCoinbase,@"Did not find coinbase at height %u",[chain heightForBlockHash:blockHash]);
                 //XCTAssert(validCoinbase,@"Coinbase not valid at height %u",[chain heightForBlockHash:blockHash]); //turned off on purpose as we don't have the coinbase block

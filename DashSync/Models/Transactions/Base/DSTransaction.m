@@ -50,6 +50,7 @@
 @property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 @property (nonatomic, assign) BOOL instantSendReceived;
+@property (nonatomic, assign) BOOL confirmed;
 @property (nonatomic, assign) BOOL hasUnverifiedInstantSendLock;
 
 @end
@@ -126,7 +127,7 @@
         off += l.unsignedIntegerValue;
         
         for (NSUInteger i = 0; i < count; i++) { // inputs
-            [self.hashes addObject:uint256_obj([message hashAtOffset:off])];
+            [self.hashes addObject:uint256_obj([message UInt256AtOffset:off])];
             off += sizeof(UInt256);
             [self.indexes addObject:@([message UInt32AtOffset:off])]; // input index
             off += sizeof(uint32_t);
@@ -654,6 +655,22 @@
     if (!instantSendLock.saved) {
         [instantSendLock save];
     }
+}
+
+-(uint32_t)confirmations {
+    if (self.blockHeight == UINT32_MAX) return 0;
+    const uint32_t lastHeight = self.chain.lastBlockHeight;
+    return lastHeight - self.blockHeight;
+}
+
+-(BOOL)confirmed {
+    if (_confirmed) return YES; //because it can't be unconfirmed
+    if (self.blockHeight == UINT32_MAX) return NO;
+    const uint32_t lastHeight = self.chain.lastBlockHeight;
+    if (self.blockHeight > self.chain.lastBlockHeight) return NO; //maybe a reorg?
+    if (lastHeight - self.blockHeight > 6) return YES;
+    _confirmed = [self.chain blockHeightChainLocked:self.blockHeight];
+    return _confirmed;
 }
 
 // MARK: - Polymorphic data

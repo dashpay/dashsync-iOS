@@ -86,6 +86,10 @@ static checkpoint testnet_checkpoint_array[] = {
     {       28000, "000000000204f318ee830af7416def9e45cef5507401fcc27a9627cbc28bb689", 1547961658, 0x1c0cd81bu, "", "" },
     {       50000, "0000000000d737f4b6f0fcd10ecd2f59e5e4f9409b1afae5fb50604510a2551f", 1550935893, 0x1c00e933u, "", "" },
     {      100000, "000000008650f09124958e7352f844f9c15705171ac38ee6668534c5c238b916", 1558052383, 0x1d00968du, "", "" },
+    {      122064, "0000000003fa1af7f55b5cde19da8c8fdb024a881a50794cd1c31e0cb4506b3d", 1561126213, 0x1c0c2849u, "", "" }, //for tests
+    {      122088, "0000000007eec28e1459b36de6e54ac81fa2dc2b12a797ac77ee7c7f7a59148f", 1561129080, 0x1c0839adu, "", "" }, //for tests
+    {      122928, "0000000001d975dfc73df9040e894576f27f6c252f1540b1c092c80353cdb823", 1561247926, 0x1c0b30d2u, "", "" }, //for tests
+    {      123000, "000000000577855d5599ce9a89417628233a6ccf3a86b2938b191f3dfed2e63d", 1561258020, 0x1c0d4446u, "", "" }, //for tests
     {      180000, "000000000175f718920ecebd54765faee973975511415f1dd1ef12194518675b", 1569211090, 0x1c025786u, "", "" }
 };
 
@@ -153,7 +157,10 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 1060000, "00000000000000132447e6bac9fe0d7d756851450eab29358787dc05d809bf07", 1556260812, 0x191f6aceu, "", "" },
     { 1080000, "00000000000000099c5cc38bac7878f771408537e520a1ef9e31b5c1040d2d2a", 1559412342, 0x192a9588u, "", "" },
     { 1088640, "00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e", 1560773201, 0x1922ae0bu, "ML1088640", "379fd491044a273372a8e901866fbe6ed9bab7ce2de0968a71d38de5d5eac340" },
-    { 1100000, "00000000000000190560ed4b128c156e489fdbe0814bf62c8ab53ab3259d7908", 1562561033, 0x191a9f05u, "ML1100000", "b42a23b668751fa8239b736c63c8529ead78df579ed85389f6db7ddbc736fa48" }
+    { 1100000, "00000000000000190560ed4b128c156e489fdbe0814bf62c8ab53ab3259d7908", 1562561033, 0x191a9f05u, "ML1100000", "b42a23b668751fa8239b736c63c8529ead78df579ed85389f6db7ddbc736fa48" },
+    { 1120000, "0000000000000011103eae768e6a322b991c5c20569d95930b87e1305fa19c75", 1565712301, 0x19200768u, "", ""},
+    { 1140000, "00000000000000083ac0e592e180487cb237f659a305d2be19e883ed564fe20f", 1568864488, 0x1923198bu, "", ""},
+    { 1160000, "00000000000000098f985e79ca74ca2cf8c113763f8184011759306945149309", 1572017931, 0x191f3f6eu, "", ""},
 };
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
@@ -1248,7 +1255,7 @@ static dispatch_once_t devnetToken = 0;
             self->_blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                                        merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
                                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
-                                                                                            flags:nil height:checkpoint.height];
+                                                                                            flags:nil height:checkpoint.height chainLock:nil];
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
@@ -1344,6 +1351,19 @@ static dispatch_once_t devnetToken = 0;
     return self.blocks[uint256_obj(blockHash)];
 }
 
+-(BOOL)blockHeightChainLocked:(uint32_t)height {
+    DSMerkleBlock *b = self.lastBlock;
+    NSUInteger count = 0;
+    BOOL confirmed = false;
+    while (b && b.height > height) {
+        b = self.blocks[uint256_obj(b.prevBlock)];
+        confirmed |= b.chainLocked;
+        count++;
+    }
+    if (b.height != height) return NO;
+    return confirmed;
+}
+
 - (DSMerkleBlock *)blockAtHeight:(uint32_t)height {
     DSMerkleBlock *b = self.lastBlock;
     NSUInteger count = 0;
@@ -1393,7 +1413,7 @@ static dispatch_once_t devnetToken = 0;
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                    merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height];
+                                                                       height:self.checkpoints[i].height chainLock:nil];
                     }
                 }
             } else {
@@ -1407,7 +1427,7 @@ static dispatch_once_t devnetToken = 0;
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                    merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height];
+                                                                       height:self.checkpoints[i].height chainLock:nil];
                     }
                 }
                 if (_lastBlock) {
@@ -2299,7 +2319,7 @@ static dispatch_once_t devnetToken = 0;
     return [[DSMerkleBlock alloc] initWithBlockHash:self.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
                                   merkleRoot:self.merkleRoot timestamp:self.timestamp
                                       target:self.target nonce:0 totalTransactions:0 hashes:nil
-                                       flags:nil height:self.height];
+                                       flags:nil height:self.height chainLock:nil];
 }
 
 -(void)encodeWithCoder:(NSCoder *)aCoder {

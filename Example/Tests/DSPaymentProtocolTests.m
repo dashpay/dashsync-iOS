@@ -117,7 +117,7 @@
     // test that the x509 certs are valid, but the payment request is expired
     XCTAssertFalse([req isValid], @"[DSPaymentProtocolRequest isValid]");
     XCTAssertEqualObjects(req.errorMessage,
-                          @"untrusted certificate - One or more certificates have expired or are not valid yet.",
+                          @"Untrusted certificate - One or more certificates have expired or are not valid yet.",
                           @"[DSPaymentProtocolRequest isValid]");
     
     NSLog(@"commonName:%@", req.commonName);
@@ -199,7 +199,7 @@
     // test that the x509 certs are valid, but the payment request is expired (BUG: XXXX the cert is now expired!)
     XCTAssertFalse([req isValid], @"[DSPaymentProtocolRequest isValid]");
     XCTAssertEqualObjects(req.errorMessage,
-                          @"untrusted certificate - One or more certificates have expired or are not valid yet.",
+                          @"Untrusted certificate - One or more certificates have expired or are not valid yet.",
                           @"[DSPaymentProtocolRequest isValid]");
     
     NSLog(@"commonName:%@", req.commonName);

@@ -1,8 +1,8 @@
 //
-//  DSMerkleBlockEntity+CoreDataClass.h
-//  
+//  DSChainLock.h
+//  DashSync
 //
-//  Created by Sam Westrich on 5/20/18.
+//  Created by Sam Westrich on 11/25/19.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,35 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-
-@class DSChainEntity, DSMerkleBlock, DSMasternodeListEntity, DSQuorumEntryEntity, DSChainLockEntity;
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSMerkleBlockEntity : NSManagedObject
+@class DSChain, DSQuorumEntry;
 
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block;
-- (instancetype)setAttributesFromBlock:(DSMerkleBlock *)block forChain:(DSChainEntity*)chainEntity; //this is faster when you know the chain entity already
-- (DSMerkleBlock *)merkleBlock;
+@interface DSChainLock : NSObject
 
-+ (NSArray<DSMerkleBlockEntity*>*)lastBlocks:(uint32_t)blockcount onChain:(DSChainEntity*)chainEntity;
-+ (void)deleteBlocksOnChain:(DSChainEntity*)chainEntity;
+@property (nonatomic, readonly) uint32_t height;
+@property (nonatomic, readonly) UInt256 blockHash;
+@property (nonatomic, readonly) UInt256 requestID;
+@property (nonatomic, readonly) UInt768 signature;
+@property (nonatomic, readonly) BOOL signatureVerified;
+@property (nonatomic, readonly) BOOL saved;
+@property (nonatomic, readonly) DSQuorumEntry * intendedQuorum;
+
+// message can be either a merkleblock or header message
++ (instancetype)chainLockWithMessage:(NSData *)message onChain:(DSChain*)chain;
+
+- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
+
+- (instancetype)initWithBlockHash:(UInt256)blockHash signature:(UInt768)signature signatureVerified:(BOOL)signatureVerified quorumVerified:(BOOL)quorumVerified onChain:(DSChain*)chain;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (BOOL)verifySignature;
+
+- (void)save;
 
 @end
 
 NS_ASSUME_NONNULL_END
-
-#import "DSMerkleBlockEntity+CoreDataProperties.h"

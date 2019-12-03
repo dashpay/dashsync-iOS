@@ -28,5 +28,6 @@
 @dynamic chain;
 @dynamic masternodeList;
 @dynamic usedByQuorums;
+@dynamic chainLock;
 
 @end

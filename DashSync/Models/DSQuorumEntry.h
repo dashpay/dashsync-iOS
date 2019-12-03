@@ -47,9 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain;
 
--(UInt256)orderingHashForRequestID:(UInt256)requestID;
+-(UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType;
 
 +(uint32_t)quorumSizeForType:(DSLLMQType)type;
+
++(DSLLMQType)chainLockQuorumTypeForChain:(DSChain*)chain;
 
 @end
 

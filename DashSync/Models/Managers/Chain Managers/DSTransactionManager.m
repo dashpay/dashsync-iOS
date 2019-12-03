@@ -35,6 +35,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSMerkleBlock.h"
+#import "DSChainLock.h"
 #import "DSBloomFilter.h"
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
@@ -67,6 +68,8 @@
 @property (nonatomic, strong) NSMutableArray * removeUnrelayedTransactionsLocalRequests;
 @property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForQuorums;
 @property (nonatomic, strong) NSMutableDictionary * instantSendLocksWaitingForTransactions;
+@property (nonatomic, strong) NSMutableDictionary * chainLocksWaitingForMerkleBlocks;
+@property (nonatomic, strong) NSMutableDictionary * chainLocksWaitingForQuorums;
 
 @end
 
@@ -84,6 +87,8 @@
     self.removeUnrelayedTransactionsLocalRequests = [NSMutableArray array];
     self.instantSendLocksWaitingForQuorums = [NSMutableDictionary dictionary];
     self.instantSendLocksWaitingForTransactions = [NSMutableDictionary dictionary];
+    self.chainLocksWaitingForMerkleBlocks = [NSMutableDictionary dictionary];
+    self.chainLocksWaitingForQuorums = [NSMutableDictionary dictionary];
     [self recreatePublishedTransactionList];
     return self;
 }
@@ -174,7 +179,7 @@
                     if (! self.txRequests[h]) self.txRequests[h] = [NSMutableSet set];
                     [self.txRequests[h] addObject:p];
                     //todo: to get lock requests instead if sent that way
-                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil blockHashes:nil];
+                    [p sendGetdataMessageWithTxHashes:@[h] instantSendLockHashes:nil blockHashes:nil chainLockHashes:nil];
                 }
             }];
         }
@@ -1035,6 +1040,10 @@
     
 }
 
+- (void)peer:(DSPeer *)peer hasChainLockHashes:(NSOrderedSet*)chainLockHashes {
+    
+}
+
 - (void)peer:(DSPeer *)peer relayedInstantSendTransactionLock:(DSInstantSendTransactionLock *)instantSendTransactionLock {
     //NSValue *transactionHashValue = uint256_obj(instantSendTransactionLock.transactionHash);
     
@@ -1144,6 +1153,29 @@
 
 - (void)peer:(DSPeer *)peer relayedTooManyOrphanBlocks:(NSUInteger)orphanBlockCount {
     [self.peerManager peerMisbehaving:peer errorMessage:@"Too many orphan blocks"];
+}
+
+- (void)peer:(DSPeer *)peer relayedChainLock:(DSChainLock *)chainLock {
+    BOOL verified = [chainLock verifySignature];
+    
+    DSDLog(@"%@:%d relayed chain lock %@", peer.host, peer.port, uint256_reverse_hex(chainLock.blockHash));
+    
+    DSMerkleBlock * block = [self.chain blockForBlockHash:chainLock.blockHash];
+    
+    if (block) {
+        [block setChainLockedWithChainLock:chainLock];
+        [chainLock save];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockWasLockedNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain, DSChainNotificationBlockKey:block}];
+        });
+    } else {
+        [self.chainLocksWaitingForMerkleBlocks setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+    }
+    
+    if (!verified && !chainLock.intendedQuorum) {
+        //the quorum hasn't been retrieved yet
+        [self.chainLocksWaitingForQuorums setObject:chainLock forKey:uint256_data(chainLock.blockHash)];
+    }
 }
 
 // MARK: Fees

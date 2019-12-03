@@ -106,15 +106,21 @@
 }
 
 -(BOOL)llmqInstantSendEnabled {
-    DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork20InstantSendLLMQBased)];
-    if (!dmlSpork) return TRUE;//assume true
-    return dmlSpork.value <= self.chain.lastBlockHeight;
+    DSSpork * llmqSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork20InstantSendLLMQBased)];
+    if (!llmqSpork) return TRUE;//assume true
+    return llmqSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(BOOL)quorumDKGEnabled {
-    DSSpork * dmlSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork17QuorumDKGEnabled)];
-    if (!dmlSpork) return TRUE;//assume true
-    return dmlSpork.value <= self.chain.lastBlockHeight;
+    DSSpork * dkgSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork17QuorumDKGEnabled)];
+    if (!dkgSpork) return TRUE;//assume true
+    return dkgSpork.value <= self.chain.lastBlockHeight;
+}
+
+-(BOOL)chainLocksEnabled {
+    DSSpork * chainLockSpork = self.sporkDictionary[@(DSSporkIdentifier_Spork19ChainLocksEnabled)];
+    if (!chainLockSpork) return TRUE;//assume true
+    return chainLockSpork.value <= self.chain.lastBlockHeight;
 }
 
 -(NSDictionary*)sporkDictionary {

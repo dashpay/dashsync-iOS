@@ -131,6 +131,10 @@ typedef struct _DSLLMQ {
 #define uint256_reverse_hex(u) [NSData dataWithUInt256:u].reverse.hexString
 #define uint384_hex(u) [NSData dataWithUInt384:u].hexString
 #define uint384_reverse_hex(u) [NSData dataWithUInt384:u].reverse.hexString
+#define uint512_hex(u) [NSData dataWithUInt512:u].hexString
+#define uint512_reverse_hex(u) [NSData dataWithUInt512:u].reverse.hexString
+#define uint768_hex(u) [NSData dataWithUInt768:u].hexString
+#define uint768_reverse_hex(u) [NSData dataWithUInt768:u].reverse.hexString
 
 #define uint256_reverse(u)  [NSData dataWithUInt256:u].reverse.UInt256
 

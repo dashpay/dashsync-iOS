@@ -63,6 +63,7 @@
 #import "DSSporkEntity+CoreDataProperties.h"
 #import "DSTransactionEntity+CoreDataProperties.h"
 #import "DSTransactionHashEntity+CoreDataProperties.h"
+#import "DSChainLockEntity+CoreDataProperties.h"
 #import "DSTxOutputEntity+CoreDataProperties.h"
 #import "DSTxInputEntity+CoreDataProperties.h"
 #import "DSSimplifiedMasternodeEntry.h"

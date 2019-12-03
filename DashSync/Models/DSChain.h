@@ -80,6 +80,8 @@ FOUNDATION_EXPORT NSString* const DSChainBlockchainUsersDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
+FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 @class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction,DSChain;
@@ -239,6 +241,9 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (DSCheckpoint* _Nullable)checkpointForBlockHash:(UInt256)blockHash;
 
 - (DSCheckpoint* _Nullable)checkpointForBlockHeight:(uint32_t)blockHeight;
+
+//Is there a block at the following height that is confirmed?
+- (BOOL)blockHeightChainLocked:(uint32_t)height;
 
 - (DSMerkleBlock * _Nullable)blockAtHeight:(uint32_t)height;
 

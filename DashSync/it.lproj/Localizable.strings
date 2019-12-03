@@ -78,6 +78,9 @@
 "Double spend" = "Double spend";
 
 /* No comment provided by engineer. */
+"Down" = "Down";
+
+/* No comment provided by engineer. */
 "Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
@@ -235,6 +238,9 @@
 
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Untrusted certificate";
+
+/* No comment provided by engineer. */
+"Up" = "Up";
 
 /* Updating Price */
 "Updating Price" = "Prezzo in aggiornamento";

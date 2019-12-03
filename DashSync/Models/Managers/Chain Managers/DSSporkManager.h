@@ -41,6 +41,7 @@ FOUNDATION_EXPORT NSString* const DSSporkListDidUpdateNotification;
 @property (nonatomic,readonly) BOOL deterministicMasternodeListEnabled; //spork 15
 @property (nonatomic,readonly) BOOL llmqInstantSendEnabled; // spork 20
 @property (nonatomic,readonly) BOOL quorumDKGEnabled; // spork 17
+@property (nonatomic,readonly) BOOL chainLocksEnabled; // spork 19
 
 @property (nonatomic,readonly) NSDictionary * sporkDictionary;
 @property (nonatomic,readonly) DSChain * chain;

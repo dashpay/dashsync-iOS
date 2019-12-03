@@ -187,7 +187,6 @@ size_t chacha20Poly1305AEADDecrypt(void *_Nullable out, size_t outLen, const voi
 - (DSUTXO)transactionOutpoint;
 - (DSLLMQ)llmq;
 - (uint64_t)varIntAtOffset:(NSUInteger)offset length:(NSNumber * _Nullable * _Nullable)length;
-- (UInt256)hashAtOffset:(NSUInteger)offset;
 - (DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset;
 - (NSString * _Nullable)stringAtOffset:(NSUInteger)offset length:(NSNumber * _Nullable * _Nullable)length;
 - (NSData *)dataAtOffset:(NSUInteger)offset length:(NSNumber * _Nullable * _Nullable)length;

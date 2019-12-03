@@ -133,6 +133,7 @@
 		FB27C63C22DC346C002808C4 /* MNL_0_1096704.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB27C63A22DC318B002808C4 /* MNL_0_1096704.dat */; };
 		FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */ = {isa = PBXBuildFile; fileRef = FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */; };
 		FB3A390E22BE62D900801F39 /* MasternodeListTestnet119064.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */; };
+		FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */; };
 		FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */; };
 		FB3E970720DC245C00D9B0CB /* DSTransactionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E970620DC245C00D9B0CB /* DSTransactionTableViewCell.m */; };
 		FB3E971220DD7C2E00D9B0CB /* DSSendAmountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB3E971120DD7C2E00D9B0CB /* DSSendAmountViewController.m */; };
@@ -433,6 +434,7 @@
 		FB2B21A920D6FC0B000DF537 /* BRBubbleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRBubbleView.m; sourceTree = "<group>"; };
 		FB2B21AA20D6FC0B000DF537 /* BRBubbleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRBubbleView.h; sourceTree = "<group>"; };
 		FB3A390D22BE62D900801F39 /* MasternodeListTestnet119064.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MasternodeListTestnet119064.dat; sourceTree = "<group>"; };
+		FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSChainLockTests.m; sourceTree = "<group>"; };
 		FB3E970220DC21EB00D9B0CB /* DSAddressesTransactionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddressesTransactionsViewController.h; sourceTree = "<group>"; };
 		FB3E970320DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddressesTransactionsViewController.m; sourceTree = "<group>"; };
 		FB3E970520DC245C00D9B0CB /* DSTransactionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionTableViewCell.h; sourceTree = "<group>"; };
@@ -810,6 +812,7 @@
 				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
 				FBD696EB2291A1800012FF51 /* DSDataTests.m */,
 				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
+				FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1670,6 +1673,7 @@
 				2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */,
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
+				FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,
 				2A7DCCAC20D9474F0097049F /* DSBIP39Tests.m in Sources */,

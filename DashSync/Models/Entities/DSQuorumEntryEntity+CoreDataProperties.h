@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSQuorumCommitmentTransactionEntity *commitmentTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSInstantSendLockEntity *> *instantSendLocks;
+@property (nullable, nonatomic, retain) NSSet<DSChainLockEntity *> *chainLocks;
 @property (nullable, nonatomic, retain) NSSet<DSMasternodeListEntity *> *referencedByMasternodeLists;
 
 @end
@@ -42,6 +43,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeInstantSendLocksObject:(DSInstantSendLockEntity *)value;
 - (void)addInstantSendLocks:(NSSet<DSInstantSendLockEntity *> *)values;
 - (void)removeInstantSendLocks:(NSSet<DSInstantSendLockEntity *> *)values;
+
+- (void)addChainLocksObject:(DSChainLockEntity *)value;
+- (void)removeChainLocksObject:(DSChainLockEntity *)value;
+- (void)addChainLocks:(NSSet<DSChainLockEntity *> *)values;
+- (void)removeChainLocks:(NSSet<DSChainLockEntity *> *)values;
 
 - (void)addUsedByMasternodeListsObject:(DSMasternodeListEntity *)value;
 - (void)removeUsedByMasternodeListsObject:(DSMasternodeListEntity *)value;

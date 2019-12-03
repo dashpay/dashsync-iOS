@@ -1223,12 +1223,6 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     }
 }
 
-- (UInt256)hashAtOffset:(NSUInteger)offset
-{
-    if (self.length < offset + sizeof(UInt256)) return UINT256_ZERO;
-    return *(const UInt256 *)((const char *)self.bytes + offset);
-}
-
 -(DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(DSUTXO)) return DSUTXO_ZERO;
