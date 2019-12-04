@@ -448,7 +448,7 @@
         }
         BOOL touchid = amount?((self.totalSent + amount < getKeychainInt(SPEND_LIMIT_KEY, nil)) ? YES : NO):NO;
         
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt andTouchId:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt usingBiometricAuthentication:touchid alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
                 completion(nil,cancelled);
             } else {
@@ -475,7 +475,7 @@
 - (void)seedPhraseAfterAuthenticationWithPrompt:(NSString *)authprompt completion:(void (^)(NSString * seedPhrase))completion
 {
     @autoreleasepool {
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt andTouchId:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:authprompt usingBiometricAuthentication:NO alertIfLockout:YES completion:^(BOOL authenticated,BOOL cancelled) {
             NSString * rSeedPhrase = authenticated?getKeychainString(self.mnemonicUniqueID, nil):nil;
             completion(rSeedPhrase);
         }];

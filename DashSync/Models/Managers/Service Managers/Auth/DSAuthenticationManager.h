@@ -59,12 +59,13 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 - (BOOL)hasPin:(NSError *_Nullable __autoreleasing *_Nullable)outError;
 
 - (BOOL)isBiometricAuthenticationAllowed;
+- (BOOL)isBiometricSpendingAllowed;
 
 - (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
                                        completion:(PinCompletionBlock)completion;
 
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
-- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
+- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt usingBiometricAuthentication:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinIfNeededWithCompletion:(void (^ _Nullable)(BOOL needed, BOOL success))completion; // prompts the user to set his pin if he has never set one before
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 - (void)removePin;
