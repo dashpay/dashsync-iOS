@@ -580,7 +580,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             }
             
             DSRequestPinViewController *alert =
-                [[DSRequestPinViewController alloc] initWihtAuthPrompt:resultMessage
+                [[DSRequestPinViewController alloc] initWithAuthPrompt:resultMessage
                                                         alertIfLockout:alertIfLockout
                                                             completion:completion];
             [self presentController:alert animated:YES completion:nil];

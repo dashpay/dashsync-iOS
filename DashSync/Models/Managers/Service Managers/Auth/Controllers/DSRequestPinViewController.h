@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSRequestPinViewController : DSBasePinViewController
 
-- (instancetype)initWihtAuthPrompt:(nullable NSString *)authPrompt
+- (instancetype)initWithAuthPrompt:(nullable NSString *)authPrompt
                     alertIfLockout:(BOOL)alertIfLockout
                         completion:(PinCompletionBlock)completion;
 

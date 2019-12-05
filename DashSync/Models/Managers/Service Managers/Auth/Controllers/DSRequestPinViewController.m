@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSRequestPinViewController
 
-- (instancetype)initWihtAuthPrompt:(nullable NSString *)authPrompt
+- (instancetype)initWithAuthPrompt:(nullable NSString *)authPrompt
                     alertIfLockout:(BOOL)alertIfLockout
                         completion:(PinCompletionBlock)completion {
     DSSinglePagePinViewController *pinController = [[DSSinglePagePinViewController alloc] init];
