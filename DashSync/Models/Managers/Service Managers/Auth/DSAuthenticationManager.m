@@ -340,7 +340,11 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
     NSTimeInterval pinUnlockTime = [[NSUserDefaults standardUserDefaults] doubleForKey:PIN_UNLOCK_TIME_KEY];
     
     return (pinUnlockTime + 7*24*60*60 > [NSDate timeIntervalSince1970] &&
-            [self getFailCount:nil] == 0 && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0);
+            [self getFailCount:nil] == 0);
+}
+
+- (BOOL)isBiometricSpendingAllowed {
+    return ([self isBiometricAuthenticationAllowed] && getKeychainInt(SPEND_LIMIT_KEY, nil) > 0);
 }
 
 - (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
@@ -373,7 +377,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
                                            completion:^(BOOL authenticated, BOOL shouldTryAnotherMethod) {
                                                if (shouldFallbackToPin && shouldTryAnotherMethod) {
                                                    [self authenticateWithPrompt:prompt
-                                                                     andTouchId:NO
+                                                   usingBiometricAuthentication:NO
                                                                  alertIfLockout:alertIfLockout
                                                                      completion:completion];
                                                }
@@ -430,13 +434,13 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 // prompts user to authenticate with touch id or passcode
-- (void)authenticateWithPrompt:(NSString *)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion {
+- (void)authenticateWithPrompt:(NSString *)authprompt usingBiometricAuthentication:(BOOL)usesBiometricAuthentication alertIfLockout:(BOOL)alertIfLockout completion:(PinCompletionBlock)completion {
     if (!self.usesAuthentication) { //if we don't have authentication
         completion(YES, NO);
         return;
     }
     
-    if (touchId) {
+    if (usesBiometricAuthentication) {
         if ([self isBiometricAuthenticationAllowed]) {
             [self authenticateUsingBiometricsOnlyWithPrompt:authprompt
                                         shouldFallbackToPin:YES
@@ -445,7 +449,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         }
         else {
             [self authenticateWithPrompt:authprompt
-                              andTouchId:NO
+                              usingBiometricAuthentication:NO
                           alertIfLockout:alertIfLockout
                               completion:completion];
         }
@@ -576,7 +580,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
             }
             
             DSRequestPinViewController *alert =
-                [[DSRequestPinViewController alloc] initWihtAuthPrompt:resultMessage
+                [[DSRequestPinViewController alloc] initWithAuthPrompt:resultMessage
                                                         alertIfLockout:alertIfLockout
                                                             completion:completion];
             [self presentController:alert animated:YES completion:nil];

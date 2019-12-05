@@ -246,7 +246,7 @@
 -(void)removeDevnetChain:(DSChain *)chain {
     NSParameterAssert(chain);
     
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Remove Devnet?" andTouchId:FALSE alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Remove Devnet?" usingBiometricAuthentication:FALSE alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
         if (!cancelled && authenticatedOrSuccess) {
             NSError * error = nil;
             DSChainManager * chainManager = [self chainManagerForChain:chain];
