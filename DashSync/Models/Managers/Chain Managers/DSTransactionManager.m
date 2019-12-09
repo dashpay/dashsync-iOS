@@ -1055,7 +1055,7 @@
     
     BOOL verified = [instantSendTransactionLock verifySignature];
     
-    DSDLog(@"%@:%d relayed instant send transaction lock %@", peer.host, peer.port, uint256_reverse_hex(instantSendTransactionLock.transactionHash));
+    DSDLog(@"%@:%d relayed instant send transaction lock %@ %@", peer.host, peer.port,verified?@"Verified":@"Not Verified", uint256_reverse_hex(instantSendTransactionLock.transactionHash));
     
     DSTransaction * transaction = nil;
     DSWallet * wallet = nil;

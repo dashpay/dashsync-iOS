@@ -49,7 +49,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 - (void)estimateFeeWithNumberOfBlocksToWait:(NSUInteger)numberOfBlocksToWait
                                     success:(void (^)(NSNumber *duffsPerKilobyte))success
                                     failure:(void (^)(NSError *error))failure {
-    [self requestWithMetod:@"estimateFee"
+    [self requestWithMethod:@"estimateFee"
                   parameters:@{ @"blocks" : @(numberOfBlocksToWait) }
         validateAgainstClass:NSNumber.class
                      success:success
@@ -61,7 +61,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                   failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getAddressSummary"
+    [self requestWithMethod:@"getAddressSummary"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -73,7 +73,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getAddressTotalReceived"
+    [self requestWithMethod:@"getAddressTotalReceived"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSNumber.class
                      success:success
@@ -85,7 +85,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                     failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getAddressTotalSent"
+    [self requestWithMethod:@"getAddressTotalSent"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSNumber.class
                      success:success
@@ -97,7 +97,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getAddressUnconfirmedBalance"
+    [self requestWithMethod:@"getAddressUnconfirmedBalance"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSNumber.class
                      success:success
@@ -109,7 +109,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                      failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getBalance"
+    [self requestWithMethod:@"getBalance"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSNumber.class
                      success:success
@@ -118,7 +118,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
 - (void)getBestBlockHeightSuccess:(void (^)(NSNumber *blockHeight))success
                           failure:(void (^)(NSError *error))failure {
-    [self requestWithMetod:@"getBestBlockHeight"
+    [self requestWithMethod:@"getBestBlockHeight"
                   parameters:nil
         validateAgainstClass:NSNumber.class
                      success:success
@@ -128,7 +128,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 - (void)getBlockHashForHeight:(NSUInteger)height
                       success:(void (^)(NSString *blockHash))success
                       failure:(void (^)(NSError *error))failure {
-    [self requestWithMetod:@"getBlockHash"
+    [self requestWithMethod:@"getBlockHash"
                   parameters:@{ @"height" : @(height) }
         validateAgainstClass:NSString.class
                      success:success
@@ -140,7 +140,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                       failure:(void (^)(NSError *error))failure {
     NSParameterAssert(blockHash);
 
-    [self requestWithMetod:@"getBlockHeader"
+    [self requestWithMethod:@"getBlockHeader"
                   parameters:@{ @"blockHash" : blockHash }
         validateAgainstClass:NSArray.class
                      success:success
@@ -153,7 +153,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                           failure:(void (^)(NSError *error))failure {
     NSAssert(limit <= 25, @"Limit should be <= 25");
 
-    [self requestWithMetod:@"getBlockHeaders"
+    [self requestWithMethod:@"getBlockHeaders"
                   parameters:@{
                       @"offset" : @(offset),
                       @"limit" : @(limit),
@@ -173,7 +173,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     dateFormatter.dateFormat = @"yyyy-MM-dd";
     NSString *dateString = [dateFormatter stringFromDate:date];
 
-    [self requestWithMetod:@"getBlocks"
+    [self requestWithMethod:@"getBlocks"
                   parameters:@{
                       @"blockDate" : dateString,
                       @"limit" : @(limit),
@@ -185,7 +185,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
 - (void)getHistoricBlockchainDataSyncStatusSuccess:(void (^)(NSDictionary *historicStatus))success
                                            failure:(void (^)(NSError *error))failure {
-    [self requestWithMetod:@"getHistoricBlockchainDataSyncStatus"
+    [self requestWithMethod:@"getHistoricBlockchainDataSyncStatus"
                   parameters:nil
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -194,7 +194,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
 - (void)getMNListSuccess:(void (^)(NSArray<NSDictionary *> *mnList))success
                  failure:(void (^)(NSError *error))failure {
-    [self requestWithMetod:@"getMNList"
+    [self requestWithMethod:@"getMNList"
                   parameters:nil
         validateAgainstClass:NSArray.class
                      success:success
@@ -208,7 +208,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     NSParameterAssert(baseBlockHash);
     NSParameterAssert(blockHash);
 
-    [self requestWithMetod:@"getMnListDiff"
+    [self requestWithMethod:@"getMnListDiff"
                   parameters:@{
                       @"baseBlockHash" : baseBlockHash,
                       @"blockHash" : blockHash,
@@ -220,7 +220,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
 - (void)getPeerDataSyncStatusSuccess:(void (^)(NSDictionary *syncStatus))success
                              failure:(void (^)(NSError *error))failure {
-    [self requestWithMetod:@"getPeerDataSyncStatus"
+    [self requestWithMethod:@"getPeerDataSyncStatus"
                   parameters:nil
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -232,7 +232,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                  failure:(void (^)(NSError *error))failure {
     NSParameterAssert(regTxId);
 
-    [self requestWithMetod:@"getQuorum"
+    [self requestWithMethod:@"getQuorum"
                   parameters:@{ @"regTxId" : regTxId }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -244,7 +244,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(blockHash);
 
-    [self requestWithMetod:@"getRawBlock"
+    [self requestWithMethod:@"getRawBlock"
                   parameters:@{ @"blockHash" : blockHash }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -258,7 +258,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
         filter = @"";
     }
 
-    [self requestWithMetod:@"getSpvData"
+    [self requestWithMethod:@"getSpvData"
                   parameters:@{ @"filter" : filter }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -284,7 +284,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
             break;
     }
 
-    [self requestWithMetod:@"getStatus"
+    [self requestWithMethod:@"getStatus"
                   parameters:@{ @"query" : statusString }
         validateAgainstClass:NSObject.class
                      success:success
@@ -296,7 +296,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                    failure:(void (^)(NSError *error))failure {
     NSParameterAssert(txid);
 
-    [self requestWithMetod:@"getTransactionById"
+    [self requestWithMethod:@"getTransactionById"
                   parameters:@{ @"txid" : txid }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -308,7 +308,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                          failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getTransactionsByAddress"
+    [self requestWithMethod:@"getTransactionsByAddress"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSArray.class
                      success:success
@@ -320,7 +320,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                   failure:(void (^)(NSError *error))failure {
     NSParameterAssert(address);
 
-    [self requestWithMetod:@"getUTXO"
+    [self requestWithMethod:@"getUTXO"
                   parameters:@{ @"address" : address }
         validateAgainstClass:NSArray.class
                      success:success
@@ -332,7 +332,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                      failure:(void (^)(NSError *error))failure {
     NSParameterAssert(rawIxTransaction);
 
-    [self requestWithMetod:@"sendRawIxTransaction"
+    [self requestWithMethod:@"sendRawIxTransaction"
                   parameters:@{ @"rawIxTransaction" : rawIxTransaction }
         validateAgainstClass:NSString.class
                      success:success
@@ -344,7 +344,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                    failure:(void (^)(NSError *error))failure {
     NSParameterAssert(rawTransaction);
 
-    [self requestWithMetod:@"sendRawTransaction"
+    [self requestWithMethod:@"sendRawTransaction"
                   parameters:@{ @"rawTransaction" : rawTransaction }
         validateAgainstClass:NSString.class
                      success:success
@@ -358,7 +358,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     NSParameterAssert(originalFilter);
     NSParameterAssert(element);
 
-    [self requestWithMetod:@"addToBloomFilter"
+    [self requestWithMethod:@"addToBloomFilter"
                   parameters:@{
                       @"originalFilter" : originalFilter,
                       @"element" : element,
@@ -377,7 +377,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                  failure:(void (^)(NSError *error))failure {
     NSParameterAssert(filter);
 
-    [self requestWithMetod:@"clearBloomFilter"
+    [self requestWithMethod:@"clearBloomFilter"
                   parameters:@{ @"filter" : filter }
         validateAgainstClass:NSNumber.class
                      success:^(id _Nonnull responseObject) {
@@ -393,7 +393,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                 failure:(void (^)(NSError *error))failure {
     NSParameterAssert(filter);
 
-    [self requestWithMetod:@"loadBloomFilter"
+    [self requestWithMethod:@"loadBloomFilter"
                   parameters:@{ @"filter" : filter }
         validateAgainstClass:NSNumber.class
                      success:^(id _Nonnull responseObject) {
@@ -411,7 +411,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
                       failure:(void (^)(NSError *error))failure {
     NSParameterAssert(dapId);
 
-    [self requestWithMetod:@"fetchDapContract"
+    [self requestWithMethod:@"fetchDapContract"
                   parameters:@{ @"dapId" : dapId }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -423,7 +423,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
               failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
 
-    [self requestWithMetod:@"getUser"
+    [self requestWithMethod:@"getUser"
                   parameters:@{ @"username" : username }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -435,7 +435,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
 
-    [self requestWithMetod:@"getUser"
+    [self requestWithMethod:@"getUser"
                   parameters:@{ @"userId" : userId }
         validateAgainstClass:NSDictionary.class
                      success:success
@@ -450,7 +450,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     NSParameterAssert(pattern);
     NSAssert(limit <= 25, @"Limit should be <= 25");
 
-    [self requestWithMetod:@"searchUsers"
+    [self requestWithMethod:@"searchUsers"
                   parameters:@{
                       @"pattern" : pattern,
                       @"offset" : @(offset),
@@ -475,7 +475,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     NSParameterAssert(rawTransitionHeader);
     NSParameterAssert(rawTransitionPacket);
 
-    [self requestWithMetod:@"sendRawTransition"
+    [self requestWithMethod:@"sendRawTransition"
                   parameters:@{ @"rawTransitionHeader" : rawTransitionHeader,
                                 @"rawTransitionPacket" : rawTransitionPacket }
         validateAgainstClass:NSString.class
@@ -498,7 +498,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
     optionsDictionary[@"startAt"] = options.startAt;
     optionsDictionary[@"startAfter"] = options.startAfter;
 
-    [self requestWithMetod:@"fetchDapObjects"
+    [self requestWithMethod:@"fetchDapObjects"
                   parameters:@{ @"dapId" : dapId,
                                 @"type" : objectsType,
                                 @"options" : optionsDictionary }
@@ -509,7 +509,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 
 #pragma mark - Private
 
-- (void)requestWithMetod:(NSString *)method
+- (void)requestWithMethod:(NSString *)method
               parameters:(nullable NSDictionary *)parameters
     validateAgainstClass:(Class)responseClass
                  success:(void (^)(id responseObject))success
