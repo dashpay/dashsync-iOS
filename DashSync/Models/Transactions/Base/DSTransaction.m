@@ -99,6 +99,7 @@
     self.sequences = [NSMutableArray array];
     self.chain = chain;
     self.saved = FALSE;
+    self.hasUnverifiedInstantSendLock = NO;
     _lockTime = TX_LOCKTIME;
     _blockHeight = TX_UNCONFIRMED;
     return self;

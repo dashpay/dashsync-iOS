@@ -163,9 +163,9 @@
     if (quorumEntry && quorumEntry.verified) {
         self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
         if (!self.signatureVerified) {
-            DSDLog(@"unable to verify signature with offset %d",offset);
+            DSDLog(@"unable to verify IS signature with offset %d",offset);
         } else {
-            DSDLog(@"signature verified with offset %d",offset);
+            DSDLog(@"IS signature verified with offset %d",offset);
         }
         
     } else if (quorumEntry) {
