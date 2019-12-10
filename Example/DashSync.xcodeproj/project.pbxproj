@@ -1527,11 +1527,13 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DashSync_Example/Pods-DashSync_Example-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC/gRPCCertificates.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ios-dpp/ios-dpp.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ios-dpp.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
