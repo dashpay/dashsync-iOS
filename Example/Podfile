@@ -3,21 +3,29 @@ target 'DashSync_Example' do
   
   pod 'DashSync', :path => '../'
   pod 'KVO-MVVM', '0.5.1'
-  pod 'DAPI-GRPC', :path => '.'
+  pod 'DAPI-GRPC', :path => '../'
   pod 'ios-dpp', :git => 'https://github.com/dashevo/ios-dpp.git', :branch => 'master', :commit => '6b3210b2f0f124687175a697720099a6dd3d3024'
-
+  
   target 'DashSync_Tests' do
     inherit! :search_paths
   end
 end
 
-# fixes warnings about unsupported Deployment Target in Xcode 10
 post_install do |installer|
     installer.pods_project.targets.each do |target|
-        if target.name == 'AFNetworking'
+        # fixes warnings about unsupported Deployment Target in Xcode 10
+        if ["BoringSSL-GRPC", "gRPC", "gRPC-Core", "gRPC-RxLibrary", "gRPC-ProtoRPC", "Protobuf", "DSJSONSchemaValidation", "!ProtoCompiler", "!ProtoCompiler-gRPCPlugin", "gRPC-gRPCCertificates"].include? target.name
             target.build_configurations.each do |config|
                 config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '8.0'
             end
+        end
+        
+        # temporary solution to work with gRPC-Core
+        # see https://github.com/CocoaPods/CocoaPods/issues/8474
+        if target.name == 'secp256k1_dash'
+          target.build_configurations.each do |config|
+              config.build_settings['HEADER_SEARCH_PATHS'] = '"${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/secp256k1_dash" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/secp256k1_dash"'
+          end
         end
     end
 end

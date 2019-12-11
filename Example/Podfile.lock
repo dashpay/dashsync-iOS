@@ -28,10 +28,10 @@ PODS:
   - DashSync (0.1.0):
     - bls-signatures-pod (= 0.2.9)
     - CocoaLumberjack (= 3.6.0)
-    - DSDynamicOptions (= 0.1.0)
+    - DSDynamicOptions (= 0.1.1)
     - DWAlertController (= 0.2.1)
-    - secp256k1_dash (= 0.1.2)
-  - DSDynamicOptions (0.1.0)
+    - secp256k1_dash (= 0.1.3-alpha.1)
+  - DSDynamicOptions (0.1.1)
   - DSJSONSchemaValidation (2.0.5)
   - DWAlertController (0.2.1)
   - gRPC-Core (1.25.0):
@@ -76,13 +76,13 @@ PODS:
     - TinyCborObjc (= 0.3.0)
   - KVO-MVVM (0.5.1)
   - Protobuf (3.11.1)
-  - secp256k1_dash (0.1.2)
+  - secp256k1_dash (0.1.3-alpha.1)
   - tinycbor (0.5.3-alpha2)
   - TinyCborObjc (0.3.0):
     - tinycbor (= 0.5.3-alpha2)
 
 DEPENDENCIES:
-  - DAPI-GRPC (from `.`)
+  - DAPI-GRPC (from `../`)
   - DashSync (from `../`)
   - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `6b3210b2f0f124687175a697720099a6dd3d3024`, branch `master`)
   - KVO-MVVM (= 0.5.1)
@@ -109,7 +109,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   DAPI-GRPC:
-    :path: "."
+    :path: "../"
   DashSync:
     :path: "../"
   ios-dpp:
@@ -128,9 +128,9 @@ SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   BoringSSL-GRPC: 8f2c6b5fbae71d1f3aabb787a52fd4929d1eef33
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
-  DAPI-GRPC: c828569d3e322a637c5434b8dc220021cd53b801
-  DashSync: e693cc7ede2f98ce305c0f972e1457c76b218188
-  DSDynamicOptions: 6a37eb496daee3c067e086b5b236d77707e9a3ee
+  DAPI-GRPC: f487c802c0849c2ca811b1c4375bd9892411e2e9
+  DashSync: ef8c91b82f5fb79e069d9c924c5531835c2c88cb
+  DSDynamicOptions: 23229bb4e60e7fc966cc1842eb405ea3b94b042e
   DSJSONSchemaValidation: a0d791d3c8a4801cb3c72f3c8701342e2cb66f58
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
   gRPC: 7fb3e0d14ce1f87f1c27a9e46167da5168ab9092
@@ -140,10 +140,10 @@ SPEC CHECKSUMS:
   ios-dpp: 5193ef55546e5cc3ce1ef5ad831f084a07731dc1
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
   Protobuf: 20d79da7f20b5928b80043b05080b816e802659e
-  secp256k1_dash: 7fdbc23e3e8a27d522ec211b874d97fb091c2b23
+  secp256k1_dash: a571007f30d545ced45d97dba46e5cd3cb3c3b16
   tinycbor: d2990189c8db918fbdb2936708642aeb55334dd5
   TinyCborObjc: b514d3e288b5d26c3c65c568ec97e375a6840a98
 
-PODFILE CHECKSUM: 9f635ad87816a302cac136e8e3e73c6bf4272a9a
+PODFILE CHECKSUM: 9a0697d3b6f5f2c0e4680a14a126f5faf8f4daee
 
 COCOAPODS: 1.8.4
