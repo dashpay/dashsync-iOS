@@ -16,6 +16,7 @@
 - (IBAction)done:(id)sender;
 @property (strong, nonatomic) IBOutlet UITextField *usernameLabel;
 @property (strong, nonatomic) IBOutlet UITextField *topupAmountLabel;
+@property (strong, nonatomic) IBOutlet UITextField *indexLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
 @property (strong, nonatomic) DSWallet * wallet;
@@ -28,9 +29,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setToDefaultAccount];
+    
     if (self.fundingAccount) {
         self.wallet = self.fundingAccount.wallet;
     }
+    
+    self.indexLabel.text = [NSString stringWithFormat:@"%d",[self.wallet unusedBlockchainUserIndex]];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -110,7 +114,7 @@
             return;
         }
     }
-    DSBlockchainUser * blockchainUser = [self.wallet createBlockchainUserForUsername:desiredUsername];
+    DSBlockchainUser * blockchainUser = [self.wallet createBlockchainUserForUsername:desiredUsername atIndex:[self.indexLabel.text intValue]];
     [blockchainUser generateBlockchainUserExtendedPublicKey:^(BOOL exists) {
         if (exists) {
             [blockchainUser registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction) {

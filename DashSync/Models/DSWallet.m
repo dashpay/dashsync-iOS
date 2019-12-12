@@ -836,6 +836,13 @@
     return blockchainUser;
 }
 
+-(DSBlockchainUser*)createBlockchainUserForUsername:(NSString*)username atIndex:(uint32_t)index {
+    NSParameterAssert(username);
+    
+    DSBlockchainUser * blockchainUser = [[DSBlockchainUser alloc] initWithUsername:username atIndex:index inWallet:self];
+    return blockchainUser;
+}
+
 // MARK: - Masternodes (Providers)
 
 -(NSArray*)providerOwnerAddresses {

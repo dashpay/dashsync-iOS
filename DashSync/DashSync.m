@@ -230,7 +230,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
 
 -(void)wipeWalletDataForChain:(DSChain*)chain forceReauthentication:(BOOL)forceReauthentication {
     NSParameterAssert(chain);
-    
+    [self wipeMasternodeDataForChain:chain];
     [self wipeBlockchainDataForChain:chain];
     if (!forceReauthentication && [[DSAuthenticationManager sharedInstance] didAuthenticate]) {
         [chain wipeWalletsAndDerivatives];
