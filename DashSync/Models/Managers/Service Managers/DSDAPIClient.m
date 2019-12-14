@@ -18,7 +18,7 @@
 #import "DSDAPIClient.h"
 
 #import "DSHTTPJSONRPCClient.h"
-//#import <DAPI-GRPC/Core.pbrpc.h>
+#import <DAPI-GRPC/Core.pbrpc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +28,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 @interface DSDAPIClient ()
 
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
-//@property (strong, nonatomic) Core *gRPCClient;
+@property (strong, nonatomic) Core *gRPCClient;
 
 @end
 
@@ -47,7 +47,7 @@ NSString *const DSDAPIClientErrorDomain = @"dash.dapi-client.error";
 //        options.transport = GRPCDefaultTransportImplList.core_insecure;
 //        options.userAgentPrefix = @"HelloWorld/1.0";
         
-        //_gRPCClient = [Core serviceWithHost:url.absoluteString];
+        _gRPCClient = [Core serviceWithHost:url.absoluteString];
     }
     return self;
 }
