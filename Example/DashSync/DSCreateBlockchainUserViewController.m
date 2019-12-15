@@ -125,7 +125,7 @@
                                 if (error) {
                                     [self raiseIssue:@"Error" message:error.localizedDescription];
                                 } else {
-                                    [blockchainUser registerInWallet];
+                                    [blockchainUser registerInWalletForBlockchainUserRegistrationTransaction:blockchainUserRegistrationTransaction];
                                     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
                                 }
                             }];

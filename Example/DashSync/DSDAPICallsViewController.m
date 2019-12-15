@@ -33,7 +33,7 @@
 }
 
 -(void)getBestBlockHeight:(id)sender {
-    [self.chainManager.DAPIClient getBestBlockHeightSuccess:^(NSNumber * _Nonnull blockHeight) {
+    [self.chainManager.DAPIClient.DAPINetworkService getBestBlockHeightSuccess:^(NSNumber * _Nonnull blockHeight) {
         [self.view addSubview:[[[BRBubbleView viewWithText:[NSString stringWithFormat:@"%@",blockHeight]
                                                     center:CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2)] popIn]
                                popOutAfterDelay:2.0]];

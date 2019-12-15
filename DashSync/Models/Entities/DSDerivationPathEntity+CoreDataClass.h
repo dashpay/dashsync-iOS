@@ -25,13 +25,15 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain,DSWallet,DSTxInputEntity,DSTxOutputEntity,DSAccountEntity;
+@class DSAddressEntity, DSChainEntity,DSDerivationPath,DSChain,DSWallet,DSTxInputEntity,DSTxOutputEntity,DSAccountEntity,DSFriendRequestEntity,DSIncomingFundsDerivationPath;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDerivationPathEntity : NSManagedObject
 
 + (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSDerivationPath*)derivationPath;
++ (DSDerivationPathEntity* _Nonnull)derivationPathEntityMatchingDerivationPath:(DSIncomingFundsDerivationPath*)derivationPath associateWithFriendRequest:(DSFriendRequestEntity*)friendRequest;
++(void)deleteDerivationPathsOnChain:(DSChainEntity*)chainEntity;
 
 @end
 

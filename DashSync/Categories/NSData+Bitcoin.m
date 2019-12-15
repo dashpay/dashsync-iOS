@@ -519,6 +519,7 @@ void MD5(void *md, const void *data, size_t len)
 void HMAC(void *md, void (*hash)(void *, const void *, size_t), size_t hlen, const void *key, size_t klen,
           const void *data, size_t dlen)
 {
+    //blen is block size length
     size_t blen = (hlen > 32) ? 128 : 64;
     uint8_t k[hlen], kipad[blen + dlen], kopad[blen + hlen];
     

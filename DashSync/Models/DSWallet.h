@@ -45,7 +45,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
 
-@property (nonatomic, readonly) NSArray * blockchainUsers;
+@property (nonatomic, readonly) NSDictionary * blockchainUsers;
 
 @property (nonatomic, readonly) NSArray * blockchainUserAddresses;
 
@@ -97,6 +97,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 // the first unused index for blockchain users
 @property (nonatomic, readonly) uint32_t unusedBlockchainUserIndex;
 
+// the amount of known blockchain users
+@property (nonatomic, readonly) uint32_t blockchainUsersCount;
+
 @property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
 
 -(void)authPrivateKey:(void (^ _Nullable)(NSString * _Nullable authKey))completion;
@@ -104,11 +107,15 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 + (DSWallet* _Nullable)standardWalletWithSeedPhrase:(NSString *)seedPhrase setCreationDate:(NSTimeInterval)creationDate forChain:(DSChain * )chain storeSeedPhrase:(BOOL)storeSeedPhrase isTransient:(BOOL)isTransient;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseForChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
 + (DSWallet* _Nullable)standardWalletWithRandomSeedPhraseInLanguage:(DSBIP39Language)language forChain:(DSChain *)chain storeSeedPhrase:(BOOL)store isTransient:(BOOL)isTransient;
++ (DSWallet* _Nullable)transientWalletWithDerivedKeyData:(NSData*)derivedData forChain:(DSChain*)chain;
 
 -(instancetype)initWithUniqueID:(NSString* _Nonnull)uniqueID forChain:(DSChain* _Nonnull)chain;
 
 // true if the address is controlled by the wallet
 - (BOOL)containsAddress:(NSString *)address;
+
+// true if the address is controlled by the wallet except for evolution addresses
+- (BOOL)accountsBaseDerivationPathsContainAddress:(NSString *)address;
 
 - (DSAccount* _Nullable)accountForAddress:(NSString *)address;
 

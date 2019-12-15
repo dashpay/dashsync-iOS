@@ -26,7 +26,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSTransaction.h"
+#import "DSTransaction+Protected.h"
 #import "DSTransactionFactory.h"
 #import "DSECDSAKey.h"
 #import "NSString+Dash.h"
@@ -47,7 +47,6 @@
 @interface DSTransaction ()
 
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, assign) BOOL saved; //don't trust this
 @property (nonatomic, strong) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 @property (nonatomic, assign) BOOL instantSendReceived;
 @property (nonatomic, assign) BOOL confirmed;
@@ -101,7 +100,7 @@
     self.saved = FALSE;
     self.hasUnverifiedInstantSendLock = NO;
     _lockTime = TX_LOCKTIME;
-    _blockHeight = TX_UNCONFIRMED;
+    self.blockHeight = TX_UNCONFIRMED;
     return self;
 }
 
@@ -243,7 +242,7 @@
     }
     
     _lockTime = TX_LOCKTIME;
-    _blockHeight = TX_UNCONFIRMED;
+    self.blockHeight = TX_UNCONFIRMED;
     return self;
 }
 

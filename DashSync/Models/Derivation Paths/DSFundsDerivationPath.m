@@ -7,6 +7,9 @@
 
 #import "DSDerivationPath+Protected.h"
 #import "DSFundsDerivationPath.h"
+#import "DSBlockchainUser.h"
+#import "DSContactEntity+CoreDataClass.h"
+#import "DSAccount.h"
 
 @interface DSFundsDerivationPath()
 
@@ -16,20 +19,21 @@
 
 @implementation DSFundsDerivationPath
 
-+ (instancetype _Nonnull)bip32DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
-    NSUInteger indexes[] = {accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
++ (instancetype _Nonnull)bip32DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
+    UInt256 indexes[] = {uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:1 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP32 onChain:chain];
 }
-+ (instancetype _Nonnull)bip44DerivationPathOnChain:(DSChain*)chain forAccountNumber:(uint32_t)accountNumber {
++ (instancetype _Nonnull)bip44DerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    NSUInteger indexes[] = {44 | BIP32_HARD, coinType | BIP32_HARD, accountNumber | BIP32_HARD};
-    return [self derivationPathWithIndexes:indexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
+    UInt256 indexes[] = {uint256_from_long(44),uint256_from_long(coinType),uint256_from_long(accountNumber)};
+    BOOL hardenedIndexes[] = {YES,YES,YES};
+    return [self derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_ClearFunds signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BIP44 onChain:chain];
 }
 
-- (instancetype)initWithIndexes:(NSUInteger *)indexes length:(NSUInteger)length
-                           type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain*)chain {
+- (instancetype)initWithIndexes:(const UInt256 [])indexes hardened:(const BOOL [])hardenedIndexes length:(NSUInteger)length type:(DSDerivationPathType)type signingAlgorithm:(DSDerivationPathSigningAlgorith)signingAlgorithm reference:(DSDerivationPathReference)reference onChain:(DSChain *)chain {
     
-    if (! (self = [super initWithIndexes:indexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
+    if (! (self = [super initWithIndexes:indexes hardened:hardenedIndexes length:length type:type signingAlgorithm:signingAlgorithm reference:reference onChain:chain])) return nil;
     
     self.internalAddresses = [NSMutableArray array];
     self.externalAddresses = [NSMutableArray array];
@@ -257,6 +261,17 @@
 - (NSString *)privateKeyStringAtIndex:(uint32_t)n internal:(BOOL)internal fromSeed:(NSData *)seed
 {
     return seed ? [self serializedPrivateKeys:@[@(n)] internal:internal fromSeed:seed].lastObject : nil;
+}
+
+- (NSArray *)privateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed
+{
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (NSNumber * index in n) {
+        NSUInteger indexes[] = {(internal ? 1 : 0),index.unsignedIntValue};
+        [mArray addObject:[NSIndexPath indexPathWithIndexes:indexes length:2]];
+    }
+    
+    return [self privateKeysAtIndexPaths:mArray fromSeed:seed];
 }
 
 - (NSArray *)serializedPrivateKeys:(NSArray *)n internal:(BOOL)internal fromSeed:(NSData *)seed

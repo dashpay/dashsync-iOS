@@ -150,6 +150,8 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
         [DSMerkleBlockEntity deleteBlocksOnChain:chainEntity];
         [DSAddressEntity deleteAddressesOnChain:chainEntity];
         [DSTransactionHashEntity deleteTransactionHashesOnChain:chainEntity];
+        [DSDerivationPathEntity deleteDerivationPathsOnChain:chainEntity];
+        [DSContactEntity deleteContactsOnChain:chainEntity];
         [chain wipeBlockchainInfo];
         [DSTransactionEntity saveContext];
         [chain reloadDerivationPaths];

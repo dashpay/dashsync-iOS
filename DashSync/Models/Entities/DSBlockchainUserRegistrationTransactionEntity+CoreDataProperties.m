@@ -2,7 +2,7 @@
 //  DSBlockchainUserRegistrationTransactionEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 8/27/18.
+//  Created by Sam Westrich on 4/30/19.
 //
 //
 
@@ -14,8 +14,10 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainUserRegistrationTransactionEntity"];
 }
 
-@dynamic username;
-@dynamic publicKey;
 @dynamic payloadSignature;
+@dynamic publicKey;
+@dynamic username;
+@dynamic ownContact;
+@dynamic transitions;
 
 @end

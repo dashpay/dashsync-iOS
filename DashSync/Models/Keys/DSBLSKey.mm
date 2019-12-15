@@ -5,21 +5,12 @@
 //  Created by Sam Westrich on 11/3/18.
 //
 
-#import "DSBLSKey.h"
+#import "DSBLSKey+Private.h"
 #import "NSMutableData+Dash.h"
 #import "DSDerivationPath.h"
 #import "NSIndexPath+Dash.h"
 #import "DSChain.h"
 #import "NSString+Dash.h"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wconversion"
-#pragma clang diagnostic ignored "-Wunused-function"
-#pragma clang diagnostic ignored "-Wconditional-uninitialized"
-#pragma clang diagnostic ignored "-Wdocumentation"
-#pragma clang diagnostic ignored "-Wmacro-redefined"
-#import <bls-signatures-pod/bls.hpp>
-#pragma clang diagnostic pop
 
 @interface DSBLSKey ()
 
@@ -324,6 +315,15 @@
     UInt768 signature = UINT768_ZERO;
     blsSignature.Serialize(signature.u8);
     return signature;
+}
+
+// MARK: - Encryption
+
+- (NSData*)encryptData:(NSData*)data {
+    bls::PublicKey blsPublicKey = [self blsPublicKey];
+    //to do
+    //[data aes]
+    return data;
 }
 
 // MARK: - Verification

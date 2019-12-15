@@ -1,5 +1,5 @@
-//
-//  Created by Andrew Podkovyrin
+//  
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,18 +15,15 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-
-#import "DSDAPIProtocol.h"
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class HTTPLoaderFactory;
-
-@interface DSDAPIClient : NSObject <DSDAPIProtocol>
-
-- (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+@interface DSTransitionTableViewCell : UITableViewCell
+@property (strong, nonatomic) IBOutlet UILabel *transactionLabel;
+@property (strong, nonatomic) IBOutlet UILabel *previousTransitionHashLabel;
+@property (strong, nonatomic) IBOutlet UILabel *confirmedInBlockLabel;
+@property (strong, nonatomic) IBOutlet UILabel *numberLabel;
 
 @end
 
