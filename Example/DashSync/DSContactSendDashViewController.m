@@ -61,7 +61,7 @@
         
         __block BOOL displayedSentMessage = FALSE;
         
-        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest fromAccount:self.account acceptReusingAddress:YES addressIsFromPasteboard:NO requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
+        [self.account.wallet.chain.chainManager.transactionManager confirmPaymentRequest:paymentRequest fromAccount:self.account acceptInternalAddress:NO acceptReusingAddress:YES addressIsFromPasteboard:NO requiresSpendingAuthenticationPrompt:YES requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
         } presentChallenge:^(NSString * _Nonnull challengeTitle, NSString * _Nonnull challengeMessage, NSString * _Nonnull actionTitle, void (^ _Nonnull actionBlock)(void), void (^ _Nonnull cancelBlock)(void)) {
             UIAlertController * alert = [UIAlertController
                                          alertControllerWithTitle:challengeTitle
@@ -83,7 +83,7 @@
             [alert addAction:cancelButton]; //cancel should always be on the left
             [alert addAction:ignoreButton];
             [self presentViewController:alert animated:YES completion:nil];
-        } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount) {
+        } transactionCreationCompletion:^BOOL(DSTransaction * _Nonnull tx, NSString * _Nonnull prompt, uint64_t amount, uint64_t proposedFee, NSArray<NSString *> * _Nonnull addresses, BOOL isSecure) {
             return TRUE; //just continue and let Dash Sync do it's thing
         } signedCompletion:^BOOL(DSTransaction * _Nonnull tx, NSError * _Nullable error, BOOL cancelled) {
             if (cancelled) {
