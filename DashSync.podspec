@@ -33,6 +33,7 @@ Pod::Spec.new do |s|
   s.dependency 'CocoaLumberjack', '3.6.0'
   s.dependency 'DWAlertController', '0.2.1'
   s.dependency 'DSDynamicOptions', '0.1.1'
+  s.dependency 'DAPI-GRPC', '0.0.1'
   s.prefix_header_contents = '#import "DSEnvironment.h"'
   
 end
