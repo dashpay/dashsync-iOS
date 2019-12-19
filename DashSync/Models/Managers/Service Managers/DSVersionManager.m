@@ -67,9 +67,8 @@
 }
 
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
+- (void)upgradeVersion1ExtendedKeysForWallet:(nullable DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
 {
-    NSParameterAssert(wallet);
     NSParameterAssert(chain);
     NSParameterAssert(message);
     NSParameterAssert(completion);
@@ -159,7 +158,7 @@
     }
 }
 
-//there was an issue with extended public keys on version 0.7.6 and before, this fixes that
+// upgrades extended keys for new/existing derivation paths
 - (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
 {
     NSParameterAssert(wallets);
