@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = "和";
-
-/* No comment provided by engineer. */
-", " = "，";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\n      总额%1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n还剩%d次尝试机会\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(本地请求金额: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n还剩1次尝试机会\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\n      金额%1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n网络手续费+%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nno attempts remaining";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\n在 %1$d %2$@ 后重试";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Are you sure you would like to reclaim this masternode?";
@@ -54,79 +36,76 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "Are you sure you would like to update this masternode to pay to %@?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "密码错误，请重试";
+"Bad password, try again" = "Bad password, try again";
 
 /* No comment provided by engineer. */
-"bad payment request" = "bad payment request";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "付款请求链接错误";
+"Bad payment request URL" = "Bad payment request URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "付款链接错误";
+"Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
-"cancel" = "取消";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "选择%@的密码";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Confirm";
 
 /* No comment provided by engineer. */
-"connect timeout" = "连接超时";
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "couldn't make payment";
+"Connect timeout" = "Connect timeout";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "dash payments can't be less than %@";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "达世币交易尚未签名";
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "dash transaction outputs can't be less than %@";
+"Dash transaction not signed" = "Dash transaction not signed";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"double spend" = "双重花费";
+"Double spend" = "Double spend";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "输入旧密码";
+"Down" = "Down";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error from payment request server %@";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "error signing dash transaction";
+"Error signing dash transaction" = "Error signing dash transaction";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "交易签名错误";
+"Error signing transaction" = "Error signing transaction";
 
 /* No comment provided by engineer. */
-"hour" = "小时";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"hours" = "小时";
-
-/* No comment provided by engineer. */
-"ignore" = "ignore";
-
-/* No comment provided by engineer. */
-"instant payment" = "instant payment";
+"Instant payment" = "Instant payment";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "insufficient funds";
+"Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "insufficient funds for dash network fee";
+"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Internal Error";
@@ -147,106 +126,103 @@
 "Method Not Found" = "Method Not Found";
 
 /* No comment provided by engineer. */
-"minute" = "分钟";
+"Missing certificate" = "Missing certificate";
 
 /* No comment provided by engineer. */
-"minutes" = "几分钟";
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
-"missing certificate" = "缺少认证";
+"No peers found" = "No peers found";
 
 /* No comment provided by engineer. */
-"no peers found" = "未找到节点";
+"Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "不是一个有效的私钥";
+"Not connected to the dash network" = "Not connected to the dash network";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "未连接到达世币网络";
-
-/* No comment provided by engineer. */
-"ok" = "确定";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "密码";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "%@的密码";
+"Password" = "Password";
 
 /* No comment provided by engineer. */
-"password" = "密码";
+"Password protected key" = "Password protected key";
 
 /* No comment provided by engineer. */
-"password protected key" = "密码保护的密钥";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "payee identity isn't certified";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "recovery phrase";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "恢复密语不匹配";
+"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "reduce payment amount by\n%1$@ (%2$@)?";
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
-"request expired" = "请求已过期";
+"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "requested network \"%@\" not currently in use";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"rescan" = "重新扫描";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"reset" = "重置";
+"Retry" = "Retry";
 
 /* No comment provided by engineer. */
-"retry" = "retry";
-
-/* No comment provided by engineer. */
-"second" = "秒";
-
-/* No comment provided by engineer. */
-"seconds" = "几秒";
-
-/* No comment provided by engineer. */
-"send" = "send";
+"Send" = "Send";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
 
 /* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "this payment address is already in your wallet";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "这个私钥已在你的钱包中";
+"This private key is already in your wallet" = "This private key is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is empty" = "这个私钥为空";
+"This private key is empty" = "This private key is empty";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes.";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "交易被取消，网络超时";
+"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "交易手续费将比此私钥上可用资金多 (由于极小额存款) ";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
-"transaction rejected" = "交易被拒绝";
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "从 %@ 来的意外响应";
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Unexpected response from %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Unknown Error";
@@ -255,28 +231,28 @@
 "Unknown JSON-RPC Response" = "Unknown JSON-RPC Response";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "unrecognized address";
+"Unrecognized address" = "Unrecognized address";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "不支持的签名类型";
+"Unsupported signature type" = "Unsupported signature type";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "不受信任的证书";
+"Untrusted certificate" = "Untrusted certificate";
+
+/* No comment provided by engineer. */
+"Up" = "Up";
 
 /* Updating Price */
 "Updating Price" = "更新价格";
 
 /* No comment provided by engineer. */
-"verify passcode" = "验证密码";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "钱包被禁用";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "WARNING";
 
 /* No comment provided by engineer. */
-"wipe" = "wipe";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的钱包可能未同步。\n这通常可以通过重新扫描区块链来修复。";

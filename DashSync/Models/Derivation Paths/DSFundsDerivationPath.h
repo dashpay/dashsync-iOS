@@ -62,6 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSIndexPath* _Nullable)indexPathForKnownAddress:(NSString*)address;
 
+- (BOOL)containsChangeAddress:(NSString *)address;
+- (BOOL)containsReceiveAddress:(NSString *)address;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " и ";
-
-/* No comment provided by engineer. */
-", " = ", ";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nИтого: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\nОсталось попыток: %d\n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(в местной валюте: %@)";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\nОсталась 1 попытка\n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nСумма: %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nКомиссия сети: +%1$@ (%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nпопыток больше нет";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nПопробуйте ещё раз через %1$d %2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "Вы уверены, что хотите использовать эту мастерноду?";
@@ -54,79 +36,76 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "Вы уверены, что хотите обновить адрес выплат этой мастерноды на %@?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "Некорректный пароль, попробуйте ещё раз";
+"Bad password, try again" = "Bad password, try again";
 
 /* No comment provided by engineer. */
-"bad payment request" = "Некорректный платёжный запрос";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "Некорректный платёжный URL-запрос";
+"Bad payment request URL" = "Bad payment request URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "Некорректный платёжный URL";
+"Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
-"cancel" = "Отменить";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "Придумайте код доступа для %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "Подтвердить";
 
 /* No comment provided by engineer. */
-"connect timeout" = "Время ожидания подключения";
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "Не удалось совершить платёж";
+"Connect timeout" = "Connect timeout";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "Платежи в Dash не могут быть меньше, чем %@";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "Транзакция не подписана";
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "Выходы транзакции не могут быть меньше, чем %@";
+"Dash transaction not signed" = "Dash transaction not signed";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Сеть разработки";
 
 /* No comment provided by engineer. */
-"double spend" = "Двойное расходование";
+"Double spend" = "Double spend";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "Введите старый пароль";
+"Down" = "Down";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ошибка платёжного сервера %@";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "Ошибка подписания транзакции";
+"Error signing dash transaction" = "Error signing dash transaction";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "Ошибка подписания транзакции";
+"Error signing transaction" = "Error signing transaction";
 
 /* No comment provided by engineer. */
-"hour" = "час";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"hours" = "часов";
-
-/* No comment provided by engineer. */
-"ignore" = "Игнорировать";
-
-/* No comment provided by engineer. */
-"instant payment" = "Мгновенный платёж";
+"Instant payment" = "Instant payment";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend требует достаточного количества входов с 6 подтверждениями. Отправить как обычную транзакцию?";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "Недостаточно средств";
+"Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "Недостаточно средств для оплаты комиссии сети Dash";
+"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Внутренняя ошибка";
@@ -147,106 +126,103 @@
 "Method Not Found" = "Метод не найден";
 
 /* No comment provided by engineer. */
-"minute" = "минута";
+"Missing certificate" = "Missing certificate";
 
 /* No comment provided by engineer. */
-"minutes" = "минуты";
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
-"missing certificate" = "Отсутствует сертификат";
+"No peers found" = "No peers found";
 
 /* No comment provided by engineer. */
-"no peers found" = "Узлы не найдены";
+"Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "Некорректный закрытый ключ";
+"Not connected to the dash network" = "Not connected to the dash network";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "Нет подключения к сети Dash";
-
-/* No comment provided by engineer. */
-"ok" = "ок";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Ошибка обработки";
 
 /* No comment provided by engineer. */
-"passcode" = "Код доступа";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "Код доступа для %@";
+"Password" = "Password";
 
 /* No comment provided by engineer. */
-"password" = "Пароль";
+"Password protected key" = "Password protected key";
 
 /* No comment provided by engineer. */
-"password protected key" = "Защищённый паролем ключ";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "Сертификат личности получателя некорректен";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "Фраза восстановления";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "Фраза восстановления не подходит";
+"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "Уменьшить сумму платежа на\n%1$@ (%2$@)?";
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
-"request expired" = "Срок действия запроса истёк";
+"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "запрашиваемая сеть \"%@\" в настоящее время не используется";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"rescan" = "Повторное сканирование";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"reset" = "Сбросить";
+"Retry" = "Retry";
 
 /* No comment provided by engineer. */
-"retry" = "повторить";
-
-/* No comment provided by engineer. */
-"second" = "секунда";
-
-/* No comment provided by engineer. */
-"seconds" = "секунды";
-
-/* No comment provided by engineer. */
-"send" = "Отправить";
+"Send" = "Send";
 
 /* No comment provided by engineer. */
 "Server Error" = "Ошибка сервера";
 
 /* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
 "Testnet" = "Тестовая сеть";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "Этот адрес уже находится в вашем кошельке";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "Этот закрытый ключ уже находится в вашем кошельке";
+"This private key is already in your wallet" = "This private key is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is empty" = "Этот закрытый ключ пустой";
+"This private key is empty" = "This private key is empty";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно входов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "Транзакция отменена, время ожидания сети истекло";
+"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Комиссия за эту транзакцию будет больше, чем сумма на этом приватном ключе (из-за маленьких депозитов)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
-"transaction rejected" = "Транзакция отклонена";
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "Неожиданный ответ от %@";
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Unexpected response from %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Неизвестная ошибка";
@@ -255,28 +231,28 @@
 "Unknown JSON-RPC Response" = "Неизвестный ответ JSON-RPC";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "Нераспознанный адрес";
+"Unrecognized address" = "Unrecognized address";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "Тип подписи не поддерживается";
+"Unsupported signature type" = "Unsupported signature type";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "Ненадёжный сертификат";
+"Untrusted certificate" = "Untrusted certificate";
+
+/* No comment provided by engineer. */
+"Up" = "Up";
 
 /* Updating Price */
 "Updating Price" = "Обновление цены";
 
 /* No comment provided by engineer. */
-"verify passcode" = "Подтвердите код";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "Кошелёк отключен";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
-"wipe" = "Стереть";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Возможно, Ваш кошелёк рассинхронизирован.\nОбычно, это может быть исправлено путём повторного сканирования цепочки блоков.";

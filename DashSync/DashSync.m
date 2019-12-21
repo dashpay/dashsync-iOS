@@ -7,6 +7,7 @@
 //
 
 #import "DashSync.h"
+#import <BackgroundTasks/BackgroundTasks.h>
 #import <sys/stat.h>
 #import <mach-o/dyld.h>
 #import "NSManagedObject+Sugar.h"
@@ -18,7 +19,24 @@
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+/*
+ Notice on iOS 13+ Background Task debugging:
+ 
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"org.dashcore.dashsync.backgroundblocksync"]
+
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"org.dashcore.dashsync.backgroundblocksync"]
+ */
+
+static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.backgroundblocksync";
+
 @interface DashSync ()
+
+@property (nullable, nonatomic, strong) id protectedDataNotificationObserver;
+@property (nullable, nonatomic, strong) id syncFinishedNotificationObserver;
+@property (nullable, nonatomic, strong) id syncFailedNotificationObserver;
+@property (nullable, nonatomic, copy) void (^backgroundFetchCompletion)(UIBackgroundFetchResult);
 
 @end
 
@@ -26,41 +44,65 @@
 
 + (instancetype)sharedSyncController
 {
-    static id singleton = nil;
-    static dispatch_once_t onceToken = 0;
-    
+    static DashSync *_sharedInstance = nil;
+    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        singleton = [self new];
+        _sharedInstance = [[self alloc] init];
     });
-    
-    return singleton;
+    return _sharedInstance;
 }
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
+- (void)registerBackgroundFetchOnce {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         // use background fetch to stay synced with the blockchain
-        [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
-        
+        if (@available(iOS 13.0, *)) {
+            BGTaskScheduler *taskScheduler = [BGTaskScheduler sharedScheduler];
+            const BOOL registerSuccess =
+            [taskScheduler registerForTaskWithIdentifier:BG_TASK_REFRESH_IDENTIFIER
+                                                                  usingQueue:nil
+                                                               launchHandler:^(BGTask *task) {
+                [self scheduleBackgroundFetch];
+                
+                [task setExpirationHandler:^{
+                    [self backgroundFetchTimedOut];
+                }];
+                
+                [self performFetchWithCompletionHandler:^(UIBackgroundFetchResult backgroundFetchResult) {
+                    const BOOL success = backgroundFetchResult == UIBackgroundFetchResultNewData;
+                    [task setTaskCompletedWithSuccess:success];
+                }];
+            }];
+            
+            NSAssert(registerSuccess, @"Add background task identifier '%@' to the App's Info.plist",
+                     BG_TASK_REFRESH_IDENTIFIER);
+        } else {
+            [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+        }
+    });
+}
+
+- (void)setupDashSyncOnce {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         if ([[DSOptionsManager sharedInstance] retrievePriceInfo]) {
-            [[DSPriceManager sharedInstance] startExchangeRateFetching];
-        }
-        // start the event manager
-        [[DSEventManager sharedEventManager] up];
-        
-        struct stat s;
-        self.deviceIsJailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
-        
-        // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
-        for (uint32_t count = _dyld_image_count(), i = 0; i < count && !self.deviceIsJailbroken; i++) {
-            if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) self.deviceIsJailbroken = YES;
-        }
-        
-#if TARGET_IPHONE_SIMULATOR
-        self.deviceIsJailbroken = NO;
-#endif
-    }
-    return self;
+                    [[DSPriceManager sharedInstance] startExchangeRateFetching];
+                }
+                // start the event manager
+                [[DSEventManager sharedEventManager] up];
+                
+                struct stat s;
+                self.deviceIsJailbroken = (stat("/bin/sh", &s) == 0) ? YES : NO; // if we can see /bin/sh, the app isn't sandboxed
+                
+                // some anti-jailbreak detection tools re-sandbox apps, so do a secondary check for any MobileSubstrate dyld images
+                for (uint32_t count = _dyld_image_count(), i = 0; i < count && !self.deviceIsJailbroken; i++) {
+                    if (strstr(_dyld_get_image_name(i), "MobileSubstrate")) self.deviceIsJailbroken = YES;
+                }
+                
+        #if TARGET_IPHONE_SIMULATOR
+                self.deviceIsJailbroken = NO;
+        #endif
+    });
 }
 
 -(void)startSyncForChain:(DSChain*)chain
@@ -198,7 +240,7 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
     } else {
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
             if (authenticatedOrSuccess) {
                 [chain wipeWalletsAndDerivatives];
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -225,71 +267,115 @@
     }
 }
 
+- (void)scheduleBackgroundFetch {
+    if (@available(iOS 13.0,*)) {
+        BGAppRefreshTaskRequest *request = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:BG_TASK_REFRESH_IDENTIFIER];
+        // Fetch no earlier than 15 minutes from now
+        request.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:15.0 * 60.0];
+        
+        NSError *error = nil;
+        [[BGTaskScheduler sharedScheduler] submitTaskRequest:request error:&error];
+        if (error) {
+            NSLog(@"Error scheduling background refresh");
+        }
+    }
+}
 
-- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
-{
-    //todo this needs to be made per chain
-    __block id protectedObserver = nil, syncFinishedObserver = nil, syncFailedObserver = nil;
-    __block void (^completion)(UIBackgroundFetchResult) = completionHandler;
-    void (^cleanup)(void) = ^() {
-        completion = nil;
-        if (protectedObserver) [[NSNotificationCenter defaultCenter] removeObserver:protectedObserver];
-        if (syncFinishedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFinishedObserver];
-        if (syncFailedObserver) [[NSNotificationCenter defaultCenter] removeObserver:syncFailedObserver];
-        protectedObserver = syncFinishedObserver = syncFailedObserver = nil;
-    };
-    
-    if ([[DSChainsManager sharedInstance] mainnetManager].syncProgress >= 1.0) {
-        DSDLog(@"background fetch already synced");
-        if (completion) completion(UIBackgroundFetchResultNoData);
+- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    DSChainManager *mainnetManager = [[DSChainsManager sharedInstance] mainnetManager];
+    if (mainnetManager.syncProgress >= 1.0) {
+        DSDLog(@"Background fetch: already synced");
+        
+        if (completionHandler) {
+            completionHandler(UIBackgroundFetchResultNoData);
+        }
+        
         return;
     }
     
-    // timeout after 25 seconds
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        if (completion) {
-            DSDLog(@"background fetch timeout with progress: %f", [[DSChainsManager sharedInstance] mainnetManager].syncProgress);
-            completion(([[DSChainsManager sharedInstance] mainnetManager].syncProgress > 0.1) ? UIBackgroundFetchResultNewData :
-                       UIBackgroundFetchResultFailed);
-            cleanup();
-        }
-        //TODO: disconnect
-    });
+    self.backgroundFetchCompletion = completionHandler;
     
-    protectedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationProtectedDataDidBecomeAvailable object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           DSDLog(@"background fetch protected data available");
-                                                           [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
-                                                       }];
+    if (@available(iOS 13.0, *)) {
+        // NOP
+        // The expirationHandler of BGTask will be called
+    }
+    else {
+        // timeout after 25 seconds
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 25*NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            [self backgroundFetchTimedOut];
+        });
+    }
     
-    syncFinishedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           DSDLog(@"background fetch sync finished");
-                                                           if (completion) completion(UIBackgroundFetchResultNewData);
-                                                           cleanup();
-                                                       }];
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     
-    syncFailedObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSTransactionManagerSyncFailedNotification object:nil
-                                                       queue:nil usingBlock:^(NSNotification *note) {
-                                                           DSDLog(@"background fetch sync failed");
-                                                           if (completion) completion(UIBackgroundFetchResultFailed);
-                                                           cleanup();
-                                                       }];
+    self.protectedDataNotificationObserver =
+    [notificationCenter addObserverForName:UIApplicationProtectedDataDidBecomeAvailable
+                                    object:nil
+                                     queue:nil
+                                usingBlock:^(NSNotification *note) {
+        DSDLog(@"Background fetch: protected data available");
+        [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
+    }];
     
-    DSDLog(@"background fetch starting");
-    [[[DSChainsManager sharedInstance] mainnetManager].peerManager connect];
+    self.syncFinishedNotificationObserver =
+    [notificationCenter addObserverForName:DSTransactionManagerSyncFinishedNotification object:nil
+                                     queue:nil
+                                usingBlock:^(NSNotification *note) {
+        DSDLog(@"Background fetch: sync finished");
+        [self finishBackgroundFetchWithResult:UIBackgroundFetchResultNewData];
+    }];
+    
+    self.syncFailedNotificationObserver =
+    [notificationCenter addObserverForName:DSTransactionManagerSyncFailedNotification
+                                    object:nil
+                                     queue:nil
+                                usingBlock:^(NSNotification *note) {
+        DSDLog(@"Background fetch: sync failed");
+        [self finishBackgroundFetchWithResult:UIBackgroundFetchResultFailed];
+    }];
+    
+    DSDLog(@"Background fetch: starting");
+    [mainnetManager.peerManager connect];
     
     // sync events to the server
     [[DSEventManager sharedEventManager] sync];
+}
+
+- (void)backgroundFetchTimedOut {
+    const double syncProgress = [[DSChainsManager sharedInstance] mainnetManager].syncProgress;
+    DSDLog(@"Background fetch timeout with progress: %f", syncProgress);
     
-    //    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"has_alerted_buy_dash"] == NO &&
-    //        [WKWebView class] && [[BRAPIClient sharedClient] featureEnabled:BRFeatureFlagsBuyDash] &&
-    //        [UIApplication sharedApplication].applicationIconBadgeNumber == 0) {
-    //        [UIApplication sharedApplication].applicationIconBadgeNumber = 1;
-    //    }
+    const UIBackgroundFetchResult fetchResult = syncProgress > 0.1
+        ? UIBackgroundFetchResultNewData
+        : UIBackgroundFetchResultFailed;
+    [self finishBackgroundFetchWithResult:fetchResult];
+    
+    // TODO: disconnect
+}
+
+- (void)finishBackgroundFetchWithResult:(UIBackgroundFetchResult)fetchResult {
+    if (self.backgroundFetchCompletion) {
+        self.backgroundFetchCompletion(fetchResult);
+    }
+    self.backgroundFetchCompletion = nil;
+    
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    if (self.protectedDataNotificationObserver) {
+        [notificationCenter removeObserver:self.protectedDataNotificationObserver];
+    }
+    if (self.syncFinishedNotificationObserver) {
+        [notificationCenter removeObserver:self.syncFinishedNotificationObserver];
+    }
+    if (self.syncFailedNotificationObserver) {
+        [notificationCenter removeObserver:self.syncFailedNotificationObserver];
+    }
+    
+    self.protectedDataNotificationObserver = nil;
+    self.syncFinishedNotificationObserver = nil;
+    self.syncFailedNotificationObserver = nil;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

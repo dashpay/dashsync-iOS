@@ -33,14 +33,11 @@ typedef void (^PinCompletionBlock)(BOOL authenticatedOrSuccess, BOOL cancelled);
 typedef void (^SeedPhraseCompletionBlock)(NSString * _Nullable seedPhrase);
 typedef void (^SeedCompletionBlock)(NSData * _Nullable seed, BOOL cancelled);
 
-typedef void (^ResetCancelHandlerBlock)(void);
-typedef void (^ResetWipeHandlerBlock)(void);
-
 extern NSString *const DSApplicationTerminationRequestNotification;
 
 @class DSWallet,DSChain,DSTransaction;
 
-@interface DSAuthenticationManager : NSObject <UITextFieldDelegate>
+@interface DSAuthenticationManager : NSObject
 
 @property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
 @property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
@@ -48,8 +45,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic, readonly) BOOL shouldUseAuthentication; //true if the app should use authentication once it is set up
 @property (nonatomic, readonly) BOOL usesAuthentication; //true if the app uses authentication and it is set up
 @property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
-@property (nonatomic ,readonly) BOOL lockedOut;
-@property (nullable, nonatomic, copy) NSDictionary * userAccount; // client api user id and auth token
+
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 /**
  Secure time was updated by HTTP response since app starts
@@ -58,8 +54,18 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 @property (nonatomic, readonly) NSTimeInterval lockoutWaitTime;
 
 + (instancetype)sharedInstance;
+
+
+- (BOOL)hasPin:(NSError *_Nullable __autoreleasing *_Nullable)outError;
+
+- (BOOL)isBiometricAuthenticationAllowed;
+- (BOOL)isBiometricSpendingAllowed;
+
+- (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
+                                       completion:(PinCompletionBlock)completion;
+
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forWallet:(DSWallet*)wallet forAmount:(uint64_t)amount forceAuthentication:(BOOL)forceAuthentication completion:(_Nullable SeedCompletionBlock)completion;//auth user,return seed
-- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
+- (void)authenticateWithPrompt:(NSString * _Nullable)authprompt usingBiometricAuthentication:(BOOL)touchId alertIfLockout:(BOOL)alertIfLockout completion:(_Nullable PinCompletionBlock)completion; // prompt user to authenticate
 - (void)setPinIfNeededWithCompletion:(void (^ _Nullable)(BOOL needed, BOOL success))completion; // prompts the user to set his pin if he has never set one before
 - (void)setPinWithCompletion:(void (^ _Nullable)(BOOL success))completion; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
 - (void)removePin;
@@ -67,13 +73,13 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 - (void)requestKeyPasswordForSweepCompletion:(void (^)(DSTransaction *tx, uint64_t fee, NSError *error))sweepCompletion userInfo:(NSDictionary*)userInfo completion:(void (^)(void (^sweepCompletion)(DSTransaction *tx, uint64_t fee, NSError *error),NSDictionary * userInfo, NSString * password))completion cancel:(void (^)(void))cancel;
 - (NSString *)promptForAmount:(uint64_t)amount fee:(uint64_t)fee address:(NSString *)address name:(NSString * _Nullable)name memo:(NSString * _Nullable)memo isSecure:(BOOL)isSecure errorMessage:(NSString * _Nullable)errorMessage localCurrency:(NSString * _Nullable)localCurrency;
 
--(void)badKeyPasswordForSweepCompletion:(void (^)(void))completion cancel:(void (^)(void))cancel;
+- (void)badKeyPasswordForSweepCompletion:(void (^)(void))completion cancel:(void (^)(void))cancel;
 
--(void)deauthenticate;
+- (void)deauthenticate;
 
--(void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
+- (void)setOneTimeShouldUseAuthentication:(BOOL)shouldUseAuthentication; // you can not set this to false after it being true
 
--(void)showResetWalletWithWipeHandler:(_Nullable ResetWipeHandlerBlock)resetWipeHandlerBlock cancelHandler:(_Nullable ResetCancelHandlerBlock)resetCancelHandlerBlock;
+- (void)resetAllWalletsWithWipeHandler:(void(^_Nullable)(void))wipeHandler completion:(void(^)(BOOL success))completion;
 
 @end
 

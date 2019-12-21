@@ -1,21 +1,9 @@
 
 /* No comment provided by engineer. */
-" and " = " และ ";
-
-/* No comment provided by engineer. */
-", " = ",";
-
-/* No comment provided by engineer. */
 "\n         total %@ (%@)" = "\nยอดรวม %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\n%d attempts remaining\n" = "\n%d พยายามที่เหลืออยู่ \n";
-
-/* No comment provided by engineer. */
 "\n(local requested amount: %@)" = "\n(จำนวนที่ขอในบริเวณท้องถิ่น : %@ )";
-
-/* No comment provided by engineer. */
-"\n1 attempt remaining\n" = "\n1 พยายามที่เหลืออยู่ \n";
 
 /* No comment provided by engineer. */
 "\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
@@ -25,12 +13,6 @@
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
-
-/* No comment provided by engineer. */
-"\nno attempts remaining" = "\nไม่สามารถพยายามได้อีก";
-
-/* No comment provided by engineer. */
-"\ntry again in %d %@" = "\nลองเข้าอีกครั้ง %1$d%2$@";
 
 /* No comment provided by engineer. */
 "Are you sure you would like to reclaim this masternode?" = "คุณแน่ใจหรือไม่ว่าต้องการเรียกคืนโหมดนี้อีกครั้ง?";
@@ -54,79 +36,76 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "คุณแน่ใจหรือว่าต้องการอัปเดต masternode นี้เพื่อจ่าย %@?";
 
 /* No comment provided by engineer. */
-"bad password, try again" = "รหัสไม่ถูกต้อง, ลองอีกครั้ง";
+"Bad password, try again" = "Bad password, try again";
 
 /* No comment provided by engineer. */
-"bad payment request" = "คำขอชำระเงินไม่ถูกต้อง";
+"Bad payment request" = "Bad payment request";
 
 /* No comment provided by engineer. */
-"bad payment request URL" = "URL คำขอชำระเงินไม่ถูกต้อง";
+"Bad payment request URL" = "Bad payment request URL";
 
 /* No comment provided by engineer. */
-"bad payment URL" = "URL ใบชำระเงินไม่ถูกต้อง";
+"Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
-"cancel" = "ยกเลิก";
-
-/* No comment provided by engineer. */
-"choose passcode for %@" = "เลือกรหัสผ่านสำหรับ %@";
+"Cancel" = "Cancel";
 
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
-"connect timeout" = "หมดเวลาเชื่อมต่อ";
+"Confirm PIN" = "Confirm PIN";
 
 /* No comment provided by engineer. */
-"couldn't make payment" = "ไม่สามารถชำระเงินได้";
+"Connect timeout" = "Connect timeout";
 
 /* No comment provided by engineer. */
-"dash payments can't be less than %@" = "ชำระเงิน dash ไม่สามารถไม่น้อยกว่า %@ ได้";
+"Couldn't make payment" = "Couldn't make payment";
 
 /* No comment provided by engineer. */
-"dash transaction not signed" = "ธุรกรรม dash นี้ ยังไม่ถูกลงนาม";
+"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
 /* No comment provided by engineer. */
-"dash transaction outputs can't be less than %@" = "รายการธุรกรรม dash ไม่สามารถน้อยกว่า %@  ได้";
+"Dash transaction not signed" = "Dash transaction not signed";
+
+/* No comment provided by engineer. */
+"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"double spend" = "จ่ายเงินสองเท่า";
+"Double spend" = "Double spend";
 
 /* No comment provided by engineer. */
-"enter old passcode" = "เข้าสู่รหัสเก่า";
+"Down" = "Down";
+
+/* No comment provided by engineer. */
+"Enter old PIN" = "Enter old PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "ข้อผิดพลาดจากเซิร์ฟเวอร์คำขอชำระเงิน%@";
 
 /* No comment provided by engineer. */
-"error signing dash transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม dash";
+"Error signing dash transaction" = "Error signing dash transaction";
 
 /* No comment provided by engineer. */
-"error signing transaction" = "ข้อผิดพลาดการลงชื่อเข้าถึงธุรกรรม ";
+"Error signing transaction" = "Error signing transaction";
 
 /* No comment provided by engineer. */
-"hour" = "ชั่วโมง";
+"Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"hours" = "ชั่วโมง";
-
-/* No comment provided by engineer. */
-"ignore" = "เพิกเฉย";
-
-/* No comment provided by engineer. */
-"instant payment" = "ชำระเงินด่วน";
+"Instant payment" = "Instant payment";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "การส่งด่วนจะต้องใช้ข้อมูลยืนยัน 6 รายการ , ต้องการส่งแบบธรรมดาหรือไม่?";
 
 /* No comment provided by engineer. */
-"insufficient funds" = "ยอดเงินไม่เพียงพอ";
+"Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"insufficient funds for dash network fee" = "ยอดเงินไม่เพียงพอสำหรับค่าธรรมเนียมเครือข่าย dash";
+"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "ข้อผิดพลาดภายใน";
@@ -147,106 +126,103 @@
 "Method Not Found" = "ไม่พบวิธี";
 
 /* No comment provided by engineer. */
-"minute" = "นาที";
+"Missing certificate" = "Missing certificate";
 
 /* No comment provided by engineer. */
-"minutes" = "นาที";
+"No attempts remaining" = "No attempts remaining";
 
 /* No comment provided by engineer. */
-"missing certificate" = "ไม่พบใบรับรอง";
+"No peers found" = "No peers found";
 
 /* No comment provided by engineer. */
-"no peers found" = "ไม่มีผู้ปล่อย";
+"Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"not a valid private key" = "ไม่ใช่ใช่คีย์ส่วนตัวที่ถูกต้อง";
+"Not connected to the dash network" = "Not connected to the dash network";
 
 /* No comment provided by engineer. */
-"not connected to the dash network" = "ไม่ได้เชื่อมต่อกับเครือข่าย dash";
-
-/* No comment provided by engineer. */
-"ok" = "โอเค";
+"OK" = "OK";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parse Error";
 
 /* No comment provided by engineer. */
-"passcode" = "รหัสการเข้าถึง";
+"Passcode" = "Passcode";
 
 /* No comment provided by engineer. */
-"passcode for %@" = "รหัสการเข้าถึงสำหรับ %@";
+"Password" = "Password";
 
 /* No comment provided by engineer. */
-"password" = "รหัสผ่าน";
+"Password protected key" = "Password protected key";
 
 /* No comment provided by engineer. */
-"password protected key" = "คีย์ที่ป้องกันด้วยรหัสผ่าน";
+"Payee identity isn't certified" = "Payee identity isn't certified";
 
 /* No comment provided by engineer. */
-"payee identity isn't certified" = "เอกลักษณ์ของผู้รับเงินไม่ได้รับการรับรอง";
+"PIN for %@" = "PIN for %@";
 
 /* No comment provided by engineer. */
-"recovery phrase" = "วลีกู้คืน";
+"Recovery phrase" = "Recovery phrase";
 
 /* No comment provided by engineer. */
-"recovery phrase doesn't match" = "วลีกู้คืนไม่ตรงกัน";
+"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"reduce payment amount by\n%@ (%@)?" = "ลดจำนวนที่ต้องชำระโดย\n%1$@(%2$@)?";
+"Request expired" = "Request expired";
 
 /* No comment provided by engineer. */
-"request expired" = "คำขอหมดอายุ";
+"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
 
 /* No comment provided by engineer. */
-"requested network \"%@\" not currently in use" = "เครือข่ายที่ขอ \"%@\" ไม่ได้ใช้อยู่ในปัจจุบัน";
+"Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"rescan" = "สแกนอีกครั้ง";
+"Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"reset" = "รีเซ็ต";
+"Retry" = "Retry";
 
 /* No comment provided by engineer. */
-"retry" = "ลองใหม่อีกครั้ง";
-
-/* No comment provided by engineer. */
-"second" = "ที่สอง";
-
-/* No comment provided by engineer. */
-"seconds" = "ที่สอง";
-
-/* No comment provided by engineer. */
-"send" = "ส่ง";
+"Send" = "Send";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
 
 /* No comment provided by engineer. */
+"Set PIN" = "Set PIN";
+
+/* No comment provided by engineer. */
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"this payment address is already in your wallet" = "ที่อยู่การชำระเงินนี้อยู่ใน wallet ของคุณแล้ว";
+"This payment address is already in your wallet" = "This payment address is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is already in your wallet" = "คีย์ส่วนตัวนี้อยู่ใน wallet ของคุณแล้ว";
+"This private key is already in your wallet" = "This private key is already in your wallet";
 
 /* No comment provided by engineer. */
-"this private key is empty" = "คีย์ส่วนตัวว่างเปล่า";
+"This private key is empty" = "This private key is empty";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "คำขอนี้ต้องการการชำระเงินทันที แต่คุณไม่มีการยืนยัน 6 รายการที่จำเป็นสำหรับการจัดส่งทันที คุณอาจขอให้ผู้ขายยอมรับการทำธุรกรรมตามปกติหรือรอสักครู่";
 
 /* No comment provided by engineer. */
-"transaction canceled, network timeout" = "ธุรกรรมถูกยกเลิก  เครือข่ายหมดเวลา";
+"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
 
 /* No comment provided by engineer. */
-"transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "ค่าธรรมเนียมการทำธุรกรรมอาจสูงกว่าเงินที่มีอยู่ในคีย์ส่วนตัวนี้ (เนื่องจากเงินฝาก \"dust\" เล็กน้อย)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
 
 /* No comment provided by engineer. */
-"transaction rejected" = "การทำธุรกรรมถูกปฏิเสธ";
+"Transaction rejected" = "Transaction rejected";
 
 /* No comment provided by engineer. */
-"unexpected response from %@" = "การตอบสนองที่ไม่คาดคิดจาก %@";
+"Try again in %@" = "Try again in %@";
+
+/* No comment provided by engineer. */
+"Unexpected response from %@" = "Unexpected response from %@";
+
+/* No comment provided by engineer. */
+"unknown address" = "unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Unknown Error";
@@ -255,28 +231,28 @@
 "Unknown JSON-RPC Response" = "JSON-RPC ไม่ตอบสนอง";
 
 /* No comment provided by engineer. */
-"unrecognized address" = "ที่อยู่ที่ไม่รู้จัก";
+"Unrecognized address" = "Unrecognized address";
 
 /* No comment provided by engineer. */
-"unsupported signature type" = "ลายเซ็นไม่รองรับ";
+"Unsupported signature type" = "Unsupported signature type";
 
 /* No comment provided by engineer. */
-"untrusted certificate" = "ใบรับรองไม่น่าเชื่อถือ";
+"Untrusted certificate" = "Untrusted certificate";
+
+/* No comment provided by engineer. */
+"Up" = "Up";
 
 /* Updating Price */
 "Updating Price" = "อัพเดตราคา";
 
 /* No comment provided by engineer. */
-"verify passcode" = "ยืนยันรหัสผ่าน";
-
-/* No comment provided by engineer. */
-"wallet disabled" = "ปิดใช้งาน wallet";
+"Wallet disabled" = "Wallet disabled";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
 
 /* No comment provided by engineer. */
-"wipe" = "ลบล้าง";
+"Wipe" = "Wipe";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "wallet ของคุณ อาจไม่ได้รับการซิงค์ ซึ่งมักจะสามารถแก้ไขได้โดยการสแกน blockchain ใหม่";

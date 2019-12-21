@@ -42,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(NSUInteger)validQuorumsCountOfType:(DSLLMQType)type;
 
+-(NSDictionary*)quorumsOfType:(DSLLMQType)type;
+
 -(NSUInteger)quorumsCountOfType:(DSLLMQType)type;
 
 -(NSArray<DSSimplifiedMasternodeEntry*>*)masternodesForQuorumModifier:(UInt256)quorumHash quorumCount:(NSUInteger)quorumCount;
@@ -55,6 +57,12 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSDictionary*)compareWithPrevious:(DSMasternodeList*)other;
 
 -(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs;
+
+-(DSQuorumEntry*)quorumEntryForInstantSendRequestID:(UInt256)requestID;
+
+-(DSQuorumEntry*)quorumEntryForChainLockRequestID:(UInt256)requestID;
+
+-(NSArray<DSQuorumEntry*>*)quorumEntriesRankedForInstantSendRequestID:(UInt256)requestID;
 
 @end
 

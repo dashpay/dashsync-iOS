@@ -38,9 +38,11 @@
 #define LLMQ_KEEP_RECENT_BLOCKS (576*8 + 100)
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef union _UInt256 UInt256;
 
-@class DSChain;
+@class DSChain, DSChainLock;
 
 @interface DSMerkleBlock : NSObject <NSCopying>
 
@@ -56,6 +58,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSData *flags;
 @property (nonatomic, assign) uint32_t height;
 @property (nonatomic, readonly) DSChain *chain;
+@property (nonatomic, readonly) BOOL chainLocked;
 
 @property (nonatomic, readonly) NSArray *txHashes; // the matched tx hashes in the block
 
@@ -73,7 +76,7 @@ typedef union _UInt256 UInt256;
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain*)chain;
 - (instancetype)initWithBlockHash:(UInt256)blockHash onChain:(DSChain*)chain version:(uint32_t)version prevBlock:(UInt256)prevBlock
 merkleRoot:(UInt256)merkleRoot timestamp:(uint32_t)timestamp target:(uint32_t)target nonce:(uint32_t)nonce
-totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags height:(uint32_t)height;
+totalTransactions:(uint32_t)totalTransactions hashes:(NSData * _Nullable)hashes flags:(NSData * _Nullable)flags height:(uint32_t)height chainLock:(DSChainLock* _Nullable)chainLock;
 
 // this init is used to check that the coinbase transaction is properly in the merkle tree of a block
 - (instancetype)initWithBlockHash:(UInt256)blockHash merkleRoot:(UInt256)merkleRoot totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSData *)flags;
@@ -86,4 +89,8 @@ totalTransactions:(uint32_t)totalTransactions hashes:(NSData *)hashes flags:(NSD
 
 - (int32_t)darkGravityWaveTargetWithPreviousBlocks:(NSMutableDictionary *)previousBlocks;
 
+- (void)setChainLockedWithChainLock:(DSChainLock*)chainLock;
+
 @end
+
+NS_ASSUME_NONNULL_END

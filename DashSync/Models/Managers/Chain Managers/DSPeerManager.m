@@ -652,7 +652,7 @@
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSError *error = [NSError errorWithDomain:@"DashSync" code:1
-                                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"no peers found", nil)}];
+                                                 userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"No peers found", nil)}];
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:DSTransactionManagerSyncFailedNotification
                                                                     object:nil userInfo:@{@"error":error,DSChainManagerNotificationChainKey:self.chain}];

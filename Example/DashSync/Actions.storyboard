@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -21,10 +19,10 @@
                             <tableViewSection id="eIb-JI-g8J">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="A5p-xy-Kgz">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="52"/>
+                                        <rect key="frame" x="0.0" y="28" width="375" height="52"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="A5p-xy-Kgz" id="SAg-9z-eUB">
-                                            <rect key="frame" x="0.0" y="0.0" width="341" height="51.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="347.5" height="52"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transaction Flooding" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8tJ-R2-oB0">
@@ -44,10 +42,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" rowHeight="52" id="aiu-my-zY3">
-                                        <rect key="frame" x="0.0" y="52" width="375" height="52"/>
+                                        <rect key="frame" x="0.0" y="80" width="375" height="52"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="aiu-my-zY3" id="1cl-7N-VhJ">
-                                            <rect key="frame" x="0.0" y="0.0" width="341" height="51.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="347.5" height="52"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Masternode List Retrieval Full Test" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ed0-J8-sub">
@@ -89,14 +87,14 @@
                             <tableViewSection id="ksM-pf-17R">
                                 <cells>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="Tuz-Dz-Kv5" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="28" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Tuz-Dz-Kv5" id="U8j-Sv-jjF">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Funding Account*" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hOF-Nz-ZpD">
-                                                    <rect key="frame" x="16" y="12" width="137" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Funding Account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hOF-Nz-ZpD">
+                                                    <rect key="frame" x="16" y="12" width="129.5" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -121,14 +119,14 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="ATM-tI-cEY" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
-                                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="72" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ATM-tI-cEY" id="oFB-Q2-JSa">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Destination Account*" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zGD-Em-Svd">
-                                                    <rect key="frame" x="16" y="12" width="162" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Destination Account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zGD-Em-Svd">
+                                                    <rect key="frame" x="16" y="12" width="154.5" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
@@ -153,24 +151,23 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="nsd-Uc-Tgo" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
-                                        <rect key="frame" x="0.0" y="88" width="375" height="44"/>
+                                        <rect key="frame" x="0.0" y="116" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="nsd-Uc-Tgo" id="AaX-7A-qgn">
-                                            <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tx Count*" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1L4-53-1Xs">
-                                                    <rect key="frame" x="16" y="12" width="76.5" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tx Count" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1L4-53-1Xs">
+                                                    <rect key="frame" x="16" y="12" width="69" height="21"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="100" borderStyle="roundedRect" textAlignment="right" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="N64-lR-ztC" userLabel="Amount Text Field">
-                                                    <rect key="frame" x="159" y="7" width="200" height="30"/>
+                                                    <rect key="frame" x="259" y="7" width="100" height="34"/>
                                                     <constraints>
-                                                        <constraint firstAttribute="width" priority="900" constant="200" id="MBr-UD-ExL"/>
+                                                        <constraint firstAttribute="width" priority="900" constant="100" id="MBr-UD-ExL"/>
                                                     </constraints>
-                                                    <nil key="textColor"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="ASCIICapableNumberPad" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
                                                 </textField>
@@ -185,6 +182,156 @@
                                         </tableViewCellContentView>
                                         <connections>
                                             <outlet property="IPAddressTextField" destination="N64-lR-ztC" id="s4n-iN-cIv"/>
+                                        </connections>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="Klo-eR-yVs" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
+                                        <rect key="frame" x="0.0" y="160" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Klo-eR-yVs" id="123-L6-LBd">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tx Success Count" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="khX-30-2iD">
+                                                    <rect key="frame" x="16" y="12" width="137.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fLC-rg-ZwT">
+                                                    <rect key="frame" x="317" y="12" width="42" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="khX-30-2iD" firstAttribute="leading" secondItem="123-L6-LBd" secondAttribute="leading" constant="16" id="Vjj-vR-b0V"/>
+                                                <constraint firstItem="khX-30-2iD" firstAttribute="top" secondItem="123-L6-LBd" secondAttribute="top" constant="12.000000000000028" id="Yab-tv-ZIU"/>
+                                                <constraint firstItem="fLC-rg-ZwT" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="khX-30-2iD" secondAttribute="trailing" constant="10" id="civ-qs-Gba"/>
+                                                <constraint firstAttribute="trailing" secondItem="fLC-rg-ZwT" secondAttribute="trailing" constant="16" id="hN9-k4-uf3"/>
+                                                <constraint firstItem="fLC-rg-ZwT" firstAttribute="baseline" secondItem="khX-30-2iD" secondAttribute="baseline" id="qkX-2b-Ptt"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="LKC-i3-umU" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
+                                        <rect key="frame" x="0.0" y="204" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="LKC-i3-umU" id="BGk-qK-rN6">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tx Fail Count" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WuN-Gn-DIv">
+                                                    <rect key="frame" x="16" y="12" width="98.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6PM-0c-oc1">
+                                                    <rect key="frame" x="317" y="12" width="42" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="6PM-0c-oc1" firstAttribute="baseline" secondItem="WuN-Gn-DIv" secondAttribute="baseline" id="1AO-We-2Hy"/>
+                                                <constraint firstAttribute="trailing" secondItem="6PM-0c-oc1" secondAttribute="trailing" constant="16" id="63j-V6-HxD"/>
+                                                <constraint firstItem="WuN-Gn-DIv" firstAttribute="top" secondItem="BGk-qK-rN6" secondAttribute="top" constant="12.000000000000028" id="Kma-m7-W3M"/>
+                                                <constraint firstItem="6PM-0c-oc1" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="WuN-Gn-DIv" secondAttribute="trailing" constant="10" id="ejd-T6-80O"/>
+                                                <constraint firstItem="WuN-Gn-DIv" firstAttribute="leading" secondItem="BGk-qK-rN6" secondAttribute="leading" constant="16" id="lq1-Fa-hol"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="8Fk-wL-zeF" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
+                                        <rect key="frame" x="0.0" y="248" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="8Fk-wL-zeF" id="kZe-aB-DGv">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="IS Success Count" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HSX-SY-VFg">
+                                                    <rect key="frame" x="16" y="12" width="134.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bLj-Jf-m9w">
+                                                    <rect key="frame" x="317" y="12" width="42" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="HSX-SY-VFg" firstAttribute="leading" secondItem="kZe-aB-DGv" secondAttribute="leading" constant="16" id="EnB-zd-0f3"/>
+                                                <constraint firstItem="bLj-Jf-m9w" firstAttribute="baseline" secondItem="HSX-SY-VFg" secondAttribute="baseline" id="SeV-bO-eM5"/>
+                                                <constraint firstItem="HSX-SY-VFg" firstAttribute="top" secondItem="kZe-aB-DGv" secondAttribute="top" constant="12.000000000000028" id="Vjy-H3-LfK"/>
+                                                <constraint firstAttribute="trailing" secondItem="bLj-Jf-m9w" secondAttribute="trailing" constant="16" id="tmt-aS-qm2"/>
+                                                <constraint firstItem="bLj-Jf-m9w" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="HSX-SY-VFg" secondAttribute="trailing" constant="10" id="w5R-xB-v1m"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="8Vo-06-6mV" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
+                                        <rect key="frame" x="0.0" y="292" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="8Vo-06-6mV" id="SQz-OC-4o6">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="IS Fail Count" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Rwy-ky-PMe">
+                                                    <rect key="frame" x="16" y="12" width="95.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OED-Lh-GwO">
+                                                    <rect key="frame" x="317" y="12" width="42" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="trailing" secondItem="OED-Lh-GwO" secondAttribute="trailing" constant="16" id="Ieb-es-wok"/>
+                                                <constraint firstItem="Rwy-ky-PMe" firstAttribute="top" secondItem="SQz-OC-4o6" secondAttribute="top" constant="12.000000000000028" id="MCL-1T-mRW"/>
+                                                <constraint firstItem="OED-Lh-GwO" firstAttribute="baseline" secondItem="Rwy-ky-PMe" secondAttribute="baseline" id="RM8-Ii-7M6"/>
+                                                <constraint firstItem="OED-Lh-GwO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Rwy-ky-PMe" secondAttribute="trailing" constant="10" id="RzU-5B-MMz"/>
+                                                <constraint firstItem="Rwy-ky-PMe" firstAttribute="leading" secondItem="SQz-OC-4o6" secondAttribute="leading" constant="16" id="oNQ-7D-FsO"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="Isf-hF-1w4" userLabel="ProposalAmountCell" customClass="DSAddDevnetIPAddressTableViewCell">
+                                        <rect key="frame" x="0.0" y="336" width="375" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Isf-hF-1w4" id="wj7-nX-eag">
+                                            <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reset Quorums Every" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Pp-jx-w1t">
+                                                    <rect key="frame" x="16" y="12" width="165.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="0" borderStyle="roundedRect" textAlignment="right" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ruR-DU-lwO" userLabel="Amount Text Field">
+                                                    <rect key="frame" x="259" y="7" width="100" height="34"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" priority="900" constant="100" id="ggd-sG-dZC"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="ASCIICapableNumberPad" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                                </textField>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="0Pp-jx-w1t" firstAttribute="top" secondItem="wj7-nX-eag" secondAttribute="top" constant="12.000000000000028" id="RGX-mV-URI"/>
+                                                <constraint firstAttribute="trailing" secondItem="ruR-DU-lwO" secondAttribute="trailing" constant="16" id="dWl-EE-RoS"/>
+                                                <constraint firstItem="0Pp-jx-w1t" firstAttribute="leading" secondItem="wj7-nX-eag" secondAttribute="leading" constant="16" id="ibv-7F-0dJ"/>
+                                                <constraint firstItem="ruR-DU-lwO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="0Pp-jx-w1t" secondAttribute="trailing" constant="10" id="nmd-OT-xi4"/>
+                                                <constraint firstItem="ruR-DU-lwO" firstAttribute="top" secondItem="wj7-nX-eag" secondAttribute="top" constant="7" id="u4s-5A-O18"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="IPAddressTextField" destination="ruR-DU-lwO" id="SXc-33-2Ud"/>
                                         </connections>
                                     </tableViewCell>
                                 </cells>
@@ -208,8 +355,13 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="destinationAccountIdentifierLabel" destination="l9r-Vz-WlH" id="3Px-4u-8t4"/>
+                        <outlet property="failedISCountLabel" destination="OED-Lh-GwO" id="5oh-ZN-ev4"/>
+                        <outlet property="failedTxCountLabel" destination="6PM-0c-oc1" id="WXg-6z-FAg"/>
                         <outlet property="fundingAccountIdentifierLabel" destination="20i-u1-ee7" id="i3A-qS-gvi"/>
+                        <outlet property="resetQuorumsTextField" destination="ruR-DU-lwO" id="6ig-xo-apa"/>
                         <outlet property="startFloodingButton" destination="QaL-iO-hLO" id="by3-kb-2mH"/>
+                        <outlet property="succeededISCountLabel" destination="bLj-Jf-m9w" id="bAy-GB-nji"/>
+                        <outlet property="succeededTxCountLabel" destination="fLC-rg-ZwT" id="lVB-57-89F"/>
                         <outlet property="transactionCountTextField" destination="N64-lR-ztC" id="ELD-Ok-xl6"/>
                     </connections>
                 </tableViewController>

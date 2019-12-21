@@ -85,7 +85,12 @@ static checkpoint testnet_checkpoint_array[] = {
     {       19500, "000000000735c41ba5948fbe6c791d5e28b02e3eff5ea4ac7fecf6d07c488edf", 1546803426, 0x1c0daf28u, "", "" }, //important for testInstantSendReceiveTransaction
     {       28000, "000000000204f318ee830af7416def9e45cef5507401fcc27a9627cbc28bb689", 1547961658, 0x1c0cd81bu, "", "" },
     {       50000, "0000000000d737f4b6f0fcd10ecd2f59e5e4f9409b1afae5fb50604510a2551f", 1550935893, 0x1c00e933u, "", "" },
-    {      100000, "000000008650f09124958e7352f844f9c15705171ac38ee6668534c5c238b916", 1558052383, 0x1d00968du, "", "" }
+    {      100000, "000000008650f09124958e7352f844f9c15705171ac38ee6668534c5c238b916", 1558052383, 0x1d00968du, "", "" },
+    {      122064, "0000000003fa1af7f55b5cde19da8c8fdb024a881a50794cd1c31e0cb4506b3d", 1561126213, 0x1c0c2849u, "", "" }, //for tests
+    {      122088, "0000000007eec28e1459b36de6e54ac81fa2dc2b12a797ac77ee7c7f7a59148f", 1561129080, 0x1c0839adu, "", "" }, //for tests
+    {      122928, "0000000001d975dfc73df9040e894576f27f6c252f1540b1c092c80353cdb823", 1561247926, 0x1c0b30d2u, "", "" }, //for tests
+    {      123000, "000000000577855d5599ce9a89417628233a6ccf3a86b2938b191f3dfed2e63d", 1561258020, 0x1c0d4446u, "", "" }, //for tests
+    {      180000, "000000000175f718920ecebd54765faee973975511415f1dd1ef12194518675b", 1569211090, 0x1c025786u, "", "" }
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they need to be at
@@ -152,7 +157,10 @@ static checkpoint mainnet_checkpoint_array[] = {
     { 1060000, "00000000000000132447e6bac9fe0d7d756851450eab29358787dc05d809bf07", 1556260812, 0x191f6aceu, "", "" },
     { 1080000, "00000000000000099c5cc38bac7878f771408537e520a1ef9e31b5c1040d2d2a", 1559412342, 0x192a9588u, "", "" },
     { 1088640, "00000000000000112e41e4b3afda8b233b8cc07c532d2eac5de097b68358c43e", 1560773201, 0x1922ae0bu, "ML1088640", "379fd491044a273372a8e901866fbe6ed9bab7ce2de0968a71d38de5d5eac340" },
-    { 1100000, "00000000000000190560ed4b128c156e489fdbe0814bf62c8ab53ab3259d7908", 1562561033, 0x191a9f05u, "ML1100000", "b42a23b668751fa8239b736c63c8529ead78df579ed85389f6db7ddbc736fa48" }
+    { 1100000, "00000000000000190560ed4b128c156e489fdbe0814bf62c8ab53ab3259d7908", 1562561033, 0x191a9f05u, "ML1100000", "b42a23b668751fa8239b736c63c8529ead78df579ed85389f6db7ddbc736fa48" },
+    { 1120000, "0000000000000011103eae768e6a322b991c5c20569d95930b87e1305fa19c75", 1565712301, 0x19200768u, "", ""},
+    { 1140000, "00000000000000083ac0e592e180487cb237f659a305d2be19e883ed564fe20f", 1568864488, 0x1923198bu, "", ""},
+    { 1160000, "00000000000000098f985e79ca74ca2cf8c113763f8184011759306945149309", 1572017931, 0x191f3f6eu, "", ""},
 };
 
 #define FEE_PER_BYTE_KEY          @"FEE_PER_BYTE"
@@ -984,6 +992,9 @@ static dispatch_once_t devnetToken = 0;
         
         //we should also add the blockchain user public keys to the filter
         //[allAddresses addObjectsFromArray:[wallet blockchainUserAddresses]];
+        [allAddresses addObjectsFromArray:[wallet providerOwnerAddresses]];
+        [allAddresses addObjectsFromArray:[wallet providerVotingAddresses]];
+        [allAddresses addObjectsFromArray:[wallet providerOperatorAddresses]];
     }
     
     for (DSFundsDerivationPath * derivationPath in self.standaloneDerivationPaths) {
@@ -1244,7 +1255,7 @@ static dispatch_once_t devnetToken = 0;
             self->_blocks[uint256_obj(checkpointHash)] = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                                        merkleRoot:checkpoint.merkleRoot timestamp:checkpoint.timestamp
                                                                                            target:checkpoint.target nonce:0 totalTransactions:0 hashes:nil
-                                                                                            flags:nil height:checkpoint.height];
+                                                                                            flags:nil height:checkpoint.height chainLock:nil];
             self.checkpointsByHeightDictionary[@(checkpoint.height)] = checkpoint;
             self.checkpointsByHashDictionary[uint256_data(checkpointHash)] = checkpoint;
         }
@@ -1316,12 +1327,17 @@ static dispatch_once_t devnetToken = 0;
     
     DSMerkleBlock *b = self.lastBlock;
     
-    while (b && b.height > 0) {
-        if (uint256_eq(b.blockHash, blockhash)) {
-            return b.height;
+    @synchronized (self.blocks) {
+        while (b && b.height > 0) {
+            if (uint256_eq(b.blockHash, blockhash)) {
+                return b.height;
+            }
+            UInt256 prevBlock = b.prevBlock;
+            NSValue * prevBlockValue = uint256_obj(prevBlock);
+            b = self.blocks[prevBlockValue];
         }
-        b = self.blocks[uint256_obj(b.prevBlock)];
     }
+    
     for (DSCheckpoint * checkpoint in self.checkpoints) {
         if (uint256_eq(checkpoint.checkpointHash, blockhash)) {
             return checkpoint.height;
@@ -1333,6 +1349,19 @@ static dispatch_once_t devnetToken = 0;
 
 - (DSMerkleBlock * _Nullable)blockForBlockHash:(UInt256)blockHash {
     return self.blocks[uint256_obj(blockHash)];
+}
+
+-(BOOL)blockHeightChainLocked:(uint32_t)height {
+    DSMerkleBlock *b = self.lastBlock;
+    NSUInteger count = 0;
+    BOOL confirmed = false;
+    while (b && b.height > height) {
+        b = self.blocks[uint256_obj(b.prevBlock)];
+        confirmed |= b.chainLocked;
+        count++;
+    }
+    if (b.height != height) return NO;
+    return confirmed;
 }
 
 - (DSMerkleBlock *)blockAtHeight:(uint32_t)height {
@@ -1384,7 +1413,7 @@ static dispatch_once_t devnetToken = 0;
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                    merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height];
+                                                                       height:self.checkpoints[i].height chainLock:nil];
                     }
                 }
             } else {
@@ -1398,7 +1427,7 @@ static dispatch_once_t devnetToken = 0;
                         _lastBlock = [[DSMerkleBlock alloc] initWithBlockHash:checkpointHash onChain:self version:1 prevBlock:UINT256_ZERO
                                                                    merkleRoot:self.checkpoints[i].merkleRoot timestamp:self.checkpoints[i].timestamp
                                                                        target:self.checkpoints[i].target nonce:0 totalTransactions:0 hashes:nil flags:nil
-                                                                       height:self.checkpoints[i].height];
+                                                                       height:self.checkpoints[i].height chainLock:nil];
                     }
                 }
                 if (_lastBlock) {
@@ -1513,20 +1542,22 @@ static dispatch_once_t devnetToken = 0;
     block.height = prev.height + 1;
     txTime = block.timestamp/2 + prev.timestamp/2;
     
-    if ((block.height % 1000) == 0) { //free up some memory from time to time
-        [self saveBlocks];
-        DSMerkleBlock *b = block;
-        
-        for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
-            b = self.blocks[uint256_obj(b.prevBlock)];
+    @synchronized (self.blocks) {
+        if ((block.height % 1000) == 0) { //free up some memory from time to time
+            [self saveBlocks];
+            DSMerkleBlock *b = block;
+            
+            for (uint32_t i = 0; b && i < LLMQ_KEEP_RECENT_BLOCKS; i++) {
+                b = self.blocks[uint256_obj(b.prevBlock)];
+            }
+            NSMutableArray * blocksToRemove = [NSMutableArray array];
+            while (b) { // free up some memory
+                [blocksToRemove addObject:uint256_obj(b.blockHash)];
+                b = self.blocks[uint256_obj(b.prevBlock)];
+            }
+            [self.blocks removeObjectsForKeys:blocksToRemove];
+            //DSDLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
         }
-        NSMutableArray * blocksToRemove = [NSMutableArray array];
-        while (b) { // free up some memory
-            [blocksToRemove addObject:uint256_obj(b.blockHash)];
-            b = self.blocks[uint256_obj(b.prevBlock)];
-        }
-        [self.blocks removeObjectsForKeys:blocksToRemove];
-        //DSDLog(@"%lu blocks remaining",(unsigned long)[self.blocks count]);
     }
     
     // verify block difficulty if block is past last checkpoint
@@ -1559,8 +1590,9 @@ static dispatch_once_t devnetToken = 0;
         if ((block.height % 500) == 0 || txHashes.count > 0 || block.height > peer.lastblock) {
             DSDLog(@"adding block on %@ at height: %d from peer %@", self.name, block.height,peer.host);
         }
-        
-        self.blocks[blockHash] = block;
+        @synchronized (self.blocks) {
+            self.blocks[blockHash] = block;
+        }
         self.lastBlock = block;
         [self setBlockHeight:block.height andTimestamp:txTime forTxHashes:txHashes];
         peer.currentBlockHeight = block.height; //might be download peer instead
@@ -1572,7 +1604,9 @@ static dispatch_once_t devnetToken = 0;
             DSDLog(@"%@:%d relayed existing block at height %d", peer.host, peer.port, block.height);
         }
         
-        self.blocks[blockHash] = block;
+        @synchronized (self.blocks) {
+            self.blocks[blockHash] = block;
+        }
         
         DSMerkleBlock *b = self.lastBlock;
         
@@ -1599,7 +1633,9 @@ static dispatch_once_t devnetToken = 0;
         }
         
         DSDLog(@"chain fork to height %d", block.height);
-        self.blocks[blockHash] = block;
+        @synchronized (self.blocks) {
+            self.blocks[blockHash] = block;
+        }
         if (block.height <= self.lastBlockHeight) return TRUE; // if fork is shorter than main chain, ignore it for now
         
         NSMutableArray *txHashes = [NSMutableArray array];
@@ -1881,13 +1917,6 @@ static dispatch_once_t devnetToken = 0;
 - (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
-    if (isInstant) {
-        if ([self canUseAutoLocksWithInputCount:inputCount]) {
-            return standardFee;
-        } else {
-            return TX_FEE_PER_INPUT*inputCount;
-        }
-    } else {
         
 #if (!!FEE_PER_KB_URL)
         uint64_t fee = ((size*self.feePerByte + 99)/100)*100; // fee using feePerByte, rounded up to nearest 100 satoshi
@@ -1895,8 +1924,6 @@ static dispatch_once_t devnetToken = 0;
 #else
         return standardFee;
 #endif
-        
-    }
 }
 
 // outputs below this amount are uneconomical due to fees
@@ -1905,18 +1932,6 @@ static dispatch_once_t devnetToken = 0;
     uint64_t amount = (TX_MIN_OUTPUT_AMOUNT*self.feePerByte + MIN_FEE_PER_B - 1)/MIN_FEE_PER_B;
     
     return (amount > TX_MIN_OUTPUT_AMOUNT) ? amount : TX_MIN_OUTPUT_AMOUNT;
-}
-
-- (BOOL)canUseAutoLocksWithInputCount:(NSInteger)inputCount
-{
-    const NSInteger AutoLocksMaximumInputCount = 4;
-    DSSporkManager * sporkManager = [self chainManager].sporkManager;
-    if (sporkManager && [sporkManager instantSendAutoLocks] && inputCount <= AutoLocksMaximumInputCount) {
-        return YES;
-    }
-    else {
-        return NO;
-    }
 }
 
 - (BOOL)isEqual:(id)obj
@@ -2304,7 +2319,7 @@ static dispatch_once_t devnetToken = 0;
     return [[DSMerkleBlock alloc] initWithBlockHash:self.checkpointHash onChain:chain version:1 prevBlock:UINT256_ZERO
                                   merkleRoot:self.merkleRoot timestamp:self.timestamp
                                       target:self.target nonce:0 totalTransactions:0 hashes:nil
-                                       flags:nil height:self.height];
+                                       flags:nil height:self.height chainLock:nil];
 }
 
 -(void)encodeWithCoder:(NSCoder *)aCoder {

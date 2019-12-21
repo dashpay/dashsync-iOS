@@ -33,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, retain) NSOrderedSet<DSTxInputEntity *> *inputs;
 @property (nonatomic, retain) NSOrderedSet<DSTxOutputEntity *> *outputs;
-@property (nonatomic, retain) NSOrderedSet<DSTransactionLockVoteEntity *> *lockVotes;
 @property (nonatomic) int32_t lockTime;
 @property (nonatomic, retain) DSShapeshiftEntity *associatedShapeshift;
 @property (nonatomic, retain) DSChainEntity *chain;

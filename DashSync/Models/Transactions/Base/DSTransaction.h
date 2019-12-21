@@ -63,6 +63,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSArray *outputScripts;
 
 @property (nonatomic, readonly) BOOL instantSendReceived;
+@property (nonatomic, readonly) BOOL confirmed;
 
 @property (nonatomic, readonly) BOOL hasUnverifiedInstantSendLock;
 
@@ -81,6 +82,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSData * payloadDataForHash;
 @property (nonatomic, assign) uint32_t payloadOffset;
 @property (nonatomic, assign) uint32_t blockHeight;
+@property (nonatomic, readonly) uint32_t confirmations;
 @property (nonatomic, assign) NSTimeInterval timestamp; // time interval since 1970
 @property (nonatomic, readonly) size_t size; // size in bytes if signed, or estimated size assuming compact pubkey sigs
 @property (nonatomic, readonly) uint64_t standardFee;
@@ -93,8 +95,6 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
-@property (nonatomic, readonly) NSDictionary<NSValue*,NSArray<DSTransactionLockVote*>*>* transactionLockVotesDictionary;
-@property (nonatomic, readonly) NSArray<DSTransactionLockVote*>* transactionLockVotes;
 @property (nonatomic, readonly) Class entityClass;
 
 @property (nonatomic, readonly) BOOL transactionTypeRequiresInputs;
@@ -142,8 +142,6 @@ sequence:(uint32_t)sequence;
 - (BOOL)saveInitial; //returns if the save took place
 
 //instant send
-
--(void)setInstantSendReceivedWithTransactionLockVotes:(NSMutableDictionary<NSValue*, NSArray<DSTransactionLockVote *> *> *)transactionLockVotes;
 
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
 

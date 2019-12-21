@@ -14,19 +14,24 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Based on https://github.com/gangverk/GVUserDefaults
-//
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSDynamicOptions : NSObject
+@class DSPassphraseChildViewController;
 
-- (instancetype)initWithDefaults:(NSDictionary<NSString *, id> *_Nullable)defaults NS_DESIGNATED_INITIALIZER;
+@protocol DSPassphraseChildViewControllerDelegate <NSObject>
 
-- (NSUserDefaults *)userDefaults;
-- (NSString *)defaultsKeyForPropertyName:(NSString *)propertyName;
+- (void)passphraseChildViewControllerDidVerifySeedPhrase:(DSPassphraseChildViewController *)controller;
+
+@end
+
+@interface DSPassphraseChildViewController : UIViewController
+
+@property (nullable, nonatomic, weak) id<DSPassphraseChildViewControllerDelegate> delegate;
+
+- (void)verifySeedPharse;
 
 @end
 

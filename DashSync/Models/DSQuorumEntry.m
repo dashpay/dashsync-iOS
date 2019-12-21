@@ -39,6 +39,36 @@
 
 @implementation DSQuorumEntry
 
+- (id)copyWithZone:(NSZone *)zone
+{
+    DSQuorumEntry * copy = [[[self class] alloc] init];
+
+    if (copy) {
+        // Copy NSObject subclasses
+        [copy setSignersBitset:self.signersBitset];
+        [copy setValidMembersBitset:self.validMembersBitset];
+
+        // Set primitives
+        [copy setVersion:self.version];
+        [copy setQuorumHash:self.quorumHash];
+        [copy setQuorumPublicKey:self.quorumPublicKey];
+        [copy setQuorumThresholdSignature:self.quorumThresholdSignature];
+        [copy setQuorumVerificationVectorHash:self.quorumVerificationVectorHash];
+        [copy setAllCommitmentAggregatedSignature:self.allCommitmentAggregatedSignature];
+        [copy setSignersCount:self.signersCount];
+        [copy setLlmqType:self.llmqType];
+        [copy setValidMembersCount:self.validMembersCount];
+        [copy setQuorumEntryHash:self.quorumEntryHash];
+        [copy setCommitmentHash:self.commitmentHash];
+        [copy setLength:self.length];
+        
+        [copy setChain:self.chain];
+        
+        
+    }
+
+    return copy;
+}
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain {
     return [[DSQuorumEntry alloc] initWithMessage:data dataOffset:dataOffset
@@ -120,6 +150,7 @@
     self.quorumEntryHash = commitmentHash;
     self.verified = verified;
     self.chain = chain;
+    self.saved = TRUE;
     
     return self;
 }
@@ -257,9 +288,9 @@
     return [DSQuorumEntryEntity anyObjectMatching:@"quorumPublicKeyData == %@",uint384_data(self.quorumPublicKey)];
 }
 
-- (UInt256)orderingHashForRequestID:(UInt256)requestID {
+- (UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType {
     NSMutableData * data = [NSMutableData data];
-    [data appendVarInt:1];
+    [data appendVarInt:quorumType];
     [data appendUInt256:self.quorumHash];
     [data appendUInt256:requestID];
     return [data SHA256_2];
@@ -282,6 +313,14 @@
     }
 }
 
++(DSLLMQType)chainLockQuorumTypeForChain:(DSChain*)chain {
+    if ([chain isMainnet]) {
+        return DSLLMQType_400_60;
+    } else {
+        return DSLLMQType_50_60;
+    }
+}
+
 -(NSString*)description {
     uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
     return [[super description] stringByAppendingString:[NSString stringWithFormat:@" - %u",height]];
@@ -290,6 +329,16 @@
 -(NSString*)debugDescription {
     uint32_t height = [self.chain heightForBlockHash:self.quorumHash];
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" - %u",height]];
+}
+
+-(BOOL)isEqual:(id)object {
+    if (self == object) return YES;
+    if (![object isKindOfClass:[DSQuorumEntry class]]) return NO;
+    return uint256_eq(self.quorumEntryHash, ((DSQuorumEntry*)object).quorumEntryHash);
+}
+
+-(NSUInteger)hash {
+    return [uint256_data(self.quorumEntryHash) hash];
 }
 
 @end

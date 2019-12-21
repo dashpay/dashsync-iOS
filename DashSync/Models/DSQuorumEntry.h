@@ -19,7 +19,7 @@ typedef NS_ENUM(uint16_t, DSLLMQType) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSQuorumEntry : NSObject
+@interface DSQuorumEntry : NSObject <NSCopying>
 
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) UInt256 quorumHash;
@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt256 quorumEntryHash;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) BOOL verified;
+@property (nonatomic, assign) BOOL saved;
 @property (nonatomic, readonly) DSQuorumEntryEntity * matchingQuorumEntryEntity;
 
 +(instancetype)potentialQuorumEntryWithData:(NSData*)data dataOffset:(uint32_t)dataOffset onChain:(DSChain*)chain;
@@ -46,9 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(instancetype)initWithVersion:(uint16_t)version type:(DSLLMQType)type quorumHash:(UInt256)quorumHash quorumPublicKey:(UInt384)quorumPublicKey commitmentHash:(UInt256)commitmentHash verified:(BOOL)verified onChain:(DSChain*)chain;
 
--(UInt256)orderingHashForRequestID:(UInt256)requestID;
+-(UInt256)orderingHashForRequestID:(UInt256)requestID forQuorumType:(DSLLMQType)quorumType;
 
 +(uint32_t)quorumSizeForType:(DSLLMQType)type;
+
++(DSLLMQType)chainLockQuorumTypeForChain:(DSChain*)chain;
 
 @end
 

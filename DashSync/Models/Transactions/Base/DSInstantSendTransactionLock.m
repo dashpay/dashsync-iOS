@@ -20,6 +20,7 @@
 #import "NSManagedObject+Sugar.h"
 #import "DSBLSKey.h"
 #import "DSQuorumEntry.h"
+#import "DSMasternodeList.h"
 
 @interface DSInstantSendTransactionLock()
 
@@ -133,28 +134,57 @@
     return [data SHA256_2];
 }
 
+-(BOOL)verifySignatureAgainstQuorum:(DSQuorumEntry*)quorumEntry {
+    UInt384 publicKey = quorumEntry.quorumPublicKey;
+    DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
+    UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
+    DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@ against quorum %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString,quorumEntry);
+    return [blsKey verify:signId signature:self.signature];
+}
+
+-(DSQuorumEntry*)findSigningQuorumReturnMasternodeList:(DSMasternodeList**)returnMasternodeList {
+    DSQuorumEntry * foundQuorum = nil;
+    for (DSMasternodeList * masternodeList in self.chain.chainManager.masternodeManager.recentMasternodeLists) {
+        for (DSQuorumEntry * quorumEntry in [[masternodeList quorumsOfType:DSLLMQType_50_60] allValues]) {
+            BOOL signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
+            if (signatureVerified) {
+                foundQuorum = quorumEntry;
+                if (returnMasternodeList) *returnMasternodeList = masternodeList;
+                break;
+            }
+        }
+        if (foundQuorum) break;
+    }
+    return foundQuorum;
+}
+
 - (BOOL)verifySignatureWithQuorumOffset:(uint32_t)offset {
     DSQuorumEntry * quorumEntry = [self.chain.chainManager.masternodeManager quorumEntryForInstantSendRequestID:[self requestID] withBlockHeightOffset:offset];
     if (quorumEntry && quorumEntry.verified) {
-        UInt384 publicKey = quorumEntry.quorumPublicKey;
-        DSBLSKey * blsKey = [DSBLSKey blsKeyWithPublicKey:publicKey onChain:self.chain];
-        UInt256 signId = [self signIDForQuorumEntry:quorumEntry];
-        DSDLog(@"verifying signature %@ with public key %@ for transaction hash %@",[NSData dataWithUInt768:self.signature].hexString, [NSData dataWithUInt384:publicKey].hexString, [NSData dataWithUInt256:self.transactionHash].hexString);
-        self.signatureVerified = [blsKey verify:signId signature:self.signature];
+        self.signatureVerified = [self verifySignatureAgainstQuorum:quorumEntry];
+        if (!self.signatureVerified) {
+            DSDLog(@"unable to verify IS signature with offset %d",offset);
+        } else {
+            DSDLog(@"IS signature verified with offset %d",offset);
+        }
+        
     } else if (quorumEntry) {
-        DSDLog(@"quorum entry found but is not yet verified");
+        DSDLog(@"quorum entry %@ found but is not yet verified",uint256_hex(quorumEntry.quorumHash));
     } else {
         DSDLog(@"no quorum entry found");
     }
     if (self.signatureVerified) {
         self.intendedQuorum = quorumEntry;
-    } else if (offset == 8) {
+    } else if (quorumEntry.verified && offset == 8) {
         //try again a few blocks more in the past
-        return [self verifySignatureWithQuorumOffset:16];
-    }  else if (offset == 12) {
-        //try again a few blocks more in the future
+        DSDLog(@"trying with offset 0");
         return [self verifySignatureWithQuorumOffset:0];
+    }  else if (quorumEntry.verified && offset == 0) {
+        //try again a few blocks more in the future
+        DSDLog(@"trying with offset 16");
+        return [self verifySignatureWithQuorumOffset:16];
     }
+    DSDLog(@"returning signature verified %d with offset %d",self.signatureVerified,offset);
     return self.signatureVerified;
 }
 

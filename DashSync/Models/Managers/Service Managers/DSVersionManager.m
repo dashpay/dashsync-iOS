@@ -10,7 +10,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSWallet.h"
 #import "DSAccount.h"
-#import "DSAuthenticationManager+Private.h"
+#import "DSAuthenticationManager+UpdateSecureTime.h"
 #import "DSBIP39Mnemonic.h"
 #import "DSChainsManager.h"
 #import "NSMutableData+Dash.h"
@@ -67,9 +67,8 @@
 }
 
 //there was an issue with extended public keys on version 0.7.6 and before, this fixes that
-- (void)upgradeVersion1ExtendedKeysForWallet:(DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
+- (void)upgradeVersion1ExtendedKeysForWallet:(nullable DSWallet*)wallet chain:(DSChain *)chain withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
 {
-    NSParameterAssert(wallet);
     NSParameterAssert(chain);
     NSParameterAssert(message);
     NSParameterAssert(completion);
@@ -117,7 +116,7 @@
         }
         
         //upgrade scenario
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:message andTouchId:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:message usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
             if (!authenticated) {
                 completion(NO,YES,NO,cancelled);
                 return;
@@ -159,7 +158,7 @@
     }
 }
 
-//there was an issue with extended public keys on version 0.7.6 and before, this fixes that
+// upgrades extended keys for new/existing derivation paths
 - (void)upgradeExtendedKeysForWallets:(NSArray*)wallets withMessage:(NSString*)message withCompletion:(UpgradeCompletionBlock)completion
 {
     NSParameterAssert(wallets);

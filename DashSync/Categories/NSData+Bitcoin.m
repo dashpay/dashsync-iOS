@@ -1223,12 +1223,6 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     }
 }
 
-- (UInt256)hashAtOffset:(NSUInteger)offset
-{
-    if (self.length < offset + sizeof(UInt256)) return UINT256_ZERO;
-    return *(const UInt256 *)((const char *)self.bytes + offset);
-}
-
 -(DSUTXO)transactionOutpointAtOffset:(NSUInteger)offset
 {
     if (self.length < offset + sizeof(DSUTXO)) return DSUTXO_ZERO;
@@ -1410,6 +1404,14 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 - (BOOL)bitIsTrueAtIndex:(uint32_t)index {
     uint32_t offset = index / 8;
     uint32_t bitPosition = index % 8;
+    uint8_t bits = [self UInt8AtOffset:offset];
+    BOOL bitIsSet = ((bits >> bitPosition) & 1);
+    return bitIsSet;
+}
+
+- (BOOL)bitIsTrueAtLeftToRightIndex:(uint32_t)index {
+    uint32_t offset = index / 8;
+    uint32_t bitPosition = 7 - (index % 8);
     uint8_t bits = [self UInt8AtOffset:offset];
     BOOL bitIsSet = ((bits >> bitPosition) & 1);
     return bitIsSet;

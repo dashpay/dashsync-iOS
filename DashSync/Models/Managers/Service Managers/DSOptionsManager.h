@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSDynamicOptions.h"
+#import <DSDynamicOptions/DSDynamicOptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
