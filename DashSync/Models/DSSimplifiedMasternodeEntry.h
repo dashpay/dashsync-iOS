@@ -17,10 +17,14 @@
 @property(nonatomic,readonly) UInt256 confirmedHashHashedWithProviderRegistrationTransactionHash;
 @property(nonatomic,readonly) UInt128 address;
 @property(nonatomic,readonly) NSString * host;
+@property(nonatomic,readonly) NSNumber * ipAddressNumber;
+@property(nonatomic,readonly) NSNumber * ipAddressIsValidIPV4;
 @property(nonatomic,readonly) NSString * ipAddressString;
 @property(nonatomic,readonly) uint16_t port;
 @property(nonatomic,readonly) NSString * portString;
 @property(nonatomic,readonly) NSString * validString;
+@property(nonatomic,readonly) NSString * validLowercaseString;
+@property(nonatomic,readonly) NSString * validUppercaseString;
 @property(nonatomic,readonly) UInt384 operatorPublicKey;
 @property(nonatomic,readonly) NSDictionary * previousOperatorPublicKeys;
 @property(nonatomic,readonly) NSDictionary * previousSimplifiedMasternodeEntryHashes;

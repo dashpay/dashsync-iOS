@@ -23,6 +23,7 @@ typedef NS_ENUM(NSUInteger, DSLocalMasternodeStatus) {
 @property(nonatomic,readonly) NSString * name;
 @property(nonatomic,readonly) UInt128 ipAddress;
 @property(nonatomic,readonly) NSString * ipAddressString;
+@property(nonatomic,readonly) NSNumber * ipAddressNumber;
 @property(nonatomic,readonly) NSString * ipAddressAndPortString;
 @property(nonatomic,readonly) NSString * ipAddressAndIfNonstandardPortString;
 @property(nonatomic,readonly) uint16_t port;

@@ -37,6 +37,8 @@
 @property(nonatomic,assign) BOOL isValid;
 @property(nonatomic,strong) DSChain * chain;
 @property(null_resettable, nonatomic, copy) NSString * host;
+@property(null_resettable, nonatomic, copy) NSNumber * ipAddressNumber;
+@property(null_resettable, nonatomic, copy) NSNumber * ipAddressIsValidIPV4;
 @property(null_resettable, nonatomic, copy) NSString * ipAddressString;
 @property(null_resettable, nonatomic, copy) NSString * portString;
 @property(nonatomic,strong) DSBLSKey * operatorPublicBLSKey;
@@ -318,6 +320,23 @@
     return _host;
 }
 
+-(NSNumber*)ipAddressIsValidIPV4 {
+    if (_ipAddressIsValidIPV4) return _ipAddressIsValidIPV4;
+    if (_address.u64[0] == 0 && _address.u32[2] == CFSwapInt32HostToBig(0xffff)) {
+        _ipAddressIsValidIPV4 = @(YES);
+    }
+    else {
+        _ipAddressIsValidIPV4 = @(NO);
+    }
+    return _ipAddressIsValidIPV4;
+}
+
+-(NSNumber*)ipAddressNumber {
+    if (_ipAddressNumber) return _ipAddressNumber;
+    _ipAddressNumber = [NSNumber numberWithUnsignedInt:CFSwapInt32BigToHost(_address.u32[3])];
+    return _ipAddressNumber;
+}
+
 -(NSString*)ipAddressString {
     if (_ipAddressString) return _ipAddressString;
     char s[INET6_ADDRSTRLEN];
@@ -338,7 +357,15 @@
 }
 
 -(NSString*)validString {
-    return self.isValid?DSLocalizedString(@"Up", nil):DSLocalizedString(@"Down", nil);
+    return self.isValid?DSLocalizedString(@"Valid", nil):DSLocalizedString(@"Banned", nil);
+}
+
+-(NSString*)validLowercaseString {
+    return self.isValid?DSLocalizedString(@"valid", nil):DSLocalizedString(@"banned", nil);
+}
+
+-(NSString*)validUppercaseString {
+    return self.isValid?DSLocalizedString(@"VALID", nil):DSLocalizedString(@"BANNED", nil);
 }
 
 -(NSString*)uniqueID {

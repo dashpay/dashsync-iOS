@@ -203,6 +203,10 @@
     return nil;
 }
 
+-(NSNumber*)ipAddressNumber {
+    return [NSNumber numberWithInt:self.ipAddress.u32[3]];
+}
+
 -(NSString*)ipAddressString {
     char s[INET6_ADDRSTRLEN];
     NSString * ipAddressString = @(inet_ntop(AF_INET, &self.ipAddress.u32[3], s, sizeof(s)));
