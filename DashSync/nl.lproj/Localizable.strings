@@ -36,76 +36,76 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "weet je zeker dat je deze masternode wilt updaten om uit te laten betalen aan%@?";
 
 /* No comment provided by engineer. */
-"Bad password, try again" = "Bad password, try again";
+"Bad password, try again" = "Verkeerd wachtwoord, probeer opnieuw";
 
 /* No comment provided by engineer. */
-"Bad payment request" = "Bad payment request";
+"Bad payment request" = "Ongeldig betalingsverzoek";
 
 /* No comment provided by engineer. */
-"Bad payment request URL" = "Bad payment request URL";
+"Bad payment request URL" = "Ongeldige betalingsverzoek-URL";
 
 /* No comment provided by engineer. */
-"Bad payment URL" = "Bad payment URL";
+"Bad payment URL" = "Ongeldige betalings-URL";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Annuleer";
 
 /* No comment provided by engineer. */
 "Confirm" = "Bevestig";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Bevestig pin";
 
 /* No comment provided by engineer. */
-"Connect timeout" = "Connect timeout";
+"Connect timeout" = "Verbindingtime-out";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "Kon betaling niet maken";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "Dash-betalingen mogen niet kleiner zijn dan %@";
 
 /* No comment provided by engineer. */
-"Dash transaction not signed" = "Dash transaction not signed";
+"Dash transaction not signed" = "Dash-transactie is niet ondertekend";
 
 /* No comment provided by engineer. */
-"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
+"Dash transaction outputs can't be less than %@" = "Dash-transactieoutputs mogen niet minder zijn dan %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"Double spend" = "Double spend";
+"Double spend" = "Dubbel uitgegeven";
 
 /* No comment provided by engineer. */
 "Down" = "Down";
 
 /* No comment provided by engineer. */
-"Enter old PIN" = "Enter old PIN";
+"Enter old PIN" = "Voer oude pin in";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Fout van server voor betalingsverzoeken %@";
 
 /* No comment provided by engineer. */
-"Error signing dash transaction" = "Error signing dash transaction";
+"Error signing dash transaction" = "Fout bij ondertekenen dash-transactie";
 
 /* No comment provided by engineer. */
-"Error signing transaction" = "Error signing transaction";
+"Error signing transaction" = "Fout bij ondertekenen transactie";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"Ignore" = "Negeer";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instant payment";
+"Instant payment" = "Instantane betaling";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
 
 /* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
+"Insufficient funds" = "Ontoereikende fondsen";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for dash network fee" = "Onvoldoende fondsen voor transactiekosten dash-netwek";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Interne fout";
@@ -126,103 +126,103 @@
 "Method Not Found" = "Methode niet gevonden";
 
 /* No comment provided by engineer. */
-"Missing certificate" = "Missing certificate";
+"Missing certificate" = "Ontbrekend certificaat";
 
 /* No comment provided by engineer. */
-"No attempts remaining" = "No attempts remaining";
+"No attempts remaining" = "Geen resterende pogingen";
 
 /* No comment provided by engineer. */
-"No peers found" = "No peers found";
+"No peers found" = "Er zijn geen peers gevonden";
 
 /* No comment provided by engineer. */
-"Not a valid private key" = "Not a valid private key";
+"Not a valid private key" = "Geen geldige privésleutel";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Not connected to the dash network";
+"Not connected to the dash network" = "Niet verbonden met dash-netwerk";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "Oké";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Parserfout";
 
 /* No comment provided by engineer. */
-"Passcode" = "Passcode";
+"Passcode" = "Pascode";
 
 /* No comment provided by engineer. */
-"Password" = "Password";
+"Password" = "Wachtwoord";
 
 /* No comment provided by engineer. */
-"Password protected key" = "Password protected key";
+"Password protected key" = "Sleutel is met wachtwoord beveiligd";
 
 /* No comment provided by engineer. */
-"Payee identity isn't certified" = "Payee identity isn't certified";
+"Payee identity isn't certified" = "Identiteit ontvanger is niet gecertificeerd";
 
 /* No comment provided by engineer. */
-"PIN for %@" = "PIN for %@";
+"PIN for %@" = "Pin voor %@";
 
 /* No comment provided by engineer. */
-"Recovery phrase" = "Recovery phrase";
+"Recovery phrase" = "Hersetlzin";
 
 /* No comment provided by engineer. */
-"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
+"Reduce payment amount by\n%@ (%@)?" = "Verminder te betalen bedrag met\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"Request expired" = "Request expired";
+"Request expired" = "Verzoek is verlopen";
 
 /* No comment provided by engineer. */
-"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
+"Requested network \"%@\" not currently in use" = "Gevraagde netwerk \"%@\" is momenteel niet in gebruik";
 
 /* No comment provided by engineer. */
-"Rescan" = "Rescan";
+"Rescan" = "Herscan";
 
 /* No comment provided by engineer. */
 "Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "Probeer opnieuw";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "Verstuur";
 
 /* No comment provided by engineer. */
 "Server Error" = "Serverfout";
 
 /* No comment provided by engineer. */
-"Set PIN" = "Set PIN";
+"Set PIN" = "Stel pin in";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"This payment address is already in your wallet" = "This payment address is already in your wallet";
+"This payment address is already in your wallet" = "Dit betalingsadres zit al in je portemonnee";
 
 /* No comment provided by engineer. */
-"This private key is already in your wallet" = "This private key is already in your wallet";
+"This private key is already in your wallet" = "Deze privésleutel zit al in je portemonnee";
 
 /* No comment provided by engineer. */
-"This private key is empty" = "This private key is empty";
+"This private key is empty" = "De privésleutel is leeg";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
 
 /* No comment provided by engineer. */
-"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
+"Transaction canceled, network timeout" = "Transactie is geannuleerd, netwerktime-out";
 
 /* No comment provided by engineer. */
-"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transactiekosten zijn meer dan de fondsen die beschikbaar zijn op deze privésleutel (vanwege kleine \"stof\"-stortingen)";
 
 /* No comment provided by engineer. */
-"Transaction rejected" = "Transaction rejected";
+"Transaction rejected" = "Transactie is geweigerd";
 
 /* No comment provided by engineer. */
-"Try again in %@" = "Try again in %@";
+"Try again in %@" = "Probeer opnieuw over %@";
 
 /* No comment provided by engineer. */
-"Unexpected response from %@" = "Unexpected response from %@";
+"Unexpected response from %@" = "Onverwacht response van %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "unknown address";
+"unknown address" = "onbekend adres";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Onbekende fout";
@@ -231,13 +231,13 @@
 "Unknown JSON-RPC Response" = "Onbekend JSON-RPC-respons";
 
 /* No comment provided by engineer. */
-"Unrecognized address" = "Unrecognized address";
+"Unrecognized address" = "Onherkenbaar adres";
 
 /* No comment provided by engineer. */
-"Unsupported signature type" = "Unsupported signature type";
+"Unsupported signature type" = "Niet-ondersteund handtekeningtype";
 
 /* No comment provided by engineer. */
-"Untrusted certificate" = "Untrusted certificate";
+"Untrusted certificate" = "Onvertrouwd certificaat";
 
 /* No comment provided by engineer. */
 "Up" = "Up";
@@ -246,13 +246,13 @@
 "Updating Price" = "Bezig met bijwerken van prijs";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "Portemonnee is uitgeschakeld";
 
 /* No comment provided by engineer. */
 "WARNING" = "WAARSCHUWING";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"Wipe" = "Wis";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Je portemonnee is mogelijk niet gesynchroniseerd.\nDit kan vaak worden opgelost door de blockchain opnieuw te scannen.";
