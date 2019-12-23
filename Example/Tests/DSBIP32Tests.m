@@ -402,7 +402,7 @@
     
     DSDerivationPath * masterContactsDerivationPath = [account masterContactsDerivationPath];
     
-    DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainUserRegistrationTransactionHash:destinationUser2 sourceBlockchainUserRegistrationTransactionHash:sourceUser1 forAccountNumber:0 onChain:self.chain];
+    DSIncomingFundsDerivationPath * incomingFundsDerivationPath = [DSIncomingFundsDerivationPath contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:destinationUser2 sourceBlockchainIdentityRegistrationTransactionHash:sourceUser1 forAccountNumber:0 onChain:self.chain];
     
     incomingFundsDerivationPath.account = account;
     

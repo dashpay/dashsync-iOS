@@ -10,11 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChainManager, DSBlockchainUser;
+@class DSChainManager, DSBlockchainIdentity;
 
 @interface DSContactsNavigationController : UINavigationController
 
-+ (instancetype)controllerWithChainManager:(DSChainManager *)chainManager blockchainUser:(DSBlockchainUser *)blockchainUser;
++ (instancetype)controllerWithChainManager:(DSChainManager *)chainManager blockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
 
 @end
 

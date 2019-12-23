@@ -25,21 +25,21 @@ static NSString * const CellId = @"CellId";
     
 }
 
-- (void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
-    _blockchainUser = blockchainUser;
+- (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    _blockchainIdentity = blockchainIdentity;
     
-    self.title = blockchainUser.username;
+    self.title = blockchainIdentity.username;
 }
 
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser fetchIncomingContactRequests:^(BOOL success) {
+    [self.blockchainIdentity fetchIncomingContactRequests:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        [self.blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
+        [self.blockchainIdentity fetchOutgoingContactRequests:^(BOOL success) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -55,7 +55,7 @@ static NSString * const CellId = @"CellId";
 }
 
 -(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"ANY friends == %@",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"ANY friends == %@",self.blockchainIdentity.ownContact];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -89,7 +89,7 @@ static NSString * const CellId = @"CellId";
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     NSIndexPath * selectedIndex = self.tableView.indexPathForSelectedRow;
     DSContactEntity * friend = [self.fetchedResultsController objectAtIndexPath:selectedIndex];
-    DSContactEntity * me = self.blockchainUser.ownContact;
+    DSContactEntity * me = self.blockchainIdentity.ownContact;
     DSFriendRequestEntity * meToFriend = [[me.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact == %@",friend]] anyObject];
     DSFriendRequestEntity * friendToMe = [[me.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",friend]] anyObject];
     if ([segue.identifier isEqualToString:@"ContactTransactionsSegue"]) {
@@ -99,15 +99,15 @@ static NSString * const CellId = @"CellId";
             if ([controller isKindOfClass:[DSContactReceivedTransactionsTableViewController class]]) {
                 DSContactReceivedTransactionsTableViewController *receivedTransactionsController = (DSContactReceivedTransactionsTableViewController *)controller;
                 receivedTransactionsController.chainManager = self.chainManager;
-                receivedTransactionsController.blockchainUser = self.blockchainUser;
+                receivedTransactionsController.blockchainIdentity = self.blockchainIdentity;
                 receivedTransactionsController.friendRequest = meToFriend;
             } else if ([controller isKindOfClass:[DSContactSentTransactionsTableViewController class]]) {
                 DSContactSentTransactionsTableViewController *sentTransactionsController = (DSContactSentTransactionsTableViewController *)controller;
                 sentTransactionsController.chainManager = self.chainManager;
-                sentTransactionsController.blockchainUser = self.blockchainUser;
+                sentTransactionsController.blockchainIdentity = self.blockchainIdentity;
                 sentTransactionsController.friendRequest = friendToMe;
             } else if ([controller isKindOfClass:[DSContactSendDashViewController class]]) {
-                ((DSContactSendDashViewController*)controller).blockchainUser = self.blockchainUser;
+                ((DSContactSendDashViewController*)controller).blockchainIdentity = self.blockchainIdentity;
                 ((DSContactSendDashViewController*)controller).contact = friend;
             }
         }

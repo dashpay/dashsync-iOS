@@ -72,9 +72,9 @@
 		FB0F15A521049432000272E6 /* DSTransactionStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A421049432000272E6 /* DSTransactionStatusTableViewCell.m */; };
 		FB0F15A821049505000272E6 /* DSTransactionAmountTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */; };
 		FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */; };
-		FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15B621090445000272E6 /* DSBlockchainUsersViewController.m */; };
-		FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */; };
-		FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15C0210ACD52000272E6 /* DSCreateBlockchainUserViewController.m */; };
+		FB0F15B721090445000272E6 /* DSBlockchainIdentitiesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15B621090445000272E6 /* DSBlockchainIdentitiesViewController.m */; };
+		FB0F15BE210A0208000272E6 /* DSBlockchainIdentityTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15BD210A0208000272E6 /* DSBlockchainIdentityTableViewCell.m */; };
+		FB0F15C1210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15C0210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.m */; };
 		FB0F15C4210AD9A1000272E6 /* DSWalletChooserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0F15C3210AD9A0000272E6 /* DSWalletChooserViewController.m */; };
 		FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE220CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m */; };
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
@@ -188,7 +188,7 @@
 		FB9A106C20D8362F006883E2 /* DSKeyValueTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106B20D8362F006883E2 /* DSKeyValueTableViewCell.m */; };
 		FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */; };
 		FB9A107220D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */; };
-		FBA676322235A7920069EC2F /* BlockchainUsers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */; };
+		FBA676322235A7920069EC2F /* BlockchainIdentities.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */; };
 		FBA676342235A9620069EC2F /* Helpers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676332235A9620069EC2F /* Helpers.storyboard */; };
 		FBA676362235AD090069EC2F /* Governance.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FBA676352235AD090069EC2F /* Governance.storyboard */; };
 		FBA676392235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBA676382235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.m */; };
@@ -210,12 +210,12 @@
 		FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D728221DF9390021764A /* DSUpdateMasternodeServiceViewController.m */; };
 		FBB5D73C221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */; };
 		FBBDF423226B6E770081D673 /* DSBigNumberTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF422226B6E770081D673 /* DSBigNumberTests.m */; };
-		FBBDF426226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */; };
+		FBBDF426226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF425226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m */; };
 		FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */; };
 		FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */; };
 		FBD696EC2291A1800012FF51 /* DSDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD696EB2291A1800012FF51 /* DSDataTests.m */; };
-		FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */; };
-		FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */; };
+		FBD967A72125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A62125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m */; };
+		FBD967AA212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967A9212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m */; };
 		FBD967AD21270DD6005CBE0B /* DSUsernameTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */; };
 		FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */; };
 		FBE155FB22B931FA009CA817 /* DSMasternodeListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE155FA22B931FA009CA817 /* DSMasternodeListsViewController.m */; };
@@ -386,12 +386,12 @@
 		FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionAmountTableViewCell.m; sourceTree = "<group>"; };
 		FB0F15A921049598000272E6 /* DSTransactionIdentifierTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransactionIdentifierTableViewCell.h; sourceTree = "<group>"; };
 		FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransactionIdentifierTableViewCell.m; sourceTree = "<group>"; };
-		FB0F15B521090445000272E6 /* DSBlockchainUsersViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUsersViewController.h; sourceTree = "<group>"; };
-		FB0F15B621090445000272E6 /* DSBlockchainUsersViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUsersViewController.m; sourceTree = "<group>"; };
-		FB0F15BC210A0208000272E6 /* DSBlockchainUserTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserTableViewCell.h; sourceTree = "<group>"; };
-		FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserTableViewCell.m; sourceTree = "<group>"; };
-		FB0F15BF210ACD52000272E6 /* DSCreateBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSCreateBlockchainUserViewController.h; sourceTree = "<group>"; };
-		FB0F15C0210ACD52000272E6 /* DSCreateBlockchainUserViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCreateBlockchainUserViewController.m; sourceTree = "<group>"; };
+		FB0F15B521090445000272E6 /* DSBlockchainIdentitiesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentitiesViewController.h; sourceTree = "<group>"; };
+		FB0F15B621090445000272E6 /* DSBlockchainIdentitiesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentitiesViewController.m; sourceTree = "<group>"; };
+		FB0F15BC210A0208000272E6 /* DSBlockchainIdentityTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityTableViewCell.h; sourceTree = "<group>"; };
+		FB0F15BD210A0208000272E6 /* DSBlockchainIdentityTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityTableViewCell.m; sourceTree = "<group>"; };
+		FB0F15BF210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSCreateBlockchainIdentityViewController.h; sourceTree = "<group>"; };
+		FB0F15C0210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSCreateBlockchainIdentityViewController.m; sourceTree = "<group>"; };
 		FB0F15C2210AD9A0000272E6 /* DSWalletChooserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSWalletChooserViewController.h; sourceTree = "<group>"; };
 		FB0F15C3210AD9A0000272E6 /* DSWalletChooserViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSWalletChooserViewController.m; sourceTree = "<group>"; };
 		FB12FEE120CD3BD100C1E0F0 /* DSMasternodeTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSMasternodeTableViewCell.h; sourceTree = "<group>"; };
@@ -557,7 +557,7 @@
 		FB9A106E20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetIPAddressTableViewCell.m; sourceTree = "<group>"; };
 		FB9A107020D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAddDevnetAddIPAddressTableViewCell.h; sourceTree = "<group>"; };
 		FB9A107120D836BB006883E2 /* DSAddDevnetAddIPAddressTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSAddDevnetAddIPAddressTableViewCell.m; sourceTree = "<group>"; };
-		FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainUsers.storyboard; sourceTree = "<group>"; };
+		FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BlockchainIdentities.storyboard; sourceTree = "<group>"; };
 		FBA676332235A9620069EC2F /* Helpers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Helpers.storyboard; sourceTree = "<group>"; };
 		FBA676352235AD090069EC2F /* Governance.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Governance.storyboard; sourceTree = "<group>"; };
 		FBA676372235CE0C0069EC2F /* DSAuthenticationKeysDerivationPathsAddressesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSAuthenticationKeysDerivationPathsAddressesViewController.h; sourceTree = "<group>"; };
@@ -595,17 +595,17 @@
 		FBB5D73A221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUpdateMasternodeRegistrarViewController.h; sourceTree = "<group>"; };
 		FBB5D73B221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUpdateMasternodeRegistrarViewController.m; sourceTree = "<group>"; };
 		FBBDF422226B6E770081D673 /* DSBigNumberTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBigNumberTests.m; sourceTree = "<group>"; };
-		FBBDF424226C843C0081D673 /* DSBlockchainUserTransitionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserTransitionsViewController.h; sourceTree = "<group>"; };
-		FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserTransitionsViewController.m; sourceTree = "<group>"; };
+		FBBDF424226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityTransitionsViewController.h; sourceTree = "<group>"; };
+		FBBDF425226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityTransitionsViewController.m; sourceTree = "<group>"; };
 		FBBDF427226C8ECA0081D673 /* DSTransitionTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTransitionTableViewCell.h; sourceTree = "<group>"; };
 		FBBDF428226C8ECA0081D673 /* DSTransitionTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransitionTableViewCell.m; sourceTree = "<group>"; };
 		FBBDF42A226EDF600081D673 /* DSContactTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSContactTableViewCell.h; sourceTree = "<group>"; };
 		FBBDF42B226EDF600081D673 /* DSContactTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSContactTableViewCell.m; sourceTree = "<group>"; };
 		FBD696EB2291A1800012FF51 /* DSDataTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDataTests.m; sourceTree = "<group>"; };
-		FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainUserActionsViewController.h; sourceTree = "<group>"; };
-		FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainUserActionsViewController.m; sourceTree = "<group>"; };
-		FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainUserViewController.h; sourceTree = "<group>"; };
-		FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTopupBlockchainUserViewController.m; sourceTree = "<group>"; };
+		FBD967A52125719E005CBE0B /* DSBlockchainIdentityActionsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSBlockchainIdentityActionsViewController.h; sourceTree = "<group>"; };
+		FBD967A62125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSBlockchainIdentityActionsViewController.m; sourceTree = "<group>"; };
+		FBD967A8212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSTopupBlockchainIdentityViewController.h; sourceTree = "<group>"; };
+		FBD967A9212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTopupBlockchainIdentityViewController.m; sourceTree = "<group>"; };
 		FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSUsernameTableViewCell.h; sourceTree = "<group>"; };
 		FBD967AC21270DD6005CBE0B /* DSUsernameTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSUsernameTableViewCell.m; sourceTree = "<group>"; };
 		FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSDeterministicMasternodeListTests.m; sourceTree = "<group>"; };
@@ -858,7 +858,7 @@
 				FB83C2DF21B7B6D70057A0EF /* Actions.storyboard */,
 				FBEB7E8B220EE5650013F619 /* Masternodes.storyboard */,
 				FBF31B6B222FD94400393301 /* Wallets.storyboard */,
-				FBA676312235A7920069EC2F /* BlockchainUsers.storyboard */,
+				FBA676312235A7920069EC2F /* BlockchainIdentities.storyboard */,
 				FBA676332235A9620069EC2F /* Helpers.storyboard */,
 				FBA676352235AD090069EC2F /* Governance.storyboard */,
 				FB44D620228C73FB00354A4D /* Quorums.storyboard */,
@@ -886,14 +886,9 @@
 				2AF7296C22789C56001D2D21 /* DSBLSIESEncryptedDataTests.mm */,
 				2A7DCCAD20D9485A0097049F /* DSBIP32Tests.m */,
 				2A7DCCAB20D9474F0097049F /* DSBIP39Tests.m */,
-				2A7DCCB120DA10870097049F /* DSBloomFilterTests.m */,
-				FBDB9B7D20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m */,
-				2AA2C5EA20E37B74007768B1 /* DSGovernanceTests.m */,
 				2A1ECBD820D8B327000177D8 /* DSHashTests.m */,
 				2A1ECBDA20D8B7EC000177D8 /* DSKeyTests.m */,
-				2A7DCCB320DA198F0097049F /* DSPaymentProtocolTests.m */,
 				2A1ECBDC20D8F4BD000177D8 /* DSPaymentRequestTests.m */,
-				FBF31B7022328AA800393301 /* DSProviderTransactionsTests.m */,
 				2A1ECBDE20D8F7DB000177D8 /* DSTransactionTests.m */,
 				2A90EDA92268C15D00D95B6B /* DSUInt256IndexPathTests.m */,
 				2A7DCCAF20DA080F0097049F /* DSWalletTests.m */,
@@ -948,16 +943,16 @@
 			isa = PBXGroup;
 			children = (
 				2A1BDBE7225B855B0028F6DE /* Contracts */,
-				FB0F15B521090445000272E6 /* DSBlockchainUsersViewController.h */,
-				FB0F15B621090445000272E6 /* DSBlockchainUsersViewController.m */,
-				FB0F15BF210ACD52000272E6 /* DSCreateBlockchainUserViewController.h */,
-				FB0F15C0210ACD52000272E6 /* DSCreateBlockchainUserViewController.m */,
-				FBD967A52125719E005CBE0B /* DSBlockchainUserActionsViewController.h */,
-				FBD967A62125719E005CBE0B /* DSBlockchainUserActionsViewController.m */,
-				FBD967A8212571DC005CBE0B /* DSTopupBlockchainUserViewController.h */,
-				FBD967A9212571DC005CBE0B /* DSTopupBlockchainUserViewController.m */,
-				FBBDF424226C843C0081D673 /* DSBlockchainUserTransitionsViewController.h */,
-				FBBDF425226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m */,
+				FB0F15B521090445000272E6 /* DSBlockchainIdentitiesViewController.h */,
+				FB0F15B621090445000272E6 /* DSBlockchainIdentitiesViewController.m */,
+				FB0F15BF210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.h */,
+				FB0F15C0210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.m */,
+				FBD967A52125719E005CBE0B /* DSBlockchainIdentityActionsViewController.h */,
+				FBD967A62125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m */,
+				FBD967A8212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.h */,
+				FBD967A9212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m */,
+				FBBDF424226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.h */,
+				FBBDF425226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m */,
 			);
 			name = "Blockchain Users";
 			sourceTree = "<group>";
@@ -1167,8 +1162,8 @@
 				FB0F15A721049505000272E6 /* DSTransactionAmountTableViewCell.m */,
 				FB0F15A921049598000272E6 /* DSTransactionIdentifierTableViewCell.h */,
 				FB0F15AA21049598000272E6 /* DSTransactionIdentifierTableViewCell.m */,
-				FB0F15BC210A0208000272E6 /* DSBlockchainUserTableViewCell.h */,
-				FB0F15BD210A0208000272E6 /* DSBlockchainUserTableViewCell.m */,
+				FB0F15BC210A0208000272E6 /* DSBlockchainIdentityTableViewCell.h */,
+				FB0F15BD210A0208000272E6 /* DSBlockchainIdentityTableViewCell.m */,
 				FB995D9B21101C9600AC37D0 /* DSPeerTableViewCell.h */,
 				FB995D9C21101C9600AC37D0 /* DSPeerTableViewCell.m */,
 				FBD967AB21270DD6005CBE0B /* DSUsernameTableViewCell.h */,
@@ -1471,7 +1466,7 @@
 				2A1B55BE2226B3C5008FED65 /* Contacts.storyboard in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,
 				FBEB7E8C220EE5650013F619 /* Masternodes.storyboard in Resources */,
-				FBA676322235A7920069EC2F /* BlockchainUsers.storyboard in Resources */,
+				FBA676322235A7920069EC2F /* BlockchainIdentities.storyboard in Resources */,
 				FBF31B6C222FD94400393301 /* Wallets.storyboard in Resources */,
 				FBB4E36C2145B2D0008040B7 /* Layer2.storyboard in Resources */,
 			);
@@ -1709,16 +1704,16 @@
 				FBB5D73C221FE5F40021764A /* DSUpdateMasternodeRegistrarViewController.m in Sources */,
 				FBB4E386215057AA008040B7 /* DSAddDAPViewController.m in Sources */,
 				FBB5D729221DF9390021764A /* DSUpdateMasternodeServiceViewController.m in Sources */,
-				FB0F15BE210A0208000272E6 /* DSBlockchainUserTableViewCell.m in Sources */,
+				FB0F15BE210A0208000272E6 /* DSBlockchainIdentityTableViewCell.m in Sources */,
 				FBB4E383214BC7C3008040B7 /* DSDAPIGetUserInfoViewController.m in Sources */,
 				FBEB7E92220F0DE50013F619 /* DSAccountChooserTableViewCell.m in Sources */,
-				FBBDF426226C843C0081D673 /* DSBlockchainUserTransitionsViewController.m in Sources */,
+				FBBDF426226C843C0081D673 /* DSBlockchainIdentityTransitionsViewController.m in Sources */,
 				FB9A106F20D83683006883E2 /* DSAddDevnetIPAddressTableViewCell.m in Sources */,
 				FBB4E380214A9F01008040B7 /* DSDAPIGetAddressSummaryViewController.m in Sources */,
 				FBB4E3732145B5B3008040B7 /* DSDAPListViewController.m in Sources */,
 				FBB4E37C214A937D008040B7 /* DSDAPICallsViewController.m in Sources */,
 				FB9A106920D833F4006883E2 /* DSAddDevnetViewController.m in Sources */,
-				FBD967AA212571DC005CBE0B /* DSTopupBlockchainUserViewController.m in Sources */,
+				FBD967AA212571DC005CBE0B /* DSTopupBlockchainIdentityViewController.m in Sources */,
 				2A9FFEC622328D0E00956D5F /* DSContactsViewController.m in Sources */,
 				FB2B21AB20D6FC0B000DF537 /* BRBubbleView.m in Sources */,
 				FBB25BF020C5CDC60037F5BE /* DSBlockchainExplorerViewController.m in Sources */,
@@ -1735,14 +1730,14 @@
 				FB6B78462278D50A0005C9DB /* DSContactReceivedTransactionsTableViewController.m in Sources */,
 				FBF31B68222F784E00393301 /* DSSpecializedDerivationPathsViewController.m in Sources */,
 				FB6B784C2278FB3A0005C9DB /* DSContactSendDashViewController.m in Sources */,
-				FBD967A72125719E005CBE0B /* DSBlockchainUserActionsViewController.m in Sources */,
+				FBD967A72125719E005CBE0B /* DSBlockchainIdentityActionsViewController.m in Sources */,
 				FBF6050C22BA85F10082EB00 /* DSMasternodeHealthForListRetrievalViewController.m in Sources */,
 				FBBDF429226C8ECA0081D673 /* DSTransitionTableViewCell.m in Sources */,
 				FB5252FF20F2377E009A2BF1 /* BRCopyLabel.m in Sources */,
 				2A3B3EC220F893F4002962FB /* BaseFormCellModel.m in Sources */,
 				2A3B3EB320F893F4002962FB /* FormTableViewController.m in Sources */,
 				FB0F15AB21049598000272E6 /* DSTransactionIdentifierTableViewCell.m in Sources */,
-				FB0F15B721090445000272E6 /* DSBlockchainUsersViewController.m in Sources */,
+				FB0F15B721090445000272E6 /* DSBlockchainIdentitiesViewController.m in Sources */,
 				FB44D628228C77E400354A4D /* DSQuorumListViewController.m in Sources */,
 				FB12FEE320CD3BD100C1E0F0 /* DSMasternodeTableViewCell.m in Sources */,
 				FB3E970420DC21EB00D9B0CB /* DSAddressesTransactionsViewController.m in Sources */,
@@ -1754,7 +1749,7 @@
 				FB90D2D520C40DD3002B7956 /* DSFundsDerivationPathsAddressesViewController.m in Sources */,
 				FBF31B65222F74B400393301 /* DSWalletDetailViewController.m in Sources */,
 				2AF8A95D2284820F00F8C72D /* DSContactProfileAvatarView.m in Sources */,
-				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainUserViewController.m in Sources */,
+				FB0F15C1210ACD52000272E6 /* DSCreateBlockchainIdentityViewController.m in Sources */,
 				FBBDF42C226EDF600081D673 /* DSContactTableViewCell.m in Sources */,
 				FB83C2E721B91A8D0057A0EF /* DSTransactionFloodingViewController.m in Sources */,
 				FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */,

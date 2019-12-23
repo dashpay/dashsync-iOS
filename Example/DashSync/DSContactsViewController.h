@@ -11,12 +11,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSChainManager;
-@class DSBlockchainUser;
+@class DSBlockchainIdentity;
 
 @interface DSContactsViewController : DSFetchedResultsTableViewController
 
 @property (nonatomic,strong) DSChainManager *chainManager;
-@property (strong, nonatomic) DSBlockchainUser *blockchainUser;
+@property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
 
 @end
 

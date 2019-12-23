@@ -12,12 +12,12 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransaction.h"
 #import "DSTransitionEntity+CoreDataClass.h"
 
 @interface DSTransition()
 
-@property (nonatomic,strong) DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction;
+@property (nonatomic,strong) DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction;
 
 @end
 
@@ -194,16 +194,16 @@
 
 -(void)setRegistrationTransactionHash:(UInt256)registrationTransactionHash {
     _registrationTransactionHash = registrationTransactionHash;
-    self.blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)[self.chain transactionForHash:registrationTransactionHash];
+    self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction*)[self.chain transactionForHash:registrationTransactionHash];
 }
 
--(DSBlockchainUserRegistrationTransaction*)blockchainUserRegistrationTransaction {
-    if (!_blockchainUserRegistrationTransaction) self.blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction*)[self.chain transactionForHash:self.registrationTransactionHash];
-    return _blockchainUserRegistrationTransaction;
+-(DSBlockchainIdentityRegistrationTransaction*)blockchainIdentityRegistrationTransaction {
+    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction*)[self.chain transactionForHash:self.registrationTransactionHash];
+    return _blockchainIdentityRegistrationTransaction;
 }
 
 -(BOOL)checkPayloadSignature:(DSECDSAKey*)transitionRecoveredPublicKey {
-    return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainUserRegistrationTransaction.pubkeyHash);
+    return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
 }
 
 -(BOOL)checkPayloadSignature {

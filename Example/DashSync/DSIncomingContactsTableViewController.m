@@ -30,7 +30,7 @@ static NSString * const CellId = @"CellId";
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser fetchIncomingContactRequests:^(BOOL success) {
+    [self.blockchainIdentity fetchIncomingContactRequests:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -63,7 +63,7 @@ static NSString * const CellId = @"CellId";
     NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
     NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
     
-    DSContactEntity *contact = self.blockchainUser.ownContact;
+    DSContactEntity *contact = self.blockchainIdentity.ownContact;
     if (objectsHasChangedContact(insertedObjects, contact) ||
         objectsHasChangedContact(updatedObjects, contact) ||
         objectsHasChangedContact(deletedObjects, contact)) {
@@ -81,7 +81,7 @@ static NSString * const CellId = @"CellId";
     //own contact is homer
     //self is marge
     //validates to being a request from marge to homer
-    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"destinationContact == %@ && (SUBQUERY(destinationContact.outgoingRequests, $friendRequest, $friendRequest.destinationContact == SELF.sourceContact).@count == 0)",self.blockchainIdentity.ownContact];
 }
 
 - (NSArray<NSSortDescriptor *> *)sortDescriptors {
@@ -110,7 +110,7 @@ static NSString * const CellId = @"CellId";
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     DSFriendRequestEntity * friendRequest = [self.fetchedResultsController objectAtIndexPath:indexPath];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser acceptFriendRequest:friendRequest completion:^(BOOL success) {
+    [self.blockchainIdentity acceptFriendRequest:friendRequest completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

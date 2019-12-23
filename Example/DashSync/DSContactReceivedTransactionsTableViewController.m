@@ -31,17 +31,17 @@
     self.direction = DSContactTransactionDirectionReceived;
 }
 
--(void)setBlockchainUser:(DSBlockchainUser *)blockchainUser {
-    _blockchainUser = blockchainUser;
+-(void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
+    _blockchainIdentity = blockchainIdentity;
     if (_friendRequest) {
-        self.account = [blockchainUser.wallet accountWithNumber:_friendRequest.account.index];
+        self.account = [blockchainIdentity.wallet accountWithNumber:_friendRequest.account.index];
     }
 }
 
 -(void)setFriendRequest:(DSFriendRequestEntity *)friendRequest {
     _friendRequest = friendRequest;
-    if (_blockchainUser) {
-        self.account = [_blockchainUser.wallet accountWithNumber:_friendRequest.account.index];
+    if (_blockchainIdentity) {
+        self.account = [_blockchainIdentity.wallet accountWithNumber:_friendRequest.account.index];
     }
 }
 

@@ -23,7 +23,7 @@
 //  THE SOFTWARE.
 
 #import <Foundation/Foundation.h>
-#import "DSBlockchainUser.h"
+#import "DSBlockchainIdentity.h"
 #import "DSBIP39Mnemonic.h"
 #import "BigIntTypes.h"
 
@@ -45,9 +45,9 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 
 @property (nonatomic, readonly) DSSpecialTransactionsWalletHolder * specialTransactionsHolder;
 
-@property (nonatomic, readonly) NSDictionary * blockchainUsers;
+@property (nonatomic, readonly) NSDictionary * blockchainIdentities;
 
-@property (nonatomic, readonly) NSArray * blockchainUserAddresses;
+@property (nonatomic, readonly) NSArray * blockchainIdentityAddresses;
 
 @property (nonatomic, readonly) NSArray * providerOwnerAddresses;
 
@@ -95,10 +95,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 @property (nonatomic, readonly) uint64_t totalReceived;
 
 // the first unused index for blockchain users
-@property (nonatomic, readonly) uint32_t unusedBlockchainUserIndex;
+@property (nonatomic, readonly) uint32_t unusedBlockchainIdentityIndex;
 
 // the amount of known blockchain users
-@property (nonatomic, readonly) uint32_t blockchainUsersCount;
+@property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
 
 @property (nonatomic, readonly) SeedRequestBlock seedRequestBlock;
 
@@ -194,12 +194,12 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 //Recreate derivation paths and addresses
 -(void)reloadDerivationPaths;
 
--(void)unregisterBlockchainUser:(DSBlockchainUser *)blockchainUser;
--(void)addBlockchainUser:(DSBlockchainUser *)blockchainUser;
--(void)registerBlockchainUser:(DSBlockchainUser *)blockchainUser;
--(DSBlockchainUser *)createBlockchainUserForUsername:(NSString *)username;
--(DSBlockchainUser*)createBlockchainUserForUsername:(NSString*)username atIndex:(uint32_t)index;
--(DSBlockchainUser* _Nullable)blockchainUserForRegistrationHash:(UInt256)registrationHash;
+-(void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+-(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+-(void)registerBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
+-(DSBlockchainIdentity *)createBlockchainIdentityForUsername:(NSString *)username;
+-(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username atIndex:(uint32_t)index;
+-(DSBlockchainIdentity* _Nullable)blockchainIdentityForRegistrationHash:(UInt256)registrationHash;
 
 - (void)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount completion:(_Nullable SeedCompletionBlock)completion;
 
@@ -217,14 +217,14 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
-- (BOOL)containsBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash;
+- (BOOL)containsBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (BOOL)containsHoldingAddress:(NSString*)holdingAddress;
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (NSUInteger)indexOfProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 - (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
-- (NSUInteger)indexOfBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash;
+- (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 
 @end
 

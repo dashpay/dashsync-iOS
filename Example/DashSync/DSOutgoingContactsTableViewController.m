@@ -28,7 +28,7 @@
 - (IBAction)refreshAction:(id)sender {
     [self.refreshControl beginRefreshing];
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
+    [self.blockchainIdentity fetchOutgoingContactRequests:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -61,7 +61,7 @@
     NSArray <NSManagedObject *> *updatedObjects = notification.userInfo[NSUpdatedObjectsKey];
     NSArray <NSManagedObject *> *deletedObjects = notification.userInfo[NSDeletedObjectsKey];
     
-    DSContactEntity *contact = self.blockchainUser.ownContact;
+    DSContactEntity *contact = self.blockchainIdentity.ownContact;
     if (objectsHasChangedContact(insertedObjects, contact) ||
         objectsHasChangedContact(updatedObjects, contact) ||
         objectsHasChangedContact(deletedObjects, contact)) {
@@ -75,7 +75,7 @@
 }
 
 -(NSPredicate*)predicate {
-    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainUser.ownContact];
+    return [NSPredicate predicateWithFormat:@"sourceContact == %@ && (SUBQUERY(sourceContact.incomingRequests, $friendRequest, $friendRequest.sourceContact == SELF.destinationContact).@count == 0)",self.blockchainIdentity.ownContact];
 }
 
 

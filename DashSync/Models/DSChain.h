@@ -76,7 +76,7 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 };
 
 FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainBlockchainUsersDidChangeNotification;
+FOUNDATION_EXPORT NSString* const DSChainBlockchainIdentitiesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
@@ -84,7 +84,7 @@ FOUNDATION_EXPORT NSString* const DSChainBlockWasLockedNotification;
 FOUNDATION_EXPORT NSString* const DSChainNotificationBlockKey;
 FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
-@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainUser,DSBloomFilter,DSProviderRegistrationTransaction,DSChain;
+@class DSWallet,DSMerkleBlock,DSChainManager,DSPeer,DSChainEntity,DSDerivationPath,DSTransaction,DSAccount,DSSimplifiedMasternodeEntry,DSBlockchainIdentity,DSBloomFilter,DSProviderRegistrationTransaction,DSChain;
 
 @protocol DSChainDelegate;
 
@@ -146,7 +146,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) uint16_t transactionVersion;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
-@property (nonatomic, readonly) uint32_t blockchainUsersCount;
+@property (nonatomic, readonly) uint32_t blockchainIdentitiesCount;
 @property (nonatomic, assign) UInt256 masternodeBaseBlockHash;
 @property (nonatomic, readonly) uint64_t ixPreviousConfirmationsNeeded;
 @property (nonatomic, readonly) NSManagedObjectContext * managedObjectContext;
@@ -259,7 +259,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
 
-- (DSWallet* _Nullable)walletHavingBlockchainUserAuthenticationHash:(UInt160)blockchainUserAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet* _Nullable)walletHavingBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 

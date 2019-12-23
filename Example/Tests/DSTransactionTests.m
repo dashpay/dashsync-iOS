@@ -13,10 +13,10 @@
 #import "NSString+Bitcoin.h"
 #import "DSTransaction.h"
 #import "NSMutableData+Dash.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserTopupTransaction.h"
-#import "DSBlockchainUserResetTransaction.h"
-#import "DSBlockchainUserCloseTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityResetTransaction.h"
+#import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSChainManager.h"
 #import "NSData+Dash.h"
@@ -103,14 +103,14 @@
     XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
 }
 
-- (void)testBlockchainUserTransactionPayload {
+- (void)testBlockchainIdentityTransactionPayload {
     DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
     DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:@"cTu5paPRRZ1bby6XPR9oLmJ8XsasXm699xVCMGJuEVFu7qaU8uS5" onChain:devnetDRA];
     UInt160 pubkeyHash = *(UInt160 *)@"43bfdea7363e6ea738da5059987c7232b58d2afe".hexToData.bytes;
     
     XCTAssertTrue(uint160_eq(pubkeyHash, key.publicKeyData.hash160), @"Pubkey Hash does not Pubkey");
-    DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithBlockchainUserRegistrationTransactionVersion:1 username:@"crazy2" pubkeyHash:pubkeyHash onChain:devnetDRA];
-    UInt256 payloadHash = blockchainUserRegistrationTransaction.payloadHash;
+    DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithBlockchainIdentityRegistrationTransactionVersion:1 username:@"crazy2" pubkeyHash:pubkeyHash onChain:devnetDRA];
+    UInt256 payloadHash = blockchainIdentityRegistrationTransaction.payloadHash;
     NSData * payloadHashDataToConfirm = @"b29e4bc3dd4e0a02d163599e3be5a315781d1ef9e25ec9767eabbe3bfc250af5".hexToData.reverse;
     XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirm,@"Pubkey Hash does not match Pubkey Reverse");
 }
@@ -152,7 +152,7 @@
     XCTAssertEqualObjects([NSData dataWithUInt256:coinbaseTransaction.txHash],txIdData,@"Coinbase transaction hash does not match it's data dash");
 }
 
-- (void)testCreateBlockchainUserTransactionInputs {
+- (void)testCreateBlockchainIdentityTransactionInputs {
     //this is for v3 transaction versions
     DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
     NSData * hexData = [NSData dataFromHexString:@"03000800013f39fe95e37ce75bf7de2a89496e8c485f75f808b597c7c11fe9f023ec8726d3010000006a473044022033bafeac5704355c7855a6ad099bd6834cbcf3b052e42ed83945c58aae904aa4022073e747d376a8dcd2b5eb89fef274b01c0194ee9a13963ebbc657963417f0acf3012102393c140e7b53f3117fd038581ae66187c4be33f49e33a4c16ffbf2db1255e985feffffff0240420f0000000000016a9421be1d000000001976a9145f461d2cdae3e8244c6dbc6de58ad06ccd22890388ac000000006101000873616d697366756ec3bfec8ca49279bb1375ad3461f654ff1a277d464120f19af9563ef387fef19c82bc4027152ef5642fe8158ffeb3b8a411d9a967b6af0104b95659106c8a9d7451478010abe042e58afc9cdaf006f77cab16edcb6f84"];
@@ -178,31 +178,31 @@
     
     [script appendScriptPubKeyForAddress:inputAddress forChain:devnetDRA];
     
-    DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransactionFromMessage = [[DSBlockchainUserRegistrationTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    DSBlockchainIdentityRegistrationTransaction *blockchainIdentityRegistrationTransactionFromMessage = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
     
-    XCTAssertEqualObjects(blockchainUserRegistrationTransactionFromMessage.toData,hexData,@"Blockchain user transaction does not match it's data");
+    XCTAssertEqualObjects(blockchainIdentityRegistrationTransactionFromMessage.toData,hexData,@"Blockchain user transaction does not match it's data");
     
-    DSBlockchainUserRegistrationTransaction *blockchainUserRegistrationTransaction = [[DSBlockchainUserRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainUserRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
-    [blockchainUserRegistrationTransaction signPayloadWithKey:payloadKey];
+    DSBlockchainIdentityRegistrationTransaction *blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainIdentityRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
+    [blockchainIdentityRegistrationTransaction signPayloadWithKey:payloadKey];
     NSData * payloadDataToConfirm = @"01000873616d697366756ec3bfec8ca49279bb1375ad3461f654ff1a277d464120f19af9563ef387fef19c82bc4027152ef5642fe8158ffeb3b8a411d9a967b6af0104b95659106c8a9d7451478010abe042e58afc9cdaf006f77cab16edcb6f84".hexToData;
-    NSData * payloadData = blockchainUserRegistrationTransaction.payloadData;
+    NSData * payloadData = blockchainIdentityRegistrationTransaction.payloadData;
     XCTAssertEqualObjects(payloadData,payloadDataToConfirm,@"Payload Data does not match, signing payload does not work");
     
-    [blockchainUserRegistrationTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
+    [blockchainIdentityRegistrationTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
     NSData * inputSignature = @"473044022033bafeac5704355c7855a6ad099bd6834cbcf3b052e42ed83945c58aae904aa4022073e747d376a8dcd2b5eb89fef274b01c0194ee9a13963ebbc657963417f0acf3012102393c140e7b53f3117fd038581ae66187c4be33f49e33a4c16ffbf2db1255e985".hexToData;
-    XCTAssertEqualObjects(blockchainUserRegistrationTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
+    XCTAssertEqualObjects(blockchainIdentityRegistrationTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
 
     
-    XCTAssertEqualObjects(blockchainUserRegistrationTransaction.data,hexData,@"The transaction data does not match it's expected values");
-    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserRegistrationTransaction.txHash],@"The transaction does not match it's desired private key");
+    XCTAssertEqualObjects(blockchainIdentityRegistrationTransaction.data,hexData,@"The transaction data does not match it's expected values");
+    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainIdentityRegistrationTransaction.txHash],@"The transaction does not match it's desired private key");
 }
 
-- (void)testTopupBlockchainUserTransactionInputs {
+- (void)testTopupBlockchainIdentityTransactionInputs {
     //this is for v3 transaction versions
     DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
     NSData * hexData = [NSData dataFromHexString:@"0300090001d4ad073ec40da120d28a47164753f4f5ad80d0dc3b918b39223d36ebdfacdef6000000006b483045022100a65429d4f2ab2df58cafdaaffe874ef260f610e068e89a4455fbf92261156bb7022015733ae5aef3006fd5781b91f97ca1102edf09e9383ca761e407c619d13db7660121034c1f31446c5971558b9027499c3678483b0deb06af5b5ccd41e1f536af1e34cafeffffff0200e1f50500000000016ad2d327cc050000001976a9141eccbe2508c7741d2e4c517f87565e7d477cfbbc88ac000000002201002369fced72076b33e25c5ca31efb605037e3377c8e1989eb9ec968224d5e22b4"];
     UInt256 txId = *(UInt256 *)@"715f96a80e0e4feb8a94f2e9f4f6821dd4502f0ae6c43013ec6e77985d059b55".hexToData.reverse.bytes;
-    UInt256 blockchainUserRegistrationTransactionHash = *(UInt256 *)@"b4225e4d2268c99eeb89198e7c37e3375060fb1ea35c5ce2336b0772edfc6923".hexToData.reverse.bytes;
+    UInt256 blockchainIdentityRegistrationTransactionHash = *(UInt256 *)@"b4225e4d2268c99eeb89198e7c37e3375060fb1ea35c5ce2336b0772edfc6923".hexToData.reverse.bytes;
     UInt256 inputId = *(UInt256 *)@"f6deacdfeb363d22398b913bdcd080adf5f4534716478ad220a10dc43e07add4".hexToData.reverse.bytes;
     NSString * inputAddress = @"yYZqfmQhqMSF1PL7xeNHzQM3q9rktXFPLN";
     NSString * inputPrivateKey = @"cNYPkC4hGoE11ieBr2GgwyUct8zY1HLi5S5K2LLPMewtQGJsbu9H";
@@ -218,29 +218,29 @@
     
     [script appendScriptPubKeyForAddress:inputAddress forChain:devnetDRA];
     
-    DSBlockchainUserTopupTransaction *blockchainUserTopupTransactionFromMessage = [[DSBlockchainUserTopupTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    DSBlockchainIdentityTopupTransaction *blockchainIdentityTopupTransactionFromMessage = [[DSBlockchainIdentityTopupTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
     
-    XCTAssertEqualObjects(blockchainUserTopupTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
+    XCTAssertEqualObjects(blockchainIdentityTopupTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
     
-    DSBlockchainUserTopupTransaction *blockchainUserTopupTransaction = [[DSBlockchainUserTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainUserTopupTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash topupAmount:100000000 topupIndex:0 onChain:devnetDRA];
+    DSBlockchainIdentityTopupTransaction *blockchainIdentityTopupTransaction = [[DSBlockchainIdentityTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainIdentityTopupTransactionVersion:1 registrationTransactionHash:blockchainIdentityRegistrationTransactionHash topupAmount:100000000 topupIndex:0 onChain:devnetDRA];
     
-    [blockchainUserTopupTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
+    [blockchainIdentityTopupTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
 
     NSData * inputSignature = @"483045022100a65429d4f2ab2df58cafdaaffe874ef260f610e068e89a4455fbf92261156bb7022015733ae5aef3006fd5781b91f97ca1102edf09e9383ca761e407c619d13db7660121034c1f31446c5971558b9027499c3678483b0deb06af5b5ccd41e1f536af1e34ca".hexToData;
-    XCTAssertEqualObjects(blockchainUserTopupTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
+    XCTAssertEqualObjects(blockchainIdentityTopupTransaction.inputSignatures[0],inputSignature,@"The transaction input signature isn't signing correctly");
     
     
-    XCTAssertEqualObjects(blockchainUserTopupTransaction.data,hexData,@"The transaction data does not match it's expected values");
-    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserTopupTransaction.txHash],@"The transaction does not match it's desired private key");
+    XCTAssertEqualObjects(blockchainIdentityTopupTransaction.data,hexData,@"The transaction data does not match it's expected values");
+    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainIdentityTopupTransaction.txHash],@"The transaction does not match it's desired private key");
 }
 
-- (void)testResetBlockchainUserTransactionInputs {
+- (void)testResetBlockchainIdentityTransactionInputs {
     //this is for v3 transaction versions
     DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
     NSData * hexData = [NSData dataFromHexString:@"03000a00000000000000a00100659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370d659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370de803000000000000f6f5abf4ba75c554b9ef001a78c35ce5edb3ccb1411fd442ee3bb6dac571f432e56def3d06f64a15cc74f382184ca4d5d4cad781ced01ae4e8109411f548da5c5fa6bfce5a23a8d620104e6953600539728b95077e19"];
     UInt256 txId = *(UInt256 *)@"251961000a115bafbb7bdb6e1baf23d88e37ecf2fe6af5d9572884cabaecdcc0".hexToData.reverse.bytes;
-    UInt256 blockchainUserRegistrationTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
-    UInt256 blockchainUserPreviousTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
+    UInt256 blockchainIdentityRegistrationTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
+    UInt256 blockchainIdentityPreviousTransactionHash = *(UInt256 *)@"0d3701a0ef99acaf10158b9891c24d84600930824566063a81b7caef43329c65".hexToData.reverse.bytes;
     
     DSECDSAKey * payloadKey = [DSECDSAKey keyWithPrivateKey:@"cVxAzue29NemggDqJyUwMsZ7KJsm4y9ntoW5UeCaTfQdruH2BKQR" onChain:devnetDRA];
     NSString * payloadAddress = @"yfguWspuwx7ceKthnqqDc8CiZGZGRN7eFp";
@@ -253,20 +253,20 @@
     NSString * replacementCheckPayloadAddress = [replacementPayloadKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(replacementCheckPayloadAddress,replacementPayloadAddress,@"Replacement payload key does not match input address");
     
-    DSBlockchainUserResetTransaction *blockchainUserResetTransactionFromMessage = [[DSBlockchainUserResetTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    DSBlockchainIdentityResetTransaction *blockchainIdentityResetTransactionFromMessage = [[DSBlockchainIdentityResetTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
     
-    XCTAssertEqualObjects(blockchainUserResetTransactionFromMessage.toData,hexData,@"Blockchain user reset transaction does not match it's data");
+    XCTAssertEqualObjects(blockchainIdentityResetTransactionFromMessage.toData,hexData,@"Blockchain user reset transaction does not match it's data");
     
-    DSBlockchainUserResetTransaction *blockchainUserResetTransaction = [[DSBlockchainUserResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainUserResetTransactionVersion:1 registrationTransactionHash:blockchainUserRegistrationTransactionHash previousBlockchainUserTransactionHash:blockchainUserPreviousTransactionHash replacementPublicKeyHash:replacementPubkeyHash creditFee:1000 onChain:devnetDRA];
+    DSBlockchainIdentityResetTransaction *blockchainIdentityResetTransaction = [[DSBlockchainIdentityResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainIdentityResetTransactionVersion:1 registrationTransactionHash:blockchainIdentityRegistrationTransactionHash previousBlockchainIdentityTransactionHash:blockchainIdentityPreviousTransactionHash replacementPublicKeyHash:replacementPubkeyHash creditFee:1000 onChain:devnetDRA];
 
-    [blockchainUserResetTransaction signPayloadWithKey:payloadKey];
+    [blockchainIdentityResetTransaction signPayloadWithKey:payloadKey];
     NSData * payloadDataToConfirm = @"0100659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370d659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370de803000000000000f6f5abf4ba75c554b9ef001a78c35ce5edb3ccb1411fd442ee3bb6dac571f432e56def3d06f64a15cc74f382184ca4d5d4cad781ced01ae4e8109411f548da5c5fa6bfce5a23a8d620104e6953600539728b95077e19".hexToData;
-    NSData * payloadData = blockchainUserResetTransaction.payloadData;
+    NSData * payloadData = blockchainIdentityResetTransaction.payloadData;
     XCTAssertEqualObjects(payloadData,payloadDataToConfirm,@"Payload Data does not match, signing payload does not work");
 
 
-    XCTAssertEqualObjects(blockchainUserResetTransaction.data,hexData,@"The transaction data does not match it's expected values");
-    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainUserResetTransaction.txHash],@"The transaction does not match it's desired private key");
+    XCTAssertEqualObjects(blockchainIdentityResetTransaction.data,hexData,@"The transaction data does not match it's expected values");
+    XCTAssertEqualObjects([NSData dataWithUInt256:txId],[NSData dataWithUInt256:blockchainIdentityResetTransaction.txHash],@"The transaction does not match it's desired private key");
 }
 
 
@@ -345,7 +345,7 @@
     
     __unused NSString * packetHash = @"a36470766572016564617069647840373732336265343032666264343537626338653834333561646464346566636265343163316435343864623966633330373561303362623638393239666336316a6461706f626a6563747381a663616374006362696f78264865792c204920616d2073616d73616d30322c2061204461706944656d6f2055736572203a4463696478006372657600676f626a747970656770726f66696c656b646973706c61794e616d656873616d73616d3032";
     
-    __unused NSString * blockchainUserRegistrationTransaction = @"ff9c7c1f0204bfc035c543a645b6f7945cd175fe4ca88725ca592111c1142aeb";
+    __unused NSString * blockchainIdentityRegistrationTransaction = @"ff9c7c1f0204bfc035c543a645b6f7945cd175fe4ca88725ca592111c1142aeb";
     
     NSData * hexData = [NSData dataFromHexString:@"03000c00000000000000ac0100eb2a14c1112159ca2587a84cfe75d15c94f7b645a643c535c0bf04021f7c9cffeb2a14c1112159ca2587a84cfe75d15c94f7b645a643c535c0bf04021f7c9cffe803000000000000f43cdbc898b761336121c09bfc551afcd47ea40c97abae8822e8ac91f4d92805412067035023b59979470f335ad0f700818d5ef6cdf5c94f16fdecd07cf2c848222c6c9c01c91069ff7648ff5f0d519c08af37b48eb12522873a0884f5211d99f6ff"];
     

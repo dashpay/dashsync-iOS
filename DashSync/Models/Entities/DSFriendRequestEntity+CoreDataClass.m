@@ -23,8 +23,8 @@
     NSAssert(self.sourceContact, @"source contact must exist");
     NSAssert(self.destinationContact, @"destination contact must exist");
     NSAssert(self.account, @"account must exist");
-    UInt256 sourceIdentifier = self.sourceContact.associatedBlockchainUserRegistrationHash.UInt256;
-    UInt256 destinationIdentifier = self.destinationContact.associatedBlockchainUserRegistrationHash.UInt256;
+    UInt256 sourceIdentifier = self.sourceContact.associatedBlockchainIdentityRegistrationHash.UInt256;
+    UInt256 destinationIdentifier = self.destinationContact.associatedBlockchainIdentityRegistrationHash.UInt256;
     UInt256 friendship = uint256_xor(sourceIdentifier, destinationIdentifier);
     if (uint256_sup(sourceIdentifier, destinationIdentifier)) {
         //the destination should always be bigger than the source, otherwise add 1 on the 32nd bit to differenciate them

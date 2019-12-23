@@ -447,7 +447,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getUserByName:(NSString *)username
-              success:(void (^)(NSDictionary *blockchainUser))success
+              success:(void (^)(NSDictionary *blockchainIdentity))success
               failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
 
@@ -459,7 +459,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getUserById:(NSString *)userId
-            success:(void (^)(NSDictionary *blockchainUser))success
+            success:(void (^)(NSDictionary *blockchainIdentity))success
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
 
@@ -473,7 +473,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 - (void)searchUsersWithPattern:(NSString *)pattern
                         offset:(NSUInteger)offset
                          limit:(NSUInteger)limit
-                       success:(void (^)(NSArray<NSDictionary *> *blockchainUsers, NSUInteger totalCount))success
+                       success:(void (^)(NSArray<NSDictionary *> *blockchainIdentities, NSUInteger totalCount))success
                        failure:(void (^)(NSError *error))failure {
     NSParameterAssert(pattern);
     NSAssert(limit <= 25, @"Limit should be <= 25");
@@ -488,9 +488,9 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                      success:^(id _Nonnull responseObject) {
                          if (success) {
                              NSDictionary *responseDictionary = (NSDictionary *)responseObject;
-                             NSArray<NSDictionary *> *blockchainUsers = responseDictionary[@"results"];
+                             NSArray<NSDictionary *> *blockchainIdentities = responseDictionary[@"results"];
                              NSUInteger totalCount = [responseDictionary[@"totalCount"] unsignedIntegerValue];
-                             success(blockchainUsers, totalCount);
+                             success(blockchainIdentities, totalCount);
                          }
                      }
                      failure:failure];

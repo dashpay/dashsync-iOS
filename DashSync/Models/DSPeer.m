@@ -51,7 +51,7 @@
 #import "DSChainManager.h"
 #import "DSInstantSendTransactionLock.h"
 #import "DSSporkManager.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransaction.h"
 
 #define PEER_LOGGING 1
 #define LOG_ALL_HEADERS_IN_ACCEPT_HEADERS 0
@@ -1299,7 +1299,7 @@
     }
     
     if (tx) {
-        if ([tx isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
+        if ([tx isKindOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
             dispatch_sync(self.delegateQueue, ^{ // if there is a blockchain user process this synchronously
                 [self.transactionDelegate peer:self relayedTransaction:tx transactionIsRequestingInstantSendLock:isIxTransaction];
             });

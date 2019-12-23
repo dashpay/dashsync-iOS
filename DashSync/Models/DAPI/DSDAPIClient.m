@@ -50,7 +50,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 - (void)sendDocument:(DPDocument *)document
-             forUser:(DSBlockchainUser*)blockchainUser
+             forUser:(DSBlockchainIdentity*)blockchainIdentity
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(document);
@@ -60,11 +60,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:contract.identifier documents:documents];
-    [self sendPacket:stPacket forUser:blockchainUser completion:completion];
+    [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
 }
 
 - (void)sendPacket:(DPSTPacket *)stPacket
-           forUser:(DSBlockchainUser*)blockchainUser
+           forUser:(DSBlockchainIdentity*)blockchainIdentity
         completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(stPacket);
     NSParameterAssert(completion);
@@ -74,10 +74,10 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     // ios-dpp (DAPI) uses direct byte order, but DSTransition needs reversed
     NSData *serializedSTPacketObjectHash = [[stPacket serializedHash] reverse];
     
-    DSTransition *transition = [blockchainUser transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
+    DSTransition *transition = [blockchainIdentity transitionForStateTransitionPacketHash:serializedSTPacketObjectHash.UInt256];
     DSDLog(@"registrationHash %@ previousTransitionHash %@",uint256_hex(transition.registrationTransactionHash) ,uint256_hex(transition.previousTransitionHash));
     __weak typeof(self) weakSelf = self;
-    [blockchainUser signStateTransition:transition
+    [blockchainIdentity signStateTransition:transition
                                   withPrompt:@""
                                   completion:^(BOOL success) {
                                       __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -101,7 +101,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                   }];
 }
 
--(void)getAllStateTransitionsForUser:(DSBlockchainUser*)blockchainUser completion:(void (^)(NSError *_Nullable error))completion {
+-(void)getAllStateTransitionsForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion {
     DSDAPINetworkService * service = self.DAPINetworkService;
     if (!service) {
         completion([NSError errorWithDomain:DSDAPIClientErrorDomain
@@ -109,11 +109,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                    userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
         return;
     }
-    [service getUserById:uint256_reverse_hex(blockchainUser.registrationTransactionHash) success:^(NSDictionary * _Nonnull blockchainUserDictionary) {
-        if ([blockchainUserDictionary objectForKey:@"subtx"] && [[blockchainUserDictionary objectForKey:@"subtx"] isKindOfClass:[NSArray class]]) {
-            NSArray * subscriptionTransactions = [blockchainUserDictionary objectForKey:@"subtx"];
+    [service getUserById:uint256_reverse_hex(blockchainIdentity.registrationTransactionHash) success:^(NSDictionary * _Nonnull blockchainIdentityDictionary) {
+        if ([blockchainIdentityDictionary objectForKey:@"subtx"] && [[blockchainIdentityDictionary objectForKey:@"subtx"] isKindOfClass:[NSArray class]]) {
+            NSArray * subscriptionTransactions = [blockchainIdentityDictionary objectForKey:@"subtx"];
             NSMutableArray * oldSubscriptionTransactionHashes = [NSMutableArray array];
-            for (DSTransaction * transaction in blockchainUser.allTransitions) {
+            for (DSTransaction * transaction in blockchainIdentity.allTransitions) {
                 [oldSubscriptionTransactionHashes addObject:[NSData dataWithUInt256:transaction.txHash]];
             }
             NSMutableArray * novelSubscriptionTransactionHashes = [NSMutableArray array];
@@ -131,10 +131,10 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                         //this is a transition
                         NSString * extraPayload = tx[@"extraPayload"];
                         uint16_t version = [tx[@"version"] shortValue];
-                        DSTransition * transition = [[DSTransition alloc] initWithVersion:version payloadData:extraPayload.hexToData onChain:blockchainUser.wallet.chain];
+                        DSTransition * transition = [[DSTransition alloc] initWithVersion:version payloadData:extraPayload.hexToData onChain:blockchainIdentity.wallet.chain];
                         transition.blockHeight = [tx[@"blockheight"] unsignedIntValue];
-                        [blockchainUser.wallet.specialTransactionsHolder registerTransaction:transition];
-                        [blockchainUser updateWithTransition:transition save:TRUE];
+                        [blockchainIdentity.wallet.specialTransactionsHolder registerTransaction:transition];
+                        [blockchainIdentity updateWithTransition:transition save:TRUE];
                         if (completion) {
                             completion(nil);
                         }

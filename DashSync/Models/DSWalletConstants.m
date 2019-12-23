@@ -20,7 +20,7 @@ NSString* const DSPeerManagerConnectedPeersDidChangeNotification =      @"DSPeer
 NSString* const DSPeerManagerDownloadPeerDidChangeNotification =      @"DSPeerManagerDownloadPeerDidChangeNotification";
 
 NSString* const DSChainWalletsDidChangeNotification =    @"DSChainWalletsDidChangeNotification";
-NSString* const DSChainBlockchainUsersDidChangeNotification =    @"DSChainBlockchainUsersDidChangeNotification";
+NSString* const DSChainBlockchainIdentitiesDidChangeNotification =    @"DSChainBlockchainIdentitiesDidChangeNotification";
 
 NSString* const DSChainStandaloneDerivationPathsDidChangeNotification =    @"DSChainStandaloneDerivationPathsDidChangeNotification";
 NSString* const DSChainStandaloneAddressesDidChangeNotification = @"DSChainStandaloneAddressesDidChangeNotification";

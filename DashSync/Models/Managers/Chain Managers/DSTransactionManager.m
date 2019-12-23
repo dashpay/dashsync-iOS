@@ -52,7 +52,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeList.h"
 #import "DSTransition.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransaction.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -928,26 +928,26 @@
         }
     }
     
-    BOOL isNewBlockchainUser = FALSE;
-    DSBlockchainUser * blockchainUser = nil;
+    BOOL isNewBlockchainIdentity = FALSE;
+    DSBlockchainIdentity * blockchainIdentity = nil;
     
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
         BOOL registered = [self.chain registerSpecialTransaction:transaction];
         
         if (registered) {
-            if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]]) {
-                DSBlockchainUserRegistrationTransaction * blockchainUserRegistrationTransaction = (DSBlockchainUserRegistrationTransaction *)transaction;
-                DSWallet * wallet = [self.chain walletHavingBlockchainUserAuthenticationHash:blockchainUserRegistrationTransaction.pubkeyHash foundAtIndex:nil];
+            if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
+                DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction *)transaction;
+                DSWallet * wallet = [self.chain walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil];
                 
                 if (wallet) {
-                    blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash];
+                    blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransaction.txHash];
                 }
                 [self.chain triggerUpdatesForLocalReferences:transaction];
                 
                 
-                if (!blockchainUser && (blockchainUser = [wallet blockchainUserForRegistrationHash:blockchainUserRegistrationTransaction.txHash])) {
-                    isNewBlockchainUser = TRUE;
+                if (!blockchainIdentity && (blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransaction.txHash])) {
+                    isNewBlockchainIdentity = TRUE;
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];
@@ -1009,20 +1009,20 @@
     [self.txRequests[hash] removeObject:peer];
     
     
-    if ([transaction isKindOfClass:[DSBlockchainUserRegistrationTransaction class]] && blockchainUser && isNewBlockchainUser) {
-        [self fetchFriendshipsForBlockchainUser:blockchainUser];
+    if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+        [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
     } else {
         [self updateTransactionsBloomFilter];
     }
 }
 
--(void)fetchFriendshipsForBlockchainUser:(DSBlockchainUser*)blockchainUser {
+-(void)fetchFriendshipsForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [blockchainUser fetchProfile:^(BOOL success) {
+    [blockchainIdentity fetchProfile:^(BOOL success) {
         if (success) {
-            [blockchainUser fetchOutgoingContactRequests:^(BOOL success) {
+            [blockchainIdentity fetchOutgoingContactRequests:^(BOOL success) {
                 if (success) {
-                    [blockchainUser fetchIncomingContactRequests:^(BOOL success) {
+                    [blockchainIdentity fetchIncomingContactRequests:^(BOOL success) {
                         if (success) {
                             dispatch_semaphore_signal(sem);
                         }

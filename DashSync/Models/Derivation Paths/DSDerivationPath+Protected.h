@@ -25,7 +25,7 @@
 #import "NSString+Bitcoin.h"
 #import "NSString+Dash.h"
 #import "NSData+Bitcoin.h"
-#import "DSBlockchainUser.h"
+#import "DSBlockchainIdentity.h"
 #import "DSBLSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN

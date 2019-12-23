@@ -185,7 +185,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 // MARK: - Derivation Path initialization
 
-+ (instancetype)masterBlockchainUserContactsDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
++ (instancetype)masterBlockchainIdentityContactsDerivationPathForAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE),uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(accountNumber)};
     //todo full uint256 derivation
@@ -477,7 +477,7 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             } else {
                 UInt256 index = [self indexAtPosition:i];
                 [[DSContactEntity context] performBlockAndWait:^{
-                    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(index)];
+                    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityRegistrationHash == %@",uint256_data(index)];
                     if (contactEntity) {
                         [mutableString appendFormat:@"/%@%@",contactEntity.username,[self isHardenedAtPosition:i]?@"'":@""];
                     } else {
@@ -506,15 +506,15 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
             mutableString = [NSMutableString stringWithFormat:@"inc"];
             DSIncomingFundsDerivationPath * incomingFundsDerivationPath = (DSIncomingFundsDerivationPath*)self;
             [[DSContactEntity context] performBlockAndWait:^{
-                DSContactEntity * sourceContactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainUserRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash)];
+                DSContactEntity * sourceContactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityRegistrationHash == %@",uint256_data(incomingFundsDerivationPath.contactSourceBlockchainIdentityRegistrationTransactionHash)];
                 if (sourceContactEntity) {
                     [mutableString appendFormat:@"/%@",sourceContactEntity.username];
                 } else {
-                    [mutableString appendFormat:@"/0x%@",uint256_hex(incomingFundsDerivationPath.contactSourceBlockchainUserRegistrationTransactionHash)];
+                    [mutableString appendFormat:@"/0x%@",uint256_hex(incomingFundsDerivationPath.contactSourceBlockchainIdentityRegistrationTransactionHash)];
                 }
             }];
-            DSBlockchainUser * blockchainUser = [self.wallet blockchainUserForRegistrationHash:incomingFundsDerivationPath.contactDestinationBlockchainUserRegistrationTransactionHash];
-            [mutableString appendFormat:@"/%@",blockchainUser.username];
+            DSBlockchainIdentity * blockchainIdentity = [self.wallet blockchainIdentityForRegistrationHash:incomingFundsDerivationPath.contactDestinationBlockchainIdentityRegistrationTransactionHash];
+            [mutableString appendFormat:@"/%@",blockchainIdentity.username];
         }
     }
     _stringRepresentation = [mutableString copy];
@@ -541,8 +541,8 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
         case DSDerivationPathReference_ProviderVotingKeys:
             return @"Provider Voting Keys";
             break;
-        case DSDerivationPathReference_BlockchainUsers:
-            return @"Blockchain Users";
+        case DSDerivationPathReference_BlockchainIdentities:
+            return @"Blockchain Identities";
             break;
         case DSDerivationPathReference_ContactBasedFunds:
             return @"Contact Funds";

@@ -24,8 +24,8 @@
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
     return [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
 }
-+ (instancetype)blockchainUsersKeysDerivationPathForWallet:(DSWallet*)wallet {
-    return [[DSDerivationPathFactory sharedInstance] blockchainUsersKeysDerivationPathForWallet:wallet];
++ (instancetype)blockchainIdentitiesKeysDerivationPathForWallet:(DSWallet*)wallet {
+    return [[DSDerivationPathFactory sharedInstance] blockchainIdentitiesKeysDerivationPathForWallet:wallet];
 }
 
 -(NSUInteger)defaultGapLimit {
@@ -53,11 +53,11 @@
     return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_ProviderOperatorKeys onChain:chain];
 }
 
-+ (instancetype)blockchainUsersKeysDerivationPathForChain:(DSChain*)chain {
++ (instancetype)blockchainIdentitiesKeysDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BlockchainUsers onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
 }
 
 - (NSData*)firstUnusedPublicKey {

@@ -7,10 +7,10 @@
 
 #import "DSTransactionFactory.h"
 #import "DSCoinbaseTransaction.h"
-#import "DSBlockchainUserRegistrationTransaction.h"
-#import "DSBlockchainUserTopupTransaction.h"
-#import "DSBlockchainUserResetTransaction.h"
-#import "DSBlockchainUserCloseTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityResetTransaction.h"
+#import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
@@ -37,13 +37,13 @@
         case DSTransactionType_Coinbase:
             return [DSCoinbaseTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionRegistration:
-            return [DSBlockchainUserRegistrationTransaction transactionWithMessage:message onChain:chain];
+            return [DSBlockchainIdentityRegistrationTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionTopUp:
-            return [DSBlockchainUserTopupTransaction transactionWithMessage:message onChain:chain];
+            return [DSBlockchainIdentityTopupTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionCloseAccount:
-            return [DSBlockchainUserCloseTransaction transactionWithMessage:message onChain:chain];
+            return [DSBlockchainIdentityCloseTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionResetKey:
-            return [DSBlockchainUserResetTransaction transactionWithMessage:message onChain:chain];
+            return [DSBlockchainIdentityResetTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderRegistration:
             return [DSProviderRegistrationTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateService:

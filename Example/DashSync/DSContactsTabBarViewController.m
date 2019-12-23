@@ -27,8 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.delegate = self;
     
     for (UIViewController * viewController in self.viewControllers) {
-        if ([viewController respondsToSelector:@selector(setBlockchainUser:)]) {
-            [(id)viewController setBlockchainUser:self.blockchainUser];
+        if ([viewController respondsToSelector:@selector(setBlockchainIdentity:)]) {
+            [(id)viewController setBlockchainIdentity:self.blockchainIdentity];
         }
         
         if ([viewController respondsToSelector:@selector(setChainManager:)]) {
@@ -56,13 +56,13 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *username = textField.text;
         
         __weak typeof(self) weakSelf = self;
-        NSParameterAssert(self.blockchainUser);
-        DSAccount * account = [self.blockchainUser.wallet accountWithNumber:0];
+        NSParameterAssert(self.blockchainIdentity);
+        DSAccount * account = [self.blockchainIdentity.wallet accountWithNumber:0];
         NSParameterAssert(account);
         
         DSPotentialContact * potentialContact = [[DSPotentialContact alloc] initWithUsername:username];
         
-        [self.blockchainUser sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success) {
+        [self.blockchainIdentity sendNewFriendRequestToPotentialContact:potentialContact completion:^(BOOL success) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;

@@ -36,10 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSContactProfileViewController
 
-- (instancetype)initWithBlockchainUser:(DSBlockchainUser *)blockchainUser {
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     self = [super init];
     if (self) {
-        _blockchainUser = blockchainUser;
+        _blockchainIdentity = blockchainIdentity;
     }
     return self;
 }
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = self.blockchainUser.username;
+    self.title = self.blockchainIdentity.username;
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
@@ -79,8 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
-                                                           self.blockchainUser.username];
-        cellModel.text = self.blockchainUser.ownContact.avatarPath;
+                                                           self.blockchainIdentity.username];
+        cellModel.text = self.blockchainIdentity.ownContact.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -98,8 +98,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (TextViewFormCellModel *)aboutMeCellModel {
     if (!_aboutMeCellModel) {
         TextViewFormCellModel *cellModel = [[TextViewFormCellModel alloc] initWithTitle:@"About me"];
-        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainUser.username];
-        cellModel.text = self.blockchainUser.ownContact.publicMessage;
+        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.username];
+        cellModel.text = self.blockchainIdentity.ownContact.publicMessage;
         _aboutMeCellModel = cellModel;
     }
     return _aboutMeCellModel;
@@ -143,7 +143,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.view.userInteractionEnabled = NO;
     // TODO: show HUD
-    BOOL isCreate = !self.blockchainUser.ownContact;
+    BOOL isCreate = !self.blockchainIdentity.ownContact;
     NSString *aboutMe = self.aboutMeCellModel.text.length > 0
                             ? self.aboutMeCellModel.text
                             : self.aboutMeCellModel.placeholder;
@@ -151,7 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
                                     ? self.avatarCellModel.text
                                     : self.avatarCellModel.placeholder;
     __weak typeof(self) weakSelf = self;
-    [self.blockchainUser createOrUpdateProfileWithAboutMeString:aboutMe avatarURLString:avatarURLString completion:^(BOOL success) {
+    [self.blockchainIdentity createOrUpdateProfileWithAboutMeString:aboutMe avatarURLString:avatarURLString completion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

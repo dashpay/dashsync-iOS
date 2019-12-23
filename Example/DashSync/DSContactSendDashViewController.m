@@ -33,10 +33,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    DSFriendRequestEntity * friendRequest = [[_contact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainUserRegistrationHash == %@",self.blockchainUser.registrationTransactionHashData]] anyObject];
+    DSFriendRequestEntity * friendRequest = [[_contact.outgoingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"destinationContact.associatedBlockchainIdentityRegistrationHash == %@",self.blockchainIdentity.registrationTransactionHashData]] anyObject];
     NSAssert(friendRequest, @"there must be a friendRequest");
     self.friendRequest = friendRequest;
-    self.account = [self.blockchainUser.wallet accountWithNumber:0];
+    self.account = [self.blockchainIdentity.wallet accountWithNumber:0];
     DSIncomingFundsDerivationPath * derivationPath = [self.account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
     NSAssert(derivationPath.extendedPublicKey, @"Extended public key must exist already");
     self.address = [derivationPath receiveAddress];

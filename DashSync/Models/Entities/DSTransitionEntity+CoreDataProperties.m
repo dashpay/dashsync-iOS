@@ -19,6 +19,6 @@
 @dynamic packetHash;
 @dynamic payloadSignature;
 @dynamic registrationTransactionHash;
-@dynamic blockchainUserRegistrationTransaction;
+@dynamic blockchainIdentityRegistrationTransaction;
 
 @end

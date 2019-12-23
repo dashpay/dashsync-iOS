@@ -19,12 +19,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainUser;
+@class DSBlockchainIdentity;
 @class DSFriendRequestEntity;
 
 @interface DSContactReceivedTransactionsTableViewController : DSContactBaseTransactionsTableViewController
 
-@property (strong, nonatomic) DSBlockchainUser *blockchainUser;
+@property (strong, nonatomic) DSBlockchainIdentity *blockchainIdentity;
 @property (strong, nonatomic) DSFriendRequestEntity *friendRequest;
 
 @end

@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_NotAccountFunds,
 };
 
-@class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainUserRegistrationTransaction,DSBlockchainUserResetTransaction;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainIdentityRegistrationTransaction,DSBlockchainIdentityResetTransaction;
 @class DSCoinbaseTransaction,DSPotentialFriendship;
 
 @interface DSAccount : NSObject
