@@ -36,76 +36,76 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "Czy jesteś pewien, że chcesz aktualizować tego masternoda aby płacił do %@?";
 
 /* No comment provided by engineer. */
-"Bad password, try again" = "Bad password, try again";
+"Bad password, try again" = "Złe hasło, spróbuj ponownie";
 
 /* No comment provided by engineer. */
-"Bad payment request" = "Bad payment request";
+"Bad payment request" = "Błędna prośba o płatność";
 
 /* No comment provided by engineer. */
-"Bad payment request URL" = "Bad payment request URL";
+"Bad payment request URL" = "Błędny URL żądania płatności";
 
 /* No comment provided by engineer. */
-"Bad payment URL" = "Bad payment URL";
+"Bad payment URL" = "Błędny URL płatności";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Anuluj";
 
 /* No comment provided by engineer. */
 "Confirm" = "Potwierdź";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Potwierdź kod PIN";
 
 /* No comment provided by engineer. */
-"Connect timeout" = "Connect timeout";
+"Connect timeout" = "Limit czasu połączenia";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "Nie można dokonać płatności";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "Płatności Dash nie mogą być mniejsze niż %@";
 
 /* No comment provided by engineer. */
-"Dash transaction not signed" = "Dash transaction not signed";
+"Dash transaction not signed" = "Transakcja Dash nie została podpisana";
 
 /* No comment provided by engineer. */
-"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
+"Dash transaction outputs can't be less than %@" = "Dane wyjściowe transakcji Dash nie mogą być mniejsze niż %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"Double spend" = "Double spend";
+"Double spend" = "Podwójne wydatkowanie";
 
 /* No comment provided by engineer. */
 "Down" = "Down";
 
 /* No comment provided by engineer. */
-"Enter old PIN" = "Enter old PIN";
+"Enter old PIN" = "Wpisz stary kod PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Błąd z serwera żądań płatności %@";
 
 /* No comment provided by engineer. */
-"Error signing dash transaction" = "Error signing dash transaction";
+"Error signing dash transaction" = "Błąd podpisywania transakcji Dash";
 
 /* No comment provided by engineer. */
-"Error signing transaction" = "Error signing transaction";
+"Error signing transaction" = "Błąd podpisywania transakcji";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"Ignore" = "Zignoruj";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instant payment";
+"Instant payment" = "Natychmiastowa płatność";
 
 /* No comment provided by engineer. */
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend wymaga funduszy wejściowych z 6 potwierdzeniami, wysłać jako normalną transakcję?";
 
 /* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
+"Insufficient funds" = "Niewystarczająca ilość funduszy";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for dash network fee" = "Niewystarczające środki na opłatę w sieć Dash";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Błąd wewnętrzny";
@@ -126,19 +126,19 @@
 "Method Not Found" = "Metoda nieznaleziona";
 
 /* No comment provided by engineer. */
-"Missing certificate" = "Missing certificate";
+"Missing certificate" = "Brak certyfikatu";
 
 /* No comment provided by engineer. */
-"No attempts remaining" = "No attempts remaining";
+"No attempts remaining" = "Brak pozostałych prób";
 
 /* No comment provided by engineer. */
-"No peers found" = "No peers found";
+"No peers found" = "Nie znaleziono peers";
 
 /* No comment provided by engineer. */
-"Not a valid private key" = "Not a valid private key";
+"Not a valid private key" = "Niepoprawny klucz prywatny";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Not connected to the dash network";
+"Not connected to the dash network" = "Brak połączenia z siecią Dash";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -147,10 +147,10 @@
 "Parse Error" = "Błąd analizy";
 
 /* No comment provided by engineer. */
-"Passcode" = "Passcode";
+"Passcode" = "Kod dostępu";
 
 /* No comment provided by engineer. */
-"Password" = "Password";
+"Password" = "Hasło";
 
 /* No comment provided by engineer. */
 "Password protected key" = "Password protected key";
