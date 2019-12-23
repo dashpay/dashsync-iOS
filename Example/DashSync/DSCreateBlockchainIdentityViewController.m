@@ -9,7 +9,7 @@
 #import "DSCreateBlockchainIdentityViewController.h"
 #import "DSWalletChooserViewController.h"
 #import "DSAccountChooserViewController.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 
 @interface DSCreateBlockchainIdentityViewController ()
 - (IBAction)cancel:(id)sender;
@@ -117,7 +117,7 @@
     DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:desiredUsername atIndex:[self.indexLabel.text intValue]];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKey:^(BOOL exists) {
         if (exists) {
-            [blockchainIdentity registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainIdentityRegistrationTransaction *blockchainIdentityRegistrationTransaction) {
+            [blockchainIdentity registrationTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {
                 if (blockchainIdentityRegistrationTransaction) {
                     [self.fundingAccount signTransaction:blockchainIdentityRegistrationTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                         if (signedTransaction) {

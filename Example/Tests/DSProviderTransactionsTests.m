@@ -12,7 +12,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSTransaction.h"
 #import "NSMutableData+Dash.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransaction.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"

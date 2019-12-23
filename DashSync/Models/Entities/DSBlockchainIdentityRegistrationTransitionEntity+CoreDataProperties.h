@@ -1,19 +1,19 @@
 //
-//  DSBlockchainIdentityRegistrationTransactionEntity+CoreDataProperties.h
+//  DSBlockchainIdentityRegistrationTransitionEntity+CoreDataProperties.h
 //  DashSync
 //
 //  Created by Sam Westrich on 4/30/19.
 //
 //
 
-#import "DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentityRegistrationTransactionEntity (CoreDataProperties)
+@interface DSBlockchainIdentityRegistrationTransitionEntity (CoreDataProperties)
 
-+ (NSFetchRequest<DSBlockchainIdentityRegistrationTransactionEntity *> *)fetchRequest;
++ (NSFetchRequest<DSBlockchainIdentityRegistrationTransitionEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *payloadSignature;
 @property (nullable, nonatomic, retain) NSData *publicKey;
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface DSBlockchainIdentityRegistrationTransactionEntity (CoreDataGeneratedAccessors)
+@interface DSBlockchainIdentityRegistrationTransitionEntity (CoreDataGeneratedAccessors)
 
 - (void)addTransitionsObject:(DSTransitionEntity *)value;
 - (void)removeTransitionsObject:(DSTransitionEntity *)value;

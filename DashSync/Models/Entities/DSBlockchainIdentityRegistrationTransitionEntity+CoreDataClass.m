@@ -1,13 +1,13 @@
 //
-//  DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.m
+//  DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.m
 //  DashSync
 //
 //  Created by Sam Westrich on 8/27/18.
 //
 //
 
-#import "DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 #import "DSTransaction.h"
@@ -16,13 +16,13 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
-@implementation DSBlockchainIdentityRegistrationTransactionEntity
+@implementation DSBlockchainIdentityRegistrationTransitionEntity
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
         [super setAttributesFromTransaction:tx];
-        DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction*)tx;
+        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)tx;
         self.specialTransactionVersion = blockchainIdentityRegistrationTransaction.blockchainIdentityRegistrationTransactionVersion;
         self.publicKey = [NSData dataWithUInt160:blockchainIdentityRegistrationTransaction.pubkeyHash];
         self.username = blockchainIdentityRegistrationTransaction.username;
@@ -44,7 +44,7 @@
 
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
-    DSBlockchainIdentityRegistrationTransaction * transaction = (DSBlockchainIdentityRegistrationTransaction *)[super transactionForChain:chain];
+    DSBlockchainIdentityRegistrationTransition * transaction = (DSBlockchainIdentityRegistrationTransition *)[super transactionForChain:chain];
     transaction.type = DSTransactionType_SubscriptionRegistration;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.blockchainIdentityRegistrationTransactionVersion = self.specialTransactionVersion;
@@ -58,7 +58,7 @@
 }
 
 -(Class)transactionClass {
-    return [DSBlockchainIdentityRegistrationTransaction class];
+    return [DSBlockchainIdentityRegistrationTransition class];
 }
 
 @end

@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentityRegistrationTransaction.h
+//  DSBlockchainIdentityRegistrationTransition.h
 //  DashSync
 //
 //  Created by Sam Westrich on 7/12/18.
@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSECDSAKey;
 
-@interface DSBlockchainIdentityRegistrationTransaction : DSTransaction
+@interface DSBlockchainIdentityRegistrationTransition : DSTransition
 
 
 @property (nonatomic,readonly) UInt256 payloadHash;

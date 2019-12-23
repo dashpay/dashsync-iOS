@@ -9,7 +9,7 @@
 #import "DSTopupBlockchainIdentityViewController.h"
 #import "DSWalletChooserViewController.h"
 #import "DSAccountChooserViewController.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import <DashSync/DashSync.h>
 
 @interface DSTopupBlockchainIdentityViewController ()

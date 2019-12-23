@@ -29,7 +29,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSBlockchainIdentityResetTransaction.h"
@@ -141,7 +141,7 @@
         [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             added = TRUE;
         }
-    } else if ([transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
+    } else if ([transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
         if (![self.blockchainIdentityRegistrationTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.blockchainIdentityRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             added = TRUE;
@@ -208,7 +208,7 @@
                     [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
                 } else if ([transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                     [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
-                } else if ([transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
+                } else if ([transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
                     [self.blockchainIdentityRegistrationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
                 } else if ([transaction isMemberOfClass:[DSBlockchainIdentityResetTransaction class]]) {
                     [self.blockchainIdentityResetTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
@@ -245,7 +245,7 @@
         
         NSArray * blockchainIdentityRegistrationTransactions = [self.blockchainIdentityRegistrationTransactions allValues];
         
-        for (DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction in blockchainIdentityRegistrationTransactions) {
+        for (DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction in blockchainIdentityRegistrationTransactions) {
             NSArray<DSBlockchainIdentityResetTransactionEntity *>* blockchainIdentityResetTransactions = [DSBlockchainIdentityResetTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
             for (DSBlockchainIdentityResetTransactionEntity *e in blockchainIdentityResetTransactions) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
@@ -282,8 +282,8 @@
 
 // MARK: == Blockchain Identities Transaction Retrieval
 
-- (DSBlockchainIdentityRegistrationTransaction*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    for (DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction in [self.blockchainIdentityRegistrationTransactions allValues]) {
+- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    for (DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction in [self.blockchainIdentityRegistrationTransactions allValues]) {
         if (uint160_eq(blockchainIdentityRegistrationTransaction.pubkeyHash, publicKeyHash)) {
             return blockchainIdentityRegistrationTransaction;
         }

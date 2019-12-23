@@ -21,7 +21,7 @@
 #import <ios-dpp/DashPlatformProtocol.h>
 #import "DSPotentialFriendship.h"
 
-@class DSAccountEntity, DSBlockchainIdentityRegistrationTransactionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity;
+@class DSAccountEntity, DSBlockchainIdentityRegistrationTransitionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

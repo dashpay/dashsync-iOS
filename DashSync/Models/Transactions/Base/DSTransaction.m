@@ -492,6 +492,13 @@
     [self.outScripts.lastObject appendScriptPubKeyForAddress:address forChain:self.chain];
 }
 
+- (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount {
+    [self.amounts addObject:@(amount)];
+    [self.addresses addObject:address];
+    [self.outScripts addObject:[NSMutableData data]];
+    [self.outScripts.lastObject appendScriptPubKeyForAddress:address forChain:self.chain];
+}
+
 - (void)addOutputShapeshiftAddress:(NSString *)address
 {
     [self.amounts addObject:@(0)];

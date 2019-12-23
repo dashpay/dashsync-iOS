@@ -12,12 +12,12 @@
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSTransitionEntity+CoreDataClass.h"
 
 @interface DSTransition()
 
-@property (nonatomic,strong) DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction;
+@property (nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
 
 @end
 
@@ -194,11 +194,11 @@
 
 -(void)setRegistrationTransactionHash:(UInt256)registrationTransactionHash {
     _registrationTransactionHash = registrationTransactionHash;
-    self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction*)[self.chain transactionForHash:registrationTransactionHash];
+    self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:registrationTransactionHash];
 }
 
--(DSBlockchainIdentityRegistrationTransaction*)blockchainIdentityRegistrationTransaction {
-    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction*)[self.chain transactionForHash:self.registrationTransactionHash];
+-(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
+    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:self.registrationTransactionHash];
     return _blockchainIdentityRegistrationTransaction;
 }
 

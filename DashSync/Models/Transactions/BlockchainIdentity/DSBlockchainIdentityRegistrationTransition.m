@@ -1,23 +1,23 @@
 //
-//  DSBlockchainIdentityRegistrationTransaction.m
+//  DSBlockchainIdentityRegistrationTransition.m
 //  DashSync
 //
 //  Created by Sam Westrich on 7/12/18.
 //
 
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 
-@interface DSBlockchainIdentityRegistrationTransaction()
+@interface DSBlockchainIdentityRegistrationTransition()
 
 @end
 
-@implementation DSBlockchainIdentityRegistrationTransaction
+@implementation DSBlockchainIdentityRegistrationTransition
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
@@ -168,7 +168,7 @@
 }
 
 -(Class)entityClass {
-    return [DSBlockchainIdentityRegistrationTransactionEntity class];
+    return [DSBlockchainIdentityRegistrationTransitionEntity class];
 }
 
 - (NSString *)description

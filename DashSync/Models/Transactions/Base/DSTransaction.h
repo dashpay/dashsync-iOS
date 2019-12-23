@@ -119,6 +119,7 @@ sequence:(uint32_t)sequence;
 - (void)addOutputScript:(NSData *)script withAddress:(NSString*)address amount:(uint64_t)amount;
 - (void)addOutputShapeshiftAddress:(NSString *)address;
 - (void)addOutputBurnAmount:(uint64_t)amount;
+- (void)addOutputCreditAddress:(NSString *)address amount:(uint64_t)amount;
 - (void)addOutputScript:(NSData *)script amount:(uint64_t)amount;
 - (void)setInputAddress:(NSString *)address atIndex:(NSUInteger)index;
 - (void)shuffleOutputOrder;

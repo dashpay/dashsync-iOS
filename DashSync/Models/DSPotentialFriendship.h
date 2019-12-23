@@ -21,7 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity,DSAccount,DSBlockchainIdentityRegistrationTransaction,DSFriendRequestEntity,DSPotentialContact,DSContactEntity,DSIncomingFundsDerivationPath,DSDerivationPathEntity;
+@class DSBlockchainIdentity,DSAccount,DSBlockchainIdentityRegistrationTransition,DSFriendRequestEntity,DSPotentialContact,DSContactEntity,DSIncomingFundsDerivationPath,DSDerivationPathEntity;
 
 @interface DSPotentialFriendship : NSObject
 

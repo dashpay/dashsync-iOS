@@ -36,7 +36,7 @@
 #import "DSEnvironment.h"
 #import "DSChainsManager.h"
 #import "DSBlockchainIdentity.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "NSDate+Utils.h"
@@ -843,8 +843,8 @@
     return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10];
 }
 
-- (DSBlockchainIdentityRegistrationTransaction *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    DSBlockchainIdentityRegistrationTransaction * transaction = [_specialTransactionsHolder blockchainIdentityRegistrationTransactionForPublicKeyHash:publicKeyHash];
+- (DSBlockchainIdentityRegistrationTransition *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    DSBlockchainIdentityRegistrationTransition * transaction = [_specialTransactionsHolder blockchainIdentityRegistrationTransactionForPublicKeyHash:publicKeyHash];
     if (transaction) return transaction;
     return nil;
 }
@@ -855,7 +855,7 @@
     return nil;
 }
 
--(DSBlockchainIdentityRegistrationTransaction *)blockchainIdentityRegistrationTransactionForIndex:(uint32_t)index {
+-(DSBlockchainIdentityRegistrationTransition *)blockchainIdentityRegistrationTransactionForIndex:(uint32_t)index {
     DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentitiesKeysDerivationPathForWallet:self];
     UInt160 hash160 = [derivationPath publicKeyDataAtIndex:index].hash160;
     return [self registrationTransactionForPublicKeyHash:hash160];
@@ -951,7 +951,7 @@
                 DSDLog(@"Blockchain user with reg %@",uint256_hex(registrationTransactionHash));
                 UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
                 DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
-                DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];
+                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];
                 DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithUsername:blockchainIdentityRegistrationTransaction.username atIndex:[keyChainDictionary[registrationTransactionHashData] unsignedIntValue] inWallet:self createdWithTransactionHash:registrationTransactionHash lastTransitionHash:lastTransitionHash inContext:self.chain.managedObjectContext];
                 [rDictionary setObject:blockchainIdentity forKey:registrationTransactionHashData];
             }

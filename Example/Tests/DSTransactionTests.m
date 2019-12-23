@@ -13,7 +13,7 @@
 #import "NSString+Bitcoin.h"
 #import "DSTransaction.h"
 #import "NSMutableData+Dash.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransaction.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
@@ -109,7 +109,7 @@
     UInt160 pubkeyHash = *(UInt160 *)@"43bfdea7363e6ea738da5059987c7232b58d2afe".hexToData.bytes;
     
     XCTAssertTrue(uint160_eq(pubkeyHash, key.publicKeyData.hash160), @"Pubkey Hash does not Pubkey");
-    DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithBlockchainIdentityRegistrationTransactionVersion:1 username:@"crazy2" pubkeyHash:pubkeyHash onChain:devnetDRA];
+    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithBlockchainIdentityRegistrationTransactionVersion:1 username:@"crazy2" pubkeyHash:pubkeyHash onChain:devnetDRA];
     UInt256 payloadHash = blockchainIdentityRegistrationTransaction.payloadHash;
     NSData * payloadHashDataToConfirm = @"b29e4bc3dd4e0a02d163599e3be5a315781d1ef9e25ec9767eabbe3bfc250af5".hexToData.reverse;
     XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirm,@"Pubkey Hash does not match Pubkey Reverse");
@@ -178,11 +178,11 @@
     
     [script appendScriptPubKeyForAddress:inputAddress forChain:devnetDRA];
     
-    DSBlockchainIdentityRegistrationTransaction *blockchainIdentityRegistrationTransactionFromMessage = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransactionFromMessage = [[DSBlockchainIdentityRegistrationTransition alloc] initWithMessage:hexData onChain:devnetDRA];
     
     XCTAssertEqualObjects(blockchainIdentityRegistrationTransactionFromMessage.toData,hexData,@"Blockchain user transaction does not match it's data");
     
-    DSBlockchainIdentityRegistrationTransaction *blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainIdentityRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
+    DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithInputHashes:@[hash] inputIndexes:@[@1] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@498999700] blockchainIdentityRegistrationTransactionVersion:1 username:@"samisfun" pubkeyHash:pubkeyHash topupAmount:1000000 topupIndex:0 onChain:devnetDRA];
     [blockchainIdentityRegistrationTransaction signPayloadWithKey:payloadKey];
     NSData * payloadDataToConfirm = @"01000873616d697366756ec3bfec8ca49279bb1375ad3461f654ff1a277d464120f19af9563ef387fef19c82bc4027152ef5642fe8158ffeb3b8a411d9a967b6af0104b95659106c8a9d7451478010abe042e58afc9cdaf006f77cab16edcb6f84".hexToData;
     NSData * payloadData = blockchainIdentityRegistrationTransaction.payloadData;

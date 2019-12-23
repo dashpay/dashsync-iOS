@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.h
+//  DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h
 //  DashSync
 //
 //  Created by Sam Westrich on 8/27/18.
@@ -13,10 +13,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentityRegistrationTransactionEntity : DSSpecialTransactionEntity
+@interface DSBlockchainIdentityRegistrationTransitionEntity : DSSpecialTransactionEntity
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-#import "DSBlockchainIdentityRegistrationTransactionEntity+CoreDataProperties.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataProperties.h"

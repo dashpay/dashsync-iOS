@@ -52,7 +52,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeList.h"
 #import "DSTransition.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -936,8 +936,8 @@
         BOOL registered = [self.chain registerSpecialTransaction:transaction];
         
         if (registered) {
-            if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
-                DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction *)transaction;
+            if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
                 DSWallet * wallet = [self.chain walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil];
                 
                 if (wallet) {
@@ -1009,7 +1009,7 @@
     [self.txRequests[hash] removeObject:peer];
     
     
-    if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransaction class]] && blockchainIdentity && isNewBlockchainIdentity) {
+    if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]] && blockchainIdentity && isNewBlockchainIdentity) {
         [self fetchFriendshipsForBlockchainIdentity:blockchainIdentity];
     } else {
         [self updateTransactionsBloomFilter];

@@ -7,7 +7,7 @@
 
 #import "DSTransactionFactory.h"
 #import "DSCoinbaseTransaction.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransaction.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
@@ -37,7 +37,7 @@
         case DSTransactionType_Coinbase:
             return [DSCoinbaseTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionRegistration:
-            return [DSBlockchainIdentityRegistrationTransaction transactionWithMessage:message onChain:chain];
+            return [DSBlockchainIdentityRegistrationTransition transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionTopUp:
             return [DSBlockchainIdentityTopupTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_SubscriptionCloseAccount:

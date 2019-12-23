@@ -87,7 +87,7 @@
 #import "DSTransaction+Utils.h"
 
 #import "DSBlockchainIdentityTopupTransaction.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "DSSpecialTransactionEntity+CoreDataClass.h"
 
-@class DSBlockchainIdentityRegistrationTransactionEntity;
+@class DSBlockchainIdentityRegistrationTransitionEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -13,7 +13,7 @@
 #import "DSDerivationPath.h"
 #import "NSCoder+Dash.h"
 #import "NSMutableData+Dash.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransaction.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
@@ -37,7 +37,7 @@
 #import "DSDAPIClient+RegisterDashPayContract.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSIncomingFundsDerivationPath.h"
-#import "DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPotentialContact.h"
 
@@ -53,7 +53,7 @@
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
 
-@property(nonatomic,strong) DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction;
+@property(nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransaction*>* blockchainIdentityTopupTransactions;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransaction*>* blockchainIdentityCloseTransactions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityResetTransaction*>* blockchainIdentityResetTransactions; //this is also a transition
@@ -149,7 +149,7 @@
     return self;
 }
 
--(instancetype)initWithBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransaction*)blockchainIdentityRegistrationTransaction inContext:(NSManagedObjectContext*)managedObjectContext {
+-(instancetype)initWithBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction inContext:(NSManagedObjectContext*)managedObjectContext {
     uint32_t index = 0;
     DSWallet * wallet = [blockchainIdentityRegistrationTransaction.chain walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:&index];
     if (!(self = [self initWithUsername:blockchainIdentityRegistrationTransaction.username atIndex:index inWallet:wallet inContext:(NSManagedObjectContext*)managedObjectContext])) return nil;
@@ -177,7 +177,7 @@
     }];
 }
 
--(void)registerInWalletForBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransaction*)blockchainIdentityRegistrationTransaction {
+-(void)registerInWalletForBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
     self.blockchainIdentityRegistrationTransaction = blockchainIdentityRegistrationTransaction;
     self.registrationTransactionHash = blockchainIdentityRegistrationTransaction.txHash;
     [self registerInWallet];
@@ -187,7 +187,7 @@
     [self.wallet registerBlockchainIdentity:self];
 }
 
--(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction))completion {
+-(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
     NSParameterAssert(fundingAccount);
     
     NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register the username %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
@@ -199,7 +199,7 @@
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentitiesKeysDerivationPathForWallet:self.wallet];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
         
-        DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransaction alloc] initWithBlockchainIdentityRegistrationTransactionVersion:1 username:self.username pubkeyHash:[privateKey.publicKeyData hash160] onChain:self.wallet.chain];
+        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithBlockchainIdentityRegistrationTransactionVersion:1 username:self.username pubkeyHash:[privateKey.publicKeyData hash160] onChain:self.wallet.chain];
         [blockchainIdentityRegistrationTransaction signPayloadWithKey:privateKey];
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];
@@ -301,9 +301,9 @@
 }
 
 
--(DSBlockchainIdentityRegistrationTransaction*)blockchainIdentityRegistrationTransaction {
+-(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
     if (!_blockchainIdentityRegistrationTransaction) {
-        _blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction*)[self.wallet.specialTransactionsHolder transactionForHash:self.registrationTransactionHash];
+        _blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.wallet.specialTransactionsHolder transactionForHash:self.registrationTransactionHash];
     }
     return _blockchainIdentityRegistrationTransaction;
 }
@@ -551,7 +551,7 @@
                 contact.associatedBlockchainIdentityRegistrationHash = uint256_data(registrationTransactionHash);
                 contact.chain = self.wallet.chain.chainEntity;
                 if (uint256_eq(registrationTransactionHash, self.registrationTransactionHash) && !self.ownContact) {
-                    DSBlockchainIdentityRegistrationTransactionEntity * blockchainIdentityRegistrationTransactionEntity = [DSBlockchainIdentityRegistrationTransactionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
+                    DSBlockchainIdentityRegistrationTransitionEntity * blockchainIdentityRegistrationTransactionEntity = [DSBlockchainIdentityRegistrationTransitionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
                     NSAssert(blockchainIdentityRegistrationTransactionEntity, @"blockchainIdentityRegistrationTransactionEntity must exist");
                     contact.associatedBlockchainIdentityRegistrationTransaction = blockchainIdentityRegistrationTransactionEntity;
                     contact.username = self.username;
@@ -562,7 +562,7 @@
                 } else if ([self.wallet blockchainIdentityForRegistrationHash:registrationTransactionHash]) {
                     //this means we are fetching a contact for another blockchain user on the device
                     DSBlockchainIdentity * blockchainIdentity = [self.wallet blockchainIdentityForRegistrationHash:registrationTransactionHash];
-                    DSBlockchainIdentityRegistrationTransactionEntity * blockchainIdentityRegistrationTransactionEntity = [DSBlockchainIdentityRegistrationTransactionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
+                    DSBlockchainIdentityRegistrationTransitionEntity * blockchainIdentityRegistrationTransactionEntity = [DSBlockchainIdentityRegistrationTransitionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
                     NSAssert(blockchainIdentityRegistrationTransactionEntity, @"blockchainIdentityRegistrationTransactionEntity must exist");
                     contact.associatedBlockchainIdentityRegistrationTransaction = blockchainIdentityRegistrationTransactionEntity;
                     contact.username = blockchainIdentity.username;

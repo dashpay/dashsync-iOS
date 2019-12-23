@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSData *packetHash;
 @property (nullable, nonatomic, retain) NSData *payloadSignature;
 @property (nullable, nonatomic, retain) NSData *registrationTransactionHash;
-@property (nullable, nonatomic, retain) DSBlockchainIdentityRegistrationTransactionEntity *blockchainIdentityRegistrationTransaction;
+@property (nullable, nonatomic, retain) DSBlockchainIdentityRegistrationTransitionEntity *blockchainIdentityRegistrationTransaction;
 
 @end
 

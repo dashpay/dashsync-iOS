@@ -269,7 +269,7 @@
                     
                     [self setBackgroundForCell:cell indexPath:indexPath];
                     cell.titleLabel.text = NSLocalizedString(@"type:", nil);
-                    if ([self.transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
+                    if ([self.transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
                         cell.statusLabel.text = @"BU Registration Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityTopupTransaction class]]) {
                         cell.statusLabel.text = @"BU Topup Transaction";
@@ -504,8 +504,8 @@
         case 3:
         {
             
-            if ([self.transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransaction class]]) {
-                DSBlockchainIdentityRegistrationTransaction * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransaction *)self.transaction;
+            if ([self.transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)self.transaction;
                 switch (indexPath.row) {
                     case 0:
                     {

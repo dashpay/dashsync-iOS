@@ -25,7 +25,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSPotentialFriendship.h"
 #import "DSAccountEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityRegistrationTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSIncomingFundsDerivationPath.h"

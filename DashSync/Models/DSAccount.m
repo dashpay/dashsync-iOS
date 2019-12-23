@@ -34,7 +34,7 @@
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
-#import "DSBlockchainIdentityRegistrationTransaction.h"
+#import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityTopupTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
@@ -861,6 +861,18 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
 - (DSTransaction *)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
+{
+    NSParameterAssert(address);
+    
+    NSMutableData *script = [NSMutableData data];
+    
+    [script appendScriptPubKeyForAddress:address forChain:self.wallet.chain];
+    
+    return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
+}
+
+// returns an unsigned transaction that sends the specified amount from the wallet to the given address
+- (DSTransaction *)creditBurnTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     NSParameterAssert(address);
     

@@ -25,7 +25,7 @@
         <attribute name="previousBlockchainUserTransactionHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="registrationTransactionHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
-    <entity name="DSBlockchainIdentityRegistrationTransactionEntity" representedClassName="DSBlockchainIdentityRegistrationTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+    <entity name="DSBlockchainIdentityRegistrationTransitionEntity" representedClassName="DSBlockchainIdentityRegistrationTransitionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <attribute name="payloadSignature" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="publicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
@@ -82,7 +82,7 @@
         <attribute name="encryptionPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <relationship name="associatedBlockchainIdentityRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityRegistrationTransactionEntity" inverseName="ownContact" inverseEntity="DSBlockchainIdentityRegistrationTransactionEntity" indexed="YES" syncable="YES"/>
+        <relationship name="associatedBlockchainIdentityRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityRegistrationTransitionEntity" inverseName="ownContact" inverseEntity="DSBlockchainIdentityRegistrationTransitionEntity" indexed="YES" syncable="YES"/>
         <relationship name="chain" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contacts" inverseEntity="DSChainEntity" syncable="YES"/>
         <relationship name="friends" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSContactEntity" inverseName="friends" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
@@ -395,7 +395,7 @@
         <attribute name="payloadSignature" attributeType="Binary" syncable="YES"/>
         <attribute name="previousSubcriptionHash" attributeType="Binary" syncable="YES"/>
         <attribute name="registrationTransactionHash" attributeType="Binary" syncable="YES"/>
-        <relationship name="blockchainIdentityRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityRegistrationTransactionEntity" inverseName="transitions" inverseEntity="DSBlockchainIdentityRegistrationTransactionEntity" indexed="YES" syncable="YES"/>
+        <relationship name="blockchainIdentityRegistrationTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityRegistrationTransitionEntity" inverseName="transitions" inverseEntity="DSBlockchainIdentityRegistrationTransitionEntity" indexed="YES" syncable="YES"/>
         <relationship name="contactProfileCreations" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="profileTransition" inverseEntity="DSContactEntity" syncable="YES"/>
         <relationship name="contactRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="transition" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
     </entity>
@@ -424,7 +424,7 @@
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
         <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="180"/>
         <element name="DSBlockchainIdentityCloseTransactionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="103"/>
-        <element name="DSBlockchainIdentityRegistrationTransactionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="118"/>
+        <element name="DSBlockchainIdentityRegistrationTransitionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="118"/>
         <element name="DSBlockchainIdentityResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="118"/>
         <element name="DSBlockchainIdentityTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="58"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="328"/>
