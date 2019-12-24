@@ -59,7 +59,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSTransition.h"
 #import "DSLocalMasternode+Protected.h"
@@ -2063,7 +2063,7 @@ static dispatch_once_t devnetToken = 0;
     }
 }
 
--(BOOL)registerBlockchainIdentityTopupTransaction:(DSBlockchainIdentityTopupTransaction*)blockchainIdentityTopupTransaction {
+-(BOOL)registerBlockchainIdentityTopupTransaction:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction {
     DSWallet * blockchainIdentityRegistrationWallet = nil;
     DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
     if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
@@ -2105,8 +2105,8 @@ static dispatch_once_t devnetToken = 0;
     } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransaction class]]) {
         DSBlockchainIdentityCloseTransaction * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransaction *)transaction;
         return [self registerBlockchainIdentityCloseTransaction:blockchainIdentityCloseTransaction];
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransaction class]]) {
-        DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransaction *)transaction;
+    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
         return [self registerBlockchainIdentityTopupTransaction:blockchainIdentityTopupTransaction];
     } else if ([transaction isKindOfClass:[DSTransition class]]) {
         DSTransition * transition = (DSTransition*)transaction;
@@ -2154,8 +2154,8 @@ static dispatch_once_t devnetToken = 0;
     } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransaction class]]) {
         DSBlockchainIdentityCloseTransaction * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransaction *)transaction;
         if ([self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransaction class]]) {
-        DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransaction *)transaction;
+    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
         if ([self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash]) return TRUE;
     }
     return FALSE;
@@ -2189,8 +2189,8 @@ static dispatch_once_t devnetToken = 0;
                 [wallet registerBlockchainIdentity:blockchainIdentity];
             }
         }
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransaction class]]) {
-        DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransaction *)transaction;
+    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
         DSWallet * wallet;
         [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&wallet];
         DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityTopupTransaction.registrationTransactionHash];

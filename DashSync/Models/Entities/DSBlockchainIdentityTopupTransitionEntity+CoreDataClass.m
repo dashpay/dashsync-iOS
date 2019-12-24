@@ -1,23 +1,23 @@
 //
-//  DSBlockchainIdentityTopupTransactionEntity+CoreDataClass.m
+//  DSBlockchainIdentityTopupTransitionEntity+CoreDataClass.m
 //  DashSync
 //
 //  Created by Sam Westrich on 8/27/18.
 //
 //
 
-#import "DSBlockchainIdentityTopupTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransitionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 
-@implementation DSBlockchainIdentityTopupTransactionEntity
+@implementation DSBlockchainIdentityTopupTransitionEntity
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
     [self.managedObjectContext performBlockAndWait:^{
         [super setAttributesFromTransaction:tx];
-        DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransaction*)tx;
+        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition*)tx;
         self.specialTransactionVersion = blockchainIdentityTopupTransaction.blockchainIdentityTopupTransactionVersion;
         self.registrationTransactionHash = [NSData dataWithUInt256:blockchainIdentityTopupTransaction.registrationTransactionHash];
     }];
@@ -27,7 +27,7 @@
 
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
-    DSBlockchainIdentityTopupTransaction * transaction = (DSBlockchainIdentityTopupTransaction *)[super transactionForChain:chain];
+    DSBlockchainIdentityTopupTransition * transaction = (DSBlockchainIdentityTopupTransition *)[super transactionForChain:chain];
     transaction.type = DSTransactionType_SubscriptionTopUp;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.blockchainIdentityTopupTransactionVersion = self.specialTransactionVersion;
@@ -38,7 +38,7 @@
 }
 
 -(Class)transactionClass {
-    return [DSBlockchainIdentityTopupTransaction class];
+    return [DSBlockchainIdentityTopupTransition class];
 }
 
 

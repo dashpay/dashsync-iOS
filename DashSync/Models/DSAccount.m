@@ -36,7 +36,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 
 #import "DSTransactionEntity+CoreDataClass.h"

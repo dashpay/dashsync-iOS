@@ -325,36 +325,37 @@ CFAllocatorRef SecureAllocator()
 
 - (void)appendCreditBurnScriptPubKeyForAddress:(NSString *)address forChain:(DSChain*)chain
 {
-    uint8_t pubkeyAddress, scriptAddress;
+    //uint8_t pubkeyAddress, scriptAddress;
     NSData *d = address.base58checkToData;
 
     if (d.length != 21) return;
 
-    uint8_t version = *(const uint8_t *)d.bytes;
+    //uint8_t version = *(const uint8_t *)d.bytes;
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
-
-    if ([chain isMainnet]) {
-        pubkeyAddress = DASH_PUBKEY_ADDRESS;
-        scriptAddress = DASH_SCRIPT_ADDRESS;
-    } else {
-        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
-        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
-    }
     
     [self appendUInt8:OP_RETURN];
-    
-    if (version == pubkeyAddress) {
-        [self appendUInt8:OP_DUP];
-        [self appendUInt8:OP_HASH160];
-        [self appendScriptPushData:hash];
-        [self appendUInt8:OP_EQUALVERIFY];
-        [self appendUInt8:OP_CHECKSIG];
-    }
-    else if (version == scriptAddress) {
-        [self appendUInt8:OP_HASH160];
-        [self appendScriptPushData:hash];
-        [self appendUInt8:OP_EQUAL];
-    }
+    [self appendData:hash];
+
+//    if ([chain isMainnet]) {
+//        pubkeyAddress = DASH_PUBKEY_ADDRESS;
+//        scriptAddress = DASH_SCRIPT_ADDRESS;
+//    } else {
+//        pubkeyAddress = DASH_PUBKEY_ADDRESS_TEST;
+//        scriptAddress = DASH_SCRIPT_ADDRESS_TEST;
+//    }
+//
+//    if (version == pubkeyAddress) {
+//        [self appendUInt8:OP_DUP];
+//        [self appendUInt8:OP_HASH160];
+//        [self appendScriptPushData:hash];
+//        [self appendUInt8:OP_EQUALVERIFY];
+//        [self appendUInt8:OP_CHECKSIG];
+//    }
+//    else if (version == scriptAddress) {
+//        [self appendUInt8:OP_HASH160];
+//        [self appendScriptPushData:hash];
+//        [self appendUInt8:OP_EQUAL];
+//    }
 }
 
 - (void)appendShapeshiftMemoForAddress:(NSString *)address

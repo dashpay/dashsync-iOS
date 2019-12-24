@@ -1,23 +1,23 @@
 //
-//  DSBlockchainIdentityTopupTransaction.m
+//  DSBlockchainIdentityTopupTransition.m
 //  DashSync
 //
 //  Created by Sam Westrich on 7/30/18.
 //
 
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityTopupTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityTopupTransitionEntity+CoreDataClass.h"
 
-@interface DSBlockchainIdentityTopupTransaction()
+@interface DSBlockchainIdentityTopupTransition()
 
 @end
 
-@implementation DSBlockchainIdentityTopupTransaction
+@implementation DSBlockchainIdentityTopupTransition
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
@@ -102,7 +102,7 @@
 }
 
 -(Class)entityClass {
-    return [DSBlockchainIdentityTopupTransactionEntity class];
+    return [DSBlockchainIdentityTopupTransitionEntity class];
 }
 
 @end

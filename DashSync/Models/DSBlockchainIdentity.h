@@ -10,7 +10,7 @@
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransaction,DSBlockchainIdentityResetTransaction,DSBlockchainIdentityCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact;
+@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityResetTransaction,DSBlockchainIdentityCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact;
 
 @interface DSBlockchainIdentity : NSObject
 
@@ -45,11 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion;
 
--(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction))completion;
+-(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction))completion;
 
 -(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityResetTransaction * blockchainIdentityResetTransaction))completion;
 
--(void)updateWithTopupTransaction:(DSBlockchainIdentityTopupTransaction*)blockchainIdentityTopupTransaction save:(BOOL)save;
+-(void)updateWithTopupTransaction:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction save:(BOOL)save;
 -(void)updateWithResetTransaction:(DSBlockchainIdentityResetTransaction*)blockchainIdentityResetTransaction save:(BOOL)save;
 -(void)updateWithCloseTransaction:(DSBlockchainIdentityCloseTransaction*)blockchainIdentityCloseTransaction save:(BOOL)save;
 -(void)updateWithTransition:(DSTransition*)transition save:(BOOL)save;

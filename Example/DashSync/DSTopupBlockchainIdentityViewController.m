@@ -95,7 +95,7 @@
         return;
     }
     
-    [self.blockchainIdentity topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainIdentityTopupTransaction *blockchainIdentityTopupTransaction) {
+    [self.blockchainIdentity topupTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainIdentityTopupTransition *blockchainIdentityTopupTransaction) {
         if (blockchainIdentityTopupTransaction) {
             [self.fundingAccount signTransaction:blockchainIdentityTopupTransaction withPrompt:@"Fund Transaction" completion:^(BOOL signedTransaction, BOOL cancelled) {
                 if (signedTransaction) {

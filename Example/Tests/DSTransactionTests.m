@@ -14,7 +14,7 @@
 #import "DSTransaction.h"
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSTransactionFactory.h"
@@ -218,11 +218,11 @@
     
     [script appendScriptPubKeyForAddress:inputAddress forChain:devnetDRA];
     
-    DSBlockchainIdentityTopupTransaction *blockchainIdentityTopupTransactionFromMessage = [[DSBlockchainIdentityTopupTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    DSBlockchainIdentityTopupTransition *blockchainIdentityTopupTransactionFromMessage = [[DSBlockchainIdentityTopupTransition alloc] initWithMessage:hexData onChain:devnetDRA];
     
     XCTAssertEqualObjects(blockchainIdentityTopupTransactionFromMessage.toData,hexData,@"Blockchain user topup transaction does not match it's data");
     
-    DSBlockchainIdentityTopupTransaction *blockchainIdentityTopupTransaction = [[DSBlockchainIdentityTopupTransaction alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainIdentityTopupTransactionVersion:1 registrationTransactionHash:blockchainIdentityRegistrationTransactionHash topupAmount:100000000 topupIndex:0 onChain:devnetDRA];
+    DSBlockchainIdentityTopupTransition *blockchainIdentityTopupTransaction = [[DSBlockchainIdentityTopupTransition alloc] initWithInputHashes:@[hash] inputIndexes:@[@0] inputScripts:@[script] inputSequences:@[@(TXIN_SEQUENCE - 1)] outputAddresses:@[outputAddress0] outputAmounts:@[@24899998674] blockchainIdentityTopupTransactionVersion:1 registrationTransactionHash:blockchainIdentityRegistrationTransactionHash topupAmount:100000000 topupIndex:0 onChain:devnetDRA];
     
     [blockchainIdentityTopupTransaction signWithSerializedPrivateKeys:@[inputPrivateKey]];
 

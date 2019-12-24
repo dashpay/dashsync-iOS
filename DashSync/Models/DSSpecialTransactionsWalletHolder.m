@@ -15,7 +15,7 @@
 #import "DSProviderUpdateRevocationTransactionEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityResetTransactionEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityCloseTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityTopupTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityTopupTransitionEntity+CoreDataClass.h"
 #import "DSTransitionEntity+CoreDataClass.h"
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
@@ -30,7 +30,7 @@
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSTransition.h"
@@ -156,7 +156,7 @@
         [self.blockchainIdentityCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             added = TRUE;
         }
-    } else if ([transaction isMemberOfClass:[DSBlockchainIdentityTopupTransaction class]]) {
+    } else if ([transaction isMemberOfClass:[DSBlockchainIdentityTopupTransition class]]) {
         if (![self.blockchainIdentityTopupTransactions objectForKey:uint256_data(transaction.txHash)]) {
         [self.blockchainIdentityTopupTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             added = TRUE;
@@ -262,8 +262,8 @@
                 [self.blockchainIdentityCloseTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
             }
             
-            NSArray<DSBlockchainIdentityTopupTransactionEntity *>* blockchainIdentityTopupTransactions = [DSBlockchainIdentityTopupTransactionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
-            for (DSBlockchainIdentityTopupTransactionEntity *e in blockchainIdentityTopupTransactions) {
+            NSArray<DSBlockchainIdentityTopupTransitionEntity *>* blockchainIdentityTopupTransactions = [DSBlockchainIdentityTopupTransitionEntity objectsMatching:@"registrationTransactionHash == %@",uint256_data(blockchainIdentityRegistrationTransaction.txHash)];
+            for (DSBlockchainIdentityTopupTransitionEntity *e in blockchainIdentityTopupTransactions) {
                 DSTransaction *transaction = [e transactionForChain:self.wallet.chain];
                 
                 if (! transaction) continue;
@@ -303,7 +303,7 @@
 - (NSArray<DSTransaction*>*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash {
     NSLog(@"blockchainIdentityRegistrationTransactionHash %@",uint256_hex(blockchainIdentityRegistrationTransactionHash));
     NSMutableArray<DSTransaction*> * subscriptionTransactions = [NSMutableArray array];
-    for (DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction in [self.blockchainIdentityTopupTransactions allValues]) {
+    for (DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction in [self.blockchainIdentityTopupTransactions allValues]) {
         if (uint256_eq(blockchainIdentityTopupTransaction.registrationTransactionHash, blockchainIdentityRegistrationTransactionHash)) {
             [subscriptionTransactions addObject:blockchainIdentityTopupTransaction];
         }
@@ -333,7 +333,7 @@
     while ([subscriptionTransactions count]) {
         BOOL found = FALSE;
         for (DSTransaction * transaction in [subscriptionTransactions copy]) {
-            if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransaction class]]) {
+            if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
                 [subscriptionTransactions removeObject:transaction]; //remove topups
             } else if ([transaction isKindOfClass:[DSBlockchainIdentityResetTransaction class]]) {
                 DSBlockchainIdentityResetTransaction * blockchainIdentityResetTransaction = (DSBlockchainIdentityResetTransaction*)transaction;

@@ -14,7 +14,7 @@
 #import "NSCoder+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityTopupTransaction.h"
+#import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityResetTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSAuthenticationManager.h"
@@ -54,7 +54,7 @@
 @property (nonatomic,assign) uint64_t creditBalance;
 
 @property(nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
-@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransaction*>* blockchainIdentityTopupTransactions;
+@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransition*>* blockchainIdentityTopupTransactions;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransaction*>* blockchainIdentityCloseTransactions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityResetTransaction*>* blockchainIdentityResetTransactions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
@@ -209,7 +209,7 @@
     }];
 }
 
--(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction))completion {
+-(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction))completion {
     NSParameterAssert(fundingAccount);
     
     NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to topup %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
@@ -218,7 +218,7 @@
             completion(nil);
             return;
         }
-        DSBlockchainIdentityTopupTransaction * blockchainIdentityTopupTransaction = [[DSBlockchainIdentityTopupTransaction alloc] initWithBlockchainIdentityTopupTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash onChain:self.wallet.chain];
+        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = [[DSBlockchainIdentityTopupTransition alloc] initWithBlockchainIdentityTopupTransactionVersion:1 registrationTransactionHash:self.registrationTransactionHash onChain:self.wallet.chain];
         
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];
@@ -247,7 +247,7 @@
     }];
 }
 
--(void)updateWithTopupTransaction:(DSBlockchainIdentityTopupTransaction*)blockchainIdentityTopupTransaction save:(BOOL)save {
+-(void)updateWithTopupTransaction:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction save:(BOOL)save {
     NSParameterAssert(blockchainIdentityTopupTransaction);
     
     if (![_blockchainIdentityTopupTransactions containsObject:blockchainIdentityTopupTransaction]) {

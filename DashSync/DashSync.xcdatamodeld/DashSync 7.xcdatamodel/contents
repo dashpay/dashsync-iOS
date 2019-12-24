@@ -39,7 +39,7 @@
         <attribute name="registrationTransactionHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <attribute name="replacementPubKey" optional="YES" attributeType="Binary" syncable="YES"/>
     </entity>
-    <entity name="DSBlockchainIdentityTopupTransactionEntity" representedClassName="DSBlockchainIdentityTopupTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
+    <entity name="DSBlockchainIdentityTopupTransitionEntity" representedClassName="DSBlockchainIdentityTopupTransitionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <attribute name="registrationTransactionHash" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="DSChainEntity" representedClassName="DSChainEntity" syncable="YES">
@@ -426,7 +426,7 @@
         <element name="DSBlockchainIdentityCloseTransactionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="103"/>
         <element name="DSBlockchainIdentityRegistrationTransitionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="118"/>
         <element name="DSBlockchainIdentityResetTransactionEntity" positionX="-1238.328125" positionY="1254.44140625" width="128" height="118"/>
-        <element name="DSBlockchainIdentityTopupTransactionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="58"/>
+        <element name="DSBlockchainIdentityTopupTransitionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="58"/>
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="328"/>
         <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="103"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
