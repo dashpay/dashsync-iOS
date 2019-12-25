@@ -56,8 +56,8 @@
 
 @property(nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransition*>* blockchainIdentityTopupTransitions;
-@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransition*>* blockchainIdentityCloseTransactions; //this is also a transition
-@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityResetTransition*>* blockchainIdentityResetTransactions; //this is also a transition
+@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransition*>* blockchainIdentityCloseTransitions; //this is also a transition
+@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityResetTransition*>* blockchainIdentityResetTransitions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
 @property(nonatomic,strong) NSMutableArray <DSTransaction*>* allTransitions;
 
@@ -81,8 +81,8 @@
     self.registrationTransitionHash = UINT256_ZERO;
     self.index = index;
     self.blockchainIdentityTopupTransitions = [NSMutableArray array];
-    self.blockchainIdentityCloseTransactions = [NSMutableArray array];
-    self.blockchainIdentityResetTransactions = [NSMutableArray array];
+    self.blockchainIdentityCloseTransitions = [NSMutableArray array];
+    self.blockchainIdentityResetTransitions = [NSMutableArray array];
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
     if (managedObjectContext) {
@@ -129,9 +129,9 @@
         if ([transaction isKindOfClass:[DSTransition class]]) {
             [self.baseTransitions addObject:(DSTransition*)transaction];
         } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-            [self.blockchainIdentityCloseTransactions addObject:(DSBlockchainIdentityCloseTransition*)transaction];
+            [self.blockchainIdentityCloseTransitions addObject:(DSBlockchainIdentityCloseTransition*)transaction];
         } else if ([transaction isKindOfClass:[DSBlockchainIdentityResetTransition class]]) {
-            [self.blockchainIdentityResetTransactions addObject:(DSBlockchainIdentityResetTransition*)transaction];
+            [self.blockchainIdentityResetTransitions addObject:(DSBlockchainIdentityResetTransition*)transaction];
         }
     }
 }
@@ -265,8 +265,8 @@
 -(void)updateWithResetTransaction:(DSBlockchainIdentityResetTransition*)blockchainIdentityResetTransaction save:(BOOL)save {
     NSParameterAssert(blockchainIdentityResetTransaction);
     
-    if (![_blockchainIdentityResetTransactions containsObject:blockchainIdentityResetTransaction]) {
-        [_blockchainIdentityResetTransactions addObject:blockchainIdentityResetTransaction];
+    if (![_blockchainIdentityResetTransitions containsObject:blockchainIdentityResetTransaction]) {
+        [_blockchainIdentityResetTransitions addObject:blockchainIdentityResetTransaction];
         [_allTransitions addObject:blockchainIdentityResetTransaction];
         if (save) {
             [self save];
@@ -277,8 +277,8 @@
 -(void)updateWithCloseTransaction:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction save:(BOOL)save {
     NSParameterAssert(blockchainIdentityCloseTransaction);
     
-    if (![_blockchainIdentityCloseTransactions containsObject:blockchainIdentityCloseTransaction]) {
-        [_blockchainIdentityCloseTransactions addObject:blockchainIdentityCloseTransaction];
+    if (![_blockchainIdentityCloseTransitions containsObject:blockchainIdentityCloseTransaction]) {
+        [_blockchainIdentityCloseTransitions addObject:blockchainIdentityCloseTransaction];
         [_allTransitions addObject:blockchainIdentityCloseTransaction];
         if (save) {
             [self save];

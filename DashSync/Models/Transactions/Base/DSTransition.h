@@ -10,15 +10,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define TS_VERSION    0x00000001u
+
 @class DSKey, DSBlockchainIdentity;
 
 @interface DSTransition : NSObject
 
-@property (nonatomic, readonly) uint16_t transitionVersion;
+@property (nonatomic, readonly) uint16_t version;
+@property (nonatomic, readonly) uint16_t type;
 @property (nonatomic, readonly) DSBlockchainIdentity * owner;
 @property (nonatomic, readonly) UInt256 registrationTransactionHash;
 @property (nonatomic, readonly) uint64_t creditFee;
 @property (nonatomic, readonly) UInt256 packetHash;
+@property (nonatomic, readonly) UInt256 transitionHash;
+
+@property (nonatomic, readonly, getter = toData) NSData *data;
 
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
