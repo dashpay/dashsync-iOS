@@ -15,7 +15,8 @@
 @property(nonatomic,strong) NSMutableDictionary * ownerKeysDerivationPathByWallet;
 @property(nonatomic,strong) NSMutableDictionary * operatorKeysDerivationPathByWallet;
 @property(nonatomic,strong) NSMutableDictionary * providerFundsDerivationPathByWallet;
-@property(nonatomic,strong) NSMutableDictionary * blockchainIdentitiesDerivationPathByWallet;
+@property(nonatomic,strong) NSMutableDictionary * blockchainIdentityBLSDerivationPathByWallet;
+@property(nonatomic,strong) NSMutableDictionary * blockchainIdentityECDSADerivationPathByWallet;
 
 @end
 
@@ -105,22 +106,40 @@
     return [self.providerFundsDerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
-- (DSAuthenticationKeysDerivationPath*)blockchainIdentitiesKeysDerivationPathForWallet:(DSWallet*)wallet {
-    static dispatch_once_t blockchainIdentitiesDerivationPathByWalletToken = 0;
-    dispatch_once(&blockchainIdentitiesDerivationPathByWalletToken, ^{
-        self.blockchainIdentitiesDerivationPathByWallet = [NSMutableDictionary dictionary];
+- (DSAuthenticationKeysDerivationPath*)blockchainIdentityBLSKeysDerivationPathForWallet:(DSWallet*)wallet {
+    static dispatch_once_t blockchainIdentityBLSDerivationPathByWalletToken = 0;
+    dispatch_once(&blockchainIdentityBLSDerivationPathByWalletToken, ^{
+        self.blockchainIdentityBLSDerivationPathByWallet = [NSMutableDictionary dictionary];
     });
     @synchronized(self) {
-        if (![self.blockchainIdentitiesDerivationPathByWallet objectForKey:wallet.uniqueID]) {
-            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesKeysDerivationPathForChain:wallet.chain];
+        if (![self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueID]) {
+            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
             derivationPath.wallet = wallet;
             if (derivationPath.hasExtendedPublicKey) {
                 [derivationPath loadAddresses];
             }
-            [self.blockchainIdentitiesDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+            [self.blockchainIdentityBLSDerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
         }
     }
-    return [self.blockchainIdentitiesDerivationPathByWallet objectForKey:wallet.uniqueID];
+    return [self.blockchainIdentityBLSDerivationPathByWallet objectForKey:wallet.uniqueID];
+}
+
+- (DSAuthenticationKeysDerivationPath*)blockchainIdentityECDSAKeysDerivationPathForWallet:(DSWallet*)wallet {
+    static dispatch_once_t blockchainIdentityECDSADerivationPathByWalletToken = 0;
+    dispatch_once(&blockchainIdentityECDSADerivationPathByWalletToken, ^{
+        self.blockchainIdentityECDSADerivationPathByWallet = [NSMutableDictionary dictionary];
+    });
+    @synchronized(self) {
+        if (![self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueID]) {
+            DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:wallet.chain];
+            derivationPath.wallet = wallet;
+            if (derivationPath.hasExtendedPublicKey) {
+                [derivationPath loadAddresses];
+            }
+            [self.blockchainIdentityECDSADerivationPathByWallet setObject:derivationPath forKey:wallet.uniqueID];
+        }
+    }
+    return [self.blockchainIdentityECDSADerivationPathByWallet objectForKey:wallet.uniqueID];
 }
 
 - (NSArray<DSDerivationPath*>*)loadedSpecializedDerivationPathsForWallet:(DSWallet*)wallet {
@@ -130,7 +149,7 @@
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerVotingKeysDerivationPathForWallet:wallet]];
     [mArray addObject:[[DSDerivationPathFactory sharedInstance] providerFundsDerivationPathForWallet:wallet]];
     if (wallet.chain.isDevnetAny) {
-        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainIdentitiesKeysDerivationPathForWallet:wallet]];
+        [mArray addObject:[[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet]];
     }
     return mArray;
 }
@@ -177,7 +196,7 @@
     
     if (wallet.chain.isDevnetAny) {
         //Blockchain Identities
-        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesKeysDerivationPathForChain:wallet.chain];
+        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:wallet.chain];
         blockchainIdentitiesDerivationPath.wallet = wallet;
         
         [mArray addObject:blockchainIdentitiesDerivationPath];

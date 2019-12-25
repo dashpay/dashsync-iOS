@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentityCloseTransactionEntity+CoreDataClass.h
+//  DSBlockchainIdentityCloseTransitionEntity+CoreDataClass.h
 //  DashSync
 //
 //  Created by Sam Westrich on 8/29/18.
@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentityCloseTransactionEntity : DSSpecialTransactionEntity
+@interface DSBlockchainIdentityCloseTransitionEntity : DSSpecialTransactionEntity
 
 @end
 

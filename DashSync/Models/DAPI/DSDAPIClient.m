@@ -109,7 +109,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                    userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
         return;
     }
-    [service getUserById:uint256_reverse_hex(blockchainIdentity.registrationTransactionHash) success:^(NSDictionary * _Nonnull blockchainIdentityDictionary) {
+    [service getUserById:uint256_reverse_hex(blockchainIdentity.registrationTransitionHash) success:^(NSDictionary * _Nonnull blockchainIdentityDictionary) {
         if ([blockchainIdentityDictionary objectForKey:@"subtx"] && [[blockchainIdentityDictionary objectForKey:@"subtx"] isKindOfClass:[NSArray class]]) {
             NSArray * subscriptionTransactions = [blockchainIdentityDictionary objectForKey:@"subtx"];
             NSMutableArray * oldSubscriptionTransactionHashes = [NSMutableArray array];

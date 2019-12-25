@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentityCloseTransactionEntity+CoreDataClass.m
+//  DSBlockchainIdentityCloseTransitionEntity+CoreDataClass.m
 //  DashSync
 //
 //  Created by Sam Westrich on 8/29/18.
@@ -7,11 +7,11 @@
 //
 
 #import "DSBlockchainIdentityCloseTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityCloseTransaction.h"
+#import "DSBlockchainIdentityCloseTransition.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 
-@implementation DSBlockchainIdentityCloseTransactionEntity
+@implementation DSBlockchainIdentityCloseTransitionEntity
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {
@@ -29,7 +29,7 @@
 
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
-    DSBlockchainIdentityCloseTransaction * transaction = (DSBlockchainIdentityCloseTransaction *)[super transactionForChain:chain];
+    DSBlockchainIdentityCloseTransition * transaction = (DSBlockchainIdentityCloseTransaction *)[super transactionForChain:chain];
     transaction.type = DSTransactionType_SubscriptionCloseAccount;
     [self.managedObjectContext performBlockAndWait:^{
         transaction.blockchainIdentityCloseTransactionVersion = self.specialTransactionVersion;
@@ -42,7 +42,7 @@
 }
 
 -(Class)transactionClass {
-    return [DSBlockchainIdentityCloseTransaction class];
+    return [DSBlockchainIdentityCloseTransition class];
 }
 
 @end

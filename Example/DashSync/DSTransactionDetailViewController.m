@@ -273,7 +273,7 @@
                         cell.statusLabel.text = @"BU Registration Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityTopupTransition class]]) {
                         cell.statusLabel.text = @"BU Topup Transaction";
-                    } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityResetTransaction class]]) {
+                    } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityResetTransition class]]) {
                         cell.statusLabel.text = @"BU Reset Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
                         cell.statusLabel.text = @"Masternode Registration Transaction";
@@ -595,8 +595,8 @@
                     }
                         
                 }
-            } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityResetTransaction class]]) {
-                DSBlockchainIdentityResetTransaction * blockchainIdentityResetTransaction = (DSBlockchainIdentityResetTransaction *)self.transaction;
+            } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityResetTransition class]]) {
+                DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityResetTransition *)self.transaction;
                 switch (indexPath.row) {
                     case 0:
                     {

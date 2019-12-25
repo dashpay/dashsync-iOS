@@ -59,8 +59,8 @@
         DSBlockchainIdentity * blockchainIdentity = [[wallet.blockchainIdentities allValues] objectAtIndex:indexPath.row];
         blockchainIdentityCell.usernameLabel.text = blockchainIdentity.username;
         blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainIdentity.creditBalance];
-        if (blockchainIdentity.blockchainIdentityRegistrationTransaction) {
-            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.blockchainIdentityRegistrationTransaction.blockHeight)];
+        if (blockchainIdentity.blockchainIdentityRegistrationTransition) {
+            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.blockchainIdentityRegistrationTransition.blockHeight)];
         }
        // blockchainIdentityCell.publicKeyLabel.text = blockchainIdentity;
     }

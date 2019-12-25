@@ -23,7 +23,7 @@
         self.previousSubcriptionHash = [NSData dataWithUInt256:transition.previousTransitionHash];
         self.creditFee = transition.creditFee;
         self.packetHash = [NSData dataWithUInt256:transition.packetHash];
-        self.payloadSignature = transition.payloadSignature;
+        self.payloadSignature = [NSData dataWithUInt768:transition.payloadSignature];
     }];
     
     return self;
@@ -39,7 +39,7 @@
         transaction.previousTransitionHash = self.previousSubcriptionHash.UInt256;
         transaction.creditFee = self.creditFee;
         transaction.packetHash = self.packetHash.UInt256;
-        transaction.payloadSignature = self.payloadSignature;
+        transaction.payloadSignature = self.payloadSignature.UInt768;
     }];
     
     return transaction;

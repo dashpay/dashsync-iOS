@@ -408,7 +408,7 @@
     XCTAssertEqualObjects(compactSignature.hexString, providerUpdateRegistrarTransactionFromMessage.payloadSignature.hexString,@"payload signature doesn't match");
     
     
-    BOOL verified = [privateKey verify:payloadHash signature:compactSignature];
+    BOOL verified = [privateKey verify:payloadHash signatureData:compactSignature];
     
     XCTAssertTrue(verified,@"The signature is not signed correctly");
     

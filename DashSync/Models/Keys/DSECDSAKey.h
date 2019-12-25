@@ -73,7 +73,6 @@ int DSSecp256k1PointMul(DSECPoint * p, const UInt256 * i);
 - (nullable instancetype)initWithCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md;
 
 - (NSData * _Nullable)sign:(UInt256)md;
-- (BOOL)verify:(UInt256)md signature:(NSData *)sig;
 
 - (NSString * _Nullable)privateKeyStringForChain:(DSChain* _Nonnull)chain;
 // Pieter Wuille's compact signature encoding used for bitcoin message signing

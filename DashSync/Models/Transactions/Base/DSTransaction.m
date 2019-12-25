@@ -406,7 +406,25 @@
         [self.hashes[0] getValue:&firstInputHash];
         if (uint256_is_zero(firstInputHash) && [[self.inputIndexes objectAtIndex:0] integerValue] == UINT32_MAX) return TRUE;
     }
-    return FALSE;
+    return NO;
+}
+
+-(BOOL)isCreditFundingTransaction {
+    for (NSData * script in self.outputScripts) {
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+-(NSString*)creditBurnIdentityIdentifier {
+    for (NSData * script in self.outputScripts) {
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
+            return [script base58String];
+        }
+    }
+    return nil;
 }
 
 - (NSUInteger)hash

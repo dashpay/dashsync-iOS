@@ -88,8 +88,8 @@
 
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityResetTransaction.h"
-#import "DSBlockchainIdentityCloseTransaction.h"
+#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityCloseTransition.h"
 
 #import "DSMasternodeList.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"

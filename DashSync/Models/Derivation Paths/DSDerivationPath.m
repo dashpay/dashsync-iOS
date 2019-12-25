@@ -659,6 +659,15 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
     return nil;
 }
 
+-(DSKey*)publicKeyAtIndexPath:(NSIndexPath*)indexPath onChain:(DSChain*)chain {
+    if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [DSECDSAKey keyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath]];
+    } else if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_BLS) {
+        return [DSBLSKey blsKeyWithPublicKey:[self publicKeyDataAtIndexPath:indexPath].UInt384 onChain:chain];
+    }
+    return nil;
+}
+
 - (NSData *)publicKeyDataAtIndexPath:(NSIndexPath*)indexPath
 {
     if (self.signingAlgorithm == DSDerivationPathSigningAlgorith_ECDSA) {

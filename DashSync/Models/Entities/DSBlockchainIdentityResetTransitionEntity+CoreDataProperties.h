@@ -1,19 +1,19 @@
 //
-//  DSBlockchainIdentityResetTransactionEntity+CoreDataProperties.h
+//  DSBlockchainIdentityResetTransitionEntity+CoreDataProperties.h
 //  DashSync
 //
 //  Created by Sam Westrich on 8/29/18.
 //
 //
 
-#import "DSBlockchainIdentityResetTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityResetTransitionEntity+CoreDataClass.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentityResetTransactionEntity (CoreDataProperties)
+@interface DSBlockchainIdentityResetTransitionEntity (CoreDataProperties)
 
-+ (NSFetchRequest<DSBlockchainIdentityResetTransactionEntity *> *)fetchRequest;
++ (NSFetchRequest<DSBlockchainIdentityResetTransitionEntity *> *)fetchRequest;
 
 @property (assign, nonatomic) uint64_t creditFee;
 @property (nullable, nonatomic, retain) NSData *oldPubKeyPayloadSignature;

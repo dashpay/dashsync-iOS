@@ -14,7 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)providerVotingKeysDerivationPathForChain:(DSChain*)chain;
 + (instancetype)providerOwnerKeysDerivationPathForChain:(DSChain*)chain;
 + (instancetype)providerOperatorKeysDerivationPathForChain:(DSChain*)chain;
-+ (instancetype)blockchainIdentitiesKeysDerivationPathForChain:(DSChain*)chain;
++ (instancetype)blockchainIdentityECDSAKeysDerivationPathForChain:(DSChain*)chain;
++ (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain*)chain;
 
 @end
 

@@ -1,13 +1,13 @@
 //
-//  DSBlockchainIdentityCloseTransaction.h
+//  DSBlockchainIdentityCloseTransition.h
 //  DashSync
 //
 //  Created by Sam Westrich on 8/13/18.
 //
 
-#import "DSTransaction.h"
+#import "DSTransition.h"
 
-@interface DSBlockchainIdentityCloseTransaction : DSTransaction
+@interface DSBlockchainIdentityCloseTransition : DSTransition
 
 @property (nonatomic,assign) uint16_t blockchainIdentityCloseTransactionVersion;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;

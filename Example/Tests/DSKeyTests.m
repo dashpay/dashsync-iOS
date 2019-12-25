@@ -100,7 +100,7 @@
 
     XCTAssertEqualObjects(sig, @"3044022033a69cd2065432a30f3d1ce4eb0d59b8ab58c74f27c41a7fdb5696ad4e6108c902206f80798286"
                           "6f785d3f6418d24163ddae117b7db4d5fdf0071de069fa54342262".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
@@ -110,7 +110,7 @@
 
     XCTAssertEqualObjects(sig, @"3044022054c4a33c6423d689378f160a7ff8b61330444abb58fb470f96ea16d99d4a2fed02200708230441"
                           "0efa6b2943111b6a4e0aaa7b7db55a07e9861d1fb3cb1f421044a5".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140".hexToData.bytes;
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
@@ -120,7 +120,7 @@
 
     XCTAssertEqualObjects(sig, @"3045022100ff466a9f1b7b273e2f4c3ffe032eb2e814121ed18ef84665d0f515360dab3dd002206fc95f51"
                           "32e5ecfdc8e5e6e616cc77151455d46ed48f5589b7db7771a332b283".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"0000000000000000000000000000000000000000000000000000000000000001".hexToData.bytes;
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
@@ -130,7 +130,7 @@
 
     XCTAssertEqualObjects(sig, @"3045022100c0dafec8251f1d5010289d210232220b03202cba34ec11fec58b3e93a85b91d3022075afdc06"
                           "b7d6322a590955bf264e7aaa155847f614d80078a90292fe205064d3".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"69ec59eaa1f4f2e36b639716b7c30ca86d9a5375c7b38d8918bd9c0ebc80ba64".hexToData.bytes;
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
@@ -140,7 +140,7 @@
 
     XCTAssertEqualObjects(sig, @"304402207186363571d65e084e7f02b0b77c3ec44fb1b257dee26274c38c928986fea45d02200de0b38e06"
                           "807e46bda1f1e293f4f6323e854c86d58abdd00c46c16441085df6".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"00000000000000000000000000007246174ab1e92e9149c6e446fe194d072637".hexToData.bytes;
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
@@ -150,7 +150,7 @@
 
     XCTAssertEqualObjects(sig, @"3045022100fbfe5076a15860ba8ed00e75e9bd22e05d230f02a936b653eb55b61c99dda48702200e68880e"
                           "bb0050fe4312b1b1eb0899e1b82da89baa5b895f612619edf34cbd37".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 
     sec = *(UInt256 *)@"000000000000000000000000000000000000000000056916d0f9b31dc9b637f3".hexToData.bytes;
     key = [DSECDSAKey keyWithSecret:sec compressed:YES];
@@ -160,7 +160,7 @@
 
     XCTAssertEqualObjects(sig, @"3045022100cde1302d83f8dd835d89aef803c74a119f561fbaef3eb9129e45f30de86abbf9022006ce643f"
                           "5049ee1f27890467b77a6a8e11ec4661cc38cd8badf90115fbd03cef".hexToData, @"[DSKey sign:]");
-    XCTAssertTrue([key verify:md signature:sig], @"[DSKey verify:signature:]");
+    XCTAssertTrue([key verify:md signatureData:sig], @"[DSKey verify:signature:]");
 }
 
 // MARK: - testCompactSign

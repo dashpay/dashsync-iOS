@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentityCloseTransactionEntity+CoreDataProperties.h
+//  DSBlockchainIdentityCloseTransitionEntity+CoreDataProperties.h
 //  DashSync
 //
 //  Created by Sam Westrich on 8/29/18.
@@ -11,9 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentityCloseTransactionEntity (CoreDataProperties)
+@interface DSBlockchainIdentityCloseTransitionEntity (CoreDataProperties)
 
-+ (NSFetchRequest<DSBlockchainIdentityCloseTransactionEntity *> *)fetchRequest;
++ (NSFetchRequest<DSBlockchainIdentityCloseTransitionEntity *> *)fetchRequest;
 
 @property (assign, nonatomic) uint64_t creditFee;
 @property (nullable, nonatomic, retain) NSData *previousBlockchainIdentityTransactionHash;

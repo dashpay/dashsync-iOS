@@ -5,27 +5,34 @@
 //  Created by Sam Westrich on 7/12/18.
 //
 
-#import "DSTransaction.h"
+#import "BigIntTypes.h"
+#import "DSBlockchainIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSECDSAKey;
+@class DSKey, DSBlockchainIdentity;
 
-@interface DSTransition : DSTransaction
+@interface DSTransition : NSObject
 
-@property (nonatomic,assign) uint16_t transitionVersion;
-@property (nonatomic,assign) UInt256 registrationTransactionHash;
-@property (nonatomic,assign) UInt256 previousTransitionHash;
-@property (nonatomic,assign) uint64_t creditFee;
-@property (nonatomic,assign) UInt256 packetHash;
-@property (nonatomic,strong) NSData * payloadSignature;
+@property (nonatomic, readonly) uint16_t transitionVersion;
+@property (nonatomic, readonly) DSBlockchainIdentity * owner;
+@property (nonatomic, readonly) UInt256 registrationTransactionHash;
+@property (nonatomic, readonly) uint64_t creditFee;
+@property (nonatomic, readonly) UInt256 packetHash;
+
+@property (nonatomic, readonly) DSChain * chain;
+@property (nonatomic, readonly) DSAccount * account;
+@property (nonatomic, readonly) Class entityClass;
+
+@property (nonatomic, readonly) DSBlockchainIdentitySigningType payloadSignatureType;
+@property (nonatomic, readonly) NSData * payloadSignatureData;
 
 -(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain * _Nonnull)chain;
 
 -(instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain;
 
 
--(void)signPayloadWithKey:(DSECDSAKey *)privateKey;
+-(void)signPayloadWithKey:(DSKey *)privateKey;
 
 @end
 

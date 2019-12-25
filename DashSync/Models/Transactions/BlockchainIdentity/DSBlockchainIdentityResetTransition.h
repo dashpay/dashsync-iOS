@@ -5,14 +5,14 @@
 //  Created by Sam Westrich on 8/13/18.
 //
 
-#import "DSTransaction.h"
+#import "DSTransition.h"
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSECDSAKey;
 
-@interface DSBlockchainIdentityResetTransaction : DSTransaction
+@interface DSBlockchainIdentityResetTransition : DSTransition
 
 @property (nonatomic,assign) uint16_t blockchainIdentityResetTransactionVersion;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;

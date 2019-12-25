@@ -66,7 +66,7 @@
 //    [super setBlockHeight:blockHeight];
 //}
 
--(instancetype)initWithBlockchainIdentityRegistrationTransactionVersion:(uint16_t)version username:(NSString*)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain {
+-(instancetype)initWithBlockchainIdentityRegistrationTransitionVersion:(uint16_t)version username:(NSString*)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain {
     NSParameterAssert(username);
     NSParameterAssert(chain);
     

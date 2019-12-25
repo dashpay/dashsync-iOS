@@ -1,11 +1,11 @@
 //
-//  DSBlockchainIdentityResetUserKeyTransaction.m
+//  DSBlockchainIdentityResetTransition.m
 //  DashSync
 //
 //  Created by Sam Westrich on 8/13/18.
 //
 
-#import "DSBlockchainIdentityResetTransaction.h"
+#import "DSBlockchainIdentityResetTransition.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
@@ -13,7 +13,7 @@
 #import "DSTransactionFactory.h"
 #import "DSBlockchainIdentityResetTransactionEntity+CoreDataClass.h"
 
-@implementation DSBlockchainIdentityResetTransaction
+@implementation DSBlockchainIdentityResetTransition
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {
@@ -104,7 +104,7 @@
 //-(NSData*)payloadData {
 //    NSMutableData * data = [NSMutableData data];
 //    [data appendUInt16:self.blockchainIdentityResetTransactionVersion];
-//    [data appendUInt256:self.registrationTransactionHash];
+//    [data appendUInt256:self.registrationTransitionHash];
 //    [data appendUInt256:self.previousBlockchainIdentityTransactionHash];
 //    [data appendUInt64:self.creditFee];
 //    [data appendVarInt:self.replacementPublicKey.length];
@@ -117,7 +117,7 @@
 //-(NSData*)payloadDataForHash {
 //    NSMutableData * data = [NSMutableData data];
 //    [data appendUInt16:self.blockchainIdentityResetTransactionVersion];
-//    [data appendUInt256:self.registrationTransactionHash];
+//    [data appendUInt256:self.registrationTransitionHash];
 //    [data appendUInt256:self.previousBlockchainIdentityTransactionHash];
 //    [data appendUInt64:self.creditFee];
 //    [data appendVarInt:self.replacementPublicKey.length];

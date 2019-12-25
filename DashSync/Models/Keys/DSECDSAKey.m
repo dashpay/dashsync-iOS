@@ -299,7 +299,7 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return sig;
 }
 
-- (BOOL)verify:(UInt256)md signature:(NSData *)sig
+- (BOOL)verify:(UInt256)md signatureData:(NSData *)sig
 {
     NSParameterAssert(sig);
     

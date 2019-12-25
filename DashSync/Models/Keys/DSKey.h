@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) UInt160 hash160;
 @property (nonatomic,readonly) NSString * secretKeyString;
 
+- (BOOL)verify:(UInt256)messageDigest signatureData:(NSData*)signature;
 - (NSString *)addressForChain:(DSChain*)chain;
 + (NSString *)randomAddressForChain:(DSChain*)chain;
 + (NSString *)addressWithPublicKeyData:(NSData*)data forChain:(DSChain*)chain;

@@ -123,6 +123,8 @@ typedef struct _DSLLMQ {
 #define uint160_data(u) [NSData dataWithUInt160:u]
 #define uint256_data(u) [NSData dataWithUInt256:u]
 #define uint384_data(u) [NSData dataWithUInt384:u]
+#define uint512_data(u) [NSData dataWithUInt512:u]
+#define uint768_data(u) [NSData dataWithUInt768:u]
 
 #define uint160_data_from_obj(u) [NSData dataWithUInt160Value:u]
 #define uint256_data_from_obj(u) [NSData dataWithUInt256Value:u]

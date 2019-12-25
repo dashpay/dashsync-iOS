@@ -1,5 +1,5 @@
 //
-//  DSBlockchainIdentityResetTransactionEntity+CoreDataClass.h
+//  DSBlockchainIdentityResetTransitionEntity+CoreDataClass.h
 //  DashSync
 //
 //  Created by Sam Westrich on 8/29/18.
@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSSpecialTransactionEntity+CoreDataClass.h"
+#import "DSSpecialTransitionEntity+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSBlockchainIdentityResetTransactionEntity : DSSpecialTransactionEntity
+@interface DSBlockchainIdentityResetTransitionEntity : DSSpecialTransactionEntity
 
 @end
 

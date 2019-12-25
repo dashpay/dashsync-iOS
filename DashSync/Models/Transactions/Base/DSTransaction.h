@@ -29,6 +29,8 @@
 #import <Foundation/Foundation.h>
 #import "DSShapeshiftEntity+CoreDataClass.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class DSChain,DSAccount,DSWallet,DSTransactionLockVote,DSTransactionEntity,DSInstantSendTransactionLock;
 
 #define TX_FEE_PER_B         1ULL    // standard tx fee per b of tx size
@@ -92,6 +94,9 @@ typedef union _UInt256 UInt256;
 
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
+@property (nonatomic, readonly) BOOL isCreditFundingTransaction;
+@property (nonatomic, nullable, readonly) NSString * creditBurnIdentityIdentifier;
+
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;
 @property (nonatomic, readonly) DSAccount * account;
@@ -147,3 +152,5 @@ sequence:(uint32_t)sequence;
 - (void)setInstantSendReceivedWithInstantSendLock:(DSInstantSendTransactionLock*)instantSendLock;
 
 @end
+
+NS_ASSUME_NONNULL_END

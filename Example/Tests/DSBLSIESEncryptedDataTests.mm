@@ -19,6 +19,7 @@
 
 #import <DashSync/NSData+BLSEncryption.h>
 #import "DSBLSKey+Private.h"
+#import "NSString+Bitcoin.h"
 #import <DashSync/DSChain.h>
 
 @interface DSBLSIESEncryptedDataTests : XCTestCase
@@ -40,8 +41,10 @@
     NSString *secret = @"my little secret is a pony that never sleeps";
     NSData *data = [secret dataUsingEncoding:NSUTF8StringEncoding];
     //Alice is sending to Bob
-    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPeerWithPublicKey:bobKeyPair];
+    NSData *encryptedData = [data encryptWithSecretKey:aliceKeyPair forPeerWithPublicKey:bobKeyPair useInitializationVectorForTesting:@"eac5bcd6eb85074759e0261497428c9b".hexToData];
     XCTAssertNotNil(encryptedData);
+    
+    XCTAssertEqualObjects(encryptedData, @"eac5bcd6eb85074759e0261497428c9bd72bd418ce96e69cbb6766e59f8d1f8138afb0686018bb4d401369e77ba47367f93a49a528f4cc9e3f209a515e6dd8f2".hexToData, @"they should be the same data");
     
     //Bob is receiving from Alice
     NSData *decrypted = [encryptedData decryptWithSecretKey:bobKeyPair fromPeerWithPublicKey:aliceKeyPair];

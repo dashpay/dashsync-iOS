@@ -9,15 +9,22 @@
 #import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
+#import "DSBLSKey.h"
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSTransitionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentity.h"
 
 @interface DSTransition()
 
-@property (nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
+@property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
+@property (nonatomic, assign) uint16_t transitionVersion;
+@property (nonatomic, strong) DSBlockchainIdentity * owner;
+@property (nonatomic, assign) UInt256 registrationTransactionHash;
+@property (nonatomic, assign) uint64_t creditFee;
+@property (nonatomic, assign) UInt256 packetHash;
 
 @end
 
@@ -74,10 +81,6 @@
     self.registrationTransactionHash = [message UInt256AtOffset:off];
     off += 32;
     
-    if (length - off < 32) return nil;
-    self.previousTransitionHash = [message UInt256AtOffset:off];
-    off += 32;
-    
     if (length - off < 8) return nil;
     self.creditFee = [message UInt64AtOffset:off];
     off += 8;
@@ -86,10 +89,9 @@
     self.packetHash = [message UInt256AtOffset:off];
     off += 32;
     
-    if (length - off < 1) return nil;
-    NSNumber * payloadSignatureLength = nil;
-    self.payloadSignature = [message dataAtOffset:off length:&payloadSignatureLength];
-    off += payloadSignatureLength.unsignedLongValue;
+    if (length - off < 96) return nil;
+    self.payloadSignature = [message UInt768AtOffset:off];
+    off += 96;
     
     
     self.payloadOffset = off;
@@ -127,10 +129,9 @@
     self.packetHash = [message UInt256AtOffset:off];
     off += 32;
     
-    if (length - off < 1) return nil;
-    NSNumber * payloadSignatureLength = nil;
-    self.payloadSignature = [message dataAtOffset:off length:&payloadSignatureLength];
-    off += payloadSignatureLength.unsignedLongValue;
+    if (length - off < 96) return nil;
+    self.payloadSignature = [message UInt768AtOffset:off];
+    off += 96;
     
     
     self.payloadOffset = off;
@@ -173,8 +174,8 @@
 -(NSData*)payloadData {
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
-    [data appendUInt8:self.payloadSignature.length];
-    [data appendData:self.payloadSignature];
+    //[data appendUInt8:96]; ??
+    [data appendUInt768:self.payloadSignature];
     return data;
 }
 
@@ -202,21 +203,40 @@
     return _blockchainIdentityRegistrationTransaction;
 }
 
--(BOOL)checkPayloadSignature:(DSECDSAKey*)transitionRecoveredPublicKey {
+-(BOOL)checkPayloadSignatureForECDSAKey:(DSECDSAKey*)transitionRecoveredPublicKey {
     return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
 }
 
--(BOOL)checkPayloadSignature {
-    DSECDSAKey * providerOwnerPublicKey = [DSECDSAKey keyRecoveredFromCompactSig:self.payloadSignature andMessageDigest:[self payloadHash]];
-    return [self checkPayloadSignature:providerOwnerPublicKey];
+-(BOOL)checkPayloadSignatureForBLSKey:(DSBLSKey*)blockchainIdentityPublicKey {
+    [blockchainIdentityPublicKey verify:[self payloadHash] signature:self.payloadSignature];
+    return uint160_eq([blockchainIdentityPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
 }
 
--(void)signPayloadWithKey:(DSECDSAKey*)privateKey {
+-(BOOL)checkPayloadSignature:(DSKey*)key {
+    if ([key isMemberOfClass:[DSECDSAKey class]]) {
+        return [self checkPayloadSignatureForECDSAKey:(DSECDSAKey*)key];
+    } else if ([key isMemberOfClass:[DSBLSKey class]]) {
+        return [self checkPayloadSignatureForBLSKey:(DSBLSKey*)key];
+    }
+    NSAssert(FALSE, @"unimplemented key type");
+}
+
+-(BOOL)checkPayloadSignedByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    return [blockchainIdentity verifySignature:self.payloadSignature forMessageDigest:[self payloadHash]];
+}
+
+-(void)signPayloadWithKey:(DSKey*)privateKey {
     NSParameterAssert(privateKey);
     
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
-    self.payloadSignature = [privateKey compactSign:[self payloadHash]];
+    if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
+        self.payloadSignatureType = DSBlockchainIdentitySigningType_BLS;
+        self.payloadSignature = uint768_data([((DSBLSKey*)privateKey) signDigest:[self payloadHash]]);
+    } else if ([privateKey isMemberOfClass:[DSECDSAKey class]]) {
+        self.payloadSignatureType = DSBlockchainIdentitySigningType_ECDSA;
+        self.payloadSignature = [((DSECDSAKey*)privateKey) compactSign:[self payloadHash]];
+    }
     self.txHash = self.data.SHA256_2;
 }
 
@@ -227,10 +247,6 @@
 
 -(Class)entityClass {
     return [DSTransitionEntity class];
-}
-
--(BOOL)transactionTypeRequiresInputs {
-    return NO;
 }
 
 @end

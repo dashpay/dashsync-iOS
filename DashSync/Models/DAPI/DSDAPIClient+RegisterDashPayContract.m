@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion {
     DPContract *contract = [self.class ds_currentDashPayContract];
     DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
-    dpp.userId = blockchainIdentity.registrationTransactionHashIdentifier;
+    dpp.userId = blockchainIdentity.registrationTransitionHashIdentifier;
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
     [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
 }

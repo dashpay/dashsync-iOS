@@ -10,32 +10,37 @@
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityResetTransaction,DSBlockchainIdentityCloseTransaction,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact;
+@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityResetTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact;
+
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentitySigningType) {
+    DSBlockchainIdentitySigningType_ECDSA = 0,
+    DSBlockchainIdentitySigningType_BLS = 1,
+};
 
 @interface DSBlockchainIdentity : NSObject
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
 @property (nonatomic,readonly) NSString * uniqueIdentifier;
-@property (nonatomic,readonly) UInt256 registrationTransactionHash;
-@property (nonatomic,readonly) NSData * registrationTransactionHashData;
-@property (nonatomic,readonly) NSString * registrationTransactionHashIdentifier;
+@property (nonatomic,readonly) UInt256 registrationTransitionHash;
+@property (nonatomic,readonly) NSData * registrationTransitionHashData;
+@property (nonatomic,readonly) NSString * registrationTransitionHashIdentifier;
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
-@property (nonatomic,readonly) NSString * username;
+@property (nonatomic,readonly) NSArray <NSString *> * usernames;
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint64_t syncHeight;
 @property (nonatomic,readonly) NSArray<DSTransaction*>*allTransitions;
 
-@property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
+@property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 
 @property (nonatomic,readonly) DSContactEntity* ownContact;
 
--(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithUsername:(NSString* _Nonnull)username atIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransactionHash:(UInt256)registrationTransactionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransitionHash:(UInt256)registrationTransitionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initWithBlockchainIdentityRegistrationTransition:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)generateBlockchainIdentityExtendedPublicKey:(void (^ _Nullable)(BOOL registered))completion;
 
@@ -43,20 +48,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)registerInWalletForBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction;
 
--(void)registrationTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion;
+-(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSTransaction * fundingTransaction))completion;
 
--(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction))completion;
+-(void)registrationTransitionForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition))completion;
 
--(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityResetTransaction * blockchainIdentityResetTransaction))completion;
+-(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 
--(void)updateWithTopupTransaction:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction save:(BOOL)save;
--(void)updateWithResetTransaction:(DSBlockchainIdentityResetTransaction*)blockchainIdentityResetTransaction save:(BOOL)save;
--(void)updateWithCloseTransaction:(DSBlockchainIdentityCloseTransaction*)blockchainIdentityCloseTransaction save:(BOOL)save;
+-(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction))completion;
+
+-(void)updateWithTopupTransition:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction save:(BOOL)save;
+-(void)updateWithResetTransaction:(DSBlockchainIdentityResetTransition*)blockchainIdentityResetTransaction save:(BOOL)save;
+-(void)updateWithCloseTransaction:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction save:(BOOL)save;
 -(void)updateWithTransition:(DSTransition*)transition save:(BOOL)save;
 
 -(DSTransition*)transitionForStateTransitionPacketHash:(UInt256)stateTransitionHash;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
+
+-(BOOL)verifySignature:(NSData*)signature ofType:(DSBlockchainIdentitySigningType)blockchainIdentitySigningType forMessageDigest:(UInt256)messageDigest;
+
+-(void)encryptData:(NSData*)data forRecipientKey:(UInt384)recipientKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion;
 
 -(void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion;
 

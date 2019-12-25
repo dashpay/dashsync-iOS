@@ -328,6 +328,10 @@
 
 // MARK: - Verification
 
+- (BOOL)verify:(UInt256)messageDigest signatureData:(NSData*)signatureData {
+    return [self verify:messageDigest signature:signatureData.UInt768];
+}
+
 - (BOOL)verify:(UInt256)messageDigest signature:(UInt768)signature {
     bls::PublicKey blsPublicKey = [self blsPublicKey];
     bls::AggregationInfo aggregationInfo = bls::AggregationInfo::FromMsgHash(blsPublicKey, messageDigest.u8);

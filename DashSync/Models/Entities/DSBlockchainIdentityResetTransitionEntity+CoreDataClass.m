@@ -1,13 +1,13 @@
 //
-//  DSBlockchainIdentityResetTransactionEntity+CoreDataClass.m
+//  DSBlockchainIdentityResetTransitionEntity+CoreDataClass.m
 //  DashSync
 //
 //  Created by Sam Westrich on 8/29/18.
 //
 //
 
-#import "DSBlockchainIdentityResetTransactionEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityResetTransaction.h"
+#import "DSBlockchainIdentityResetTransitionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityResetTransition.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 #import "DSTransaction.h"
@@ -16,7 +16,7 @@
 #import "DSAddressEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
 
-@implementation DSBlockchainIdentityResetTransactionEntity
+@implementation DSBlockchainIdentityResetTransitionEntity
 
 - (instancetype)setAttributesFromTransaction:(DSTransaction *)tx
 {

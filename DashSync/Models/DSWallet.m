@@ -37,7 +37,7 @@
 #import "DSChainsManager.h"
 #import "DSBlockchainIdentity.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityResetTransaction.h"
+#import "DSBlockchainIdentityResetTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "NSDate+Utils.h"
 #import "DSLocalMasternode.h"
@@ -198,7 +198,7 @@
             for (DSFriendRequestEntity * friendRequest in blockchainIdentity.ownContact.outgoingRequests) {
                 DSAccount * account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
-                                                               contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainIdentityRegistrationHash.UInt256 sourceBlockchainIdentityRegistrationTransactionHash:blockchainIdentity.registrationTransactionHash forAccountNumber:account.accountNumber onChain:self.chain];
+                                                               contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:friendRequest.destinationContact.associatedBlockchainIdentityRegistrationHash.UInt256 sourceBlockchainIdentityRegistrationTransactionHash:blockchainIdentity.registrationTransitionHash forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
                 NSLog(@"%@",blockchainIdentity.ownContact.outgoingRequests);
@@ -251,7 +251,7 @@
         [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
         
         if (chain.isDevnetAny) {
-            DSAuthenticationKeysDerivationPath * blockchainIdentityKeysDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesKeysDerivationPathForChain:chain];
+            DSAuthenticationKeysDerivationPath * blockchainIdentityKeysDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:chain];
             [blockchainIdentityKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
         }
     }
@@ -838,7 +838,7 @@
 // MARK: - Blockchain Identities
 
 -(NSArray*)blockchainIdentityAddresses {
-    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentitiesKeysDerivationPathForWallet:self];
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self];
     if (!derivationPath.hasExtendedPublicKey) return @[];
     return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10];
 }
@@ -849,14 +849,14 @@
     return nil;
 }
 
-- (DSBlockchainIdentityResetTransaction *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    DSBlockchainIdentityResetTransaction * transaction = [_specialTransactionsHolder blockchainIdentityResetTransactionForPublicKeyHash:publicKeyHash];
+- (DSBlockchainIdentityResetTransition *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    DSBlockchainIdentityResetTransition * transaction = [_specialTransactionsHolder blockchainIdentityResetTransactionForPublicKeyHash:publicKeyHash];
     if (transaction) return transaction;
     return nil;
 }
 
 -(DSBlockchainIdentityRegistrationTransition *)blockchainIdentityRegistrationTransactionForIndex:(uint32_t)index {
-    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentitiesKeysDerivationPathForWallet:self];
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self];
     UInt160 hash160 = [derivationPath publicKeyDataAtIndex:index].hash160;
     return [self registrationTransactionForPublicKeyHash:hash160];
 }
@@ -865,11 +865,11 @@
     NSParameterAssert(blockchainIdentity);
     NSAssert(blockchainIdentity.wallet == self, @"the blockchainIdentity you are trying to remove is not in this wallet");
     
-    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.registrationTransactionHashData];
+    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.registrationTransitionHashData];
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary removeObjectForKey:blockchainIdentity.registrationTransactionHashData];
+    [keyChainDictionary removeObjectForKey:blockchainIdentity.registrationTransitionHashData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     
     //we also have to remove all contacts derivation paths from their associated accounts.
@@ -899,15 +899,15 @@
 {
     NSParameterAssert(blockchainIdentity);
     
-    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.registrationTransactionHashData] == nil) {
+    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.registrationTransitionHashData] == nil) {
         [self addBlockchainIdentity:blockchainIdentity];
     }
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     
-    NSAssert(!uint256_is_zero(blockchainIdentity.registrationTransactionHashData.UInt256), @"registrationTransactionHashData must not be null");
-    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.registrationTransactionHashData];
+    NSAssert(!uint256_is_zero(blockchainIdentity.registrationTransitionHashData.UInt256), @"registrationTransactionHashData must not be null");
+    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.registrationTransitionHashData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainIdentitiesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
@@ -923,7 +923,7 @@
 -(DSBlockchainIdentity*)blockchainIdentityForRegistrationHash:(UInt256)registrationHash {
     DSBlockchainIdentity * foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
-        if (uint256_eq([blockchainIdentity registrationTransactionHash],registrationHash)) {
+        if (uint256_eq([blockchainIdentity registrationTransitionHash],registrationHash)) {
             foundBlockchainIdentity = blockchainIdentity;
         }
     }

@@ -1,17 +1,17 @@
 //
-//  DSBlockchainIdentityCloseTransaction.m
+//  DSBlockchainIdentityCloseTransition.m
 //  DashSync
 //
 //  Created by Sam Westrich on 8/13/18.
 //
 
-#import "DSBlockchainIdentityCloseTransaction.h"
+#import "DSBlockchainIdentityCloseTransition.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
 #import "DSTransactionFactory.h"
-#import "DSBlockchainIdentityCloseTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityCloseTransitionEntity+CoreDataClass.h"
 
 @implementation DSBlockchainIdentityCloseTransaction
 

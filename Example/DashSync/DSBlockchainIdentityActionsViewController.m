@@ -43,7 +43,7 @@
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
     }
     
-    self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainIdentity.registrationTransactionHash);
+    self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainIdentity.registrationTransitionHash);
 }
 
 -(void)updateProfile {
@@ -74,7 +74,7 @@
 }
 
 -(IBAction)reset:(id)sender {
-    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityResetTransaction *blockchainIdentityResetTransaction) {
+    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityResetTransition *blockchainIdentityResetTransaction) {
         [self.chainManager.transactionManager publishTransaction:blockchainIdentityResetTransaction completion:^(NSError * _Nullable error) {
             if (error) {
                 [self raiseIssue:@"Error" message:error.localizedDescription];
