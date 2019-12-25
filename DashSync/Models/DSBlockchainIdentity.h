@@ -30,7 +30,6 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentitySigningType) {
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint64_t syncHeight;
-@property (nonatomic,readonly) NSArray<DSTransaction*>*allTransitions;
 
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 

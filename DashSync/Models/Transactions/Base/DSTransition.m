@@ -12,7 +12,6 @@
 #import "DSBLSKey.h"
 #import "DSECDSAKey.h"
 #import "NSString+Bitcoin.h"
-#import "DSTransitionFactory.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSTransitionEntity+CoreDataClass.h"
 #import "DSBlockchainIdentity.h"
@@ -25,7 +24,6 @@
 @property (nonatomic, strong) DSBlockchainIdentity * owner;
 @property (nonatomic, assign) UInt256 registrationTransactionHash;
 @property (nonatomic, assign) uint64_t creditFee;
-@property (nonatomic, assign) UInt256 packetHash;
 @property (nonatomic, assign) UInt256 transitionHash;
 
 @property (nonatomic, strong) DSChain * chain;
@@ -70,10 +68,6 @@
     if (length - off < 8) return nil;
     self.creditFee = [message UInt64AtOffset:off];
     off += 8;
-    
-    if (length - off < 32) return nil;
-    self.packetHash = [message UInt256AtOffset:off];
-    off += 32;
     
     if (length - off < 96) return nil;
     self.payloadSignatureData = uint768_data([message UInt768AtOffset:off]);

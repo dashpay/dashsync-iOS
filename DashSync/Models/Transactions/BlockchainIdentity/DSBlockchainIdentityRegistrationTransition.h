@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainIdentityRegistrationTransactionVersion:(uint16_t)version username:(NSString *)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain;
 
--(instancetype)initWithBlockchainIdentityRegistrationTransitionVersion:(uint16_t)version username:(NSString *)username pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain;
+-(instancetype)initWithBlockchainIdentityRegistrationTransitionVersion:(uint16_t)version pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain;
 
 -(void)signPayloadWithKey:(DSECDSAKey *)privateKey;
 

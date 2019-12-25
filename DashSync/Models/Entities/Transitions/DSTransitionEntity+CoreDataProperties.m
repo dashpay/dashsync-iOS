@@ -2,7 +2,7 @@
 //  DSTransitionEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 3/14/19.
+//  Created by Sam Westrich on 12/25/19.
 //
 //
 
@@ -14,11 +14,11 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSTransitionEntity"];
 }
 
-@dynamic previousSubcriptionHash;
 @dynamic creditFee;
-@dynamic packetHash;
-@dynamic payloadSignature;
+@dynamic signature;
 @dynamic registrationTransactionHash;
+@dynamic signatureId;
+@dynamic timestamp;
 @dynamic blockchainIdentityRegistrationTransaction;
 
 @end

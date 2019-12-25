@@ -2,7 +2,7 @@
 //  DSBlockchainIdentityTopupTransitionEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 8/27/18.
+//  Created by Sam Westrich on 12/25/19.
 //
 //
 
@@ -14,6 +14,6 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityTopupTransitionEntity"];
 }
 
-@dynamic registrationTransactionHash;
+@dynamic topupAmount;
 
 @end

@@ -2,7 +2,7 @@
 //  DSBlockchainIdentityTopupTransitionEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 8/27/18.
+//  Created by Sam Westrich on 12/25/19.
 //
 //
 
@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSBlockchainIdentityTopupTransitionEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *registrationTransactionHash;
+@property (nullable, nonatomic, copy) NSNumber *topupAmount;
 
 @end
 

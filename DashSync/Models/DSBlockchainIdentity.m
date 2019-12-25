@@ -59,7 +59,7 @@
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransition*>* blockchainIdentityCloseTransitions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityResetTransition*>* blockchainIdentityResetTransitions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
-@property(nonatomic,strong) NSMutableArray <DSTransaction*>* allTransitions;
+@property(nonatomic,strong) NSMutableArray <DSTransition*>* allTransitions;
 
 @property(nonatomic,strong) DSContactEntity * ownContact;
 
@@ -124,7 +124,7 @@
 }
 
 -(void)loadTransitions {
-    self.allTransitions = [[self.wallet.specialTransactionsHolder subscriptionTransactionsForRegistrationTransactionHash:self.registrationTransitionHash] mutableCopy];
+    self.allTransitions = [[self.wallet.specialTransactionsHolder identityTransitionsForRegistrationTransitionHash:self.registrationTransitionHash] mutableCopy];
     for (DSTransaction * transaction in self.allTransitions) {
         if ([transaction isKindOfClass:[DSTransition class]]) {
             [self.baseTransitions addObject:(DSTransition*)transaction];
@@ -154,8 +154,8 @@
 -(instancetype)initWithBlockchainIdentityRegistrationTransition:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransition inContext:(NSManagedObjectContext*)managedObjectContext {
     uint32_t index = 0;
     DSWallet * wallet = [blockchainIdentityRegistrationTransition.chain walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransition.pubkeyHash foundAtIndex:&index];
-    if (!(self = [self initWithUsername:blockchainIdentityRegistrationTransition.username atIndex:index inWallet:wallet inContext:(NSManagedObjectContext*)managedObjectContext])) return nil;
-    self.registrationTransitionHash = blockchainIdentityRegistrationTransition.txHash;
+    if (!(self = [self initAtIndex:index inWallet:wallet inContext:(NSManagedObjectContext*)managedObjectContext])) return nil;
+    self.registrationTransitionHash = blockchainIdentityRegistrationTransition.transitionHash;
     self.blockchainIdentityRegistrationTransition = blockchainIdentityRegistrationTransition;
     
     [self loadTransitions];
@@ -183,7 +183,7 @@
 
 -(void)registerInWalletForBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransition {
     self.blockchainIdentityRegistrationTransition = blockchainIdentityRegistrationTransition;
-    self.registrationTransitionHash = blockchainIdentityRegistrationTransition.txHash;
+    self.registrationTransitionHash = blockchainIdentityRegistrationTransition.transitionHash;
     [self registerInWallet];
 }
 
@@ -191,10 +191,10 @@
     [self.wallet registerBlockchainIdentity:self];
 }
 
--(void)registrationTransitionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
-    NSParameterAssert(fundingAccount);
+-(void)registrationTransitionForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
+    NSParameterAssert(fundingTransaction);
     
-    NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register the username %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
+//    NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to register the username %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
         if (!seed) {
             completion(nil);
@@ -203,7 +203,7 @@
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
         
-        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithBlockchainIdentityRegistrationTransitionVersion:1 username:self.username pubkeyHash:[privateKey.publicKeyData hash160] onChain:self.wallet.chain];
+        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithBlockchainIdentityRegistrationTransitionVersion:<#(uint16_t)#> username:<#(nonnull NSString *)#> pubkeyHash:<#(UInt160)#> onChain:<#(nonnull DSChain *)#>ionVersion:1 pubkeyHash:[privateKey.publicKeyData hash160] onChain:self.wallet.chain];
         [blockchainIdentityRegistrationTransaction signPayloadWithKey:privateKey];
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];
@@ -213,8 +213,8 @@
     }];
 }
 
--(void)topupTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction))completion {
-    NSParameterAssert(fundingAccount);
+-(void)topupTransitionForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction))completion {
+    NSParameterAssert(fundingTransaction);
     
     NSString * question = [NSString stringWithFormat:DSLocalizedString(@"Are you sure you would like to topup %@ and spend %@ on credits?", nil),self.username,[[DSPriceManager sharedInstance] stringForDashAmount:topupAmount]];
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:topupAmount forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
@@ -296,6 +296,13 @@
             [self save];
         }
     }
+}
+
+// MARK: - Funding
+
+-(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount to:(NSString*)address fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSTransaction * fundingTransaction))completion {
+    DSTransaction * fundingTransaction = [fundingAccount creditBurnTransactionFor:topupAmount to:address withFee:YES];
+    completion(fundingTransaction);
 }
 
 // MARK: - Persistence

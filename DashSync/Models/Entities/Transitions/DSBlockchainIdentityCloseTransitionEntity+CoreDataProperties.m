@@ -2,11 +2,11 @@
 //  DSBlockchainIdentityCloseTransitionEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 8/29/18.
+//  Created by Sam Westrich on 12/25/19.
 //
 //
 
-#import "DSBlockchainIdentityCloseTransactionEntity+CoreDataProperties.h"
+#import "DSBlockchainIdentityCloseTransitionEntity+CoreDataProperties.h"
 
 @implementation DSBlockchainIdentityCloseTransitionEntity (CoreDataProperties)
 
@@ -14,9 +14,6 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityCloseTransitionEntity"];
 }
 
-@dynamic creditFee;
-@dynamic previousBlockchainIdentityTransactionHash;
-@dynamic registrationTransactionHash;
-@dynamic payloadSignature;
+@dynamic reason;
 
 @end

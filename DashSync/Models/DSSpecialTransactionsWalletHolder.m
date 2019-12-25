@@ -300,7 +300,7 @@
     return nil;
 }
 
-- (NSArray<DSTransaction*>*)subscriptionTransactionsForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash {
+- (NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)blockchainIdentityRegistrationTransactionHash {
     NSLog(@"blockchainIdentityRegistrationTransactionHash %@",uint256_hex(blockchainIdentityRegistrationTransactionHash));
     NSMutableArray<DSTransaction*> * subscriptionTransactions = [NSMutableArray array];
     for (DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction in [self.blockchainIdentityTopupTransactions allValues]) {
@@ -328,7 +328,7 @@
 }
 
 -(UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash {
-    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self subscriptionTransactionsForRegistrationTransactionHash:blockchainIdentityRegistrationTransactionHash]];
+    NSMutableOrderedSet * subscriptionTransactions = [NSMutableOrderedSet orderedSetWithArray:[self identityTransitionsForRegistrationTransitionHash:blockchainIdentityRegistrationTransactionHash]];
     UInt256 lastSubscriptionTransactionHash = blockchainIdentityRegistrationTransactionHash;
     while ([subscriptionTransactions count]) {
         BOOL found = FALSE;

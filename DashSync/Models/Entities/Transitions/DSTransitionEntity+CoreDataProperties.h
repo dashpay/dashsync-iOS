@@ -2,7 +2,7 @@
 //  DSTransitionEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 3/14/19.
+//  Created by Sam Westrich on 12/25/19.
 //
 //
 
@@ -15,11 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSTransitionEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *previousSubcriptionHash;
-@property (nonatomic, assign) uint64_t creditFee;
-@property (nullable, nonatomic, retain) NSData *packetHash;
-@property (nullable, nonatomic, retain) NSData *payloadSignature;
+@property (nullable, nonatomic, copy) NSNumber *creditFee;
+@property (nullable, nonatomic, retain) NSData *signature;
 @property (nullable, nonatomic, retain) NSData *registrationTransactionHash;
+@property (nullable, nonatomic, copy) NSNumber *signatureId;
+@property (nullable, nonatomic, copy) NSNumber *timestamp;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityRegistrationTransitionEntity *blockchainIdentityRegistrationTransaction;
 
 @end
