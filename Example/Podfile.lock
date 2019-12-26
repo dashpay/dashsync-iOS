@@ -1,9 +1,9 @@
 PODS:
   - "!ProtoCompiler (3.8.0)":
     - Protobuf (~> 3.0)
-  - "!ProtoCompiler-gRPCPlugin (1.25.0)":
+  - "!ProtoCompiler-gRPCPlugin (1.26.0)":
     - "!ProtoCompiler (= 3.8.0)"
-    - gRPC-ProtoRPC (= 1.25.0)
+    - gRPC-ProtoRPC (= 1.26.0)
   - bls-signatures-pod (0.2.9)
   - BoringSSL-GRPC (0.0.5):
     - BoringSSL-GRPC/Implementation (= 0.0.5)
@@ -34,47 +34,47 @@ PODS:
     - secp256k1_dash (= 0.1.3-alpha.1)
   - DSDynamicOptions (0.1.1)
   - DWAlertController (0.2.1)
-  - gRPC-Core (1.25.0):
-    - gRPC-Core/Implementation (= 1.25.0)
-    - gRPC-Core/Interface (= 1.25.0)
-  - gRPC-Core/Implementation (1.25.0):
+  - gRPC-Core (1.26.0):
+    - gRPC-Core/Implementation (= 1.26.0)
+    - gRPC-Core/Interface (= 1.26.0)
+  - gRPC-Core/Implementation (1.26.0):
     - BoringSSL-GRPC (= 0.0.5)
-    - gRPC-Core/Interface (= 1.25.0)
-  - gRPC-Core/Interface (1.25.0)
-  - gRPC-ProtoRPC (1.25.0):
-    - gRPC-ProtoRPC/Legacy (= 1.25.0)
-    - gRPC-ProtoRPC/Legacy-Header (= 1.25.0)
-    - gRPC-ProtoRPC/Main (= 1.25.0)
-  - gRPC-ProtoRPC/Legacy (1.25.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.25.0)
-    - gRPC-ProtoRPC/Main (= 1.25.0)
-    - gRPC-RxLibrary (= 1.25.0)
-    - gRPC/GRPCCore (= 1.25.0)
+    - gRPC-Core/Interface (= 1.26.0)
+  - gRPC-Core/Interface (1.26.0)
+  - gRPC-ProtoRPC (1.26.0):
+    - gRPC-ProtoRPC/Legacy (= 1.26.0)
+    - gRPC-ProtoRPC/Legacy-Header (= 1.26.0)
+    - gRPC-ProtoRPC/Main (= 1.26.0)
+  - gRPC-ProtoRPC/Legacy (1.26.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.26.0)
+    - gRPC-ProtoRPC/Main (= 1.26.0)
+    - gRPC-RxLibrary (= 1.26.0)
+    - gRPC/GRPCCore (= 1.26.0)
     - Protobuf (~> 3.0)
-  - gRPC-ProtoRPC/Legacy-Header (1.25.0)
-  - gRPC-ProtoRPC/Main (1.25.0):
-    - gRPC-ProtoRPC/Legacy-Header (= 1.25.0)
-    - gRPC/Interface (= 1.25.0)
+  - gRPC-ProtoRPC/Legacy-Header (1.26.0)
+  - gRPC-ProtoRPC/Main (1.26.0):
+    - gRPC-ProtoRPC/Legacy-Header (= 1.26.0)
+    - gRPC/Interface (= 1.26.0)
     - Protobuf (~> 3.0)
-  - gRPC-RxLibrary (1.25.0):
-    - gRPC-RxLibrary/Implementation (= 1.25.0)
-    - gRPC-RxLibrary/Interface (= 1.25.0)
-  - gRPC-RxLibrary/Implementation (1.25.0):
+  - gRPC-RxLibrary (1.26.0):
+    - gRPC-RxLibrary/Implementation (= 1.26.0)
+    - gRPC-RxLibrary/Interface (= 1.26.0)
+  - gRPC-RxLibrary/Implementation (1.26.0):
     - gRPC-RxLibrary/Interface
-  - gRPC-RxLibrary/Interface (1.25.0)
-  - gRPC/GRPCCore (1.25.0):
-    - gRPC-Core (= 1.25.0)
-    - gRPC-RxLibrary (= 1.25.0)
-    - gRPC/Interface (= 1.25.0)
-    - gRPC/Interface-Legacy (= 1.25.0)
-  - gRPC/Interface (1.25.0):
-    - gRPC/Interface-Legacy (= 1.25.0)
-  - gRPC/Interface-Legacy (1.25.0):
-    - gRPC-RxLibrary/Interface (= 1.25.0)
+  - gRPC-RxLibrary/Interface (1.26.0)
+  - gRPC/GRPCCore (1.26.0):
+    - gRPC-Core (= 1.26.0)
+    - gRPC-RxLibrary (= 1.26.0)
+    - gRPC/Interface (= 1.26.0)
+    - gRPC/Interface-Legacy (= 1.26.0)
+  - gRPC/Interface (1.26.0):
+    - gRPC/Interface-Legacy (= 1.26.0)
+  - gRPC/Interface-Legacy (1.26.0):
+    - gRPC-RxLibrary/Interface (= 1.26.0)
   - ios-dpp (0.0.1):
     - TinyCborObjc (= 0.4.2)
   - KVO-MVVM (0.5.1)
-  - Protobuf (3.11.1)
+  - Protobuf (3.11.2)
   - SDWebImage (5.0.1):
     - SDWebImage/Core (= 5.0.1)
   - SDWebImage/Core (5.0.1)
@@ -86,7 +86,7 @@ PODS:
 DEPENDENCIES:
   - DAPI-GRPC (from `../`)
   - DashSync (from `../`)
-  - ios-dpp (from `https://github.com/dashevo/ios-dpp.git`, commit `2460e6b`, branch `supernova`)
+  - ios-dpp (from `../../ios-dpp/`)
   - KVO-MVVM (= 0.5.1)
   - SDWebImage (= 5.0.1)
 
@@ -116,18 +116,11 @@ EXTERNAL SOURCES:
   DashSync:
     :path: "../"
   ios-dpp:
-    :branch: supernova
-    :commit: 2460e6b
-    :git: https://github.com/dashevo/ios-dpp.git
-
-CHECKOUT OPTIONS:
-  ios-dpp:
-    :commit: 2451f082c56affeb24adc0a185671f397e82379c
-    :git: https://github.com/dashevo/ios-dpp.git
+    :path: "../../ios-dpp/"
 
 SPEC CHECKSUMS:
   "!ProtoCompiler": 7fc49078ec544d0347264496f6cd09b8132536b5
-  "!ProtoCompiler-gRPCPlugin": 5359f08272bb60883bedc61fb5ad7544aeb96fa9
+  "!ProtoCompiler-gRPCPlugin": 5b2fe2bbb1a7dd27df2b13fa55026c2e2228a39f
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   BoringSSL-GRPC: 8f2c6b5fbae71d1f3aabb787a52fd4929d1eef33
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
@@ -135,18 +128,18 @@ SPEC CHECKSUMS:
   DashSync: c5044bbdc8cdcb39441d2bc69deb2904fc6d44e5
   DSDynamicOptions: 23229bb4e60e7fc966cc1842eb405ea3b94b042e
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
-  gRPC: 7fb3e0d14ce1f87f1c27a9e46167da5168ab9092
-  gRPC-Core: 76552aeeae7c42172d52224cc6f3cf70bff577f5
-  gRPC-ProtoRPC: b00a140f2f21872305cd8e3ef91b2dfe28914b5c
-  gRPC-RxLibrary: cd49d9cd343fd00e2326a65522e82c2285ebe84b
+  gRPC: 01cad0fe812eb92170a8748b7507607752350e2b
+  gRPC-Core: a9f9bd0cc7fe2a2d9930b415a19f29b8062dcb52
+  gRPC-ProtoRPC: 8888afc144159d4e4c3716178bff686b7e83b66f
+  gRPC-RxLibrary: c1c5cfd22a05064bf05584115aee703298a9f44a
   ios-dpp: 7916cdb9203ee65fce156a914664f958ba1c77a5
   KVO-MVVM: 4df3afd1f7ebcb69735458b85db59c4271ada7c6
-  Protobuf: 20d79da7f20b5928b80043b05080b816e802659e
+  Protobuf: dd1aaea7140debfe4dd0683fb8ef208e527ae153
   SDWebImage: 27dd2c9ea07a2252f94557c9fbb6105ee94b74c9
   secp256k1_dash: a571007f30d545ced45d97dba46e5cd3cb3c3b16
   tinycbor: f3596b9acc8493b19c9e0cc2d0417d9c7aa58daa
   TinyCborObjc: 9a095ec8486e609f52e1254d97735d65fe77371c
 
-PODFILE CHECKSUM: b0890b32f94a16398ab7ce40fa5b2ff0b59b10fb
+PODFILE CHECKSUM: 5f01e3cfb87d90216021c03558b6805c4849ea31
 
 COCOAPODS: 1.8.4

@@ -4,8 +4,6 @@ target 'DashSync_Example' do
   pod 'DashSync', :path => '../'
   pod 'KVO-MVVM', '0.5.1'
   pod 'DAPI-GRPC', :path => '../'
-  pod 'ios-dpp', :path => '../'
-  #pod 'ios-dpp', :git => 'https://github.com/dashevo/ios-dpp.git', :branch => 'supernova', :commit => '2460e6b'
   pod 'SDWebImage', '5.0.1'
   
   target 'DashSync_Tests' do
