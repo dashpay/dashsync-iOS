@@ -147,7 +147,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
             completion([NSError errorWithDomain:@"DashSync" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                      DSLocalizedString(@"Not connected to the dash network", nil)}]);
+                                                                                      DSLocalizedString(@"Not connected to the Dash network", nil)}]);
         }
         
         return;

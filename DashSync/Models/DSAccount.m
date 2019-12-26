@@ -1426,7 +1426,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
                     }
                 }
                 else {
-                    [addresses addObject:NSLocalizedString(@"unknown address", nil)];
+                    [addresses addObject:DSLocalizedString(@"Unknown address", nil)];
                 }
             }
         }
