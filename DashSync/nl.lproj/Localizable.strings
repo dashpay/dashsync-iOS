@@ -138,7 +138,7 @@
 "Not a valid private key" = "Geen geldige privésleutel";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Niet verbonden met dash-netwerk";
+"Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -222,7 +222,7 @@
 "Unexpected response from %@" = "Onverwacht response van %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "onbekend adres";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Onbekende fout";

@@ -138,7 +138,7 @@
 "Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Not connected to the dash network";
+"Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -222,7 +222,7 @@
 "Unexpected response from %@" = "Unexpected response from %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "unknown address";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Неизвестная ошибка";
