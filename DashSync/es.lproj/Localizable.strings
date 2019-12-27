@@ -77,7 +77,7 @@
 /* No comment provided by engineer. */
 "Double spend" = "Doble gasto";
 
-/* No comment provided by engineer. */
+/* The server is not working */
 "Down" = "Bajo";
 
 /* No comment provided by engineer. */
@@ -85,9 +85,6 @@
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error del servidor de solicitud de pagos %@";
-
-/* No comment provided by engineer. */
-"Error signing dash transaction" = "Error al firmar transacción de Dash";
 
 /* No comment provided by engineer. */
 "Error signing transaction" = "Error al firmar transacción";
@@ -239,7 +236,7 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Certificado no confiable";
 
-/* No comment provided by engineer. */
+/* The server is up and running */
 "Up" = "Arriba";
 
 /* Updating Price */

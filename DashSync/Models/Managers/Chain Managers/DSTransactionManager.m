@@ -511,7 +511,7 @@
             
             if (!signedTransaction || ! tx.isSigned) {
                 signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
-                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing dash transaction", nil)}],NO);
+                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing transaction", nil)}],NO);
                 return;
             }
             

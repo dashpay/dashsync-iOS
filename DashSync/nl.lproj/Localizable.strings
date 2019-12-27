@@ -77,7 +77,7 @@
 /* No comment provided by engineer. */
 "Double spend" = "Dubbel uitgegeven";
 
-/* No comment provided by engineer. */
+/* The server is not working */
 "Down" = "Down";
 
 /* No comment provided by engineer. */
@@ -85,9 +85,6 @@
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Fout van server voor betalingsverzoeken %@";
-
-/* No comment provided by engineer. */
-"Error signing dash transaction" = "Fout bij ondertekenen dash-transactie";
 
 /* No comment provided by engineer. */
 "Error signing transaction" = "Fout bij ondertekenen transactie";
@@ -239,7 +236,7 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Onvertrouwd certificaat";
 
-/* No comment provided by engineer. */
+/* The server is up and running */
 "Up" = "Up";
 
 /* Updating Price */
