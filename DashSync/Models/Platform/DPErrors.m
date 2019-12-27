@@ -19,6 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSErrorDomain const DPErrorDomain = @"org.dash.ios-dpp.error";
+NSErrorDomain const DPErrorDomain = @"org.dashcore.dashsync.ios-dpp.error";
 
 NS_ASSUME_NONNULL_END

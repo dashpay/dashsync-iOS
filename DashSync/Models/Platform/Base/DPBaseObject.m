@@ -17,7 +17,10 @@
 
 #import "DPBaseObject.h"
 
-#import "DPSerializeUtils.h"
+
+#import "NSData+Bitcoin.h"
+#import "BigIntTypes.h"
+#import <TinyCborObjc/NSObject+DSCborEncoding.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,14 +43,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSData *)serialized {
     if (_serialized == nil) {
-        _serialized = [DPSerializeUtils serializeObject:self.json];
+        _serialized = [self.json ds_cborEncodedObject];
     }
     return _serialized;
 }
 
 - (NSData *)serializedHash {
     if (_serializedHash == nil) {
-        _serializedHash = [DPSerializeUtils hashDataOfData:self.serialized];
+        _serializedHash = uint256_data([self.serialized SHA256_2]);
     }
     return _serializedHash;
 }

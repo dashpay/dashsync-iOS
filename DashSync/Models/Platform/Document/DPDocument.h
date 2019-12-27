@@ -17,33 +17,23 @@
 
 #import "DPBaseObject.h"
 
-#import "DPBase58DataEncoder.h"
-
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSUInteger, DPDocumentAction) {
-    DPDocumentAction_Create = 0,
-    DPDocumentAction_Update = 1,
-    DPDocumentAction_Delete = 2,
-};
 
 @interface DPDocument : DPBaseObject
 
 @property (readonly, copy, nonatomic) NSString *identifier;
 
 @property (readonly, copy, nonatomic) NSString *type;
-@property (readonly, copy, nonatomic) NSString *scope;
-@property (readonly, copy, nonatomic) NSString *scopeId;
-@property (readonly, assign, nonatomic) DPDocumentAction action;
+@property (readonly, copy, nonatomic) NSString *contractId;
+@property (readonly, copy, nonatomic) NSString *userId;
+@property (readonly, copy, nonatomic) NSString *entropy;
 @property (readonly, strong, nonatomic) NSNumber *revision;
 @property (readonly, copy, nonatomic) DPJSONObject *data;
 
-- (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument
-                  base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder;
+- (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)setAction:(DPDocumentAction)action error:(NSError *_Nullable __autoreleasing *)error;
 - (void)setData:(DPJSONObject *)data error:(NSError *_Nullable __autoreleasing *)error;
 
 @end

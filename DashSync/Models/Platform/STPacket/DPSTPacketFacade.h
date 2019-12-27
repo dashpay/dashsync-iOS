@@ -23,9 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPSTPacketFacade : NSObject <DPSTPacketFactory>
 
-- (instancetype)initWithMerkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation
-                          base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder;
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

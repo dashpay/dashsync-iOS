@@ -15,11 +15,11 @@
 //  limitations under the License.
 //
 
-#import <ios-dpp/DashPlatformProtocol.h>
+#import "DSDashPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DashPlatformProtocol (DashSync)
+@interface DSDashPlatform (DashSync)
 
 + (instancetype)sharedInstance;
 

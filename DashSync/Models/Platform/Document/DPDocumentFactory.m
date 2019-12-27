@@ -18,19 +18,21 @@
 #import "DPDocumentFactory.h"
 
 #import "DPErrors.h"
-#import "DPSerializeUtils.h"
+
+#import "NSData+Bitcoin.h"
+#import "BigIntTypes.h"
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
+#import "DSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 static NSInteger const DEFAULT_REVISION = 1;
-static DPDocumentAction const DEFAULT_ACTION = DPDocumentAction_Create;
 
 @interface DPDocumentFactory ()
 
 @property (copy, nonatomic) NSString *userId;
 @property (strong, nonatomic) DPContract *contract;
-@property (strong, nonatomic) id<DPEntropyProvider> entropyProvider;
-@property (strong, nonatomic) id<DPBase58DataEncoder> base58DataEncoder;
+@property (strong, nonatomic) DSChain * chain;
 
 @end
 
@@ -38,19 +40,15 @@ static DPDocumentAction const DEFAULT_ACTION = DPDocumentAction_Create;
 
 - (instancetype)initWithUserId:(NSString *)userId
                       contract:(DPContract *)contract
-               entropyProvider:(id<DPEntropyProvider>)entropyProvider
-             base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder {
+                         onChain:(DSChain*)chain {
     NSParameterAssert(userId);
     NSParameterAssert(contract);
-    NSParameterAssert(entropyProvider);
-    NSParameterAssert(base58DataEncoder);
 
     self = [super init];
     if (self) {
         _userId = [userId copy];
         _contract = contract;
-        _entropyProvider = entropyProvider;
-        _base58DataEncoder = base58DataEncoder;
+        _chain = chain;
     }
     return self;
 }
@@ -73,7 +71,7 @@ static DPDocumentAction const DEFAULT_ACTION = DPDocumentAction_Create;
                                      userInfo:@{
                                          NSLocalizedDescriptionKey :
                                              [NSString stringWithFormat:@"Contract '%@' doesn't contain type '%@'",
-                                                                        self.contract.name, type],
+                                                                        self.contract.contractId, type],
                                      }];
         }
 
@@ -82,18 +80,17 @@ static DPDocumentAction const DEFAULT_ACTION = DPDocumentAction_Create;
 
     NSString *scopeString = [self.contract.identifier stringByAppendingString:self.userId];
     NSData *scopeStringData = [scopeString dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *scopeStringHash = [DPSerializeUtils hashStringOfData:scopeStringData];
+    NSString *scopeStringHash = uint256_hex([scopeStringData SHA256_2]);
 
     DPMutableJSONObject *rawObject = [[DPMutableJSONObject alloc] init];
     rawObject[@"$type"] = type;
     rawObject[@"$scope"] = scopeStringHash;
-    rawObject[@"$scopeId"] = [self.entropyProvider generateEntropyString];
-    rawObject[@"$action"] = @(DEFAULT_ACTION);
+    rawObject[@"$scopeId"] = [DSKey randomAddressForChain:[self chain]];
+//    rawObject[@"$action"] = @(DEFAULT_ACTION);
     rawObject[@"$rev"] = @(DEFAULT_REVISION);
     [rawObject addEntriesFromDictionary:data];
 
-    DPDocument *object = [[DPDocument alloc] initWithRawDocument:rawObject
-                                               base58DataEncoder:self.base58DataEncoder];
+    DPDocument *object = [[DPDocument alloc] initWithRawDocument:rawObject];
 
     return object;
 }
@@ -110,8 +107,7 @@ static DPDocumentAction const DEFAULT_ACTION = DPDocumentAction_Create;
 
     // TODO: validate rawDocument
 
-    DPDocument *object = [[DPDocument alloc] initWithRawDocument:rawDocument
-                                               base58DataEncoder:self.base58DataEncoder];
+    DPDocument *object = [[DPDocument alloc] initWithRawDocument:rawDocument];
 
     return object;
 }
@@ -126,8 +122,8 @@ static DPDocumentAction const DEFAULT_ACTION = DPDocumentAction_Create;
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawDocument = [DPSerializeUtils decodeSerializedObject:data
-                                                                   error:error];
+    DPJSONObject *rawDocument = [data ds_decodeCborError:error];
+    
     if (!rawDocument) {
         return nil;
     }

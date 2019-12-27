@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPSTPacket (HashCalculations)
 
-- (nullable NSString *)dp_calculateItemsMerkleRootWithOperation:(id<DPMerkleRootOperation>)merkleRootOperation;
+- (nullable NSString *)dp_calculateItemsMerkleRoot;
 - (nullable NSString *)dp_calculateItemsHash;
 
 @end

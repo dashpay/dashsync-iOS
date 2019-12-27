@@ -19,16 +19,16 @@
 
 #import "DPContract.h"
 #import "DPDocumentFactoryProtocol.h"
-#import "DPEntropyProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class DSChain;
 
 @interface DPDocumentFactory : NSObject <DPDocumentFactory>
 
 - (instancetype)initWithUserId:(NSString *)userId
                       contract:(DPContract *)contract
-               entropyProvider:(id<DPEntropyProvider>)entropyProvider
-             base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder;
+                       onChain:(DSChain*)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

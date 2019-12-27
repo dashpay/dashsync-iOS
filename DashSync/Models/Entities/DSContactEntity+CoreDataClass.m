@@ -21,7 +21,7 @@
 #import "DSWallet.h"
 #import "DSDerivationPathFactory.h"
 #import "DSFundsDerivationPath.h"
-#import "DashPlatformProtocol+DashSync.h"
+#import "DSDashPlatform.h"
 #import "NSData+Bitcoin.h"
 #import "DSPotentialFriendship.h"
 #import "DSAccountEntity+CoreDataClass.h"

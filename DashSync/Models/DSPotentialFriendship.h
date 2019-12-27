@@ -17,7 +17,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
-#import <ios-dpp/DashPlatformProtocol.h>
+#import <ios-dpp/DSDashPlatform.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

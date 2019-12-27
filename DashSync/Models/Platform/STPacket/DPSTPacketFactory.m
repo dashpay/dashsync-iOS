@@ -18,39 +18,23 @@
 #import "DPSTPacketFactory.h"
 
 #import "DPContractFactory+CreateContract.h"
-#import "DPSerializeUtils.h"
+
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPSTPacketFactory ()
 
-@property (strong, nonatomic) id<DPMerkleRootOperation> merkleRootOperation;
-@property (strong, nonatomic) id<DPBase58DataEncoder> base58DataEncoder;
-
 @end
 
 @implementation DPSTPacketFactory
-
-- (instancetype)initWithMerkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation
-                          base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder {
-    NSParameterAssert(merkleRootOperation);
-    NSParameterAssert(base58DataEncoder);
-
-    self = [super init];
-    if (self) {
-        _merkleRootOperation = merkleRootOperation;
-        _base58DataEncoder = base58DataEncoder;
-    }
-    return self;
-}
 
 #pragma mark - DPSTPacketFactory
 
 - (DPSTPacket *)packetWithContract:(DPContract *)contract {
     NSParameterAssert(contract);
 
-    DPSTPacket *packet = [[DPSTPacket alloc] initWithContract:contract
-                                          merkleRootOperation:self.merkleRootOperation];
+    DPSTPacket *packet = [[DPSTPacket alloc] initWithContract:contract];
 
     return packet;
 }
@@ -61,8 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSParameterAssert(documents);
 
     DPSTPacket *packet = [[DPSTPacket alloc] initWithContractId:contractId
-                                                      documents:documents
-                                            merkleRootOperation:self.merkleRootOperation];
+                                                      documents:documents];
 
     return packet;
 }
@@ -82,14 +65,12 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *contractId = rawPacket[@"contractId"];
     NSParameterAssert(contractId);
 
-    DPSTPacket *packet = [[DPSTPacket alloc] initWithContractId:contractId
-                                            merkleRootOperation:self.merkleRootOperation];
+    DPSTPacket *packet = [[DPSTPacket alloc] initWithContractId:contractId];
 
     NSArray<DPJSONObject *> *rawContracts = rawPacket[@"contracts"];
     if (rawContracts.count > 0) {
         DPJSONObject *rawContract = rawContracts.firstObject;
-        DPContract *contract = [DPContractFactory dp_contractFromRawContract:rawContract
-                                                           base58DataEncoder:self.base58DataEncoder];
+        DPContract *contract = [DPContractFactory dp_contractFromRawContract:rawContract];
         [packet setContract:contract error:error];
         if (*error != nil) {
             return nil;
@@ -100,8 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (rawDocuments.count > 0) {
         NSMutableArray<DPDocument *> *documents = [NSMutableArray array];
         for (DPJSONObject *rawDocument in rawDocuments) {
-            DPDocument *document = [[DPDocument alloc] initWithRawDocument:rawDocument
-                                                         base58DataEncoder:self.base58DataEncoder];
+            DPDocument *document = [[DPDocument alloc] initWithRawDocument:rawDocument];
             [documents addObject:document];
         }
         [packet setDocuments:documents error:error];
@@ -123,8 +103,8 @@ NS_ASSUME_NONNULL_BEGIN
                                         error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawPacket = [DPSerializeUtils decodeSerializedObject:data
-                                                                 error:error];
+    DPJSONObject *rawPacket = [data ds_decodeCborError:error];
+    
     if (!rawPacket) {
         return nil;
     }

@@ -16,8 +16,7 @@
 //
 
 #import "DPSTPacketHeaderFactory.h"
-
-#import "DPSerializeUtils.h"
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -68,8 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                     error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawPacketHeader = [DPSerializeUtils decodeSerializedObject:data
-                                                                       error:error];
+    DPJSONObject *rawPacketHeader = [data ds_decodeCborError:error];
+    
     if (!rawPacketHeader) {
         return nil;
     }

@@ -17,14 +17,17 @@
 
 #import "DPSTPacket+HashCalculations.h"
 
-#import "DPSerializeUtils.h"
+
 #import <TinyCborObjc/NSObject+DSCborEncoding.h>
+#import "NSData+Bitcoin.h"
+#import "BigIntTypes.h"
+#import "NSData+Bitcoin.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPSTPacket (HashCalculations)
 
-- (nullable NSString *)dp_calculateItemsMerkleRootWithOperation:(id<DPMerkleRootOperation>)merkleRootOperation {
+- (nullable NSString *)dp_calculateItemsMerkleRoot {
     NSArray<NSData *> *documentsHashes = [self dp_calculateDocumentsHashes];
     NSArray<NSData *> *contractsHashes = [self dp_calculateContractsHashes];
 
@@ -34,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
 
-    NSData *merkleRootData = [merkleRootOperation merkleRootFromHashes:itemsHashes];
+    NSData *merkleRootData = [NSData merkleRootFromHashes:itemsHashes];
     if (!merkleRootData) {
         return nil;
     }
@@ -56,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
         @"contracts" : contractsHashes,
     };
 
-    NSString *hash = [DPSerializeUtils serializeAndHashObjectToString:itemsHashesDictionary];
+    NSString *hash = uint256_hex([[itemsHashesDictionary ds_cborEncodedObject] SHA256_2]);
 
     return hash;
 }

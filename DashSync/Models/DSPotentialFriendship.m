@@ -20,7 +20,7 @@
 #import "DSWallet.h"
 #import "DSDerivationPathFactory.h"
 #import "DSFundsDerivationPath.h"
-#import "DashPlatformProtocol+DashSync.h"
+#import "DSDashPlatform.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
@@ -75,7 +75,7 @@
 
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash), @"the destination contact's associatedBlockchainIdentityRegistrationTransactionHash must be set before making a friend request");
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     dpp.userId = uint256_reverse_hex(self.sourceBlockchainIdentity.registrationTransitionHash);
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;

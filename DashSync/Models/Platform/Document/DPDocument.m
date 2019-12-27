@@ -18,14 +18,14 @@
 #import "DPDocument.h"
 
 #import "DPErrors.h"
-#import "DPSerializeUtils.h"
+
+#import "NSData+Bitcoin.h"
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocument ()
 
-@property (strong, nonatomic) id<DPBase58DataEncoder> base58DataEncoder;
-@property (assign, nonatomic) DPDocumentAction action;
 @property (copy, nonatomic) DPJSONObject *data;
 
 @end
@@ -34,14 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @synthesize identifier = _identifier;
 
-- (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument
-                  base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder {
+- (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument {
     NSParameterAssert(rawDocument);
-    NSParameterAssert(base58DataEncoder);
 
     self = [super init];
     if (self) {
-        _base58DataEncoder = base58DataEncoder;
 
         DPMutableJSONObject *mutableRawObject = [rawDocument mutableCopy];
 
@@ -51,23 +48,17 @@ NS_ASSUME_NONNULL_BEGIN
             _type = [type copy];
             [mutableRawObject removeObjectForKey:@"$type"];
         }
-        NSString *scope = mutableRawObject[@"$scope"];
-        NSParameterAssert(scope);
-        if (scope) {
-            _scope = [scope copy];
-            [mutableRawObject removeObjectForKey:@"$scope"];
+        NSString *contractId = mutableRawObject[@"$contractId"];
+        NSParameterAssert(contractId);
+        if (contractId) {
+            _contractId = [contractId copy];
+            [mutableRawObject removeObjectForKey:@"$contractId"];
         }
-        NSString *scopeId = mutableRawObject[@"$scopeId"];
-        NSParameterAssert(scopeId);
-        if (scopeId) {
-            _scopeId = [scopeId copy];
-            [mutableRawObject removeObjectForKey:@"$scopeId"];
-        }
-        NSNumber *action = mutableRawObject[@"$action"];
-        NSParameterAssert(action);
-        if (action) {
-            _action = action.unsignedIntegerValue;
-            [mutableRawObject removeObjectForKey:@"$action"];
+        NSString *userId = mutableRawObject[@"$userId"];
+        NSParameterAssert(userId);
+        if (userId) {
+            _userId = [userId copy];
+            [mutableRawObject removeObjectForKey:@"$userId"];
         }
         NSNumber *rev = mutableRawObject[@"$rev"];
         NSParameterAssert(rev);
@@ -86,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (_identifier == nil) {
         NSString *identifierString = [self.scope stringByAppendingString:self.scopeId];
         NSData *identifierStringData = [identifierString dataUsingEncoding:NSUTF8StringEncoding];
-        NSData *identifierHashData = [DPSerializeUtils hashDataOfData:identifierStringData];
+        NSData *identifierHashData = uint256_data([identifierStringData SHA256_2]);
         _identifier = [self.base58DataEncoder base58WithData:identifierHashData];
     }
     return _identifier;
@@ -139,7 +130,6 @@ NS_ASSUME_NONNULL_BEGIN
         json[@"$type"] = self.type;
         json[@"$scope"] = self.scope;
         json[@"$scopeId"] = self.scopeId;
-        json[@"$action"] = @(self.action);
         json[@"$rev"] = self.revision;
         [json addEntriesFromDictionary:self.data];
         _json = json;

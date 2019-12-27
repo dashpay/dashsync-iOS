@@ -15,30 +15,11 @@
 //  limitations under the License.
 //
 
-#import "DashPlatformProtocol+DashSync.h"
-
-#import "DSBase58DataEncoder.h"
-#import "DSEntropyProvider.h"
-#import "DSMerkleRootOperation.h"
+#import "DSDashPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation DashPlatformProtocol (DashSync)
-
-+ (instancetype)sharedInstance {
-    static DashPlatformProtocol *_sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        DSBase58DataEncoder *base58DataEncoder = [[DSBase58DataEncoder alloc] init];
-        DSEntropyProvider *entropyProvider = [[DSEntropyProvider alloc] init];
-        DSMerkleRootOperation *merkleRootOperation = [[DSMerkleRootOperation alloc] init];
-        
-        _sharedInstance = [[self alloc] initWithBase58DataEncoder:base58DataEncoder
-                                                  entropyProvider:entropyProvider
-                                              merkleRootOperation:merkleRootOperation];
-    });
-    return _sharedInstance;
-}
+@implementation DSDashPlatform (DashSync)
 
 @end
 

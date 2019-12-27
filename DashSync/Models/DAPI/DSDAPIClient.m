@@ -21,7 +21,7 @@
 #import <DashSync/DashSync.h>
 #import "DSDAPINetworkService.h"
 
-#import "DashPlatformProtocol+DashSync.h"
+#import "DSDashPlatform.h"
 #import <arpa/inet.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -58,7 +58,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     
     NSArray *documents = @[ document ];
     
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:contract.identifier documents:documents];
     [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
 }

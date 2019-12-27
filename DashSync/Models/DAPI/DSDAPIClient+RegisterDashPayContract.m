@@ -17,7 +17,7 @@
 
 #import "DSDAPIClient+RegisterDashPayContract.h"
 
-#import "DashPlatformProtocol+DashSync.h"
+#import "DSDashPlatform.h"
 #import "DSBlockchainIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DSDAPIClient (RegisterDashPayContract)
 
 + (DPContract *)ds_currentDashPayContract {
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     if (dpp.contract) {
         return dpp.contract;
     }
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion {
     DPContract *contract = [self.class ds_currentDashPayContract];
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     dpp.userId = blockchainIdentity.registrationTransitionHashIdentifier;
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
     [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
     DPJSONObject *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     DPContract *contract = [dpp.contractFactory contractFromRawContract:jsonObject error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     

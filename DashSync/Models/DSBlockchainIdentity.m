@@ -31,7 +31,7 @@
 #import "DSContactEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
-#import "DashPlatformProtocol+DashSync.h"
+#import "DSDashPlatform.h"
 #import "DSPotentialFriendship.h"
 #import "NSData+Bitcoin.h"
 #import "DSDAPIClient+RegisterDashPayContract.h"
@@ -472,7 +472,7 @@
 }
 
 - (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion {
-    DashPlatformProtocol *dpp = [DashPlatformProtocol sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     dpp.userId = uint256_reverse_hex(self.registrationTransitionHash);
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;

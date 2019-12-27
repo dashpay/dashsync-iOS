@@ -16,8 +16,8 @@
 //
 
 #import "DPContract.h"
-
-#import "DPSerializeUtils.h"
+#import "NSData+Bitcoin.h"
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +27,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @interface DPContract ()
 
-@property (strong, nonatomic) id<DPBase58DataEncoder> base58DataEncoder;
 @property (strong, nonatomic) NSMutableDictionary<NSString *, DPJSONObject *> *mutableDocuments;
 
 @end
@@ -35,15 +34,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @implementation DPContract
 
 - (instancetype)initWithContractId:(NSString *)contractId
-                   documents:(NSDictionary<NSString *, DPJSONObject *> *)documents
-           base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder {
+                   documents:(NSDictionary<NSString *, DPJSONObject *> *)documents {
     NSParameterAssert(contractId);
     NSParameterAssert(documents);
-    NSParameterAssert(base58DataEncoder);
 
     self = [super init];
     if (self) {
-        _base58DataEncoder = base58DataEncoder;
         _version = DEFAULT_VERSION;
         _jsonMetaSchema = DEFAULT_SCHEMA;
         _mutableDocuments = [documents mutableCopy];
@@ -53,8 +49,8 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 - (NSString *)identifier {
-    NSData *serializedData = [DPSerializeUtils hashDataOfData:self.serialized];
-    return [self.base58DataEncoder base58WithData:serializedData];
+    NSData *serializedData = uint256_data([self.serialized SHA256_2]);
+    return [serializedData base58String];
 }
 
 - (NSString *)jsonSchemaId {

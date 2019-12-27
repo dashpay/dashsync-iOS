@@ -18,16 +18,13 @@
 #import <Foundation/Foundation.h>
 
 #import "DPDocumentFactoryProtocol.h"
-#import "DPEntropyProvider.h"
-#import "DashPlatformProtocol.h"
+#import "DSDashPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocumentFacade : NSObject <DPDocumentFactory>
 
-- (instancetype)initWithDPP:(DashPlatformProtocol *)dpp
-            entropyProvider:(id<DPEntropyProvider>)entropyProvider
-          base58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder;
+- (instancetype)initWithPlaform:(DSDashPlatform *)dpp;
 
 - (instancetype)init NS_UNAVAILABLE;
 

@@ -20,27 +20,16 @@
 #import "DPContractFactory.h"
 
 #import "DPContractFactory+CreateContract.h"
-#import "DPSerializeUtils.h"
+#import <TinyCborObjc/NSData+DSCborDecoding.h>
+
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContractFactory ()
 
-@property (strong, nonatomic) id<DPBase58DataEncoder> base58DataEncoder;
-
 @end
 
 @implementation DPContractFactory
-
-- (instancetype)initWithBase58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder {
-    NSParameterAssert(base58DataEncoder);
-
-    self = [super init];
-    if (self) {
-        _base58DataEncoder = base58DataEncoder;
-    }
-    return self;
-}
 
 #pragma mark - DPContractFactory
 
@@ -53,8 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
         @"name" : name,
         @"documents" : documents,
     };
-    DPContract *contract = [self.class dp_contractFromRawContract:rawContract
-                                                base58DataEncoder:self.base58DataEncoder];
+    DPContract *contract = [self.class dp_contractFromRawContract:rawContract];
 
     return contract;
 }
@@ -71,8 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     // TODO: validate rawContract
 
-    DPContract *contract = [self.class dp_contractFromRawContract:rawContract
-                                                base58DataEncoder:self.base58DataEncoder];
+    DPContract *contract = [self.class dp_contractFromRawContract:rawContract];
 
     return contract;
 }
@@ -87,8 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawContract = [DPSerializeUtils decodeSerializedObject:data
-                                                                   error:error];
+    DPJSONObject *rawContract = [data ds_decodeCborError:error];
     if (!rawContract) {
         return nil;
     }

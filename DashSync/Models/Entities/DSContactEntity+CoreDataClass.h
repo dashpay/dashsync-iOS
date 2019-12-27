@@ -18,7 +18,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
-#import <ios-dpp/DashPlatformProtocol.h>
 #import "DSPotentialFriendship.h"
 
 @class DSAccountEntity, DSBlockchainIdentityRegistrationTransitionEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity;

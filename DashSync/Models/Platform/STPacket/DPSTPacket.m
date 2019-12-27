@@ -24,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPSTPacket ()
 
-@property (strong, nonatomic) id<DPMerkleRootOperation> merkleRootOperation;
 @property (copy, nonatomic) NSArray<DPContract *> *contracts;
 @property (strong, nonatomic) NSMutableArray<DPDocument *> *mutableDocuments;
 
@@ -32,14 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPSTPacket
 
-- (instancetype)initWithContractId:(NSString *)contractId
-               merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation {
+- (instancetype)initWithContractId:(NSString *)contractId {
     NSParameterAssert(contractId);
-    NSParameterAssert(merkleRootOperation);
 
     self = [super init];
     if (self) {
-        _merkleRootOperation = merkleRootOperation;
         _contractId = [contractId copy];
         _contracts = @[];
         _mutableDocuments = [NSMutableArray array];
@@ -47,12 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (instancetype)initWithContract:(DPContract *)contract
-             merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation {
+- (instancetype)initWithContract:(DPContract *)contract {
     NSParameterAssert(contract);
-    NSParameterAssert(merkleRootOperation);
 
-    self = [self initWithContractId:contract.identifier merkleRootOperation:merkleRootOperation];
+    self = [self initWithContractId:contract.identifier];
     if (self) {
         _contracts = @[ contract ];
     }
@@ -60,13 +54,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (instancetype)initWithContractId:(NSString *)contractId
-                         documents:(NSArray<DPDocument *> *)documents
-               merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation {
+                         documents:(NSArray<DPDocument *> *)documents {
     NSParameterAssert(contractId);
     NSParameterAssert(documents);
-    NSParameterAssert(merkleRootOperation);
 
-    self = [self initWithContractId:contractId merkleRootOperation:merkleRootOperation];
+    self = [self initWithContractId:contractId];
     if (self) {
         _mutableDocuments = [documents mutableCopy];
     }
@@ -74,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)itemsMerkleRoot {
-    return [self dp_calculateItemsMerkleRootWithOperation:self.merkleRootOperation];
+    return [self dp_calculateItemsMerkleRoot];
 }
 
 - (NSString *)itemsHash {

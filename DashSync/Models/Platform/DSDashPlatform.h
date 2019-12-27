@@ -19,14 +19,14 @@
 
 #import "DPContractFactoryProtocol.h"
 #import "DPDocumentFactoryProtocol.h"
-#import "DPEntropyProvider.h"
-#import "DPMerkleRootOperation.h"
 #import "DPSTPacketFactoryProtocol.h"
 #import "DPSTPacketHeaderFactoryProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DashPlatformProtocol : NSObject
+@class DSChain;
+
+@interface DSDashPlatform : NSObject
 
 @property (nullable, copy, nonatomic) NSString *userId;
 @property (nullable, strong, nonatomic) DPContract *contract;
@@ -36,11 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) id<DPSTPacketFactory> stPacketFactory;
 @property (readonly, strong, nonatomic) id<DPSTPacketHeaderFactory> stPacketHeaderFactory;
 
-- (instancetype)initWithBase58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder
-                          entropyProvider:(id<DPEntropyProvider>)entropyProvider
-                      merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation;
-
 - (instancetype)init NS_UNAVAILABLE;
+
++ (instancetype)sharedInstanceForChain:(DSChain*)chain;
 
 @end
 

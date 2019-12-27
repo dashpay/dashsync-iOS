@@ -19,7 +19,6 @@
 
 #import "DPContract.h"
 #import "DPDocument.h"
-#import "DPMerkleRootOperation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,15 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSArray<DPContract *> *contracts;
 @property (readonly, copy, nonatomic) NSArray<DPDocument *> *documents;
 
-- (instancetype)initWithContractId:(NSString *)contractId
-               merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithContractId:(NSString *)contractId NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithContract:(DPContract *)contract
-             merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation;
+- (instancetype)initWithContract:(DPContract *)contract;
 
 - (instancetype)initWithContractId:(NSString *)contractId
-                         documents:(NSArray<DPDocument *> *)documents
-               merkleRootOperation:(id<DPMerkleRootOperation>)merkleRootOperation;
+                         documents:(NSArray<DPDocument *> *)documents;
 
 - (instancetype)init NS_UNAVAILABLE;
 

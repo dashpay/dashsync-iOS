@@ -23,10 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContractFactory : NSObject <DPContractFactory>
 
-- (instancetype)initWithBase58DataEncoder:(id<DPBase58DataEncoder>)base58DataEncoder;
-
-- (instancetype)init NS_UNAVAILABLE;
-
 @end
 
 NS_ASSUME_NONNULL_END
