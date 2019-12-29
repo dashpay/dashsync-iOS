@@ -47,9 +47,10 @@
 @interface DSBlockchainIdentity()
 
 @property (nonatomic,weak) DSWallet * wallet;
-@property (nonatomic,strong) NSArray <NSString *> * usernames;
+@property (nonatomic,strong) NSMutableDictionary <NSString *,NSNumber *> * usernameStatuses;
 @property (nonatomic,strong) NSString * uniqueIdentifier;
 @property (nonatomic,assign) uint32_t index;
+@property (nonatomic,assign) BOOL registered;
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
@@ -85,6 +86,7 @@
     self.blockchainIdentityResetTransitions = [NSMutableArray array];
     self.baseTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
+    self.registered = FALSE;
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -307,6 +309,23 @@
 
 // MARK: - Persistence
 
+-(void)addUsername:(NSString*)username {
+    [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Initial) forKey:username];
+    if (self.registered) {
+        [self registerUsernames];
+    }
+}
+
+-(NSArray<NSString*>*)usernames {
+    return [self.usernameStatuses allKeys];
+}
+
+-(void)registerUsernames {
+    
+}
+
+// MARK: - Persistence
+
 -(void)save {
     
 }
@@ -472,7 +491,7 @@
 }
 
 - (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion {
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:self.wallet.chain];
     dpp.userId = uint256_reverse_hex(self.registrationTransitionHash);
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
     dpp.contract = contract;

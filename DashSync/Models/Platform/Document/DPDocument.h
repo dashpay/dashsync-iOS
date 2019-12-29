@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocument : DPBaseObject
 
-@property (readonly, copy, nonatomic) NSString *identifier;
+//@property (readonly, copy, nonatomic) NSString *identifier;
 
 @property (readonly, copy, nonatomic) NSString *type;
 @property (readonly, copy, nonatomic) NSString *contractId;

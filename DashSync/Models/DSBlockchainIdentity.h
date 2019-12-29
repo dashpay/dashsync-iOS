@@ -17,6 +17,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentitySigningType) {
     DSBlockchainIdentitySigningType_BLS = 1,
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
+    DSBlockchainIdentityUsernameStatus_NotPresent = 0,
+    DSBlockchainIdentityUsernameStatus_Initial = 1,
+    DSBlockchainIdentityUsernameStatus_RegistrationPending = 2, //sent to DAPI, not yet confirmed
+    DSBlockchainIdentityUsernameStatus_Confirmed = 3,
+};
+
 @interface DSBlockchainIdentity : NSObject
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
@@ -37,9 +44,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentitySigningType) {
 
 -(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransitionHash:(UInt256)registrationTransitionHash lastTransitionHash:(UInt256)lastTransitionHash inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet* _Nonnull)wallet createdWithTransitionHash:(UInt256)registrationTransitionHash inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(instancetype)initWithBlockchainIdentityRegistrationTransition:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+
+-(void)addUsername:(NSString*)username;
+
+-(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;
 
 -(void)generateBlockchainIdentityExtendedPublicKey:(void (^ _Nullable)(BOOL registered))completion;
 

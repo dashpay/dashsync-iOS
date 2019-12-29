@@ -36,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) id<DPSTPacketFactory> stPacketFactory;
 @property (readonly, strong, nonatomic) id<DPSTPacketHeaderFactory> stPacketHeaderFactory;
 
+@property (readonly, strong, nonatomic) DSChain *chain;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 + (instancetype)sharedInstanceForChain:(DSChain*)chain;

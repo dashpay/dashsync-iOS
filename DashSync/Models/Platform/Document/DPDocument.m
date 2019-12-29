@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPDocument
 
-@synthesize identifier = _identifier;
+//@synthesize identifier = _identifier;
 
 - (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument {
     NSParameterAssert(rawDocument);
@@ -73,43 +73,43 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (NSString *)identifier {
-    if (_identifier == nil) {
-        NSString *identifierString = [self.scope stringByAppendingString:self.scopeId];
-        NSData *identifierStringData = [identifierString dataUsingEncoding:NSUTF8StringEncoding];
-        NSData *identifierHashData = uint256_data([identifierStringData SHA256_2]);
-        _identifier = [self.base58DataEncoder base58WithData:identifierHashData];
-    }
-    return _identifier;
-}
+//- (NSString *)identifier {
+//    if (_identifier == nil) {
+//        NSString *identifierString = [self.scope stringByAppendingString:self.scopeId];
+//        NSData *identifierStringData = [identifierString dataUsingEncoding:NSUTF8StringEncoding];
+//        NSData *identifierHashData = uint256_data([identifierStringData SHA256_2]);
+//        _identifier = [identifierHashData base58String];
+//    }
+//    return _identifier;
+//}
 
-- (void)setAction:(DPDocumentAction)action error:(NSError *_Nullable __autoreleasing *)error {
-    if (action == DPDocumentAction_Delete && self.data.count != 0) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:DPErrorDomain
-                                         code:DPErrorCode_DataIsNotAllowedWithActionDelete
-                                     userInfo:@{NSDebugDescriptionErrorKey : self}];
-        }
-
-        return;
-    }
-
-    _action = action;
-    [self resetSerializedValues];
-}
+//- (void)setAction:(DPDocumentAction)action error:(NSError *_Nullable __autoreleasing *)error {
+//    if (action == DPDocumentAction_Delete && self.data.count != 0) {
+//        if (error != NULL) {
+//            *error = [NSError errorWithDomain:DPErrorDomain
+//                                         code:DPErrorCode_DataIsNotAllowedWithActionDelete
+//                                     userInfo:@{NSDebugDescriptionErrorKey : self}];
+//        }
+//
+//        return;
+//    }
+//
+//    _action = action;
+//    [self resetSerializedValues];
+//}
 
 - (void)setData:(DPJSONObject *)data error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    if (self.action == DPDocumentAction_Delete && data.count != 0) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:DPErrorDomain
-                                         code:DPErrorCode_DataIsNotAllowedWithActionDelete
-                                     userInfo:@{NSDebugDescriptionErrorKey : self}];
-        }
-
-        return;
-    }
+//    if (self.action == DPDocumentAction_Delete && data.count != 0) {
+//        if (error != NULL) {
+//            *error = [NSError errorWithDomain:DPErrorDomain
+//                                         code:DPErrorCode_DataIsNotAllowedWithActionDelete
+//                                     userInfo:@{NSDebugDescriptionErrorKey : self}];
+//        }
+//
+//        return;
+//    }
 
     _data = data;
     [self resetSerializedValues];
@@ -128,8 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
     if (_json == nil) {
         DPMutableJSONObject *json = [[DPMutableJSONObject alloc] init];
         json[@"$type"] = self.type;
-        json[@"$scope"] = self.scope;
-        json[@"$scopeId"] = self.scopeId;
+        json[@"$contractId"] = self.contractId;
+        json[@"$userId"] = self.userId;
+        json[@"$entropy"] = self.entropy;
         json[@"$rev"] = self.revision;
         [json addEntriesFromDictionary:self.data];
         _json = json;
