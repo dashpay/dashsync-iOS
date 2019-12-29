@@ -54,9 +54,9 @@
 }
 
 -(DSIncomingFundsDerivationPath*)createDerivationPath {
-    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash), @"associatedBlockchainIdentityRegistrationTransactionHash must not be null");
+    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"associatedBlockchainIdentityUniqueId must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                          contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash sourceBlockchainIdentityRegistrationTransactionHash:self.sourceBlockchainIdentity.registrationTransitionHash forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
+                                          contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:self.destinationContact.associatedBlockchainIdentityUniqueId sourceBlockchainIdentityRegistrationTransactionHash:self.sourceBlockchainIdentity.registrationTransitionHash forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
     self.fundsDerivationPathForContact.account = self.account;
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
@@ -74,7 +74,7 @@
 }
 
 -(DPDocument*)contactRequestDocument {
-    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash), @"the destination contact's associatedBlockchainIdentityRegistrationTransactionHash must be set before making a friend request");
+    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
     DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
     dpp.userId = uint256_reverse_hex(self.sourceBlockchainIdentity.registrationTransitionHash);
     DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
@@ -88,7 +88,7 @@
     
     
     DPJSONObject *data = @{
-                           @"toUserId" : uint256_reverse_hex(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash),
+                           @"toUserId" : uint256_reverse_hex(self.destinationContact.associatedBlockchainIdentityUniqueId),
                            @"publicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
                            };
     
@@ -114,7 +114,7 @@
 
 -(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSContactEntity*)contactEntity {
     NSParameterAssert(contactEntity);
-    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityRegistrationHash.UInt256,self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash), @"contact entity must match");
+    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityRegistrationHash.UInt256,self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.ownContact;
     friendRequestEntity.destinationContact = contactEntity;
@@ -127,15 +127,15 @@
 
 
 -(DSFriendRequestEntity*)outgoingFriendRequest {
-    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash), @"destination contact must be known");
-    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityRegistrationHash == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash)];
+    NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
+    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityRegistrationHash == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
     if (!contactEntity) {
         contactEntity =  [DSContactEntity managedObject];
         
         contactEntity.username = self.destinationContact.username;
         contactEntity.avatarPath = self.destinationContact.avatarPath;
         contactEntity.publicMessage = self.destinationContact.publicMessage;
-        contactEntity.associatedBlockchainIdentityRegistrationHash = uint256_data(self.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash);
+        contactEntity.associatedBlockchainIdentityRegistrationHash = uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId);
         contactEntity.chain = self.account.wallet.chain.chainEntity;
     }
     

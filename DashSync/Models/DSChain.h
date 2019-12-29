@@ -259,8 +259,6 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSWallet* _Nullable)walletContainingMasternodeHoldingAddressForProviderRegistrationTransaction:(DSProviderRegistrationTransaction * _Nonnull)transaction foundAtIndex:(uint32_t* _Nullable)rIndex;
 
-- (DSWallet* _Nullable)walletHavingBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
-
 - (BOOL)transactionHasLocalReferences:(DSTransaction*)transaction;
 
 - (BOOL)registerSpecialTransaction:(DSTransaction*)transaction;

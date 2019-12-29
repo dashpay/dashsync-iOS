@@ -414,12 +414,12 @@
             }
             return;
         }
-        
-        UInt256 blockchainIdentityContactRegistrationHash = ((NSString*)blockchainIdentity[@"regtxid"]).hexToData.reverse.UInt256;
+        //TODO: switch this from regtxid
+        UInt256 blockchainIdentityContactUniqueId = ((NSString*)blockchainIdentity[@"regtxid"]).hexToData.reverse.UInt256;
         __unused UInt384 blockchainIdentityContactEncryptionPublicKey = ((NSString*)blockchainIdentity[@"publicKey"]).hexToData.reverse.UInt384;
-        NSAssert(!uint256_is_zero(blockchainIdentityContactRegistrationHash), @"blockchainIdentityContactRegistrationHash should not be null");
+        NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
         //NSAssert(!uint384_is_zero(blockchainIdentityContactEncryptionPublicKey), @"blockchainIdentityContactEncryptionPublicKey should not be null");
-        [potentialContact setAssociatedBlockchainIdentityRegistrationTransactionHash:blockchainIdentityContactRegistrationHash];
+        [potentialContact setAssociatedBlockchainIdentityUniqueId:blockchainIdentityContactUniqueId];
         //[potentialContact setContactEncryptionPublicKey:blockchainIdentityContactEncryptionPublicKey];
         DSAccount * account = [self.wallet accountWithNumber:0];
         DSPotentialFriendship * potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:potentialContact sourceBlockchainIdentity:self account:account];
@@ -437,7 +437,7 @@
 }
 
 - (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialFriendship*)potentialFriendship completion:(void (^)(BOOL))completion {
-    if (uint256_is_zero(potentialFriendship.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash)) {
+    if (uint256_is_zero(potentialFriendship.destinationContact.associatedBlockchainIdentityUniqueId)) {
         [self sendNewFriendRequestToPotentialContact:potentialFriendship.destinationContact completion:completion];
         return;
     }
@@ -455,7 +455,7 @@
         
         if (success) {
             
-            [self fetchProfileForRegistrationTransactionHash:potentialFriendship.destinationContact.associatedBlockchainIdentityRegistrationTransactionHash saveReturnedProfile:NO context:self.managedObjectContext completion:^(DSContactEntity *contactEntity) {
+            [self fetchProfileForBlockchainIdentityUniqueId:potentialFriendship.destinationContact.associatedBlockchainIdentityUniqueId saveReturnedProfile:NO context:self.managedObjectContext completion:^(DSContactEntity *contactEntity) {
                 if (!contactEntity) {
                     if (completion) {
                         completion(NO);
@@ -480,7 +480,7 @@
     DSAccount * account = [self.wallet accountWithNumber:0];
     DSPotentialContact *contact = [[DSPotentialContact alloc] initWithUsername:friendRequest.sourceContact.username avatarPath:friendRequest.sourceContact.avatarPath
                                                                  publicMessage:friendRequest.sourceContact.publicMessage];
-    [contact setAssociatedBlockchainIdentityRegistrationTransactionHash:friendRequest.sourceContact.associatedBlockchainIdentityRegistrationHash.UInt256];
+    [contact setAssociatedBlockchainIdentityUniqueId:friendRequest.sourceContact.associatedBlockchainIdentityUniqueId];
     DSPotentialFriendship *potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact
                                                                           sourceBlockchainIdentity:self
                                                                                       account:account];
@@ -566,9 +566,9 @@
     }];
 }
 
-- (void)fetchProfileForRegistrationTransactionHash:(UInt256)registrationTransactionHash saveReturnedProfile:(BOOL)saveReturnedProfile context:(NSManagedObjectContext*)context completion:(void (^)(DSContactEntity* contactEntity))completion {
+- (void)fetchProfileForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId saveReturnedProfile:(BOOL)saveReturnedProfile context:(NSManagedObjectContext*)context completion:(void (^)(DSContactEntity* contactEntity))completion {
     
-    NSDictionary *query = @{ @"userId" : uint256_reverse_hex(registrationTransactionHash) };
+    NSDictionary *query = @{ @"userId" : uint256_reverse_hex(blockchainIdentityUniqueId) };
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;

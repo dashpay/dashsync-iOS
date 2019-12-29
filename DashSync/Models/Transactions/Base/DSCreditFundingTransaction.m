@@ -1,5 +1,5 @@
-//
-//  DSContactEntity+CoreDataClass.h
+//  
+//  Created by Sam Westrich
 //  Copyright © 2019 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
@@ -15,21 +15,13 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-#import "BigIntTypes.h"
-#import "DSPotentialFriendship.h"
+#import "DSCreditFundingTransaction.h"
+#import "DSCreditFundingTransactionEntity+CoreDataClass.h"
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentity;
+@implementation DSCreditFundingTransaction
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface DSContactEntity : NSManagedObject
-
-+(void)deleteContactsOnChain:(DSChainEntity*)chainEntity;
+-(Class)entityClass {
+    return [DSCreditFundingTransactionEntity class];
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
-
-#import "DSContactEntity+CoreDataProperties.h"

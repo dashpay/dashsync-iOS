@@ -21,9 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *documentScopeID;
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, copy) NSString *avatarPath;
-@property (nullable, nonatomic, retain) NSData *associatedBlockchainIdentityRegistrationHash;
+@property (nullable, nonatomic, retain) NSData *associatedBlockchainIdentityUniqueId;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
-@property (nullable, nonatomic, retain) DSBlockchainIdentityRegistrationTransitionEntity *associatedBlockchainIdentityRegistrationTransaction;
+@property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *associatedBlockchainIdentity;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSContactEntity *> *friends;

@@ -941,14 +941,10 @@
         NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
         NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
         if (keyChainDictionary) {
-            for (NSData * registrationTransactionHashData in keyChainDictionary) {
-                if ([registrationTransactionHashData isKindOfClass:[NSString class]]) {
-                    setKeychainDict(rDictionary, self.walletBlockchainIdentitiesKey, NO);
-                    break;
-                }
-                uint32_t index = [keyChainDictionary[registrationTransactionHashData] unsignedIntValue];
-                UInt256 registrationTransactionHash = registrationTransactionHashData.UInt256;
-                DSDLog(@"Blockchain user with reg %@",uint256_hex(registrationTransactionHash));
+            for (NSData * blockchainIdentityData in keyChainDictionary) {
+                uint32_t index = [keyChainDictionary[blockchainIdentityData] unsignedIntValue];
+                UInt256 blockchainIdentity = blockchainIdentityData.UInt256;
+                DSDLog(@"Blockchain identity %@",uint256_hex(blockchainIdentity));
                 UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
                 DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
                 DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];

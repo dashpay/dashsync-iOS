@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString * username;
 @property (nonatomic, copy) NSString * avatarPath;
 @property (nonatomic, copy) NSString * publicMessage;
-@property (nonatomic, assign) UInt256 associatedBlockchainIdentityRegistrationTransactionHash;
+@property (nonatomic, assign) UInt256 associatedBlockchainIdentityUniqueId;
 
 -(instancetype)initWithUsername:(NSString*)username;
 

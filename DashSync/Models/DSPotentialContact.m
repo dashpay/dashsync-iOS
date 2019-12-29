@@ -26,7 +26,7 @@
     self = [super init];
     if (self) {
         _username = username;
-        _associatedBlockchainIdentityRegistrationTransactionHash = UINT256_ZERO;
+        _associatedBlockchainIdentityUniqueId = UINT256_ZERO;
     }
     return self;
 }
@@ -37,7 +37,7 @@
         _username = username;
         _avatarPath = avatarPath;
         _publicMessage = publicMessage;
-        _associatedBlockchainIdentityRegistrationTransactionHash = UINT256_ZERO;
+        _associatedBlockchainIdentityUniqueId = UINT256_ZERO;
     }
     return self;
 }
@@ -45,13 +45,13 @@
 -(instancetype)initWithContactEntity:(DSContactEntity*)contactEntity {
     self = [self initWithUsername:contactEntity.username avatarPath:contactEntity.avatarPath publicMessage:contactEntity.publicMessage];
     if (self) {
-        _associatedBlockchainIdentityRegistrationTransactionHash = contactEntity.associatedBlockchainIdentityRegistrationHash.UInt256;
+        _associatedBlockchainIdentityUniqueId = contactEntity.associatedBlockchainIdentityRegistrationHash.UInt256;
     }
     return self;
 }
 
 -(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainIdentityRegistrationTransactionHash)];
+    return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainIdentityUniqueId)];
 }
 
 
