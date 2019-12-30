@@ -117,25 +117,30 @@
     DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:desiredUsername atIndex:[self.indexLabel.text intValue]];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKey:^(BOOL exists) {
         if (exists) {
-            [blockchainIdentity registrationTransitionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSBlockchainIdentityRegistrationTransition *blockchainIdentityRegistrationTransaction) {
-                if (blockchainIdentityRegistrationTransaction) {
-                    [self.fundingAccount signTransaction:blockchainIdentityRegistrationTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
-                        if (signedTransaction) {
-                            [self.chainManager.transactionManager publishTransaction:blockchainIdentityRegistrationTransaction completion:^(NSError * _Nullable error) {
-                                if (error) {
-                                    [self raiseIssue:@"Error" message:error.localizedDescription];
-                                } else {
-                                    [blockchainIdentity registerInWalletForBlockchainIdentityRegistrationTransaction:blockchainIdentityRegistrationTransaction];
-                                    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
-                                }
-                            }];
-                        } else {
-                            [self raiseIssue:@"Error" message:@"Transaction was not signed."];
-                        }
-                    }];
-                } else {
-                    [self raiseIssue:@"Error" message:@"Unable to create BlockchainIdentityRegistrationTransaction."];
-                }
+            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSTransaction * _Nonnull fundingTransaction) {
+                [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
+                    if (signedTransaction) {
+                        [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
+                            if (error) {
+                                [self raiseIssue:@"Error" message:error.localizedDescription];
+                            } else {
+                                [blockchainIdentity registerInWalletForBlockchainIdentityRegistrationTransaction:blockchainIdentityRegistrationTransaction];
+                                [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+                                    if (blockchainIdentityRegistrationTransition) {
+                                        
+                                    } else {
+                                        [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
+                                    }
+                                }];
+                                
+                                [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+                            }
+                        }];
+                    } else {
+                        [self raiseIssue:@"Error" message:@"Transaction was not signed."];
+                    }
+                }];
+                
             }];
         } else {
             [self raiseIssue:@"Error" message:@"Unable to register blockchain user."];

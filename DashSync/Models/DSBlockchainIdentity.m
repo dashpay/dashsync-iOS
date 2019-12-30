@@ -183,7 +183,7 @@
     }];
 }
 
--(void)registerInWalletForBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransition {
+-(void)registerInWalletForBlockchainIdentityUniqueId:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransition {
     self.blockchainIdentityRegistrationTransition = blockchainIdentityRegistrationTransition;
     self.registrationTransitionHash = blockchainIdentityRegistrationTransition.transitionHash;
     [self registerInWallet];
@@ -205,7 +205,7 @@
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
         
-        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithBlockchainIdentityRegistrationTransitionVersion:<#(uint16_t)#> username:<#(nonnull NSString *)#> pubkeyHash:<#(UInt160)#> onChain:<#(nonnull DSChain *)#>ionVersion:1 pubkeyHash:[privateKey.publicKeyData hash160] onChain:self.wallet.chain];
+        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithTransitionVersion:<#(uint16_t)#> registrationTransactionHash:<#(UInt256)#> previousTransitionHash:<#(UInt256)#> creditFee:<#(uint64_t)#> onChain:<#(DSChain * _Nonnull)#>];
         [blockchainIdentityRegistrationTransaction signPayloadWithKey:privateKey];
         NSMutableData * opReturnScript = [NSMutableData data];
         [opReturnScript appendUInt8:OP_RETURN];

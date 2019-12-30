@@ -57,7 +57,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(void)registerInWallet;
 
--(void)registerInWalletForBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction;
+-(void)registerInWalletForBlockchainIdentityUniqueId:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction;
 
 -(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSTransaction * fundingTransaction))completion;
 
