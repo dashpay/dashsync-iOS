@@ -338,7 +338,9 @@
 }
 
 -(NSString*)validString {
-    return self.isValid?DSLocalizedString(@"Up", nil):DSLocalizedString(@"Down", nil);
+    return self.isValid
+        ? DSLocalizedString(@"Up", @"The server is up and running")
+        : DSLocalizedString(@"Down", @"The server is not working");
 }
 
 -(NSString*)uniqueID {
