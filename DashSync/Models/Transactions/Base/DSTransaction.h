@@ -95,7 +95,7 @@ typedef union _UInt256 UInt256;
 @property (nonatomic, readonly) NSString *longDescription;
 @property (nonatomic, readonly) BOOL isCoinbaseClassicTransaction;
 @property (nonatomic, readonly) BOOL isCreditFundingTransaction;
-@property (nonatomic, nullable, readonly) NSString * creditBurnIdentityIdentifier;
+@property (nonatomic, readonly) UInt256 creditBurnIdentityIdentifier;
 
 @property (nonatomic, strong) DSShapeshiftEntity * associatedShapeshift;
 @property (nonatomic, readonly) DSChain * chain;

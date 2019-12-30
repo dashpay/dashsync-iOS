@@ -48,7 +48,7 @@
 
 @property (nonatomic,weak) DSWallet * wallet;
 @property (nonatomic,strong) NSMutableDictionary <NSString *,NSNumber *> * usernameStatuses;
-@property (nonatomic,strong) NSString * uniqueIdentifier;
+@property (nonatomic,assign) UInt256 uniqueId;
 @property (nonatomic,assign) uint32_t index;
 @property (nonatomic,assign) BOOL registered;
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
@@ -76,7 +76,7 @@
     if (!(self = [super init])) return nil;
     if (![transaction isCreditFundingTransaction]) return nil;
     //TODO: the unique identifier will eventually need to be changed.
-    self.uniqueIdentifier = [transaction creditBurnIdentityIdentifier];
+    self.uniqueId = [transaction creditBurnIdentityIdentifier];
     //[NSString stringWithFormat:@"%@_%@_%@",BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY,wallet.chain.uniqueID,username];
     self.wallet = wallet;
     self.registrationTransitionHash = UINT256_ZERO;
@@ -112,7 +112,7 @@
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        [self.DAPINetworkService getUserById:self.uniqueIdentifier success:^(NSDictionary * _Nullable profileDictionary) {
+        [self.DAPINetworkService getUserById:self.uniqueIdString success:^(NSDictionary * _Nullable profileDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -298,6 +298,10 @@
             [self save];
         }
     }
+}
+
+-(NSString*)uniqueIdString {
+    return [uint256_data(self.uniqueId) base58String];
 }
 
 // MARK: - Funding

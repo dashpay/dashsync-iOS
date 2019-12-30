@@ -27,7 +27,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 @interface DSBlockchainIdentity : NSObject
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
-@property (nonatomic,readonly) NSString * uniqueIdentifier;
+@property (nonatomic,readonly) NSString * uniqueIdString;
+@property (nonatomic,readonly) UInt256 uniqueId;
 @property (nonatomic,readonly) UInt256 registrationTransitionHash;
 @property (nonatomic,readonly) NSData * registrationTransitionHashData;
 @property (nonatomic,readonly) NSString * registrationTransitionHashIdentifier;

@@ -8,6 +8,7 @@
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSDerivationPathFactory.h"
 #import "DSSimpleIndexedDerivationPath+Protected.h"
+#import "DSCreditFundingDerivationPath.h"
 
 @interface DSAuthenticationKeysDerivationPath()
 
@@ -57,14 +58,14 @@
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(0), uint256_from_long(0)};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
 }
 
 + (instancetype)blockchainIdentityBLSKeysDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
-    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(1), uint256_from_long(0)};
+    UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(5), uint256_from_long(0), uint256_from_long(1)};
     BOOL hardenedIndexes[] = {YES,YES,YES,YES,YES};
-    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:4 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
+    return [DSAuthenticationKeysDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:5 type:DSDerivationPathType_Authentication signingAlgorithm:DSDerivationPathSigningAlgorith_BLS reference:DSDerivationPathReference_BlockchainIdentities onChain:chain];
 }
 
 - (NSData*)firstUnusedPublicKey {

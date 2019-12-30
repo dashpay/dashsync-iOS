@@ -21,16 +21,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSIncomingFundsDerivationPath : DSDerivationPath
 
-@property (nonatomic,readonly) UInt256 contactSourceBlockchainIdentityRegistrationTransactionHash;
-@property (nonatomic,readonly) UInt256 contactDestinationBlockchainIdentityRegistrationTransactionHash;
+@property (nonatomic,readonly) UInt256 contactSourceBlockchainIdentityUniqueId;
+@property (nonatomic,readonly) UInt256 contactDestinationBlockchainIdentityUniqueId;
 
-+(instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:(UInt256)destinationBlockchainIdentityRegistrationTransactionHash sourceBlockchainIdentityRegistrationTransactionHash:(UInt256)sourceBlockchainIdentityRegistrationTransactionHash forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
++(instancetype)contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:(UInt256)destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256)sourceBlockchainIdentityUniqueId forAccountNumber:(uint32_t)accountNumber onChain:(DSChain*)chain;
 
 //The extended public key will be saved to disk (storeExternalDerivationPathExtendedPublicKeyToKeyChain call needed)
-+ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainIdentityRegistrationTransactionHash:(UInt256) destinationBlockchainIdentityRegistrationTransactionHash sourceBlockchainIdentityRegistrationTransactionHash:(UInt256) sourceBlockchainIdentityRegistrationTransactionHash onChain:(DSChain*)chain;
++ (instancetype)externalDerivationPathWithExtendedPublicKey:(NSData*)extendedPublicKey withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain;
 
 //The extended public key will be loaded from disk
-+ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString*)extendedPublicKeyUniqueId withDestinationBlockchainIdentityRegistrationTransactionHash:(UInt256) destinationBlockchainIdentityRegistrationTransactionHash sourceBlockchainIdentityRegistrationTransactionHash:(UInt256) sourceBlockchainIdentityRegistrationTransactionHash onChain:(DSChain*)chain;
++ (instancetype)externalDerivationPathWithExtendedPublicKeyUniqueID:(NSString*)extendedPublicKeyUniqueId withDestinationBlockchainIdentityUniqueId:(UInt256) destinationBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:(UInt256) sourceBlockchainIdentityUniqueId onChain:(DSChain*)chain;
 
 // returns the first unused external address
 @property (nonatomic, readonly, nullable) NSString * receiveAddress;

@@ -418,13 +418,13 @@
     return NO;
 }
 
--(NSString*)creditBurnIdentityIdentifier {
+-(UInt256)creditBurnIdentityIdentifier {
     for (NSData * script in self.outputScripts) {
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
-            return [script base58String];
+            return [script SHA256_2];
         }
     }
-    return nil;
+    return UINT256_ZERO;
 }
 
 - (NSUInteger)hash

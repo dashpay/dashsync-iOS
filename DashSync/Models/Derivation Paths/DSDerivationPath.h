@@ -53,6 +53,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
     DSDerivationPathType_Authentication = 1 << 3,
     DSDerivationPathType_PartialPath = 1 << 4,
     DSDerivationPathType_ProtectedFunds = 1 << 5,
+    DSDerivationPathType_CreditFunding = 1 << 6,
     
     DSDerivationPathType_IsForFunds = DSDerivationPathType_ClearFunds | DSDerivationPathType_AnonymousFunds | DSDerivationPathType_ViewOnlyFunds | DSDerivationPathType_ProtectedFunds
 };
@@ -73,7 +74,9 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_ProviderOwnerKeys = 7,
     DSDerivationPathReference_ContactBasedFunds = 8,
     DSDerivationPathReference_ContactBasedFundsRoot = 9,
-    DSDerivationPathReference_ContactBasedFundsExternal = 10
+    DSDerivationPathReference_ContactBasedFundsExternal = 10,
+    DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding = 11,
+    DSDerivationPathReference_BlockchainIdentityCreditTopupFunding = 12,
 };
 
 @interface DSDerivationPath : DSUInt256IndexPath{
