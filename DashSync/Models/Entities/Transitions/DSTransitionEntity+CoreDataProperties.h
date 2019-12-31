@@ -15,12 +15,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSTransitionEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, copy) NSNumber *creditFee;
-@property (nullable, nonatomic, retain) NSData *signature;
-@property (nullable, nonatomic, retain) NSData *registrationTransactionHash;
-@property (nullable, nonatomic, copy) NSNumber *signatureId;
-@property (nullable, nonatomic, copy) NSNumber *timestamp;
-@property (nullable, nonatomic, retain) DSBlockchainIdentityRegistrationTransitionEntity *blockchainIdentityRegistrationTransaction;
+@property (nonatomic) int16_t version;
+@property (nonatomic) int16_t type;
+@property (nonatomic) int64_t creditFee;
+@property (nullable, nonatomic, retain) NSData *signatureData;
+@property (nullable, nonatomic, retain) NSData *blockchainIdentityUniqueIdData;
+@property (nonatomic) int32_t signatureId;
+@property (nonatomic) double createdTimestamp;
+@property (nonatomic) double registeredTimestamp;
+@property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *blockchainIdentity;
+@property (nonatomic, retain) NSData *transitionHashData;
 
 @end
 

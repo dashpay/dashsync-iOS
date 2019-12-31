@@ -15,6 +15,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
+#import "DSCreditFundingTransaction.h"
 #import "DSTransition.h"
 #import "NSData+Dash.h"
 #import "NSData+Bitcoin.h"
@@ -33,17 +34,16 @@
     uint16_t type = [message UInt16AtOffset:2];
     switch (type) {
         case DSTransactionType_Classic:
-            return [DSTransaction transactionWithMessage:message onChain:chain];
+        {
+            DSTransaction * transaction = [DSTransaction transactionWithMessage:message onChain:chain];
+            if ([transaction isCreditFundingTransaction]) {
+                //replace with credit funding transaction
+                transaction = [DSCreditFundingTransaction transactionWithMessage:message onChain:chain];
+            }
+            return transaction;
+        }
         case DSTransactionType_Coinbase:
             return [DSCoinbaseTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionRegistration:
-            return [DSBlockchainIdentityRegistrationTransition transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionTopUp:
-            return [DSBlockchainIdentityTopupTransition transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionCloseAccount:
-            return [DSBlockchainIdentityCloseTransition transactionWithMessage:message onChain:chain];
-        case DSTransactionType_SubscriptionResetKey:
-            return [DSBlockchainIdentityResetTransition transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderRegistration:
             return [DSProviderRegistrationTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateService:
@@ -52,8 +52,6 @@
             return [DSProviderUpdateRegistrarTransaction transactionWithMessage:message onChain:chain];
         case DSTransactionType_ProviderUpdateRevocation:
             return [DSProviderUpdateRevocationTransaction transactionWithMessage:message onChain:chain];
-        case DSTransactionType_Transition:
-            return [DSTransition transactionWithMessage:message onChain:chain];
         default:
             return [DSTransaction transactionWithMessage:message onChain:chain]; //we won't be able to check the payload, but try best to support it.
     }

@@ -29,7 +29,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) uint16_t type;
-@property (nonatomic, readonly) DSBlockchainIdentity * owner;
+@property (nonatomic, readonly) UInt256 blockchainIdentityUniqueId;
 @property (nonatomic, readonly) UInt256 registrationTransactionHash;
 @property (nonatomic, readonly) uint64_t creditFee;
 @property (nonatomic, readonly) UInt256 transitionHash;
@@ -37,18 +37,20 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 @property (nonatomic, readonly, getter = toData) NSData *data;
 
 @property (nonatomic, readonly) DSChain * chain;
-@property (nonatomic, readonly) DSAccount * account;
 @property (nonatomic, readonly) Class entityClass;
 
-@property (nonatomic, readonly) DSBlockchainIdentitySigningType payloadSignatureType;
-@property (nonatomic, readonly) NSData * payloadSignatureData;
+@property (nonatomic, readonly) NSTimeInterval createdTimestamp;
+@property (nonatomic, readonly) NSTimeInterval registeredTimestamp;
 
--(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee onChain:(DSChain * _Nonnull)chain;
+@property (nonatomic, readonly) DSBlockchainIdentitySigningType signatureType;
+@property (nonatomic, readonly) NSData * signatureData;
 
--(instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain;
+-(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain; //local creation
+
+-(instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain; //from network
 
 
--(void)signPayloadWithKey:(DSKey *)privateKey;
+-(void)signWithKey:(DSKey *)privateKey;
 
 @end
 

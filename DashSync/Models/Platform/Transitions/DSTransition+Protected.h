@@ -23,6 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL saved; //don't trust this
 
+@property (nonatomic, assign) uint16_t type;
+@property (nonatomic, assign) uint64_t creditFee;
+@property (nonatomic, assign) UInt256 transitionHash;
+
+@property (nonatomic, assign) NSTimeInterval createdTimestamp;
+@property (nonatomic, assign) NSTimeInterval registeredTimestamp;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -14,11 +14,15 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSTransitionEntity"];
 }
 
+@dynamic version;
+@dynamic type;
 @dynamic creditFee;
-@dynamic signature;
-@dynamic registrationTransactionHash;
+@dynamic signatureData;
+@dynamic blockchainIdentityUniqueIdData;
 @dynamic signatureId;
-@dynamic timestamp;
-@dynamic blockchainIdentityRegistrationTransaction;
+@dynamic createdTimestamp;
+@dynamic registeredTimestamp;
+@dynamic blockchainIdentity;
+@dynamic transitionHashData;
 
 @end

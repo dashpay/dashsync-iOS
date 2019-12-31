@@ -15,16 +15,16 @@
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSTransitionEntity+CoreDataClass.h"
 #import "DSBlockchainIdentity.h"
+#import "DSTransition.h"
+#import "NSDate+Utils.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 @interface DSTransition()
 
 @property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
 @property (nonatomic, assign) uint16_t version;
-@property (nonatomic, assign) uint16_t type;
-@property (nonatomic, strong) DSBlockchainIdentity * owner;
-@property (nonatomic, assign) UInt256 registrationTransactionHash;
-@property (nonatomic, assign) uint64_t creditFee;
-@property (nonatomic, assign) UInt256 transitionHash;
+@property (nonatomic, assign) UInt256 blockchainIdentityUniqueId;
 
 @property (nonatomic, strong) DSChain * chain;
 
@@ -42,84 +42,17 @@
     _version = TS_VERSION;
     self.chain = chain;
     self.saved = FALSE;
+    self.createdTimestamp = [NSDate timeIntervalSince1970];
     return self;
 }
 
-- (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
-{
-    if (! (self = [self initOnChain:chain])) return nil;
-    self.type = DSTransitionType_Classic;
-    NSUInteger length = message.length;
-    uint32_t off = 0;
-    
-    if (length - off < 1) return nil;
-    NSNumber * payloadLengthSize = nil;
-    uint64_t payloadLength = [message varIntAtOffset:off length:&payloadLengthSize];
-    off += payloadLengthSize.unsignedLongValue;
-    
-    if (length - off < 2) return nil;
-    self.version = [message UInt16AtOffset:off];
-    off += 2;
-    
-    if (length - off < 32) return nil;
-    self.registrationTransactionHash = [message UInt256AtOffset:off];
-    off += 32;
-    
-    if (length - off < 8) return nil;
-    self.creditFee = [message UInt64AtOffset:off];
-    off += 8;
-    
-    if (length - off < 96) return nil;
-    self.payloadSignatureData = uint768_data([message UInt768AtOffset:off]);
-    off += 96;
-    
-    if ([self payloadData].length != payloadLength) return nil;
-    self.transitionHash = self.data.SHA256_2;
-    
-    return self;
-}
-
-- (instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain
-{
-    if (! (self = [self initOnChain:chain])) return nil;
-    self.type = DSTransitionType_Classic;
-    self.version = version;
-    NSUInteger length = message.length;
-    uint32_t off = 0;
-    
-    if (length - off < 2) return nil;
-    self.version = [message UInt16AtOffset:off];
-    off += 2;
-    
-    if (length - off < 32) return nil;
-    self.registrationTransactionHash = [message UInt256AtOffset:off];
-    off += 32;
-    
-    if (length - off < 8) return nil;
-    self.creditFee = [message UInt64AtOffset:off];
-    off += 8;
-    
-    if (length - off < 32) return nil;
-    self.packetHash = [message UInt256AtOffset:off];
-    off += 32;
-    
-    if (length - off < 96) return nil;
-    self.payloadSignatureData = uint768_data([message UInt768AtOffset:off]);
-    off += 96;
-    
-    self.transitionHash = self.data.SHA256_2;
-    return self;
-}
-
--(instancetype)initWithTransitionVersion:(uint16_t)version registrationTransactionHash:(UInt256)registrationTransactionHash previousTransitionHash:(UInt256)previousTransitionHash creditFee:(uint64_t)creditFee packetHash:(UInt256)packetHash onChain:(DSChain *)chain {
+-(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain {
     NSParameterAssert(chain);
     
     if (!(self = [self initOnChain:chain])) return nil;
     self.type = DSTransitionType_Classic;
     self.version = version;
-    self.registrationTransactionHash = registrationTransactionHash;
-    self.packetHash = packetHash;
-    self.creditFee = creditFee;
+    self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
     return self;
 }
 
@@ -128,7 +61,6 @@
     [data appendUInt16:self.version];
     [data appendUInt256:self.registrationTransactionHash];
     [data appendUInt64:self.creditFee];
-    [data appendUInt256:self.packetHash];
     return data;
 }
 
@@ -178,6 +110,7 @@
         return [self checkPayloadSignatureForBLSKey:(DSBLSKey*)key];
     }
     NSAssert(FALSE, @"unimplemented key type");
+    return FALSE;
 }
 
 -(BOOL)checkPayloadSignedByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
@@ -252,14 +185,13 @@
 
 -(BOOL)saveInitial {
     if (self.saved) return nil;
-    NSManagedObjectContext * context = [DSTransactionEntity context];
+    NSManagedObjectContext * context = [DSTransitionEntity context];
     __block BOOL didSave = FALSE;
     [context performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:context];
         Class transactionEntityClass = [self entityClass];
         [transactionEntityClass setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.txHash)] == 0) {
             
             DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
             [transactionEntity setAttributesFromTransaction:self];
