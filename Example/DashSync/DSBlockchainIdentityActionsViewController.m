@@ -74,7 +74,7 @@
 }
 
 -(IBAction)reset:(id)sender {
-    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityResetTransition *blockchainIdentityResetTransaction) {
+    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityUpdateTransition *blockchainIdentityResetTransaction) {
         [self.chainManager.transactionManager publishTransaction:blockchainIdentityResetTransaction completion:^(NSError * _Nullable error) {
             if (error) {
                 [self raiseIssue:@"Error" message:error.localizedDescription];

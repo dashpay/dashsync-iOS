@@ -2,7 +2,7 @@
 //  DSBlockchainIdentityEntity+CoreDataProperties.h
 //  DashSync
 //
-//  Created by Sam Westrich on 12/29/19.
+//  Created by Sam Westrich on 12/31/19.
 //
 //
 
@@ -16,19 +16,20 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSBlockchainIdentityEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *uniqueId;
-@property (nullable, nonatomic, retain) NSSet<NSManagedObject *> *creditFundingTransactions;
+@property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *creditFundingTransactions;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
-@property (nullable, nonatomic, retain) NSSet<DSTransitionEntity *> *transitions;
 @property (nullable, nonatomic, retain) DSContactEntity *ownContact;
+@property (nullable, nonatomic, retain) NSSet<DSTransitionEntity *> *transitions;
+@property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
 
 @interface DSBlockchainIdentityEntity (CoreDataGeneratedAccessors)
 
-- (void)addCreditFundingTransactionsObject:(NSManagedObject *)value;
-- (void)removeCreditFundingTransactionsObject:(NSManagedObject *)value;
-- (void)addCreditFundingTransactions:(NSSet<NSManagedObject *> *)values;
-- (void)removeCreditFundingTransactions:(NSSet<NSManagedObject *> *)values;
+- (void)addCreditFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
+- (void)removeCreditFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
+- (void)addCreditFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
+- (void)removeCreditFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
 
 - (void)addKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;
 - (void)removeKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;

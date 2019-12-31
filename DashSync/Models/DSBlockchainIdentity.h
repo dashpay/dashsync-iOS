@@ -10,7 +10,7 @@
 #import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityResetTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact;
+@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentitySigningType) {
     DSBlockchainIdentitySigningType_ECDSA = 0,
@@ -65,10 +65,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(void)topupTransitionForForFundingTransaction:(DSTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransition))completion;
 
--(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction))completion;
+-(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction))completion;
 
 -(void)updateWithTopupTransition:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction save:(BOOL)save;
--(void)updateWithResetTransaction:(DSBlockchainIdentityResetTransition*)blockchainIdentityResetTransaction save:(BOOL)save;
+-(void)updateWithResetTransaction:(DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransaction save:(BOOL)save;
 -(void)updateWithCloseTransaction:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction save:(BOOL)save;
 -(void)updateWithTransition:(DSTransition*)transition save:(BOOL)save;
 

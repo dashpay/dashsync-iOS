@@ -9,7 +9,7 @@
 #import "DSCoinbaseTransaction.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
-#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"

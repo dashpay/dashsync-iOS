@@ -23,8 +23,8 @@
         <attribute name="reason" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainIdentityEntity" representedClassName="DSBlockchainIdentityEntity" syncable="YES">
-        <attribute name="uniqueId" optional="YES" attributeType="Binary" syncable="YES"/>
-        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" syncable="YES"/>
+        <attribute name="uniqueId" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
         <relationship name="creditFundingTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="blockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
         <relationship name="keyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
         <relationship name="ownContact" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="associatedBlockchainIdentity" inverseEntity="DSContactEntity" syncable="YES"/>

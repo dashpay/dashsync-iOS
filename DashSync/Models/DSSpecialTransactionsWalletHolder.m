@@ -32,7 +32,7 @@
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityCloseTransition.h"
-#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityUpdateTransitionDSBlockchainIdentityUpdateTransition.h"
 #import "DSTransition.h"
 #import "DSChain.h"
 
@@ -259,7 +259,7 @@
     return nil;
 }
 
-- (DSBlockchainIdentityResetTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+- (DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
     for (DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction in [self.blockchainIdentityResetTransactions allValues]) {
         if (uint160_eq(blockchainIdentityResetTransaction.replacementPublicKeyHash, publicKeyHash)) {
             return blockchainIdentityResetTransaction;
@@ -303,8 +303,8 @@
         for (DSTransaction * transaction in [subscriptionTransactions copy]) {
             if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
                 [subscriptionTransactions removeObject:transaction]; //remove topups
-            } else if ([transaction isKindOfClass:[DSBlockchainIdentityResetTransition class]]) {
-                DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityResetTransition*)transaction;
+            } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+                DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition*)transaction;
                 if (uint256_eq(blockchainIdentityResetTransaction.previousBlockchainIdentityTransactionHash, lastSubscriptionTransactionHash)) {
                     lastSubscriptionTransactionHash = blockchainIdentityResetTransaction.txHash;
                     found = TRUE;

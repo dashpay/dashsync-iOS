@@ -7,7 +7,7 @@
 //
 
 #import "DSBlockchainIdentityResetTransitionEntity+CoreDataClass.h"
-#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSTransactionFactory.h"
 #import "NSData+Bitcoin.h"
 #import "DSTransaction.h"

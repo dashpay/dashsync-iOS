@@ -253,11 +253,11 @@
     NSString * replacementCheckPayloadAddress = [replacementPayloadKey addressForChain:devnetDRA];
     XCTAssertEqualObjects(replacementCheckPayloadAddress,replacementPayloadAddress,@"Replacement payload key does not match input address");
     
-    DSBlockchainIdentityResetTransition *blockchainIdentityResetTransactionFromMessage = [[DSBlockchainIdentityResetTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
+    DSBlockchainIdentityUpdateTransition *blockchainIdentityResetTransactionFromMessage = [[DSBlockchainIdentityResetTransaction alloc] initWithMessage:hexData onChain:devnetDRA];
     
     XCTAssertEqualObjects(blockchainIdentityResetTransactionFromMessage.toData,hexData,@"Blockchain user reset transaction does not match it's data");
     
-    DSBlockchainIdentityResetTransition *blockchainIdentityResetTransaction = [[DSBlockchainIdentityResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainIdentityResetTransactionVersion:1 registrationTransactionHash:blockchainIdentityRegistrationTransactionHash previousBlockchainIdentityTransactionHash:blockchainIdentityPreviousTransactionHash replacementPublicKeyHash:replacementPubkeyHash creditFee:1000 onChain:devnetDRA];
+    DSBlockchainIdentityUpdateTransition *blockchainIdentityResetTransaction = [[DSBlockchainIdentityResetTransaction alloc] initWithInputHashes:@[] inputIndexes:@[] inputScripts:@[] inputSequences:@[] outputAddresses:@[] outputAmounts:@[] blockchainIdentityResetTransactionVersion:1 registrationTransactionHash:blockchainIdentityRegistrationTransactionHash previousBlockchainIdentityTransactionHash:blockchainIdentityPreviousTransactionHash replacementPublicKeyHash:replacementPubkeyHash creditFee:1000 onChain:devnetDRA];
 
     [blockchainIdentityResetTransaction signPayloadWithKey:payloadKey];
     NSData * payloadDataToConfirm = @"0100659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370d659c3243efcab7813a06664582300960844dc291988b1510afac99efa001370de803000000000000f6f5abf4ba75c554b9ef001a78c35ce5edb3ccb1411fd442ee3bb6dac571f432e56def3d06f64a15cc74f382184ca4d5d4cad781ced01ae4e8109411f548da5c5fa6bfce5a23a8d620104e6953600539728b95077e19".hexToData;

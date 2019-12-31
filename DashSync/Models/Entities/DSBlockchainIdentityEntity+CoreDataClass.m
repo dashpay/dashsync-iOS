@@ -2,7 +2,7 @@
 //  DSBlockchainIdentityEntity+CoreDataClass.m
 //  DashSync
 //
-//  Created by Sam Westrich on 12/29/19.
+//  Created by Sam Westrich on 12/31/19.
 //
 //
 

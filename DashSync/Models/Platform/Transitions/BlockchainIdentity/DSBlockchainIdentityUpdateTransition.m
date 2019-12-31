@@ -5,7 +5,7 @@
 //  Created by Sam Westrich on 8/13/18.
 //
 
-#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityUpdateTransitionDSBlockchainIdentityUpdateTransition.h"
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSECDSAKey.h"
@@ -13,7 +13,7 @@
 #import "DSTransactionFactory.h"
 #import "DSBlockchainIdentityResetTransactionEntity+CoreDataClass.h"
 
-@implementation DSBlockchainIdentityResetTransition
+@implementation DSBlockchainIdentityUpdateTransition
 
 - (instancetype)initWithMessage:(NSData *)message onChain:(DSChain *)chain
 {

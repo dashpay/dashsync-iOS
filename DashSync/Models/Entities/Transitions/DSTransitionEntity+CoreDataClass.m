@@ -9,6 +9,9 @@
 #import "DSTransitionEntity+CoreDataClass.h"
 #import "DSTransition.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
+#import "NSData+Bitcoin.h"
+#import "NSManagedObject+Sugar.h"
+#import "DSChainEntity+CoreDataClass.h"
 
 @implementation DSTransitionEntity
 
@@ -17,7 +20,10 @@
     [self.managedObjectContext performBlockAndWait:^{
         self.version = transition.version;
         self.type = transition.type;
-        self.blockchainIdentity = transition.owner; //TODO
+        self.blockchainIdentityUniqueIdData = uint256_data(transition.blockchainIdentityUniqueId);
+        DSBlockchainIdentityEntity * identity = [[DSBlockchainIdentityEntity objectsMatching:@"uniqueId == %@",self.blockchainIdentityUniqueIdData] firstObject];
+        NSAssert(identity, @"Identity must exist when saving a transition.");
+        self.blockchainIdentity = identity;
         self.creditFee = transition.creditFee;
         self.createdTimestamp = transition.createdTimestamp;
         self.registeredTimestamp = transition.registeredTimestamp;
@@ -35,7 +41,7 @@
     DSTransition *transition = [[[self transitionClass] alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
-        NSData *txHash = self.transactionHash.txHash;
+        NSData *txHash = self.transaction;
         
         if (txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)txHash.bytes;
         tx.lockTime = self.lockTime;

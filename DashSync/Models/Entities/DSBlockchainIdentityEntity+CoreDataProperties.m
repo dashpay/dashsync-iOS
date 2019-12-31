@@ -2,7 +2,7 @@
 //  DSBlockchainIdentityEntity+CoreDataProperties.m
 //  DashSync
 //
-//  Created by Sam Westrich on 12/29/19.
+//  Created by Sam Westrich on 12/31/19.
 //
 //
 
@@ -17,7 +17,8 @@
 @dynamic uniqueId;
 @dynamic creditFundingTransactions;
 @dynamic keyPaths;
-@dynamic transitions;
 @dynamic ownContact;
+@dynamic transitions;
+@dynamic chain;
 
 @end

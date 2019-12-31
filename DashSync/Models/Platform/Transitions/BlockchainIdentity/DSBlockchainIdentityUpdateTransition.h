@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSECDSAKey;
 
-@interface DSBlockchainIdentityResetTransition : DSTransition
+@interface DSBlockchainIdentityUpdateTransition : DSTransition
 
 @property (nonatomic,assign) uint16_t blockchainIdentityResetTransactionVersion;
 @property (nonatomic,assign) UInt256 registrationTransactionHash;

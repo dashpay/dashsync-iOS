@@ -15,7 +15,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
-#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityUpdateTransitionDSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSAuthenticationManager.h"
 #import "DSPriceManager.h"
@@ -58,7 +58,7 @@
 @property(nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransition*>* blockchainIdentityTopupTransitions;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransition*>* blockchainIdentityCloseTransitions; //this is also a transition
-@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityResetTransition*>* blockchainIdentityResetTransitions; //this is also a transition
+@property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityUpdateTransition*>* blockchainIdentityResetTransitions; //this is also a transition
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* baseTransitions;
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* allTransitions;
 
@@ -132,8 +132,8 @@
             [self.baseTransitions addObject:(DSTransition*)transaction];
         } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
             [self.blockchainIdentityCloseTransitions addObject:(DSBlockchainIdentityCloseTransition*)transaction];
-        } else if ([transaction isKindOfClass:[DSBlockchainIdentityResetTransition class]]) {
-            [self.blockchainIdentityResetTransitions addObject:(DSBlockchainIdentityResetTransition*)transaction];
+        } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+            [self.blockchainIdentityResetTransitions addObject:(DSBlockchainIdentityUpdateTransition*)transaction];
         }
     }
 }
@@ -235,7 +235,7 @@
     
 }
 
--(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction))completion {
+-(void)resetTransactionUsingNewIndex:(uint32_t)index completion:(void (^ _Nullable)(DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction))completion {
     NSString * question = DSLocalizedString(@"Are you sure you would like to reset this user?", nil);
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData * _Nullable seed, BOOL cancelled) {
         if (!seed) {
@@ -246,7 +246,7 @@
         DSECDSAKey * oldPrivateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:index fromSeed:seed];
         
-        DSBlockchainIdentityResetTransition * blockchainIdentityResetTransaction = [[DSBlockchainIdentityResetTransition alloc] initWithBlockchainIdentityResetTransactionVersion:1 registrationTransactionHash:self.registrationTransitionHash previousBlockchainIdentityTransactionHash:self.lastTransitionHash replacementPublicKeyHash:[privateKey.publicKeyData hash160] creditFee:1000 onChain:self.wallet.chain];
+        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = [[DSBlockchainIdentityUpdateTransition alloc] initWithBlockchainIdentityResetTransactionVersion:1 registrationTransactionHash:self.registrationTransitionHash previousBlockchainIdentityTransactionHash:self.lastTransitionHash replacementPublicKeyHash:[privateKey.publicKeyData hash160] creditFee:1000 onChain:self.wallet.chain];
         [blockchainIdentityResetTransaction signPayloadWithKey:oldPrivateKey];
         DSDLog(@"%@",blockchainIdentityResetTransaction.toData);
         completion(blockchainIdentityResetTransaction);
@@ -264,7 +264,7 @@
     }
 }
 
--(void)updateWithResetTransaction:(DSBlockchainIdentityResetTransition*)blockchainIdentityResetTransaction save:(BOOL)save {
+-(void)updateWithResetTransaction:(DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransaction save:(BOOL)save {
     NSParameterAssert(blockchainIdentityResetTransaction);
     
     if (![_blockchainIdentityResetTransitions containsObject:blockchainIdentityResetTransaction]) {

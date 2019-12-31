@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval createdTimestamp;
 @property (nonatomic, assign) NSTimeInterval registeredTimestamp;
 
+-(instancetype)initOnChain:(DSChain*)chain;
+
 @end
 
 NS_ASSUME_NONNULL_END
