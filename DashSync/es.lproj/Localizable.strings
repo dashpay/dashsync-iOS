@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN YA UTILIZADA\nlas direcciones dash están previstas para ser utilizadas solo una vez\nre-utilizar reduce la privacidad para ambos usted y el receptor, puede resultar en una pérdida si el receptor no tiene directamente control de la dirección.";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
@@ -102,7 +102,7 @@
 "Insufficient funds" = "Fondos insuficientes";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Fondos insuficientes para la tasa de red de Dash";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Error interno";

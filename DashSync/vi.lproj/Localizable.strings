@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     số lượng %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nĐỊA CHỈ ĐÃ ĐƯỢC SỬ DỤNG\ncác địa chỉ dash chỉ nên sử dụng một lần duy nhất\n\ntái sử dụng địa chỉ làm giảm đi tính riêng tư cho cả bạn lẫn người nhận và dẫn đến tình trạng mất nếu người nhận không quản lý trực tiếp địa chỉ đó";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nphí giao dịch +%1$@ (%2$@)";
@@ -102,7 +102,7 @@
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Lỗi bên trong";

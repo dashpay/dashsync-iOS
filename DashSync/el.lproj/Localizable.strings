@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nΗ ΔΙΕΥΘΥΝΣΗ ΕΧΕΙ ΗΔΗ ΧΡΗΣΙΜΟΠΟΙΗΘΕΙ\nΟι dash διευθύνσεις προορίζονται μόνο για μία χρήση\n\nΗ επαναλαμβανόμενη χρήση της μειώνει το απόρρητο για εσάς όσο και για τον παραλήπτη και μπορεί να οδηγήσει σε απώλεια εάν ο παραλήπτης δεν ελέγχει άμεσα την διεύθυνση";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nτέλος δικτύου +%1$@ (%2$@)";
@@ -102,7 +102,7 @@
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Εσωτερικό σφάλμα";

@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\nจำนวน %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nที่อยู่ที่ถูกใช้แล้ว\nที่อยู่ dash มีไว้ใช้งานได้เพียงครั้งเดียว\n\nการใช้ซ้ำจะทำให้ความเป็นส่วนตัวทั้งของคุณและผู้รับลดน้อยลงและสามารถเกิดความเสียหายได้ ถ้าผู้รับไม่สามารถควบคุมที่อยู่ได้";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nค่าธรรมเนียมเครือข่าย +%1$@(%2$@)";
@@ -102,7 +102,7 @@
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "ข้อผิดพลาดภายใน";
