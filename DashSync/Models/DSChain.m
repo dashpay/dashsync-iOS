@@ -2238,7 +2238,7 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Merging Wallets
 
-- (DSWallet*)walletHavingBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
+- (DSWallet*)walletHavingBlockchainIdentityRegistrationAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
     for (DSWallet * wallet in self.wallets) {
         NSUInteger index = [wallet indexOfBlockchainIdentityAuthenticationHash:blockchainIdentityAuthenticationHash];
         if (index != NSNotFound) {

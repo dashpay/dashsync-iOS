@@ -28,7 +28,7 @@ static NSString * const CellId = @"CellId";
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
     
-    self.title = blockchainIdentity.username;
+    self.title = blockchainIdentity.currentUsername;
 }
 
 - (IBAction)refreshAction:(id)sender {

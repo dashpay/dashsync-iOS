@@ -33,7 +33,7 @@
 }
 
 -(void)loadProfileInitial {
-    self.title = self.blockchainIdentity.username;
+    self.title = self.blockchainIdentity.currentUsername;
     if (!self.blockchainIdentity.ownContact) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
@@ -47,7 +47,7 @@
 }
 
 -(void)updateProfile {
-    self.title = self.blockchainIdentity.username;
+    self.title = self.blockchainIdentity.currentUsername;
     if (!self.blockchainIdentity.ownContact) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
@@ -107,7 +107,7 @@
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             
             __weak typeof(self) weakSelf = self;
-            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainIdentity completion:^(NSError * _Nullable error) {
+            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainIdentity forChain:self.chainManager.chain completion:^(NSError * _Nullable error) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 if (!strongSelf) {
                     return;

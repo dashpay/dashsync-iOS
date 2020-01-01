@@ -121,12 +121,13 @@
             [blockchainIdentity fundingTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
                 [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                     if (signedTransaction) {
+                        [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
                         [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
                             if (error) {
                                 [self raiseIssue:@"Error" message:error.localizedDescription];
                             } else {
                                 
-                                [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
+                                
                                 [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
                                     if (blockchainIdentityRegistrationTransition) {
                                         

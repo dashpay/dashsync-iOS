@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define MAX_ECDSA_SIGNATURE_SIZE 75
 
 typedef union _UInt256 UInt256;
+typedef union _UInt160 UInt160;
 
 @interface DSTransaction : NSObject
 

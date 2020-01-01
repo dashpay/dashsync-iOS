@@ -17,6 +17,8 @@
 
 #import "DSCreditFundingTransaction.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
+#import "BigIntTypes.h"
+#import "NSData+Bitcoin.h"
 
 @implementation DSCreditFundingTransaction
 
@@ -27,6 +29,15 @@
         }
     }
     return UINT256_ZERO;
+}
+
+-(UInt160)creditBurnPublicKeyHash {
+    for (NSData * script in self.outputScripts) {
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
+            return [script subdataWithRange:NSMakeRange(1,20)].UInt160;
+        }
+    }
+    return UINT160_ZERO;
 }
 
 -(Class)entityClass {

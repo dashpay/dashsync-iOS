@@ -31,7 +31,7 @@
     [self setToDefaultAccount];
     if (self.fundingAccount) {
         self.wallet = self.fundingAccount.wallet;
-        self.usernameLabel.text = self.blockchainIdentity.username;
+        self.usernameLabel.text = self.blockchainIdentity.currentUsername;
     }
 }
 

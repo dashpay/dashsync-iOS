@@ -844,14 +844,14 @@
 }
 
 - (DSBlockchainIdentityRegistrationTransition *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    DSBlockchainIdentityRegistrationTransition * transaction = [_specialTransactionsHolder blockchainIdentityRegistrationTransactionForPublicKeyHash:publicKeyHash];
-    if (transaction) return transaction;
+    DSBlockchainIdentityRegistrationTransition * transition = [_specialTransactionsHolder blockchainIdentityRegistrationTransactionForPublicKeyHash:publicKeyHash];
+    if (transition) return transition;
     return nil;
 }
 
-- (DSBlockchainIdentityResetTransition *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    DSBlockchainIdentityResetTransition * transaction = [_specialTransactionsHolder blockchainIdentityResetTransactionForPublicKeyHash:publicKeyHash];
-    if (transaction) return transaction;
+- (DSBlockchainIdentityUpdateTransition *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+    DSBlockchainIdentityUpdateTransition * transition = [_specialTransactionsHolder blockchainIdentityResetTransactionForPublicKeyHash:publicKeyHash];
+    if (transition) return transition;
     return nil;
 }
 
@@ -920,10 +920,10 @@
     }
 }
 
--(DSBlockchainIdentity*)blockchainIdentityForRegistrationHash:(UInt256)registrationHash {
+-(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
     DSBlockchainIdentity * foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
-        if (uint256_eq([blockchainIdentity registrationTransitionHash],registrationHash)) {
+        if (uint256_eq([blockchainIdentity uniqueId],uniqueId)) {
             foundBlockchainIdentity = blockchainIdentity;
         }
     }

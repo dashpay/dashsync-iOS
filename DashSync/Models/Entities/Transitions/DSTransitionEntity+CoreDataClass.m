@@ -35,7 +35,7 @@
     return self;
 }
 
-- (DSTransition *)transitionForChain:(DSChain*)chain
+- (DSTransition *)transitionsForChain:(DSChain*)chain
 {
     
     if (!chain) chain = [self.blockchainIdentity.chain chain];
@@ -48,24 +48,9 @@
         transition.registeredTimestamp = self.registeredTimestamp;
         transition.creditFee = self.creditFee;
         transition.signatureData = self.signatureData;
-        tx.blockHeight = self.transactionHash.blockHeight;
-        tx.timestamp = self.transactionHash.timestamp;
-        transition.associatedShapeshift = self.associatedShapeshift;
-        
     }];
     
-    DSTransition * transaction = (DSTransition *)[super transactionForChain:chain];
-    transaction.type = DSTransactionType_Transition;
-    [self.managedObjectContext performBlockAndWait:^{
-        transaction.transitionVersion = self.specialTransactionVersion;
-        transaction.registrationTransactionHash = self.registrationTransactionHash.UInt256;
-        transaction.previousTransitionHash = self.previousSubcriptionHash.UInt256;
-        transaction.creditFee = self.creditFee;
-        transaction.packetHash = self.packetHash.UInt256;
-        transaction.payloadSignature = self.payloadSignature.UInt768;
-    }];
-    
-    return transaction;
+    return transition;
 }
 
 -(UInt256)blockchainIdentityUniqueId {

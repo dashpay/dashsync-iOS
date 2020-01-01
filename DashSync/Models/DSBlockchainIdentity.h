@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 @property (nonatomic,readonly) UInt256 registrationTransitionHash;
 @property (nonatomic,readonly) NSData * uniqueIdData;
 @property (nonatomic,readonly) NSString * registrationTransitionHashIdentifier;
+@property (nullable,nonatomic,readonly) NSString * currentUsername;
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
 @property (nonatomic,readonly) NSArray <NSString *> * usernames;
@@ -55,7 +56,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(void)registerInWallet;
 
--(void)registerInWalletForBlockchainIdentityUniqueId:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction;
+-(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 
 -(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSCreditFundingTransaction * fundingTransaction))completion;
 

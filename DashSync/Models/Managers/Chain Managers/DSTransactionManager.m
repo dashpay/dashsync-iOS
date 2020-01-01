@@ -53,6 +53,7 @@
 #import "DSMasternodeList.h"
 #import "DSTransition.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSCreditFundingTransaction.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -936,17 +937,16 @@
         BOOL registered = [self.chain registerSpecialTransaction:transaction];
         
         if (registered) {
-            if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
-                DSWallet * wallet = [self.chain walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil];
+            if ([transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+                DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+                uint32_t index;
+                DSWallet * wallet = [self.chain walletHavingBlockchainIdentityRegistrationAuthenticationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
                 
                 if (wallet) {
-                    blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransaction.txHash];
+                    blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
                 }
-                [self.chain triggerUpdatesForLocalReferences:transaction];
                 
-                
-                if (!blockchainIdentity && (blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransaction.txHash])) {
+                if (!blockchainIdentity && (blockchainIdentity = [wallet createBlockchainIdentityUsingDerivationIndex:index])) {
                     isNewBlockchainIdentity = TRUE;
                 }
             } else {

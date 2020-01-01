@@ -104,6 +104,10 @@
     return uint256_data(self.uniqueId);
 }
 
+-(NSString*)currentUsername {
+    return [self.usernames firstObject];
+}
+
 -(NSString*)registrationTransitionHashIdentifier {
     NSAssert(!uint256_is_zero(self.registrationTransitionHash), @"Registration transaction hash is null");
     return uint256_hex(self.registrationTransitionHash);

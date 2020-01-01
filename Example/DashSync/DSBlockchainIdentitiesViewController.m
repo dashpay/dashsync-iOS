@@ -57,7 +57,7 @@
     @autoreleasepool {
         DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
         DSBlockchainIdentity * blockchainIdentity = [[wallet.blockchainIdentities allValues] objectAtIndex:indexPath.row];
-        blockchainIdentityCell.usernameLabel.text = blockchainIdentity.username;
+        blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentUsername;
         blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainIdentity.creditBalance];
         if (blockchainIdentity.blockchainIdentityRegistrationTransition) {
             blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.blockchainIdentityRegistrationTransition.blockHeight)];

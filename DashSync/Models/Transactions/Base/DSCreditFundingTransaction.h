@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) uint64_t fundingAmount;
 @property (nonatomic,readonly) UInt256 creditBurnIdentityIdentifier;
+@property (nonatomic,readonly) UInt160 creditBurnPublicKeyHash;
 
 @end
 

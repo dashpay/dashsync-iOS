@@ -187,7 +187,7 @@
 //}
 
 -(Class)entityClass {
-    return [DSBlockchainIdentityResetTransitionEntity class];
+    return [DSBlockchainIdentityUpdateTransitionEntity class];
 }
 
 @end
