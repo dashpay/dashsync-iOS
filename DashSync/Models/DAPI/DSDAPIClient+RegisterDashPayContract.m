@@ -24,21 +24,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSDAPIClient (RegisterDashPayContract)
 
-+ (DPContract *)ds_currentDashPayContract {
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
++ (DPContract *)ds_currentDashPayContractForChain:(DSChain*)chain {
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
     if (dpp.contract) {
         return dpp.contract;
     }
     
-    DPContract *contract = [self ds_localDashPayContract];
+    DPContract *contract = [self ds_localDashPayContractForChain:chain];
     dpp.contract = contract;
     
     return contract;
 }
 
-- (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion {
-    DPContract *contract = [self.class ds_currentDashPayContract];
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
+- (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity forChain:(DSChain*)chain completion:(void (^)(NSError *_Nullable error))completion {
+    DPContract *contract = [self.class ds_currentDashPayContractForChain:chain];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
     dpp.userId = blockchainIdentity.registrationTransitionHashIdentifier;
     DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
     [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Private
 
-+ (DPContract *)ds_localDashPayContract {
++ (DPContract *)ds_localDashPayContractForChain:(DSChain*)chain {
     // TODO: read async'ly
     NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
     DPJSONObject *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
     DPContract *contract = [dpp.contractFactory contractFromRawContract:jsonObject error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     

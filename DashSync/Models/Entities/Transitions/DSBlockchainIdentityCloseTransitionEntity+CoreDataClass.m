@@ -25,12 +25,12 @@
 - (DSTransition *)transitionForChain:(DSChain*)chain
 {
     DSBlockchainIdentityCloseTransition * transition = (DSBlockchainIdentityCloseTransition *)[super transitionForChain:chain];
-    transition.type = DSTransactionType_SubscriptionCloseAccount;
+//    transition.type = DSTransactionType_SubscriptionCloseAccount;
     [self.managedObjectContext performBlockAndWait:^{
-        transition.blockchainIdentityCloseTransactionVersion = self.specialTransactionVersion;
-        transition.registrationTransactionHash = self.registrationTransactionHash.UInt256;
-        transition.creditFee = self.creditFee;
-        transition.payloadSignature = self.payloadSignature;
+//        transition.blockchainIdentityCloseTransactionVersion = self.specialTransactionVersion;
+//        transition.registrationTransactionHash = self.registrationTransactionHash.UInt256;
+//        transition.creditFee = self.creditFee;
+//        transition.payloadSignature = self.payloadSignature;
     }];
     
     return transition;

@@ -10,6 +10,7 @@
 #import "DSWalletChooserViewController.h"
 #import "DSAccountChooserViewController.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
+#import "DSCreditFundingTransaction.h"
 
 @interface DSCreateBlockchainIdentityViewController ()
 - (IBAction)cancel:(id)sender;
@@ -114,17 +115,18 @@
             return;
         }
     }
-    DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:desiredUsername atIndex:[self.indexLabel.text intValue]];
+    DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKey:^(BOOL exists) {
         if (exists) {
-            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSTransaction * _Nonnull fundingTransaction) {
+            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
                 [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                     if (signedTransaction) {
                         [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
                             if (error) {
                                 [self raiseIssue:@"Error" message:error.localizedDescription];
                             } else {
-                                [blockchainIdentity registerInWalletForBlockchainIdentityRegistrationTransaction:blockchainIdentityRegistrationTransaction];
+                                
+                                [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
                                 [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
                                     if (blockchainIdentityRegistrationTransition) {
                                         

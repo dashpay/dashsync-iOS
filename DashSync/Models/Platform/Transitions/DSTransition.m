@@ -28,9 +28,6 @@
 
 @property (nonatomic, strong) DSChain * chain;
 
-@property (nonatomic, assign) DSBlockchainIdentitySigningType payloadSignatureType;
-@property (nonatomic, copy) NSData * payloadSignatureData;
-
 @end
 
 @implementation DSTransition
@@ -76,7 +73,7 @@
     NSMutableData * data = [NSMutableData data];
     [data appendData:[self basePayloadData]];
     //[data appendUInt8:96]; ??
-    [data appendData:self.payloadSignatureData];
+    [data appendData:self.signatureData];
     return data;
 }
 
@@ -89,45 +86,45 @@
     self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:registrationTransactionHash];
 }
 
--(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
-    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:self.registrationTransactionHash];
-    return _blockchainIdentityRegistrationTransaction;
+//-(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
+//    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:self.registrationTransactionHash];
+//    return _blockchainIdentityRegistrationTransaction;
+//}
+
+-(BOOL)checkTransitionSignatureForECDSAKey:(DSECDSAKey*)transitionRecoveredPublicKey {
+    return [transitionRecoveredPublicKey verify:[self payloadHash] signatureData:self.signatureData];
+    //return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
 }
 
--(BOOL)checkPayloadSignatureForECDSAKey:(DSECDSAKey*)transitionRecoveredPublicKey {
-    return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
+-(BOOL)checkTransitionSignatureForBLSKey:(DSBLSKey*)blockchainIdentityPublicKey {
+    return [blockchainIdentityPublicKey verify:[self payloadHash] signature:self.signatureData.UInt768];
 }
 
--(BOOL)checkPayloadSignatureForBLSKey:(DSBLSKey*)blockchainIdentityPublicKey {
-    [blockchainIdentityPublicKey verify:[self payloadHash] signature:self.payloadSignatureData.UInt768];
-    return uint160_eq([blockchainIdentityPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
-}
-
--(BOOL)checkPayloadSignature:(DSKey*)key {
+-(BOOL)checkTransitionSignature:(DSKey*)key {
     if ([key isMemberOfClass:[DSECDSAKey class]]) {
-        return [self checkPayloadSignatureForECDSAKey:(DSECDSAKey*)key];
+        return [self checkTransitionSignatureForECDSAKey:(DSECDSAKey*)key];
     } else if ([key isMemberOfClass:[DSBLSKey class]]) {
-        return [self checkPayloadSignatureForBLSKey:(DSBLSKey*)key];
+        return [self checkTransitionSignatureForBLSKey:(DSBLSKey*)key];
     }
     NSAssert(FALSE, @"unimplemented key type");
     return FALSE;
 }
 
--(BOOL)checkPayloadSignedByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    return [blockchainIdentity verifySignature:self.payloadSignatureData ofType:DSBlockchainIdentitySigningType_ECDSA forMessageDigest:[self payloadHash]];
+-(BOOL)checkTransitionSignedByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    return [blockchainIdentity verifySignature:self.signatureData ofType:DSBlockchainIdentitySigningType_ECDSA forMessageDigest:[self payloadHash]];
 }
 
--(void)signPayloadWithKey:(DSKey*)privateKey {
+-(void)signWithKey:(DSKey*)privateKey {
     NSParameterAssert(privateKey);
     
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
-        self.payloadSignatureType = DSBlockchainIdentitySigningType_BLS;
-        self.payloadSignatureData = uint768_data([((DSBLSKey*)privateKey) signDigest:[self payloadHash]]);
+        self.signatureType = DSBlockchainIdentitySigningType_BLS;
+        self.signatureData = uint768_data([((DSBLSKey*)privateKey) signDigest:[self payloadHash]]);
     } else if ([privateKey isMemberOfClass:[DSECDSAKey class]]) {
-        self.payloadSignatureType = DSBlockchainIdentitySigningType_ECDSA;
-        self.payloadSignatureData = [((DSECDSAKey*)privateKey) compactSign:[self payloadHash]];
+        self.signatureType = DSBlockchainIdentitySigningType_ECDSA;
+        self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self payloadHash]];
     }
     self.transitionHash = self.data.SHA256_2;
 }
@@ -163,24 +160,23 @@
 
 -(DSTransitionEntity *)save {
     NSManagedObjectContext * context = [DSTransitionEntity context];
-    __block DSTransitionEntity * transactionEntity = nil;
+    __block DSTransitionEntity * transitionEntity = nil;
     [context performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:context];
-        Class transactionEntityClass = [self entityClass];
-        [transactionEntityClass setContext:context];
-        [DSTransactionHashEntity setContext:context];
-        if ([DSTransactionEntity countObjectsMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)] == 0) {
+        Class transitionEntityClass = [self entityClass];
+        [transitionEntityClass setContext:context];
+        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.transitionHash)] == 0) {
             
-            transactionEntity = [transactionEntityClass managedObject];
-            [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            transitionEntity = [transitionEntityClass managedObject];
+            [transitionEntity setAttributesFromTransition:self];
+            [transitionEntityClass saveContext];
         } else {
-            transactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", uint256_data(self.txHash)];
-            [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            transitionEntity = [DSTransitionEntity anyObjectMatching:@"transitionHash == %@", uint256_data(self.transitionHash)];
+            [transitionEntity setAttributesFromTransition:self];
+            [transitionEntityClass saveContext];
         }
     }];
-    return transactionEntity;
+    return transitionEntity;
 }
 
 -(BOOL)saveInitial {
@@ -189,13 +185,13 @@
     __block BOOL didSave = FALSE;
     [context performBlockAndWait:^{ // add the transaction to core data
         [DSChainEntity setContext:context];
-        Class transactionEntityClass = [self entityClass];
-        [transactionEntityClass setContext:context];
-        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.txHash)] == 0) {
+        Class transitionEntityClass = [self entityClass];
+        [transitionEntityClass setContext:context];
+        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.transitionHash)] == 0) {
             
-            DSTransactionEntity * transactionEntity = [transactionEntityClass managedObject];
-            [transactionEntity setAttributesFromTransaction:self];
-            [transactionEntityClass saveContext];
+            DSTransitionEntity * transitionEntity = [transitionEntityClass managedObject];
+            [transitionEntity setAttributesFromTransition:self];
+            [transitionEntityClass saveContext];
             didSave = TRUE;
         }
     }];

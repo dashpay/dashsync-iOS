@@ -15,7 +15,7 @@
 #import "NSMutableData+Dash.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
-#import "DSBlockchainIdentityResetTransaction.h"
+#import "DSBlockchainIdentityUpdateTransaction.h"
 #import "DSBlockchainIdentityCloseTransaction.h"
 #import "DSTransactionFactory.h"
 #import "DSChainManager.h"

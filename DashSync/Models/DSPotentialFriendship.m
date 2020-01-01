@@ -114,7 +114,7 @@
 
 -(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSContactEntity*)contactEntity {
     NSParameterAssert(contactEntity);
-    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityRegistrationHash.UInt256,self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
+    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityUniqueId.UInt256,self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.ownContact;
     friendRequestEntity.destinationContact = contactEntity;
@@ -128,14 +128,14 @@
 
 -(DSFriendRequestEntity*)outgoingFriendRequest {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"destination contact must be known");
-    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityRegistrationHash == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
+    DSContactEntity * contactEntity = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId)];
     if (!contactEntity) {
         contactEntity =  [DSContactEntity managedObject];
         
         contactEntity.username = self.destinationContact.username;
         contactEntity.avatarPath = self.destinationContact.avatarPath;
         contactEntity.publicMessage = self.destinationContact.publicMessage;
-        contactEntity.associatedBlockchainIdentityRegistrationHash = uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId);
+        contactEntity.associatedBlockchainIdentityUniqueId = uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId);
         contactEntity.chain = self.account.wallet.chain.chainEntity;
     }
     

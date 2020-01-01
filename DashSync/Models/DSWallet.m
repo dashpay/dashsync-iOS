@@ -37,7 +37,7 @@
 #import "DSChainsManager.h"
 #import "DSBlockchainIdentity.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityResetTransition.h"
+#import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSProviderRegistrationTransaction.h"
 #import "NSDate+Utils.h"
 #import "DSLocalMasternode.h"
@@ -865,11 +865,11 @@
     NSParameterAssert(blockchainIdentity);
     NSAssert(blockchainIdentity.wallet == self, @"the blockchainIdentity you are trying to remove is not in this wallet");
     
-    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.registrationTransitionHashData];
+    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.uniqueIdData];
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary removeObjectForKey:blockchainIdentity.registrationTransitionHashData];
+    [keyChainDictionary removeObjectForKey:blockchainIdentity.uniqueIdData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     
     //we also have to remove all contacts derivation paths from their associated accounts.
@@ -899,15 +899,15 @@
 {
     NSParameterAssert(blockchainIdentity);
     
-    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.registrationTransitionHashData] == nil) {
+    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.uniqueIdData] == nil) {
         [self addBlockchainIdentity:blockchainIdentity];
     }
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     
-    NSAssert(!uint256_is_zero(blockchainIdentity.registrationTransitionHashData.UInt256), @"registrationTransactionHashData must not be null");
-    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.registrationTransitionHashData];
+    NSAssert(!uint256_is_zero(blockchainIdentity.uniqueId), @"registrationTransactionHashData must not be null");
+    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.uniqueIdData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainIdentitiesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];

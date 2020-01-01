@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval createdTimestamp;
 @property (nonatomic, assign) NSTimeInterval registeredTimestamp;
 
+@property (nonatomic, copy) NSData * signatureData;
+@property (nonatomic, assign) DSBlockchainIdentitySigningType signatureType;
+
 -(instancetype)initOnChain:(DSChain*)chain;
 
 @end

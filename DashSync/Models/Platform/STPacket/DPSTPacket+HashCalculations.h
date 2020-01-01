@@ -17,8 +17,6 @@
 
 #import "DPSTPacket.h"
 
-#import "DPMerkleRootOperation.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DPSTPacket (HashCalculations)

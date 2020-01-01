@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSCreditFundingTransaction : DSTransaction
 
 @property (nonatomic,readonly) uint64_t fundingAmount;
+@property (nonatomic,readonly) UInt256 creditBurnIdentityIdentifier;
 
 @end
 

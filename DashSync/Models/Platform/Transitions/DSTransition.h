@@ -47,9 +47,6 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 
 -(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain; //local creation
 
--(instancetype)initWithVersion:(uint16_t)version payloadData:(NSData *)message onChain:(DSChain *)chain; //from network
-
-
 -(void)signWithKey:(DSKey *)privateKey;
 
 @end

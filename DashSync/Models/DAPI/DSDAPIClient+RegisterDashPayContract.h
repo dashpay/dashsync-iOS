@@ -19,13 +19,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DPContract;
+@class DPContract,DSChain;
 
 @interface DSDAPIClient (RegisterDashPayContract)
 
-+ (DPContract *)ds_currentDashPayContract;
++ (DPContract *)ds_currentDashPayContractForChain:(DSChain*)chain;
 
-- (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion;
+- (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity forChain:(DSChain*)chain completion:(void (^)(NSError *_Nullable error))completion;
 
 @end
 

@@ -7,11 +7,12 @@
 //
 
 #import "DSTransitionEntity+CoreDataClass.h"
-#import "DSTransition.h"
+#import "DSTransition+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSChainEntity+CoreDataClass.h"
+
 
 @implementation DSTransitionEntity
 
@@ -41,29 +42,16 @@
     DSTransition *transition = [[[self transitionClass] alloc] initOnChain:chain];
     
     [self.managedObjectContext performBlockAndWait:^{
-        NSData *txHash = self.transaction;
-        
-        if (txHash.length == sizeof(UInt256)) tx.txHash = *(const UInt256 *)txHash.bytes;
-        tx.lockTime = self.lockTime;
-        tx.saved = TRUE;
-        
+        transition.transitionHash = self.transitionHashData.UInt256;
+        transition.saved = TRUE;
+        transition.createdTimestamp = self.createdTimestamp;
+        transition.registeredTimestamp = self.registeredTimestamp;
+        transition.creditFee = self.creditFee;
+        transition.signatureData = self.signatureData;
         tx.blockHeight = self.transactionHash.blockHeight;
         tx.timestamp = self.transactionHash.timestamp;
-        tx.associatedShapeshift = self.associatedShapeshift;
+        transition.associatedShapeshift = self.associatedShapeshift;
         
-        for (DSTxInputEntity *e in self.inputs) {
-            txHash = e.txHash;
-            if (txHash.length != sizeof(UInt256)) continue;
-            [tx addInputHash:*(const UInt256 *)txHash.bytes index:e.n script:nil signature:e.signature
-                    sequence:e.sequence];
-        }
-        
-        for (DSTxOutputEntity *e in self.outputs) {
-            [tx addOutputScript:e.script withAddress:e.address amount:e.value];
-        }
-        
-        DSInstantSendTransactionLock * instantSendLock = [self.instantSendLock instantSendTransactionLockForChain:chain];
-        [tx setInstantSendReceivedWithInstantSendLock:instantSendLock];
     }];
     
     DSTransition * transaction = (DSTransition *)[super transactionForChain:chain];

@@ -18,7 +18,7 @@
 @dynamic documentRevision;
 @dynamic documentScopeID;
 @dynamic username;
-@dynamic associatedBlockchainIdentityRegistrationHash;
+@dynamic associatedBlockchainIdentityUniqueId;
 @dynamic publicMessage;
 @dynamic associatedBlockchainIdentityRegistrationTransaction;
 @dynamic outgoingRequests;

@@ -45,7 +45,7 @@
 -(instancetype)initWithContactEntity:(DSContactEntity*)contactEntity {
     self = [self initWithUsername:contactEntity.username avatarPath:contactEntity.avatarPath publicMessage:contactEntity.publicMessage];
     if (self) {
-        _associatedBlockchainIdentityUniqueId = contactEntity.associatedBlockchainIdentityRegistrationHash.UInt256;
+        _associatedBlockchainIdentityUniqueId = contactEntity.associatedBlockchainIdentityUniqueId.UInt256;
     }
     return self;
 }
