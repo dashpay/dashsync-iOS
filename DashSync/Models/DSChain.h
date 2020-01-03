@@ -32,9 +32,13 @@ NS_ASSUME_NONNULL_BEGIN
 #define TESTNET_STANDARD_PORT 19999
 #define DEVNET_STANDARD_PORT 12999
 
-#define MAINNET_DAPI_STANDARD_PORT 3000
-#define TESTNET_DAPI_STANDARD_PORT 3000
-#define DEVNET_DAPI_STANDARD_PORT 3000
+#define MAINNET_DAPI_JRPC_STANDARD_PORT 3000
+#define TESTNET_DAPI_JRPC_STANDARD_PORT 3000
+#define DEVNET_DAPI_JRPC_STANDARD_PORT 3000
+
+#define MAINNET_DAPI_GRPC_STANDARD_PORT 3010
+#define TESTNET_DAPI_GRPC_STANDARD_PORT 3010
+#define DEVNET_DAPI_GRPC_STANDARD_PORT 3000
 
 #define PROTOCOL_VERSION_MAINNET   70215
 #define DEFAULT_MIN_PROTOCOL_VERSION_MAINNET  70214
@@ -109,7 +113,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 @property (nonatomic, readonly) NSDictionary *recentBlocks;
 @property (nonatomic, assign) DSChainType chainType;
 @property (nonatomic, assign) uint32_t standardPort;
-@property (nonatomic, assign) uint32_t standardDapiPort;
+@property (nonatomic, assign) uint32_t standardDapiJRPCPort;
+@property (nonatomic, assign) uint32_t standardDapiGRPCPort;
 @property (nonatomic, assign) UInt256 genesisHash;
 @property (nonatomic, readonly,nullable) NSString * chainTip;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;
@@ -166,7 +171,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 +(DSChain*)testnet;
 
 +(DSChain* _Nullable)devnetWithIdentifier:(NSString*)identifier;
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiPort:(uint32_t)dapiPort;
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>* _Nullable)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort;
 
 +(DSChain* _Nullable)chainForNetworkName:(NSString* _Nullable)networkName;
 

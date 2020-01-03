@@ -42,7 +42,8 @@
 - (DSChain *)chain {
     __block DSChainType type;
     __block uint32_t port;
-    __block uint32_t dapiPort;
+    __block uint32_t dapiJRPCPort;
+    __block uint32_t dapiGRPCPort;
     __block NSString * devnetIdentifier;
     __block NSData * data;
     __block uint32_t totalMasternodeCount;
@@ -50,7 +51,8 @@
     __block UInt256 baseBlockHash;
     [self.managedObjectContext performBlockAndWait:^{
         port = self.standardPort;
-        dapiPort = self.standardDapiPort;
+        dapiJRPCPort = self.standardDapiJRPCPort;
+        dapiGRPCPort = self.standardDapiGRPCPort;
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
@@ -67,7 +69,7 @@
             return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiPort:dapiPort];
+            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort];
         }
     }
     return nil;
@@ -94,17 +96,16 @@
     }
     if (type == DSChainType_MainNet) {
         chainEntity.standardPort = MAINNET_STANDARD_PORT;
+        chainEntity.standardDapiJRPCPort = MAINNET_DAPI_JRPC_STANDARD_PORT;
+        chainEntity.standardDapiGRPCPort = MAINNET_DAPI_GRPC_STANDARD_PORT;
     } else if (type == DSChainType_TestNet) {
         chainEntity.standardPort = TESTNET_STANDARD_PORT;
+        chainEntity.standardDapiJRPCPort = TESTNET_DAPI_JRPC_STANDARD_PORT;
+        chainEntity.standardDapiGRPCPort = TESTNET_DAPI_GRPC_STANDARD_PORT;
     } else {
         chainEntity.standardPort = DEVNET_STANDARD_PORT;
-    }
-    if (type == DSChainType_MainNet) {
-        chainEntity.standardDapiPort = MAINNET_DAPI_STANDARD_PORT;
-    } else if (type == DSChainType_TestNet) {
-        chainEntity.standardDapiPort = TESTNET_DAPI_STANDARD_PORT;
-    } else {
-        chainEntity.standardDapiPort = DEVNET_DAPI_STANDARD_PORT;
+        chainEntity.standardDapiJRPCPort = DEVNET_DAPI_JRPC_STANDARD_PORT;
+        chainEntity.standardDapiGRPCPort = DEVNET_DAPI_GRPC_STANDARD_PORT;
     }
     return chainEntity;
 }

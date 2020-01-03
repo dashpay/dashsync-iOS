@@ -66,7 +66,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSPeerManagerPeersDidChangeNotificati
 - (void)disconnect;
 
 - (void)clearRegisteredPeers;
-- (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
+- (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort;
 
 - (DSPeerStatus)statusForLocation:(UInt128)IPAddress port:(uint32_t)port;
 - (DSPeerType)typeForLocation:(UInt128)IPAddress port:(uint32_t)port;

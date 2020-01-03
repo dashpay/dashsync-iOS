@@ -45,9 +45,9 @@ FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
 
 -(DSChainManager * _Nullable)chainManagerForChain:(DSChain*)chain;
 
--(void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString*> *)serviceLocations  standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
+-(void)updateDevnetChain:(DSChain *)chain forServiceLocations:(NSMutableOrderedSet<NSString*> *)serviceLocations  standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString* _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
 
--(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSMutableOrderedSet<NSString*> * )serviceLocations standardPort:(uint32_t)standardPort dapiPort:(uint32_t)dapiPort  protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString * _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
+-(DSChain* _Nullable)registerDevnetChainWithIdentifier:(NSString *)identifier forServiceLocations:(NSMutableOrderedSet<NSString*> * )serviceLocations standardPort:(uint32_t)standardPort dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort  protocolVersion:(uint32_t)protocolVersion minProtocolVersion:(uint32_t)minProtocolVersion sporkAddress:(NSString * _Nullable)sporkAddress sporkPrivateKey:(NSString * _Nullable)sporkPrivateKey;
 
 -(void)removeDevnetChain:(DSChain *)chain;
 

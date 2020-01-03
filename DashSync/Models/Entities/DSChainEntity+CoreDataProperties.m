@@ -17,7 +17,8 @@
 @dynamic baseBlockHash;
 @dynamic checkpoints;
 @dynamic devnetIdentifier;
-@dynamic standardDapiPort;
+@dynamic standardDapiJRPCPort;
+@dynamic standardDapiGRPCPort;
 @dynamic standardPort;
 @dynamic totalGovernanceObjectsCount;
 @dynamic totalMasternodeCount;
