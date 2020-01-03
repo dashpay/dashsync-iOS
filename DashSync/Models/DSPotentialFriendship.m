@@ -56,13 +56,13 @@
 -(DSIncomingFundsDerivationPath*)createDerivationPath {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"associatedBlockchainIdentityUniqueId must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                          contactBasedDerivationPathWithDestinationBlockchainIdentityRegistrationTransactionHash:self.destinationContact.associatedBlockchainIdentityUniqueId sourceBlockchainIdentityRegistrationTransactionHash:self.sourceBlockchainIdentity.registrationTransitionHash forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
+                                          contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:self.destinationContact.associatedBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.registrationTransitionHash forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
     self.fundsDerivationPathForContact.account = self.account;
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     __weak typeof(self) weakSelf = self;
-    [self.sourceBlockchainUser encryptData:self.extendedPublicKey forRecipientKey:self.contactEncryptionPublicKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
+    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey forRecipientKey:self.contactEncryptionPublicKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -75,9 +75,9 @@
 
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:self.sourceBlockchainIdentity.wallet.chain];
     dpp.userId = uint256_reverse_hex(self.sourceBlockchainIdentity.registrationTransitionHash);
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
+    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.sourceBlockchainIdentity.wallet.chain];
     dpp.contract = contract;
     
     //to do encrypt public key
@@ -164,7 +164,7 @@
 }
 
 -(NSString*)debugDescription {
-    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainIdentity.username, self.destinationContact.username];
+    return [NSString stringWithFormat:@"%@ - s:%@ d:%@", [super debugDescription], self.sourceBlockchainIdentity.currentUsername, self.destinationContact.username];
 }
 
 @end

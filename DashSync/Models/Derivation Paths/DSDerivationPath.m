@@ -513,8 +513,8 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
                     [mutableString appendFormat:@"/0x%@",uint256_hex(incomingFundsDerivationPath.contactSourceBlockchainIdentityUniqueId)];
                 }
             }];
-            DSBlockchainIdentity * blockchainIdentity = [self.wallet blockchainIdentityForRegistrationHash:incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId];
-            [mutableString appendFormat:@"/%@",blockchainIdentity.username];
+            DSBlockchainIdentity * blockchainIdentity = [self.wallet blockchainIdentityForUniqueId:incomingFundsDerivationPath.contactDestinationBlockchainIdentityUniqueId];
+            [mutableString appendFormat:@"/%@",blockchainIdentity.currentUsername];
         }
     }
     _stringRepresentation = [mutableString copy];

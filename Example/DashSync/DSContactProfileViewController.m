@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = self.blockchainIdentity.username;
+    self.title = self.blockchainIdentity.currentUsername;
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
         initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
         cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
         cellModel.returnKeyType = UIReturnKeyNext;
         cellModel.placeholder = [NSString stringWithFormat:@"https://api.adorable.io/avatars/120/%@.png",
-                                                           self.blockchainIdentity.username];
+                                                           self.blockchainIdentity.currentUsername];
         cellModel.text = self.blockchainIdentity.ownContact.avatarPath;
         __weak typeof(self) weakSelf = self;
         cellModel.didChangeValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
@@ -98,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (TextViewFormCellModel *)aboutMeCellModel {
     if (!_aboutMeCellModel) {
         TextViewFormCellModel *cellModel = [[TextViewFormCellModel alloc] initWithTitle:@"About me"];
-        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.username];
+        cellModel.placeholder = [NSString stringWithFormat:@"Hey I'm a demo user %@", self.blockchainIdentity.currentUsername];
         cellModel.text = self.blockchainIdentity.ownContact.publicMessage;
         _aboutMeCellModel = cellModel;
     }

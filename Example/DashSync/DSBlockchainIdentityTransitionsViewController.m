@@ -19,6 +19,7 @@
 #import "DSTransitionTableViewCell.h"
 #import "DSTransition.h"
 
+
 @interface DSBlockchainIdentityTransitionsViewController ()
 
 @property (nonatomic,strong) NSArray * transitions;

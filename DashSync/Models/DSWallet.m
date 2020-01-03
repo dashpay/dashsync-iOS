@@ -843,23 +843,23 @@
     return [derivationPath addressesToIndex:[self unusedBlockchainIdentityIndex] + 10];
 }
 
-- (DSBlockchainIdentityRegistrationTransition *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    DSBlockchainIdentityRegistrationTransition * transition = [_specialTransactionsHolder blockchainIdentityRegistrationTransactionForPublicKeyHash:publicKeyHash];
-    if (transition) return transition;
-    return nil;
-}
-
-- (DSBlockchainIdentityUpdateTransition *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
-    DSBlockchainIdentityUpdateTransition * transition = [_specialTransactionsHolder blockchainIdentityResetTransactionForPublicKeyHash:publicKeyHash];
-    if (transition) return transition;
-    return nil;
-}
-
--(DSBlockchainIdentityRegistrationTransition *)blockchainIdentityRegistrationTransactionForIndex:(uint32_t)index {
-    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self];
-    UInt160 hash160 = [derivationPath publicKeyDataAtIndex:index].hash160;
-    return [self registrationTransactionForPublicKeyHash:hash160];
-}
+//- (DSBlockchainIdentityRegistrationTransition *)registrationTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+//    DSBlockchainIdentityRegistrationTransition * transition = [_specialTransactionsHolder blockchainIdentityRegistrationTransactionForPublicKeyHash:publicKeyHash];
+//    if (transition) return transition;
+//    return nil;
+//}
+//
+//- (DSBlockchainIdentityUpdateTransition *)resetTransactionForPublicKeyHash:(UInt160)publicKeyHash {
+//    DSBlockchainIdentityUpdateTransition * transition = [_specialTransactionsHolder blockchainIdentityResetTransactionForPublicKeyHash:publicKeyHash];
+//    if (transition) return transition;
+//    return nil;
+//}
+//
+//-(DSBlockchainIdentityRegistrationTransition *)blockchainIdentityRegistrationTransactionForIndex:(uint32_t)index {
+//    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self];
+//    UInt160 hash160 = [derivationPath publicKeyDataAtIndex:index].hash160;
+//    return [self registrationTransactionForPublicKeyHash:hash160];
+//}
 
 -(void)unregisterBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     NSParameterAssert(blockchainIdentity);

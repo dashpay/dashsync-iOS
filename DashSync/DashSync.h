@@ -23,9 +23,13 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSAuthenticationKeysDerivationPath.h"
 #import "DSMasternodeHoldingsDerivationPath.h"
+#import "DSCreditFundingDerivationPath.h"
 #import "DSFundsDerivationPath.h"
 
 #import "DSSparseMerkleTree.h"
+
+#import "DSBlockchainIdentity.h"
+#import "DSCreditFundingTransaction.h"
 
 #import "DSChainsManager.h"
 #import "DSChainManager.h"

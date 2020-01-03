@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSSpecialTransactionEntity.h"
+#import "DSSpecialTransactionEntity+CoreDataClass.h"
 
 @class DSBlockchainIdentityEntity;
 

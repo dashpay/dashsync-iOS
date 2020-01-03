@@ -10,6 +10,7 @@
 #import "DSBlockchainIdentityTableViewCell.h"
 #import "DSCreateBlockchainIdentityViewController.h"
 #import "DSBlockchainIdentityActionsViewController.h"
+#import <DashSync/DSCreditFundingTransaction.h>
 
 @interface DSBlockchainIdentitiesViewController ()
 
@@ -60,7 +61,7 @@
         blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentUsername;
         blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainIdentity.creditBalance];
         if (blockchainIdentity.blockchainIdentityRegistrationTransition) {
-            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.blockchainIdentityRegistrationTransition.blockHeight)];
+            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.creditFundingTransaction.blockHeight)];
         }
        // blockchainIdentityCell.publicKeyLabel.text = blockchainIdentity;
     }

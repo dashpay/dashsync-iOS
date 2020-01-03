@@ -213,15 +213,15 @@
         case 2: return (self.sent > 0) ? self.inputAddresses.count : self.outputText.count;
         case 3: {
             switch ([self.transaction type]) {
-                case DSTransactionType_SubscriptionRegistration:
-                    return 4;
-                    break;
-                case DSTransactionType_SubscriptionResetKey:
-                    return 3;
-                    break;
-                case DSTransactionType_SubscriptionTopUp:
-                    return 3;
-                    break;
+//                case DSTransactionType_SubscriptionRegistration:
+//                    return 4;
+//                    break;
+//                case DSTransactionType_SubscriptionResetKey:
+//                    return 3;
+//                    break;
+//                case DSTransactionType_SubscriptionTopUp:
+//                    return 3;
+//                    break;
                 case DSTransactionType_ProviderRegistration:
                     return 10;
                     break;
@@ -504,140 +504,141 @@
         case 3:
         {
             
-            if ([self.transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)self.transaction;
-                switch (indexPath.row) {
-                    case 0:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainIdentityRegistrationTransaction.blockchainIdentityRegistrationTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
-                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"public key address:", nil);
-                        s = [[NSData dataWithUInt160:blockchainIdentityRegistrationTransaction.pubkeyHash] addressFromHash160DataForChain:self.transaction.chain];
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
-                                                     [s substringFromIndex:s.length/2]];
-                        cell.identifierLabel.copyableText = s;
-                        return cell;
-                        break;
-                    }
-                    case 2:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"username:", nil);
-                        cell.statusLabel.text = blockchainIdentityRegistrationTransaction.username;
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 3:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"topup amount:", nil);
-                        cell.statusLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:blockchainIdentityRegistrationTransaction.topupAmount];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                        
-                }
-            } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-                DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)self.transaction;
-                switch (indexPath.row) {
-                    case 0:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainIdentityTopupTransaction.blockchainIdentityTopupTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
-                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"subregtx:", nil);
-                        s = [NSData dataWithUInt256:blockchainIdentityTopupTransaction.registrationTransactionHash].hexString;
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
-                                                     [s substringFromIndex:s.length/2]];
-                        cell.identifierLabel.copyableText = s;
-                        return cell;
-                        break;
-                    }
-                    case 2:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"topup amount:", nil);
-                        cell.statusLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:blockchainIdentityTopupTransaction.topupAmount];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                        
-                }
-            } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-                DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)self.transaction;
-                switch (indexPath.row) {
-                    case 0:
-                    {
-                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
-                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainIdentityResetTransaction.blockchainIdentityResetTransactionVersion];
-                        cell.moreInfoLabel.text = nil;
-                        return cell;
-                        break;
-                    }
-                    case 1:
-                    {
-                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"subregtx:", nil);
-                        s = [NSData dataWithUInt256:blockchainIdentityResetTransaction.registrationTransactionHash].hexString;
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
-                                                     [s substringFromIndex:s.length/2]];
-                        cell.identifierLabel.copyableText = s;
-                        return cell;
-                        break;
-                    }
-                    case 2:
-                    {
-                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
-                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                        [self setBackgroundForCell:cell indexPath:indexPath];
-                        cell.titleLabel.text = NSLocalizedString(@"new pubkeyhash:", nil);
-                        s = [NSData dataWithUInt160:blockchainIdentityResetTransaction.replacementPublicKeyHash].hexString;
-                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
-                                                     [s substringFromIndex:s.length/2]];
-                        cell.identifierLabel.copyableText = s;
-                        return cell;
-                        break;
-                    }
-                        
-                }
-            } else if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
+//            if ([self.transaction isMemberOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+//                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)self.transaction;
+//                switch (indexPath.row) {
+//                    case 0:
+//                    {
+//                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
+//                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainIdentityRegistrationTransaction.blockchainIdentityRegistrationTransactionVersion];
+//                        cell.moreInfoLabel.text = nil;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 1:
+//                    {
+//                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.titleLabel.text = NSLocalizedString(@"public key address:", nil);
+//                        s = [[NSData dataWithUInt160:blockchainIdentityRegistrationTransaction.pubkeyHash] addressFromHash160DataForChain:self.transaction.chain];
+//                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+//                                                     [s substringFromIndex:s.length/2]];
+//                        cell.identifierLabel.copyableText = s;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 2:
+//                    {
+//                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//                        cell.titleLabel.text = NSLocalizedString(@"username:", nil);
+//                        cell.statusLabel.text = blockchainIdentityRegistrationTransaction.username;
+//                        cell.moreInfoLabel.text = nil;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 3:
+//                    {
+//                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//                        cell.titleLabel.text = NSLocalizedString(@"topup amount:", nil);
+//                        cell.statusLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:blockchainIdentityRegistrationTransaction.topupAmount];
+//                        cell.moreInfoLabel.text = nil;
+//                        return cell;
+//                        break;
+//                    }
+//
+//                }
+//            } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+//                DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)self.transaction;
+//                switch (indexPath.row) {
+//                    case 0:
+//                    {
+//                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
+//                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainIdentityTopupTransaction.blockchainIdentityTopupTransactionVersion];
+//                        cell.moreInfoLabel.text = nil;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 1:
+//                    {
+//                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.titleLabel.text = NSLocalizedString(@"subregtx:", nil);
+//                        s = [NSData dataWithUInt256:blockchainIdentityTopupTransaction.registrationTransactionHash].hexString;
+//                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+//                                                     [s substringFromIndex:s.length/2]];
+//                        cell.identifierLabel.copyableText = s;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 2:
+//                    {
+//                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//                        cell.titleLabel.text = NSLocalizedString(@"topup amount:", nil);
+//                        cell.statusLabel.text = [[DSPriceManager sharedInstance] stringForDashAmount:blockchainIdentityTopupTransaction.topupAmount];
+//                        cell.moreInfoLabel.text = nil;
+//                        return cell;
+//                        break;
+//                    }
+//
+//                }
+//            } else if ([self.transaction isMemberOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+//                DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)self.transaction;
+//                switch (indexPath.row) {
+//                    case 0:
+//                    {
+//                        DSTransactionStatusTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"TitleCellIdentifier" forIndexPath:indexPath];
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+//                        cell.titleLabel.text = NSLocalizedString(@"BU version", nil);
+//                        cell.statusLabel.text = [NSString stringWithFormat:@"%d",blockchainIdentityResetTransaction.blockchainIdentityResetTransactionVersion];
+//                        cell.moreInfoLabel.text = nil;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 1:
+//                    {
+//                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.titleLabel.text = NSLocalizedString(@"subregtx:", nil);
+//                        s = [NSData dataWithUInt256:blockchainIdentityResetTransaction.registrationTransactionHash].hexString;
+//                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+//                                                     [s substringFromIndex:s.length/2]];
+//                        cell.identifierLabel.copyableText = s;
+//                        return cell;
+//                        break;
+//                    }
+//                    case 2:
+//                    {
+//                        DSTransactionIdentifierTableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:@"IdCellIdentifier" forIndexPath:indexPath];
+//                        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+//                        [self setBackgroundForCell:cell indexPath:indexPath];
+//                        cell.titleLabel.text = NSLocalizedString(@"new pubkeyhash:", nil);
+//                        s = [NSData dataWithUInt160:blockchainIdentityResetTransaction.replacementPublicKeyHash].hexString;
+//                        cell.identifierLabel.text = [NSString stringWithFormat:@"%@\n%@", [s substringToIndex:s.length/2],
+//                                                     [s substringFromIndex:s.length/2]];
+//                        cell.identifierLabel.copyableText = s;
+//                        return cell;
+//                        break;
+//                    }
+//
+//                }
+//            } else
+            if ([self.transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
                 DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)self.transaction;
                 switch (indexPath.row) {
                     case 0:

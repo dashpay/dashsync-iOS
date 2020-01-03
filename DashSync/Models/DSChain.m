@@ -58,7 +58,7 @@
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
-#import "DSBlockchainIdentityUpdateTransitionDSBlockchainIdentityUpdateTransition.h"
+#import "DSBlockchainIdentityUpdateTransition.h"
 #import "DSBlockchainIdentityTopupTransition.h"
 #import "DSBlockchainIdentityCloseTransition.h"
 #import "DSTransition.h"
@@ -2024,64 +2024,64 @@ static dispatch_once_t devnetToken = 0;
         return NO;
     }
 }
-
--(BOOL)registerBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
-    DSWallet * blockchainIdentityWallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil];
-    BOOL registered = [blockchainIdentityWallet.specialTransactionsHolder registerTransaction:blockchainIdentityRegistrationTransaction];
-    
-    if (blockchainIdentityWallet) {
-        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:blockchainIdentityWallet];
-        [blockchainIdentitiesDerivationPath registerTransactionAddress:blockchainIdentityRegistrationTransaction.pubkeyAddress];
-    }
-    return registered;
-}
-
--(BOOL)registerBlockchainIdentityResetTransaction:(DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransaction {
-    DSWallet * blockchainIdentityWallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityResetTransaction.replacementPublicKeyHash foundAtIndex:nil];
-    [blockchainIdentityWallet.specialTransactionsHolder registerTransaction:blockchainIdentityResetTransaction];
-    DSWallet * blockchainIdentityRegistrationWallet = nil;
-    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
-    BOOL registered = NO;
-    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet && (blockchainIdentityWallet != blockchainIdentityRegistrationWallet)) {
-        registered = [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:blockchainIdentityResetTransaction];
-    }
-    
-    if (blockchainIdentityWallet) {
-        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:blockchainIdentityWallet];
-        [blockchainIdentitiesDerivationPath registerTransactionAddress:blockchainIdentityResetTransaction.replacementAddress];
-    }
-    return registered;
-}
-
--(BOOL)registerBlockchainIdentityCloseTransaction:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction {
-    DSWallet * blockchainIdentityRegistrationWallet = nil;
-    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
-    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
-        return [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:blockchainIdentityCloseTransaction];
-    } else {
-        return NO;
-    }
-}
-
--(BOOL)registerBlockchainIdentityTopupTransaction:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction {
-    DSWallet * blockchainIdentityRegistrationWallet = nil;
-    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
-    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
-        return [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:blockchainIdentityTopupTransaction];
-    } else {
-        return NO;
-    }
-}
-
--(BOOL)registerTransition:(DSTransition*)transition {
-    DSWallet * blockchainIdentityRegistrationWallet = nil;
-    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:transition.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
-    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
-        return [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:transition];
-    } else {
-        return NO;
-    }
-}
+//
+//-(BOOL)registerBlockchainIdentityRegistrationTransaction:(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
+//    DSWallet * blockchainIdentityWallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil];
+//    BOOL registered = [blockchainIdentityWallet.specialTransactionsHolder registerTransaction:blockchainIdentityRegistrationTransaction];
+//
+//    if (blockchainIdentityWallet) {
+//        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:blockchainIdentityWallet];
+//        [blockchainIdentitiesDerivationPath registerTransactionAddress:blockchainIdentityRegistrationTransaction.pubkeyAddress];
+//    }
+//    return registered;
+//}
+//
+//-(BOOL)registerBlockchainIdentityResetTransaction:(DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransaction {
+//    DSWallet * blockchainIdentityWallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityResetTransaction.replacementPublicKeyHash foundAtIndex:nil];
+//    [blockchainIdentityWallet.specialTransactionsHolder registerTransaction:blockchainIdentityResetTransaction];
+//    DSWallet * blockchainIdentityRegistrationWallet = nil;
+//    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
+//    BOOL registered = NO;
+//    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet && (blockchainIdentityWallet != blockchainIdentityRegistrationWallet)) {
+//        registered = [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:blockchainIdentityResetTransaction];
+//    }
+//
+//    if (blockchainIdentityWallet) {
+//        DSAuthenticationKeysDerivationPath * blockchainIdentitiesDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:blockchainIdentityWallet];
+//        [blockchainIdentitiesDerivationPath registerTransactionAddress:blockchainIdentityResetTransaction.replacementAddress];
+//    }
+//    return registered;
+//}
+//
+//-(BOOL)registerBlockchainIdentityCloseTransaction:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction {
+//    DSWallet * blockchainIdentityRegistrationWallet = nil;
+//    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
+//    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
+//        return [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:blockchainIdentityCloseTransaction];
+//    } else {
+//        return NO;
+//    }
+//}
+//
+//-(BOOL)registerBlockchainIdentityTopupTransaction:(DSBlockchainIdentityTopupTransition*)blockchainIdentityTopupTransaction {
+//    DSWallet * blockchainIdentityRegistrationWallet = nil;
+//    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
+//    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
+//        return [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:blockchainIdentityTopupTransaction];
+//    } else {
+//        return NO;
+//    }
+//}
+//
+//-(BOOL)registerTransition:(DSTransition*)transition {
+//    DSWallet * blockchainIdentityRegistrationWallet = nil;
+//    DSTransaction * blockchainIdentityRegistrationTransaction = [self transactionForHash:transition.registrationTransactionHash returnWallet:&blockchainIdentityRegistrationWallet];
+//    if (blockchainIdentityRegistrationTransaction && blockchainIdentityRegistrationWallet) {
+//        return [blockchainIdentityRegistrationWallet.specialTransactionsHolder registerTransaction:transition];
+//    } else {
+//        return NO;
+//    }
+//}
 
 -(BOOL)registerSpecialTransaction:(DSTransaction*)transaction {
     if ([transaction isKindOfClass:[DSProviderRegistrationTransaction class]]) {
@@ -2096,22 +2096,23 @@ static dispatch_once_t devnetToken = 0;
     } else if ([transaction isKindOfClass:[DSProviderUpdateRevocationTransaction class]]) {
         DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
         return [self registerProviderUpdateRevocationTransaction:providerUpdateRevocationTransaction];
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
-        return [self registerBlockchainIdentityRegistrationTransaction:blockchainIdentityRegistrationTransaction];
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transaction;
-        return [self registerBlockchainIdentityResetTransaction:blockchainIdentityResetTransaction];
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transaction;
-        return [self registerBlockchainIdentityCloseTransaction:blockchainIdentityCloseTransaction];
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
-        return [self registerBlockchainIdentityTopupTransaction:blockchainIdentityTopupTransaction];
-    } else if ([transaction isKindOfClass:[DSTransition class]]) {
-        DSTransition * transition = (DSTransition*)transaction;
-        return [self registerTransition:transition];
     }
+//    else if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+//        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
+//        return [self registerBlockchainIdentityRegistrationTransaction:blockchainIdentityRegistrationTransaction];
+//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+//        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transaction;
+//        return [self registerBlockchainIdentityResetTransaction:blockchainIdentityResetTransaction];
+//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
+//        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transaction;
+//        return [self registerBlockchainIdentityCloseTransaction:blockchainIdentityCloseTransaction];
+//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+//        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
+//        return [self registerBlockchainIdentityTopupTransaction:blockchainIdentityTopupTransaction];
+//    } else if ([transaction isKindOfClass:[DSTransition class]]) {
+//        DSTransition * transition = (DSTransition*)transaction;
+//        return [self registerTransition:transition];
+//    }
     return FALSE;
 }
 
@@ -2144,20 +2145,21 @@ static dispatch_once_t devnetToken = 0;
         if ([self transactionForHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash]) return TRUE;
         
         //BLOCKCHAIN USERS
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
-        if ([self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transaction;
-        if ([self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityResetTransaction.replacementPublicKeyHash foundAtIndex:nil]) return TRUE;
-        if ([self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transaction;
-        if ([self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash]) return TRUE;
-    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
-        if ([self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash]) return TRUE;
     }
+//    else if ([transaction isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+//        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition *)transaction;
+//        if ([self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransaction.pubkeyHash foundAtIndex:nil]) return TRUE;
+//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+//        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transaction;
+//        if ([self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityResetTransaction.replacementPublicKeyHash foundAtIndex:nil]) return TRUE;
+//        if ([self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash]) return TRUE;
+//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
+//        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transaction;
+//        if ([self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash]) return TRUE;
+//    } else if ([transaction isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+//        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transaction;
+//        if ([self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash]) return TRUE;
+//    }
     return FALSE;
 }
 
@@ -2183,40 +2185,40 @@ static dispatch_once_t devnetToken = 0;
 }
 
 -(void)triggerUpdatesForLocalReferencesFromTransition:(DSTransition*)transition {
-    if ([transition isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
-        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = (DSBlockchainIdentityRegistrationTransition *)transition;
-        DSWallet * wallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransition.pubkeyHash foundAtIndex:nil];
-        if (wallet) {
-            DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransition.txHash];
-            if (!blockchainIdentity) {
-                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityRegistrationTransition:blockchainIdentityRegistrationTransition inContext:self.managedObjectContext];
-                [wallet registerBlockchainIdentity:blockchainIdentity];
-            }
-        }
-    } else if ([transition isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
-        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transition;
-        DSWallet * wallet;
-        [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&wallet];
-        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityTopupTransaction.registrationTransactionHash];
-        [blockchainIdentity updateWithTopupTransition:blockchainIdentityTopupTransaction save:TRUE];
-    } else if ([transition isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
-        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transition;
-        DSWallet * wallet;
-        [self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash returnWallet:&wallet];
-        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityResetTransaction.registrationTransactionHash];
-        [blockchainIdentity updateWithUpdateTransition:blockchainIdentityResetTransaction save:TRUE];
-    } else if ([transition isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
-        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transition;
-        DSWallet * wallet;
-        [self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash returnWallet:&wallet];
-        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityCloseTransaction.registrationTransactionHash];
-        [blockchainIdentity updateWithCloseTransition:blockchainIdentityCloseTransaction save:TRUE];
-    } else if ([transition isKindOfClass:[DSTransition class]]) {
-        DSWallet * wallet;
-        [self transactionForHash:transition.registrationTransactionHash returnWallet:&wallet];
-        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:transition.registrationTransactionHash];
-        [blockchainIdentity updateWithTransition:transition save:TRUE];
-    }
+//    if ([transition isKindOfClass:[DSBlockchainIdentityRegistrationTransition class]]) {
+//        DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = (DSBlockchainIdentityRegistrationTransition *)transition;
+//        DSWallet * wallet = [self walletHavingBlockchainIdentityAuthenticationHash:blockchainIdentityRegistrationTransition.pubkeyHash foundAtIndex:nil];
+//        if (wallet) {
+//            DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityRegistrationTransition.txHash];
+//            if (!blockchainIdentity) {
+//                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithBlockchainIdentityRegistrationTransition:blockchainIdentityRegistrationTransition inContext:self.managedObjectContext];
+//                [wallet registerBlockchainIdentity:blockchainIdentity];
+//            }
+//        }
+//    } else if ([transition isKindOfClass:[DSBlockchainIdentityTopupTransition class]]) {
+//        DSBlockchainIdentityTopupTransition * blockchainIdentityTopupTransaction = (DSBlockchainIdentityTopupTransition *)transition;
+//        DSWallet * wallet;
+//        [self transactionForHash:blockchainIdentityTopupTransaction.registrationTransactionHash returnWallet:&wallet];
+//        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityTopupTransaction.registrationTransactionHash];
+//        [blockchainIdentity updateWithTopupTransition:blockchainIdentityTopupTransaction save:TRUE];
+//    } else if ([transition isKindOfClass:[DSBlockchainIdentityUpdateTransition class]]) {
+//        DSBlockchainIdentityUpdateTransition * blockchainIdentityResetTransaction = (DSBlockchainIdentityUpdateTransition *)transition;
+//        DSWallet * wallet;
+//        [self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash returnWallet:&wallet];
+//        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityResetTransaction.registrationTransactionHash];
+//        [blockchainIdentity updateWithUpdateTransition:blockchainIdentityResetTransaction save:TRUE];
+//    } else if ([transition isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
+//        DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transition;
+//        DSWallet * wallet;
+//        [self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash returnWallet:&wallet];
+//        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityCloseTransaction.registrationTransactionHash];
+//        [blockchainIdentity updateWithCloseTransition:blockchainIdentityCloseTransaction save:TRUE];
+//    } else if ([transition isKindOfClass:[DSTransition class]]) {
+//        DSWallet * wallet;
+//        [self transactionForHash:transition.registrationTransactionHash returnWallet:&wallet];
+//        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:transition.registrationTransactionHash];
+//        [blockchainIdentity updateWithTransition:transition save:TRUE];
+//    }
 }
 
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries {

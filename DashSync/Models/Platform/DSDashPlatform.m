@@ -55,6 +55,9 @@ static NSMutableDictionary * _platformChainDictionary = nil;
 static dispatch_once_t platformChainToken = 0;
 
 +(instancetype)sharedInstanceForChain:(DSChain*)chain {
+    
+    NSParameterAssert(chain);
+    
     dispatch_once(&platformChainToken, ^{
         _platformChainDictionary = [NSMutableDictionary dictionary];
     });

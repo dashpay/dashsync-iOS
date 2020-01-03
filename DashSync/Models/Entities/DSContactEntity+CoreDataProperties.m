@@ -20,7 +20,7 @@
 @dynamic username;
 @dynamic associatedBlockchainIdentityUniqueId;
 @dynamic publicMessage;
-@dynamic associatedBlockchainIdentityRegistrationTransaction;
+@dynamic associatedBlockchainIdentity;
 @dynamic outgoingRequests;
 @dynamic incomingRequests;
 @dynamic profileTransition;
