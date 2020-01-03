@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "%1$@:%2$d üstünde bir anadüğüm kaydetmek istediğiniz emin misiniz?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "%1$@ kullanıcı adını kaydedip kredi olarak %2$@ harcamak istediğinize emin misiniz?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Bu kullanıcıyı sıfırlamak istediğinize emin misiniz?";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

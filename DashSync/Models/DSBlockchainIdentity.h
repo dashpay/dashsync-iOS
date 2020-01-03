@@ -40,6 +40,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint64_t syncHeight;
 
+@property (nonatomic,readonly) NSArray <DSTransition*>* allTransitions;
+
 @property (nonatomic,readonly) DSCreditFundingTransaction * creditFundingTransaction;
 
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;

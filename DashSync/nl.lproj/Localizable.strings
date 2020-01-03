@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Weet je zeker dat je een masternode wil registreren op %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Weet je zeker dat je je wil registreren onder de gebruikersnaam %1$@ en %2$@ aan krediet wil uitgeven?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Weet je zeker dat je deze gebruiker wil resetten?";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Dubbel uitgegeven";

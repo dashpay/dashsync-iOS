@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "本当にマスターノードを %1$@:%2$dにて登録してもよろしいでしょうか？";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "ユーザー名 %1$@ を登録し、クレジットカードに %2$@ を課金してもよろしいですか？";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "本当にこのユーザーをリセットしてもよろしいですか？";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

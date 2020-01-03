@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Είστε σίγουροι ότι θέλετε να καταχωρήσετε ένα masternode στο %1$@:%2$d;";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Είστε σίγουροι ότι θέλετε να καταχωρήσετε το όνομα χρήστη %1$@ και να ξοδέψετε %2$@ σε credits?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Είστε σίγουροι ότι θέλετε να επαναφέρετε αυτόν τον χρήστη;";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

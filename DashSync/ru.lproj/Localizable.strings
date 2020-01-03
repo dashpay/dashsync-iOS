@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Вы уверены, что хотите зарегистрировать мастерноду на %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Вы уверены, что хотите зарегистрировать имя пользователя %1$@ и потратить %2$@ на кредиты?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Вы уверены, что хотите сбросить это имя пользователя?";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Сеть разработки";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

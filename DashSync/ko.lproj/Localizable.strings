@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "%1$@:%2$d에 마스터노드를 정말 등록하시겠습니까?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "사용자 이름을 %1$@로 지정하고 크레딧에 %2$@을 사용하시겠습니까?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "이 사용자를 리셋 하시겠습니까?";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "개발자 네트워크";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

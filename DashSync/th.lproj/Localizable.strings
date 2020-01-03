@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "คุณแน่ใจหรือว่าต้องการลงทะเบียน masternode ที่%1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "คุณแน่ใจหรือไม่ว่าคุณต้องการลงทะเบียนชื่อผู้ใช้ %1$@และใช้จ่าย %2$@ในเครดิต ?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตผู้ใช้นี้?";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

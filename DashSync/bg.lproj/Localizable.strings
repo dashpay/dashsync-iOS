@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Сигурни ли сте, че искате да регистрирате masternode в %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Сигурен ли сте, че желаете да регистирате това потребителско име%1$@ и да похарчите %2$@ от своят кредит?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Сигурен ли си, че желаеш да нулираш този потребител?";
 
 /* No comment provided by engineer. */
@@ -73,6 +70,9 @@
 
 /* No comment provided by engineer. */
 "Devnet" = "Мрежа за разработчици";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
 
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";

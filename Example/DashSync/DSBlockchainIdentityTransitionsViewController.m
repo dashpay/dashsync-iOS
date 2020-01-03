@@ -19,7 +19,6 @@
 #import "DSTransitionTableViewCell.h"
 #import "DSTransition.h"
 
-
 @interface DSBlockchainIdentityTransitionsViewController ()
 
 @property (nonatomic,strong) NSArray * transitions;
@@ -68,9 +67,9 @@
     DSTransition * transition = [self.transitions objectAtIndex:indexPath.row];
     
     cell.numberLabel.text = [NSString stringWithFormat:@"%ld",(long)indexPath.row];
-    cell.confirmedInBlockLabel.text = [NSString stringWithFormat:@"%u",transition.blockHeight];
-    cell.transactionLabel.text = uint256_hex(transition.txHash);
-    cell.previousTransitionHashLabel.text = uint256_hex(transition.previousTransitionHash);
+    //cell.confirmedInBlockLabel.text = [NSString stringWithFormat:@"%u",transition.blockHeight];
+    cell.transactionLabel.text = uint256_hex(transition.transitionHash);
+    //cell.previousTransitionHashLabel.text = uint256_hex(transition.previousTransitionHash);
     return cell;
 }
 
