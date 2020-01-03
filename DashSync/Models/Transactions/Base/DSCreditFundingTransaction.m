@@ -19,6 +19,10 @@
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
 #import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
+#import "DSDerivationPathFactory.h"
+#import "DSWallet.h"
+#import "DSAccount.h"
+#import "DSCreditFundingDerivationPath.h"
 
 @implementation DSCreditFundingTransaction
 
@@ -38,6 +42,13 @@
         }
     }
     return UINT160_ZERO;
+}
+
+
+-(uint32_t)usedDerivationPathIndex {
+    DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.account.wallet];
+    NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
+    return (uint32_t)[registrationFundingDerivationPath indexOfKnownAddress:address];
 }
 
 -(Class)entityClass {

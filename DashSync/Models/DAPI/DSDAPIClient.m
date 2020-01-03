@@ -22,6 +22,7 @@
 #import "DSDAPINetworkService.h"
 
 #import "DSDashPlatform.h"
+#import "DSDocumentTransition.h"
 #import <arpa/inet.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -58,8 +59,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     
     NSArray *documents = @[ document ];
     
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstance];
-    DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContractId:contract.identifier documents:documents];
+    DSDashPlatform *platform = [DSDashPlatform sharedInstanceForChain:self.chain];
+    
+    DSDocumentTransition *transition = [blockchainIdentity documentTransition];
+    
+    DPSTPacket *stPacket = [platform.stPacketFactory packetWithContractId:contract.identifier documents:documents];
     [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
 }
 

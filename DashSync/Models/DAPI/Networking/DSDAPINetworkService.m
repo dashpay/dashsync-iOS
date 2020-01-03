@@ -19,6 +19,7 @@
 
 #import "DSHTTPJSONRPCClient.h"
 #import <DAPI-GRPC/Core.pbrpc.h>
+#import <DAPI-GRPC/Core.pbobjc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -496,19 +497,18 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                      failure:failure];
 }
 
-- (void)sendRawTransitionWithRawStateTransition:(NSString *)rawStateTransition
-                                    rawSTPacket:(NSString *)rawSTPacket
+- (void)publishTransition:(NSData *)rawStateTransition
                                         success:(void (^)(NSString *headerId))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(rawStateTransition);
-    NSParameterAssert(rawSTPacket);
 
-    [self requestWithMethod:@"sendRawTransition"
-                  parameters:@{ @"rawStateTransition" : rawStateTransition,
-                                @"rawSTPacket" : rawSTPacket } //todo remove rawSTPacket
-        validateAgainstClass:NSString.class
-                     success:success
-                     failure:failure];
+    NSError * error = nil;
+    UpdateStateRequest * updateStateRequest = [[UpdateStateRequest alloc] initWithData:rawStateTransition error:&error];
+    updateStateRequest.stateTransition = rawStateTransition;
+    [self.gRPCClient updateStateWithRequest:updateStateRequest handler:^(UpdateStateResponse * _Nullable response, NSError * _Nullable error) {
+        //TODO:response
+        NSLog(@"here");
+    }];
 }
 
 - (void)fetchDocumentsForContractId:(NSString *)contractId

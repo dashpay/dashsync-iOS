@@ -24,15 +24,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)removeAllTransactions;
 
-// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
-
-// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
-- (DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
-
-- (NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
-
-- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
+//// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
+//- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//
+//// This gets a blockchain user reset transaction that has a specific public key hash (will change to BLS pub key)
+//- (DSBlockchainIdentityUpdateTransition*)blockchainIdentityResetTransactionForPublicKeyHash:(UInt160)publicKeyHash;
+//
+//- (NSArray<DSTransaction*>*)identityTransitionsForRegistrationTransitionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
+//
+//- (UInt256)lastSubscriptionTransactionHashForRegistrationTransactionHash:(UInt256)blockchainIdentityRegistrationTransactionHash;
 
 @end
 

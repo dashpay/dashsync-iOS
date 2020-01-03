@@ -401,14 +401,12 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  Sends raw state transition to the network
  
  @param rawStateTransition Hex-string representing state transition header
- @param rawSTPacket Hex-string representing state transition data
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)sendRawTransitionWithRawStateTransition:(NSString *)rawStateTransition
-                                    rawSTPacket:(NSString *)rawSTPacket
-                                        success:(void (^)(NSString *headerId))success
-                                        failure:(void (^)(NSError *error))failure;
+- (void)publishTransition:(NSData *)rawStateTransition
+                  success:(void (^)(NSString *headerId))success
+                  failure:(void (^)(NSError *error))failure;
 
 /**
  Fetches user objects for a given condition

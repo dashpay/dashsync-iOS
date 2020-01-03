@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSChain;
+
 @interface DSCreditFundingDerivationPath : DSSimpleIndexedDerivationPath
 
 - (NSString*)receiveAddress;

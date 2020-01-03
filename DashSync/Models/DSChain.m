@@ -2204,13 +2204,13 @@ static dispatch_once_t devnetToken = 0;
         DSWallet * wallet;
         [self transactionForHash:blockchainIdentityResetTransaction.registrationTransactionHash returnWallet:&wallet];
         DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityResetTransaction.registrationTransactionHash];
-        [blockchainIdentity updateWithResetTransaction:blockchainIdentityResetTransaction save:TRUE];
+        [blockchainIdentity updateWithUpdateTransition:blockchainIdentityResetTransaction save:TRUE];
     } else if ([transition isKindOfClass:[DSBlockchainIdentityCloseTransition class]]) {
         DSBlockchainIdentityCloseTransition * blockchainIdentityCloseTransaction = (DSBlockchainIdentityCloseTransition *)transition;
         DSWallet * wallet;
         [self transactionForHash:blockchainIdentityCloseTransaction.registrationTransactionHash returnWallet:&wallet];
         DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForRegistrationHash:blockchainIdentityCloseTransaction.registrationTransactionHash];
-        [blockchainIdentity updateWithCloseTransaction:blockchainIdentityCloseTransaction save:TRUE];
+        [blockchainIdentity updateWithCloseTransition:blockchainIdentityCloseTransaction save:TRUE];
     } else if ([transition isKindOfClass:[DSTransition class]]) {
         DSWallet * wallet;
         [self transactionForHash:transition.registrationTransactionHash returnWallet:&wallet];

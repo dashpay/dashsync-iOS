@@ -419,7 +419,7 @@
         <attribute name="transitionHashData" attributeType="Binary" syncable="YES"/>
         <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="version" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="transitions" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="blockchainIdentity" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="transitions" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
     </entity>
     <entity name="DSTxInputEntity" representedClassName="DSTxInputEntity" syncable="YES">
         <attribute name="n" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -447,6 +447,7 @@
         <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="180"/>
         <element name="DSBlockchainIdentityCloseTransitionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="58"/>
         <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="133"/>
+        <element name="DSBlockchainIdentityFundedTransition" positionX="-2403" positionY="-171" width="128" height="58"/>
         <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="133"/>
         <element name="DSBlockchainIdentityRegistrationTransitionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="58"/>
         <element name="DSBlockchainIdentityTopupTransitionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="58"/>
@@ -484,6 +485,5 @@
         <element name="DSTransitionEntity" positionX="-2500.7265625" positionY="554.08203125" width="128" height="193"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
-        <element name="DSBlockchainIdentityFundedTransition" positionX="-2403" positionY="-171" width="128" height="58"/>
     </elements>
 </model>

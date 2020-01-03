@@ -1,6 +1,6 @@
 //  
 //  Created by Sam Westrich
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
 //  limitations under the License.
 //
 
-#import "DSTransaction.h"
+#import "DSCreditFundingDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DSCreditFundingTransaction : DSTransaction
+@interface DSCreditFundingDerivationPath ()
 
-@property (nonatomic,readonly) uint64_t fundingAmount;
-@property (nonatomic,readonly) UInt256 creditBurnIdentityIdentifier;
-@property (nonatomic,readonly) UInt160 creditBurnPublicKeyHash;
-@property (nonatomic,readonly) uint32_t usedDerivationPathIndex;
++ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain*)chain;
++ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain*)chain;
 
 @end
 
