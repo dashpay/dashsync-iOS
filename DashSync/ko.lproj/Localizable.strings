@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     금액 %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\n이미 사용된 주소입니다\nDash 주소는 일회성으로만 사용됩니다.\n\n주소 재사용은 사용자와 수신자의 개인 정보 보호에 취약하며, 수신자가 주소를 직접 제어하지 않는 경우 손실이 발생할 수 있습니다";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\n네트워크 수수료 +%1$@ (%2$@)";
@@ -102,7 +102,7 @@
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "내부 오류";
