@@ -73,6 +73,19 @@
     }];
 }
 
+-(IBAction)registerBlockchainIdentity:(id)sender {
+    if (self.blockchainIdentity.isRegistered) return;
+    [self.blockchainIdentity registrationTransitionForFundingTransaction:self.blockchainIdentity.creditFundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+                                        if (blockchainIdentityRegistrationTransition) {
+                                            [self.chainManager.DAPIClient publishTransition:blockchainIdentityRegistrationTransition completion:^(NSError * _Nullable error) {
+                                                
+                                            }];
+                                        } else {
+                                            [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
+                                        }
+                                    }];
+}
+
 -(IBAction)reset:(id)sender {
 //    [self.blockchainIdentity resetTransactionUsingNewIndex:self.blockchainIdentity.wallet.unusedBlockchainIdentityIndex completion:^(DSBlockchainIdentityUpdateTransition *blockchainIdentityResetTransaction) {
 //        [self.chainManager.transactionManager publishTransaction:blockchainIdentityResetTransaction completion:^(NSError * _Nullable error) {
@@ -96,14 +109,16 @@
         }
     }
     else if (indexPath.section == 1) {
-        if (indexPath.row == 1) {
+        if (indexPath.row == 0) {
+            [self registerBlockchainIdentity:self];
+        } else if (indexPath.row == 2) {
             [self reset:self];
         }
-        else if (indexPath.row == 2) {
+        else if (indexPath.row == 3) {
             DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainIdentity:self.blockchainIdentity];
             [self presentViewController:controller animated:YES completion:nil];
         }
-        else if (indexPath.row == 3) {
+        else if (indexPath.row == 4) {
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
             
             __weak typeof(self) weakSelf = self;

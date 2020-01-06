@@ -64,6 +64,7 @@
 #import "DSTransactionFactory.h"
 #import "DSMasternodeManager.h"
 #import "DSIncomingFundsDerivationPath.h"
+#import "DSCreditFundingTransaction.h"
 
 #define LOG_BALANCE_UPDATE 0
 
@@ -872,15 +873,16 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 }
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address
-- (DSTransaction *)creditBurnTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
+- (DSCreditFundingTransaction *)creditFundingTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee
 {
     NSParameterAssert(address);
     
     NSMutableData *script = [NSMutableData data];
     
-    [script appendScriptPubKeyForAddress:address forChain:self.wallet.chain];
+    [script appendCreditBurnScriptPubKeyForAddress:address forChain:self.wallet.chain];
     
-    return [self transactionForAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee];
+    DSCreditFundingTransaction *transaction = [[DSCreditFundingTransaction alloc] initOnChain:self.wallet.chain];
+    return (DSCreditFundingTransaction*)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee isInstant:FALSE toShapeshiftAddress:nil shuffleOutputOrder:YES];
 }
 
 

@@ -28,7 +28,7 @@
 
 -(UInt256)creditBurnIdentityIdentifier {
     for (NSData * script in self.outputScripts) {
-        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
             return [script SHA256_2];
         }
     }
@@ -37,8 +37,8 @@
 
 -(UInt160)creditBurnPublicKeyHash {
     for (NSData * script in self.outputScripts) {
-        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
-            return [script subdataWithRange:NSMakeRange(1,20)].UInt160;
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
+            return [script subdataWithRange:NSMakeRange(2,20)].UInt160;
         }
     }
     return UINT160_ZERO;

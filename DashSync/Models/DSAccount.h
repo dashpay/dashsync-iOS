@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
     DSTransactionDirection_NotAccountFunds,
 };
 
-@class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition;
+@class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition,DSCreditFundingTransaction;
 @class DSCoinbaseTransaction,DSPotentialFriendship;
 
 @interface DSAccount : NSObject
@@ -154,7 +154,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 - (DSTransaction * _Nullable)transactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amount from the wallet to the given address intended for conversion to L2 credits
-- (DSTransaction * _Nullable)creditBurnTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
+- (DSCreditFundingTransaction * _Nullable)creditFundingTransactionFor:(uint64_t)amount to:(NSString *)address withFee:(BOOL)fee;
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction * _Nullable)transactionForAmounts:(NSArray *)amounts

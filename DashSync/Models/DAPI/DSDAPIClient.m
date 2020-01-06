@@ -91,7 +91,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                       }
                                       
                                       if (success) {
-                                          [strongSelf sendTransition:documentTransition completion:completion];
+                                          [strongSelf publishTransition:documentTransition completion:completion];
                                       }
                                       else {
                                           if (completion) {
@@ -184,9 +184,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     }
 }
 
-#pragma mark - Private
-
-- (void)sendTransition:(DSTransition *)transition
+- (void)publishTransition:(DSTransition *)transition
             completion:(void (^)(NSError *_Nullable error))completion {
     DSDAPINetworkService * service = self.DAPINetworkService;
     if (!service) {

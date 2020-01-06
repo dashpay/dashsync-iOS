@@ -26,7 +26,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
     DSDAPIClientErrorCodeNoKnownDAPINodes = 2,
 };
 
-@class DSChain, DSBlockchainIdentity, DPDocument, DPSTPacket, DPContract, DSDAPINetworkService,DSPeer;
+@class DSChain, DSBlockchainIdentity, DPDocument, DSTransition, DPSTPacket, DPContract, DSDAPINetworkService, DSPeer;
 
 @interface DSDAPIClient : NSObject
 
@@ -46,9 +46,8 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
-- (void)sendPacket:(DPSTPacket *)stPacket
-           forUser:(DSBlockchainIdentity*)blockchainIdentity
-        completion:(void (^)(NSError *_Nullable error))completion;
+- (void)publishTransition:(DSTransition *)transition
+               completion:(void (^)(NSError *_Nullable error))completion;
 
 @end
 

@@ -43,6 +43,7 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSTransactionHashEntity+CoreDataClass.h"
 #import "DSInstantSendTransactionLock.h"
+#import "DSCreditFundingTransaction.h"
 
 @interface DSTransaction ()
 
@@ -472,7 +473,7 @@
     }
     
     [d appendUInt32:self.lockTime];
-    if ([self isMemberOfClass:[DSTransaction class]] && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
+    if (([self isMemberOfClass:[DSTransaction class]] || [self isMemberOfClass:[DSCreditFundingTransaction class]]) && subscriptIndex != NSNotFound) [d appendUInt32:SIGHASH_ALL];
     return d;
 }
 

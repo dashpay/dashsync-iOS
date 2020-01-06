@@ -118,24 +118,25 @@
     DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
         if (exists) {
-            NSString * creditBurnAddress = nil;//[blockchainIdentity ];
-            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount toAddress:creditBurnAddress fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
+            NSString * creditFundingRegistrationAddress = [blockchainIdentity registrationFundingAddress];
+            [blockchainIdentity fundingTransactionForTopupAmount:topupAmount toAddress:creditFundingRegistrationAddress fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
                 [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                     if (signedTransaction) {
                         [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
+                        
                         [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
                             if (error) {
                                 [self raiseIssue:@"Error" message:error.localizedDescription];
                             } else {
                                 
                                 
-                                [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
-                                    if (blockchainIdentityRegistrationTransition) {
-                                        
-                                    } else {
-                                        [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
-                                    }
-                                }];
+//                                [blockchainIdentity registrationTransitionForFundingTransaction:fundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+//                                    if (blockchainIdentityRegistrationTransition) {
+//
+//                                    } else {
+//                                        [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
+//                                    }
+//                                }];
                                 
                                 [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
                             }

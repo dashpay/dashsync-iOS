@@ -334,7 +334,7 @@ CFAllocatorRef SecureAllocator()
     NSData *hash = [d subdataWithRange:NSMakeRange(1, d.length - 1)];
     
     [self appendUInt8:OP_RETURN];
-    [self appendData:hash];
+    [self appendScriptPushData:hash];
 
 //    if ([chain isMainnet]) {
 //        pubkeyAddress = DASH_PUBKEY_ADDRESS;

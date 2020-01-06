@@ -35,6 +35,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 @property (nullable,nonatomic,readonly) NSString * currentUsername;
 @property (nonatomic,readonly) UInt256 lastTransitionHash;
 @property (nonatomic,readonly) uint32_t index;
+@property (nonatomic,readonly) NSString * registrationFundingAddress;
 @property (nonatomic,readonly) NSArray <NSString *> * usernames;
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
@@ -47,6 +48,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 
 @property (nonatomic,readonly) DSContactEntity* ownContact;
+
+@property (nonatomic,readonly,getter=isRegistered) BOOL registered;
+
 
 -(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 

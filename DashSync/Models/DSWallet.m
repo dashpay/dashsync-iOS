@@ -659,7 +659,7 @@
 -(NSArray *) allTransactions {
     NSMutableSet * mSet = [NSMutableSet set];
     for (DSAccount * account in self.accounts) {
-        [mSet addObjectsFromArray:account.allTransactions];
+        [mSet addObjectsFromArray:[account.allTransactions copy]];
     }
     [mSet addObjectsFromArray:[self.specialTransactionsHolder allTransactions]];
     return [mSet allObjects];
@@ -891,7 +891,7 @@
 -(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
 
     NSParameterAssert(blockchainIdentity);
-    [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIdString];
+    [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIdData];
 
 }
 

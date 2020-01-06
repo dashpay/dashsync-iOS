@@ -54,7 +54,7 @@
 @property (nonatomic,strong) NSMutableDictionary <NSString *,NSNumber *> * usernameStatuses;
 @property (nonatomic,assign) UInt256 uniqueId;
 @property (nonatomic,assign) uint32_t index;
-@property (nonatomic,assign) BOOL registered;
+@property (nonatomic,assign,getter=isRegistered) BOOL registered;
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
@@ -347,13 +347,19 @@
 }
 
 // MARK: - Funding
-     
--(NSString*)unusedRegistrationFundingAddress {
-    return nil;
+
+
+-(NSString*)registrationFundingAddress {
+    if (self.creditFundingTransaction) {
+        return [uint160_data(self.creditFundingTransaction.creditBurnPublicKeyHash) addressFromHash160DataForChain:self.wallet.chain];
+    } else {
+        DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
+        return [derivationPathRegistrationFunding addressAtIndex:self.index];
+    }
 }
 
--(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString*)address fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSTransaction * fundingTransaction))completion {
-    DSTransaction * fundingTransaction = [fundingAccount creditBurnTransactionFor:topupAmount to:address withFee:YES];
+-(void)fundingTransactionForTopupAmount:(uint64_t)topupAmount toAddress:(NSString*)address fundedByAccount:(DSAccount*)fundingAccount completion:(void (^ _Nullable)(DSCreditFundingTransaction * fundingTransaction))completion {
+    DSCreditFundingTransaction * fundingTransaction = [fundingAccount creditFundingTransactionFor:topupAmount to:address withFee:YES];
     completion(fundingTransaction);
 }
 

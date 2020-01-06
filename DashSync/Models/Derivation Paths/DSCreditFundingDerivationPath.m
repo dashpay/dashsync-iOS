@@ -23,14 +23,14 @@
 
 @implementation DSCreditFundingDerivationPath
 
-+ (instancetype)blockchainIdentityRegistrationFundingKeysDerivationPathForChain:(DSChain*)chain {
++ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(12)};
     BOOL hardenedIndexes[] = {YES,YES,YES};
     return [DSCreditFundingDerivationPath derivationPathWithIndexes:indexes hardened:hardenedIndexes length:3 type:DSDerivationPathType_CreditFunding signingAlgorithm:DSDerivationPathSigningAlgorith_ECDSA reference:DSDerivationPathReference_BlockchainIdentityCreditRegistrationFunding onChain:chain];
 }
 
-+ (instancetype)blockchainIdentityTopupFundingKeysDerivationPathForChain:(DSChain*)chain {
++ (instancetype)blockchainIdentityTopupFundingDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(13)};
     BOOL hardenedIndexes[] = {YES,YES,YES};
