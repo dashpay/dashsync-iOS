@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   
   s.framework = 'Foundation', 'UIKit', 'SystemConfiguration', 'CoreData', 'BackgroundTasks'
   s.compiler_flags = '-Wno-comma'
-  s.dependency 'secp256k1_dash', '0.1.3-alpha.1'
+  s.dependency 'secp256k1_dash', '0.1.3-alpha.2'
   s.dependency 'bls-signatures-pod', '0.2.9'
   s.dependency 'CocoaLumberjack', '3.6.0'
   s.dependency 'DWAlertController', '0.2.1'
