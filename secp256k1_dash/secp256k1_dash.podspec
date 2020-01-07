@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'secp256k1_dash'
-  s.version          = '0.1.3-alpha.1'
+  s.version          = '0.1.3-alpha.2'
   s.summary          = 'Optimized C library for EC operations on curve secp256k1'
   s.description      = <<-DESC
 Optimized C library for EC operations on curve secp256k1.
@@ -57,6 +57,8 @@ Configured with following defines: `USE_BASIC_CONFIG`, `ENABLE_MODULE_RECOVERY`,
 #if __BIG_ENDIAN__
 #define WORDS_BIGENDIAN        1
 #endif
+
+#define ENABLE_MODULE_ECDH 1
 
 #include <secp256k1_dash/src/basic-config.h>
 
