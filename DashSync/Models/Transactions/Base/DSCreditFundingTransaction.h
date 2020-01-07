@@ -16,6 +16,7 @@
 //
 
 #import "DSTransaction.h"
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) uint64_t fundingAmount;
 @property (nonatomic,readonly) UInt256 creditBurnIdentityIdentifier;
+@property (nonatomic,readonly) DSUTXO lockedOutpoint;
 @property (nonatomic,readonly) UInt160 creditBurnPublicKeyHash;
 @property (nonatomic,readonly) uint32_t usedDerivationPathIndex;
 

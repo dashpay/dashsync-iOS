@@ -35,6 +35,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSTransition.h"
+#import "DSCreditFundingTransaction.h"
 #include <arpa/inet.h>
 
 @interface DSTransactionTests : XCTestCase
@@ -103,16 +104,14 @@
     XCTAssertEqualObjects(d, tx.data, @"[DSTransaction transactionWithMessage:]");
 }
 
-- (void)testBlockchainIdentityTransactionPayload {
-//    DSChain * devnetDRA = [DSChain devnetWithIdentifier:@"devnet-DRA"];
-//    DSECDSAKey * key = [DSECDSAKey keyWithPrivateKey:@"cTu5paPRRZ1bby6XPR9oLmJ8XsasXm699xVCMGJuEVFu7qaU8uS5" onChain:devnetDRA];
-//    UInt160 pubkeyHash = *(UInt160 *)@"43bfdea7363e6ea738da5059987c7232b58d2afe".hexToData.bytes;
-//
-//    XCTAssertTrue(uint160_eq(pubkeyHash, key.publicKeyData.hash160), @"Pubkey Hash does not Pubkey");
-//    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [[DSBlockchainIdentityRegistrationTransition alloc] initWithBlockchainIdentityRegistrationTransitionVersion:1 username:@"crazy2" pubkeyHash:pubkeyHash onChain:devnetDRA];
-//    UInt256 payloadHash = blockchainIdentityRegistrationTransaction.payloadHash;
-//    NSData * payloadHashDataToConfirm = @"b29e4bc3dd4e0a02d163599e3be5a315781d1ef9e25ec9767eabbe3bfc250af5".hexToData.reverse;
-//    XCTAssertEqualObjects([NSData dataWithUInt256:payloadHash],payloadHashDataToConfirm,@"Pubkey Hash does not match Pubkey Reverse");
+- (void)testBlockchainIdentityFundingTransactionUniqueId {
+    NSData * transactionData = @"0300000002b74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417020000006b483045022100815b175ab1a8fde7d651d78541ba73d2e9b297e6190f5244e1957004aa89d3c902207e1b164499569c1f282fe5533154495186484f7db22dc3dc1ccbdc9b47d997250121027f69794d6c4c942392b1416566aef9eaade43fbf07b63323c721b4518127baadffffffffb74030bbda6edd804d4bfb2bdbbb7c207a122f3af2f6283de17074a42c6a5417010000006b483045022100a7c94fe1bb6ffb66d2bb90fd8786f5bd7a0177b0f3af20342523e64291f51b3e02201f0308f1034c0f6024e368ca18949be42a896dda434520fa95b5651dc5ad3072012102009e3f2eb633ee12c0143f009bf773155a6c1d0f14271d30809b1dc06766aff0ffffffff031027000000000000166a1414ec6c36e6c39a9181f3a261a08a5171425ac5e210270000000000001976a91414ec6c36e6c39a9181f3a261a08a5171425ac5e288acc443953b000000001976a9140d1775b9ed85abeb19fd4a7d8cc88b08a29fe6de88ac00000000".hexToData;
+    DSCreditFundingTransaction * fundingTransaction = [[DSCreditFundingTransaction alloc] initWithMessage:transactionData onChain:[DSChain testnet]];
+    NSString * lockedOutpoint = [dsutxo_data(fundingTransaction.lockedOutpoint) base64EncodedStringWithOptions:0];
+    XCTAssertEqualObjects(lockedOutpoint, @"pRtcx0tE0ydkGODlBEfWNIivD2w6whvSkvYunB5+hCUAAAAA", @"Locked outpoint is incorrect");
+    
+    NSString * identityIdentifier = [uint256_data(fundingTransaction.creditBurnIdentityIdentifier) base58String];
+    XCTAssertEqualObjects(identityIdentifier, @"Cka1ELdpfrZhFFvKRurvPtTHurDXXnnezafNPJkxCYjc", @"Identity Identifier is incorrect");
 }
 
 - (void)testClassicalTransactionInputs {

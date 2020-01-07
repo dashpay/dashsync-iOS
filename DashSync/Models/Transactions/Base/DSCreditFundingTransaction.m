@@ -17,7 +17,6 @@
 
 #import "DSCreditFundingTransaction.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
-#import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
 #import "DSDerivationPathFactory.h"
 #import "DSWallet.h"
@@ -27,12 +26,20 @@
 @implementation DSCreditFundingTransaction
 
 -(UInt256)creditBurnIdentityIdentifier {
-    for (NSData * script in self.outputScripts) {
+    DSUTXO outpoint = [self lockedOutpoint];
+    if (dsutxo_is_zero(outpoint)) return UINT256_ZERO;
+    return [dsutxo_data(outpoint) SHA256_2];
+}
+
+-(DSUTXO)lockedOutpoint {
+    for (int i = 0; i<self.outputScripts.count;i++) {
+        NSData * script = self.outputScripts[i];
         if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
-            return [script SHA256_2];
+            DSUTXO outpoint = { .hash = uint256_reverse(self.txHash), .n = i };
+            return outpoint;
         }
     }
-    return UINT256_ZERO;
+    return DSUTXO_ZERO;
 }
 
 -(UInt160)creditBurnPublicKeyHash {
