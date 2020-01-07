@@ -23,6 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSCreditFundingDerivationPath : DSSimpleIndexedDerivationPath
 
++ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet*)wallet;
+
 - (NSString*)receiveAddress;
 
 - (void)signTransaction:(DSTransaction *)transaction withPrompt:(NSString *)authprompt completion:(TransactionValidityCompletionBlock)completion;

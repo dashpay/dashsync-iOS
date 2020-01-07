@@ -23,6 +23,13 @@
 
 @implementation DSCreditFundingDerivationPath
 
++ (instancetype)blockchainIdentityRegistrationFundingDerivationPathForWallet:(DSWallet*)wallet {
+    return [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:wallet];
+}
++ (instancetype)blockchainIdentityTopupFundingDerivationPathForWallet:(DSWallet*)wallet {
+    return [[DSDerivationPathFactory sharedInstance] blockchainIdentityTopupFundingDerivationPathForWallet:wallet];
+}
+
 + (instancetype)blockchainIdentityRegistrationFundingDerivationPathForChain:(DSChain*)chain {
     NSUInteger coinType = (chain.chainType == DSChainType_MainNet)?5:1;
     UInt256 indexes[] = {uint256_from_long(FEATURE_PURPOSE), uint256_from_long(coinType), uint256_from_long(12)};

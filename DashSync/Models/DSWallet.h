@@ -221,7 +221,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (BOOL)containsProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
 - (BOOL)containsProviderOwningAuthenticationHash:(UInt160)owningAuthenticationHash;
 - (BOOL)containsProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
-- (BOOL)containsBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
+- (BOOL)containsBlockchainIdentityBLSAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
 - (BOOL)containsHoldingAddress:(NSString*)holdingAddress;
 
 - (NSUInteger)indexOfProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash;
@@ -229,6 +229,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const DSWalletBalanceDidChangeNotification;
 - (NSUInteger)indexOfProviderOperatorAuthenticationKey:(UInt384)providerOperatorAuthenticationKey;
 - (NSUInteger)indexOfHoldingAddress:(NSString*)holdingAddress;
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash;
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash;
 
 @end
 

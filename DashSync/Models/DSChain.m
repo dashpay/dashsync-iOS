@@ -71,6 +71,7 @@
 #import "DSLocalMasternodeEntity+CoreDataProperties.h"
 #import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
+#import "DSCreditFundingTransaction.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; const char * masternodeListPath; const char * merkleRoot;} checkpoint;
 
@@ -2182,6 +2183,17 @@ static dispatch_once_t devnetToken = 0;
         DSProviderUpdateRevocationTransaction * providerUpdateRevocationTransaction = (DSProviderUpdateRevocationTransaction *)transaction;
         DSLocalMasternode * localMasternode = [self.chainManager.masternodeManager localMasternodeHavingProviderRegistrationTransactionHash:providerUpdateRevocationTransaction.providerRegistrationTransactionHash];
         [localMasternode updateWithUpdateRevocationTransaction:providerUpdateRevocationTransaction save:TRUE];
+    } else if ([transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+        DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+        uint32_t index;
+        DSWallet * wallet = [self walletHavingBlockchainIdentityCreditFundingRegistrationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+        if (wallet) {
+            DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
+            if (!blockchainIdentity) {
+                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:creditFundingTransaction inWallet:wallet inContext:self.managedObjectContext];
+                [wallet registerBlockchainIdentity:blockchainIdentity];
+            }
+        }
     }
 }
 
@@ -2241,9 +2253,9 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Merging Wallets
 
-- (DSWallet*)walletHavingBlockchainIdentityRegistrationAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash foundAtIndex:(uint32_t*)rIndex {
+- (DSWallet*)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t*)rIndex {
     for (DSWallet * wallet in self.wallets) {
-        NSUInteger index = [wallet indexOfBlockchainIdentityAuthenticationHash:blockchainIdentityAuthenticationHash];
+        NSUInteger index = [wallet indexOfBlockchainIdentityCreditFundingRegistrationHash:creditFundingRegistrationHash];
         if (index != NSNotFound) {
             if (rIndex) *rIndex = (uint32_t)index;
             return wallet;

@@ -934,20 +934,25 @@
     
     if (![transaction isMemberOfClass:[DSTransaction class]]) {
         //it's a special transaction
-        BOOL registered = [self.chain registerSpecialTransaction:transaction];
+        BOOL registered = YES; //default to yes
+        if (![transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
+            registered = [self.chain registerSpecialTransaction:transaction];
+        }
         
         if (registered) {
             if ([transaction isKindOfClass:[DSCreditFundingTransaction class]]) {
                 DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
                 uint32_t index;
-                DSWallet * wallet = [self.chain walletHavingBlockchainIdentityRegistrationAuthenticationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
+                DSWallet * wallet = [self.chain walletHavingBlockchainIdentityCreditFundingRegistrationHash:creditFundingTransaction.creditBurnPublicKeyHash foundAtIndex:&index];
                 
                 if (wallet) {
                     blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
                 }
                 
-                if (!blockchainIdentity && (blockchainIdentity = [wallet createBlockchainIdentityUsingDerivationIndex:index])) {
-                    isNewBlockchainIdentity = TRUE;
+                if (!blockchainIdentity) {
+                    [self.chain triggerUpdatesForLocalReferences:transaction];
+                    blockchainIdentity = [wallet blockchainIdentityForUniqueId:transaction.creditBurnIdentityIdentifier];
+                    if (blockchainIdentity) isNewBlockchainIdentity = TRUE;
                 }
             } else {
                 [self.chain triggerUpdatesForLocalReferences:transaction];

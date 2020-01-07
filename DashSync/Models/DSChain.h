@@ -256,7 +256,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 
 - (DSMerkleBlock * _Nullable)blockFromChainTip:(NSUInteger)blocksAgo;
 
-- (DSWallet* _Nullable)walletHavingBlockchainIdentityRegistrationAuthenticationHash:(UInt160)blockchainIdentityRegistrationAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
+- (DSWallet* _Nullable)walletHavingBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 
 - (DSWallet* _Nullable)walletHavingProviderVotingAuthenticationHash:(UInt160)votingAuthenticationHash foundAtIndex:(uint32_t* _Nullable)rIndex;
 

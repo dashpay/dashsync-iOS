@@ -50,6 +50,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
+#import "DSCreditFundingDerivationPath+Protected.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -1138,8 +1139,8 @@
     return [derivationPath containsAddress:[[NSData dataWithUInt160:[[NSData dataWithUInt384:providerOperatorAuthenticationKey] hash160]] addressFromHash160DataForChain:self.chain]];
 }
 
-- (BOOL)containsBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash {
-    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesKeysDerivationPathForWallet:self];
+- (BOOL)containsBlockchainIdentityBLSAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash {
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self];
     return [derivationPath containsAddress:[[NSData dataWithUInt160:blockchainIdentityAuthenticationHash] addressFromHash160DataForChain:self.chain]];
 }
 
@@ -1173,8 +1174,13 @@
 }
 
 - (NSUInteger)indexOfBlockchainIdentityAuthenticationHash:(UInt160)blockchainIdentityAuthenticationHash {
-    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesKeysDerivationPathForWallet:self];
+    DSAuthenticationKeysDerivationPath * derivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentitiesBLSKeysDerivationPathForWallet:self];
     return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:blockchainIdentityAuthenticationHash] addressFromHash160DataForChain:self.chain]];
+}
+
+- (NSUInteger)indexOfBlockchainIdentityCreditFundingRegistrationHash:(UInt160)creditFundingRegistrationHash {
+    DSCreditFundingDerivationPath * derivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForWallet:self];
+    return [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:creditFundingRegistrationHash] addressFromHash160DataForChain:self.chain]];
 }
 
 @end

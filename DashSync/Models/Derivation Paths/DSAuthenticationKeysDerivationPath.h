@@ -15,7 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)providerVotingKeysDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerOwnerKeysDerivationPathForWallet:(DSWallet*)wallet;
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet;
-+ (instancetype)blockchainIdentitiesKeysDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)blockchainIdentitiesBLSKeysDerivationPathForWallet:(DSWallet*)wallet;
++ (instancetype)blockchainIdentitiesECDSAKeysDerivationPathForWallet:(DSWallet*)wallet;
 
 - (NSData*)firstUnusedPublicKey;
 - (DSKey*)firstUnusedPrivateKeyFromSeed:(NSData*)seed;

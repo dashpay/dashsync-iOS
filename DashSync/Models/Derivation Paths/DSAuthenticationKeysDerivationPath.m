@@ -25,8 +25,11 @@
 + (instancetype)providerOperatorKeysDerivationPathForWallet:(DSWallet*)wallet {
     return [[DSDerivationPathFactory sharedInstance] providerOperatorKeysDerivationPathForWallet:wallet];
 }
-+ (instancetype)blockchainIdentitiesKeysDerivationPathForWallet:(DSWallet*)wallet {
++ (instancetype)blockchainIdentitiesBLSKeysDerivationPathForWallet:(DSWallet*)wallet {
     return [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:wallet];
+}
++ (instancetype)blockchainIdentitiesECDSAKeysDerivationPathForWallet:(DSWallet*)wallet {
+    return [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:wallet];
 }
 
 -(NSUInteger)defaultGapLimit {
