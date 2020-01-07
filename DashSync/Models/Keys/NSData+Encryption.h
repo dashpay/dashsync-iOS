@@ -16,15 +16,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DSBLSKey.h"
+#import "DSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSData (BLSEncryption)
+@interface NSData (Encryption)
 
-- (nullable NSData *)encryptWithSecretKey:(DSBLSKey*)secretKey forPeerWithPublicKey:(DSBLSKey*)peerPubKey;
-- (nullable NSData *)encryptWithSecretKey:(DSBLSKey*)secretKey forPeerWithPublicKey:(DSBLSKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector;
-- (nullable NSData *)decryptWithSecretKey:(DSBLSKey*)secretKey fromPeerWithPublicKey:(DSBLSKey*)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPeerWithPublicKey:(DSKey*)peerPubKey;
+- (nullable NSData *)encryptWithSecretKey:(DSKey*)secretKey forPeerWithPublicKey:(DSKey*)peerPubKey useInitializationVectorForTesting:(NSData*)initializationVector;
+- (nullable NSData *)decryptWithSecretKey:(DSKey*)secretKey fromPeerWithPublicKey:(DSKey*)peerPubKey;
 
 @end
 

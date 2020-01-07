@@ -40,6 +40,8 @@
 #pragma clang diagnostic ignored "-Wconditional-uninitialized"
 #import "secp256k1.h"
 #import "secp256k1_recovery.h"
+#import "secp256k1_ecdh.h"
+
 #pragma clang diagnostic pop
 
 static secp256k1_context *_ctx = NULL;
@@ -127,6 +129,10 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 + (instancetype)keyRecoveredFromCompactSig:(NSData *)compactSig andMessageDigest:(UInt256)md
 {
     return [[self alloc] initWithCompactSig:compactSig andMessageDigest:md];
+}
+
++(instancetype)keyWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
+    return [[self alloc] initWithDHKeyExchangeWithPublicKey:publicKey forPrivateKey:privateKey];
 }
 
 - (instancetype)init
@@ -221,6 +227,22 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     }
     
     return nil;
+}
+
+- (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
+    NSParameterAssert(publicKey);
+    NSParameterAssert(privateKey);
+    secp256k1_pubkey pk;
+    if (secp256k1_ec_pubkey_parse(_ctx, &pk, publicKey.publicKeyData.bytes, publicKey.publicKeyData.length) != 1) {
+        return nil;
+    }
+    
+    uint8_t * seckey = NULL;
+    
+    if (secp256k1_ecdh(_ctx, seckey, &pk, (const uint8_t *)privateKey.secretKey)!= 1) {
+        return nil;
+    }
+    return [self initWithSecret:*(const UInt256 *)seckey compressed:YES];
 }
 
 - (nullable NSString *)privateKeyStringForChain:(DSChain*)chain

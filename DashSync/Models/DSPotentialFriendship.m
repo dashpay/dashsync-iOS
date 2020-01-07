@@ -29,7 +29,7 @@
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSPotentialContact.h"
-#import "NSData+BLSEncryption.h"
+#import "NSData+Encryption.h"
 
 @interface DSPotentialFriendship()
 

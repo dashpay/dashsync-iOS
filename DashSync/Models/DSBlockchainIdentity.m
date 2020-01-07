@@ -41,7 +41,7 @@
 #import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSPotentialContact.h"
-#import "NSData+BLSEncryption.h"
+#import "NSData+Encryption.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSCreditFundingDerivationPath.h"
 #import "DSDocumentTransition.h"
