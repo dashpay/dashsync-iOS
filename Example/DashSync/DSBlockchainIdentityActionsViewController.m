@@ -18,7 +18,7 @@
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
-@property (strong, nonatomic) IBOutlet UILabel *transactionRegistrationHashLabel;
+@property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
 
 @end
 
@@ -43,7 +43,7 @@
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
     }
     
-    self.transactionRegistrationHashLabel.text = uint256_hex(self.blockchainIdentity.registrationTransitionHash);
+    self.uniqueIdLabel.text = self.blockchainIdentity.uniqueIdString;
 }
 
 -(void)updateProfile {
@@ -75,7 +75,7 @@
 
 -(IBAction)registerBlockchainIdentity:(id)sender {
     if (self.blockchainIdentity.isRegistered) return;
-    [self.blockchainIdentity registrationTransitionForFundingTransaction:self.blockchainIdentity.creditFundingTransaction completion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+    [self.blockchainIdentity registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
                                         if (blockchainIdentityRegistrationTransition) {
                                             [self.chainManager.DAPIClient publishTransition:blockchainIdentityRegistrationTransition completion:^(NSError * _Nullable error) {
                                                 

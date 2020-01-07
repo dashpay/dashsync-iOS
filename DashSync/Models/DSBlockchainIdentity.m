@@ -243,8 +243,7 @@
     }
 }
 
--(void)registrationTransitionForFundingTransaction:(DSCreditFundingTransaction*)fundingTransaction completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
-    NSParameterAssert(fundingTransaction);
+-(void)registrationTransitionWithCompletion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
     
     NSString * question = DSLocalizedString(@"Do you wish to create this identity?", nil);
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:question forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData * _Nullable seed, BOOL cancelled) {
@@ -255,7 +254,7 @@
         DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
         DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] fromSeed:seed];
         
-        [self registrationTransitionWithUniqueId:fundingTransaction.creditBurnIdentityIdentifier signedByPrivateKey:privateKey completion:completion];
+        [self registrationTransitionWithUniqueId:self.uniqueId signedByPrivateKey:privateKey completion:completion];
     }];
 }
 

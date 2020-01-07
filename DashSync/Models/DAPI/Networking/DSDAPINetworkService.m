@@ -503,12 +503,12 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     NSParameterAssert(rawStateTransition);
 
     NSError * error = nil;
-//    UpdateStateRequest * updateStateRequest = [[UpdateStateRequest alloc] initWithData:rawStateTransition error:&error];
-//    updateStateRequest.stateTransition = rawStateTransition;
-//    [self.gRPCClient updateStateWithRequest:updateStateRequest handler:^(UpdateStateResponse * _Nullable response, NSError * _Nullable error) {
-//        //TODO:response
-//        NSLog(@"here");
-//    }];
+    UpdateStateRequest * updateStateRequest = [[UpdateStateRequest alloc] initWithData:rawStateTransition error:&error];
+    updateStateRequest.stateTransition = rawStateTransition;
+    [self.gRPCClient updateStateWithRequest:updateStateRequest handler:^(UpdateStateResponse * _Nullable response, NSError * _Nullable error) {
+        //TODO:response
+        NSLog(@"here");
+    }];
 }
 
 - (void)fetchDocumentsForContractId:(NSString *)contractId

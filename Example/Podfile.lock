@@ -120,7 +120,7 @@ SPEC CHECKSUMS:
   bls-signatures-pod: 56adce76843f10f484ff996c33aee36cfd98ae5e
   BoringSSL-GRPC: 8f2c6b5fbae71d1f3aabb787a52fd4929d1eef33
   CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
-  DAPI-GRPC: f487c802c0849c2ca811b1c4375bd9892411e2e9
+  DAPI-GRPC: faca236b4d2357cbab85a67a8341e4eeb6c51798
   DashSync: cfd5f1d67c2cd55502a8c9e26d926fa8890e7a0e
   DSDynamicOptions: 23229bb4e60e7fc966cc1842eb405ea3b94b042e
   DWAlertController: 5f4cd8adf90336331c054857f709f5f8d4b16a5b
