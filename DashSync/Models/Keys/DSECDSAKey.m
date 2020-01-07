@@ -232,17 +232,20 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
 - (nullable instancetype)initWithDHKeyExchangeWithPublicKey:(DSECDSAKey *)publicKey forPrivateKey:(DSECDSAKey*)privateKey {
     NSParameterAssert(publicKey);
     NSParameterAssert(privateKey);
+    if (! (self = [self init])) return nil;
+    
     secp256k1_pubkey pk;
     if (secp256k1_ec_pubkey_parse(_ctx, &pk, publicKey.publicKeyData.bytes, publicKey.publicKeyData.length) != 1) {
         return nil;
     }
     
-    uint8_t * seckey = NULL;
+    //uint8_t * seckey = NULL;
     
-    if (secp256k1_ecdh(_ctx, seckey, &pk, (const uint8_t *)privateKey.secretKey)!= 1) {
+    if (secp256k1_ecdh(_ctx, _seckey.u8, &pk, (const uint8_t *)privateKey.secretKey)!= 1) {
         return nil;
     }
-    return [self initWithSecret:*(const UInt256 *)seckey compressed:YES];
+    self.compressed = NO;
+    return self;
 }
 
 - (nullable NSString *)privateKeyStringForChain:(DSChain*)chain
