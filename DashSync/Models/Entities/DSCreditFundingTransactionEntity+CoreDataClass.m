@@ -7,7 +7,12 @@
 //
 
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
+#import "DSCreditFundingTransaction.h"
 
 @implementation DSCreditFundingTransactionEntity
+
+-(Class)transactionClass {
+    return [DSCreditFundingTransaction class];
+}
 
 @end

@@ -30,8 +30,12 @@
 
 +(DSTransaction*)transactionWithMessage:(NSData*)message onChain:(DSChain*)chain {
     uint16_t version = [message UInt16AtOffset:0];
-    if (version < 3) return [DSTransaction transactionWithMessage:message onChain:chain]; //no special transactions yet
-    uint16_t type = [message UInt16AtOffset:2];
+    uint16_t type;
+    if (version < 3) {
+        type = DSTransactionType_Classic;
+    } else {
+        type = [message UInt16AtOffset:2];
+    }
     switch (type) {
         case DSTransactionType_Classic:
         {

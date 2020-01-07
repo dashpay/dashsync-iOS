@@ -412,7 +412,7 @@
 
 -(BOOL)isCreditFundingTransaction {
     for (NSData * script in self.outputScripts) {
-        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 21) {
+        if ([script UInt8AtOffset:0] == OP_RETURN && script.length == 22) {
             return YES;
         }
     }

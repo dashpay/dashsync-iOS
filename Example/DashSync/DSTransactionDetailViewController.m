@@ -283,6 +283,8 @@
                         cell.statusLabel.text = @"Masternode Update Registrar Transaction";
                     } else if ([self.transaction isMemberOfClass:[DSCoinbaseTransaction class]]) {
                         cell.statusLabel.text = @"Coinbase Transaction";
+                    } else if ([self.transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
+                        cell.statusLabel.text = @"Classical Credit Funding Transaction";
                     } else {
                         cell.statusLabel.text = @"Classical Transaction";
                     }
