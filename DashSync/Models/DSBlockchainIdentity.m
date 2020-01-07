@@ -98,6 +98,12 @@
     return self;
 }
 
+-(instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
+    if (!(self = [self initAtIndex:index inWallet:wallet inContext:managedObjectContext])) return nil;
+    self.uniqueId = uniqueId;
+    return self;
+}
+
 -(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     NSParameterAssert(wallet);
     

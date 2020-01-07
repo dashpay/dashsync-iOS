@@ -207,8 +207,8 @@
             }
         }
         
-        for (NSData * blockchainRegistrationHashData in self.mBlockchainIdentities) {
-            DSBlockchainIdentity * blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainRegistrationHashData];
+        for (NSData * blockchainUniqueIdData in self.mBlockchainIdentities) {
+            DSBlockchainIdentity * blockchainIdentity = [self.mBlockchainIdentities objectForKey:blockchainUniqueIdData];
             for (DSFriendRequestEntity * friendRequest in blockchainIdentity.ownContact.incomingRequests) {
                 
                 DSAccount * account = [self accountWithNumber:friendRequest.account.index];
@@ -953,7 +953,7 @@
                 
                 //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
                 //TODO: get the identity from core data
-                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index inWallet:self inContext:self.chain.managedObjectContext];
+                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withUniqueId:blockchainIdentityUniqueId inWallet:self inContext:self.chain.managedObjectContext];
                 [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityUniqueIdData];
             }
         }

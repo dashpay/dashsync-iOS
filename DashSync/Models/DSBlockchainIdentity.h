@@ -54,6 +54,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
+-(instancetype)initAtIndex:(uint32_t)index withUniqueId:(UInt256)uniqueId inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+
 -(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)addUsername:(NSString*)username;
