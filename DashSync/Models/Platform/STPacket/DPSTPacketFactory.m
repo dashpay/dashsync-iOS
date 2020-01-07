@@ -50,12 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
     return packet;
 }
 
-- (nullable DPSTPacket *)packetFromRawPacket:(DPJSONObject *)rawPacket
+- (nullable DPSTPacket *)packetFromRawPacket:(DSStringValueDictionary *)rawPacket
                                        error:(NSError *_Nullable __autoreleasing *)error {
     return [self packetFromRawPacket:rawPacket skipValidation:NO error:error];
 }
 
-- (nullable DPSTPacket *)packetFromRawPacket:(DPJSONObject *)rawPacket
+- (nullable DPSTPacket *)packetFromRawPacket:(DSStringValueDictionary *)rawPacket
                               skipValidation:(BOOL)skipValidation
                                        error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(rawPacket);
@@ -67,9 +67,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     DPSTPacket *packet = [[DPSTPacket alloc] initWithContractId:contractId];
 
-    NSArray<DPJSONObject *> *rawContracts = rawPacket[@"contracts"];
+    NSArray<DSStringValueDictionary *> *rawContracts = rawPacket[@"contracts"];
     if (rawContracts.count > 0) {
-        DPJSONObject *rawContract = rawContracts.firstObject;
+        DSStringValueDictionary *rawContract = rawContracts.firstObject;
         DPContract *contract = [DPContractFactory dp_contractFromRawContract:rawContract];
         [packet setContract:contract error:error];
         if (*error != nil) {
@@ -77,10 +77,10 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    NSArray<DPJSONObject *> *rawDocuments = rawPacket[@"documents"];
+    NSArray<DSStringValueDictionary *> *rawDocuments = rawPacket[@"documents"];
     if (rawDocuments.count > 0) {
         NSMutableArray<DPDocument *> *documents = [NSMutableArray array];
-        for (DPJSONObject *rawDocument in rawDocuments) {
+        for (DSStringValueDictionary *rawDocument in rawDocuments) {
             DPDocument *document = [[DPDocument alloc] initWithRawDocument:rawDocument];
             [documents addObject:document];
         }
@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
                                         error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawPacket = [data ds_decodeCborError:error];
+    DSStringValueDictionary *rawPacket = [data ds_decodeCborError:error];
     
     if (!rawPacket) {
         return nil;

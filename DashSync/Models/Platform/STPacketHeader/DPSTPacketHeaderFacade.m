@@ -47,12 +47,12 @@ NS_ASSUME_NONNULL_BEGIN
                                           itemsHash:itemsHash];
 }
 
-- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DPJSONObject *)rawPacketHeader
+- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DSStringValueDictionary *)rawPacketHeader
                                                          error:(NSError *_Nullable __autoreleasing *)error {
     return [self.factory packetHeaderFromRawPacketHeader:rawPacketHeader error:error];
 }
 
-- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DPJSONObject *)rawPacketHeader
+- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DSStringValueDictionary *)rawPacketHeader
                                                 skipValidation:(BOOL)skipValidation
                                                          error:(NSError *_Nullable __autoreleasing *)error {
     return [self.factory packetHeaderFromRawPacketHeader:rawPacketHeader skipValidation:skipValidation error:error];

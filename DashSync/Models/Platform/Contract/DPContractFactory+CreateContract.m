@@ -21,9 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DPContractFactory (CreateContract)
 
-+ (DPContract *)dp_contractFromRawContract:(DPJSONObject *)rawContract {
++ (DPContract *)dp_contractFromRawContract:(DSStringValueDictionary *)rawContract {
     NSString *contractId = rawContract[@"contractId"];
-    NSDictionary<NSString *, DPJSONObject *> *documents = rawContract[@"documents"];
+    NSDictionary<NSString *, DSStringValueDictionary *> *documents = rawContract[@"documents"];
 
     DPContract *contract = [[DPContract alloc] initWithContractId:contractId
                                                   documents:documents];
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
         contract.version = version.integerValue;
     }
 
-    NSDictionary<NSString *, DPJSONObject *> *definitions = rawContract[@"definitions"];
+    NSDictionary<NSString *, DSStringValueDictionary *> *definitions = rawContract[@"definitions"];
     if (definitions) {
         contract.definitions = definitions;
     }

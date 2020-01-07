@@ -27,17 +27,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) NSInteger version;
 @property (copy, nonatomic) NSString *contractId;
 @property (copy, nonatomic) NSString *jsonMetaSchema;
-@property (copy, nonatomic) NSDictionary<NSString *, DPJSONObject *> *documents;
-@property (copy, nonatomic) NSDictionary<NSString *, DPJSONObject *> *definitions;
+@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;
+@property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
 - (instancetype)initWithContractId:(NSString *)contractID
-                   documents:(NSDictionary<NSString *, DPJSONObject *> *)documents;
+                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (BOOL)isDocumentDefinedForType:(NSString *)type;
-- (void)setDocumentSchema:(DPJSONObject *)schema forType:(NSString *)type;
-- (nullable DPJSONObject *)documentSchemaForType:(NSString *)type;
+- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type;
+- (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type;
 
 - (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
 

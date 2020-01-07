@@ -56,7 +56,7 @@ static NSInteger const DEFAULT_REVISION = 1;
 #pragma mark - DPDocumentFactory
 
 - (nullable DPDocument *)documentWithType:(NSString *)type
-                                     data:(nullable DPJSONObject *)data
+                                     data:(nullable DSStringValueDictionary *)data
                                     error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(type);
 
@@ -82,7 +82,7 @@ static NSInteger const DEFAULT_REVISION = 1;
     NSData *scopeStringData = [scopeString dataUsingEncoding:NSUTF8StringEncoding];
     NSString *scopeStringHash = uint256_hex([scopeStringData SHA256_2]);
 
-    DPMutableJSONObject *rawObject = [[DPMutableJSONObject alloc] init];
+    DSMutableStringValueDictionary *rawObject = [[DSMutableStringValueDictionary alloc] init];
     rawObject[@"$type"] = type;
     rawObject[@"$scope"] = scopeStringHash;
     rawObject[@"$scopeId"] = [DSKey randomAddressForChain:[self chain]];
@@ -95,12 +95,12 @@ static NSInteger const DEFAULT_REVISION = 1;
     return object;
 }
 
-- (nullable DPDocument *)documentFromRawDocument:(DPJSONObject *)rawDocument
+- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
                                            error:(NSError *_Nullable __autoreleasing *)error {
     return [self documentFromRawDocument:rawDocument skipValidation:NO error:error];
 }
 
-- (nullable DPDocument *)documentFromRawDocument:(DPJSONObject *)rawDocument
+- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
                                   skipValidation:(BOOL)skipValidation
                                            error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(rawDocument);
@@ -122,7 +122,7 @@ static NSInteger const DEFAULT_REVISION = 1;
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawDocument = [data ds_decodeCborError:error];
+    DSStringValueDictionary *rawDocument = [data ds_decodeCborError:error];
     
     if (!rawDocument) {
         return nil;

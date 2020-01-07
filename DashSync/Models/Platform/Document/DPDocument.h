@@ -28,13 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *userId;
 @property (readonly, copy, nonatomic) NSString *entropy;
 @property (readonly, strong, nonatomic) NSNumber *revision;
-@property (readonly, copy, nonatomic) DPJSONObject *data;
+@property (readonly, copy, nonatomic) DSStringValueDictionary *data;
 
-- (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument;
+- (instancetype)initWithRawDocument:(DSStringValueDictionary *)rawDocument;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)setData:(DPJSONObject *)data error:(NSError *_Nullable __autoreleasing *)error;
+- (void)setData:(DSStringValueDictionary *)data error:(NSError *_Nullable __autoreleasing *)error;
 
 @end
 

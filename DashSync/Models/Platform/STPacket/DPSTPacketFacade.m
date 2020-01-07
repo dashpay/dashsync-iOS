@@ -50,12 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.factory packetWithContractId:contractId documents:documents];
 }
 
-- (nullable DPSTPacket *)packetFromRawPacket:(DPJSONObject *)rawPacket
+- (nullable DPSTPacket *)packetFromRawPacket:(DSStringValueDictionary *)rawPacket
                                        error:(NSError *_Nullable __autoreleasing *)error {
     return [self.factory packetFromRawPacket:rawPacket error:error];
 }
 
-- (nullable DPSTPacket *)packetFromRawPacket:(DPJSONObject *)rawPacket
+- (nullable DPSTPacket *)packetFromRawPacket:(DSStringValueDictionary *)rawPacket
                               skipValidation:(BOOL)skipValidation
                                        error:(NSError *_Nullable __autoreleasing *)error {
     return [self.factory packetFromRawPacket:rawPacket skipValidation:skipValidation error:error];

@@ -144,12 +144,12 @@ NS_ASSUME_NONNULL_BEGIN
         json[@"contractId"] = self.contractId;
         json[@"itemsMerkleRoot"] = self.itemsMerkleRoot;
         json[@"itemsHash"] = self.itemsHash;
-        NSMutableArray<DPJSONObject *> *jsonContracts = [NSMutableArray array];
+        NSMutableArray<DSStringValueDictionary *> *jsonContracts = [NSMutableArray array];
         for (DPContract *contract in self.contracts) {
             [jsonContracts addObject:contract.json];
         }
         json[@"contracts"] = jsonContracts;
-        NSMutableArray<DPJSONObject *> *jsonDocuments = [NSMutableArray array];
+        NSMutableArray<DSStringValueDictionary *> *jsonDocuments = [NSMutableArray array];
         for (DPDocument *document in self.documents) {
             [jsonDocuments addObject:document.json];
         }

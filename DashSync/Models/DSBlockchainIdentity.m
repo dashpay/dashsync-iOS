@@ -552,7 +552,7 @@
 //    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.wallet.chain];
 //    dpp.contract = contract;
 //    NSError *error = nil;
-//    DPJSONObject *data = @{
+//    DSStringValueDictionary *data = @{
 //                           @"about" :aboutme,
 //                           @"avatarUrl" : avatarURLString,
 //                           };

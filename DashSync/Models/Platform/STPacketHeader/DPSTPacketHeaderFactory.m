@@ -38,12 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
     return object;
 }
 
-- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DPJSONObject *)rawPacketHeader
+- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DSStringValueDictionary *)rawPacketHeader
                                                          error:(NSError *_Nullable __autoreleasing *)error {
     return [self packetHeaderFromRawPacketHeader:rawPacketHeader skipValidation:NO error:error];
 }
 
-- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DPJSONObject *)rawPacketHeader
+- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DSStringValueDictionary *)rawPacketHeader
                                                 skipValidation:(BOOL)skipValidation
                                                          error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(rawPacketHeader);
@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                     error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawPacketHeader = [data ds_decodeCborError:error];
+    DSStringValueDictionary *rawPacketHeader = [data ds_decodeCborError:error];
     
     if (!rawPacketHeader) {
         return nil;

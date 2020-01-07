@@ -7,6 +7,7 @@
 
 #import "BigIntTypes.h"
 #import "DSBlockchainIdentity.h"
+#import "DPBaseObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,7 +26,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 
 @class DSKey, DSBlockchainIdentity;
 
-@interface DSTransition : NSObject
+@interface DSTransition : DPBaseObject
 
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) uint16_t type;

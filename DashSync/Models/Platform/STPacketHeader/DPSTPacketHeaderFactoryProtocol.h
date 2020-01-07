@@ -27,10 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
                                  itemsMerkleRoot:(NSString *)itemsMerkleRoot
                                        itemsHash:(NSString *)itemsHash;
 
-- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DPJSONObject *)rawPacketHeader
+- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DSStringValueDictionary *)rawPacketHeader
                                                          error:(NSError *_Nullable __autoreleasing *)error;
 
-- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DPJSONObject *)rawPacketHeader
+- (nullable DPSTPacketHeader *)packetHeaderFromRawPacketHeader:(DSStringValueDictionary *)rawPacketHeader
                                                 skipValidation:(BOOL)skipValidation
                                                          error:(NSError *_Nullable __autoreleasing *)error;
 

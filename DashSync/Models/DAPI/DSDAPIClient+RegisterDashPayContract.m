@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
     NSAssert(error == nil, @"Failed reading contract json");
-    DPJSONObject *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
+    DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
     DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];

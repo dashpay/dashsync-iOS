@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPContractFactory (CreateContract)
 
-+ (DPContract *)dp_contractFromRawContract:(DPJSONObject *)rawContract;
++ (DPContract *)dp_contractFromRawContract:(DSStringValueDictionary *)rawContract;
 
 @end
 

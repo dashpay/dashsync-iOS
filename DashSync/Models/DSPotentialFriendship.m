@@ -87,7 +87,7 @@
     NSError *error = nil;
     
     
-    DPJSONObject *data = @{
+    DSStringValueDictionary *data = @{
                            @"toUserId" : uint256_reverse_hex(self.destinationContact.associatedBlockchainIdentityUniqueId),
                            @"publicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
                            };

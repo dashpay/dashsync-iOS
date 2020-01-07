@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocument ()
 
-@property (copy, nonatomic) DPJSONObject *data;
+@property (copy, nonatomic) DSStringValueDictionary *data;
 
 @end
 
@@ -34,13 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 //@synthesize identifier = _identifier;
 
-- (instancetype)initWithRawDocument:(DPJSONObject *)rawDocument {
+- (instancetype)initWithRawDocument:(DSStringValueDictionary *)rawDocument {
     NSParameterAssert(rawDocument);
 
     self = [super init];
     if (self) {
 
-        DPMutableJSONObject *mutableRawObject = [rawDocument mutableCopy];
+        DSMutableStringValueDictionary *mutableRawObject = [rawDocument mutableCopy];
 
         NSString *type = mutableRawObject[@"$type"];
         NSParameterAssert(type);
@@ -98,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 //    [self resetSerializedValues];
 //}
 
-- (void)setData:(DPJSONObject *)data error:(NSError *_Nullable __autoreleasing *)error {
+- (void)setData:(DSStringValueDictionary *)data error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
 //    if (self.action == DPDocumentAction_Delete && data.count != 0) {
@@ -117,25 +117,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)resetSerializedValues {
     [super resetSerializedValues];
-    _json = nil;
+    _keyValueDictionary = nil;
 }
 
 #pragma mark - DPPSerializableObject
 
-@synthesize json = _json;
+@synthesize keyValueDictionary = _keyValueDictionary;
 
-- (DPMutableJSONObject *)json {
-    if (_json == nil) {
-        DPMutableJSONObject *json = [[DPMutableJSONObject alloc] init];
+- (DSMutableStringValueDictionary *)keyValueDictionary {
+    if (_keyValueDictionary == nil) {
+        DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
         json[@"$type"] = self.type;
         json[@"$contractId"] = self.contractId;
         json[@"$userId"] = self.userId;
         json[@"$entropy"] = self.entropy;
         json[@"$rev"] = self.revision;
         [json addEntriesFromDictionary:self.data];
-        _json = json;
+        _keyValueDictionary = json;
     }
-    return _json;
+    return _keyValueDictionary;
 }
 
 @end

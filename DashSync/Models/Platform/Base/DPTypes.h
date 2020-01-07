@@ -15,18 +15,10 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#ifndef DPTypes_h
+#define DPTypes_h
 
-#import "DPPTypes.h"
+typedef NSDictionary<NSString *, id>        DSStringValueDictionary;
+typedef NSMutableDictionary<NSString *, id> DSMutableStringValueDictionary;
 
-NS_ASSUME_NONNULL_BEGIN
-
-@protocol DPPSerializableObject <NSObject>
-
-@property (readonly, strong, nonatomic) DPMutableJSONObject *json;
-@property (readonly, strong, nonatomic) NSData *serialized;
-@property (readonly, strong, nonatomic) NSData *serializedHash;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#endif /* DPTypes_h */

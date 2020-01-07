@@ -36,19 +36,19 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize serialized = _serialized;
 @synthesize serializedHash = _serializedHash;
 
-- (DPMutableJSONObject *)json {
+- (DSMutableStringValueDictionary *)keyValueDictionary {
     NSAssert(NO, @"Should be overriden in subclass");
-    return [DPMutableJSONObject dictionary];
+    return [DSMutableStringValueDictionary dictionary];
 }
 
 - (NSData *)serialized {
     if (_serialized == nil) {
-        _serialized = [self.json ds_cborEncodedObject];
+        _serialized = [self.keyValueDictionary ds_cborEncodedObject];
     }
     return _serialized;
 }
 
-- (NSData *)serializedHash {
+- (NSData *)serializedBaseData {
     if (_serializedHash == nil) {
         _serializedHash = uint256_data([self.serialized SHA256_2]);
     }

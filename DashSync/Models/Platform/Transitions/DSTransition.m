@@ -136,19 +136,28 @@
     return 8 + [self payloadData].length; //todo figure this out (probably wrong)
 }
 
-// Returns the binary transaction data that needs to be hashed and signed with the private key for the tx input at
-// subscriptIndex. A subscriptIndex of NSNotFound will return the entire signed transaction.
 - (NSData *)toData
 {
-    NSMutableData *d = [NSMutableData data];
-    
-    [d appendUInt16:self.version];
-    [d appendUInt16:self.type];
-        NSData * payloadData = [self payloadData];
-        [d appendVarInt:payloadData.length];
-        [d appendData:payloadData];
-    
-    return d;
+    return [self serialized];
+}
+
+@synthesize keyValueDictionary = _keyValueDictionary;
+
+- (DSMutableStringValueDictionary *)baseKeyValueDictionary {
+    DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
+    json[@"protocolVersion"] = @(0);
+    json[@"type"] = @(self.type);
+    return json;
+}
+
+- (DSMutableStringValueDictionary *)keyValueDictionary {
+    if (_keyValueDictionary == nil) {
+        DSMutableStringValueDictionary *json = [self baseKeyValueDictionary];
+        json[@"signature"] = self.signatureData;
+        json[@"signaturePublicKeyId"] = @(0);
+        _keyValueDictionary = json;
+    }
+    return _keyValueDictionary;
 }
 
 

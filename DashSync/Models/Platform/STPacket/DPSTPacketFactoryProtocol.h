@@ -27,10 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (DPSTPacket *)packetWithContractId:(NSString *)contractId
                            documents:(NSArray<DPDocument *> *)documents;
 
-- (nullable DPSTPacket *)packetFromRawPacket:(DPJSONObject *)rawPacket
+- (nullable DPSTPacket *)packetFromRawPacket:(DSStringValueDictionary *)rawPacket
                                        error:(NSError *_Nullable __autoreleasing *)error;
 
-- (nullable DPSTPacket *)packetFromRawPacket:(DPJSONObject *)rawPacket
+- (nullable DPSTPacket *)packetFromRawPacket:(DSStringValueDictionary *)rawPacket
                               skipValidation:(BOOL)skipValidation
                                        error:(NSError *_Nullable __autoreleasing *)error;
 

@@ -18,8 +18,8 @@
 #import "DSDAPINetworkService.h"
 
 #import "DSHTTPJSONRPCClient.h"
-#import <DAPI-GRPC/Core.pbrpc.h>
-#import <DAPI-GRPC/Core.pbobjc.h>
+#import "DSChain.h"
+#import "DSPeer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,26 +29,32 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 @interface DSDAPINetworkService ()
 
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
-@property (strong, nonatomic) Core *gRPCClient;
+@property (strong, nonatomic) Platform *gRPCClient;
+@property (strong, nonatomic) DSChain * chain;
+@property (atomic, strong) dispatch_queue_t dispatchQueue;
 
 @end
 
 @implementation DSDAPINetworkService
 
-- (instancetype)initWithDAPINodeURL:(NSURL *)url httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory {
-    NSParameterAssert(url);
+- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory onChain:(DSChain*)chain {
+    NSParameterAssert(ipAddress);
     NSParameterAssert(httpLoaderFactory);
 
     self = [super init];
     if (self) {
-        _httpJSONRPCClient = [DSHTTPJSONRPCClient clientWithEndpointURL:url httpLoaderFactory:httpLoaderFactory];
+        NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%d",ipAddress,chain.standardDapiJRPCPort]];
+        _httpJSONRPCClient = [DSHTTPJSONRPCClient clientWithEndpointURL:dapiNodeURL httpLoaderFactory:httpLoaderFactory];
+        self.chain = chain;
+        GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
+        // this example does not use TLS (secure channel); use insecure channel instead
+        options.transportType = GRPCTransportTypeInsecure;
+        options.userAgentPrefix = USER_AGENT;
         
-//        GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
-//        // this example does not use TLS (secure channel); use insecure channel instead
-//        options.transport = GRPCDefaultTransportImplList.core_insecure;
-//        options.userAgentPrefix = @"HelloWorld/1.0";
+        NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,3010];
         
-        _gRPCClient = [Core serviceWithHost:url.absoluteString];
+        _gRPCClient = [Platform serviceWithHost:dapiGRPCHost callOptions:options];
+        self.dispatchQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapigrpc.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -502,13 +508,10 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(rawStateTransition);
 
-    NSError * error = nil;
-    UpdateStateRequest * updateStateRequest = [[UpdateStateRequest alloc] initWithData:rawStateTransition error:&error];
+    ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
     updateStateRequest.stateTransition = rawStateTransition;
-    [self.gRPCClient updateStateWithRequest:updateStateRequest handler:^(UpdateStateResponse * _Nullable response, NSError * _Nullable error) {
-        //TODO:response
-        NSLog(@"here");
-    }];
+    GRPCCallOptions * options = [[GRPCMutableCallOptions alloc] init];
+    [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:self callOptions:nil] start];
 }
 
 - (void)fetchDocumentsForContractId:(NSString *)contractId
@@ -569,6 +572,23 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                           withParameters:parameters
                                  success:internalSuccess
                                  failure:failure];
+}
+
+- (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
+    NSLog(@"hoho");
+}
+
+- (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
+    NSLog(@"hoho");
+}
+
+- (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
+                               error:(nullable NSError *)error {
+    NSLog(@"hoho");
+}
+
+-(void)didWriteMessage {
+    NSLog(@"hoho");
 }
 
 

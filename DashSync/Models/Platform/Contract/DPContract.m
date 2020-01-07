@@ -27,14 +27,14 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @interface DPContract ()
 
-@property (strong, nonatomic) NSMutableDictionary<NSString *, DPJSONObject *> *mutableDocuments;
+@property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
 
 @end
 
 @implementation DPContract
 
 - (instancetype)initWithContractId:(NSString *)contractId
-                   documents:(NSDictionary<NSString *, DPJSONObject *> *)documents {
+                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents {
     NSParameterAssert(contractId);
     NSParameterAssert(documents);
 
@@ -67,16 +67,16 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     [self resetSerializedValues];
 }
 
-- (NSDictionary<NSString *, DPJSONObject *> *)documents {
+- (NSDictionary<NSString *, DSStringValueDictionary *> *)documents {
     return [self.mutableDocuments copy];
 }
 
-- (void)setDocuments:(NSDictionary<NSString *, DPJSONObject *> *)documents {
+- (void)setDocuments:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents {
     _mutableDocuments = [documents mutableCopy];
     [self resetSerializedValues];
 }
 
-- (void)setDefinitions:(NSDictionary<NSString *, DPJSONObject *> *)definitions {
+- (void)setDefinitions:(NSDictionary<NSString *, DSStringValueDictionary *> *)definitions {
     _definitions = [definitions copy];
     [self resetSerializedValues];
 }
@@ -92,7 +92,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     return isDefined;
 }
 
-- (void)setDocumentSchema:(DPJSONObject *)schema forType:(NSString *)type {
+- (void)setDocumentSchema:(DSStringValueDictionary *)schema forType:(NSString *)type {
     NSParameterAssert(schema);
     NSParameterAssert(type);
     if (!schema || !type) {
@@ -102,7 +102,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     self.mutableDocuments[type] = schema;
 }
 
-- (nullable DPJSONObject *)documentSchemaForType:(NSString *)type {
+- (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type {
     NSParameterAssert(type);
     if (!type) {
         return nil;
@@ -130,25 +130,25 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 - (void)resetSerializedValues {
     [super resetSerializedValues];
-    _json = nil;
+    _keyValueDictionary = nil;
 }
 
 #pragma mark - DPPSerializableObject
 
-@synthesize json = _json;
+@synthesize keyValueDictionary = _keyValueDictionary;
 
-- (DPMutableJSONObject *)json {
-    if (_json == nil) {
-        DPMutableJSONObject *json = [[DPMutableJSONObject alloc] init];
+- (DSMutableStringValueDictionary *)keyValueDictionary {
+    if (_keyValueDictionary == nil) {
+        DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
         json[@"$schema"] = self.jsonMetaSchema;
         json[@"version"] = @(self.version);
         json[@"documents"] = self.documents;
         if (self.definitions.count > 0) {
             json[@"definitions"] = self.definitions;
         }
-        _json = json;
+        _keyValueDictionary = json;
     }
-    return _json;
+    return _keyValueDictionary;
 }
 
 @end

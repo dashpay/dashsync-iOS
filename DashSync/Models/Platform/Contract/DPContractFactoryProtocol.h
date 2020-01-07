@@ -22,12 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DPContractFactory <NSObject>
 
 - (DPContract *)contractWithName:(NSString *)name
-                       documents:(NSDictionary<NSString *, DPJSONObject *> *)documents;
+                       documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents;
 
-- (nullable DPContract *)contractFromRawContract:(DPJSONObject *)rawContract
+- (nullable DPContract *)contractFromRawContract:(DSStringValueDictionary *)rawContract
                                            error:(NSError *_Nullable __autoreleasing *)error;
 
-- (nullable DPContract *)contractFromRawContract:(DPJSONObject *)rawContract
+- (nullable DPContract *)contractFromRawContract:(DSStringValueDictionary *)rawContract
                                   skipValidation:(BOOL)skipValidation
                                            error:(NSError *_Nullable __autoreleasing *)error;
 

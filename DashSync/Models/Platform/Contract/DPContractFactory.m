@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DPContractFactory
 
 - (DPContract *)contractWithName:(NSString *)name
-                       documents:(NSDictionary<NSString *, DPJSONObject *> *)documents {
+                       documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents {
     NSParameterAssert(name);
     NSParameterAssert(documents);
 
@@ -47,12 +47,12 @@ NS_ASSUME_NONNULL_BEGIN
     return contract;
 }
 
-- (nullable DPContract *)contractFromRawContract:(DPJSONObject *)rawContract
+- (nullable DPContract *)contractFromRawContract:(DSStringValueDictionary *)rawContract
                                            error:(NSError *_Nullable __autoreleasing *)error {
     return [self contractFromRawContract:rawContract skipValidation:NO error:error];
 }
 
-- (nullable DPContract *)contractFromRawContract:(DPJSONObject *)rawContract
+- (nullable DPContract *)contractFromRawContract:(DSStringValueDictionary *)rawContract
                                   skipValidation:(BOOL)skipValidation
                                            error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(rawContract);
@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
-    DPJSONObject *rawContract = [data ds_decodeCborError:error];
+    DSStringValueDictionary *rawContract = [data ds_decodeCborError:error];
     if (!rawContract) {
         return nil;
     }

@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DPDocumentFactory
 
 - (nullable DPDocument *)documentWithType:(NSString *)type
-                                     data:(nullable DPJSONObject *)data
+                                     data:(nullable DSStringValueDictionary *)data
                                     error:(NSError *_Nullable __autoreleasing *)error {
     DPDocumentFactory *factory = [self factory];
     NSParameterAssert(factory);
@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [factory documentWithType:type data:data error:error];
 }
 
-- (nullable DPDocument *)documentFromRawDocument:(DPJSONObject *)rawDocument
+- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
                                            error:(NSError *_Nullable __autoreleasing *)error {
     DPDocumentFactory *factory = [self factory];
     NSParameterAssert(factory);
@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [factory documentFromRawDocument:rawDocument error:error];
 }
 
-- (nullable DPDocument *)documentFromRawDocument:(DPJSONObject *)rawDocument
+- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
                                   skipValidation:(BOOL)skipValidation
                                            error:(NSError *_Nullable __autoreleasing *)error {
     DPDocumentFactory *factory = [self factory];

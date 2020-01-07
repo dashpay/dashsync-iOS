@@ -24,13 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol DPDocumentFactory <NSObject>
 
 - (nullable DPDocument *)documentWithType:(NSString *)type
-                                     data:(nullable DPJSONObject *)data
+                                     data:(nullable DSStringValueDictionary *)data
                                     error:(NSError *_Nullable __autoreleasing *)error;
 
-- (nullable DPDocument *)documentFromRawDocument:(DPJSONObject *)rawDocument
+- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
                                            error:(NSError *_Nullable __autoreleasing *)error;
 
-- (nullable DPDocument *)documentFromRawDocument:(DPJSONObject *)rawDocument
+- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
                                   skipValidation:(BOOL)skipValidation
                                            error:(NSError *_Nullable __autoreleasing *)error;
 

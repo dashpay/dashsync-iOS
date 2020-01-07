@@ -174,9 +174,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
             NSString * peerHost = [self.availablePeers objectAtIndex:0];
-            NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:3000",peerHost]];
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-            DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeURL:dapiNodeURL httpLoaderFactory:loaderFactory];
+            DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory onChain:self.chain];
             [self.activeServices addObject:DAPINetworkService];
             return DAPINetworkService;
         }

@@ -17,11 +17,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DPPSerializableObject.h"
+#import "DPSerializableObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DPBaseObject : NSObject <DPPSerializableObject>
+@interface DPBaseObject : NSObject <DPSerializableObject>
 
 - (void)resetSerializedValues NS_REQUIRES_SUPER;
 
