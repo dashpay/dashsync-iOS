@@ -31,7 +31,6 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 @property (nonatomic, readonly) uint16_t version;
 @property (nonatomic, readonly) uint16_t type;
 @property (nonatomic, readonly) UInt256 blockchainIdentityUniqueId;
-@property (nonatomic, readonly) UInt256 registrationTransactionHash;
 @property (nonatomic, readonly) uint64_t creditFee;
 @property (nonatomic, readonly) UInt256 transitionHash;
 
@@ -43,12 +42,13 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 @property (nonatomic, readonly) NSTimeInterval createdTimestamp;
 @property (nonatomic, readonly) NSTimeInterval registeredTimestamp;
 
-@property (nonatomic, readonly) DSBlockchainIdentitySigningType signatureType;
+@property (nonatomic, readonly) DSDerivationPathSigningAlgorith signatureType;
 @property (nonatomic, readonly) NSData * signatureData;
+@property (nonatomic, readonly) uint32_t signaturePublicKeyId;
 
 -(instancetype)initWithTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain * _Nonnull)chain; //local creation
 
--(void)signWithKey:(DSKey *)privateKey;
+-(void)signWithKey:(DSKey *)privateKey fromIdentity:(DSBlockchainIdentity* _Nullable)blockchainIdentity;
 
 @end
 

@@ -29,12 +29,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetSerializedValues {
     _serialized = nil;
     _serializedHash = nil;
+    _serializedBaseData = nil;
+    _serializedBaseDataHash = nil;
 }
 
 #pragma mark - DPPSerializableObject
 
 @synthesize serialized = _serialized;
 @synthesize serializedHash = _serializedHash;
+@synthesize serializedBaseData = _serializedBaseData;
+@synthesize serializedBaseDataHash = _serializedBaseDataHash;
 
 - (DSMutableStringValueDictionary *)keyValueDictionary {
     NSAssert(NO, @"Should be overriden in subclass");
@@ -49,11 +53,26 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSData *)serializedBaseData {
+    if (_serializedBaseData == nil) {
+        _serializedBaseData = [self.baseKeyValueDictionary ds_cborEncodedObject];
+    }
+    return _serializedBaseData;
+}
+
+- (NSData *)serializedHash {
     if (_serializedHash == nil) {
         _serializedHash = uint256_data([self.serialized SHA256_2]);
     }
     return _serializedHash;
 }
+
+- (NSData *)serializedBaseDataHash {
+    if (_serializedBaseDataHash == nil) {
+        _serializedBaseDataHash = uint256_data([self.serializedBaseData SHA256_2]);
+    }
+    return _serializedBaseDataHash;
+}
+
 
 @end
 

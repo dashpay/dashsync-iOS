@@ -53,38 +53,10 @@
     return self;
 }
 
--(NSData*)basePayloadData {
-    NSMutableData * data = [NSMutableData data];
-    [data appendUInt16:self.version];
-    [data appendUInt256:self.registrationTransactionHash];
-    [data appendUInt64:self.creditFee];
-    return data;
-}
-
-
--(NSData*)payloadDataForHash {
-    NSMutableData * data = [NSMutableData data];
-    [data appendData:[self basePayloadData]];
-    [data appendUInt8:0];
-    return data;
-}
-
--(NSData*)payloadData {
-    NSMutableData * data = [NSMutableData data];
-    [data appendData:[self basePayloadData]];
-    //[data appendUInt8:96]; ??
-    [data appendData:self.signatureData];
-    return data;
-}
-
--(UInt256)payloadHash {
-    return [self payloadDataForHash].SHA256_2;
-}
-
--(void)setRegistrationTransactionHash:(UInt256)registrationTransactionHash {
-    _registrationTransactionHash = registrationTransactionHash;
-    self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:registrationTransactionHash];
-}
+//-(void)setRegistrationTransactionHash:(UInt256)registrationTransactionHash {
+//    _registrationTransactionHash = registrationTransactionHash;
+//    self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:registrationTransactionHash];
+//}
 
 //-(DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransaction {
 //    if (!_blockchainIdentityRegistrationTransaction) self.blockchainIdentityRegistrationTransaction = (DSBlockchainIdentityRegistrationTransition*)[self.chain transactionForHash:self.registrationTransactionHash];
@@ -92,12 +64,12 @@
 //}
 
 -(BOOL)checkTransitionSignatureForECDSAKey:(DSECDSAKey*)transitionRecoveredPublicKey {
-    return [transitionRecoveredPublicKey verify:[self payloadHash] signatureData:self.signatureData];
+    return [transitionRecoveredPublicKey verify:[self serializedBaseDataHash].UInt256 signatureData:self.signatureData];
     //return uint160_eq([transitionRecoveredPublicKey hash160], self.blockchainIdentityRegistrationTransaction.pubkeyHash);
 }
 
 -(BOOL)checkTransitionSignatureForBLSKey:(DSBLSKey*)blockchainIdentityPublicKey {
-    return [blockchainIdentityPublicKey verify:[self payloadHash] signature:self.signatureData.UInt768];
+    return [blockchainIdentityPublicKey verify:[self serializedBaseDataHash].UInt256 signature:self.signatureData.UInt768];
 }
 
 -(BOOL)checkTransitionSignature:(DSKey*)key {
@@ -111,21 +83,22 @@
 }
 
 -(BOOL)checkTransitionSignedByBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity {
-    return [blockchainIdentity verifySignature:self.signatureData ofType:DSBlockchainIdentitySigningType_ECDSA forMessageDigest:[self payloadHash]];
+    return [blockchainIdentity verifySignature:self.signatureData ofType:DSDerivationPathSigningAlgorith_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
 }
 
--(void)signWithKey:(DSKey*)privateKey {
+-(void)signWithKey:(DSKey*)privateKey fromIdentity:(DSBlockchainIdentity*)blockchainIdentity {
     NSParameterAssert(privateKey);
     
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
-        self.signatureType = DSBlockchainIdentitySigningType_BLS;
-        self.signatureData = uint768_data([((DSBLSKey*)privateKey) signDigest:[self payloadHash]]);
+        self.signatureType = DSDerivationPathSigningAlgorith_BLS;
+        self.signatureData = uint768_data([((DSBLSKey*)privateKey) signDigest:[self serializedBaseDataHash].UInt256]);
     } else if ([privateKey isMemberOfClass:[DSECDSAKey class]]) {
-        self.signatureType = DSBlockchainIdentitySigningType_ECDSA;
-        self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self payloadHash]];
+        self.signatureType = DSDerivationPathSigningAlgorith_ECDSA;
+        self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
     }
+    self.signaturePublicKeyId = blockchainIdentity?[blockchainIdentity indexOfKey:privateKey]:0;
     self.transitionHash = self.data.SHA256_2;
 }
 
@@ -133,15 +106,13 @@
 - (size_t)size
 {
     if (! uint256_is_zero(_transitionHash)) return self.data.length;
-    return 8 + [self payloadData].length; //todo figure this out (probably wrong)
+    return [self serialized].length; //todo figure this out (probably wrong)
 }
 
 - (NSData *)toData
 {
     return [self serialized];
 }
-
-@synthesize keyValueDictionary = _keyValueDictionary;
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
@@ -151,13 +122,10 @@
 }
 
 - (DSMutableStringValueDictionary *)keyValueDictionary {
-    if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [self baseKeyValueDictionary];
         json[@"signature"] = self.signatureData;
-        json[@"signaturePublicKeyId"] = @(0);
-        _keyValueDictionary = json;
-    }
-    return _keyValueDictionary;
+        json[@"signaturePublicKeyId"] = @(self.signaturePublicKeyId);
+    return json;
 }
 
 

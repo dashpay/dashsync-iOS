@@ -26,7 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) DSMutableStringValueDictionary *keyValueDictionary;
 @property (readonly, strong, nonatomic) DSMutableStringValueDictionary *baseKeyValueDictionary;
 @property (readonly, strong, nonatomic) NSData *serialized;
-@property (readonly, strong, nonatomic) NSData *serializedHash;
+@property (readonly, strong, nonatomic) NSData *serializedBaseData;
+@property (readonly, assign, nonatomic) NSData *serializedHash;
+@property (readonly, assign, nonatomic) NSData *serializedBaseDataHash;
 
 @end
 

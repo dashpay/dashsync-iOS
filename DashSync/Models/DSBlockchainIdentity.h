@@ -8,14 +8,10 @@
 #import <Foundation/Foundation.h>
 #import "DSDAPIClient.h"
 #import "BigIntTypes.h"
+#import "DSDerivationPath.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition;
-
-typedef NS_ENUM(NSUInteger, DSBlockchainIdentitySigningType) {
-    DSBlockchainIdentitySigningType_ECDSA = 0,
-    DSBlockchainIdentitySigningType_BLS = 1,
-};
+@class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey;
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
     DSBlockchainIdentityUsernameStatus_NotPresent = 0,
@@ -60,6 +56,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(void)addUsername:(NSString*)username;
 
+-(uint32_t)indexOfKey:(DSKey*)key;
+
 -(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;
 
 -(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion;
@@ -81,11 +79,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 -(void)updateWithCloseTransition:(DSBlockchainIdentityCloseTransition*)blockchainIdentityCloseTransaction save:(BOOL)save;
 -(void)updateWithDocumentTransition:(DSDocumentTransition*)transition save:(BOOL)save;
 
--(DSTransition*)transitionForStateTransitionPacketHash:(UInt256)stateTransitionHash;
+-(DSKey*)createNewKeyOfType:(DSDerivationPathSigningAlgorith)type returnIndex:(uint32_t *)rIndex;
+
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
 -(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion;
 
--(BOOL)verifySignature:(NSData*)signature ofType:(DSBlockchainIdentitySigningType)blockchainIdentitySigningType forMessageDigest:(UInt256)messageDigest;
+-(BOOL)verifySignature:(NSData*)signature ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm forMessageDigest:(UInt256)messageDigest;
 
 -(void)encryptData:(NSData*)data forRecipientKey:(UInt384)recipientKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion;
 

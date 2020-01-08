@@ -45,8 +45,10 @@
 #import "DSCreditFundingTransaction.h"
 #import "DSCreditFundingDerivationPath.h"
 #import "DSDocumentTransition.h"
+#import "DSDerivationPath.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
+#define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
 
 @interface DSBlockchainIdentity()
 
@@ -58,6 +60,10 @@
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
+
+@property (nonatomic,assign) uint32_t keysCreated;
+@property (nonatomic,assign) uint32_t currentMainKeyIndex;
+@property (nonatomic,assign) DSDerivationPathSigningAlgorith currentMainKeyType;
 
 @property(nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransition*>* blockchainIdentityTopupTransitions;
@@ -80,6 +86,7 @@
     
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
+    self.keysCreated = 0;
     self.registrationTransitionHash = UINT256_ZERO;
     self.index = index;
     self.blockchainIdentityTopupTransitions = [NSMutableArray array];
@@ -237,7 +244,7 @@
 -(void)registrationTransitionWithUniqueId:(UInt256)uniqueId signedByPrivateKey:(DSKey*)privateKey completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
         
     DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithTransitionVersion:1 blockchainIdentityUniqueId:uniqueId onChain:self.wallet.chain];
-    [blockchainIdentityRegistrationTransition signWithKey:privateKey];
+    [blockchainIdentityRegistrationTransition signWithKey:privateKey fromIdentity:self];
     if (completion) {
         completion(blockchainIdentityRegistrationTransition);
     }
@@ -351,8 +358,55 @@
     return [uint256_data(self.uniqueId) base58String];
 }
 
-// MARK: - Funding
+// MARK: - Keys
 
+-(uint32_t)indexOfKey:(DSKey*)key {
+    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+    NSUInteger index = [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:key.hash160] addressFromHash160DataForChain:self.wallet.chain]];
+    if (index == NSNotFound) {
+        derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
+        index = [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:key.hash160] addressFromHash160DataForChain:self.wallet.chain]];
+    }
+    return (uint32_t)index;
+}
+
+-(DSAuthenticationKeysDerivationPath*)derivationPathForType:(DSDerivationPathSigningAlgorith)type {
+    if (type == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+    } else if (type == DSDerivationPathSigningAlgorith_ECDSA) {
+        return [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
+    }
+    return nil;
+}
+
+-(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type forSeed:(NSData*)seed {
+
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    return [derivationPath privateKeyAtIndexPath:indexPath fromSeed:seed];
+}
+
+-(DSKey*)publicKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type {
+
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    return [derivationPath publicKeyAtIndexPath:indexPath onChain:self.wallet.chain];
+}
+
+-(DSKey*)createNewKeyOfType:(DSDerivationPathSigningAlgorith)type returnIndex:(uint32_t *)rIndex {
+    DSKey * key = [self publicKeyAtIndex:self.keysCreated ofType:type];
+    self.keysCreated++;
+    [self save];
+    return key;
+}
+
+// MARK: - Funding
 
 -(NSString*)registrationFundingAddress {
     if (self.creditFundingTransaction) {
@@ -404,7 +458,7 @@
     return [[self allTransitions] lastObject].transitionHash;
 }
 
--(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+-(void)signStateTransition:(DSTransition*)transition forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
     NSParameterAssert(transition);
     
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:prompt forWallet:self.wallet forAmount:0 forceAuthentication:YES completion:^(NSData* _Nullable seed, BOOL cancelled) {
@@ -413,26 +467,26 @@
             return;
         }
 
-        DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
-        DSECDSAKey * privateKey = (DSECDSAKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-        NSLog(@"%@",uint160_hex(privateKey.publicKeyData.hash160));
+        DSKey * privateKey = [self privateKeyAtIndex:keyIndex ofType:signingAlgorithm forSeed:seed];
         
 //        NSLog(@"%@",uint160_hex(self.blockchainIdentityRegistrationTransition.pubkeyHash));
 //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainIdentityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
-        [transition signWithKey:privateKey];
+        [transition signWithKey:privateKey fromIdentity:self];
         completion(YES);
     }];
 }
 
--(BOOL)verifySignature:(NSData*)signature ofType:(DSBlockchainIdentitySigningType)blockchainIdentitySigningType forMessageDigest:(UInt256)messageDigest {
-    DSAuthenticationKeysDerivationPath * derivationPath = nil;
-    if (blockchainIdentitySigningType == DSBlockchainIdentitySigningType_BLS) {
-        derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-    } else {
-        derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+-(void)signStateTransition:(DSTransition*)transition withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(BOOL success))completion {
+    if (!self.keysCreated) {
+        uint32_t index;
+        [self createNewKeyOfType:DEFAULT_SIGNING_ALGORITH returnIndex:&index];
     }
-    if (!derivationPath) return NO;
-    DSKey * publicKey = [derivationPath publicKeyAtIndexPath:[NSIndexPath indexPathWithIndex:self.index] onChain:self.wallet.chain];
+    return [self signStateTransition:transition forKeyIndex:self.currentMainKeyIndex ofType:self.currentMainKeyType withPrompt:prompt completion:completion];
+    
+}
+
+-(BOOL)verifySignature:(NSData*)signature forKeyIndex:(uint32_t)keyIndex ofType:(DSDerivationPathSigningAlgorith)signingAlgorithm forMessageDigest:(UInt256)messageDigest {
+    DSKey * publicKey = [self publicKeyAtIndex:keyIndex ofType:signingAlgorithm];
     return [publicKey verify:messageDigest signatureData:signature];
 }
 

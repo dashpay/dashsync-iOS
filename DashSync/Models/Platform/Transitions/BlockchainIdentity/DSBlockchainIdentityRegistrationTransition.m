@@ -171,6 +171,23 @@
     return [DSBlockchainIdentityRegistrationTransitionEntity class];
 }
 
+@synthesize keyValueDictionary = _keyValueDictionary;
+
+- (DSMutableStringValueDictionary *)baseKeyValueDictionary {
+    DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
+    return json;
+}
+
+- (DSMutableStringValueDictionary *)keyValueDictionary {
+    if (_keyValueDictionary == nil) {
+        DSMutableStringValueDictionary *json = [super keyValueDictionary];
+        json[@"signature"] = self.signatureData;
+        json[@"signaturePublicKeyId"] = @(self.signaturePublicKeyId);
+        _keyValueDictionary = json;
+    }
+    return _keyValueDictionary;
+}
+
 //- (NSString *)description
 //{
 //    NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
