@@ -742,6 +742,10 @@ static dispatch_once_t devnetToken = 0;
     if (_networkName) return _networkName;
 }
 
+-(void)setDevnetNetworkName:(NSString*)networkName {
+    if ([self chainType] == DSChainType_DevNet) _networkName = @"Evonet";
+}
+
 -(uint64_t)baseReward {
     if ([self chainType] == DSChainType_MainNet) return 5 * DUFFS;
     return 50 * DUFFS;

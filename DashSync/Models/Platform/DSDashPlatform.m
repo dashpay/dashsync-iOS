@@ -19,8 +19,6 @@
 
 #import "DPContractFacade.h"
 #import "DPDocumentFacade.h"
-#import "DPSTPacketFacade.h"
-#import "DPSTPacketHeaderFacade.h"
 #import "DSChain.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,8 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) DPContractFacade *contractFacade;
 @property (strong, nonatomic) DPDocumentFacade *documentFacade;
 @property (strong, nonatomic) DSChain *chain;
-//@property (strong, nonatomic) DPSTPacketFacade *stPacketFacade;
-//@property (strong, nonatomic) DPSTPacketHeaderFacade *stPacketHeaderFacade;
 
 @end
 

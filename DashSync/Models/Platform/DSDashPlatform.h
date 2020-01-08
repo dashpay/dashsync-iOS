@@ -19,8 +19,6 @@
 
 #import "DPContractFactoryProtocol.h"
 #import "DPDocumentFactoryProtocol.h"
-#import "DPSTPacketFactoryProtocol.h"
-#import "DPSTPacketHeaderFactoryProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,8 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) id<DPContractFactory> contractFactory;
 @property (readonly, strong, nonatomic) id<DPDocumentFactory> documentFactory;
-@property (readonly, strong, nonatomic) id<DPSTPacketFactory> stPacketFactory;
-@property (readonly, strong, nonatomic) id<DPSTPacketHeaderFactory> stPacketHeaderFactory;
 
 @property (readonly, strong, nonatomic) DSChain *chain;
 
