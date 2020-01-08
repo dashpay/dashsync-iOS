@@ -74,6 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 
+@synthesize baseKeyValueDictionary;
+
 @end
 
 NS_ASSUME_NONNULL_END

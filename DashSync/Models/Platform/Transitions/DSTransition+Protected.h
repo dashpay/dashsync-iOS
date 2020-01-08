@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL saved; //don't trust this
 
-@property (nonatomic, assign) uint16_t type;
+@property (nonatomic, assign) uint16_t version;
+@property (nonatomic, assign) DSTransitionType type;
 @property (nonatomic, assign) uint64_t creditFee;
 @property (nonatomic, assign) UInt256 transitionHash;
 
@@ -33,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSData * signatureData;
 @property (nonatomic, assign) DSDerivationPathSigningAlgorith signatureType;
 @property (nonatomic, assign) uint32_t signaturePublicKeyId;
+
+@property (nonatomic, readonly) DSMutableStringValueDictionary * keyValueDictionary;
 
 -(instancetype)initOnChain:(DSChain*)chain;
 

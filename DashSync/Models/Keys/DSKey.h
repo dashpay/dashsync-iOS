@@ -10,6 +10,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSKeyType) {
+    DSKeyType_Unknown = 0,
+    DSKeyType_ECDSA = 1,
+    DSKeyType_BLS = 2,
+};
+
 @class DSChain;
 
 @interface DSKey : NSObject
@@ -18,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, readonly) NSData *secretKeyData;
 @property (nonatomic, readonly) UInt160 hash160;
 @property (nonatomic,readonly) NSString * secretKeyString;
+@property (nonatomic,readonly) DSKeyType keyType;
 
 - (BOOL)verify:(UInt256)messageDigest signatureData:(NSData*)signature;
 - (NSString *)addressForChain:(DSChain*)chain;

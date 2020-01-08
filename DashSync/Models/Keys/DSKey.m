@@ -62,4 +62,8 @@
     return nil;
 }
 
+-(DSKeyType)keyType {
+    return 0;
+}
+
 @end

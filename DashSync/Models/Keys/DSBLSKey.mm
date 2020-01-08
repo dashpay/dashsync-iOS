@@ -229,6 +229,10 @@
     return [NSString base58checkWithData:d];
 }
 
+-(DSKeyType)keyType {
+    return DSKeyType_BLS;
+}
+
 // MARK: - Derivation
 
 -(DSBLSKey*)deriveToPath:(NSIndexPath*)derivationPath {

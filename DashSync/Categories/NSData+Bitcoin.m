@@ -1319,6 +1319,11 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
     return [NSString base58WithData:self];
 }
 
+- (NSString *)base64String
+{
+    return [self base64EncodedStringWithOptions:0];
+}
+
 - (NSString *)shortHexString
 {
     NSString * hexData = [NSString hexWithData:self];

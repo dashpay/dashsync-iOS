@@ -10,22 +10,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
+    DSBlockchainIdentityType_User = 1,
+};
+
 @class DSECDSAKey,DSBLSKey;
 
 @interface DSBlockchainIdentityRegistrationTransition : DSTransition
 
+@property (nonatomic,readonly) NSDictionary <NSNumber*,DSKey*>* publicKeys;
+@property (nonatomic,readonly) DSUTXO lockedOutpoint;
 
-//@property (nonatomic,readonly) UInt256 payloadHash;
-//@property (nonatomic,assign) uint16_t blockchainIdentityRegistrationTransactionVersion;
-//@property (nonatomic,assign) UInt160 pubkeyHash;
-//@property (nullable, nonatomic,readonly) NSString * pubkeyAddress;
-//@property (nonatomic,readonly) uint64_t topupAmount;
-//
-//- (instancetype)initWithInputHashes:(NSArray *)hashes inputIndexes:(NSArray *)indexes inputScripts:(NSArray *)scripts inputSequences:(NSArray*)inputSequences outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts blockchainIdentityRegistrationTransactionVersion:(uint16_t)version username:(NSString *)username pubkeyHash:(UInt160)pubkeyHash topupAmount:(uint64_t)topupAmount topupIndex:(uint16_t)topupIndex onChain:(DSChain *)chain;
-//
-//-(instancetype)initWithBlockchainIdentityRegistrationTransitionVersion:(uint16_t)version pubkeyHash:(UInt160)pubkeyHash onChain:(DSChain *)chain;
-//
-//-(BOOL)checkTransitionSignature;
+-(instancetype)initWithVersion:(uint16_t)version forIdentityType:(DSBlockchainIdentityType)identityType registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys usingLockedOutpoint:(DSUTXO)lockedOutpoint onChain:(DSChain *)chain;
 
 @end
 

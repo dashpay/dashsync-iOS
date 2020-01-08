@@ -23,7 +23,6 @@
 @interface DSTransition()
 
 @property (nonatomic, strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction;
-@property (nonatomic, assign) uint16_t version;
 @property (nonatomic, assign) UInt256 blockchainIdentityUniqueId;
 
 @property (nonatomic, strong) DSChain * chain;
@@ -98,7 +97,7 @@
         self.signatureType = DSDerivationPathSigningAlgorith_ECDSA;
         self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
     }
-    self.signaturePublicKeyId = blockchainIdentity?[blockchainIdentity indexOfKey:privateKey]:0;
+    self.signaturePublicKeyId = blockchainIdentity?[blockchainIdentity indexOfKey:privateKey]:1;
     self.transitionHash = self.data.SHA256_2;
 }
 
@@ -114,6 +113,8 @@
     return [self serialized];
 }
 
+@synthesize keyValueDictionary = _keyValueDictionary;
+
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
     json[@"protocolVersion"] = @(0);
@@ -122,10 +123,13 @@
 }
 
 - (DSMutableStringValueDictionary *)keyValueDictionary {
+    if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [self baseKeyValueDictionary];
-        json[@"signature"] = self.signatureData;
+        json[@"signature"] = self.signatureData.base64String;
         json[@"signaturePublicKeyId"] = @(self.signaturePublicKeyId);
-    return json;
+        _keyValueDictionary = json;
+    }
+    return _keyValueDictionary;
 }
 
 

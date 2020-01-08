@@ -488,8 +488,13 @@ static dispatch_once_t devnetToken = 0;
 -(BOOL)isMainnet {
     return [self chainType] == DSChainType_MainNet;
 }
+
 -(BOOL)isTestnet {
     return [self chainType] == DSChainType_TestNet;
+}
+
+-(BOOL)isEvonet {
+    return ([self chainType] == DSChainType_DevNet) && [[self devnetIdentifier] isEqualToString:@"devnet-evonet"];
 }
 
 -(BOOL)isDevnetAny {

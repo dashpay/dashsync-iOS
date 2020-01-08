@@ -34,7 +34,7 @@
 #import "DSProviderRegistrationTransaction.h"
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
-#import "DSTransition.h"
+#import "DSTransition+Protected.h"
 #import "DSCreditFundingTransaction.h"
 #include <arpa/inet.h>
 
@@ -113,12 +113,18 @@
     NSString * identityIdentifier = [uint256_data(fundingTransaction.creditBurnIdentityIdentifier) base58String];
     XCTAssertEqualObjects(identityIdentifier, @"Cka1ELdpfrZhFFvKRurvPtTHurDXXnnezafNPJkxCYjc", @"Identity Identifier is incorrect");
     
-    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithTransitionVersion:1 blockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier onChain:[DSChain testnet]];
+    DSECDSAKey * publicKey = [DSECDSAKey keyWithPublicKey:@"AsPvyyh6pkxss/Fespa7HCJIY8IA6ElAf6VKuqVcnPze".base64ToData];
+    
+    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 forIdentityType:1 registeringPublicKeys:@{@(1):publicKey} usingLockedOutpoint:fundingTransaction.lockedOutpoint onChain:[DSChain testnet]];
     
     //cW5w4TRjU96zVwDpy4LcwWAu7BaWJVEPbieYiEm3bM6vPbtM7hcd
     DSECDSAKey * privateKey = [DSECDSAKey keyWithSecret:@"fdbca0cd2be4375f04fcaee5a61c5d170a2a46b1c0c7531f58c430734a668f32".hexToData.UInt256 compressed:YES];
     
+    XCTAssertEqualObjects(uint160_hex([privateKey.publicKeyData hash160]),uint160_hex(fundingTransaction.creditBurnPublicKeyHash),@"The private key doesn't match the funding transaction");
+    
     [blockchainIdentityRegistrationTransition signWithKey:privateKey fromIdentity:nil];
+    
+    NSLog(@"blockchainIdentityRegistrationTransition %@",blockchainIdentityRegistrationTransition.keyValueDictionary);
     
     NSData * transitionData = [blockchainIdentityRegistrationTransition toData];
     

@@ -14,11 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 //Special Transaction
 //https://github.com/dashpay/dips/blob/master/dip-0002-special-transactions.md
 typedef NS_ENUM(NSUInteger, DSTransitionType) {
-    DSTransitionType_Classic = 12,
-    DSTransitionType_IdentityRegistration = 8,
-    DSTransitionType_IdentityTopUp = 9,
-    DSTransitionType_IdentityUpdateKey = 10,
-    DSTransitionType_IdentityCloseAccount = 11,
+    DSTransitionType_Classic = 1,
+    DSTransitionType_IdentityRegistration = 3,
+    DSTransitionType_IdentityTopUp = 4,
+    DSTransitionType_IdentityUpdateKey = 5,
+    DSTransitionType_IdentityCloseAccount = 6,
 };
 
 
@@ -29,7 +29,7 @@ typedef NS_ENUM(NSUInteger, DSTransitionType) {
 @interface DSTransition : DPBaseObject
 
 @property (nonatomic, readonly) uint16_t version;
-@property (nonatomic, readonly) uint16_t type;
+@property (nonatomic, readonly) DSTransitionType type;
 @property (nonatomic, readonly) UInt256 blockchainIdentityUniqueId;
 @property (nonatomic, readonly) uint64_t creditFee;
 @property (nonatomic, readonly) UInt256 transitionHash;

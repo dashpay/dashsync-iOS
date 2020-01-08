@@ -370,4 +370,9 @@ int DSSecp256k1PointMul(DSECPoint *p, const UInt256 *i)
     return sig;
 }
 
+-(DSKeyType)keyType {
+    return DSKeyType_ECDSA;
+}
+
+
 @end

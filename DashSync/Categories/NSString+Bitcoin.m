@@ -196,6 +196,10 @@ static const UniChar base58chars[] = {
     return r;
 }
 
+- (NSData *)base64ToData {
+    return [[NSData alloc] initWithBase64EncodedString:self options:0];
+}
+
 - (NSData *)base58ToData
 {
     size_t i, z = 0;
