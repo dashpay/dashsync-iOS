@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\nСумма: %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nАДРЕС УЖЕ ИСПОЛЬЗОВАН\nАдреса Dash предназначены для разового использования\n\nповторное использование адреса снижает приватность как для Вас, так и для получателя и может привести к потере средств, если получатель больше не контролирует этот адрес";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nКомиссия сети: +%1$@ (%2$@)";
@@ -77,7 +77,7 @@
 /* No comment provided by engineer. */
 "Double spend" = "Double spend";
 
-/* No comment provided by engineer. */
+/* The server is not working */
 "Down" = "Down";
 
 /* No comment provided by engineer. */
@@ -85,9 +85,6 @@
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Ошибка платёжного сервера %@";
-
-/* No comment provided by engineer. */
-"Error signing dash transaction" = "Error signing dash transaction";
 
 /* No comment provided by engineer. */
 "Error signing transaction" = "Error signing transaction";
@@ -105,7 +102,7 @@
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Insufficient funds for dash network fee";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Внутренняя ошибка";
@@ -138,7 +135,7 @@
 "Not a valid private key" = "Not a valid private key";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Not connected to the dash network";
+"Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -160,6 +157,9 @@
 
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN for %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Recovery phrase";
@@ -222,7 +222,7 @@
 "Unexpected response from %@" = "Unexpected response from %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "unknown address";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Неизвестная ошибка";
@@ -239,7 +239,7 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Untrusted certificate";
 
-/* No comment provided by engineer. */
+/* The server is up and running */
 "Up" = "Up";
 
 /* Updating Price */

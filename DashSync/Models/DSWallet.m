@@ -299,7 +299,11 @@
         completion(self);
         return;
     }
-    [self seedPhraseAfterAuthentication:^(NSString * _Nullable seedPhrase) {
+    NSString *prompt = [NSString stringWithFormat:DSLocalizedString(@"Please authenticate to create your %@ wallet",
+    @"Please authenticate to create your Testnet wallet"),
+                        chain.localizedName];
+    
+    [self seedPhraseAfterAuthenticationWithPrompt:prompt completion:^(NSString * _Nullable seedPhrase) {
         if (!seedPhrase) {
             completion(nil);
             return;

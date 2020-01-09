@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     cantidad %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nDIRECCIÓN YA UTILIZADA\nlas direcciones dash están previstas para ser utilizadas solo una vez\nre-utilizar reduce la privacidad para ambos usted y el receptor, puede resultar en una pérdida si el receptor no tiene directamente control de la dirección.";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\ncuota de red +%1$@ (%2$@)";
@@ -77,7 +77,7 @@
 /* No comment provided by engineer. */
 "Double spend" = "Doble gasto";
 
-/* No comment provided by engineer. */
+/* The server is not working */
 "Down" = "Bajo";
 
 /* No comment provided by engineer. */
@@ -85,9 +85,6 @@
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Error del servidor de solicitud de pagos %@";
-
-/* No comment provided by engineer. */
-"Error signing dash transaction" = "Error al firmar transacción de Dash";
 
 /* No comment provided by engineer. */
 "Error signing transaction" = "Error al firmar transacción";
@@ -105,7 +102,7 @@
 "Insufficient funds" = "Fondos insuficientes";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Fondos insuficientes para la tasa de red de Dash";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Error interno";
@@ -138,7 +135,7 @@
 "Not a valid private key" = "Clave privada inválida ";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Sin conección a la red de Dash";
+"Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -160,6 +157,9 @@
 
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN para %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Frase de recuperación";
@@ -222,7 +222,7 @@
 "Unexpected response from %@" = "Respuesta inesperada de %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "dirección desconocida";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Error desconocido";
@@ -239,7 +239,7 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Certificado no confiable";
 
-/* No comment provided by engineer. */
+/* The server is up and running */
 "Up" = "Arriba";
 
 /* Updating Price */

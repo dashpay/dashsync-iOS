@@ -4,10 +4,10 @@ tasks = ["code", "normalize"]
 [update.code]
 codePath = "../DashSync/"
 localizablePath = "../DashSync/"
-defaultToKeys = false
-customFunction = "DSLocalizedString"
-additive = true
+defaultToKeys = true
+additive = false
 unstripped = false
+customFunction = "DSLocalizedString"
 
 [update.normalize]
 path = "."

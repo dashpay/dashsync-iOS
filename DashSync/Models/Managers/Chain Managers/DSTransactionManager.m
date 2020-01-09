@@ -151,7 +151,7 @@
         if (completion) {
             [[DSEventManager sharedEventManager] saveEvent:@"transaction_manager:not_connected"];
             completion([NSError errorWithDomain:@"DashSync" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                                                                                      DSLocalizedString(@"Not connected to the dash network", nil)}]);
+                                                                                      DSLocalizedString(@"Not connected to the Dash network", nil)}]);
         }
         
         return;
@@ -406,7 +406,7 @@
     }
     else if ((amount == 0 || amount == UINT64_MAX) && !acceptReusingAddress && [wallet transactionAddressAlreadySeenInOutputs:address] && addressIsFromPasteboard) {
         NSString * challengeTitle = DSLocalizedString(@"WARNING", nil);
-        NSString * challengeMessage = DSLocalizedString(@"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\n"
+        NSString * challengeMessage = DSLocalizedString(@"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\n"
                                                         "re-use reduces privacy for both you and the recipient and can result in loss if "
                                                         "the recipient doesn't directly control the address", nil);
         NSString * challengeAction = DSLocalizedString(@"Ignore", nil);
@@ -519,7 +519,7 @@
             
             if (!signedTransaction || ! tx.isSigned) {
                 signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
-                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing dash transaction", nil)}],NO);
+                                                    userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing transaction", nil)}],NO);
                 return;
             }
             
@@ -613,7 +613,7 @@
         int64_t amount = [account maxOutputAmountUsingInstantSend:tx.desiresInstantSendSending];
         
         if (amount > 0 && amount < requestedSendAmount) {
-            NSString * challengeTitle = DSLocalizedString(@"Insufficient funds for dash network fee", nil);
+            NSString * challengeTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
             NSString * challengeMessage = [NSString stringWithFormat:DSLocalizedString(@"Reduce payment amount by\n%@ (%@)?", nil),
                                            [manager stringForDashAmount:requestedSendAmount - amount],
                                            [manager localCurrencyStringForDashAmount:requestedSendAmount - amount]];
@@ -633,7 +633,7 @@
             challenge(challengeTitle,challengeMessage,reduceString,sendReducedBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         }
         else {
-            errorNotificationBlock(DSLocalizedString(@"Insufficient funds for dash network fee", nil),nil,NO);
+            errorNotificationBlock(DSLocalizedString(@"Insufficient funds for Dash network fee", nil),nil,NO);
         }
     }
     else {

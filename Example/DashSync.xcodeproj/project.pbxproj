@@ -1373,11 +1373,11 @@
 			buildConfigurationList = 6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "DashSync_Example" */;
 			buildPhases = (
 				BA464DCB59BC59A2B2C9AAD7 /* [CP] Check Pods Manifest.lock */,
+				FB5A0FA7219506140079CF42 /* ShellScript */,
 				6003F586195388D20070C39A /* Sources */,
 				6003F587195388D20070C39A /* Frameworks */,
 				6003F588195388D20070C39A /* Resources */,
 				F3524DD5332FD019D466B225 /* [CP] Copy Pods Resources */,
-				FB5A0FA7219506140079CF42 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1654,7 +1654,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n    bartycrouch update -x\n    bartycrouch lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
+			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x > /dev/null\n    env -i $BTCRCH lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

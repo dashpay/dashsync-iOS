@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\ndash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\ndash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
@@ -77,7 +77,7 @@
 /* No comment provided by engineer. */
 "Double spend" = "Dubbel uitgegeven";
 
-/* No comment provided by engineer. */
+/* The server is not working */
 "Down" = "Down";
 
 /* No comment provided by engineer. */
@@ -85,9 +85,6 @@
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Fout van server voor betalingsverzoeken %@";
-
-/* No comment provided by engineer. */
-"Error signing dash transaction" = "Fout bij ondertekenen dash-transactie";
 
 /* No comment provided by engineer. */
 "Error signing transaction" = "Fout bij ondertekenen transactie";
@@ -105,7 +102,7 @@
 "Insufficient funds" = "Ontoereikende fondsen";
 
 /* No comment provided by engineer. */
-"Insufficient funds for dash network fee" = "Onvoldoende fondsen voor transactiekosten dash-netwek";
+"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Interne fout";
@@ -138,7 +135,7 @@
 "Not a valid private key" = "Geen geldige privésleutel";
 
 /* No comment provided by engineer. */
-"Not connected to the dash network" = "Niet verbonden met dash-netwerk";
+"Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -160,6 +157,9 @@
 
 /* No comment provided by engineer. */
 "PIN for %@" = "Pin voor %@";
+
+/* Please authenticate to create your Testnet wallet */
+"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Hersetlzin";
@@ -222,7 +222,7 @@
 "Unexpected response from %@" = "Onverwacht response van %@";
 
 /* No comment provided by engineer. */
-"unknown address" = "onbekend adres";
+"Unknown address" = "Unknown address";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Onbekende fout";
@@ -239,7 +239,7 @@
 /* No comment provided by engineer. */
 "Untrusted certificate" = "Onvertrouwd certificaat";
 
-/* No comment provided by engineer. */
+/* The server is up and running */
 "Up" = "Up";
 
 /* Updating Price */

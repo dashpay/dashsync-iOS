@@ -7,3 +7,10 @@ minimum_perc = 0
 source_file = DashSync/en.lproj/Localizable.strings
 source_lang = en
 type = STRINGS
+
+[dash-mobile-wallets.dashsync-localizable-strings-dict]
+file_filter = DashSync/<lang>.lproj/Localizable.stringsdict
+minimum_perc = 0
+source_file = DashSync/en.lproj/Localizable.stringsdict
+source_lang = en
+type = STRINGSDICT
