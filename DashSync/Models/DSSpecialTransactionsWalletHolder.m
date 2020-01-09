@@ -26,6 +26,7 @@
 #import "DSProviderUpdateServiceTransaction.h"
 #import "DSProviderUpdateRegistrarTransaction.h"
 #import "DSProviderUpdateRevocationTransaction.h"
+#import "DSCreditFundingTransaction.h"
 #import "DSChain.h"
 
 @interface DSSpecialTransactionsWalletHolder()
@@ -130,6 +131,12 @@
            [self.providerUpdateRevocationTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
                added = TRUE;
            }
+    } else if ([transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
+          DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+          if (![self.creditFundingTransactions objectForKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)]) {
+          [self.creditFundingTransactions setObject:transaction forKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)];
+              added = TRUE;
+          }
     } else {
         NSAssert(FALSE,@"unknown transaction type being registered");
         return NO;
@@ -172,6 +179,9 @@
                     [self.providerUpdateServiceTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
                 } else if ([transaction isMemberOfClass:[DSProviderUpdateRegistrarTransaction class]]) {
                     [self.providerUpdateRegistrarTransactions setObject:transaction forKey:uint256_data(transaction.txHash)];
+                } else if ([transaction isMemberOfClass:[DSCreditFundingTransaction class]]) {
+                    DSCreditFundingTransaction * creditFundingTransaction = (DSCreditFundingTransaction *)transaction;
+                    [self.creditFundingTransactions setObject:transaction forKey:uint256_data(creditFundingTransaction.creditBurnIdentityIdentifier)];
                 } else { //the other ones don't have addresses in payload
                     NSAssert(FALSE, @"Unknown special transaction type");
                 }
@@ -238,6 +248,10 @@
 //            }
 //        }
     }];
+}
+
+-(DSCreditFundingTransaction*)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId {
+    return [self.creditFundingTransactions objectForKey:uint256_data(blockchainIdentityUniqueId)];
 }
 
 //// MARK: == Blockchain Identities Transaction Retrieval

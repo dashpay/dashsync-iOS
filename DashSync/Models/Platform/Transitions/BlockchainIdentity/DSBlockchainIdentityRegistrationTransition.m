@@ -48,7 +48,7 @@
     for (NSNumber * indexIdentifier in self.publicKeys) {
         DSKey * key = self.publicKeys[indexIdentifier];
         DSMutableStringValueDictionary *platformKeyDictionary = [[DSMutableStringValueDictionary alloc] init];
-        platformKeyDictionary[@"id"] = indexIdentifier;
+        platformKeyDictionary[@"id"] = @([indexIdentifier integerValue] + 1);
         platformKeyDictionary[@"type"] = @(key.keyType);
         platformKeyDictionary[@"data"] = key.publicKeyData.base64String;
         platformKeyDictionary[@"isEnabled"] = @YES;

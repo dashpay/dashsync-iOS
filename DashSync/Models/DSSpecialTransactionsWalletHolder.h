@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-@class DSWallet,DSTransaction,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition;
+@class DSWallet,DSTransaction,DSCreditFundingTransaction,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)registerTransaction:(DSTransaction*)transaction;
 
 - (void)removeAllTransactions;
+
+-(DSCreditFundingTransaction*)creditFundingTransactionForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 
 //// This gets a blockchain user registration transaction that has a specific public key hash (will change to BLS pub key)
 //- (DSBlockchainIdentityRegistrationTransition*)blockchainIdentityRegistrationTransactionForPublicKeyHash:(UInt160)publicKeyHash;

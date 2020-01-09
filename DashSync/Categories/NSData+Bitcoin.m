@@ -1190,8 +1190,8 @@ UInt256 uInt256MultiplyUInt32 (UInt256 a,uint32_t b)
 
 - (DSUTXO)transactionOutpoint
 {
-    if (self.length < sizeof(DSUTXO)) return DSUTXO_ZERO;
-    return *(DSUTXO *)(self.bytes);
+    if (self.length < 36) return DSUTXO_ZERO;
+    return (DSUTXO) { .hash = [self UInt256], .n = *(uint32_t *)(self.bytes + 32) };
 }
 
 - (DSLLMQ)llmq

@@ -1654,7 +1654,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n# Add new keys to Localizable.strings files from NSLocalizedString in code\nbartycrouch code -p \"$PROJECT_DIR/../DashSync/\" -l \"$PROJECT_DIR/../DashSync/\" -c -s -k -f \"DSLocalizedString\"\nelse\necho \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
+			shellScript = "if which bartycrouch > /dev/null; then\n    bartycrouch update -x\n    bartycrouch lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

@@ -866,11 +866,11 @@
     NSParameterAssert(blockchainIdentity);
     NSAssert(blockchainIdentity.wallet == self, @"the blockchainIdentity you are trying to remove is not in this wallet");
     
-    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.uniqueIdData];
+    [self.mBlockchainIdentities removeObjectForKey:blockchainIdentity.lockedOutpointData];
     NSError * error = nil;
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
-    [keyChainDictionary removeObjectForKey:blockchainIdentity.uniqueIdData];
+    [keyChainDictionary removeObjectForKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     
     //we also have to remove all contacts derivation paths from their associated accounts.
@@ -892,7 +892,7 @@
 -(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
 
     NSParameterAssert(blockchainIdentity);
-    [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.uniqueIdData];
+    [self.mBlockchainIdentities setObject:blockchainIdentity forKey:blockchainIdentity.lockedOutpointData];
 
 }
 
@@ -900,7 +900,7 @@
 {
     NSParameterAssert(blockchainIdentity);
     
-    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.uniqueIdData] == nil) {
+    if ([self.mBlockchainIdentities objectForKey:blockchainIdentity.lockedOutpointData] == nil) {
         [self addBlockchainIdentity:blockchainIdentity];
     }
     NSError * error = nil;
@@ -908,7 +908,7 @@
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     
     NSAssert(!uint256_is_zero(blockchainIdentity.uniqueId), @"registrationTransactionHashData must not be null");
-    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.uniqueIdData];
+    [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainIdentitiesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
@@ -944,18 +944,18 @@
         NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
         NSMutableDictionary * rDictionary = [NSMutableDictionary dictionary];
         if (keyChainDictionary) {
-            for (NSData * blockchainIdentityUniqueIdData in keyChainDictionary) {
-                uint32_t index = [keyChainDictionary[blockchainIdentityUniqueIdData] unsignedIntValue];
-                UInt256 blockchainIdentityUniqueId = blockchainIdentityUniqueIdData.UInt256;
-                DSDLog(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
+            for (NSData * blockchainIdentityLockedOutpointData in keyChainDictionary) {
+                uint32_t index = [keyChainDictionary[blockchainIdentityLockedOutpointData] unsignedIntValue];
+                DSUTXO blockchainIdentityLockedOutpoint = blockchainIdentityLockedOutpointData.transactionOutpoint;
+                //DSDLog(@"Blockchain identity unique Id is %@",uint256_hex(blockchainIdentityUniqueId));
 //                UInt256 lastTransitionHash = [self.specialTransactionsHolder lastSubscriptionTransactionHashForRegistrationTransactionHash:registrationTransactionHash];
 //                DSDLog(@"reg %@ last %@",uint256_hex(registrationTransactionHash),uint256_hex(lastTransitionHash));
 //                DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction = [self blockchainIdentityRegistrationTransactionForIndex:index];
                 
                 //either the identity is known in core data (and we can pull it) or the wallet has been wiped and we need to get it from DAPI (the unique Id was saved in the keychain, so we don't need to resync)
                 //TODO: get the identity from core data
-                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withUniqueId:blockchainIdentityUniqueId inWallet:self inContext:self.chain.managedObjectContext];
-                [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityUniqueIdData];
+                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
+                [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
             }
         }
         _mBlockchainIdentities = rDictionary;
