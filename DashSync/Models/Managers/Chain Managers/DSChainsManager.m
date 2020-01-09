@@ -165,6 +165,15 @@
     if (sporkPrivateKey && [sporkPrivateKey isValidDashDevnetPrivateKey]) {
         chain.sporkPrivateKey = sporkPrivateKey;
     }
+    if (standardPort && standardPort != chain.standardPort) {
+        chain.standardPort = standardPort;
+    }
+    if (dapiJRPCPort && dapiJRPCPort != chain.standardDapiJRPCPort) {
+        chain.standardDapiJRPCPort = dapiJRPCPort;
+    }
+    if (dapiGRPCPort && dapiGRPCPort != chain.standardDapiGRPCPort) {
+        chain.standardDapiGRPCPort = dapiGRPCPort;
+    }
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];

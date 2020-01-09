@@ -173,6 +173,10 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define PROTOCOL_VERSION_LOCATION  @"PROTOCOL_VERSION_LOCATION"
 #define DEFAULT_MIN_PROTOCOL_VERSION_LOCATION  @"MIN_PROTOCOL_VERSION_LOCATION"
 
+#define STANDARD_PORT_LOCATION  @"STANDARD_PORT_LOCATION"
+#define JRPC_PORT_LOCATION  @"JRPC_PORT_LOCATION"
+#define GRPC_PORT_LOCATION  @"GRPC_PORT_LOCATION"
+
 #define SPORK_PUBLIC_KEY_LOCATION  @"SPORK_PUBLIC_KEY_LOCATION"
 #define SPORK_ADDRESS_LOCATION  @"SPORK_ADDRESS_LOCATION"
 #define SPORK_PRIVATE_KEY_LOCATION  @"SPORK_PRIVATE_KEY_LOCATION"
@@ -204,6 +208,9 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) uint64_t ixPreviousConfirmationsNeeded;
 @property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedProtocolVersion;
+@property (nonatomic, assign) uint32_t cachedStandardPort;
+@property (nonatomic, assign) uint32_t cachedStandardDapiJRPCPort;
+@property (nonatomic, assign) uint32_t cachedStandardDapiGRPCPort;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -471,10 +478,11 @@ static dispatch_once_t devnetToken = 0;
 
 
 -(void)save {
-    [[DSChainEntity context] performBlockAndWait:^{
-        self.chainEntity.totalMasternodeCount = self.totalMasternodeCount;
-        self.chainEntity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
-        self.chainEntity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
+    [self.managedObjectContext performBlockAndWait:^{
+        DSChainEntity * entity = self.chainEntity;
+        entity.totalMasternodeCount = self.totalMasternodeCount;
+        entity.totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
+        entity.baseBlockHash = [NSData dataWithUInt256:self.masternodeBaseBlockHash];
         [DSChainEntity saveContext];
     }];
 }
@@ -657,6 +665,130 @@ static dispatch_once_t devnetToken = 0;
             break;
     }
 }
+
+-(uint32_t)standardPort {
+    if (_cachedStandardPort) return _cachedStandardPort;
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            _cachedStandardPort = MAINNET_STANDARD_PORT;
+            return MAINNET_STANDARD_PORT;
+        case DSChainType_TestNet:
+            _cachedStandardPort = TESTNET_STANDARD_PORT;
+            return TESTNET_STANDARD_PORT;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            uint32_t cachedStandardPort = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,STANDARD_PORT_LOCATION], &error);
+            if (!error && cachedStandardPort) {
+                _cachedStandardPort = cachedStandardPort;
+                return _cachedStandardPort;
+            }
+            else return DEVNET_STANDARD_PORT;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setStandardPort:(uint32_t)standardPort {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainInt(standardPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,STANDARD_PORT_LOCATION], NO);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(uint32_t)standardDapiGRPCPort {
+    if (_cachedStandardDapiGRPCPort) return _cachedStandardDapiGRPCPort;
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            _cachedStandardDapiGRPCPort = MAINNET_DAPI_GRPC_STANDARD_PORT;
+            return MAINNET_DAPI_GRPC_STANDARD_PORT;
+        case DSChainType_TestNet:
+            _cachedStandardDapiGRPCPort = TESTNET_DAPI_GRPC_STANDARD_PORT;
+            return TESTNET_DAPI_GRPC_STANDARD_PORT;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            uint32_t cachedStandardDapiGRPCPort = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,GRPC_PORT_LOCATION], &error);
+            if (!error && cachedStandardDapiGRPCPort) {
+                _cachedStandardDapiGRPCPort = cachedStandardDapiGRPCPort;
+                return _cachedStandardDapiGRPCPort;
+            }
+            else return DEVNET_DAPI_GRPC_STANDARD_PORT;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setStandardDapiGRPCPort:(uint32_t)standardDapiGRPCPort {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainInt(standardDapiGRPCPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,GRPC_PORT_LOCATION], NO);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(uint32_t)standardDapiJRPCPort {
+    if (_cachedStandardDapiJRPCPort) return _cachedStandardDapiJRPCPort;
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            _cachedStandardDapiJRPCPort = MAINNET_DAPI_JRPC_STANDARD_PORT;
+            return MAINNET_DAPI_JRPC_STANDARD_PORT;
+        case DSChainType_TestNet:
+            _cachedStandardDapiJRPCPort = TESTNET_DAPI_JRPC_STANDARD_PORT;
+            return TESTNET_DAPI_JRPC_STANDARD_PORT;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            uint32_t cachedStandardDapiJRPCPort = (uint32_t)getKeychainInt([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,JRPC_PORT_LOCATION], &error);
+            if (!error && cachedStandardDapiJRPCPort) {
+                _cachedStandardDapiJRPCPort = cachedStandardDapiJRPCPort;
+                return _cachedStandardDapiJRPCPort;
+            }
+            else return DEVNET_DAPI_JRPC_STANDARD_PORT;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setStandardDapiJRPCPort:(uint32_t)standardDapiJRPCPort {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainInt(standardDapiJRPCPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,JRPC_PORT_LOCATION], NO);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 
 
 -(uint32_t)maxProofOfWork {

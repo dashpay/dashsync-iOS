@@ -53,6 +53,9 @@
         self.sporkPrivateKeyTableViewCell.valueTextField.text = self.chain.sporkPrivateKey;
         self.sporkAddressTableViewCell.valueTextField.text = self.chain.sporkAddress;
         self.addDevnetNameTableViewCell.userInteractionEnabled = FALSE;
+        self.dashdPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardPort];
+        self.dapiJRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardDapiJRPCPort];
+        self.dapiGRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardDapiGRPCPort];
     }
     
     // Do any additional setup after loading the view.
