@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 
 @property (readonly, nonatomic) DSChain * chain;
 @property (nonatomic, readonly) DSDAPINetworkService * DAPINetworkService;
+@property (atomic, readonly) dispatch_queue_t dispatchQueue;
 
 - (instancetype)initWithChain:(DSChain *)chain NS_DESIGNATED_INITIALIZER;
 
@@ -42,12 +43,14 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 - (void)getAllStateTransitionsForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)sendDocument:(DPDocument *)document
-             forUser:(DSBlockchainIdentity*)blockchainIdentity
+         forIdentity:(DSBlockchainIdentity*)blockchainIdentity
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion;
 
-- (void)publishTransition:(DSTransition *)transition
-               completion:(void (^)(NSError *_Nullable error))completion;
+- (void)publishTransition:(DSTransition*)stateTransition
+                  success:(void (^)(NSDictionary *successDictionary))success
+                  failure:(void (^)(NSError *error))failure;
+
 
 @end
 

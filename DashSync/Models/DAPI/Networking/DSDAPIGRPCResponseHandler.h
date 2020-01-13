@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Sam Westrich
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,19 +16,17 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "DSDAPINetworkServiceProtocol.h"
 #import <DAPI-GRPC/Platform.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class HTTPLoaderFactory, DSChain;
+@interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
-@interface DSDAPINetworkService : NSObject <DSDAPINetworkServiceProtocol>
+@property (atomic, strong) dispatch_queue_t dispatchQueue;
 
-- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+@property (nonatomic, copy) void (^successHandler)(NSDictionary * successDictionary);
+@property (nonatomic, copy) void (^errorHandler)(NSError * error);
 
 @end
 

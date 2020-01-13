@@ -75,15 +75,11 @@
 
 -(IBAction)registerBlockchainIdentity:(id)sender {
     if (self.blockchainIdentity.isRegistered) return;
-    [self.blockchainIdentity registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
-                                        if (blockchainIdentityRegistrationTransition) {
-                                            [self.chainManager.DAPIClient publishTransition:blockchainIdentityRegistrationTransition completion:^(NSError * _Nullable error) {
-                                                
-                                            }];
-                                        } else {
-                                            [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
-                                        }
-                                    }];
+    [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
+        if (error) {
+            [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
+        }
+    }];
 }
 
 -(IBAction)reset:(id)sender {

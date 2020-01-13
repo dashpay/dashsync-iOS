@@ -73,6 +73,9 @@
 @property(nonatomic,strong) NSMutableArray <DSDocumentTransition*>* documentTransitions;
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* allTransitions;
 
+@property(nonatomic,readonly) DSDAPIClient* DAPIClient;
+@property(nonatomic,readonly) DSDAPINetworkService* DAPINetworkService;
+
 @property(nonatomic,strong) DSContactEntity * ownContact;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
@@ -430,8 +433,19 @@
     return [self.usernameStatuses allKeys];
 }
 
+-(NSArray<NSString*>*)unregisteredUsernames {
+    NSMutableArray * unregisteredUsernames = [NSMutableArray array];
+    for (NSString * username in self.usernameStatuses) {
+        DSBlockchainIdentityUsernameStatus status = [self.usernameStatuses[username] unsignedIntegerValue];
+        if (status == DSBlockchainIdentityUsernameStatus_Initial) {
+            [unregisteredUsernames addObject:username];
+        }
+    }
+    return [unregisteredUsernames copy];
+}
+
 -(void)registerUsernames {
-    
+    [self.DAPIClient ds_registerDashPayContractForUser:<#(nonnull DSBlockchainIdentity *)#> forChain:<#(nonnull DSChain *)#> completion:<#^(NSError * _Nullable error)completion#>]
 }
 
 // MARK: - Persistence
@@ -503,6 +517,45 @@
     return [[super debugDescription] stringByAppendingString:[NSString stringWithFormat:@" {%@-%@}",self.currentUsername,self.uniqueIdString]];
 }
 
+// MARK: - Identity
+
+-(void)createAndPublishRegistrationTransitionWithCompletion:(void (^)(NSDictionary *, NSError *))completion {
+    [self registrationTransitionWithCompletion:^(DSBlockchainIdentityRegistrationTransition * _Nonnull blockchainIdentityRegistrationTransition) {
+                                        if (blockchainIdentityRegistrationTransition) {
+                                            [self.DAPIClient publishTransition:blockchainIdentityRegistrationTransition success:^(NSDictionary * _Nonnull successDictionary) {
+                                                [self monitorForBlockchainIdentityWithRetryCount:5];
+                                                completion(successDictionary,nil);
+                                            } failure:^(NSError * _Nonnull error) {
+                                                completion(nil,error);
+                                            }];
+                                        } else {
+                                            NSError * error = [NSError errorWithDomain:@"DashSync" code:501 userInfo:@{NSLocalizedDescriptionKey:
+                                            DSLocalizedString(@"Unable to create registration transition", nil)}];
+                                            completion(nil,error);
+                                        }
+                                    }];
+
+}
+        
+-(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount {
+    __weak typeof(self) weakSelf = self;
+    [self.DAPINetworkService getUserById:self.uniqueIdString success:^(NSDictionary * _Nonnull profileDictionary) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+        strongSelf.creditBalance = creditBalance;
+        strongSelf.registered = TRUE;
+    } failure:^(NSError * _Nonnull error) {
+        if (retryCount > 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1];
+            });
+        }
+    }];
+}
+
 // MARK: - Layer 2
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
@@ -550,7 +603,7 @@
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.wallet.chain];
     
-    [self.wallet.chain.chainManager.DAPIClient sendDocument:potentialFriendship.contactRequestDocument forUser:self contract:contract completion:^(NSError * _Nullable error) {
+    [self.DAPIClient sendDocument:potentialFriendship.contactRequestDocument forIdentity:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -655,8 +708,12 @@
 //    }];
 }
 
+-(DSDAPIClient*)DAPIClient {
+    return self.wallet.chain.chainManager.DAPIClient;
+}
+
 -(DSDAPINetworkService*)DAPINetworkService {
-    return self.wallet.chain.chainManager.DAPIClient.DAPINetworkService;
+    return self.DAPIClient.DAPINetworkService;
 }
 
 - (void)fetchProfile:(void (^)(BOOL))completion {

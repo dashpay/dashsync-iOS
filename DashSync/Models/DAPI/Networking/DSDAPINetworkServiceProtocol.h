@@ -27,6 +27,8 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
     DSDAPINetworkServiceErrorCodeInvalidResponse = 100,
 };
 
+@class DSTransition;
+
 @protocol DSDAPINetworkServiceProtocol <NSObject>
 
 ///--------------
@@ -400,12 +402,12 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
 /**
  Sends raw state transition to the network
  
- @param rawStateTransition Hex-string representing state transition header
+ @param stateTransition Hex-string representing state transition header
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)publishTransition:(NSData *)rawStateTransition
-                  success:(void (^)(NSString *headerId))success
+- (void)publishTransition:(DSTransition*)stateTransition
+                  success:(void (^)(NSDictionary *successDictionary))success
                   failure:(void (^)(NSError *error))failure;
 
 /**

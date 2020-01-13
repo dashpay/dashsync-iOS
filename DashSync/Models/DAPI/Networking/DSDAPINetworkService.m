@@ -19,7 +19,9 @@
 
 #import "DSHTTPJSONRPCClient.h"
 #import "DSChain.h"
+#import "DSTransition.h"
 #import "DSPeer.h"
+#import "DSDAPIGRPCResponseHandler.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,13 +33,13 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
 @property (strong, nonatomic) Platform *gRPCClient;
 @property (strong, nonatomic) DSChain * chain;
-@property (atomic, strong) dispatch_queue_t dispatchQueue;
+@property (strong, atomic) dispatch_queue_t grpcDispatchQueue;
 
 @end
 
 @implementation DSDAPINetworkService
 
-- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory onChain:(DSChain*)chain {
+- (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain {
     NSParameterAssert(ipAddress);
     NSParameterAssert(httpLoaderFactory);
 
@@ -50,11 +52,11 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
         // this example does not use TLS (secure channel); use insecure channel instead
         options.transportType = GRPCTransportTypeInsecure;
         options.userAgentPrefix = USER_AGENT;
+        self.grpcDispatchQueue = grpcDispatchQueue;
         
         NSString *dapiGRPCHost = [NSString stringWithFormat:@"%@:%d",ipAddress,3010];
         
         _gRPCClient = [Platform serviceWithHost:dapiGRPCHost callOptions:options];
-        self.dispatchQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapigrpc.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -503,15 +505,18 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                      failure:failure];
 }
 
-- (void)publishTransition:(NSData *)rawStateTransition
-                                        success:(void (^)(NSString *headerId))success
+- (void)publishTransition:(DSTransition *)stateTransition
+                                        success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
-    NSParameterAssert(rawStateTransition);
+    NSParameterAssert(stateTransition);
 
     ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
-    updateStateRequest.stateTransition = rawStateTransition;
-    GRPCCallOptions * options = [[GRPCMutableCallOptions alloc] init];
-    [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:self callOptions:nil] start];
+    updateStateRequest.stateTransition = stateTransition.data;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
 - (void)fetchDocumentsForContractId:(NSString *)contractId
@@ -573,24 +578,6 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                  success:internalSuccess
                                  failure:failure];
 }
-
-- (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
-    NSLog(@"hoho");
-}
-
-- (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
-    NSLog(@"hoho");
-}
-
-- (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
-                               error:(nullable NSError *)error {
-    NSLog(@"hoho");
-}
-
--(void)didWriteMessage {
-    NSLog(@"hoho");
-}
-
 
 @end
 

@@ -34,6 +34,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 @property (nonatomic, strong) DSChain * chain;
 @property (nonatomic, strong) NSMutableArray<NSString *>* availablePeers;
 @property (nonatomic, strong) NSMutableArray<DSDAPINetworkService *>* activeServices;
+@property (atomic, strong) dispatch_queue_t dispatchQueue;
 
 @end
 
@@ -45,6 +46,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         _chain = chain;
         self.availablePeers = [NSMutableArray array];
         self.activeServices = [NSMutableArray array];
+                self.dispatchQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapigrpc.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
 
     }
     return self;
@@ -68,7 +70,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 //}
 
 - (void)sendDocument:(DPDocument *)document
-             forUser:(DSBlockchainIdentity*)blockchainIdentity
+             forIdentity:(DSBlockchainIdentity*)blockchainIdentity
             contract:(DPContract *)contract
           completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(document);
@@ -78,7 +80,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 
     DSDashPlatform *platform = [DSDashPlatform sharedInstanceForChain:self.chain];
     
-    DSDocumentTransition * documentTransition = nil;//TODO
+    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initWithTransitionVersion:<#(uint16_t)#> blockchainIdentityUniqueId:<#(UInt256)#> onChain:<#(DSChain * _Nonnull)#>]
     
     DSDLog(@"identity %@",uint256_hex(documentTransition.blockchainIdentityUniqueId));
     __weak typeof(self) weakSelf = self;
@@ -91,7 +93,11 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
                                       }
                                       
                                       if (success) {
-                                          [strongSelf publishTransition:documentTransition completion:completion];
+                                          [strongSelf publishTransition:documentTransition success:^(NSDictionary * _Nonnull successDictionary) {
+                                              
+                                          } failure:^(NSError * _Nonnull error) {
+                                              
+                                          }];
                                       }
                                       else {
                                           if (completion) {
@@ -175,7 +181,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
         } else if ([self.availablePeers count]) {
             NSString * peerHost = [self.availablePeers objectAtIndex:0];
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
-            DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory onChain:self.chain];
+            DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
             [self.activeServices addObject:DAPINetworkService];
             return DAPINetworkService;
         }
@@ -184,39 +190,18 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 }
 
 - (void)publishTransition:(DSTransition *)transition
-            completion:(void (^)(NSError *_Nullable error))completion {
+            success:(void (^)(NSDictionary *successDictionary))success
+            failure:(void (^)(NSError *error))failure {
     DSDAPINetworkService * service = self.DAPINetworkService;
     if (!service) {
-        completion([NSError errorWithDomain:DSDAPIClientErrorDomain
+        failure([NSError errorWithDomain:DSDAPIClientErrorDomain
                                        code:DSDAPIClientErrorCodeNoKnownDAPINodes
                                    userInfo:@{NSLocalizedDescriptionKey:@"No known DAPI Nodes"}]);
         return;
     }
-    NSData *transitionData = [transition toData];
     
-    __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService publishTransition:transitionData
-                                       success:^(NSString *_Nonnull headerId) {
-                                                                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                                      if (!strongSelf) {
-                                                                          return;
-                                                                      }
-                                                                      
-                                                                      NSLog(@"Header ID %@", headerId);
-                                                                      
-                                                                      //[strongSelf.chain registerSpecialTransaction:transition];
-                                                                      //[transition save];
-                                                                      
-                                                                      if (completion) {
-                                                                          completion(nil);
-                                                                      }
-                                                                  }
-                                                                  failure:^(NSError *_Nonnull error) {
-                                                                      NSLog(@"Error: %@", error);
-                                                                      if (completion) {
-                                                                          completion(error);
-                                                                      }
-                                                                  }];
+    [self.DAPINetworkService publishTransition:transition
+                                       success:success failure:failure];
 }
 
 
