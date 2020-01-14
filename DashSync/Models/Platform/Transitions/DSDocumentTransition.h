@@ -21,6 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDocumentTransition : DSTransition
 
+@property(nonatomic,readonly) DPDocument * document;
+//@property(nonatomic,readonly) DPContract * contract;
+//@property(nonatomic,readonly) NSString * contractSubType;
+//@property(nonatomic,readonly) NSString * entropy;
+//@property(nonatomic,readonly) DSBlockchainIdentity * identity;
+//@property(nonatomic,readonly) uint32_t revision;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -78,15 +78,10 @@ static NSInteger const DEFAULT_REVISION = 1;
         return nil;
     }
 
-    NSString *scopeString = [self.contract.identifier stringByAppendingString:self.userId];
-    NSData *scopeStringData = [scopeString dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *scopeStringHash = uint256_hex([scopeStringData SHA256_2]);
-
     DSMutableStringValueDictionary *rawObject = [[DSMutableStringValueDictionary alloc] init];
     rawObject[@"$type"] = type;
-    rawObject[@"$scope"] = scopeStringHash;
+    rawObject[@"$userId"] = self.userId;
     rawObject[@"$scopeId"] = [DSKey randomAddressForChain:[self chain]];
-//    rawObject[@"$action"] = @(DEFAULT_ACTION);
     rawObject[@"$rev"] = @(DEFAULT_REVISION);
     [rawObject addEntriesFromDictionary:data];
 

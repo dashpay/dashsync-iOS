@@ -420,7 +420,7 @@
     completion(fundingTransaction);
 }
 
-// MARK: - Persistence
+// MARK: - DPNS
 
 -(void)addUsername:(NSString*)username {
     [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Initial) forKey:username];
@@ -445,7 +445,7 @@
 }
 
 -(void)registerUsernames {
-    [self.DAPIClient ds_registerDashPayContractForUser:<#(nonnull DSBlockchainIdentity *)#> forChain:<#(nonnull DSChain *)#> completion:<#^(NSError * _Nullable error)completion#>]
+    
 }
 
 // MARK: - Persistence

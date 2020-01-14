@@ -16,7 +16,16 @@
 //
 
 #import "DSDocumentTransition.h"
+#import "DPContract.h"
 
 @implementation DSDocumentTransition
+
+- (DSMutableStringValueDictionary *)baseKeyValueDictionary {
+    DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
+    json[@"type"] = self.contractSubType;
+    json[@"contract"] = self.contract.identifier;
+    json[@"userId"] = self.identity.uniqueIdString;
+    return json;
+}
 
 @end
