@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\nDash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
@@ -78,7 +78,7 @@
 "Double spend" = "Dubbel uitgegeven";
 
 /* The server is not working */
-"Down" = "Down";
+"Down" = "Naar beneden";
 
 /* No comment provided by engineer. */
 "Enter old PIN" = "Voer oude pin in";
@@ -102,7 +102,7 @@
 "Insufficient funds" = "Ontoereikende fondsen";
 
 /* No comment provided by engineer. */
-"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
+"Insufficient funds for Dash network fee" = "Onvoldoende fondsen voor transactiekosten Dash-netwerk";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Interne fout";
@@ -135,7 +135,7 @@
 "Not a valid private key" = "Geen geldige privésleutel";
 
 /* No comment provided by engineer. */
-"Not connected to the Dash network" = "Not connected to the Dash network";
+"Not connected to the Dash network" = "Niet verbonden met Dash-netwerk";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -222,7 +222,7 @@
 "Unexpected response from %@" = "Onverwacht response van %@";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
+"Unknown address" = "Onbekend adres";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Onbekende fout";
@@ -240,7 +240,7 @@
 "Untrusted certificate" = "Onvertrouwd certificaat";
 
 /* The server is up and running */
-"Up" = "Up";
+"Up" = "Omhoog";
 
 /* Updating Price */
 "Updating Price" = "Bezig met bijwerken van prijs";

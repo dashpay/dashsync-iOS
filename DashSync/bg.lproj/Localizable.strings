@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     количество %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nВЕЧЕ ИЗПОЛЗВАН АДРЕС\nDash адресите са предназначени за еднократно използване\n\nповторното използване намалява личната неприкосновеност, вашата и на получателя и може да липсва ако получателя на контролира директно адресът ";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nмрежова такса +%1$@ (%2$@)";
@@ -36,61 +36,61 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "Сигурни ли сте, че искате да актуализирате този masternode да плаща към %@?";
 
 /* No comment provided by engineer. */
-"Bad password, try again" = "Bad password, try again";
+"Bad password, try again" = "Грешна парола, опитайте отново";
 
 /* No comment provided by engineer. */
-"Bad payment request" = "Bad payment request";
+"Bad payment request" = "Грешна заявка за плащане";
 
 /* No comment provided by engineer. */
-"Bad payment request URL" = "Bad payment request URL";
+"Bad payment request URL" = "Грешна заявка за плащане URL";
 
 /* No comment provided by engineer. */
-"Bad payment URL" = "Bad payment URL";
+"Bad payment URL" = "Грешно  URL за плащане";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Отказ";
 
 /* No comment provided by engineer. */
 "Confirm" = "Потвърди";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Потвърди ПИН";
 
 /* No comment provided by engineer. */
-"Connect timeout" = "Connect timeout";
+"Connect timeout" = "Таймаут на връзката";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "Плащането не може да се изпълни";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "Dash плащанията не могат да бъдат по-малки от %@";
 
 /* No comment provided by engineer. */
-"Dash transaction not signed" = "Dash transaction not signed";
+"Dash transaction not signed" = "Dash транзакцията не е подписана";
 
 /* No comment provided by engineer. */
-"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
+"Dash transaction outputs can't be less than %@" = "Dash изходите за транзакцията  не може да бъдат по-малко то %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Мрежа за разработчици";
 
 /* No comment provided by engineer. */
-"Double spend" = "Double spend";
+"Double spend" = "Двойно похарчени";
 
 /* The server is not working */
-"Down" = "Down";
+"Down" = "Надолу";
 
 /* No comment provided by engineer. */
-"Enter old PIN" = "Enter old PIN";
+"Enter old PIN" = "Въведи стар ПИН";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Грешка от изискващият плащане сървър %@";
 
 /* No comment provided by engineer. */
-"Error signing transaction" = "Error signing transaction";
+"Error signing transaction" = "Грешно подписана транзакция";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"Ignore" = "Игнорирай";
 
 /* No comment provided by engineer. */
 "Instant payment" = "Instant payment";
@@ -99,10 +99,10 @@
 "InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
 
 /* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
+"Insufficient funds" = "Недостатъчно средства";
 
 /* No comment provided by engineer. */
-"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
+"Insufficient funds for Dash network fee" = "Недостатъчно средства за таксата към Dash мрежата";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Вътрешна грешка";
@@ -123,19 +123,19 @@
 "Method Not Found" = "Методът не е намерен";
 
 /* No comment provided by engineer. */
-"Missing certificate" = "Missing certificate";
+"Missing certificate" = "Липсващ сертификат";
 
 /* No comment provided by engineer. */
-"No attempts remaining" = "No attempts remaining";
+"No attempts remaining" = "Няма останали опити";
 
 /* No comment provided by engineer. */
-"No peers found" = "No peers found";
+"No peers found" = "Няма намерени пиъри";
 
 /* No comment provided by engineer. */
-"Not a valid private key" = "Not a valid private key";
+"Not a valid private key" = "Няма валиден частен ключ";
 
 /* No comment provided by engineer. */
-"Not connected to the Dash network" = "Not connected to the Dash network";
+"Not connected to the Dash network" = "Не е свързан към Dash мрежата";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -144,85 +144,85 @@
 "Parse Error" = "Грешка при анализа";
 
 /* No comment provided by engineer. */
-"Passcode" = "Passcode";
+"Passcode" = "Код за достъп";
 
 /* No comment provided by engineer. */
-"Password" = "Password";
+"Password" = "Парола";
 
 /* No comment provided by engineer. */
-"Password protected key" = "Password protected key";
+"Password protected key" = "Защитен с парола ключ";
 
 /* No comment provided by engineer. */
-"Payee identity isn't certified" = "Payee identity isn't certified";
+"Payee identity isn't certified" = "Идентичността на подателя не е сертифицирана";
 
 /* No comment provided by engineer. */
-"PIN for %@" = "PIN for %@";
+"PIN for %@" = "ПИН за %@";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "Моля, удостоверете се, за да създадете своя%@ портфейл";
 
 /* No comment provided by engineer. */
-"Recovery phrase" = "Recovery phrase";
+"Recovery phrase" = "Фраза за възстановяване";
 
 /* No comment provided by engineer. */
-"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
+"Reduce payment amount by\n%@ (%@)?" = "Намаляване сумата на плащането от\n%1$@ (%2$@)?";
 
 /* No comment provided by engineer. */
-"Request expired" = "Request expired";
+"Request expired" = "Изтекло искане";
 
 /* No comment provided by engineer. */
-"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
+"Requested network \"%@\" not currently in use" = "Избраната мрежа \"%@\" не се използва в момента";
 
 /* No comment provided by engineer. */
-"Rescan" = "Rescan";
+"Rescan" = "Повторно сканиране";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "Нулиране";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "Повторен опит";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "Изпрати";
 
 /* No comment provided by engineer. */
 "Server Error" = "Сървърна грешка";
 
 /* No comment provided by engineer. */
-"Set PIN" = "Set PIN";
+"Set PIN" = "Постави ПИН";
 
 /* No comment provided by engineer. */
 "Testnet" = "Тестова мрежа";
 
 /* No comment provided by engineer. */
-"This payment address is already in your wallet" = "This payment address is already in your wallet";
+"This payment address is already in your wallet" = "Този адрес за плащане е вече в твоя портфейл";
 
 /* No comment provided by engineer. */
-"This private key is already in your wallet" = "This private key is already in your wallet";
+"This private key is already in your wallet" = "Този частен ключ е вече в твоя портфейл";
 
 /* No comment provided by engineer. */
-"This private key is empty" = "This private key is empty";
+"This private key is empty" = "Този частен ключ е празен";
 
 /* No comment provided by engineer. */
 "This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на InstantSend, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
 
 /* No comment provided by engineer. */
-"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
+"Transaction canceled, network timeout" = "Отказана транзакция, мрежово прекъсване";
 
 /* No comment provided by engineer. */
-"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Таксата за транзакцията може да е по-голяма от наличните средства в този частен ключ(поради малките\"отпадъчни\" депозити)";
 
 /* No comment provided by engineer. */
-"Transaction rejected" = "Transaction rejected";
+"Transaction rejected" = "Отхвърлена транзакция";
 
 /* No comment provided by engineer. */
-"Try again in %@" = "Try again in %@";
+"Try again in %@" = "Опитай отново в %@";
 
 /* No comment provided by engineer. */
-"Unexpected response from %@" = "Unexpected response from %@";
+"Unexpected response from %@" = "Неочакван отговор от %@";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
+"Unknown address" = "Неизвестен адрес";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Неизвестна грешка";
@@ -231,28 +231,28 @@
 "Unknown JSON-RPC Response" = "Неизвестен JSON-RPC отговор";
 
 /* No comment provided by engineer. */
-"Unrecognized address" = "Unrecognized address";
+"Unrecognized address" = "Непознат адрес";
 
 /* No comment provided by engineer. */
-"Unsupported signature type" = "Unsupported signature type";
+"Unsupported signature type" = "Неподдържан тип подпис";
 
 /* No comment provided by engineer. */
-"Untrusted certificate" = "Untrusted certificate";
+"Untrusted certificate" = "Ненадежден сертификат";
 
 /* The server is up and running */
-"Up" = "Up";
+"Up" = "Нагоре";
 
 /* Updating Price */
 "Updating Price" = "Актуализиране на цената";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "Портфейлът е изключен";
 
 /* No comment provided by engineer. */
 "WARNING" = "ВНИМАНИЕ";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"Wipe" = "Изчисти";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Твоят портфейл вероятно не е синхронизиран.\nТова обикновено се фиксира след сканиране на блок веригата.";
