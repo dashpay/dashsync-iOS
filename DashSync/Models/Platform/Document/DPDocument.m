@@ -16,6 +16,7 @@
 //
 
 #import "DPDocument.h"
+#import "DPDocumentState.h"
 
 #import "DPErrors.h"
 
@@ -26,116 +27,63 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DPDocument ()
 
-@property (copy, nonatomic) DSStringValueDictionary *data;
+@property (copy, nonatomic) NSString *tableName;
+@property (copy, nonatomic) NSString *userId;
+@property (copy, nonatomic) NSString *contractId;
+@property (copy, nonatomic) NSString *entropy;
+@property (copy, nonatomic) NSNumber *currentRevision;
+@property (strong, nonatomic) NSMutableArray<DPDocumentState *>* documentStates;
 
 @end
 
 @implementation DPDocument
 
-//@synthesize identifier = _identifier;
-
-- (instancetype)initWithRawDocument:(DSStringValueDictionary *)rawDocument {
-    NSParameterAssert(rawDocument);
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId onTableWithName:(NSString*)tableName usingEntropy:(NSString*)entropy {
+    NSParameterAssert(dataDictionary);
+    NSParameterAssert(userId);
+    NSParameterAssert(contractId);
+    NSParameterAssert(tableName);
+    NSParameterAssert(entropy);
 
     self = [super init];
     if (self) {
-
-        DSMutableStringValueDictionary *mutableRawObject = [rawDocument mutableCopy];
-
-        NSString *type = mutableRawObject[@"$type"];
-        NSParameterAssert(type);
-        if (type) {
-            _type = [type copy];
-            [mutableRawObject removeObjectForKey:@"$type"];
-        }
-        NSString *contractId = mutableRawObject[@"$contractId"];
-        NSParameterAssert(contractId);
-        if (contractId) {
-            _contractId = [contractId copy];
-            [mutableRawObject removeObjectForKey:@"$contractId"];
-        }
-        NSString *userId = mutableRawObject[@"$userId"];
-        NSParameterAssert(userId);
-        if (userId) {
-            _userId = [userId copy];
-            [mutableRawObject removeObjectForKey:@"$userId"];
-        }
-        NSNumber *rev = mutableRawObject[@"$rev"];
-        NSParameterAssert(rev);
-        if (rev) {
-            _revision = rev;
-            [mutableRawObject removeObjectForKey:@"$rev"];
-        }
-
-        _data = [mutableRawObject copy];
+        
+        self.tableName = tableName;
+        self.userId = userId;
+        self.contractId = contractId;
+        self.entropy = entropy;
+        
+        self.currentRevision = @0;
+        self.documentStates = [NSMutableArray arrayWithObject:[DPDocumentState documentStateWithDataDictionary:dataDictionary]];
     }
 
     return self;
 }
 
-//- (NSString *)identifier {
-//    if (_identifier == nil) {
-//        NSString *identifierString = [self.scope stringByAppendingString:self.scopeId];
-//        NSData *identifierStringData = [identifierString dataUsingEncoding:NSUTF8StringEncoding];
-//        NSData *identifierHashData = uint256_data([identifierStringData SHA256_2]);
-//        _identifier = [identifierHashData base58String];
-//    }
-//    return _identifier;
-//}
-
-//- (void)setAction:(DPDocumentAction)action error:(NSError *_Nullable __autoreleasing *)error {
-//    if (action == DPDocumentAction_Delete && self.data.count != 0) {
-//        if (error != NULL) {
-//            *error = [NSError errorWithDomain:DPErrorDomain
-//                                         code:DPErrorCode_DataIsNotAllowedWithActionDelete
-//                                     userInfo:@{NSDebugDescriptionErrorKey : self}];
-//        }
-//
-//        return;
-//    }
-//
-//    _action = action;
-//    [self resetSerializedValues];
-//}
-
-- (void)setData:(DSStringValueDictionary *)data error:(NSError *_Nullable __autoreleasing *)error {
-    NSParameterAssert(data);
-
-//    if (self.action == DPDocumentAction_Delete && data.count != 0) {
-//        if (error != NULL) {
-//            *error = [NSError errorWithDomain:DPErrorDomain
-//                                         code:DPErrorCode_DataIsNotAllowedWithActionDelete
-//                                     userInfo:@{NSDebugDescriptionErrorKey : self}];
-//        }
-//
-//        return;
-//    }
-
-    _data = data;
-    [self resetSerializedValues];
+- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId inTable:(NSString*)table withEntropy:(NSString*)entropy {
+    return [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:userId onContractWithId:contractId onTableWithName:table usingEntropy:entropy];
 }
 
-- (void)resetSerializedValues {
-    [super resetSerializedValues];
-    _keyValueDictionary = nil;
+- (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary {
+    DPDocumentState * lastState = [self.documentStates lastObject];
+    
+    DSMutableStringValueDictionary * stateDataDictionary = [lastState.dataDictionary mutableCopy];
+    [stateDataDictionary addEntriesFromDictionary:dataDictionary];
+    
+    [self.documentStates addObject:[DPDocumentState documentStateWithDataDictionary:stateDataDictionary ofType:DPDocumentStateType_Update]];
 }
 
 #pragma mark - DPPSerializableObject
 
-@synthesize keyValueDictionary = _keyValueDictionary;
-
-- (DSMutableStringValueDictionary *)keyValueDictionary {
-    if (_keyValueDictionary == nil) {
-        DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
-        json[@"$type"] = self.type;
-        json[@"$contractId"] = self.contractId;
-        json[@"$userId"] = self.userId;
-        json[@"$entropy"] = self.entropy;
-        json[@"$rev"] = self.revision;
-        [json addEntriesFromDictionary:self.data];
-        _keyValueDictionary = json;
-    }
-    return _keyValueDictionary;
+- (DSMutableStringValueDictionary *)objectDictionary {
+    DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
+    json[@"$type"] = self.tableName;
+    json[@"$contractId"] = self.contractId;
+    json[@"$userId"] = self.userId;
+    json[@"$entropy"] = self.entropy;
+    json[@"$rev"] = self.currentRevision;
+    json[@"$data"] = self.currentLocalDocumentState.dataDictionary;
+    return json;
 }
 
 @end

@@ -21,12 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDocumentTransition : DSTransition
 
-@property(nonatomic,readonly) DPDocument * document;
-//@property(nonatomic,readonly) DPContract * contract;
-//@property(nonatomic,readonly) NSString * contractSubType;
-//@property(nonatomic,readonly) NSString * entropy;
-//@property(nonatomic,readonly) DSBlockchainIdentity * identity;
-//@property(nonatomic,readonly) uint32_t revision;
+@property(nonatomic,readonly) NSArray<DPDocument *>* documents;
+
+-(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 @end
 

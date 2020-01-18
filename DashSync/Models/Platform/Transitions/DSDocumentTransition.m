@@ -16,16 +16,28 @@
 //
 
 #import "DSDocumentTransition.h"
-#import "DPContract.h"
+#import "DPDocument.h"
+
+@interface DSDocumentTransition()
+
+@property(nonatomic,strong) NSArray<DPDocument *>* documents;
+
+@end
 
 @implementation DSDocumentTransition
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"type"] = self.contractSubType;
-    json[@"contract"] = self.contract.identifier;
-    json[@"userId"] = self.identity.uniqueIdString;
+    [json addEntriesFromDictionary:[self.document key]];
     return json;
+}
+
+-(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
+    if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
+        self.documents = documents;
+    }
+    
+    return self;
 }
 
 @end

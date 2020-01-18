@@ -16,12 +16,13 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "DPDocument.h"
+#import "DPTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DPDocumentFactory <NSObject>
+@class DPDocument;
+
+@protocol DPDocumentProtocol <NSObject>
 
 - (nullable DPDocument *)documentWithType:(NSString *)type
                                      data:(nullable DSStringValueDictionary *)data

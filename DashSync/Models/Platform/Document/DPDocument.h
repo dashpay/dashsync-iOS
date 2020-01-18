@@ -19,22 +19,27 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DPDocument : DPBaseObject
+@class DPDocumentState;
 
-//@property (readonly, copy, nonatomic) NSString *identifier;
+@interface DPDocument : NSObject
 
-@property (readonly, copy, nonatomic) NSString *type;
+@property (readonly, copy, nonatomic) NSString *tableName;
 @property (readonly, copy, nonatomic) NSString *contractId;
 @property (readonly, copy, nonatomic) NSString *userId;
 @property (readonly, copy, nonatomic) NSString *entropy;
-@property (readonly, strong, nonatomic) NSNumber *revision;
-@property (readonly, copy, nonatomic) DSStringValueDictionary *data;
+@property (readonly, nonatomic) DPDocumentState *currentRegisteredDocumentState;
+@property (readonly, nonatomic) DPDocumentState *currentLocalDocumentState;
+@property (readonly, copy, nonatomic) NSNumber *currentRegisteredRevision;
+@property (readonly, copy, nonatomic) NSNumber *currentLocalRevision;
+@property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
-- (instancetype)initWithRawDocument:(DSStringValueDictionary *)rawDocument;
+- (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId onTableWithName:(NSString*)table usingEntropy:(NSString*)entropy;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)setData:(DSStringValueDictionary *)data error:(NSError *_Nullable __autoreleasing *)error;
+- (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary;
+
+- (nullable DPDocument *)documentWithDataDictionary:(DSStringValueDictionary *)dataDictionary createdByUserWithId:(NSString*)userId onContractWithId:(NSString*)contractId inTable:(NSString*)table withEntropy:(NSString*)entropy;
 
 @end
 
