@@ -507,7 +507,13 @@
         [account signTransaction:tx withPrompt:displayedPrompt completion:^(BOOL signedTransaction, BOOL cancelled) {
             if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
             
-            if (cancelled) return;
+            if (cancelled) {
+                if (signedCompletion) {
+                    signedCompletion(tx, nil, YES);
+                }
+                
+                return;
+            }
             
             if (!signedTransaction || ! tx.isSigned) {
                 signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
