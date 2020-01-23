@@ -159,7 +159,7 @@
 "PIN for %@" = "%@를 위한 PIN";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "당신의 %@ 지갑을 생성하시려면 인증해주십시오";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "복원 문구";
