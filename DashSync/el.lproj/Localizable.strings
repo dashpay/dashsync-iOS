@@ -48,7 +48,7 @@
 "Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Ακύρωση";
 
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
@@ -138,7 +138,7 @@
 "Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "Εντάξει";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Σφάλμα Ανάλυσης";
@@ -162,7 +162,7 @@
 "Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
 
 /* No comment provided by engineer. */
-"Recovery phrase" = "Recovery phrase";
+"Recovery phrase" = "Φράση ανάκτησης";
 
 /* No comment provided by engineer. */
 "Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
@@ -177,13 +177,13 @@
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "Επαναφορά";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "Επανάληψη";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "Αποστολή";
 
 /* No comment provided by engineer. */
 "Server Error" = "Σφάλμα διακομιστή!";
@@ -246,7 +246,7 @@
 "Updating Price" = "Ανανέωση Τιμής";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "Το πορτοφόλι απενεργοποιήθηκε";
 
 /* No comment provided by engineer. */
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";

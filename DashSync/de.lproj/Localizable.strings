@@ -159,7 +159,7 @@
 "PIN for %@" = "PIN für %@";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "Zum Erstellen der %@ Wallet authentifizieren";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Wiederherstellungs-Wortfolge";

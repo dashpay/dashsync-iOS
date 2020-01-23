@@ -54,7 +54,7 @@
 "Confirm" = "ยืนยัน";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "ยืนยัน PIN";
 
 /* No comment provided by engineer. */
 "Connect timeout" = "หมดเวลาเชื่อมต่อ";
@@ -177,13 +177,13 @@
 "Rescan" = "สแกนอีกครั้ง";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
+"Reset" = "ตั้งค่า";
 
 /* No comment provided by engineer. */
-"Retry" = "Retry";
+"Retry" = "ลองอีกครั้ง";
 
 /* No comment provided by engineer. */
-"Send" = "Send";
+"Send" = "ส่ง";
 
 /* No comment provided by engineer. */
 "Server Error" = "Server Error";
@@ -246,7 +246,7 @@
 "Updating Price" = "อัพเดตราคา";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "wallet ถูกปิดการใช้งาน";
 
 /* No comment provided by engineer. */
 "WARNING" = "คำเตือน";
