@@ -256,3 +256,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "你的錢包可能不同步。\n這通常可以通過重新掃描區塊鏈來修復。";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";

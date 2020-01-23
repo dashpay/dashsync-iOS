@@ -256,3 +256,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Twój portfel może nie być zsynchronizowany.\nTo często można naprawić przez ponowne przeskanowanie łańcucha bloków.";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";

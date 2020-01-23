@@ -28,7 +28,7 @@
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    [json addEntriesFromDictionary:[self.document key]];
+    json[@"documents"] = self.documents;
     return json;
 }
 

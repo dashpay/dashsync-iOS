@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSDictionary *rawContract = @{
         @"name" : name,
-        @"documents" : documents,
+        @"domain" : documents,
     };
     DPContract *contract = [self.class dp_contractFromRawContract:rawContract];
 

@@ -16,9 +16,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "DPDocumentFactory.h"
 #import "DPContractFactoryProtocol.h"
-#import "DPDocumentFactoryProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,14 +26,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSDashPlatform : NSObject
 
 @property (nullable, copy, nonatomic) NSString *userId;
-@property (nullable, strong, nonatomic) DPContract *contract;
+@property (nullable, strong, nonatomic) DPContract *dashPayContract;
+@property (nullable, strong, nonatomic) DPContract *dpnsContract;
 
 @property (readonly, strong, nonatomic) id<DPContractFactory> contractFactory;
-@property (readonly, strong, nonatomic) id<DPDocumentFactory> documentFactory;
 
 @property (readonly, strong, nonatomic) DSChain *chain;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+- (DPDocumentFactory*)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity forContract:(DPContract*)contract;
 
 + (instancetype)sharedInstanceForChain:(DSChain*)chain;
 

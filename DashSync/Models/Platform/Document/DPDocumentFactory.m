@@ -16,7 +16,7 @@
 //
 
 #import "DPDocumentFactory.h"
-
+#import "DPDocument.h"
 #import "DPErrors.h"
 
 #import "NSData+Bitcoin.h"
@@ -38,15 +38,15 @@ static NSInteger const DEFAULT_REVISION = 1;
 
 @implementation DPDocumentFactory
 
-- (instancetype)initWithUserId:(NSString *)userId
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity*)identity
                       contract:(DPContract *)contract
                          onChain:(DSChain*)chain {
-    NSParameterAssert(userId);
+    NSParameterAssert(identity);
     NSParameterAssert(contract);
 
     self = [super init];
     if (self) {
-        _userId = [userId copy];
+        _userId = [identity.uniqueIdString copy];
         _contract = contract;
         _chain = chain;
     }
@@ -55,77 +55,32 @@ static NSInteger const DEFAULT_REVISION = 1;
 
 #pragma mark - DPDocumentFactory
 
-- (nullable DPDocument *)documentWithType:(NSString *)type
-                                     data:(nullable DSStringValueDictionary *)data
+- (nullable DPDocument *)documentOnTable:(NSString *)tableName
+                                     withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
                                     error:(NSError *_Nullable __autoreleasing *)error {
-    NSParameterAssert(type);
+    NSParameterAssert(tableName);
 
-    if (!data) {
-        data = @{};
+    if (!dataDictionary) {
+        dataDictionary = @{};
     }
 
-    if (![self.contract isDocumentDefinedForType:type]) {
+    if (![self.contract isDocumentDefinedForType:tableName]) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:DPErrorDomain
                                          code:DPErrorCode_InvalidDocumentType
                                      userInfo:@{
                                          NSLocalizedDescriptionKey :
                                              [NSString stringWithFormat:@"Contract '%@' doesn't contain type '%@'",
-                                                                        self.contract.contractId, type],
+                                                                        self.contract.contractId, tableName],
                                      }];
         }
 
         return nil;
     }
 
-    DSMutableStringValueDictionary *rawObject = [[DSMutableStringValueDictionary alloc] init];
-    rawObject[@"$type"] = type;
-    rawObject[@"$userId"] = self.userId;
-    rawObject[@"$scopeId"] = [DSKey randomAddressForChain:[self chain]];
-    rawObject[@"$rev"] = @(DEFAULT_REVISION);
-    [rawObject addEntriesFromDictionary:data];
-
-    DPDocument *object = [[DPDocument alloc] initWithRawDocument:rawObject];
+    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 
     return object;
-}
-
-- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
-                                           error:(NSError *_Nullable __autoreleasing *)error {
-    return [self documentFromRawDocument:rawDocument skipValidation:NO error:error];
-}
-
-- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
-                                  skipValidation:(BOOL)skipValidation
-                                           error:(NSError *_Nullable __autoreleasing *)error {
-    NSParameterAssert(rawDocument);
-
-    // TODO: validate rawDocument
-
-    DPDocument *object = [[DPDocument alloc] initWithRawDocument:rawDocument];
-
-    return object;
-}
-
-- (nullable DPDocument *)documentFromSerialized:(NSData *)data
-                                          error:(NSError *_Nullable __autoreleasing *)error {
-    return [self documentFromSerialized:data skipValidation:NO error:error];
-}
-
-- (nullable DPDocument *)documentFromSerialized:(NSData *)data
-                                 skipValidation:(BOOL)skipValidation
-                                          error:(NSError *_Nullable __autoreleasing *)error {
-    NSParameterAssert(data);
-
-    DSStringValueDictionary *rawDocument = [data ds_decodeCborError:error];
-    
-    if (!rawDocument) {
-        return nil;
-    }
-
-    return [self documentFromRawDocument:rawDocument
-                          skipValidation:skipValidation
-                                   error:error];
 }
 
 @end

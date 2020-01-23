@@ -18,15 +18,11 @@
 #import "DSDashPlatform.h"
 
 #import "DPContractFacade.h"
-#import "DPDocumentFacade.h"
 #import "DSChain.h"
-
-NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDashPlatform ()
 
 @property (strong, nonatomic) DPContractFacade *contractFacade;
-@property (strong, nonatomic) DPDocumentFacade *documentFacade;
 @property (strong, nonatomic) DSChain *chain;
 
 @end
@@ -38,11 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if (self) {
         _contractFacade = [[DPContractFacade alloc] init];
-        _documentFacade = [[DPDocumentFacade alloc] initWithPlaform:self];
         _chain = chain;
-//        _stPacketFacade = [[DPSTPacketFacade alloc] initWithMerkleRootOperation:merkleRootOperation
-//                                                              base58DataEncoder:base58DataEncoder];
-//        _stPacketHeaderFacade = [[DPSTPacketHeaderFacade alloc] init];
     }
     return self;
 }
@@ -73,10 +65,24 @@ static dispatch_once_t platformChainToken = 0;
     return self.contractFacade;
 }
 
-- (id<DPDocumentFactory>)documentFactory {
-    return self.documentFacade;
+- (DPDocumentFactory*)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity forContract:(DPContract*)contract {
+    DPDocumentFactory * documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
+    return documentFactory;
+}
+
+-(DPContract*)dashPayContract {
+    if (!_dashPayContract) {
+        _dashPayContract = [DPContract localDashpayContractForChain:self.chain];
+    }
+    return _dashPayContract;
+}
+
+-(DPContract*)dpnsContract {
+    if (!_dpnsContract) {
+        _dpnsContract = [DPContract localDPNSContractForChain:self.chain];
+    }
+    return _dpnsContract;
 }
 
 @end
 
-NS_ASSUME_NONNULL_END

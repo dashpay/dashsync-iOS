@@ -5,7 +5,7 @@
 //  Created by Sam Westrich on 7/26/18.
 //
 
-#import "DSBlockchainIdentity.h"
+#import "DSBlockchainIdentity+Protected.h"
 #import "DSChain.h"
 #import "DSECDSAKey.h"
 #import "DSAccount.h"
@@ -46,6 +46,8 @@
 #import "DSCreditFundingDerivationPath.h"
 #import "DSDocumentTransition.h"
 #import "DSDerivationPath.h"
+#import "DPDocumentFactory.h"
+#import "DPContract.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
@@ -76,6 +78,9 @@
 @property(nonatomic,readonly) DSDAPIClient* DAPIClient;
 @property(nonatomic,readonly) DSDAPINetworkService* DAPINetworkService;
 
+@property(nonatomic,strong) DPDocumentFactory* dashpayDocumentFactory;
+@property(nonatomic,strong) DPDocumentFactory* dpnsDocumentFactory;
+
 @property(nonatomic,strong) DSContactEntity * ownContact;
 
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
@@ -98,6 +103,7 @@
     self.blockchainIdentityUpdateTransitions = [NSMutableArray array];
     self.documentTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
+    self.usernameStatuses = [NSMutableDictionary dictionary];
     self.registered = FALSE;
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
@@ -429,6 +435,10 @@
     }
 }
 
+-(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username {
+    return [[self.usernameStatuses objectForKey:username] unsignedIntegerValue];
+}
+
 -(NSArray<NSString*>*)usernames {
     return [self.usernameStatuses allKeys];
 }
@@ -444,7 +454,53 @@
     return [unregisteredUsernames copy];
 }
 
+-(NSArray<NSString*>*)preorderedUsernames {
+    NSMutableArray * unregisteredUsernames = [NSMutableArray array];
+    for (NSString * username in self.usernameStatuses) {
+        DSBlockchainIdentityUsernameStatus status = [self.usernameStatuses[username] unsignedIntegerValue];
+        if (status == DSBlockchainIdentityUsernameStatus_Preordered) {
+            [unregisteredUsernames addObject:username];
+        }
+    }
+    return [unregisteredUsernames copy];
+}
+
+-(NSArray<DPDocument*>*)unregisteredUsernamesPreorderDocuments {
+    NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
+    for (NSString * unregisteredUsername in [self unregisteredUsernames]) {
+        NSError * error = nil;
+        NSMutableData * saltedDomain = [NSMutableData data];
+        NSData * usernameData = [unregisteredUsername dataUsingEncoding:NSUTF8StringEncoding];
+        [saltedDomain appendData:usernameData];
+        NSString * saltedDomainHashString = uint256_hex([saltedDomain SHA256_2]);
+        DSStringValueDictionary * dataDictionary = @{
+            @"saltedDomainHash": saltedDomainHashString
+        };
+        DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary error:&error];
+        [usernamePreorderDocuments addObject:document];
+    }
+    return usernamePreorderDocuments;
+}
+
+-(DSDocumentTransition*)unregisteredUsernamesPreorderTransition {
+    NSArray * usernamePreorderDocuments = [self unregisteredUsernamesPreorderDocuments];
+    if (![usernamePreorderDocuments count]) return nil;
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueId onChain:self.wallet.chain];
+    return transition;
+}
+
 -(void)registerUsernames {
+    DSDocumentTransition * transition = [self unregisteredUsernamesPreorderTransition];
+    //__weak typeof(self) weakSelf = self;
+    [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
+        
+    } failure:^(NSError * _Nonnull error) {
+        DSDLog(@"%@", error);
+        
+//        if (completion) {
+//            completion(NO);
+//        }
+    }];
     
 }
 
@@ -556,6 +612,26 @@
     }];
 }
 
+// MARK: - Platform Helpers
+
+-(DPDocumentFactory*)dashpayDocumentFactory {
+    if (!_dashpayDocumentFactory) {
+        DPContract * contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
+        NSAssert(contract,@"Contract must be defined");
+        self.dashpayDocumentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:self contract:contract onChain:self.wallet.chain];
+    }
+    return _dashpayDocumentFactory;
+}
+
+-(DPDocumentFactory*)dpnsDocumentFactory {
+    if (!_dpnsDocumentFactory) {
+        DPContract * contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dpnsContract;
+        NSAssert(contract,@"Contract must be defined");
+        self.dpnsDocumentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:self contract:contract onChain:self.wallet.chain];
+    }
+    return _dpnsDocumentFactory;
+}
+
 // MARK: - Layer 2
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
@@ -601,7 +677,7 @@
     }
     
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.wallet.chain];
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     
     [self.DAPIClient sendDocument:potentialFriendship.contactRequestDocument forIdentity:self contract:contract completion:^(NSError * _Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -809,7 +885,7 @@
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.wallet.chain];
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
     
     [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
@@ -835,7 +911,7 @@
     DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
     
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.wallet.chain];
+    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
     NSLog(@"%@",[contract identifier]);
     [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {

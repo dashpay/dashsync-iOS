@@ -24,23 +24,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol DPDocumentProtocol <NSObject>
 
-- (nullable DPDocument *)documentWithType:(NSString *)type
-                                     data:(nullable DSStringValueDictionary *)data
-                                    error:(NSError *_Nullable __autoreleasing *)error;
+- (nullable DPDocument *)documentOnTable:(NSString *)tableName
+                      withDataDictionary:(nullable DSStringValueDictionary *)dataDictionary
+                                   error:(NSError *_Nullable __autoreleasing *)error;
 
-- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
-                                           error:(NSError *_Nullable __autoreleasing *)error;
-
-- (nullable DPDocument *)documentFromRawDocument:(DSStringValueDictionary *)rawDocument
-                                  skipValidation:(BOOL)skipValidation
-                                           error:(NSError *_Nullable __autoreleasing *)error;
-
-- (nullable DPDocument *)documentFromSerialized:(NSData *)data
-                                          error:(NSError *_Nullable __autoreleasing *)error;
-
-- (nullable DPDocument *)documentFromSerialized:(NSData *)data
-                                 skipValidation:(BOOL)skipValidation
-                                          error:(NSError *_Nullable __autoreleasing *)error;
+//- (nullable DPDocument *)documentFromSerialized:(NSData *)data
+//                                          error:(NSError *_Nullable __autoreleasing *)error;
+//
+//- (nullable DPDocument *)documentFromSerialized:(NSData *)data
+//                                 skipValidation:(BOOL)skipValidation
+//                                          error:(NSError *_Nullable __autoreleasing *)error;
 
 @end
 

@@ -18,6 +18,7 @@
 #import "DPContract.h"
 #import "NSData+Bitcoin.h"
 #import "BigIntTypes.h"
+#import "DSDashPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -131,6 +132,42 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 - (void)resetSerializedValues {
     [super resetSerializedValues];
     _keyValueDictionary = nil;
+}
+
++ (DPContract *)localDashpayContractForChain:(DSChain*)chain {
+    // TODO: read async'ly
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *path = [bundle pathForResource:@"dashpay-contract" ofType:@"json"];
+    NSError *error = nil;
+    NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
+    NSAssert(error == nil, @"Failed reading contract json");
+    DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
+    NSAssert(error == nil, @"Failed parsing json");
+    
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
+    DPContract *contract = [dpp.contractFactory contractFromRawContract:jsonObject error:&error];
+    NSAssert(error == nil, @"Failed building DPContract");
+    
+    return contract;
+}
+
++ (DPContract *)localDPNSContractForChain:(DSChain*)chain {
+    // TODO: read async'ly
+    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString *path = [bundle pathForResource:@"dpns-contract" ofType:@"json"];
+    NSError *error = nil;
+    NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
+    NSAssert(error == nil, @"Failed reading contract json");
+    DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
+    NSAssert(error == nil, @"Failed parsing json");
+    
+    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
+    DPContract *contract = [dpp.contractFactory contractFromRawContract:jsonObject error:&error];
+    NSAssert(error == nil, @"Failed building DPContract");
+    
+    return contract;
 }
 
 #pragma mark - DPPSerializableObject

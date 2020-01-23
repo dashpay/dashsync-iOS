@@ -35,7 +35,7 @@
     return self;
 }
 
-- (DSTransition *)transitionsForChain:(DSChain*)chain
+- (DSTransition *)transitionForChain:(DSChain*)chain
 {
     
     if (!chain) chain = [self.blockchainIdentity.chain chain];

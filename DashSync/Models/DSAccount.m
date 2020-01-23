@@ -1323,7 +1323,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     }
     [self updateBalance];
     
-    [transaction saveInitial];
+    if (!self.wallet.isTransient) {
+        [transaction saveInitial];
+    }
     
     return YES;
 }

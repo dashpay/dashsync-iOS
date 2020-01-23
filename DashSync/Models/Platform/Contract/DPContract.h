@@ -19,6 +19,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSChain;
+
 @interface DPContract : DPBaseObject
 
 @property (readonly, copy, nonatomic) NSString *identifier;
@@ -40,6 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type;
 
 - (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
+
++ (DPContract *)localDashpayContractForChain:(DSChain*)chain;
++ (DPContract *)localDPNSContractForChain:(DSChain*)chain;
 
 @end
 

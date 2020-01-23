@@ -75,12 +75,8 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
           completion:(void (^)(NSError *_Nullable error))completion {
     NSParameterAssert(document);
     NSParameterAssert(contract);
-
-    NSArray *documents = @[ document ];
-
-    DSDashPlatform *platform = [DSDashPlatform sharedInstanceForChain:self.chain];
     
-    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initWithTransitionVersion:<#(uint16_t)#> blockchainIdentityUniqueId:<#(UInt256)#> onChain:<#(DSChain * _Nonnull)#>]
+    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueId onChain:self.chain];
     
     DSDLog(@"identity %@",uint256_hex(documentTransition.blockchainIdentityUniqueId));
     __weak typeof(self) weakSelf = self;

@@ -77,8 +77,6 @@
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
     DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:self.sourceBlockchainIdentity.wallet.chain];
     dpp.userId = uint256_reverse_hex(self.sourceBlockchainIdentity.registrationTransitionHash);
-    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.sourceBlockchainIdentity.wallet.chain];
-    dpp.contract = contract;
     
     //to do encrypt public key
     //DSBLSKey * key = [DSBLSKey blsKeyWithPublicKey:self.contactEncryptionPublicKey onChain:self.sourceBlockchainIdentity.wallet.chain];
@@ -93,7 +91,7 @@
                            };
     
     
-    DPDocument *contact = [dpp.documentFactory documentWithType:@"contact" data:data error:&error];
+    DPDocument *contact = [self.sourceBlockchainIdentity.dashpayDocumentFactory documentOnTable:@"contact" withDataDictionary:data error:&error];
     NSAssert(error == nil, @"Failed to build a contact");
     return contact;
 }

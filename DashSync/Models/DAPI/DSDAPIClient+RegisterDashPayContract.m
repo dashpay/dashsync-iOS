@@ -24,44 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DSDAPIClient (RegisterDashPayContract)
 
-+ (DPContract *)ds_currentDashPayContractForChain:(DSChain*)chain {
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
-    if (dpp.contract) {
-        return dpp.contract;
-    }
-    
-    DPContract *contract = [self ds_localDashPayContractForChain:chain];
-    dpp.contract = contract;
-    
-    return contract;
-}
-
 - (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity forChain:(DSChain*)chain completion:(void (^)(NSError *_Nullable error))completion {
 //    DPContract *contract = [self.class ds_currentDashPayContractForChain:chain];
 //    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
 //    dpp.userId = blockchainIdentity.registrationTransitionHashIdentifier;
 //    DPSTPacket *stPacket = [dpp.stPacketFactory packetWithContract:contract];
 //    [self sendPacket:stPacket forUser:blockchainIdentity completion:completion];
-}
-
-#pragma mark - Private
-
-+ (DPContract *)ds_localDashPayContractForChain:(DSChain*)chain {
-    // TODO: read async'ly
-    NSString *bundlePath = [[NSBundle bundleForClass:self.class] pathForResource:@"DashSync" ofType:@"bundle"];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString *path = [bundle pathForResource:@"dashpay-contract" ofType:@"json"];
-    NSError *error = nil;
-    NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingUncached error:&error];
-    NSAssert(error == nil, @"Failed reading contract json");
-    DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
-    NSAssert(error == nil, @"Failed parsing json");
-    
-    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:chain];
-    DPContract *contract = [dpp.contractFactory contractFromRawContract:jsonObject error:&error];
-    NSAssert(error == nil, @"Failed building DPContract");
-    
-    return contract;
 }
 
 @end

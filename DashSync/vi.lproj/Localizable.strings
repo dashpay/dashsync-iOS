@@ -256,3 +256,6 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ví của bạn có thể bị mất đồng bộ.\nĐiều này có thể được xử lý bằng cách quét lại blockchain.";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";

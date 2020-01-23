@@ -252,8 +252,17 @@
         [providerFundsDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
         
         if (chain.isDevnetAny) {
-            DSAuthenticationKeysDerivationPath * blockchainIdentityKeysDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:chain];
-            [blockchainIdentityKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+            DSAuthenticationKeysDerivationPath * blockchainIdentityBLSKeysDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityBLSKeysDerivationPathForChain:chain];
+            [blockchainIdentityBLSKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+            
+            DSAuthenticationKeysDerivationPath * blockchainIdentityECDSAKeysDerivationPath = [DSAuthenticationKeysDerivationPath blockchainIdentityECDSAKeysDerivationPathForChain:chain];
+            [blockchainIdentityECDSAKeysDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+            
+            DSCreditFundingDerivationPath * blockchainIdentityRegistrationFundingDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityRegistrationFundingDerivationPathForChain:chain];
+            [blockchainIdentityRegistrationFundingDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
+            
+            DSCreditFundingDerivationPath * blockchainIdentityTopupFundingDerivationPath = [DSCreditFundingDerivationPath blockchainIdentityTopupFundingDerivationPathForChain:chain];
+            [blockchainIdentityTopupFundingDerivationPath generateExtendedPublicKeyFromSeed:derivedKeyData storeUnderWalletUniqueId:walletUniqueId];
         }
     }
 }

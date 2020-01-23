@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (DPContract *)dp_contractFromRawContract:(DSStringValueDictionary *)rawContract {
     NSString *contractId = rawContract[@"contractId"];
-    NSDictionary<NSString *, DSStringValueDictionary *> *documents = rawContract[@"documents"];
+    NSDictionary<NSString *, DSStringValueDictionary *> *documents = rawContract[@"domain"];
 
     DPContract *contract = [[DPContract alloc] initWithContractId:contractId
                                                   documents:documents];

@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)setAttributesFromTransition:(DSTransition *)transition;
 - (DSTransition *)transitionForChain:(DSChain*)chain;
-+ (NSArray<DSTransitionEntity*> * _Nonnull)transitionsForChain:(DSChainEntity*)chain;
+//+ (NSArray<DSTransitionEntity*> * _Nonnull)transitionsForChain:(DSChainEntity*)chain;
 
 @property (nonatomic, readonly) Class transitionClass;
 

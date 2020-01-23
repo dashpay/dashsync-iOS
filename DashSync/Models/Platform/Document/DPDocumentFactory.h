@@ -18,17 +18,18 @@
 #import <Foundation/Foundation.h>
 
 #import "DPContract.h"
-#import "DPDocumentFactoryProtocol.h"
+#import "DPDocumentProtocol.h"
+#import "DSBlockchainIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain;
 
-@interface DPDocumentFactory : NSObject <DPDocumentFactory>
+@interface DPDocumentFactory : NSObject <DPDocumentProtocol>
 
-- (instancetype)initWithUserId:(NSString *)userId
-                      contract:(DPContract *)contract
-                       onChain:(DSChain*)chain;
+- (instancetype)initWithBlockchainIdentity:(DSBlockchainIdentity*)identity
+                                  contract:(DPContract *)contract
+                                   onChain:(DSChain*)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

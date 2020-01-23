@@ -80,6 +80,7 @@
 		FB12FEE720CD3EC100C1E0F0 /* DSMasternodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE620CD3EC100C1E0F0 /* DSMasternodeViewController.m */; };
 		FB12FEEA20CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m */; };
 		FB12FEED20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */; };
+		FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */; };
 		FB1BF8E922C96DF1003413C6 /* MNL_1095648_1095672.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8CD22C96DEC003413C6 /* MNL_1095648_1095672.dat */; };
 		FB1BF8EA22C96DF1003413C6 /* MNL_1095432_1095456.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8CE22C96DEC003413C6 /* MNL_1095432_1095456.dat */; };
 		FB1BF8EB22C96DF1003413C6 /* MNL_1095960_1095984.dat in Resources */ = {isa = PBXBuildFile; fileRef = FB1BF8CF22C96DED003413C6 /* MNL_1095960_1095984.dat */; };
@@ -402,6 +403,7 @@
 		FB12FEE920CD50AC00C1E0F0 /* DSStandaloneDerivationPathViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathViewController.m; sourceTree = "<group>"; };
 		FB12FEEB20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DSStandaloneDerivationPathKeyInputViewController.h; sourceTree = "<group>"; };
 		FB12FEEC20CD520700C1E0F0 /* DSStandaloneDerivationPathKeyInputViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSStandaloneDerivationPathKeyInputViewController.m; sourceTree = "<group>"; };
+		FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DSTransitionTests.m; sourceTree = "<group>"; };
 		FB1BF8CD22C96DEC003413C6 /* MNL_1095648_1095672.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095648_1095672.dat; sourceTree = "<group>"; };
 		FB1BF8CE22C96DEC003413C6 /* MNL_1095432_1095456.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095432_1095456.dat; sourceTree = "<group>"; };
 		FB1BF8CF22C96DED003413C6 /* MNL_1095960_1095984.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = MNL_1095960_1095984.dat; sourceTree = "<group>"; };
@@ -904,6 +906,7 @@
 				FBAF79782385CA0200F4944E /* DSSparseMerkleTreeTests.m */,
 				FB3ADDE5238E62CD00C31D23 /* DSChainLockTests.m */,
 				FBBDF422226B6E770081D673 /* DSBigNumberTests.m */,
+				FB1B98D023D6A3BD00D50F69 /* DSTransitionTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1786,6 +1789,7 @@
 				2A7DCCAE20D9485A0097049F /* DSBIP32Tests.m in Sources */,
 				2A7DCCB220DA10870097049F /* DSBloomFilterTests.m in Sources */,
 				2AA2C5EB20E37B74007768B1 /* DSGovernanceTests.m in Sources */,
+				FB1B98D123D6A3BD00D50F69 /* DSTransitionTests.m in Sources */,
 				FB3ADDE6238E62CD00C31D23 /* DSChainLockTests.m in Sources */,
 				FBDB9B7E20FF7AB900AD61B3 /* DSDeterministicMasternodeListTests.m in Sources */,
 				FBF31B7122328AA900393301 /* DSProviderTransactionsTests.m in Sources */,

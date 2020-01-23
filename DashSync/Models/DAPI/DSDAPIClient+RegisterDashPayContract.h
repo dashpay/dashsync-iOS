@@ -23,8 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDAPIClient (RegisterDashPayContract)
 
-+ (DPContract *)ds_currentDashPayContractForChain:(DSChain*)chain;
-
 - (void)ds_registerDashPayContractForUser:(DSBlockchainIdentity*)blockchainIdentity forChain:(DSChain*)chain completion:(void (^)(NSError *_Nullable error))completion;
 
 @end
