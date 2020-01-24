@@ -93,12 +93,6 @@
 "Ignore" = "無視する";
 
 /* No comment provided by engineer. */
-"Instant payment" = "即時支払い";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "即時送金［インスタントセンド］には十分な入金と6回の承認が必要ですが、通常の取引の送金方法としていつもご利用されますか？";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "資金不足";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "リセット";
 
 /* No comment provided by engineer. */
-"Retry" = "リトライ";
-
-/* No comment provided by engineer. */
-"Send" = "送金";
-
-/* No comment provided by engineer. */
 "Server Error" = "サーバーエラー";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "この秘密鍵は承認済み残高がありません";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "この請求には即時支払いが必要ですが、あなたには即時送金［インスタントセンド］に必要な6回の承認と十分な入金がありません。お店に通常の送金を受け入れるか聞くか、数分間待ってください。";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "取引はキャンセルされました、ネットワークタイムアウトがありました";

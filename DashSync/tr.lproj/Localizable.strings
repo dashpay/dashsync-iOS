@@ -93,12 +93,6 @@
 "Ignore" = "Yoksay";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Anında ödeme";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Anında Gönder için 6 onaylı yeterli girdi gerekir, yine de sıradan işlem olarak gönder?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Yetersiz bakiye";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Yeniden Başlat";
 
 /* No comment provided by engineer. */
-"Retry" = "Tekrar dene";
-
-/* No comment provided by engineer. */
-"Send" = "Gönder";
-
-/* No comment provided by engineer. */
 "Server Error" = "Sunucu Hatası";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Bu özel anahtar boş";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Bu ödeme talebi anında ödeme gerektirir ama Anında Gönder için gereken 6 onay için yeterli girdiye sahip değilsiniz. Satıcı ile normal ödeme yöntemi üzerinde anlaşabilir ya da bir kaç dakika bekleyebilirsiniz";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "İşlem iptal edildi, ağ zaman aşımına uğradı";

@@ -93,12 +93,6 @@
 "Ignore" = "Abaikan";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Pembayaran instan";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend membutuhkan input yang cukup dengan 6 konfirmasi, tetap kirim sebagai transaksi biasa?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Dana tidak mencukupi";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Atur-ulang";
 
 /* No comment provided by engineer. */
-"Retry" = "Coba lagi";
-
-/* No comment provided by engineer. */
-"Send" = "Kirim";
-
-/* No comment provided by engineer. */
 "Server Error" = "Kesalahan Server";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Kunci pribadi ini kosong";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Permintaan ini memerlukan pembayaran instan tetapi Anda tidak memiliki cukup masukan dengan 6 konfirmasi yang diperlukan oleh InstantSend, Anda dapat meminta pedagang untuk menerima transaksi normal atau menunggu beberapa menit.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transaksi dibatalkan, batas waktu jaringan";

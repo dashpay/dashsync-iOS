@@ -93,12 +93,6 @@
 "Ignore" = "Игнорирай";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instant payment";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend изисква достатъчно входове с 6 потвърждения, изпращане въпреки това с нормална транзакция?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Недостатъчно средства";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Нулиране";
 
 /* No comment provided by engineer. */
-"Retry" = "Повторен опит";
-
-/* No comment provided by engineer. */
-"Send" = "Изпрати";
-
-/* No comment provided by engineer. */
 "Server Error" = "Сървърна грешка";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Този частен ключ е празен";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Тази заявка изисква мигновено плащане но Вие нямате достатъчно входове с 6 потвърждения необходими на InstantSend, може да попитате търговеца да приеме нормална транзакция или да изчакате няколко минути.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Отказана транзакция, мрежово прекъсване";

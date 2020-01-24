@@ -93,12 +93,6 @@
 "Ignore" = "Игнорировать";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Мгновенный платёж";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend требует достаточного количества входов с 6 подтверждениями. Отправить как обычную транзакцию?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Недостаточно средств";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Сбросить";
 
 /* No comment provided by engineer. */
-"Retry" = "Повторить";
-
-/* No comment provided by engineer. */
-"Send" = "Отправить";
-
-/* No comment provided by engineer. */
 "Server Error" = "Ошибка сервера";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Этот приватный ключ пуст";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Этот запрос о мгновенном переводе, но у вас недостаточно входов с 6 подтверждениями, которые требуются InstantSend. Вы можете предложить продавцу обычный перевод или подождать несколько минут.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Транзакция отменена, время ожидания сети истекло";
