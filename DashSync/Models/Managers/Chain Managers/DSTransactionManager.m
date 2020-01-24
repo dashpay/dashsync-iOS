@@ -503,7 +503,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                 } else {
                     additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);
                 }
-                if (!previouslyWasAuthenticated) [authenticationManager deauthenticate];
+                if (!previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
             }];
         }
     } else {
@@ -514,9 +514,9 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             displayedPrompt = @"";
         }
         [account signTransaction:tx withPrompt:displayedPrompt completion:^(BOOL signedTransaction, BOOL cancelled) {
-            if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
             
             if (cancelled) {
+                if (! previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
                 if (signedCompletion) {
                     signedCompletion(tx, nil, YES);
                 }
@@ -525,10 +525,13 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
             }
             
             if (!signedTransaction || ! tx.isSigned) {
+                if (! previouslyWasAuthenticated && !keepAuthenticatedIfErrorAfterAuthentication) [authenticationManager deauthenticate];
                 signedCompletion(tx,[NSError errorWithDomain:@"DashSync" code:401
                                                     userInfo:@{NSLocalizedDescriptionKey:DSLocalizedString(@"Error signing transaction", nil)}],NO);
                 return;
             }
+            
+            if (! previouslyWasAuthenticated) [authenticationManager deauthenticate];
             
             if (!signedCompletion(tx,nil,NO)) return; //give the option to stop the process to clients
             
