@@ -459,9 +459,6 @@
                 // BUG: if user manually chooses to enter pin, the Touch ID spending limit is reset, but the tx being authorized
                 // still counts towards the next Touch ID spending limit
                 if (! touchid) setKeychainInt(self.totalSent + amount + [DSChainsManager sharedInstance].spendingLimit, SPEND_LIMIT_KEY, NO);
-                NSError * transientAuthenticatedSpendingLimitError = nil;
-                [[DSAuthenticationManager sharedInstance] setTransientAuthenticatedSpendingLimit:amount error:&transientAuthenticatedSpendingLimitError]; // this is to allow for staying authenticated in the case the amount exceeds your balance
-                NSAssert(!transientAuthenticatedSpendingLimitError, transientAuthenticatedSpendingLimitError.localizedDescription);
                 completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil],cancelled);
             }
         }];

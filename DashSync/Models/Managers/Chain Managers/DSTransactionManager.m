@@ -374,8 +374,6 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     uint64_t amount = 0, fee = 0;
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     
-    BOOL requestsInstantSend = protoReq.requestsInstantSend;
-    
     if (! valid && [protoReq.errorMessage isEqual:DSLocalizedString(@"Request expired", nil)]) {
         errorNotificationBlock(DSLocalizedString(@"Bad payment request", nil),protoReq.errorMessage,YES);
         return;
