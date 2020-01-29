@@ -15,8 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSBlockchainIdentityEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *uniqueId;
-@property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *creditFundingTransactions;
+@property (nullable, nonatomic, retain) NSData *uniqueID;
+@property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *topUpFundingTransactions;
+@property (nullable, nonatomic, retain) DSCreditFundingTransactionEntity * registrationFundingTransaction;
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
 @property (nullable, nonatomic, retain) DSContactEntity *ownContact;
 @property (nullable, nonatomic, retain) NSSet<DSTransitionEntity *> *transitions;
@@ -26,10 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSBlockchainIdentityEntity (CoreDataGeneratedAccessors)
 
-- (void)addCreditFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
-- (void)removeCreditFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
-- (void)addCreditFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
-- (void)removeCreditFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
+- (void)addTopUpFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
+- (void)removeTopUpFundingTransactionsObject:(DSCreditFundingTransactionEntity *)value;
+- (void)addTopUpFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
+- (void)removeTopUpFundingTransactions:(NSSet<DSCreditFundingTransactionEntity *> *)values;
 
 - (void)addKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;
 - (void)removeKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;

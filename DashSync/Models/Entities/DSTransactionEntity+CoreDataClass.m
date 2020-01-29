@@ -106,6 +106,10 @@
     return transactions;
 }
 
+- (DSTransaction *)transaction {
+    return [self transactionForChain:[self.chain chain]];
+}
+
 - (DSTransaction *)transactionForChain:(DSChain*)chain
 {
     if (!chain) chain = [self.chain chain];

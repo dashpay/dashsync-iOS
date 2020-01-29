@@ -23,11 +23,12 @@
         <attribute name="reason" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainIdentityEntity" representedClassName="DSBlockchainIdentityEntity" syncable="YES">
-        <attribute name="uniqueId" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
+        <attribute name="uniqueID" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
         <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="identities" inverseEntity="DSChainEntity" indexed="YES" syncable="YES"/>
-        <relationship name="creditFundingTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="blockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
         <relationship name="keyPaths" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityKeyPathEntity" inverseName="blockchainIdentity" inverseEntity="DSBlockchainIdentityKeyPathEntity" syncable="YES"/>
         <relationship name="ownContact" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="associatedBlockchainIdentity" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="registrationFundingTransaction" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="registeredBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
+        <relationship name="topUpFundingTransactions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DSCreditFundingTransactionEntity" inverseName="toppedUpBlockchainIdentity" inverseEntity="DSCreditFundingTransactionEntity" syncable="YES"/>
         <relationship name="transitions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSTransitionEntity" inverseName="blockchainIdentity" inverseEntity="DSTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSBlockchainIdentityFundedTransition" parentEntity="DSTransitionEntity" syncable="YES">
@@ -101,8 +102,9 @@
         <relationship name="profileTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDocumentTransitionEntity" inverseName="contactProfileCreations" inverseEntity="DSDocumentTransitionEntity" syncable="YES"/>
     </entity>
     <entity name="DSCreditFundingTransactionEntity" representedClassName="DSCreditFundingTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
-        <relationship name="blockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="creditFundingTransactions" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
         <relationship name="fundedTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityFundedTransition" inverseName="fundingTransaction" inverseEntity="DSBlockchainIdentityFundedTransition" syncable="YES"/>
+        <relationship name="registeredBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="registrationFundingTransaction" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
+        <relationship name="toppedUpBlockchainIdentity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityEntity" inverseName="topUpFundingTransactions" inverseEntity="DSBlockchainIdentityEntity" indexed="YES" syncable="YES"/>
     </entity>
     <entity name="DSDerivationPathEntity" representedClassName="DSDerivationPathEntity" syncable="YES">
         <attribute name="derivationPath" optional="YES" attributeType="Binary" indexed="YES" syncable="YES"/>
@@ -447,7 +449,7 @@
         <element name="DSAccountEntity" positionX="-2135.0703125" positionY="459.18359375" width="128" height="135"/>
         <element name="DSAddressEntity" positionX="-2619.41015625" positionY="308.31640625" width="128" height="180"/>
         <element name="DSBlockchainIdentityCloseTransitionEntity" positionX="-850.375" positionY="1261.98046875" width="128" height="58"/>
-        <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="133"/>
+        <element name="DSBlockchainIdentityEntity" positionX="-2403" positionY="-171" width="128" height="148"/>
         <element name="DSBlockchainIdentityFundedTransition" positionX="-2403" positionY="-171" width="128" height="58"/>
         <element name="DSBlockchainIdentityKeyPathEntity" positionX="-2394" positionY="-162" width="128" height="133"/>
         <element name="DSBlockchainIdentityRegistrationTransitionEntity" positionX="-1043.37109375" positionY="1260.8203125" width="128" height="58"/>
@@ -457,7 +459,7 @@
         <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="103"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
         <element name="DSContactEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="253"/>
-        <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="73"/>
+        <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="88"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="163"/>
         <element name="DSDocumentTransitionEntity" positionX="-2412" positionY="-180" width="128" height="88"/>
         <element name="DSFriendRequestEntity" positionX="160" positionY="192" width="128" height="133"/>

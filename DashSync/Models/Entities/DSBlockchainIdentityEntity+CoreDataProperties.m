@@ -14,8 +14,9 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSBlockchainIdentityEntity"];
 }
 
-@dynamic uniqueId;
-@dynamic creditFundingTransactions;
+@dynamic uniqueID;
+@dynamic topUpFundingTransactions;
+@dynamic registrationFundingTransaction;
 @dynamic keyPaths;
 @dynamic ownContact;
 @dynamic transitions;
