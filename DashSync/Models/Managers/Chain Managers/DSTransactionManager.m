@@ -437,7 +437,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                                   [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
         NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
         NSError *error = [NSError errorWithDomain:DSErrorDomain
-                                             code:DSErrorPaymentRequestExpired
+                                             code:DSErrorPaymentAmountLessThenMinOutputAmount
                                          userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
         errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
@@ -449,7 +449,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                                   [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
         NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
         NSError *error = [NSError errorWithDomain:DSErrorDomain
-                                             code:DSErrorPaymentRequestExpired
+                                             code:DSErrorPaymentTransactionOutputTooSmall
                                          userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
         errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
@@ -600,7 +600,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                                                                                          errorTitle, errorMessage];
                                                        NSError *resError = [NSError
                                                                             errorWithDomain:DSErrorDomain
-                                                                            code:DSErrorPaymentRequestExpired
+                                                                            code:DSErrorPaymentRequestServerError
                                                                             userInfo:@{
                                                                                 NSLocalizedDescriptionKey: localizedDescription,
                                                                                 NSUnderlyingErrorKey: error,
@@ -658,7 +658,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         else {
             NSString *errorTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
             NSError *error = [NSError errorWithDomain:DSErrorDomain
-                                                 code:DSErrorPaymentRequestExpired
+                                                 code:DSErrorInsufficientFundsForNetworkFee
                                              userInfo:@{ NSLocalizedDescriptionKey: errorTitle }];
             errorNotificationBlock(error, errorTitle, nil, NO);
         }
@@ -666,7 +666,7 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     else {
         NSString *errorTitle = DSLocalizedString(@"Insufficient funds", nil);
         NSError *error = [NSError errorWithDomain:DSErrorDomain
-                                             code:DSErrorPaymentRequestExpired
+                                             code:DSErrorInsufficientFunds
                                          userInfo:@{ NSLocalizedDescriptionKey: errorTitle }];
         errorNotificationBlock(error, errorTitle, nil, NO);
     }
