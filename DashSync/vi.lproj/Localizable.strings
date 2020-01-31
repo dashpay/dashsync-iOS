@@ -93,12 +93,6 @@
 "Ignore" = "Bỏ qua";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Giao dịch tức thời";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend yêu cầu phải có đủ các đầu vào với 6 xác thực, gửi theo cách thông thường?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Không đủ tiền";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Thiết lập lại";
 
 /* No comment provided by engineer. */
-"Retry" = "Thử lại";
-
-/* No comment provided by engineer. */
-"Send" = "Gửi";
-
-/* No comment provided by engineer. */
 "Server Error" = "Lỗi máy chủ";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Khoá riêng này không có gì";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Yêu cầu này cần có một giao dịch tức thời nhưng bạn không có đủ đầu vào với 6 xác thực cần thiết cho InstantSend, bạn có thể phải hỏi người bán hàng xem có chấp nhận giao dịch thông thường hoặc phải đợi một vài phút.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Giao dịch bị huỷ, hết thời gian";

@@ -1916,7 +1916,7 @@ static dispatch_once_t devnetToken = 0;
 }
 
 // fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount
+- (uint64_t)feeForTxSize:(NSUInteger)size
 {
     uint64_t standardFee = size*TX_FEE_PER_B; // standard fee based on tx size
         

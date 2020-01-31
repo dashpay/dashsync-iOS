@@ -93,12 +93,6 @@
 "Ignore" = "Ignorar";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Pagamento instantâneo";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "EnvioInstantâneo requer inupts suficientes com 6 confirmações, enviar assim mesmo como transação regular?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Fundos insuficientes";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Resetar";
 
 /* No comment provided by engineer. */
-"Retry" = "Repetir";
-
-/* No comment provided by engineer. */
-"Send" = "Enviar";
-
-/* No comment provided by engineer. */
 "Server Error" = "Erro de Servidor";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "Esta chave privada está vazia";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Esse pedido requer um pagamento instantâneo mas você não tem inputs necessários com 6 confirmações requeridos pelo Envio Instantâneo, você pode pedir que o comerciante que aceite uma transação normal ou espere alguns minutos.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transação cancelada, tempo limite de rede alcançado";

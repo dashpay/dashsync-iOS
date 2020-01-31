@@ -792,19 +792,14 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
 - (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
-    return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:FALSE toShapeshiftAddress:nil];
+    return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil];
 }
 
-// returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee  isInstant:(BOOL)isInstant {
-    return [self transactionForAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:nil];
-}
-
-- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress {
+- (DSTransaction *)transactionForAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee toShapeshiftAddress:(NSString*)shapeshiftAddress {
     NSParameterAssert(amounts);
     NSParameterAssert(scripts);
     DSTransaction *transaction = [[DSTransaction alloc] initOnChain:self.wallet.chain];
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:shapeshiftAddress shuffleOutputOrder:YES];
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:shapeshiftAddress shuffleOutputOrder:YES];
 }
 
 // MARK: == Proposal Transaction Creation
@@ -823,12 +818,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 // MARK: = Update
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant {
-    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee isInstant:isInstant toShapeshiftAddress:nil shuffleOutputOrder:YES];
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee {
+    return [self updateTransaction:transaction forAmounts:amounts toOutputScripts:scripts withFee:fee toShapeshiftAddress:nil shuffleOutputOrder:YES];
 }
 
 // returns an unsigned transaction that sends the specified amounts from the wallet to the specified output scripts
-- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee isInstant:(BOOL)isInstant toShapeshiftAddress:(NSString*)shapeshiftAddress shuffleOutputOrder:(BOOL)shuffleOutputOrder
+- (DSTransaction *)updateTransaction:(DSTransaction*)transaction forAmounts:(NSArray *)amounts toOutputScripts:(NSArray *)scripts withFee:(BOOL)fee toShapeshiftAddress:(NSString*)shapeshiftAddress shuffleOutputOrder:(BOOL)shuffleOutputOrder
 {
     NSParameterAssert(transaction);
     NSParameterAssert(amounts);
@@ -856,8 +851,6 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         tx = self.allTx[uint256_obj(o.hash)];
         if ([self transactionOutputsAreLocked:tx]) continue;
         if (! tx) continue;
-        //for example the tx block height is 25, can only send after the chain block height is 31 for previous confirmations needed of 6
-        if (isInstant && (tx.blockHeight >= (self.blockHeight - self.wallet.chain.ixPreviousConfirmationsNeeded))) continue;
         
         if ([transaction isMemberOfClass:[DSProviderRegistrationTransaction class]]) {
             DSProviderRegistrationTransaction * providerRegistrationTransaction = (DSProviderRegistrationTransaction *)transaction;
@@ -876,9 +869,9 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             NSUInteger txSize = 10 + self.utxos.count*148 + (scripts.count + 1)*TX_OUTPUT_SIZE;
             
             // check for sufficient total funds before building a smaller transaction
-            if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]) {
+            if (self.balance < amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]) {
                 DSDLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
-                       amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]);
+                       amount + [self.wallet.chain feeForTxSize:txSize + cpfpSize]);
                 return nil;
             }
             
@@ -902,22 +895,20 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
             [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
         if (fee) {
-            feeAmountWithoutChange = [self.wallet.chain feeForTxSize:transaction.size + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count];
+            feeAmountWithoutChange = [self.wallet.chain feeForTxSize:transaction.size + cpfpSize];
             if (balance == amount + feeAmountWithoutChange) {
                 feeAmount = feeAmountWithoutChange;
                 break;
             }
-            feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+            feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize]; // assume we will add a change output
             //if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         }
         
         if (balance == amount + feeAmount || balance >= amount + feeAmount + self.wallet.chain.minOutputAmount) break;
     }
     
-    transaction.desiresInstantSendSending = isInstant;
-    
     if (!feeAmount) {
-        feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize isInstant:isInstant inputCount:transaction.inputHashes.count]; // assume we will add a change output
+        feeAmount = [self.wallet.chain feeForTxSize:transaction.size + TX_OUTPUT_SIZE + cpfpSize]; // assume we will add a change output
     }
     
     if (balance < amount + feeAmount) { // insufficient funds
@@ -1498,12 +1489,12 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
 
 // MARK: = Outputs
 
-- (uint64_t)maxOutputAmountUsingInstantSend:(BOOL)instantSend
+- (uint64_t)maxOutputAmount
 {
-    return [self maxOutputAmountWithConfirmationCount:0 usingInstantSend:instantSend returnInputCount:nil];
+    return [self maxOutputAmountWithConfirmationCount:0 returnInputCount:nil];
 }
 
-- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount usingInstantSend:(BOOL)instantSend returnInputCount:(uint32_t*)rInputCount;
+- (uint64_t)maxOutputAmountWithConfirmationCount:(uint64_t)confirmationCount returnInputCount:(uint32_t*)rInputCount;
 {
     DSUTXO o;
     DSTransaction *tx;
@@ -1528,7 +1519,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     
     txSize = 8 + [NSMutableData sizeOfVarInt:inputCount] + TX_INPUT_SIZE*inputCount +
     [NSMutableData sizeOfVarInt:2] + TX_OUTPUT_SIZE*2;
-    fee = [self.wallet.chain feeForTxSize:txSize + cpfpSize isInstant:instantSend inputCount:inputCount];
+    fee = [self.wallet.chain feeForTxSize:txSize + cpfpSize];
     if (rInputCount) {
         *rInputCount = inputCount;
     }
@@ -1612,7 +1603,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
         }
         
         // we will be adding a wallet output (34 bytes), also non-compact pubkey sigs are larger by 32bytes each
-        if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33)*tx.inputHashes.count isInstant:false inputCount:0]; //input count doesn't matter for non instant transactions
+        if (fee) feeAmount = [self.wallet.chain feeForTxSize:tx.size + 34 + (key.publicKeyData.length - 33)*tx.inputHashes.count]; //input count doesn't matter for non instant transactions
         
         if (feeAmount + self.wallet.chain.minOutputAmount > balance) {
             completion(nil, 0, [NSError errorWithDomain:@"DashSync" code:417 userInfo:@{NSLocalizedDescriptionKey:

@@ -93,12 +93,6 @@
 "Ignore" = "Negeer";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instantane betaling";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Ontoereikende fondsen";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"Retry" = "Probeer opnieuw";
-
-/* No comment provided by engineer. */
-"Send" = "Verstuur";
-
-/* No comment provided by engineer. */
 "Server Error" = "Serverfout";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "De privésleutel is leeg";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transactie is geannuleerd, netwerktime-out";

@@ -93,12 +93,6 @@
 "Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instant payment";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Το InstantSend απαιτεί αρκετές εισόδους με 6 επιβεβαιώσεις, να σταλθεί ούτως ή άλλως ως απλή συναλλαγή;";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
@@ -180,12 +174,6 @@
 "Reset" = "Επαναφορά";
 
 /* No comment provided by engineer. */
-"Retry" = "Επανάληψη";
-
-/* No comment provided by engineer. */
-"Send" = "Αποστολή";
-
-/* No comment provided by engineer. */
 "Server Error" = "Σφάλμα διακομιστή!";
 
 /* No comment provided by engineer. */
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "This private key is empty";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Αυτό το αίτημα απαιτεί άμεση πληρωμή αλλά δεν έχετε αρκετές εισόδους με 6 επιβεβαιώσεις που απαιτούνται από το InstantSend, μπορείτε να ζητήσετε από τον έμπορο να δεχτεί μια κανονική συναλλαγή ή να περιμένει λίγα λεπτά.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transaction canceled, network timeout";
