@@ -68,6 +68,8 @@
 @property (nonatomic,assign) uint32_t currentMainKeyIndex;
 @property (nonatomic,assign) DSDerivationPathSigningAlgorith currentMainKeyType;
 
+@property (nonatomic,strong) DSCreditFundingTransaction * registrationCreditFundingTransaction;
+
 @property(nonatomic,strong) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityTopupTransition*>* blockchainIdentityTopupTransitions;
 @property(nonatomic,strong) NSMutableArray <DSBlockchainIdentityCloseTransition*>* blockchainIdentityCloseTransitions;
@@ -226,6 +228,11 @@
         [derivationPathTopupFunding generateExtendedPublicKeyFromSeed:seed storeUnderWalletUniqueId:self.wallet.uniqueID];
         completion(YES);
     }];
+}
+
+-(void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction*)fundingTransaction {
+    [self registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
+    self.registrationCreditFundingTransaction = fundingTransaction;
 }
 
 -(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId {
@@ -413,8 +420,8 @@
 // MARK: - Funding
 
 -(NSString*)registrationFundingAddress {
-    if (self.creditFundingTransaction) {
-        return [uint160_data(self.creditFundingTransaction.creditBurnPublicKeyHash) addressFromHash160DataForChain:self.wallet.chain];
+    if (self.registrationCreditFundingTransaction) {
+        return [uint160_data(self.registrationCreditFundingTransaction.creditBurnPublicKeyHash) addressFromHash160DataForChain:self.wallet.chain];
     } else {
         DSCreditFundingDerivationPath * derivationPathRegistrationFunding = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.wallet];
         return [derivationPathRegistrationFunding addressAtIndex:self.index];

@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 @property (nonatomic,readonly) NSArray <DSTransition*>* allTransitions;
 
-@property (nonatomic,readonly) DSCreditFundingTransaction * creditFundingTransaction;
+@property (nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
 
 @property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 
@@ -67,6 +67,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 -(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion;
 
 -(void)registerInWallet;
+
+-(void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction*)fundingTransaction;
 
 -(void)registerInWalletForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId;
 

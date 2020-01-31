@@ -36,6 +36,8 @@
     }
     
     self.indexLabel.text = [NSString stringWithFormat:@"%d",[self.wallet unusedBlockchainIdentityIndex]];
+    
+    self.topupAmountLabel.text = [NSString stringWithFormat:@"%d",10000000]; //0.1 Dash
 }
 
 - (void)didReceiveMemoryWarning {
@@ -122,7 +124,7 @@
             [blockchainIdentity fundingTransactionForTopupAmount:topupAmount toAddress:creditFundingRegistrationAddress fundedByAccount:self.fundingAccount completion:^(DSCreditFundingTransaction * _Nonnull fundingTransaction) {
                 [self.fundingAccount signTransaction:fundingTransaction withPrompt:@"Would you like to create this user?" completion:^(BOOL signedTransaction, BOOL cancelled) {
                     if (signedTransaction) {
-                        [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:fundingTransaction.creditBurnIdentityIdentifier];
+                        [blockchainIdentity registerInWalletForRegistrationFundingTransaction:fundingTransaction];
                         
                         [self.chainManager.transactionManager publishTransaction:fundingTransaction completion:^(NSError * _Nullable error) {
                             if (error) {
