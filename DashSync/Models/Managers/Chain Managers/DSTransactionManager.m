@@ -51,6 +51,7 @@
 #import "NSString+Dash.h"
 #import "NSMutableData+Dash.h"
 #import "DSMasternodeList.h"
+#import "DSError.h"
 
 #define IX_INPUT_LOCKED_KEY @"IX_INPUT_LOCKED_KEY"
 
@@ -375,7 +376,13 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
     BOOL valid = protoReq.isValid, outputTooSmall = NO;
     
     if (! valid && [protoReq.errorMessage isEqual:DSLocalizedString(@"Request expired", nil)]) {
-        errorNotificationBlock(DSLocalizedString(@"Bad payment request", nil),protoReq.errorMessage,YES);
+        NSString *errorTitle = DSLocalizedString(@"Bad payment request", nil);
+        NSString *errorMessage = protoReq.errorMessage;
+        NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentRequestExpired
+                                         userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
+        errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
     
@@ -424,13 +431,27 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         return;
     }
     else if (amount < TX_MIN_OUTPUT_AMOUNT) {
-        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"Dash payments can't be less than %@", nil),
-                                                                                 [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
+        NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
+        NSString *errorMessage = [NSString stringWithFormat:
+                                  DSLocalizedString(@"Dash payments can't be less than %@", nil),
+                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentRequestExpired
+                                         userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
+        errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
     else if (outputTooSmall) {
-        errorNotificationBlock(DSLocalizedString(@"Couldn't make payment", nil),[NSString stringWithFormat:DSLocalizedString(@"Dash transaction outputs can't be less than %@",
-                                                                                                                             nil), [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]],YES);
+        NSString *errorTitle = DSLocalizedString(@"Couldn't make payment", nil);
+        NSString *errorMessage = [NSString stringWithFormat:
+                                  DSLocalizedString(@"Dash transaction outputs can't be less than %@", nil),
+                                  [priceManager stringForDashAmount:TX_MIN_OUTPUT_AMOUNT]];
+        NSString *localizedDescription = [NSString stringWithFormat:@"%@\n%@", errorTitle, errorMessage];
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentRequestExpired
+                                         userInfo:@{ NSLocalizedDescriptionKey: localizedDescription }];
+        errorNotificationBlock(error, errorTitle, errorMessage, YES);
         return;
     }
     
@@ -569,7 +590,22 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                if (!publishingError && error) {
                                                    if (!sent) {
-                                                       errorNotificationBlock([NSString stringWithFormat:DSLocalizedString(@"Error from payment request server %@",nil),protocolRequest.details.paymentURL],error.localizedDescription,YES);
+                                                       NSString *errorTitle = [NSString
+                                                                               stringWithFormat:
+                                                                               DSLocalizedString(@"Error from payment request server %@",nil),
+                                                                               protocolRequest.details.paymentURL];
+                                                       NSString *errorMessage = error.localizedDescription;
+                                                       NSString *localizedDescription = [NSString
+                                                                                         stringWithFormat:@"%@\n%@",
+                                                                                         errorTitle, errorMessage];
+                                                       NSError *resError = [NSError
+                                                                            errorWithDomain:DSErrorDomain
+                                                                            code:DSErrorPaymentRequestExpired
+                                                                            userInfo:@{
+                                                                                NSLocalizedDescriptionKey: localizedDescription,
+                                                                                NSUnderlyingErrorKey: error,
+                                                                            }];
+                                                       errorNotificationBlock(resError, errorTitle, errorMessage, YES);
                                                    }
                                                }
                                                else if (!sent) {
@@ -620,11 +656,19 @@ requiresSpendingAuthenticationPrompt:(BOOL)requiresSpendingAuthenticationPrompt
         challenge(challengeTitle,challengeMessage,reduceString,sendReducedBlock,^{additionalInfoRequest(DSRequestingAdditionalInfo_CancelOrChangeAmount);});
         }
         else {
-            errorNotificationBlock(DSLocalizedString(@"Insufficient funds for Dash network fee", nil),nil,NO);
+            NSString *errorTitle = DSLocalizedString(@"Insufficient funds for Dash network fee", nil);
+            NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                                 code:DSErrorPaymentRequestExpired
+                                             userInfo:@{ NSLocalizedDescriptionKey: errorTitle }];
+            errorNotificationBlock(error, errorTitle, nil, NO);
         }
     }
     else {
-        errorNotificationBlock(DSLocalizedString(@"Insufficient funds", nil),nil,NO);
+        NSString *errorTitle = DSLocalizedString(@"Insufficient funds", nil);
+        NSError *error = [NSError errorWithDomain:DSErrorDomain
+                                             code:DSErrorPaymentRequestExpired
+                                         userInfo:@{ NSLocalizedDescriptionKey: errorTitle }];
+        errorNotificationBlock(error, errorTitle, nil, NO);
     }
 }
 

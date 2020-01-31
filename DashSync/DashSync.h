@@ -7,6 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+
+#import "DSError.h"
+
 #import "DSReachabilityManager.h"
 #import "DSEnvironment.h"
 #import "DSPeerManager.h"

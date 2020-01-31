@@ -54,7 +54,7 @@ typedef void (^DSTransactionCreationRequestingAdditionalInfoBlock)(DSRequestingA
 
 typedef void (^DSTransactionChallengeBlock)(NSString * challengeTitle, NSString * challengeMessage,NSString * actionTitle, void (^actionBlock)(void), void (^cancelBlock)(void) );
 
-typedef void (^DSTransactionErrorNotificationBlock)(NSString * _Nullable errorTitle, NSString * _Nullable errorMessage,BOOL shouldCancel);
+typedef void (^DSTransactionErrorNotificationBlock)(NSError *error, NSString * _Nullable errorTitle, NSString * _Nullable errorMessage,BOOL shouldCancel);
 
 typedef BOOL (^DSTransactionCreationCompletionBlock)(DSTransaction *tx, NSString *prompt, uint64_t amount, uint64_t proposedFee, NSArray<NSString *> *addresses, BOOL isSecure); //return is whether we should continue automatically
 

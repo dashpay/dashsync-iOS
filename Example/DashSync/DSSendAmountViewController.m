@@ -120,7 +120,7 @@
                 
                 displayedSentMessage = TRUE;
             }
-        } errorNotificationBlock:^(NSString * _Nonnull errorTitle, NSString * _Nonnull errorMessage, BOOL shouldCancel) {
+        } errorNotificationBlock:^(NSError * _Nonnull error, NSString * _Nullable errorTitle, NSString * _Nullable errorMessage, BOOL shouldCancel) {
             if (errorTitle || errorMessage) {
                 UIAlertController * alert = [UIAlertController
                                              alertControllerWithTitle:errorTitle
