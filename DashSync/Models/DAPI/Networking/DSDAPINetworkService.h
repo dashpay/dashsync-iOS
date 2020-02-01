@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDAPINetworkService : NSObject <DSDAPINetworkServiceProtocol>
 
+@property (readonly, nonatomic) NSString * ipAddress;
+
 - (instancetype)initWithDAPINodeIPAddress:(NSString*)ipAddress httpLoaderFactory:(HTTPLoaderFactory *)httpLoaderFactory usingGRPCDispatchQueue:(dispatch_queue_t)grpcDispatchQueue onChain:(DSChain*)chain NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

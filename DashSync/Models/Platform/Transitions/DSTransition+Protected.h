@@ -17,6 +17,8 @@
 
 #import "DSTransition.h"
 
+@class DSTransitionEntity;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSTransition ()
@@ -36,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint32_t signaturePublicKeyId;
 
 @property (nonatomic, readonly) DSMutableStringValueDictionary * keyValueDictionary;
+
+@property (nonatomic, readonly) DSTransitionEntity * transitionEntity;
 
 -(instancetype)initOnChain:(DSChain*)chain;
 

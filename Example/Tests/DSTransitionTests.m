@@ -67,7 +67,7 @@
     
     [self.testAccount registerTransaction:fundingTransaction];
     
-    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:fundingTransaction inWallet:self.testWallet inContext:nil];
+    self.blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:fundingTransaction withUsernameStatusDictionary:nil inWallet:self.testWallet inContext:nil];
 }
 
 - (void)tearDown {

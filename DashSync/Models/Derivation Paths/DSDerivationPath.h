@@ -79,7 +79,7 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {
     DSDerivationPathReference_BlockchainIdentityCreditTopupFunding = 12,
 };
 
-@interface DSDerivationPath : DSUInt256IndexPath{
+@interface DSDerivationPath : DSUInt256IndexPath {
 @private
     BOOL *_hardenedIndexes;
 }

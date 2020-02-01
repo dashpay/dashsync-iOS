@@ -52,6 +52,7 @@
 #import "DSTransactionManager+Protected.h"
 #import "NSString+Bitcoin.h"
 #import "DSOptionsManager.h"
+#import "DSDAPIClient.h"
 
 #define FAULTY_DML_MASTERNODE_PEERS @"FAULTY_DML_MASTERNODE_PEERS"
 #define CHAIN_FAULTY_DML_MASTERNODE_PEERS [NSString stringWithFormat:@"%@_%@",peer.chain.uniqueID,FAULTY_DML_MASTERNODE_PEERS]
@@ -244,6 +245,29 @@
             }
         }
     }];
+}
+
+-(void)setCurrentMasternodeList:(DSMasternodeList *)currentMasternodeList {
+    if (self.chain.isEvolutionEnabled) {
+        if (!_currentMasternodeList) {
+            for (DSSimplifiedMasternodeEntry * masternodeEntry in currentMasternodeList.simplifiedMasternodeEntries) {
+                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+        } else {
+            NSDictionary * updates = [currentMasternodeList listOfChangedNodesComparedTo:_currentMasternodeList];
+            NSArray * added = updates[MASTERNODE_LIST_ADDED_NODES];
+            NSArray * removed = updates[MASTERNODE_LIST_ADDED_NODES];
+            for (DSSimplifiedMasternodeEntry * masternodeEntry in added) {
+                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+            for (DSSimplifiedMasternodeEntry * masternodeEntry in removed) {
+                [self.chain.chainManager.DAPIClient addDAPINodeByAddress:masternodeEntry.ipAddressString];
+            }
+        }
+        
+        
+    }
+    _currentMasternodeList = currentMasternodeList;
 }
 
 -(void)loadFileDistributedMasternodeLists {

@@ -33,6 +33,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 @property (strong, nonatomic) DSHTTPJSONRPCClient *httpJSONRPCClient;
 @property (strong, nonatomic) Platform *gRPCClient;
 @property (strong, nonatomic) DSChain * chain;
+@property (strong, nonatomic) NSString * ipAddress;
 @property (strong, atomic) dispatch_queue_t grpcDispatchQueue;
 
 @end
@@ -45,6 +46,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
     self = [super init];
     if (self) {
+        self.ipAddress = ipAddress;
         NSURL *dapiNodeURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%d",ipAddress,chain.standardDapiJRPCPort]];
         _httpJSONRPCClient = [DSHTTPJSONRPCClient clientWithEndpointURL:dapiNodeURL httpLoaderFactory:httpLoaderFactory];
         self.chain = chain;

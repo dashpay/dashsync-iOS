@@ -40,6 +40,8 @@ typedef NS_ENUM(NSUInteger, DSDAPIClientErrorCode) {
 
 - (void)addDAPINodeByAddress:(NSString*)host;
 
+- (void)removeDAPINodeByAddress:(NSString*)host;
+
 - (void)getAllStateTransitionsForUser:(DSBlockchainIdentity*)blockchainIdentity completion:(void (^)(NSError *_Nullable error))completion;
 
 - (void)sendDocument:(DPDocument *)document

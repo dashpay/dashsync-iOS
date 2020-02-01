@@ -21,5 +21,6 @@
 @dynamic ownContact;
 @dynamic transitions;
 @dynamic chain;
+@dynamic usernames;
 
 @end

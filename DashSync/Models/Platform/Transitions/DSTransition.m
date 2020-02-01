@@ -139,6 +139,24 @@
 
 // MARK: - Persistence
 
+-(DSTransitionEntity *)transitionEntity {
+    NSManagedObjectContext * context = [DSTransitionEntity context];
+    __block DSTransitionEntity * transitionEntity = nil;
+    [context performBlockAndWait:^{ // add the transaction to core data
+        [DSChainEntity setContext:context];
+        Class transitionEntityClass = [self entityClass];
+        [transitionEntityClass setContext:context];
+        if ([DSTransitionEntity countObjectsMatching:@"transitionHash == %@", uint256_data(self.transitionHash)] == 0) {
+            
+            transitionEntity = [transitionEntityClass managedObject];
+            [transitionEntity setAttributesFromTransition:self];
+        } else {
+            transitionEntity = [DSTransitionEntity anyObjectMatching:@"transitionHash == %@", uint256_data(self.transitionHash)];
+        }
+    }];
+    return transitionEntity;
+}
+
 -(DSTransitionEntity *)save {
     NSManagedObjectContext * context = [DSTransitionEntity context];
     __block DSTransitionEntity * transitionEntity = nil;

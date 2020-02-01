@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSTransaction ()
 
 @property (nonatomic, assign) BOOL saved; //don't trust this
+@property (nonatomic, readonly) DSTransactionEntity * transactionEntity;
 
 @end
 

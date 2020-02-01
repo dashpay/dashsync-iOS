@@ -35,7 +35,7 @@
 #import "NSData+Bitcoin.h"
 #import "DSEnvironment.h"
 #import "DSChainsManager.h"
-#import "DSBlockchainIdentity.h"
+#import "DSBlockchainIdentity+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityRegistrationTransition.h"
 #import "DSBlockchainIdentityUpdateTransition.h"
@@ -54,6 +54,7 @@
 #import "DSCreditFundingDerivationPath+Protected.h"
 #import "DSCreditFundingTransaction.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 
 #define SEED_ENTROPY_LENGTH   (128/8)
 #define WALLET_CREATION_TIME_KEY   @"WALLET_CREATION_TIME_KEY"
@@ -202,7 +203,7 @@
             for (DSFriendRequestEntity * friendRequest in blockchainIdentity.ownContact.outgoingRequests) {
                 DSAccount * account = [self accountWithNumber:friendRequest.account.index];
                 DSIncomingFundsDerivationPath * fundsDerivationPath = [DSIncomingFundsDerivationPath
-                                                               contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentityUniqueId.UInt256 sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueId forAccountNumber:account.accountNumber onChain:self.chain];
+                                                               contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:friendRequest.destinationContact.associatedBlockchainIdentityUniqueId.UInt256 sourceBlockchainIdentityUniqueId:blockchainIdentity.uniqueID forAccountNumber:account.accountNumber onChain:self.chain];
                 fundsDerivationPath.wallet = self;
                 fundsDerivationPath.account = account;
                 NSLog(@"%@",blockchainIdentity.ownContact.outgoingRequests);
@@ -898,6 +899,7 @@
             DSAccount * account = [blockchainIdentity.wallet accountWithNumber:accountNumber];
             [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
         }
+        [blockchainIdentity.blockchainIdentityEntity deleteObject];
     }];
     
     
@@ -923,7 +925,7 @@
     NSMutableDictionary * keyChainDictionary = [getKeychainDict(self.walletBlockchainIdentitiesKey, &error) mutableCopy];
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     
-    NSAssert(!uint256_is_zero(blockchainIdentity.uniqueId), @"registrationTransactionHashData must not be null");
+    NSAssert(!uint256_is_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
     [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -940,7 +942,7 @@
 -(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
     DSBlockchainIdentity * foundBlockchainIdentity = nil;
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
-        if (uint256_eq([blockchainIdentity uniqueId],uniqueId)) {
+        if (uint256_eq([blockchainIdentity uniqueID],uniqueId)) {
             foundBlockchainIdentity = blockchainIdentity;
         }
     }
@@ -973,22 +975,35 @@
                 //TODO: get the identity from core data
                 
                 [self.chain.managedObjectContext performBlockAndWait:^{
+                    NSUInteger blockchainIdentityEntitiesCount = [DSBlockchainIdentityEntity countObjectsMatching:@"chain == %@",self.chain.chainEntity];
+                    if (blockchainIdentityEntitiesCount != keyChainDictionary.count) {
+                        DSDLog(@"Unmatching blockchain entities count");
+                    }
                     DSBlockchainIdentityEntity * blockchainIdentity = [DSBlockchainIdentityEntity anyObjectMatching:@"uniqueID == %@",uint256_data([dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2])];
                     if (blockchainIdentity) {
                         if (blockchainIdentity.registrationFundingTransaction) {
                             //Everything is good
                             DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[blockchainIdentity.registrationFundingTransaction transactionForChain:self.chain];
-                            DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:registrationTransaction inWallet:self inContext:self.chain.managedObjectContext];
+                            NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
+                            for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentity.usernames) {
+                                [usernameStatuses setObject:@(usernameEntity.status) forKey:usernameEntity.stringValue];
+                            }
+                            DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses inWallet:self inContext:self.chain.managedObjectContext];
+
                             [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
                         } else {
                             //Identity is known by core data, but registration transaction hasn't synced yet
                             //Lets first see if the output exists just to sanity check
-                            DSTxOutputEntity * output = [DSTxOutputEntity anyObjectMatching:@"script == %@",dsutxo_data(blockchainIdentityLockedOutpoint)];
-                            if (output) {
+                            NSData * transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
+                            DSTransactionEntity * creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",transactionHashData];
+                            if (creditRegitrationTransactionEntity) {
                                 //Weird but we should recover in this situation
-                                DSCreditFundingTransactionEntity * registrationTransactionEntity = (DSCreditFundingTransactionEntity *)output.transaction;
-                                DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[registrationTransactionEntity transactionForChain:self.chain];
-                                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:registrationTransaction inWallet:self inContext:self.chain.managedObjectContext];
+                                DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
+                                NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
+                                for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentity.usernames) {
+                                    [usernameStatuses setObject:@(usernameEntity.status) forKey:usernameEntity.stringValue];
+                                }
+                                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses inWallet:self inContext:self.chain.managedObjectContext];
                                 [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
                             } else {
                                 DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
@@ -997,17 +1012,19 @@
                         }
                     } else {
                         //No blockchain identity is known in core data
-                        DSTxOutputEntity * output = [DSTxOutputEntity anyObjectMatching:@"script == %@",dsutxo_data(blockchainIdentityLockedOutpoint)];
-                        if (output) {
+                        NSData * transactionHashData = uint256_data(uint256_reverse(blockchainIdentityLockedOutpoint.hash));
+                        DSTransactionEntity * creditRegitrationTransactionEntity = [DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@",transactionHashData];
+                        if (creditRegitrationTransactionEntity) {
                             //The registration funding transaction exists
                             //Weird but we should recover in this situation
-                            DSCreditFundingTransactionEntity * registrationTransactionEntity = (DSCreditFundingTransactionEntity *)output.transaction;
-                            DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[registrationTransactionEntity transactionForChain:self.chain];
-                            DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:registrationTransaction inWallet:self inContext:self.chain.managedObjectContext];
+                            DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
+                            DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:registrationTransaction withUsernameStatusDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
+                            [blockchainIdentity registerInWallet];
                             [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
                         } else {
                             //We also don't have the registration funding transaction
                             DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initAtIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
+                            [blockchainIdentity registerInWalletForBlockchainIdentityUniqueId:[dsutxo_data(blockchainIdentityLockedOutpoint) SHA256_2]];
                             [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
                         }
                     }

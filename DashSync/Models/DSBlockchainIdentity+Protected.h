@@ -19,10 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DSBlockchainIdentityEntity;
+
 @interface DSBlockchainIdentity ()
 
 @property (nonatomic,readonly) NSArray<DPDocument*>* unregisteredUsernamesPreorderDocuments;
 @property (nonatomic,readonly,nullable) DSDocumentTransition* unregisteredUsernamesPreorderTransition;
+
+@property (nonatomic,readonly) DSBlockchainIdentityEntity* blockchainIdentityEntity;
 
 @end
 

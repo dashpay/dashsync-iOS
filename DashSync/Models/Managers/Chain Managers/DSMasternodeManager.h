@@ -107,4 +107,12 @@ FOUNDATION_EXPORT NSString* const DSQuorumListDidChangeNotification;
 
 @end
 
+@protocol DSMasternodeManagerDelegate
+
+@required
+
+-(void)chain:(DSChain*)chain changedCurrentMasternodeList:(DSMasternodeList*)masternodeList fromPeer:(DSPeer*)peer;
+
+@end
+
 NS_ASSUME_NONNULL_END

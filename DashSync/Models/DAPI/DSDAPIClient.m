@@ -32,7 +32,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
 @interface DSDAPIClient()
 
 @property (nonatomic, strong) DSChain * chain;
-@property (nonatomic, strong) NSMutableArray<NSString *>* availablePeers;
+@property (nonatomic, strong) NSMutableSet<NSString *>* availablePeers;
 @property (nonatomic, strong) NSMutableArray<DSDAPINetworkService *>* activeServices;
 @property (atomic, strong) dispatch_queue_t dispatchQueue;
 
@@ -44,7 +44,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     self = [super init];
     if (self) {
         _chain = chain;
-        self.availablePeers = [NSMutableArray array];
+        self.availablePeers = [NSMutableSet set];
         self.activeServices = [NSMutableArray array];
                 self.dispatchQueue = dispatch_queue_create([[NSString stringWithFormat:@"org.dashcore.dashsync.dapigrpc.%@",self.chain.uniqueID] UTF8String], DISPATCH_QUEUE_SERIAL);
 
@@ -76,7 +76,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     NSParameterAssert(document);
     NSParameterAssert(contract);
     
-    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueId onChain:self.chain];
+    DSDocumentTransition * documentTransition = [[DSDocumentTransition alloc] initForDocuments:@[document] withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
     
     DSDLog(@"identity %@",uint256_hex(documentTransition.blockchainIdentityUniqueId));
     __weak typeof(self) weakSelf = self;
@@ -169,13 +169,24 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
     [self.availablePeers addObject:host];
 }
 
+- (void)removeDAPINodeByAddress:(NSString*)host {
+    @synchronized (self) {
+        [self.availablePeers removeObject:host];
+        for (DSDAPINetworkService * networkService in [self.activeServices copy]) {
+            if ([networkService.ipAddress isEqualToString:host]) {
+                [self.activeServices removeObject:networkService];
+            }
+        }
+    }
+}
+
 -(DSDAPINetworkService*)DAPINetworkService {
     @synchronized (self) {
         if ([self.activeServices count]) {
-            if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //iif only 1 service, just use first one
+            if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //if only 1 service, just use first one
             return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
-            NSString * peerHost = [self.availablePeers objectAtIndex:0];
+            NSString * peerHost = [self.availablePeers anyObject];
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
             [self.activeServices addObject:DAPINetworkService];

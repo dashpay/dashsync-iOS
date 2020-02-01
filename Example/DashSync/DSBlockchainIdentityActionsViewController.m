@@ -77,7 +77,9 @@
     if (self.blockchainIdentity.isRegistered) return;
     [self.blockchainIdentity createAndPublishRegistrationTransitionWithCompletion:^(NSDictionary * _Nullable successInfo, NSError * _Nullable error) {
         if (error) {
-            [self raiseIssue:@"Error" message:@"Unable to create blockchainIdentityRegistrationTransition."];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self raiseIssue:@"Unable to register." message:error.localizedDescription];
+            });
         }
     }];
 }

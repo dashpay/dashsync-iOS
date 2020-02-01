@@ -398,6 +398,21 @@ inline static int ceil_log2(int x)
     return [self compare:other usingOurString:@"ours" usingTheirString:@"theirs"];
 }
 
+-(NSDictionary*)listOfChangedNodesComparedTo:(DSMasternodeList*)previous {
+    NSMutableArray * added = [NSMutableArray array];
+    NSMutableArray * removed = [NSMutableArray array];
+    for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {
+        DSSimplifiedMasternodeEntry * currentEntry = self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        DSSimplifiedMasternodeEntry * previousEntry = previous.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash[data];
+        if (currentEntry && !previousEntry) {
+            [added addObject:currentEntry];
+        } else if (!currentEntry && previousEntry) {
+            [removed addObject:previousEntry];
+        }
+    }
+    return @{MASTERNODE_LIST_ADDED_NODES:added,MASTERNODE_LIST_REMOVED_NODES:removed};
+}
+
 -(NSDictionary*)compare:(DSMasternodeList*)other usingOurString:(NSString*)ours usingTheirString:(NSString*)theirs {
     NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     for (NSData * data in self.simplifiedMasternodeListDictionaryByReversedRegistrationTransactionHash) {

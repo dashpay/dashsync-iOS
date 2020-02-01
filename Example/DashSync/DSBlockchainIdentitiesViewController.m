@@ -11,6 +11,7 @@
 #import "DSCreateBlockchainIdentityViewController.h"
 #import "DSBlockchainIdentityActionsViewController.h"
 #import <DashSync/DSCreditFundingTransaction.h>
+#import "DSMerkleBlock.h"
 
 @interface DSBlockchainIdentitiesViewController ()
 
@@ -61,7 +62,11 @@
         blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentUsername?blockchainIdentity.currentUsername:@"Not yet set";
         blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainIdentity.creditBalance];
         if (blockchainIdentity.registrationCreditFundingTransaction) {
-            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight)];
+            if (blockchainIdentity.registrationCreditFundingTransaction.blockHeight == BLOCK_UNKNOWN_HEIGHT) {
+                blockchainIdentityCell.confirmationsLabel.text = @"unconfirmed";
+            } else {
+            blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight + 1)];
+            }
         }
        // blockchainIdentityCell.publicKeyLabel.text = blockchainIdentity;
     }

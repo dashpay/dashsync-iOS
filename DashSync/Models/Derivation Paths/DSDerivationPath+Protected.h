@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString * standaloneExtendedPublicKeyUniqueID;
 @property (nonatomic, weak) DSWallet * wallet;
 @property (nonatomic, readonly) NSString * standaloneExtendedPublicKeyLocationString;
+@property (nonatomic, readonly) DSDerivationPathEntity * derivationPathEntity;
 
 
 @end

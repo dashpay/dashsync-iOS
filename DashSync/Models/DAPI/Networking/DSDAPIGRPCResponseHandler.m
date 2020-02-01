@@ -20,11 +20,11 @@
 @implementation DSDAPIGRPCResponseHandler
 
 - (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
-    NSLog(@"hoho0");
+    NSLog(@"didReceiveInitialMetadata");
 }
 
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
-    NSLog(@"hoho1");
+    NSLog(@"didReceiveProtoMessage");
 }
 
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
@@ -32,12 +32,13 @@
     
     if (error && self.errorHandler) {
         self.errorHandler(error);
+        NSLog(@"error in didCloseWithTrailingMetadata %@",error);
     }
-    NSLog(@"hoho2");
+    NSLog(@"didCloseWithTrailingMetadata");
 }
 
 -(void)didWriteMessage {
-    NSLog(@"hoho3");
+    NSLog(@"didWriteMessage");
 }
 
 

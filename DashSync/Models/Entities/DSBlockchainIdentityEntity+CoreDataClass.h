@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class DSBlockchainIdentityKeyPathEntity, DSChainEntity, DSContactEntity, DSCreditFundingTransactionEntity, DSTransitionEntity;
+@class DSBlockchainIdentityKeyPathEntity, DSChainEntity, DSContactEntity, DSCreditFundingTransactionEntity, DSTransitionEntity, DSBlockchainIdentityUsernameEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

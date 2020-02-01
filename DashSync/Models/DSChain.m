@@ -509,6 +509,10 @@ static dispatch_once_t devnetToken = 0;
     return [self chainType] == DSChainType_DevNet;
 }
 
+-(BOOL)isEvolutionEnabled {
+    return [self isDevnetAny];
+}
+
 -(NSString*)uniqueID {
     if (!_uniqueID) {
         _uniqueID = [[NSData dataWithUInt256:[self genesisHash]] shortHexString];
@@ -2331,8 +2335,8 @@ static dispatch_once_t devnetToken = 0;
         if (wallet) {
             DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
             if (!blockchainIdentity) {
-                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:creditFundingTransaction inWallet:wallet inContext:self.managedObjectContext];
-                [wallet registerBlockchainIdentity:blockchainIdentity];
+                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithFundingTransaction:creditFundingTransaction withUsernameStatusDictionary:nil inWallet:wallet inContext:self.managedObjectContext];
+                [blockchainIdentity registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
             }
         }
     }

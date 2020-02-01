@@ -25,9 +25,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
 @property (nonatomic,readonly) NSString * uniqueIdString;
-@property (nonatomic,readonly) UInt256 uniqueId;
+@property (nonatomic,readonly) UInt256 uniqueID;
 @property (nonatomic,readonly) UInt256 registrationTransitionHash;
-@property (nonatomic,readonly) NSData * uniqueIdData;
+@property (nonatomic,readonly) NSData * uniqueIDData;
 @property (nonatomic,readonly) NSData * lockedOutpointData;
 @property (nonatomic,readonly) NSString * registrationTransitionHashIdentifier;
 @property (nullable,nonatomic,readonly) NSString * currentUsername;
@@ -56,7 +56,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)creditFundingTransaction inWallet:(DSWallet* _Nonnull)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)addUsername:(NSString*)username;
 

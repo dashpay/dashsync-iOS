@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityKeyPathEntity *> *keyPaths;
 @property (nullable, nonatomic, retain) DSContactEntity *ownContact;
 @property (nullable, nonatomic, retain) NSSet<DSTransitionEntity *> *transitions;
+@property (nullable, nonatomic, retain) NSSet<DSBlockchainIdentityUsernameEntity *> *usernames;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 
 @end
@@ -36,6 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeKeyPathsObject:(DSBlockchainIdentityKeyPathEntity *)value;
 - (void)addKeyPaths:(NSSet<DSBlockchainIdentityKeyPathEntity *> *)values;
 - (void)removeKeyPaths:(NSSet<DSBlockchainIdentityKeyPathEntity *> *)values;
+
+- (void)addUsernamesObject:(DSBlockchainIdentityUsernameEntity *)value;
+- (void)removeUsernamesObject:(DSBlockchainIdentityUsernameEntity *)value;
+- (void)addUsernames:(NSSet<DSBlockchainIdentityUsernameEntity *> *)values;
+- (void)removeUsernames:(NSSet<DSBlockchainIdentityUsernameEntity *> *)values;
 
 - (void)addTransitionsObject:(DSTransitionEntity *)value;
 - (void)removeTransitionsObject:(DSTransitionEntity *)value;

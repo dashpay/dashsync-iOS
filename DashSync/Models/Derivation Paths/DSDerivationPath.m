@@ -450,6 +450,10 @@ void CKDpub256(DSECPoint *K, UInt256 *c, UInt256 i, BOOL hardened)
 
 // MARK: - Derivation Path Information
 
+-(DSDerivationPathEntity*)derivationPathEntity {
+    return [DSDerivationPathEntity derivationPathEntityMatchingDerivationPath:self];
+}
+
 -(NSNumber*)depth {
     if (_depth != nil) return _depth;
     else return @(self.length);

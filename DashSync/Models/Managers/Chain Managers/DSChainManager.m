@@ -67,16 +67,11 @@
     chain.chainManager = self;
     self.sporkManager = [[DSSporkManager alloc] initWithChain:chain];
     self.masternodeManager = [[DSMasternodeManager alloc] initWithChain:chain];
+    self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain]; //this must be
     [self.masternodeManager setUp];
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
-    self.DAPIClient = [[DSDAPIClient alloc] initWithChain:chain];
-    if (chain.isDevnetAny) {
-        for (DSPeer * peer in self.peerManager.registeredDevnetPeers) {
-            [self.DAPIClient addDAPINodeByAddress:peer.host];
-        }
-    }
     
     return self;
 }
