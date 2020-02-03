@@ -473,12 +473,14 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
             success:(void (^)(NSDictionary *blockchainIdentity))success
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
-
-    [self requestWithMethod:@"getUser"
-                  parameters:@{ @"userId" : userId }
-        validateAgainstClass:NSDictionary.class
-                     success:success
-                     failure:failure];
+    
+    GetIdentityRequest * getIdentityRequest = [[GetIdentityRequest alloc] init];
+    getIdentityRequest.id_p = userId;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getIdentityWithMessage:getIdentityRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
 - (void)searchUsersWithPattern:(NSString *)pattern

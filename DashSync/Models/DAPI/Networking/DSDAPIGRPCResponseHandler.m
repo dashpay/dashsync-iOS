@@ -17,6 +17,12 @@
 
 #import "DSDAPIGRPCResponseHandler.h"
 
+@interface DSDAPIGRPCResponseHandler()
+
+@property(nonatomic,strong) NSDictionary * responseDictionary;
+
+@end
+
 @implementation DSDAPIGRPCResponseHandler
 
 - (void)didReceiveInitialMetadata:(nullable NSDictionary *)initialMetadata {
@@ -30,9 +36,13 @@
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
                                error:(nullable NSError *)error {
     
-    if (error && self.errorHandler) {
-        self.errorHandler(error);
+    if (error) {
+        if (self.errorHandler) {
+            self.errorHandler(error);
+        }
         NSLog(@"error in didCloseWithTrailingMetadata %@",error);
+    } else {
+        self.successHandler(self.responseDictionary);
     }
     NSLog(@"didCloseWithTrailingMetadata");
 }

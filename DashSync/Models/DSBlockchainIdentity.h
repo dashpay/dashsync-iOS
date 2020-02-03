@@ -13,6 +13,13 @@
 NS_ASSUME_NONNULL_BEGIN
 @class DSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityTopupTransition,DSBlockchainIdentityUpdateTransition,DSBlockchainIdentityCloseTransition,DSAccount,DSChain,DSTransition,DSContactEntity,DSPotentialFriendship,DSTransaction,DSFriendRequestEntity,DSPotentialContact,DSCreditFundingTransaction,DSDocumentTransition,DSKey,DPDocumentFactory;
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
+    DSBlockchainIdentityRegistrationStatus_Unknown = 0,
+    DSBlockchainIdentityRegistrationStatus_Registered = 1,
+    DSBlockchainIdentityRegistrationStatus_Registering = 2,
+    DSBlockchainIdentityRegistrationStatus_NotRegistered = 3, //sent to DAPI, not yet confirmed
+};
+
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
     DSBlockchainIdentityUsernameStatus_NotPresent = 0,
     DSBlockchainIdentityUsernameStatus_Initial = 1,
@@ -49,6 +56,10 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 @property (nonatomic,readonly) DPDocumentFactory* dashpayDocumentFactory;
 @property (nonatomic,readonly) DPDocumentFactory* dpnsDocumentFactory;
+
+@property (nonatomic,readonly) DSBlockchainIdentityRegistrationStatus registrationStatus;
+
+@property (nonatomic,readonly) NSString * registrationStatusString;
 
 @property (nonatomic,readonly,getter=isRegistered) BOOL registered;
 

@@ -13,6 +13,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *usernameLabel;
 @property (strong, nonatomic) IBOutlet UILabel *creditBalanceLabel;
 @property (strong, nonatomic) IBOutlet UILabel *confirmationsLabel;
+@property (strong, nonatomic) IBOutlet UILabel *registrationL2StatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *publicKeysLabel;
 
 @end

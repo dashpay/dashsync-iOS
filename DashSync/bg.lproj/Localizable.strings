@@ -259,3 +259,15 @@
 
 /* No comment provided by engineer. */
 "Unable to create registration transition" = "Unable to create registration transition";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";

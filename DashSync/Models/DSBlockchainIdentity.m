@@ -64,7 +64,7 @@
 @property (nonatomic,assign) UInt256 uniqueID;
 @property (nonatomic,assign) DSUTXO lockedOutpoint;
 @property (nonatomic,assign) uint32_t index;
-@property (nonatomic,assign,getter=isRegistered) BOOL registered;
+@property (nonatomic,assign) DSBlockchainIdentityRegistrationStatus registrationStatus;
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
@@ -111,7 +111,7 @@
     self.documentTransitions = [NSMutableArray array];
     self.allTransitions = [NSMutableArray array];
     self.usernameStatuses = [NSMutableDictionary dictionary];
-    self.registered = FALSE;
+    self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Unknown;
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -470,6 +470,33 @@
     completion(fundingTransaction);
 }
 
+// MARK: - Registration
+
+-(BOOL)isRegistered {
+    return self.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered;
+}
+
+-(NSString*)registrationStatusString {
+    switch (self.registrationStatus) {
+        case DSBlockchainIdentityRegistrationStatus_Registered:
+            return DSLocalizedString(@"Registered", @"The Blockchain Identity is registered");
+            break;
+        case DSBlockchainIdentityRegistrationStatus_Unknown:
+            return DSLocalizedString(@"Unknown", @"It is Unknown if the Blockchain Identity is registered");
+            break;
+        case DSBlockchainIdentityRegistrationStatus_Registering:
+            return DSLocalizedString(@"Registering", @"The Blockchain Identity is being registered");
+            break;
+        case DSBlockchainIdentityRegistrationStatus_NotRegistered:
+            return DSLocalizedString(@"Not Registered", @"The Blockchain Identity is not registered");
+            break;
+            
+        default:
+            break;
+    }
+    return @"";
+}
+
 // MARK: - DPNS
 
 -(void)addUsername:(NSString*)username {
@@ -697,7 +724,7 @@
         }
         uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
         strongSelf.creditBalance = creditBalance;
-        strongSelf.registered = TRUE;
+        strongSelf.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
     } failure:^(NSError * _Nonnull error) {
         if (retryCount > 0) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

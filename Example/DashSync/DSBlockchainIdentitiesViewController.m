@@ -68,6 +68,7 @@
             blockchainIdentityCell.confirmationsLabel.text = [NSString stringWithFormat:@"%u",(self.chainManager.chain.lastBlockHeight - blockchainIdentity.registrationCreditFundingTransaction.blockHeight + 1)];
             }
         }
+        blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.registrationStatusString;
        // blockchainIdentityCell.publicKeyLabel.text = blockchainIdentity;
     }
 }
