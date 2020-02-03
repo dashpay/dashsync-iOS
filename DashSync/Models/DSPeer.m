@@ -1527,10 +1527,10 @@
                     transaction = [self.transactionDelegate peer:self requestedTransaction:hash];
                     
                     if (transaction) {
-                        [self sendMessage:transaction.data type:transaction.desiresInstantSendSending?MSG_IX:MSG_TX];
+                        [self sendMessage:transaction.data type:MSG_TX];
                         break;
                     } else {
-                        DSDLog(@"peer %@ requested %@transaction was not found with hash %@ reversed %@",self.host,transaction.desiresInstantSendSending?@"instant ":@"",[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
+                        DSDLog(@"peer %@ requested transaction was not found with hash %@ reversed %@",self.host,[NSData dataWithUInt256:hash].hexString,[NSData dataWithUInt256:hash].reverse.hexString);
                         [notfound appendUInt32:type];
                         [notfound appendBytes:&hash length:sizeof(hash)];
                         break;

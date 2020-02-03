@@ -93,12 +93,6 @@
 "Ignore" = "Ignorar";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Pago instantáneo";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend requiere suficientes entradas con 6 confirmaciones, enviar de todas formas como una transacción regular?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Fondos insuficientes";
 
 /* No comment provided by engineer. */
@@ -135,7 +129,7 @@
 "Not a valid private key" = "Clave privada inválida ";
 
 /* No comment provided by engineer. */
-"Not connected to the Dash network" = "Not connected to the Dash network";
+"Not connected to the Dash network" = "Sin conección a la red de Dash";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
@@ -180,12 +174,6 @@
 "Reset" = "Reinicia";
 
 /* No comment provided by engineer. */
-"Retry" = "Reintentar";
-
-/* No comment provided by engineer. */
-"Send" = "Enviar";
-
-/* No comment provided by engineer. */
 "Server Error" = "Error de servidor";
 
 /* No comment provided by engineer. */
@@ -204,9 +192,6 @@
 "This private key is empty" = "Esta llave privada está vacía";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Esta petición requiere un pago instantáneo pero no cuentas con las 6 confirmaciones necesarias para hacer InstantSend, puedes pedirle al negocio que reciba una transacción normal o esperar unos minutos.";
-
-/* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transacción cancelada, tiempo de red excedido";
 
 /* No comment provided by engineer. */
@@ -222,7 +207,7 @@
 "Unexpected response from %@" = "Respuesta inesperada de %@";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
+"Unknown address" = "Dirección desconocida";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Error desconocido";

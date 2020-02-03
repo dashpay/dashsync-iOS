@@ -45,7 +45,7 @@
 "Bad payment URL" = "Bad payment URL";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancel";
+"Cancel" = "Ακύρωση";
 
 /* No comment provided by engineer. */
 "Confirm" = "Επιβεβαίωση";
@@ -93,12 +93,6 @@
 "Ignore" = "Ignore";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instant payment";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "Το InstantSend απαιτεί αρκετές εισόδους με 6 επιβεβαιώσεις, να σταλθεί ούτως ή άλλως ως απλή συναλλαγή;";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
 /* No comment provided by engineer. */
@@ -138,7 +132,7 @@
 "Not connected to the Dash network" = "Not connected to the Dash network";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "Εντάξει";
 
 /* No comment provided by engineer. */
 "Parse Error" = "Σφάλμα Ανάλυσης";
@@ -162,7 +156,7 @@
 "Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
 
 /* No comment provided by engineer. */
-"Recovery phrase" = "Recovery phrase";
+"Recovery phrase" = "Φράση ανάκτησης";
 
 /* No comment provided by engineer. */
 "Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
@@ -177,13 +171,7 @@
 "Rescan" = "Rescan";
 
 /* No comment provided by engineer. */
-"Reset" = "Reset";
-
-/* No comment provided by engineer. */
-"Retry" = "Retry";
-
-/* No comment provided by engineer. */
-"Send" = "Send";
+"Reset" = "Επαναφορά";
 
 /* No comment provided by engineer. */
 "Server Error" = "Σφάλμα διακομιστή!";
@@ -202,9 +190,6 @@
 
 /* No comment provided by engineer. */
 "This private key is empty" = "This private key is empty";
-
-/* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Αυτό το αίτημα απαιτεί άμεση πληρωμή αλλά δεν έχετε αρκετές εισόδους με 6 επιβεβαιώσεις που απαιτούνται από το InstantSend, μπορείτε να ζητήσετε από τον έμπορο να δεχτεί μια κανονική συναλλαγή ή να περιμένει λίγα λεπτά.";
 
 /* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transaction canceled, network timeout";
@@ -246,7 +231,7 @@
 "Updating Price" = "Ανανέωση Τιμής";
 
 /* No comment provided by engineer. */
-"Wallet disabled" = "Wallet disabled";
+"Wallet disabled" = "Το πορτοφόλι απενεργοποιήθηκε";
 
 /* No comment provided by engineer. */
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";

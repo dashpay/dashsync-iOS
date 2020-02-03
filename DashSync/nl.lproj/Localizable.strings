@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     bedrag %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADRES IS AL IN GEBRUIK\nDash-adressen zijn bestemd voor éénmalig gebruik\n\nhergebruik verlaagt het privacyniveau voor jou en de ontvanger en kan leiden tot verlies als de ontvanger het adres niet direct beheert";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nnetwerkvergoeding +%1$@ (%2$@)";
@@ -78,7 +78,7 @@
 "Double spend" = "Dubbel uitgegeven";
 
 /* The server is not working */
-"Down" = "Down";
+"Down" = "Naar beneden";
 
 /* No comment provided by engineer. */
 "Enter old PIN" = "Voer oude pin in";
@@ -93,16 +93,10 @@
 "Ignore" = "Negeer";
 
 /* No comment provided by engineer. */
-"Instant payment" = "Instantane betaling";
-
-/* No comment provided by engineer. */
-"InstantSend requires enough inputs with 6 confirmations, send anyways as regular transaction?" = "InstantSend vereist genoeg invoeren met 6 bevestigingen. Versturen als reguliere transactie?";
-
-/* No comment provided by engineer. */
 "Insufficient funds" = "Ontoereikende fondsen";
 
 /* No comment provided by engineer. */
-"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
+"Insufficient funds for Dash network fee" = "Onvoldoende fondsen voor transactiekosten Dash-netwerk";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Interne fout";
@@ -135,7 +129,7 @@
 "Not a valid private key" = "Geen geldige privésleutel";
 
 /* No comment provided by engineer. */
-"Not connected to the Dash network" = "Not connected to the Dash network";
+"Not connected to the Dash network" = "Niet verbonden met Dash-netwerk";
 
 /* No comment provided by engineer. */
 "OK" = "Oké";
@@ -159,7 +153,7 @@
 "PIN for %@" = "Pin voor %@";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "Authenticeer uw om uw%@ portemonnee te creëren";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Hersetlzin";
@@ -180,12 +174,6 @@
 "Reset" = "Reset";
 
 /* No comment provided by engineer. */
-"Retry" = "Probeer opnieuw";
-
-/* No comment provided by engineer. */
-"Send" = "Verstuur";
-
-/* No comment provided by engineer. */
 "Server Error" = "Serverfout";
 
 /* No comment provided by engineer. */
@@ -204,9 +192,6 @@
 "This private key is empty" = "De privésleutel is leeg";
 
 /* No comment provided by engineer. */
-"This request requires an instant payment but you do not have enough inputs with 6 confirmations required by InstantSend, you may ask the merchant to accept a normal transaction or wait a few minutes." = "Dit verzoek heeft een onmiddellijke betaling  nodig maar je hebt niet genoeg inputs met 6 bevestigingen die nodig zijn voor InstantSend, je mag de merchant vragen om een normale transactie te accepteren of wacht een paar minuten.";
-
-/* No comment provided by engineer. */
 "Transaction canceled, network timeout" = "Transactie is geannuleerd, netwerktime-out";
 
 /* No comment provided by engineer. */
@@ -222,7 +207,7 @@
 "Unexpected response from %@" = "Onverwacht response van %@";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
+"Unknown address" = "Onbekend adres";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Onbekende fout";
@@ -240,7 +225,7 @@
 "Untrusted certificate" = "Onvertrouwd certificaat";
 
 /* The server is up and running */
-"Up" = "Up";
+"Up" = "Omhoog";
 
 /* Updating Price */
 "Updating Price" = "Bezig met bijwerken van prijs";

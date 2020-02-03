@@ -70,8 +70,6 @@ typedef union _UInt160 UInt160;
 
 @property (nonatomic, readonly) BOOL hasUnverifiedInstantSendLock;
 
-@property (nonatomic, assign) BOOL desiresInstantSendSending;
-
 @property (nonatomic, readonly) DSInstantSendTransactionLock * instantSendLockAwaitingProcessing;
 
 @property (nonatomic, assign) UInt256 txHash;

@@ -227,7 +227,7 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 -(NSArray<DSDerivationPath*>*)standardDerivationPathsForAccountNumber:(uint32_t)accountNumber;
 
 // fee that will be added for a transaction of the given size in bytes
-- (uint64_t)feeForTxSize:(NSUInteger)size isInstant:(BOOL)isInstant inputCount:(NSInteger)inputCount;
+- (uint64_t)feeForTxSize:(NSUInteger)size;
 
 //-(void)registerVotingKey:(NSData*)votingKey forMasternodeEntry:(DSSimplifiedMasternodeEntry*)masternodeEntry;
 
