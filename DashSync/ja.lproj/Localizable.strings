@@ -54,7 +54,7 @@
 "Confirm" = "承認";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "PINを確認する";
 
 /* No comment provided by engineer. */
 "Connect timeout" = "接続タイムアウト";
@@ -177,7 +177,7 @@
 "Server Error" = "サーバーエラー";
 
 /* No comment provided by engineer. */
-"Set PIN" = "Set PIN";
+"Set PIN" = "PINを設定する";
 
 /* No comment provided by engineer. */
 "Testnet" = "テストネット";
@@ -237,7 +237,7 @@
 "WARNING" = "警告";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"Wipe" = "削除する";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "あなたのウォレットが同期されていない可能性があります。\nブロックチェーンの再スキャンを行うと直ることが大半です。";

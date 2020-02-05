@@ -153,7 +153,7 @@
 "PIN for %@" = "PIN untuk %@";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "Harap autentikasi untuk membuat dompet %@";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Frasa pemulihan";
