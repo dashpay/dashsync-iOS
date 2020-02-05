@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSTimeInterval lastChainRelayTime;
 
+- (instancetype)initWithChain:(DSChain*)chain;
+- (void)resetSyncCountInfo:(DSSyncCountInfo)masternodeSyncCountInfo;
 - (void)resetSyncStartHeight;
 - (void)restartSyncStartHeight;
 - (void)relayedNewItem;

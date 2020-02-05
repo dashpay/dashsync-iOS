@@ -18,6 +18,10 @@
 #import "DSLocalMasternodeEntity+CoreDataClass.h"
 #import "DSQuorumEntryEntity+CoreDataClass.h"
 #import "DSMasternodeListEntity+CoreDataClass.h"
+#import "DSPeerManager+Protected.h"
+#import "DSSporkManager+Protected.h"
+#import "DSMasternodeManager+Protected.h"
+#import "DSChainManager+Protected.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

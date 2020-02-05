@@ -44,7 +44,7 @@
 #import "DSDerivationPath.h"
 #import "DSOptionsManager.h"
 #import "DSChainsManager.h"
-#import "DSMasternodeManager.h"
+#import "DSMasternodeManager+Protected.h"
 #import "DSDerivationPathEntity+CoreDataProperties.h"
 #import "NSMutableData+Dash.h"
 #import "NSData+Dash.h"

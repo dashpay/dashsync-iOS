@@ -68,12 +68,6 @@ typedef void (^DSTransactionRequestRelayCompletionBlock)(DSTransaction * tx, DSP
 
 @property (nonatomic,readonly) DSChain * chain;
 
-- (instancetype)initWithChain:(DSChain*)chain;
-
-- (void)fetchMempoolFromPeer:(DSPeer*)peer;
-
-- (void)fetchMempoolFromNetwork;
-
 - (void)fetchTransactionHavingHash:(UInt256)transactionHash;
 
 - (NSUInteger)relayCountForTransaction:(UInt256)txHash; // number of connected peers that have relayed the transaction

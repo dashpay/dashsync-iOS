@@ -31,6 +31,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) BOOL sporksUpdatedSignatures;
 
+- (instancetype)initWithChain:(DSChain*)chain;
+
+- (void)getSporks;
+
+- (void)wipeSporkInfo;
+
+- (void)checkTriggers;
+
+- (void)stopGettingSporks;
+
 @end
 
 NS_ASSUME_NONNULL_END
