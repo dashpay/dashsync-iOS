@@ -9,7 +9,7 @@
 "\n\n     amount %@ (%@)" = "\n\n     ποσό %1$@ (%2$@)";
 
 /* No comment provided by engineer. */
-"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address";
+"\nADDRESS ALREADY USED\nDash addresses are intended for single use only\n\nre-use reduces privacy for both you and the recipient and can result in loss if the recipient doesn't directly control the address" = "\nΗ ΔΙΕΥΘΥΝΣΗ ΕΧΕΙ ΗΔΗ ΧΡΗΣΙΜΟΠΟΙΗΘΕΙ\nΟι Dash διευθύνσεις προορίζονται μόνο για μία χρήση\n\nΗ επαναλαμβανόμενη χρήση της μειώνει το απόρρητο για εσάς όσο και για τον παραλήπτη και μπορεί να οδηγήσει σε απώλεια εάν ο παραλήπτης δεν ελέγχει άμεσα την διεύθυνση";
 
 /* No comment provided by engineer. */
 "\nnetwork fee +%@ (%@)" = "\nτέλος δικτύου +%1$@ (%2$@)";
@@ -36,16 +36,16 @@
 "Are you sure you would like to update this masternode to pay to %@?" = "Είστε σίγουροι ότι θέλετε να ενημερώσετε αυτό το masternode να πληρώσει στο %@;";
 
 /* No comment provided by engineer. */
-"Bad password, try again" = "Bad password, try again";
+"Bad password, try again" = "Εσφαλμένος κωδικός πρόσβασης, προσπαθήστε ξανά";
 
 /* No comment provided by engineer. */
-"Bad payment request" = "Bad payment request";
+"Bad payment request" = "Λάθος αίτηση πληρωμής";
 
 /* No comment provided by engineer. */
-"Bad payment request URL" = "Bad payment request URL";
+"Bad payment request URL" = "Λάθος URL αίτησης πληρωμής";
 
 /* No comment provided by engineer. */
-"Bad payment URL" = "Bad payment URL";
+"Bad payment URL" = "Λάθος URL πληρωμής";
 
 /* No comment provided by engineer. */
 "Cancel" = "Ακύρωση";
@@ -54,28 +54,28 @@
 "Confirm" = "Επιβεβαίωση";
 
 /* No comment provided by engineer. */
-"Confirm PIN" = "Confirm PIN";
+"Confirm PIN" = "Επιβεβαίωση PIN";
 
 /* No comment provided by engineer. */
-"Connect timeout" = "Connect timeout";
+"Connect timeout" = "Λήξη χρονικού ορίου";
 
 /* No comment provided by engineer. */
-"Couldn't make payment" = "Couldn't make payment";
+"Couldn't make payment" = "Δεν μπορούσα να προβώ σε πληρωμή";
 
 /* No comment provided by engineer. */
-"Dash payments can't be less than %@" = "Dash payments can't be less than %@";
+"Dash payments can't be less than %@" = "Οι Dash πληρωμές δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
-"Dash transaction not signed" = "Dash transaction not signed";
+"Dash transaction not signed" = "Η Dash συναλλαγή δεν έχει υπογραφεί";
 
 /* No comment provided by engineer. */
-"Dash transaction outputs can't be less than %@" = "Dash transaction outputs can't be less than %@";
+"Dash transaction outputs can't be less than %@" = "Οι έξοδοι της Dash συναλλαγής δεν μπορεί να είναι μικρότερες από %@";
 
 /* No comment provided by engineer. */
 "Devnet" = "Devnet";
 
 /* No comment provided by engineer. */
-"Double spend" = "Double spend";
+"Double spend" = "Διπλό ξόδεμα";
 
 /* The server is not working */
 "Down" = "Down";
@@ -87,16 +87,16 @@
 "Error from payment request server %@" = "Σφάλμα από διακομιστή του αιτήματος πληρωμής %@";
 
 /* No comment provided by engineer. */
-"Error signing transaction" = "Error signing transaction";
+"Error signing transaction" = "Σφάλμα υπογραφής συναλλαγής";
 
 /* No comment provided by engineer. */
-"Ignore" = "Ignore";
+"Ignore" = "Παράβλεψη";
 
 /* No comment provided by engineer. */
-"Insufficient funds" = "Insufficient funds";
+"Insufficient funds" = "Ανεπαρκή χρήματα";
 
 /* No comment provided by engineer. */
-"Insufficient funds for Dash network fee" = "Insufficient funds for Dash network fee";
+"Insufficient funds for Dash network fee" = "Ανεπαρκή χρήματα για την αμοιβή του δικτύου Dash";
 
 /* No comment provided by engineer. */
 "Internal Error" = "Εσωτερικό σφάλμα";
@@ -117,19 +117,19 @@
 "Method Not Found" = "Η Μέθοδος Δεν Βρέθηκε";
 
 /* No comment provided by engineer. */
-"Missing certificate" = "Missing certificate";
+"Missing certificate" = "Λείπει το πιστοποιητικό";
 
 /* No comment provided by engineer. */
-"No attempts remaining" = "No attempts remaining";
+"No attempts remaining" = "Δεν απομένουν προσπάθειες";
 
 /* No comment provided by engineer. */
-"No peers found" = "No peers found";
+"No peers found" = "Δε βρέθηκαν κόμβοι";
 
 /* No comment provided by engineer. */
-"Not a valid private key" = "Not a valid private key";
+"Not a valid private key" = "Δεν είναι ενα έγκυρο ιδιωτικό κλειδί";
 
 /* No comment provided by engineer. */
-"Not connected to the Dash network" = "Not connected to the Dash network";
+"Not connected to the Dash network" = "Δεν είστε συνδεδεμένος με το δίκτυο Dash";
 
 /* No comment provided by engineer. */
 "OK" = "Εντάξει";
@@ -144,10 +144,10 @@
 "Password" = "Password";
 
 /* No comment provided by engineer. */
-"Password protected key" = "Password protected key";
+"Password protected key" = "Προστατευμένο κλειδί με κωδικό πρόσβασης";
 
 /* No comment provided by engineer. */
-"Payee identity isn't certified" = "Payee identity isn't certified";
+"Payee identity isn't certified" = "Η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";
 
 /* No comment provided by engineer. */
 "PIN for %@" = "PIN for %@";
@@ -159,16 +159,16 @@
 "Recovery phrase" = "Φράση ανάκτησης";
 
 /* No comment provided by engineer. */
-"Reduce payment amount by\n%@ (%@)?" = "Reduce payment amount by\n%1$@ (%2$@)?";
+"Reduce payment amount by\n%@ (%@)?" = "Μείωση του ποσού πληρωμής κατά\n%1$@ (%2$@);";
 
 /* No comment provided by engineer. */
-"Request expired" = "Request expired";
+"Request expired" = "Το αίτημα έληξε";
 
 /* No comment provided by engineer. */
-"Requested network \"%@\" not currently in use" = "Requested network \"%@\" not currently in use";
+"Requested network \"%@\" not currently in use" = "Το ζητούμενο δίκτυο \"%@\" δεν χρησιμοποιείται προς το παρόν";
 
 /* No comment provided by engineer. */
-"Rescan" = "Rescan";
+"Rescan" = "Επανάληψη της σάρωσης";
 
 /* No comment provided by engineer. */
 "Reset" = "Επαναφορά";
@@ -183,31 +183,31 @@
 "Testnet" = "Testnet";
 
 /* No comment provided by engineer. */
-"This payment address is already in your wallet" = "This payment address is already in your wallet";
+"This payment address is already in your wallet" = "Αυτή η διεύθυνση πληρωμής είναι ήδη στο πορτοφόλι σας";
 
 /* No comment provided by engineer. */
-"This private key is already in your wallet" = "This private key is already in your wallet";
+"This private key is already in your wallet" = "Αυτό το ιδιωτικό κλειδί είναι ήδη στο πορτοφόλι σας";
 
 /* No comment provided by engineer. */
-"This private key is empty" = "This private key is empty";
+"This private key is empty" = "Aυτό το ιδιωτικό κλειδί είναι άδειο";
 
 /* No comment provided by engineer. */
-"Transaction canceled, network timeout" = "Transaction canceled, network timeout";
+"Transaction canceled, network timeout" = "Η συναλλαγή ακυρώθηκε, λήξη χρονικού ορίου δικτύου";
 
 /* No comment provided by engineer. */
-"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Το τέλος δικτύου θα κόστιζε περισσότερο από τα χρήματα που υπάρχουν σε αυτό το ιδιωτικό κλειδί (λόγω πολλών μικρών καταθέσεων \"σκόνη\")";
 
 /* No comment provided by engineer. */
-"Transaction rejected" = "Transaction rejected";
+"Transaction rejected" = "Η συναλλαγή απορρίφθηκε";
 
 /* No comment provided by engineer. */
-"Try again in %@" = "Try again in %@";
+"Try again in %@" = "Προσπαθήστε ξανά σε %@";
 
 /* No comment provided by engineer. */
-"Unexpected response from %@" = "Unexpected response from %@";
+"Unexpected response from %@" = "Απρόσμενη απάντηση από %@";
 
 /* No comment provided by engineer. */
-"Unknown address" = "Unknown address";
+"Unknown address" = "Άγνωστη διεύθυνση";
 
 /* No comment provided by engineer. */
 "Unknown Error" = "Άγνωστο Σφάλμα";
@@ -216,13 +216,13 @@
 "Unknown JSON-RPC Response" = "Άγνωστη απόκριση JSON-RPC";
 
 /* No comment provided by engineer. */
-"Unrecognized address" = "Unrecognized address";
+"Unrecognized address" = "Μη αναγνωρισμένη διεύθυνση";
 
 /* No comment provided by engineer. */
-"Unsupported signature type" = "Unsupported signature type";
+"Unsupported signature type" = "Μη υποστηριζόμενος τύπος υπογραφής";
 
 /* No comment provided by engineer. */
-"Untrusted certificate" = "Untrusted certificate";
+"Untrusted certificate" = "Μη αξιόπιστο πιστοποιητικό";
 
 /* The server is up and running */
 "Up" = "Up";
