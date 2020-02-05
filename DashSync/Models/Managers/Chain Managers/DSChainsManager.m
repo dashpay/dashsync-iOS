@@ -33,6 +33,7 @@
 #import "DSWallet.h"
 #import "DashSync.h"
 #import "DSPeerManager+Protected.h"
+#import "DSChainManager+Protected.h"
 #include <arpa/inet.h>
 
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"

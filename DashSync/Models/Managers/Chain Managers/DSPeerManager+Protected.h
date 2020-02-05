@@ -50,10 +50,6 @@ typedef NS_ENUM(NSUInteger, DSPeerManagerDesiredState) {
 
 - (instancetype)initWithChain:(DSChain*)chain;
 
-- (void)connect;
-- (void)clearPeers;
-- (void)disconnect;
-
 - (void)clearRegisteredPeers;
 - (void)registerPeerAtLocation:(UInt128)IPAddress port:(uint32_t)port dapiPort:(uint32_t)dapiPort;
 

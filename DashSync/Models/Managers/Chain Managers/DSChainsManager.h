@@ -51,7 +51,7 @@ FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
 
 -(void)removeDevnetChain:(DSChain *)chain;
 
-+ (instancetype)sharedInstance;
++(instancetype)sharedInstance;
 
 -(BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
 
