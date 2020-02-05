@@ -29,8 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DSContactProfileViewController ()
 
 @property (null_resettable, nonatomic, strong) DSContactProfileAvatarView *avatarView;
+@property (null_resettable, nonatomic, strong) TextFieldFormCellModel *usernameCellModel;
 @property (null_resettable, nonatomic, strong) TextFieldFormCellModel *avatarCellModel;
 @property (null_resettable, nonatomic, strong) TextViewFormCellModel *aboutMeCellModel;
+@property (nonatomic,strong) FormTableViewController * formTableViewController;
 
 @end
 
@@ -67,11 +69,33 @@ NS_ASSUME_NONNULL_BEGIN
     formController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:formController.view];
     [formController didMoveToParentViewController:self];
+    
+    self.formTableViewController = formController;
 
     [self updateAvatarView];
 }
 
 #pragma mark - Private
+
+- (TextFieldFormCellModel *)usernameCellModel {
+    if (!_usernameCellModel) {
+        TextFieldFormCellModel *cellModel = [[TextFieldFormCellModel alloc] initWithTitle:@"Username"];
+        cellModel.autocorrectionType = UITextAutocorrectionTypeNo;
+        cellModel.returnKeyType = UIReturnKeyNext;
+        cellModel.placeholder = @"Enter Username";
+        __weak typeof(self) weakSelf = self;
+        cellModel.didReturnValueBlock = ^(TextFieldFormCellModel *_Nonnull cellModel) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+
+            [strongSelf updateUsername];
+        };
+        _usernameCellModel = cellModel;
+    }
+    return _usernameCellModel;
+}
 
 - (TextFieldFormCellModel *)avatarCellModel {
     if (!_avatarCellModel) {
@@ -106,7 +130,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<BaseFormCellModel *> *)profileItems {
-    return @[ self.avatarCellModel, self.aboutMeCellModel ];
+    if (self.blockchainIdentity.currentUsername) {
+        return @[self.avatarCellModel, self.aboutMeCellModel];
+    } else {
+        //show username model if no username is set
+        return @[self.usernameCellModel, self.avatarCellModel, self.aboutMeCellModel];
+    }
 }
 
 - (NSArray<FormSectionModel *> *)sections {
@@ -132,6 +161,13 @@ NS_ASSUME_NONNULL_BEGIN
                               : self.avatarCellModel.placeholder;
     NSURL *url = [NSURL URLWithString:urlString];
     [self.avatarView updateWithImageURL:url];
+}
+
+- (void)updateUsername {
+    if (![self.usernameCellModel.text isEqualToString:@""]) {
+        [self.blockchainIdentity addUsername:self.usernameCellModel.text];
+        [self.formTableViewController.tableView reloadData];
+    }
 }
 
 - (void)cancelButtonAction {

@@ -32,6 +32,7 @@
 #import "DSMasternodeManager+Protected.h"
 #import "DSGovernanceSyncManager+Protected.h"
 #import "DSTransactionManager+Protected.h"
+#import "DSIdentitiesManager.h"
 #import "DSBloomFilter.h"
 #import "DSMerkleBlock.h"
 #import "DSWallet.h"
@@ -49,6 +50,7 @@
 @property (nonatomic, strong) DSSporkManager * sporkManager;
 @property (nonatomic, strong) DSMasternodeManager * masternodeManager;
 @property (nonatomic, strong) DSGovernanceSyncManager * governanceSyncManager;
+@property (nonatomic, strong) DSIdentitiesManager * identitiesManager;
 @property (nonatomic, strong) DSDAPIClient * DAPIClient;
 @property (nonatomic, strong) DSTransactionManager * transactionManager;
 @property (nonatomic, strong) DSPeerManager * peerManager;
@@ -72,6 +74,7 @@
     self.governanceSyncManager = [[DSGovernanceSyncManager alloc] initWithChain:chain];
     self.transactionManager = [[DSTransactionManager alloc] initWithChain:chain];
     self.peerManager = [[DSPeerManager alloc] initWithChain:chain];
+    self.identitiesManager = [[DSIdentitiesManager alloc] initWithChain:chain];
     
     return self;
 }
@@ -221,6 +224,9 @@
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
+    if ([self.chain isEvolutionEnabled]) {
+        [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
+    }
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
         [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];

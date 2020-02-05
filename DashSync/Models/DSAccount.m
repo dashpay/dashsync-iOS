@@ -882,7 +882,7 @@ static NSUInteger transactionAddressIndex(DSTransaction *transaction, NSArray *a
     [script appendCreditBurnScriptPubKeyForAddress:address forChain:self.wallet.chain];
     
     DSCreditFundingTransaction *transaction = [[DSCreditFundingTransaction alloc] initOnChain:self.wallet.chain];
-    return (DSCreditFundingTransaction*)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee isInstant:FALSE toShapeshiftAddress:nil shuffleOutputOrder:YES];
+    return (DSCreditFundingTransaction*)[self updateTransaction:transaction forAmounts:@[@(amount)] toOutputScripts:@[script] withFee:fee toShapeshiftAddress:nil shuffleOutputOrder:YES];
 }
 
 

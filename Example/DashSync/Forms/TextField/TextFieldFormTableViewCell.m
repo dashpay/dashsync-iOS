@@ -93,8 +93,14 @@ NS_ASSUME_NONNULL_BEGIN
     else if (textField.returnKeyType == UIReturnKeyDone) {
         [self endEditing:YES];
     }
-
+    
     return YES;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason {
+    if (reason == UITextFieldDidEndEditingReasonCommitted && self.cellModel.didReturnValueBlock) {
+        self.cellModel.didReturnValueBlock(self.cellModel);
+    }
 }
 
 @end

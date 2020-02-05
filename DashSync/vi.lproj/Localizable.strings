@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Bạn có chắc là bạn muốn đăng ký một masternode tại %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Bạn có chắc là bạn muốn đăng ký tên người dùng 1%1$@ và tiêu 2%2$@ trên tín dụng?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Bạn có chắc bạn muốn thiết lập lại người sử dụng này?";
 
 /* No comment provided by engineer. */
@@ -241,3 +238,21 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Ví của bạn có thể bị mất đồng bộ.\nĐiều này có thể được xử lý bằng cách quét lại blockchain.";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";

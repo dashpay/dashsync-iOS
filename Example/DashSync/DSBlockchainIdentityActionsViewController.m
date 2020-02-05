@@ -34,7 +34,13 @@
 
 -(void)loadProfileInitial {
     self.title = self.blockchainIdentity.currentUsername;
-    if (!self.blockchainIdentity.ownContact) {
+    if (!self.blockchainIdentity.registered) {
+        self.aboutMeLabel.text = @"Register Identity";
+    } else if (!self.blockchainIdentity.currentUsername) {
+        self.aboutMeLabel.text = @"Set Username";
+    } else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityRegistrationStatus_NotRegistered) {
+        self.aboutMeLabel.text = @"Register Username";
+    } else if (!self.blockchainIdentity.ownContact) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
     }
@@ -100,10 +106,16 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         if (indexPath.row == 1) { // About me / Register
-            DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainIdentity:self.blockchainIdentity];
-            controller.delegate = self;
-            UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
-            [self presentViewController:navigationController animated:YES completion:nil];
+            if (!self.blockchainIdentity.registered) {
+                [self registerBlockchainIdentity:self];
+            } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityRegistrationStatus_NotRegistered) {
+                
+            } else {
+                DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainIdentity:self.blockchainIdentity];
+                controller.delegate = self;
+                UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
+                [self presentViewController:navigationController animated:YES completion:nil];
+            }
         }
     }
     else if (indexPath.section == 1) {

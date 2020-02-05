@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Êtes-vous sûr de vouloir enregistrer un masternode à %1$@:%2$d ?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Voulez-vous vraiment enregistrer le nom d'utilisateur %1$@ et dépenser %2$@ en crédits ?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Voulez-vous vraiment réinitialiser cet utilisateur ?";
 
 /* No comment provided by engineer. */
@@ -241,3 +238,21 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Votre portefeuille est peut-être désynchronisé.\nCeci peut souvent être résolu en réanalysant la chaîne de blocs.";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";

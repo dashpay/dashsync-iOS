@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Сигурни ли сте, че искате да регистрирате masternode в %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Сигурен ли сте, че желаете да регистирате това потребителско име%1$@ и да похарчите %2$@ от своят кредит?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Сигурен ли си, че желаеш да нулираш този потребител?";
 
 /* No comment provided by engineer. */
@@ -241,3 +238,21 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Твоят портфейл вероятно не е синхронизиран.\nТова обикновено се фиксира след сканиране на блок веригата.";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";

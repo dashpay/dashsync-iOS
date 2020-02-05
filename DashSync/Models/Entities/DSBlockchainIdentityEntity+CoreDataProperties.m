@@ -22,5 +22,7 @@
 @dynamic transitions;
 @dynamic chain;
 @dynamic usernames;
+@dynamic creditBalance;
+@dynamic registrationStatus;
 
 @end

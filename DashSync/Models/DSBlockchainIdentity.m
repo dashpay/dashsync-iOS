@@ -501,6 +501,7 @@
 
 -(void)addUsername:(NSString*)username {
     [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Initial) forKey:username];
+    [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial];
     if (self.registered) {
         [self registerUsernames];
     }
@@ -577,6 +578,8 @@
 
 // MARK: - Persistence
 
+
+
 -(void)saveInitial {
     [self.managedObjectContext performBlockAndWait:^{
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
@@ -592,6 +595,17 @@
             usernameEntity.stringValue = username;
             [entity addUsernamesObject:usernameEntity];
         }
+        [DSBlockchainIdentityEntity saveContext];
+    }];
+}
+
+-(void)save {
+    [self.managedObjectContext performBlockAndWait:^{
+        [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
+        [DSBlockchainIdentityUsernameEntity setContext:self.managedObjectContext];
+        DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
+        entity.creditBalance = self.creditBalance;
+        entity.registrationStatus = self.registrationStatus;
         [DSBlockchainIdentityEntity saveContext];
     }];
 }
@@ -704,6 +718,9 @@
                                                 [self monitorForBlockchainIdentityWithRetryCount:5];
                                                 completion(successDictionary,nil);
                                             } failure:^(NSError * _Nonnull error) {
+                                                if (error) {
+                                                    [self monitorForBlockchainIdentityWithRetryCount:1];
+                                                }
                                                 completion(nil,error);
                                             }];
                                         } else {
@@ -713,6 +730,10 @@
                                         }
                                     }];
 
+}
+
+-(void)retrieveIdentityNetworkStateInformation {
+    [self monitorForBlockchainIdentityWithRetryCount:1];
 }
         
 -(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount {
@@ -725,6 +746,7 @@
         uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
         strongSelf.creditBalance = creditBalance;
         strongSelf.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
+        [self save];
     } failure:^(NSError * _Nonnull error) {
         if (retryCount > 0) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

@@ -21,9 +21,6 @@
 "Are you sure you would like to register a masternode at %@:%d?" = "Apakah Anda yakin ingin mendaftarkan masternode di %1$@:%2$d?";
 
 /* No comment provided by engineer. */
-"Are you sure you would like to register the username %@ and spend %@ on credits?" = "Apakah Anda yakin ingin mendaftarkan nama pengguna %1$@ dan menghabiskan %2$@ pada kredit?";
-
-/* No comment provided by engineer. */
 "Are you sure you would like to reset this user?" = "Anda yakin ingin menyetel ulang pengguna ini?";
 
 /* No comment provided by engineer. */
@@ -241,3 +238,21 @@
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Dompet anda mungkin tidak sinkron.\nIni dapat diperbaiki dengan memindai ulang blockchain.";
+
+/* No comment provided by engineer. */
+"Do you wish to create this identity?" = "Do you wish to create this identity?";
+
+/* The Blockchain Identity is not registered */
+"Not Registered" = "Not Registered";
+
+/* The Blockchain Identity is registered */
+"Registered" = "Registered";
+
+/* The Blockchain Identity is being registered */
+"Registering" = "Registering";
+
+/* No comment provided by engineer. */
+"Unable to create registration transition" = "Unable to create registration transition";
+
+/* It is Unknown if the Blockchain Identity is registered */
+"Unknown" = "Unknown";
