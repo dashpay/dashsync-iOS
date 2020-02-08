@@ -33,6 +33,7 @@
 #import "DSTransactionEntity+CoreDataClass.h"
 #import "DSMerkleBlock.h"
 #import "DSMerkleBlockEntity+CoreDataClass.h"
+#import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSPriceManager.h"
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSWallet.h"
@@ -72,6 +73,7 @@
 #import "DSMasternodeListEntity+CoreDataProperties.h"
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
 #import "DSCreditFundingTransaction.h"
+#import "NSManagedObject+Sugar.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; const char * masternodeListPath; const char * merkleRoot;} checkpoint;
 
@@ -1211,10 +1213,18 @@ static dispatch_once_t devnetToken = 0;
 
 // MARK: - Wallet
 
+-(void)wipeBlockchainIdentitiesPersistedData {
+    [[DSBlockchainIdentityEntity context] performBlockAndWait:^{
+        NSArray * objects = [DSBlockchainIdentityEntity objectsMatching:@"chain == %@",self.chainEntity];
+        [DSBlockchainIdentityEntity deleteObjects:objects];
+    }];
+}
+
 - (void)wipeBlockchainInfo {
     for (DSWallet * wallet in self.wallets) {
         [wallet wipeBlockchainInfo];
     }
+    [self wipeBlockchainIdentitiesPersistedData];
     [self.viewingAccount wipeBlockchainInfo];
     self.bestBlockHeight = 0;
     _blocks = nil;

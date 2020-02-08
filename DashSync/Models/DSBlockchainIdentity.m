@@ -158,6 +158,15 @@
     return self;
 }
 
+-(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
+    if (!(self = [self initWithFundingTransaction:transaction withUsernameStatusDictionary:usernameStatuses inWallet:wallet inContext:managedObjectContext])) return nil;
+    
+    self.creditBalance = credits;
+    self.registrationStatus = registrationStatus;
+    
+    return self;
+}
+
 -(NSData*)uniqueIDData {
     return uint256_data(self.uniqueID);
 }
@@ -587,7 +596,8 @@
         DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObject];
         entity.uniqueID = uint256_data(self.uniqueID);
         NSData * transactionHash = uint256_data(self.registrationCreditFundingTransaction.txHash);
-        entity.registrationFundingTransaction = (DSCreditFundingTransactionEntity*)[DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", transactionHash];
+        DSCreditFundingTransactionEntity * transactionEntity = (DSCreditFundingTransactionEntity*)[DSTransactionEntity anyObjectMatching:@"transactionHash.txHash == %@", transactionHash];
+        entity.registrationFundingTransaction = transactionEntity;
         entity.chain = self.wallet.chain.chainEntity;
         for (NSString * username in self.usernameStatuses) {
             DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObject];
