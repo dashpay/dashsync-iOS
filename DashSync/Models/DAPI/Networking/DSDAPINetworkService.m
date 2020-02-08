@@ -450,11 +450,13 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                    failure:(void (^)(NSError *error))failure {
     NSParameterAssert(contractId);
 
-    [self requestWithMethod:@"fetchContract"
-                  parameters:@{ @"contractId" : contractId }
-        validateAgainstClass:NSDictionary.class
-                     success:success
-                     failure:failure];
+    GetDataContractRequest * getDataContractRequest = [[GetDataContractRequest alloc] init];
+    getDataContractRequest.id_p = contractId;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDataContractWithMessage:getDataContractRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
 - (void)getUserByName:(NSString *)username
@@ -507,6 +509,20 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                          }
                      }
                      failure:failure];
+}
+
+- (void)registerContract:(DSTransition *)stateTransition
+                                        success:(void (^)(NSDictionary *successDictionary))success
+                                        failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(stateTransition);
+
+    ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
+    updateStateRequest.stateTransition = stateTransition.data;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
 - (void)publishTransition:(DSTransition *)stateTransition

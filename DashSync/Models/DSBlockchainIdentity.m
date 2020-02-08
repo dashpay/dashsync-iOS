@@ -756,6 +756,56 @@
     }];
 }
 
+// MARK: - Contracts
+
+-(void)fetchAndUpdateContract:(DPContract*)contract {
+    __weak typeof(contract) weakContract = contract;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
+        
+        [self.DAPINetworkService fetchContractForId:contract.identifier success:^(NSDictionary * _Nonnull contract) {
+            __strong typeof(weakContract) strongContract = weakContract;
+            if (!weakContract) {
+                return;
+            }
+            
+        } failure:^(NSError * _Nonnull error) {
+            
+        }];
+    });
+}
+
+-(void)fetchAndUpdateContractWithIdentifier:(NSString*)identifier {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
+        
+        [self.DAPINetworkService fetchContractForId:identifier success:^(NSDictionary * _Nonnull contract) {
+            //[DPContract contr]
+            
+        } failure:^(NSError * _Nonnull error) {
+            
+        }];
+    });
+}
+
+//-(void)registerContract:(DPContract*)contract {
+//    __weak typeof(self) weakSelf = self;
+//    [self.DAPINetworkService getUserById:self.uniqueIdString success:^(NSDictionary * _Nonnull profileDictionary) {
+//        __strong typeof(weakSelf) strongSelf = weakSelf;
+//        if (!strongSelf) {
+//            return;
+//        }
+//        uint64_t creditBalance = (uint64_t)[profileDictionary[@"credits"] longLongValue];
+//        strongSelf.creditBalance = creditBalance;
+//        strongSelf.registrationStatus = DSBlockchainIdentityRegistrationStatus_Registered;
+//        [self save];
+//    } failure:^(NSError * _Nonnull error) {
+//        if (retryCount > 0) {
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//                [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1];
+//            });
+//        }
+//    }];
+//}
+
 // MARK: - Platform Helpers
 
 -(DPDocumentFactory*)dashpayDocumentFactory {

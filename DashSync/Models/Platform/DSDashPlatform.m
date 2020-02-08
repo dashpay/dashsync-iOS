@@ -16,14 +16,16 @@
 //
 
 #import "DSDashPlatform.h"
-
-#import "DPContractFacade.h"
 #import "DSChain.h"
+#import "DPContract.h"
+#import "DSDAPINetworkService.h"
 
 @interface DSDashPlatform ()
 
-@property (strong, nonatomic) DPContractFacade *contractFacade;
 @property (strong, nonatomic) DSChain *chain;
+@property (strong, nonatomic, null_resettable) NSMutableDictionary* knownContracts;
+@property (strong, nonatomic) DPContract *dashPayContract;
+@property (strong, nonatomic) DPContract *dpnsContract;
 
 @end
 
@@ -33,8 +35,7 @@
 
     self = [super init];
     if (self) {
-        _contractFacade = [[DPContractFacade alloc] init];
-        _chain = chain;
+        _chain = chain; //must come first
     }
     return self;
 }
@@ -61,13 +62,25 @@ static dispatch_once_t platformChainToken = 0;
     return platformForChain;
 }
 
-- (id<DPContractFactory>)contractFactory {
-    return self.contractFacade;
-}
-
 - (DPDocumentFactory*)documentFactoryForBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentity forContract:(DPContract*)contract {
     DPDocumentFactory * documentFactory = [[DPDocumentFactory alloc] initWithBlockchainIdentity:blockchainIdentity contract:contract onChain:self.chain];
     return documentFactory;
+}
+
++ (NSString*)nameForContractWithIdentifier:(NSString*)identifier {
+    if ([identifier isEqualToString:DASHPAY_CONTRACT]) {
+        return @"DashPay";
+    } else if ([identifier isEqualToString:DPNS_CONTRACT]) {
+        return @"DPNS";
+    }
+    return @"Unnamed Contract";
+}
+
+-(NSMutableDictionary*)knownContracts {
+    if (!_knownContracts) {
+        _knownContracts = [NSMutableDictionary dictionaryWithObjects:@[[self dashPayContract], [self dpnsContract]] forKeys:@[DASHPAY_CONTRACT,DPNS_CONTRACT]];
+    }
+    return _knownContracts;
 }
 
 -(DPContract*)dashPayContract {

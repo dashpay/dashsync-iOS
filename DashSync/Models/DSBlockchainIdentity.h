@@ -73,6 +73,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 -(void)retrieveIdentityNetworkStateInformation;
 
+-(void)fetchAndUpdateContract:(DPContract*)contract;
+
 -(uint32_t)indexOfKey:(DSKey*)key;
 
 -(DSBlockchainIdentityUsernameStatus)statusOfUsername:(NSString*)username;

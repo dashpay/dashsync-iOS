@@ -11,12 +11,19 @@
 #import "DSPriceManager.h"
 #import "NSString+Bitcoin.h"
 #import "NSData+Dash.h"
+#import "BigIntTypes.h"
 
 @interface DSHashTests : XCTestCase
 
 @end
 
 @implementation DSHashTests
+
+-(void)testBase64HashSize {
+    UInt256 hash = [[@"aaaa" hexToData] SHA256_2];
+    NSString * base64Data = uint256_base64(hash);
+    XCTAssertEqual([base64Data length], 44, @"The size of the base64 should be 44");
+}
 
 -(void)testBlake
 {

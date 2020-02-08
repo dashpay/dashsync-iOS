@@ -14,6 +14,7 @@
 #import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
 #import <SDWebImage/SDWebImage.h>
 #import "DSContactProfileViewController.h"
+#import "DSRegisterContractsViewController.h"
 
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
@@ -116,34 +117,45 @@
                 UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
                 [self presentViewController:navigationController animated:YES completion:nil];
             }
+        } else if (indexPath.row == 3) { //Keys
+            
         }
     }
-    else if (indexPath.section == 1) {
-        if (indexPath.row == 0) {
-            [self registerBlockchainIdentity:self];
-        } else if (indexPath.row == 2) {
-            [self reset:self];
-        }
-        else if (indexPath.row == 3) {
+    else if (indexPath.section == 1) { //Dashpay
+        if (indexPath.row == 0) { //Contacts
             DSContactsNavigationController *controller = [DSContactsNavigationController controllerWithChainManager:self.chainManager blockchainIdentity:self.blockchainIdentity];
             [self presentViewController:controller animated:YES completion:nil];
         }
-        else if (indexPath.row == 4) {
-            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    } else if (indexPath.section == 2) { //Contracts
+        if (indexPath.row == 0) { //Register
+            [self performSegueWithIdentifier:@"RegisterContractsSegue" sender:self];
+        } else if (indexPath.row == 1) { //View
             
-            __weak typeof(self) weakSelf = self;
-            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainIdentity forChain:self.chainManager.chain completion:^(NSError * _Nullable error) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-                
-                if (error) {
-                    [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
-                }
-            }];
+        }
+    } else if (indexPath.section == 3) { //Actions
+        if (indexPath.row == 0) {
+
+        } else if (indexPath.row == 2) {
+        }
+        else if (indexPath.row == 3) {
+            
+        } else if (indexPath.row == 4) {
+//            [tableView deselectRowAtIndexPath:indexPath animated:YES];
+//
+//            __weak typeof(self) weakSelf = self;
+//            [self.chainManager.DAPIClient ds_registerDashPayContractForUser:self.blockchainIdentity forChain:self.chainManager.chain completion:^(NSError * _Nullable error) {
+//                __strong typeof(weakSelf) strongSelf = weakSelf;
+//                if (!strongSelf) {
+//                    return;
+//                }
+//
+//                if (error) {
+//                    [strongSelf raiseIssue:@"Error" message:error.localizedDescription];
+//                }
+//            }];
         }
     }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -155,6 +167,9 @@
         DSBlockchainIdentityTransitionsViewController * blockchainIdentityTransitionsViewController = (DSBlockchainIdentityTransitionsViewController*)segue.destinationViewController;
         blockchainIdentityTransitionsViewController.chainManager = self.chainManager;
         blockchainIdentityTransitionsViewController.blockchainIdentity = self.blockchainIdentity;
+    } else if ([segue.identifier isEqualToString:@"RegisterContractsSegue"]) {
+        DSRegisterContractsViewController * controller = segue.destinationViewController;
+        controller.blockchainIdentity = self.blockchainIdentity;
     }
 }
 

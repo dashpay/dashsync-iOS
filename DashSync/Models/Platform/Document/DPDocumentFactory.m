@@ -71,14 +71,14 @@ static NSInteger const DEFAULT_REVISION = 1;
                                      userInfo:@{
                                          NSLocalizedDescriptionKey :
                                              [NSString stringWithFormat:@"Contract '%@' doesn't contain type '%@'",
-                                                                        self.contract.contractId, tableName],
+                                                                        self.contract.name, tableName],
                                      }];
         }
 
         return nil;
     }
 
-    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.contractId onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
+    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.identifier onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 
     return object;
 }

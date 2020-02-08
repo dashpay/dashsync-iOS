@@ -21,13 +21,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSChain;
 
+typedef NS_ENUM(NSUInteger, DPContractState) {
+    DPContractState_Unknown,
+    DPContractState_NotRegistered,
+    DPContractState_Registered,
+    DPContractState_Registering,
+};
+
 @interface DPContract : DPBaseObject
 
 @property (readonly, copy, nonatomic) NSString *identifier;
+@property (readonly, copy, nonatomic) NSString *name;
+@property (readonly, copy, nonatomic) NSString *statusString;
+@property (readonly, nonatomic) DPContractState contractState;
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;
 
 @property (assign, nonatomic) NSInteger version;
-@property (copy, nonatomic) NSString *contractId;
 @property (copy, nonatomic) NSString *jsonMetaSchema;
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;

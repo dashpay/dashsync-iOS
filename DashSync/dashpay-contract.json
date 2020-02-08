@@ -1,6 +1,4 @@
 {
-    "name": "DashPayNativePreDemo1",
-    
     "documents": {
         "profile": {
             "indices": [{
@@ -12,16 +10,22 @@
             "properties": {
                 "avatarUrl": {
                     "type": "string",
-                    "format": "url"
+                    "format": "url",
+                    "maxLength":256
                 },
                 "about": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength":256
+                },
+                "displayName": {
+                    "type": "string",
+                    "maxLength":64
                 }
             },
             "required": ["avatarUrl", "about"],
             "additionalProperties": false
         },
-        "contact": {
+        "contactRequest": {
             "indices": [{
                 "properties": [{
                     "$userId": "asc"
@@ -32,13 +36,23 @@
             }],
             "properties": {
                 "toUserId": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength":44,
+                    "minLength":44
                 },
-                "publicKey": {
-                    "type": "string"
+                "encryptedPublicKey": {
+                    "type": "string",
+                    "maxLength":128,
+                    "minLength":128
+                },
+                "privateData": {
+                    "type": "string",
+                    "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
+                    "maxLength":2048
                 }
             },
-            "required": ["toUserId", "publicKey"],
+            "$comment":"immutable\": [\"toUserId\", \"publicKey\"], \"allowDeletion\": false, check that toUserId exists",
+            "required": ["toUserId", "encryptedPublicKey"],
             "additionalProperties": false
         }
     }

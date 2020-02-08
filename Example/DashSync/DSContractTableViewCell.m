@@ -1,6 +1,6 @@
-//
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  
+//  Created by Sam Westrich
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSContractTableViewCell.h"
 
-#import "DPContractFactoryProtocol.h"
+@implementation DSContractTableViewCell
 
-NS_ASSUME_NONNULL_BEGIN
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
 
-@interface DPContractFactory : NSObject <DPContractFactory>
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
 
 @end
-
-NS_ASSUME_NONNULL_END
