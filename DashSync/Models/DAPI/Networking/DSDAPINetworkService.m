@@ -22,6 +22,8 @@
 #import "DSTransition.h"
 #import "DSPeer.h"
 #import "DSDAPIGRPCResponseHandler.h"
+#import "DPContract.h"
+#import "DSPlatformDocumentsRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -459,19 +461,20 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [[self.gRPCClient getDataContractWithMessage:getDataContractRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
-- (void)getUserByName:(NSString *)username
+- (void)getIdentityByName:(NSString *)username
               success:(void (^)(NSDictionary *blockchainIdentity))success
               failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
-
-    [self requestWithMethod:@"getUser"
-                  parameters:@{ @"username" : username }
-        validateAgainstClass:NSDictionary.class
-                     success:success
-                     failure:failure];
+    
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForName:username];
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
-- (void)getUserById:(NSString *)userId
+- (void)getIdentityById:(NSString *)userId
             success:(void (^)(NSDictionary *blockchainIdentity))success
             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);

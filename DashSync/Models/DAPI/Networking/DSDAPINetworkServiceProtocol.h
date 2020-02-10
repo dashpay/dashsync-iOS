@@ -369,7 +369,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getUserByName:(NSString *)username
+- (void)getIdentityByName:(NSString *)username
               success:(void (^)(NSDictionary *blockchainIdentity))success
               failure:(void (^)(NSError *error))failure;
 
@@ -380,7 +380,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)getUserById:(NSString *)userId
+- (void)getIdentityById:(NSString *)userId
             success:(void (^)(NSDictionary *blockchainIdentity))success
             failure:(void (^)(NSError *error))failure;
 

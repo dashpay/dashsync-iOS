@@ -188,7 +188,7 @@
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        [self.DAPINetworkService getUserById:self.uniqueIdString success:^(NSDictionary * _Nullable profileDictionary) {
+        [self.DAPINetworkService getIdentityById:self.uniqueIdString success:^(NSDictionary * _Nullable profileDictionary) {
             __strong typeof(weakSelf) strongSelf = weakSelf;
             if (!strongSelf) {
                 return;
@@ -748,7 +748,7 @@
         
 -(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getUserById:self.uniqueIdString success:^(NSDictionary * _Nonnull profileDictionary) {
+    [self.DAPINetworkService getIdentityById:self.uniqueIdString success:^(NSDictionary * _Nonnull profileDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -840,7 +840,7 @@
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getUserByName:potentialContact.username success:^(NSDictionary *_Nonnull blockchainIdentity) {
+    [self.DAPINetworkService getIdentityByName:potentialContact.username success:^(NSDictionary *_Nonnull blockchainIdentity) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -1247,7 +1247,7 @@
             if (!externalContact) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                [self.DAPINetworkService getUserById:blockchainIdentityRegistrationHash.reverse.hexString success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+                [self.DAPINetworkService getIdentityById:blockchainIdentityRegistrationHash.reverse.hexString success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
                     NSAssert(blockchainIdentityDictionary != nil, @"Should not be nil. Otherwise dispatch_group logic will be broken");
                     if (blockchainIdentityDictionary) {
                         UInt256 contactBlockchainIdentityUniqueId = ((NSString*)blockchainIdentityDictionary[@"uniqueId"]).hexToData.reverse.UInt256;
@@ -1334,7 +1334,7 @@
             if (!destinationContact) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                [self.DAPINetworkService getUserById:blockchainIdentityRegistrationHash.reverse.hexString success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+                [self.DAPINetworkService getIdentityById:blockchainIdentityRegistrationHash.reverse.hexString success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
                     NSAssert(blockchainIdentityDictionary != nil, @"Should not be nil. Otherwise dispatch_group logic will be broken");
                     if (blockchainIdentityDictionary) {
                         UInt256 contactBlockchainIdentityUniqueId = ((NSString*)blockchainIdentityDictionary[@"uniqueId"]).hexToData.reverse.UInt256;
