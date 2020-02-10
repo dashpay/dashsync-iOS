@@ -66,14 +66,36 @@
                 NSAssert(FALSE, @"Not supported yet");
                 break;
         }
-        [mArray addObject:leftExpression.keyPath];
+        switch (leftExpression.expressionType) {
+            case NSConstantValueExpressionType:
+                [mArray addObject:leftExpression.constantValue];
+                break;
+            case NSKeyPathExpressionType:
+                [mArray addObject:leftExpression.keyPath];
+                break;
+                
+            default:
+                NSAssert(FALSE, @"Not supported yet");
+                break;
+        }
         [mArray addObject:operator];
-        [mArray addObject:rightExpression.keyPath];
+        switch (rightExpression.expressionType) {
+            case NSConstantValueExpressionType:
+                [mArray addObject:rightExpression.constantValue];
+                break;
+            case NSKeyPathExpressionType:
+                [mArray addObject:rightExpression.keyPath];
+                break;
+                
+            default:
+                NSAssert(FALSE, @"Not supported yet");
+                break;
+        }
         return mArray;
     }
 }
 
--(NSData*)dashPlatormWhereDataWithStartAt:(NSNumber* _Nullable)startAt limit:(NSNumber* _Nullable)limit {
+-(NSData*)dashPlatormWhereDataWithStartAt:(NSNumber* _Nullable)startAt limit:(NSNumber* _Nullable)limit orderBy:(NSArray<NSSortDescriptor*>*)sortDescriptors {
     NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
     if (startAt) {
         [dictionary setObject:startAt forKey:@"startAt"];
@@ -82,6 +104,11 @@
         [dictionary setObject:limit forKey:@"limit"];
     }
     [dictionary setObject:[self whereClauseArray] forKey:@"where"];
+    NSMutableArray * sortDescriptorsArray = [NSMutableArray array];
+    for (NSSortDescriptor * sortDescriptor in sortDescriptors) {
+        [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
+    }
+    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
     return [dictionary ds_cborEncodedObject];
 }
 

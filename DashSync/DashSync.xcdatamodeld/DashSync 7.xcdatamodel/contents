@@ -73,6 +73,7 @@
         <relationship name="accounts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSAccountEntity" inverseName="chain" inverseEntity="DSAccountEntity" syncable="YES"/>
         <relationship name="blocks" toMany="YES" deletionRule="Cascade" destinationEntity="DSMerkleBlockEntity" inverseName="chain" inverseEntity="DSMerkleBlockEntity" syncable="YES"/>
         <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContactEntity" inverseName="chain" inverseEntity="DSContactEntity" syncable="YES"/>
+        <relationship name="contracts" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSContractEntity" inverseName="chain" inverseEntity="DSContractEntity" syncable="YES"/>
         <relationship name="derivationPaths" toMany="YES" deletionRule="Cascade" destinationEntity="DSDerivationPathEntity" inverseName="chain" inverseEntity="DSDerivationPathEntity" syncable="YES"/>
         <relationship name="governanceObjectHashes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSGovernanceObjectHashEntity" inverseName="chain" inverseEntity="DSGovernanceObjectHashEntity" syncable="YES"/>
         <relationship name="identities" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSBlockchainIdentityEntity" inverseName="chain" inverseEntity="DSBlockchainIdentityEntity" syncable="YES"/>
@@ -108,6 +109,10 @@
         <relationship name="incomingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="destinationContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="outgoingRequests" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DSFriendRequestEntity" inverseName="sourceContact" inverseEntity="DSFriendRequestEntity" syncable="YES"/>
         <relationship name="profileTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSDocumentTransitionEntity" inverseName="contactProfileCreations" inverseEntity="DSDocumentTransitionEntity" syncable="YES"/>
+    </entity>
+    <entity name="DSContractEntity" syncable="YES">
+        <attribute name="identityHash" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="chain" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSChainEntity" inverseName="contracts" inverseEntity="DSChainEntity" syncable="YES"/>
     </entity>
     <entity name="DSCreditFundingTransactionEntity" representedClassName="DSCreditFundingTransactionEntity" parentEntity="DSSpecialTransactionEntity" syncable="YES">
         <relationship name="fundedTransition" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DSBlockchainIdentityFundedTransition" inverseName="fundingTransaction" inverseEntity="DSBlockchainIdentityFundedTransition" syncable="YES"/>
@@ -464,7 +469,7 @@
         <element name="DSBlockchainIdentityTopupTransitionEntity" positionX="-1435" positionY="1261.13671875" width="128" height="58"/>
         <element name="DSBlockchainIdentityUpdateTransitionEntity" positionX="-2403" positionY="-207" width="128" height="73"/>
         <element name="DSBlockchainIdentityUsernameEntity" positionX="-2421" positionY="-189" width="128" height="88"/>
-        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="358"/>
+        <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="373"/>
         <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="103"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
         <element name="DSContactEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="253"/>
@@ -497,5 +502,6 @@
         <element name="DSTransitionEntity" positionX="-2500.7265625" positionY="554.08203125" width="128" height="193"/>
         <element name="DSTxInputEntity" positionX="-2146.4765625" positionY="907.25" width="128" height="150"/>
         <element name="DSTxOutputEntity" positionX="-1944.3671875" positionY="447.375" width="128" height="195"/>
+        <element name="DSContractEntity" positionX="-2412" positionY="-180" width="128" height="73"/>
     </elements>
 </model>

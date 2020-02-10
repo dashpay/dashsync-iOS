@@ -52,7 +52,7 @@
     NSString * identifier = [[self.platform.knownContracts allKeys] objectAtIndex:index];
     DPContract * contract = self.platform.knownContracts[identifier];
     cell.contractNameLabel.text = contract.name;
-    cell.statusLabel = contract.statusString;
+    cell.statusLabel.text = contract.statusString;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

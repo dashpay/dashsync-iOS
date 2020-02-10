@@ -78,7 +78,7 @@ static NSInteger const DEFAULT_REVISION = 1;
         return nil;
     }
 
-    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.identifier onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
+    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.globalContractIdentifier onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 
     return object;
 }

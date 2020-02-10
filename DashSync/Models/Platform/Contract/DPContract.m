@@ -17,9 +17,9 @@
 
 #import "DPContract.h"
 #import "NSData+Bitcoin.h"
-#import "BigIntTypes.h"
 #import "DSDashPlatform.h"
 #import "NSData+DSCborDecoding.h"
+#import "NSString+Bitcoin.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,8 +30,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 @interface DPContract ()
 
 @property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
-@property (copy, nonatomic, null_resettable) NSString *identifier;
+@property (copy, nonatomic, null_resettable) NSString *globalContractIdentifier;
 @property (assign, nonatomic) DPContractState contractState;
+@property (assign, nonatomic) UInt256 registeredBlockchainIdentity;
+@property (strong, nonatomic) DSChain *chain;
 
 @end
 
@@ -40,17 +42,18 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 #pragma mark - Init
 
 - (instancetype)initWithContractId:(NSString *)contractId
-                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents {
+                         documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain {
     NSParameterAssert(contractId);
     NSParameterAssert(documents);
 
     self = [super init];
     if (self) {
         _version = DEFAULT_VERSION;
-        _identifier = contractId;
+        _globalContractIdentifier = contractId;
         _jsonMetaSchema = DEFAULT_SCHEMA;
         _mutableDocuments = [documents mutableCopy];
         _definitions = @{};
+        _chain = chain;
     }
     return self;
 }
@@ -59,7 +62,8 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 + (DPContract *)contractWithName:(NSString *)name
                   withIdentifier:(NSString*)identifier
-                       documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents {
+                       documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents
+                         onChain:(DSChain*)chain {
     NSParameterAssert(name);
     NSParameterAssert(documents);
 
@@ -67,38 +71,42 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         @"name" : name,
         @"documents" : documents,
     };
-    DPContract *contract = [self contractFromDictionary:rawContract withIdentifier:identifier];
+    DPContract *contract = [self contractFromDictionary:rawContract withIdentifier:identifier onChain:chain];
 
     return contract;
 }
 
 + (nullable DPContract *)contractFromDictionary:(DSStringValueDictionary *)contractDictionary
                                  withIdentifier:(NSString*)identifier
-                                           error:(NSError *_Nullable __autoreleasing *)error {
-    return [self contractFromDictionary:contractDictionary withIdentifier:identifier skipValidation:NO error:error];
+                                        onChain:(DSChain*)chain
+                                          error:(NSError *_Nullable __autoreleasing *)error {
+    return [self contractFromDictionary:contractDictionary withIdentifier:identifier skipValidation:NO onChain:chain error:error];
 }
 
 + (nullable DPContract *)contractFromDictionary:(DSStringValueDictionary *)contractDictionary
                                   withIdentifier:(NSString*)identifier
                                   skipValidation:(BOOL)skipValidation
+                                        onChain:(DSChain*)chain
                                            error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(contractDictionary);
 
     // TODO: validate rawContract
 
-    DPContract *contract = [self contractFromDictionary:contractDictionary withIdentifier:identifier];
+    DPContract *contract = [self contractFromDictionary:contractDictionary withIdentifier:identifier onChain:chain];
 
     return contract;
 }
 
 + (nullable DPContract *)contractFromSerialized:(NSData *)data
+                                        onChain:(DSChain*)chain
                                           error:(NSError *_Nullable __autoreleasing *)error {
-    return [self contractFromSerialized:data withIdentifier:[data base64String] skipValidation:NO error:error];
+    return [self contractFromSerialized:data withIdentifier:[data base64String] skipValidation:NO onChain:chain error:error];
 }
 
 + (nullable DPContract *)contractFromSerialized:(NSData *)data
                                  withIdentifier:(NSString*)identifier
                                  skipValidation:(BOOL)skipValidation
+                                        onChain:(DSChain*)chain
                                           error:(NSError *_Nullable __autoreleasing *)error {
     NSParameterAssert(data);
 
@@ -109,15 +117,16 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
     return [self contractFromDictionary:contractDictionary
                          withIdentifier:identifier
-                          skipValidation:skipValidation
-                                   error:error];
+                         skipValidation:skipValidation
+                                onChain:chain
+                                  error:error];
 }
 
-+ (DPContract *)contractFromDictionary:(DSStringValueDictionary *)rawContract withIdentifier:(NSString*)contractIdentifier {
++ (DPContract *)contractFromDictionary:(DSStringValueDictionary *)rawContract withIdentifier:(NSString*)contractIdentifier onChain:(DSChain*)chain {
     NSDictionary<NSString *, DSStringValueDictionary *> *documents = rawContract[@"documents"];
 
     DPContract *contract = [[DPContract alloc] initWithContractId:contractIdentifier
-                                                  documents:documents];
+                                                  documents:documents onChain:chain];
 
     NSString *jsonMetaSchema = rawContract[@"$schema"];
     if (jsonMetaSchema) {
@@ -139,12 +148,12 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 #pragma mark - Contract Info
 
-- (NSString *)identifier {
-    if (!_identifier) {
+- (NSString *)globalContractIdentifier {
+    if (!_globalContractIdentifier) {
         NSData *serializedData = uint256_data([self.serialized SHA256_2]);
-        _identifier = [serializedData base58String];
+        _globalContractIdentifier = [serializedData base58String];
     }
-    return _identifier;
+    return _globalContractIdentifier;
 }
 
 - (NSString *)jsonSchemaId {
@@ -228,7 +237,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 -(NSString*)name {
-    return [DSDashPlatform nameForContractWithIdentifier:self.identifier];
+    return [DSDashPlatform nameForContractWithIdentifier:self.globalContractIdentifier];
 }
 
 -(NSString*)statusString {
@@ -259,7 +268,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    DPContract *contract = [self contractFromDictionary:jsonObject withIdentifier:DASHPAY_CONTRACT error:&error];
+    DPContract *contract = [self contractFromDictionary:jsonObject withIdentifier:DASHPAY_CONTRACT onChain:chain error:&error];
     NSAssert(error == nil, @"Failed building DPContract");
     
     return contract;
@@ -276,7 +285,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     DSStringValueDictionary *jsonObject = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     NSAssert(error == nil, @"Failed parsing json");
     
-    DPContract *contract = [self contractFromDictionary:jsonObject withIdentifier:DPNS_CONTRACT error:&error];
+    DPContract *contract = [self contractFromDictionary:jsonObject withIdentifier:DPNS_CONTRACT onChain:chain error:&error];
+    contract.contractState = DPContractState_Registered;
+    contract.registeredBlockchainIdentity = DPNS_ID.base64ToData.UInt256;
+    NSAssert(!uint256_is_zero(contract.registeredBlockchainIdentity), @"The dpns contract must be already registered");
     NSAssert(error == nil, @"Failed building DPContract");
     
     return contract;

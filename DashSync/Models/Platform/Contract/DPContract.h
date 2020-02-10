@@ -16,6 +16,7 @@
 //
 
 #import "DPBaseObject.h"
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,11 +33,14 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 
 @interface DPContract : DPBaseObject
 
-@property (readonly, copy, nonatomic) NSString *identifier;
+@property (readonly, copy, nonatomic) NSString *globalContractIdentifier;
+@property (readonly, nonatomic) UInt256 registeredBlockchainIdentity;
 @property (readonly, copy, nonatomic) NSString *name;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;
+
+@property (readonly, nonatomic) DSChain *chain;
 
 @property (assign, nonatomic) NSInteger version;
 @property (copy, nonatomic) NSString *jsonMetaSchema;
@@ -44,7 +48,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
 - (instancetype)initWithContractId:(NSString *)contractID
-                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents;
+                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain;
 
 - (instancetype)init NS_UNAVAILABLE;
 

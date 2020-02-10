@@ -53,6 +53,7 @@
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
+#import "BigIntTypes.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
@@ -772,15 +773,23 @@
     __weak typeof(contract) weakContract = contract;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        [self.DAPINetworkService fetchContractForId:contract.identifier success:^(NSDictionary * _Nonnull contract) {
-            __strong typeof(weakContract) strongContract = weakContract;
-            if (!weakContract) {
-                return;
-            }
-            
-        } failure:^(NSError * _Nonnull error) {
-            
-        }];
+        if (contract.contractState != DPContractState_Registered) {
+            [self.DAPINetworkService getIdentityByName:@"dashpay" success:^(NSDictionary * _Nonnull blockchainIdentity) {
+                NSLog(@"okay");
+            } failure:^(NSError * _Nonnull error) {
+                
+            }];
+        } else if (contract.contractState == DPContractState_Registered) {
+            [self.DAPINetworkService fetchContractForId:contract.globalContractIdentifier success:^(NSDictionary * _Nonnull contract) {
+                __strong typeof(weakContract) strongContract = weakContract;
+                if (!weakContract) {
+                    return;
+                }
+                
+            } failure:^(NSError * _Nonnull error) {
+                
+            }];
+        }
     });
 }
 
@@ -1092,7 +1101,7 @@
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
     
-    [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract globalContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -1117,8 +1126,8 @@
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
-    NSLog(@"%@",[contract identifier]);
-    [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    NSLog(@"%@",[contract globalContractIdentifier]);
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract globalContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

@@ -36,7 +36,7 @@
 }
 
 +(instancetype)dpnsRequestForName:(NSString*)name {
-    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest init];
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == dash",name];
     platformDocumentsRequest.startAt = 0;
@@ -47,9 +47,9 @@
 
 -(GetDocumentsRequest*)getDocumentsRequest {
     GetDocumentsRequest * getDocumentsRequest = [[GetDocumentsRequest alloc] init];
-    getDocumentsRequest.documentType = @"1";
+    getDocumentsRequest.documentType = @"domain";
     getDocumentsRequest.dataContractId = DPNS_ID;
-    getDocumentsRequest.where = [self.predicate dashPlatormWhereDataWithStartAt:@(self.startAt) limit:@(self.limit)];
+    getDocumentsRequest.where = [self.predicate dashPlatormWhereDataWithStartAt:@(self.startAt) limit:@(self.limit) orderBy:@[[NSSortDescriptor sortDescriptorWithKey:@"normalizedLabel" ascending:YES]]];
     return getDocumentsRequest;
 }
 
