@@ -95,21 +95,23 @@
     }
 }
 
--(NSData*)dashPlatormWhereDataWithStartAt:(NSNumber* _Nullable)startAt limit:(NSNumber* _Nullable)limit orderBy:(NSArray<NSSortDescriptor*>*)sortDescriptors {
-    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
-    if (startAt) {
-        [dictionary setObject:startAt forKey:@"startAt"];
-    }
-    if (limit) {
-        [dictionary setObject:limit forKey:@"limit"];
-    }
-    [dictionary setObject:[self whereClauseArray] forKey:@"where"];
-    NSMutableArray * sortDescriptorsArray = [NSMutableArray array];
-    for (NSSortDescriptor * sortDescriptor in sortDescriptors) {
-        [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
-    }
-    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
-    return [dictionary ds_cborEncodedObject];
+-(NSData*)dashPlatormWhereData {
+//    NSMutableDictionary * dictionary = [NSMutableDictionary dictionary];
+//    if (startAt) {
+//        [dictionary setObject:startAt forKey:@"startAt"];
+//    }
+//    if (limit) {
+//        [dictionary setObject:limit forKey:@"limit"];
+//    }
+//    [dictionary setObject:[self whereClauseArray] forKey:@"where"];
+//    NSMutableArray * sortDescriptorsArray = [NSMutableArray array];
+//    for (NSSortDescriptor * sortDescriptor in sortDescriptors) {
+//        [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
+//    }
+//    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
+//    NSData * json = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+//    NSLog(@"%@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
+    return [[self whereClauseArray] ds_cborEncodedObject];
 }
 
 @end

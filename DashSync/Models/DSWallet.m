@@ -1055,13 +1055,13 @@
 
 -(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username {
     DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentity];
-    [blockchainIdentity addUsername:username];
+    [blockchainIdentity addUsername:username save:NO];
     return blockchainIdentity;
 }
 
 -(DSBlockchainIdentity*)createBlockchainIdentityForUsername:(NSString*)username usingDerivationIndex:(uint32_t)index {
     DSBlockchainIdentity * blockchainIdentity = [self createBlockchainIdentityUsingDerivationIndex:index];
-    [blockchainIdentity addUsername:username];
+    [blockchainIdentity addUsername:username save:NO];
     return blockchainIdentity;
 }
 

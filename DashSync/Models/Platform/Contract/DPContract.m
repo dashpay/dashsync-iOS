@@ -15,11 +15,12 @@
 //  limitations under the License.
 //
 
-#import "DPContract.h"
+#import "DPContract+Protected.h"
 #import "NSData+Bitcoin.h"
 #import "DSDashPlatform.h"
 #import "NSData+DSCborDecoding.h"
 #import "NSString+Bitcoin.h"
+#import "DSContractTransition.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,7 +32,6 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @property (strong, nonatomic) NSMutableDictionary<NSString *, DSStringValueDictionary *> *mutableDocuments;
 @property (copy, nonatomic, null_resettable) NSString *globalContractIdentifier;
-@property (assign, nonatomic) DPContractState contractState;
 @property (assign, nonatomic) UInt256 registeredBlockchainIdentity;
 @property (strong, nonatomic) DSChain *chain;
 
@@ -255,6 +255,13 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     }
     return @"Other State";
 }
+
+#pragma mark - Transitions
+
+-(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+    return [[DSContractTransition alloc] initWithContract:self withTransitionVersion:1 blockchainIdentityUniqueId:blockchainIdentity.uniqueID onChain:self.chain];
+}
+
 #pragma mark - Special Contracts
 
 + (DPContract *)localDashpayContractForChain:(DSChain*)chain {
@@ -298,7 +305,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @synthesize keyValueDictionary = _keyValueDictionary;
 
-- (DSMutableStringValueDictionary *)keyValueDictionary {
+- (DSMutableStringValueDictionary *)objectDictionary {
     if (_keyValueDictionary == nil) {
         DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
         json[@"$schema"] = self.jsonMetaSchema;

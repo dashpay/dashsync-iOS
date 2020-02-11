@@ -1,6 +1,6 @@
 //  
 //  Created by Sam Westrich
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Copyright © 2020 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,29 +15,30 @@
 //  limitations under the License.
 //
 
-#import "DSDocumentTransition.h"
+#import "DSContractTransition.h"
 #import "DPDocument.h"
 #import "DSTransition+Protected.h"
+#import "DPContract+Protected.h"
 
-@interface DSDocumentTransition()
+@interface DSContractTransition()
 
-@property(nonatomic,strong) NSArray<DPDocument *>* documents;
+@property(nonatomic,strong) DPContract * contract;
 
 @end
 
-@implementation DSDocumentTransition
+@implementation DSContractTransition
 
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"documents"] = self.documents;
+    json[@"dataContract"] = self.contract.objectDictionary;
     return json;
 }
 
--(instancetype)initForDocuments:(NSArray<DPDocument*>*)documents withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
+-(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain {
     if (self = [super initWithTransitionVersion:version blockchainIdentityUniqueId:blockchainIdentityUniqueId onChain:chain]) {
-        self.documents = documents;
+        self.contract = contract;
     }
-    self.type = DSTransitionType_Documents;
+    self.type = DSTransitionType_DataContract;
     
     return self;
 }

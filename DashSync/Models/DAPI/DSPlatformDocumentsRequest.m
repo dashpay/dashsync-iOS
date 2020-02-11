@@ -24,6 +24,7 @@
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import "DPContract.h"
 #import "NSPredicate+CBORData.h"
+#import "NSObject+DSCborEncoding.h"
 
 @implementation DSPlatformDocumentsRequest
 
@@ -45,11 +46,25 @@
     return platformDocumentsRequest;
 }
 
+-(NSData*)whereData {
+    return [self.predicate dashPlatormWhereData];
+}
+-(NSData*)orderByData {
+    NSMutableArray * sortDescriptorsArray = [NSMutableArray array];
+    for (NSSortDescriptor * sortDescriptor in self.sortDescriptors) {
+       [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
+    }
+    return [sortDescriptorsArray ds_cborEncodedObject];
+}
+
 -(GetDocumentsRequest*)getDocumentsRequest {
     GetDocumentsRequest * getDocumentsRequest = [[GetDocumentsRequest alloc] init];
     getDocumentsRequest.documentType = @"domain";
     getDocumentsRequest.dataContractId = DPNS_ID;
-    getDocumentsRequest.where = [self.predicate dashPlatormWhereDataWithStartAt:@(self.startAt) limit:@(self.limit) orderBy:@[[NSSortDescriptor sortDescriptorWithKey:@"normalizedLabel" ascending:YES]]];
+    getDocumentsRequest.where = [self whereData];
+    getDocumentsRequest.orderBy = [self orderByData];
+    getDocumentsRequest.startAt = self.startAt;
+    getDocumentsRequest.limit = self.limit;
     return getDocumentsRequest;
 }
 

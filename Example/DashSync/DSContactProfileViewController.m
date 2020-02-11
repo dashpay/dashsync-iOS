@@ -165,7 +165,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateUsername {
     if (![self.usernameCellModel.text isEqualToString:@""]) {
-        [self.blockchainIdentity addUsername:self.usernameCellModel.text];
+        [self.blockchainIdentity addUsername:self.usernameCellModel.text save:YES];
         [self.formTableViewController.tableView reloadData];
     }
 }

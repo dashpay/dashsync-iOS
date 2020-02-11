@@ -465,7 +465,6 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
               success:(void (^)(NSDictionary *blockchainIdentity))success
               failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
-    
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForName:username];
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;

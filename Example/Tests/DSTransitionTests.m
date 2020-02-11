@@ -77,7 +77,7 @@
 - (void)testNameRegistration {
     DSECDSAKey * privateKey = [DSECDSAKey keyWithSecret:@"fdbca0cd2be4375f04fcaee5a61c5d170a2a46b1c0c7531f58c430734a668f32".hexToData.UInt256 compressed:YES];
     
-    [self.blockchainIdentity addUsername:@"dash"];
+    [self.blockchainIdentity addUsername:@"dash" save:NO];
     
     DSDocumentTransition * transition = self.blockchainIdentity.unregisteredUsernamesPreorderTransition;
     

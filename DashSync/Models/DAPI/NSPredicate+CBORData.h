@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSPredicate (CBORData)
 
--(NSData*)dashPlatormWhereDataWithStartAt:(NSNumber* _Nullable)startAt limit:(NSNumber* _Nullable)limit orderBy:(NSArray<NSSortDescriptor*>*)sortDescriptors;
+-(NSData*)dashPlatormWhereData;
 
 @end
 

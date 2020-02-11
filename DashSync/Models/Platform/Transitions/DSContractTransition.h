@@ -15,28 +15,17 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "DSTransition.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
-    DSPlatformDocumentType_Contract = 1,
-    DSPlatformDocumentType_Document = 2,
-};
+@class DPContract;
 
-@class GetDocumentsRequest;
+@interface DSContractTransition : DSTransition
 
-@interface DSPlatformDocumentsRequest : NSObject
+@property(nonatomic,readonly) DPContract * contract;
 
-@property(nonatomic,strong) NSPredicate * predicate;
-@property(nonatomic,strong) NSArray <NSSortDescriptor*>* sortDescriptors;
-@property(nonatomic,assign) uint32_t startAt;
-@property(nonatomic,assign) uint32_t limit;
-@property(nonatomic,assign) DSPlatformDocumentType type;
-
-+(instancetype)dpnsRequestForName:(NSString*)name;
-
--(GetDocumentsRequest*)getDocumentsRequest;
+-(instancetype)initWithContract:(DPContract*)contract withTransitionVersion:(uint16_t)version blockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId onChain:(DSChain *)chain;
 
 @end
 

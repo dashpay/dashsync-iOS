@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain;
+@class DSChain,DSContractTransition;
 
 typedef NS_ENUM(NSUInteger, DPContractState) {
     DPContractState_Unknown,
@@ -39,6 +39,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;
+@property (readonly, copy, nonatomic) DSStringValueDictionary *objectDictionary;
 
 @property (readonly, nonatomic) DSChain *chain;
 

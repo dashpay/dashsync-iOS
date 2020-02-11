@@ -47,13 +47,14 @@
 #import "DSDocumentTransition.h"
 #import "DSDerivationPath.h"
 #import "DPDocumentFactory.h"
-#import "DPContract.h"
+#import "DPContract+Protected.h"
 #import "DSBlockchainIdentityEntity+CoreDataClass.h"
 #import "DSTransaction+Protected.h"
 #import "DSBlockchainIdentityKeyPathEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityUsernameEntity+CoreDataClass.h"
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
 #import "BigIntTypes.h"
+#import "DSContractTransition.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
@@ -509,9 +510,11 @@
 
 // MARK: - DPNS
 
--(void)addUsername:(NSString*)username {
+-(void)addUsername:(NSString*)username save:(BOOL)save {
     [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Initial) forKey:username];
-    [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial];
+    if (save) {
+        [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Initial];
+    }
     if (self.registered) {
         [self registerUsernames];
     }
@@ -593,6 +596,7 @@
 -(void)saveInitial {
     [self.managedObjectContext performBlockAndWait:^{
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
+        [DSBlockchainIdentityUsernameEntity setContext:self.managedObjectContext];
         [DSCreditFundingTransactionEntity setContext:self.managedObjectContext];
         DSBlockchainIdentityEntity * entity = [DSBlockchainIdentityEntity managedObject];
         entity.uniqueID = uint256_data(self.uniqueID);
@@ -604,6 +608,7 @@
             DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObject];
             usernameEntity.status = ((NSNumber*)self.usernameStatuses[username]).intValue;
             usernameEntity.stringValue = username;
+            usernameEntity.blockchainIdentity = entity;
             [entity addUsernamesObject:usernameEntity];
         }
         [DSBlockchainIdentityEntity saveContext];
@@ -773,8 +778,19 @@
     __weak typeof(contract) weakContract = contract;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
-        if (contract.contractState != DPContractState_Registered) {
+        if (contract.contractState == DPContractState_Unknown) {
             [self.DAPINetworkService getIdentityByName:@"dashpay" success:^(NSDictionary * _Nonnull blockchainIdentity) {
+                NSLog(@"okay");
+            } failure:^(NSError * _Nonnull error) {
+                __strong typeof(weakContract) strongContract = weakContract;
+                if (!strongContract) {
+                    return;
+                }
+                strongContract.contractState = DPContractState_NotRegistered;
+            }];
+        } else if (contract.contractState == DPContractState_NotRegistered) {
+            DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
+            [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
                 NSLog(@"okay");
             } failure:^(NSError * _Nonnull error) {
                 

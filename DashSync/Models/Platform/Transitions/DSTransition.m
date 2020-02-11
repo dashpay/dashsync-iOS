@@ -46,7 +46,7 @@
     NSParameterAssert(chain);
     
     if (!(self = [self initOnChain:chain])) return nil;
-    self.type = DSTransitionType_Classic;
+    self.type = DSTransitionType_Documents;
     self.version = version;
     self.blockchainIdentityUniqueId = blockchainIdentityUniqueId;
     return self;
