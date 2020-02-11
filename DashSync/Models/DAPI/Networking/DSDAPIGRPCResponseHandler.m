@@ -16,10 +16,14 @@
 //
 
 #import "DSDAPIGRPCResponseHandler.h"
+#import <DAPI-GRPC/Platform.pbrpc.h>
+#import <DAPI-GRPC/Platform.pbobjc.h>
+#import "NSData+DSCborDecoding.h"
 
 @interface DSDAPIGRPCResponseHandler()
 
 @property(nonatomic,strong) NSDictionary * responseDictionary;
+@property(nonatomic,strong) NSError * decodingError;
 
 @end
 
@@ -30,12 +34,22 @@
 }
 
 - (void)didReceiveProtoMessage:(nullable GPBMessage *)message {
+    if ([message isMemberOfClass:[GetIdentityResponse class]]) {
+        GetIdentityResponse * identityResponse = (GetIdentityResponse*)message;
+        NSError * error = nil;
+        self.responseDictionary = [[identityResponse identity] ds_decodeCborError:&error];
+        if (error) {
+            self.decodingError = error;
+        }
+    }
     NSLog(@"didReceiveProtoMessage");
 }
 
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
                                error:(nullable NSError *)error {
-    
+    if (!error && self.decodingError) {
+        error = self.decodingError;
+    }
     if (error) {
         if (self.errorHandler) {
             self.errorHandler(error);

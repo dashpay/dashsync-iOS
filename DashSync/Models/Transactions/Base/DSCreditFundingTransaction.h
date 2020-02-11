@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,readonly) UInt160 creditBurnPublicKeyHash;
 @property (nonatomic,readonly) uint32_t usedDerivationPathIndex;
 
+-(uint32_t)usedDerivationPathIndexForWallet:(DSWallet*)wallet;
+
 @end
 
 NS_ASSUME_NONNULL_END

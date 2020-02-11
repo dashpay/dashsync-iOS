@@ -59,8 +59,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathSigningAlgorith) {
-    DSDerivationPathSigningAlgorith_ECDSA,
-    DSDerivationPathSigningAlgorith_BLS
+    DSDerivationPathSigningAlgorith_ECDSA = 1,
+    DSDerivationPathSigningAlgorith_BLS = 2
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {

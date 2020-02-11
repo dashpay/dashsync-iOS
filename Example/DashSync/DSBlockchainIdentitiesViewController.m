@@ -69,7 +69,7 @@
             }
         }
         blockchainIdentityCell.registrationL2StatusLabel.text = blockchainIdentity.registrationStatusString;
-       // blockchainIdentityCell.publicKeyLabel.text = blockchainIdentity;
+        blockchainIdentityCell.publicKeysLabel.text = [NSString stringWithFormat:@"%u",blockchainIdentity.activeKeys];
     }
 }
 
