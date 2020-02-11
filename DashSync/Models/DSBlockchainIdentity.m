@@ -135,10 +135,11 @@
     return self;
 }
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     NSParameterAssert(wallet);
     if (![transaction isCreditFundingTransaction]) return nil;
-    if (!(self = [self initWithType:type atIndex:[transaction usedDerivationPathIndex] withLockedOutpoint:transaction.lockedOutpoint inWallet:wallet inContext:managedObjectContext])) return nil;
+    NSAssert(index != UINT32_MAX, @"index must be found");
+    if (!(self = [self initWithType:type atIndex:index withLockedOutpoint:transaction.lockedOutpoint inWallet:wallet inContext:managedObjectContext])) return nil;
     
     self.registrationCreditFundingTransaction = transaction;
     
@@ -154,8 +155,8 @@
     return self;
 }
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> *)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
-    if (!(self = [self initWithType:type withFundingTransaction:transaction inWallet:wallet inContext:managedObjectContext])) return nil;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index  withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> *)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+    if (!(self = [self initWithType:type atIndex:index withFundingTransaction:transaction inWallet:wallet inContext:managedObjectContext])) return nil;
     
     if (usernameStatuses) {
         self.usernameStatuses = [usernameStatuses mutableCopy];
@@ -163,8 +164,8 @@
     return self;
 }
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
-    if (!(self = [self initWithType:type withFundingTransaction:transaction withUsernameStatusDictionary:usernameStatuses inWallet:wallet inContext:managedObjectContext])) return nil;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index  withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
+    if (!(self = [self initWithType:type atIndex:index withFundingTransaction:transaction withUsernameStatusDictionary:usernameStatuses inWallet:wallet inContext:managedObjectContext])) return nil;
     
     self.creditBalance = credits;
     self.registrationStatus = registrationStatus;

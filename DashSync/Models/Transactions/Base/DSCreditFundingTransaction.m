@@ -53,7 +53,7 @@
 
 
 -(uint32_t)usedDerivationPathIndex {
-    if (!self.account) return 0;
+    if (!self.account) return UINT32_MAX;
     DSCreditFundingDerivationPath * registrationFundingDerivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityRegistrationFundingDerivationPathForWallet:self.account.wallet];
     NSString * address = [[NSData dataWithUInt160:[self creditBurnPublicKeyHash]] addressFromHash160DataForChain:self.chain];
     return (uint32_t)[registrationFundingDerivationPath indexOfKnownAddress:address];

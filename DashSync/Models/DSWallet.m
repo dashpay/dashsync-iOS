@@ -988,7 +988,7 @@
                             for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentityEntity.usernames) {
                                 [usernameStatuses setObject:@(usernameEntity.status) forKey:usernameEntity.stringValue];
                             }
-                            DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type withFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
+                            DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
 
                             [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
                         } else {
@@ -1003,7 +1003,7 @@
                                 for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentityEntity.usernames) {
                                     [usernameStatuses setObject:@(usernameEntity.status) forKey:usernameEntity.stringValue];
                                 }
-                                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type withFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
+                                DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
                                 [rDictionary setObject:blockchainIdentity forKey:blockchainIdentityLockedOutpointData];
                             } else {
                                 DSBlockchainIdentity * blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
