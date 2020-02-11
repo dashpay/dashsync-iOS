@@ -20,7 +20,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSChain,DSContractTransition;
+@class DSChain,DSContractTransition,DSBlockchainIdentity;
 
 typedef NS_ENUM(NSUInteger, DPContractState) {
     DPContractState_Unknown,
@@ -58,6 +58,8 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 - (nullable DSStringValueDictionary *)documentSchemaForType:(NSString *)type;
 
 - (nullable NSDictionary<NSString *, NSString *> *)documentSchemaRefForType:(NSString *)type;
+
+- (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity;
 
 + (DPContract *)localDashpayContractForChain:(DSChain*)chain;
 + (DPContract *)localDPNSContractForChain:(DSChain*)chain;

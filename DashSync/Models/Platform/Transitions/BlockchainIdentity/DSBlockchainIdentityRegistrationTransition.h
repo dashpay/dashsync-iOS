@@ -7,12 +7,9 @@
 
 #import "DSTransition.h"
 #import "BigIntTypes.h"
+#import "DSBlockchainIdentity.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
-    DSBlockchainIdentityType_User = 1,
-};
 
 @class DSECDSAKey,DSBLSKey;
 

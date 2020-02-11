@@ -28,6 +28,12 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
     DSBlockchainIdentityUsernameStatus_Confirmed = 4,
 };
 
+typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
+    DSBlockchainIdentityType_Unknown = 0,
+    DSBlockchainIdentityType_User = 1,
+    DSBlockchainIdentityType_Application = 2,
+};
+
 @interface DSBlockchainIdentity : NSObject
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
@@ -45,6 +51,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint64_t syncHeight;
+@property (nonatomic,readonly) DSBlockchainIdentityType type;
 
 @property (nonatomic,readonly) NSArray <DSTransition*>* allTransitions;
 
@@ -63,11 +70,13 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 
 @property (nonatomic,readonly,getter=isRegistered) BOOL registered;
 
--(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+@property (nonatomic,readonly) NSString * localizedBlockchainIdentityTypeString;
 
--(instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+
+-(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)addUsername:(NSString*)username save:(BOOL)save;
 
@@ -125,6 +134,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
 - (void)fetchProfile:(void (^)(BOOL success))completion;
 
 - (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
+
++ (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type;
 
 @end
 

@@ -256,3 +256,9 @@
 
 /* It is Unknown if the Blockchain Identity is registered */
 "Unknown" = "Unknown";
+
+/* As a type of Blockchain Identity */
+"Application" = "Application";
+
+/* As a type of Blockchain Identity */
+"User" = "User";

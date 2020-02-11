@@ -85,9 +85,9 @@
     return [blockchainIdentity verifySignature:self.signatureData ofType:DSDerivationPathSigningAlgorith_ECDSA forMessageDigest:[self serializedBaseDataHash].UInt256];
 }
 
--(void)signWithKey:(DSKey*)privateKey fromIdentity:(DSBlockchainIdentity*)blockchainIdentity {
+-(void)signWithKey:(DSKey*)privateKey atIndex:(uint32_t)index fromIdentity:(DSBlockchainIdentity*)blockchainIdentity {
     NSParameterAssert(privateKey);
-    
+    NSAssert(index != UINT32_MAX, @"index must exist");
     //ATTENTION If this ever changes from ECDSA, change the max signature size defined above
     //DSDLog(@"Private Key is %@",[privateKey privateKeyStringForChain:self.chain]);
     if ([privateKey isMemberOfClass:[DSBLSKey class]]) {
@@ -97,7 +97,7 @@
         self.signatureType = DSDerivationPathSigningAlgorith_ECDSA;
         self.signatureData = [((DSECDSAKey*)privateKey) compactSign:[self serializedBaseDataHash].UInt256];
     }
-    self.signaturePublicKeyId = blockchainIdentity?[blockchainIdentity indexOfKey:privateKey]:1;
+    self.signaturePublicKeyId = index + 1; //hack for indexes starting at 1
     self.transitionHash = self.data.SHA256_2;
 }
 

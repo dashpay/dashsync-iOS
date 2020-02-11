@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSBlockchainIdentityEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *uniqueID;
+@property (nonatomic, assign) uint16_t type;
 @property (nonatomic, assign) uint16_t registrationStatus;
 @property (nonatomic, assign) uint64_t creditBalance;
 @property (nullable, nonatomic, retain) NSSet<DSCreditFundingTransactionEntity *> *topUpFundingTransactions;

@@ -70,6 +70,7 @@
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
+@property (nonatomic,assign) DSBlockchainIdentityType type;
 
 @property (nonatomic,assign) uint32_t keysCreated;
 @property (nonatomic,assign) uint32_t currentMainKeyIndex;
@@ -98,7 +99,7 @@
 
 @implementation DSBlockchainIdentity
 
--(instancetype)initAtIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     //this is the creation of a new blockchain identity
     NSParameterAssert(wallet);
     
@@ -106,6 +107,7 @@
     self.wallet = wallet;
     self.keysCreated = 0;
     self.registrationTransitionHash = UINT256_ZERO;
+    self.currentMainKeyIndex = 0;
     self.index = index;
     self.blockchainIdentityTopupTransitions = [NSMutableArray array];
     self.blockchainIdentityCloseTransitions = [NSMutableArray array];
@@ -114,6 +116,7 @@
     self.allTransitions = [NSMutableArray array];
     self.usernameStatuses = [NSMutableDictionary dictionary];
     self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Unknown;
+    self.type = type;
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
     } else {
@@ -124,18 +127,18 @@
     return self;
 }
 
--(instancetype)initAtIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
-    if (!(self = [self initAtIndex:index inWallet:wallet inContext:managedObjectContext])) return nil;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
+    if (!(self = [self initWithType:type atIndex:index inWallet:wallet inContext:managedObjectContext])) return nil;
     NSAssert(!dsutxo_is_zero(lockedOutpoint), @"utxo must not be nil");
     self.lockedOutpoint = lockedOutpoint;
     self.uniqueID = [dsutxo_data(lockedOutpoint) SHA256_2];
     return self;
 }
 
--(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+-(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     NSParameterAssert(wallet);
     if (![transaction isCreditFundingTransaction]) return nil;
-    if (!(self = [self initAtIndex:[transaction usedDerivationPathIndex] withLockedOutpoint:transaction.lockedOutpoint inWallet:wallet inContext:managedObjectContext])) return nil;
+    if (!(self = [self initWithType:type atIndex:[transaction usedDerivationPathIndex] withLockedOutpoint:transaction.lockedOutpoint inWallet:wallet inContext:managedObjectContext])) return nil;
     
     self.registrationCreditFundingTransaction = transaction;
     
@@ -151,8 +154,8 @@
     return self;
 }
 
--(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> *)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
-    if (!(self = [self initWithFundingTransaction:transaction inWallet:wallet inContext:managedObjectContext])) return nil;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> *)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+    if (!(self = [self initWithType:type withFundingTransaction:transaction inWallet:wallet inContext:managedObjectContext])) return nil;
     
     if (usernameStatuses) {
         self.usernameStatuses = [usernameStatuses mutableCopy];
@@ -160,8 +163,8 @@
     return self;
 }
 
--(instancetype)initWithFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
-    if (!(self = [self initWithFundingTransaction:transaction withUsernameStatusDictionary:usernameStatuses inWallet:wallet inContext:managedObjectContext])) return nil;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
+    if (!(self = [self initWithType:type withFundingTransaction:transaction withUsernameStatusDictionary:usernameStatuses inWallet:wallet inContext:managedObjectContext])) return nil;
     
     self.creditBalance = credits;
     self.registrationStatus = registrationStatus;
@@ -273,10 +276,10 @@
     [self saveInitial];
 }
 
--(void)registrationTransitionSignedByPrivateKey:(DSKey*)privateKey registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
-        
-    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 forIdentityType:DSBlockchainIdentityType_User registeringPublicKeys:publicKeys usingLockedOutpoint:self.lockedOutpoint onChain:self.wallet.chain];
-    [blockchainIdentityRegistrationTransition signWithKey:privateKey fromIdentity:self];
+-(void)registrationTransitionSignedByPrivateKey:(DSKey*)privateKey atIndex:(uint32_t)index registeringPublicKeys:(NSDictionary <NSNumber*,DSKey*>*)publicKeys completion:(void (^ _Nullable)(DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransaction))completion {
+    NSAssert(self.type != 0, @"Identity type should be defined");
+    DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition = [[DSBlockchainIdentityRegistrationTransition alloc] initWithVersion:1 forIdentityType:self.type registeringPublicKeys:publicKeys usingLockedOutpoint:self.lockedOutpoint onChain:self.wallet.chain];
+    [blockchainIdentityRegistrationTransition signWithKey:privateKey atIndex:index fromIdentity:self];
     if (completion) {
         completion(blockchainIdentityRegistrationTransition);
     }
@@ -299,7 +302,7 @@
         
         DSKey * publicKey = [self createNewKeyOfType:DSDerivationPathSigningAlgorith_ECDSA returnIndex:&index];
         
-        [self registrationTransitionSignedByPrivateKey:privateKey registeringPublicKeys:@{@(index):publicKey} completion:completion];
+        [self registrationTransitionSignedByPrivateKey:privateKey atIndex:index registeringPublicKeys:@{@(index):publicKey} completion:completion];
     }];
 }
 
@@ -412,10 +415,28 @@
     return [uint256_data(self.uniqueID) base58String];
 }
 
+- (NSString*)localizedBlockchainIdentityTypeString {
+    return [self.class localizedBlockchainIdentityTypeStringForType:self.type];
+}
+
++ (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type {
+    switch (type) {
+        case DSBlockchainIdentityType_Application:
+            return DSLocalizedString(@"Application", @"As a type of Blockchain Identity");
+        case DSBlockchainIdentityType_User:
+            return DSLocalizedString(@"User", @"As a type of Blockchain Identity");
+        case DSBlockchainIdentityType_Unknown:
+            return DSLocalizedString(@"Unknown", @"Unknown type of Blockchain Identity");
+            
+        default:
+            break;
+    }
+}
+
 // MARK: - Keys
 
 -(uint32_t)indexOfKey:(DSKey*)key {
-    DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityECDSAKeysDerivationPathForWallet:self.wallet];
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:DSDerivationPathSigningAlgorith_ECDSA];
     NSUInteger index = [derivationPath indexOfKnownAddress:[[NSData dataWithUInt160:key.hash160] addressFromHash160DataForChain:self.wallet.chain]];
     if (index == NSNotFound) {
         derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
@@ -622,6 +643,7 @@
         DSBlockchainIdentityEntity * entity = self.blockchainIdentityEntity;
         entity.creditBalance = self.creditBalance;
         entity.registrationStatus = self.registrationStatus;
+        entity.type = self.type;
         [DSBlockchainIdentityEntity saveContext];
     }];
 }
@@ -688,7 +710,7 @@
         
 //        NSLog(@"%@",uint160_hex(self.blockchainIdentityRegistrationTransition.pubkeyHash));
 //        NSAssert(uint160_eq(privateKey.publicKeyData.hash160,self.blockchainIdentityRegistrationTransition.pubkeyHash),@"Keys aren't ok");
-        [transition signWithKey:privateKey fromIdentity:self];
+        [transition signWithKey:privateKey atIndex:keyIndex fromIdentity:self];
         completion(YES);
     }];
 }
@@ -789,12 +811,18 @@
                 strongContract.contractState = DPContractState_NotRegistered;
             }];
         } else if (contract.contractState == DPContractState_NotRegistered) {
-            DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
-            [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
-                NSLog(@"okay");
-            } failure:^(NSError * _Nonnull error) {
-                
+            [contract registerCreator:self];
+            __block DSContractTransition * transition = [contract contractRegistrationTransitionForIdentity:self];
+            [self signStateTransition:transition withPrompt:@"Register Contract?" completion:^(BOOL success) {
+                if (success) {
+                    [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
+                        NSLog(@"okay");
+                    } failure:^(NSError * _Nonnull error) {
+                        
+                    }];
+                }
             }];
+            
         } else if (contract.contractState == DPContractState_Registered) {
             [self.DAPINetworkService fetchContractForId:contract.globalContractIdentifier success:^(NSDictionary * _Nonnull contract) {
                 __strong typeof(weakContract) strongContract = weakContract;

@@ -25,7 +25,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 static NSInteger const DEFAULT_VERSION = 1;
-static NSString *const DEFAULT_SCHEMA = @"https://schema.dash.org/dpp-0-8-0/meta/contract";
+static NSString *const DEFAULT_SCHEMA = @"https://schema.dash.org/dpp-0-4-0/meta/data-contract";
 static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 
 @interface DPContract ()
@@ -256,6 +256,10 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     return @"Other State";
 }
 
+- (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity {
+    self.registeredBlockchainIdentity = blockchainIdentity.uniqueID;
+}
+
 #pragma mark - Transitions
 
 -(DSContractTransition*)contractRegistrationTransitionForIdentity:(DSBlockchainIdentity*)blockchainIdentity {
@@ -310,6 +314,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
         DSMutableStringValueDictionary *json = [[DSMutableStringValueDictionary alloc] init];
         json[@"$schema"] = self.jsonMetaSchema;
         json[@"version"] = @(self.version);
+        json[@"contractId"] = uint256_base58(self.registeredBlockchainIdentity);
         json[@"documents"] = self.documents;
         if (self.definitions.count > 0) {
             json[@"definitions"] = self.definitions;

@@ -20,6 +20,8 @@
 @property (strong, nonatomic) IBOutlet UITextField *indexLabel;
 @property (strong, nonatomic) IBOutlet UILabel *walletIdentifierLabel;
 @property (strong, nonatomic) IBOutlet UILabel *fundingAccountIdentifierLabel;
+@property (strong, nonatomic) IBOutlet UILabel *typeLabel;
+@property (assign, nonatomic) DSBlockchainIdentityType identityType;
 @property (strong, nonatomic) DSWallet * wallet;
 @property (strong, nonatomic) DSAccount * fundingAccount;
 
@@ -38,6 +40,8 @@
     self.indexLabel.text = [NSString stringWithFormat:@"%d",[self.wallet unusedBlockchainIdentityIndex]];
     
     self.topupAmountLabel.text = [NSString stringWithFormat:@"%d",10000000]; //0.1 Dash
+    
+    self.identityType = DSBlockchainIdentityType_User;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -117,7 +121,7 @@
             return;
         }
     }
-    DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityForUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
+    DSBlockchainIdentity * blockchainIdentity = [self.wallet createBlockchainIdentityOfType:self.identityType forUsername:desiredUsername usingDerivationIndex:[self.indexLabel.text intValue]];
     [blockchainIdentity generateBlockchainIdentityExtendedPublicKeys:^(BOOL exists) {
         if (exists) {
             NSString * creditFundingRegistrationAddress = [blockchainIdentity registrationFundingAddress];
@@ -160,6 +164,30 @@
 
 -(void)viewController:(UIViewController*)controller didChooseAccount:(DSAccount *)account {
     self.fundingAccount = account;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 5) {
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Identity Type"
+                                                                                 message:nil
+                                                                          preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        [alertController addAction:[UIAlertAction actionWithTitle:@"User"
+                                                                style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction *_Nonnull action) {
+            self.typeLabel.text = @"User";
+            self.identityType = DSBlockchainIdentityType_User;
+                                                              }]];
+        
+        [alertController addAction:[UIAlertAction actionWithTitle:@"Application"
+          style:UIAlertActionStyleDefault
+        handler:^(UIAlertAction *_Nonnull action) {
+            self.typeLabel.text = @"Application";
+            self.identityType = DSBlockchainIdentityType_Application;
+        }]];
+        
+        [self presentViewController:alertController animated:YES completion:nil];
+    }
 }
 
 

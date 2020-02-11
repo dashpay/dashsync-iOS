@@ -19,6 +19,7 @@
 @interface DSBlockchainIdentityActionsViewController () <DSContactProfileViewControllerDelegate>
 @property (strong, nonatomic) IBOutlet UIImageView *avatarImageView;
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
+@property (strong, nonatomic) IBOutlet UILabel *typeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
 
 @end
@@ -49,6 +50,8 @@
         self.aboutMeLabel.text = self.blockchainIdentity.ownContact.publicMessage;
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
     }
+    
+    self.typeLabel.text = self.blockchainIdentity.localizedBlockchainIdentityTypeString;
     
     self.uniqueIdLabel.text = self.blockchainIdentity.uniqueIdString;
 }
@@ -106,7 +109,7 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        if (indexPath.row == 1) { // About me / Register
+        if (indexPath.row == 2) { // About me / Register
             if (!self.blockchainIdentity.registered) {
                 [self registerBlockchainIdentity:self];
             } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityRegistrationStatus_NotRegistered) {

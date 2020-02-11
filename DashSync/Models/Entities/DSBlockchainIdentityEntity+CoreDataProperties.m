@@ -24,5 +24,6 @@
 @dynamic usernames;
 @dynamic creditBalance;
 @dynamic registrationStatus;
+@dynamic type;
 
 @end
