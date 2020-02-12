@@ -29,7 +29,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
     DPContractState_Registering,
 };
 
-#define DPNS_ID @"DYFXCR3WeFcnnkfn664YRYCSnuYfRhw2yZjrNp7LobQb"
+#define DPNS_ID @"CZovBVFoYxxiECxf95wSYQGPiqtFvgjjfsEMe5tBnMHC"
 
 @interface DPContract : DPBaseObject
 

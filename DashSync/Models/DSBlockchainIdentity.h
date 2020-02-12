@@ -52,7 +52,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint32_t activeKeys;
 @property (nonatomic,readonly) uint64_t syncHeight;
-@property (nonatomic,readonly) DSBlockchainIdentityType type;
+@property (nonatomic,assign) DSBlockchainIdentityType type;
 
 @property (nonatomic,readonly) NSArray <DSTransition*>* allTransitions;
 
@@ -137,6 +137,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 - (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion;
 
 + (NSString*)localizedBlockchainIdentityTypeStringForType:(DSBlockchainIdentityType)type;
+
+-(void)registerUsernames;
 
 @end
 

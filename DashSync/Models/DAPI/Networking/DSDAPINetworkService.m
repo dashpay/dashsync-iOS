@@ -461,6 +461,18 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [[self.gRPCClient getDataContractWithMessage:getDataContractRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
+- (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
+              success:(void (^)(NSDictionary *preorderDocumentDictionary))success
+              failure:(void (^)(NSError *error))failure {
+    NSAssert(saltedDomainHashes.count,@"saltedDomainHash must not be empty");
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForPreorderSaltedHashes:saltedDomainHashes];
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+}
+
 - (void)getIdentityByName:(NSString *)username
               success:(void (^)(NSDictionary *blockchainIdentity))success
               failure:(void (^)(NSError *error))failure {

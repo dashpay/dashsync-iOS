@@ -18,6 +18,7 @@
 #import "DSDocumentTransition.h"
 #import "DPDocument.h"
 #import "DSTransition+Protected.h"
+#import "DPDocumentState.h"
 
 @interface DSDocumentTransition()
 
@@ -27,9 +28,26 @@
 
 @implementation DSDocumentTransition
 
+-(NSArray*)documentsAsArrayOfDictionaries {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DPDocument * document in self.documents) {
+        [mArray addObject:document.objectDictionary];
+    }
+    return mArray;
+}
+
+-(NSArray*)actions {
+    NSMutableArray * mArray = [NSMutableArray array];
+    for (DPDocument * document in self.documents) {
+        [mArray addObject:@(1)];
+    }
+    return mArray;
+}
+
 - (DSMutableStringValueDictionary *)baseKeyValueDictionary {
     DSMutableStringValueDictionary *json = [super baseKeyValueDictionary];
-    json[@"documents"] = self.documents;
+    json[@"documents"] = [self documentsAsArrayOfDictionaries];
+    json[@"actions"] = [self actions];
     return json;
 }
 

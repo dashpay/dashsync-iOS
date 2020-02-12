@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, nonatomic) NSString *contractId;
 @property (copy, nonatomic) NSString *entropy;
 @property (copy, nonatomic) NSNumber *currentRevision;
+@property (strong, nonatomic) DPDocumentState *currentRegisteredDocumentState;
+@property (strong, nonatomic) DPDocumentState *currentLocalDocumentState;
 @property (strong, nonatomic) NSMutableArray<DPDocumentState *>* documentStates;
 
 @end
@@ -53,8 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
         self.contractId = contractId;
         self.entropy = entropy;
         
-        self.currentRevision = @0;
-        self.documentStates = [NSMutableArray arrayWithObject:[DPDocumentState documentStateWithDataDictionary:dataDictionary]];
+        self.currentRevision = @1;
+        self.currentLocalDocumentState = [DPDocumentState documentStateWithDataDictionary:dataDictionary];
+        self.documentStates = [NSMutableArray arrayWithObject:self.currentLocalDocumentState];
     }
 
     return self;
@@ -67,10 +70,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addStateForChangingData:(DSStringValueDictionary *)dataDictionary {
     DPDocumentState * lastState = [self.documentStates lastObject];
     
-    DSMutableStringValueDictionary * stateDataDictionary = [lastState.dataDictionary mutableCopy];
+    DSMutableStringValueDictionary * stateDataDictionary = [lastState.dataChangeDictionary mutableCopy];
     [stateDataDictionary addEntriesFromDictionary:dataDictionary];
     
-    [self.documentStates addObject:[DPDocumentState documentStateWithDataDictionary:stateDataDictionary ofType:DPDocumentStateType_Update]];
+    self.currentLocalDocumentState = [DPDocumentState documentStateWithDataDictionary:stateDataDictionary ofType:DPDocumentStateType_Update];
+    
+    [self.documentStates addObject:self.currentLocalDocumentState];
 }
 
 #pragma mark - DPPSerializableObject
@@ -82,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
     json[@"$userId"] = self.userId;
     json[@"$entropy"] = self.entropy;
     json[@"$rev"] = self.currentRevision;
-    json[@"$data"] = self.currentLocalDocumentState.dataDictionary;
+    [json addEntriesFromDictionary:self.currentLocalDocumentState.dataChangeDictionary];
     return json;
 }
 

@@ -20,7 +20,7 @@
 @interface DPDocumentState()
 
 @property (assign, nonatomic) DPDocumentStateType documentStateType;
-@property (copy, nonatomic) DSStringValueDictionary *dataChangeDictionary;
+@property (strong, nonatomic) DSStringValueDictionary *dataChangeDictionary;
 
 @end
 

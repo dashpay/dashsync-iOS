@@ -77,8 +77,11 @@ static NSInteger const DEFAULT_REVISION = 1;
 
         return nil;
     }
+    
+    NSString * base64String = uint256_base64(self.contract.registeredBlockchainIdentity);
+    NSString * base58String = uint256_base58(self.contract.registeredBlockchainIdentity);
 
-    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:self.contract.globalContractIdentifier onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
+    DPDocument *object = [[DPDocument alloc] initWithDataDictionary:dataDictionary createdByUserWithId:self.userId onContractWithId:base58String onTableWithName:tableName usingEntropy:[DSKey randomAddressForChain:[self chain]]];
 
     return object;
 }

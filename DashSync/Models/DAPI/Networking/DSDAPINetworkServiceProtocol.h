@@ -16,8 +16,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "DSDAPIClientFetchDapObjectsOptions.h"
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -424,6 +424,10 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                             options:(nullable DSDAPIClientFetchDapObjectsOptions *)options
                             success:(void (^)(NSArray<NSDictionary *> *documents))success
                             failure:(void (^)(NSError *error))failure;
+
+- (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
+                                            success:(void (^)(NSDictionary *preorderDocumentDictionary))success
+                                            failure:(void (^)(NSError *error))failure;
 
 @end
 

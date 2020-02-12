@@ -23,15 +23,15 @@ NS_ASSUME_NONNULL_BEGIN
 @class DPDocument;
 
 typedef NS_ENUM(NSUInteger, DPDocumentStateType) {
-    DPDocumentStateType_Initial,
-    DPDocumentStateType_Update,
-    DPDocumentStateType_Delete,
+    DPDocumentStateType_Initial = 1,
+    DPDocumentStateType_Update = 2,
+    DPDocumentStateType_Delete = 4,
 };
 
 @interface DPDocumentState : NSObject
 
 @property (readonly, nonatomic) DPDocumentStateType documentStateType;
-@property (readonly, copy, nonatomic) DSStringValueDictionary *dataDictionary;
+@property (readonly, nonatomic) DSStringValueDictionary *dataChangeDictionary;
 
 - (instancetype)initWithDataDictionary:(DSStringValueDictionary *)dataDictionary;
 

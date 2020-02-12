@@ -41,7 +41,7 @@
         self.aboutMeLabel.text = @"Register Identity";
     } else if (!self.blockchainIdentity.currentUsername) {
         self.aboutMeLabel.text = @"Set Username";
-    } else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityRegistrationStatus_NotRegistered) {
+    } else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
         self.aboutMeLabel.text = @"Register Username";
     } else if (!self.blockchainIdentity.ownContact) {
         self.aboutMeLabel.text = @"Fetching";
@@ -111,11 +111,31 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        if (indexPath.row == 3) { // About me / Register
+        if (indexPath.row == 1 && !self.blockchainIdentity.registered) {
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Identity Type"
+                                                                                     message:nil
+                                                                              preferredStyle:UIAlertControllerStyleActionSheet];
+            
+            [alertController addAction:[UIAlertAction actionWithTitle:@"User"
+                                                                    style:UIAlertActionStyleDefault
+                                                                  handler:^(UIAlertAction *_Nonnull action) {
+                self.typeLabel.text = @"User";
+                self.blockchainIdentity.type = DSBlockchainIdentityType_User;
+                                                                  }]];
+            
+            [alertController addAction:[UIAlertAction actionWithTitle:@"Application"
+              style:UIAlertActionStyleDefault
+            handler:^(UIAlertAction *_Nonnull action) {
+                self.typeLabel.text = @"Application";
+                self.blockchainIdentity.type = DSBlockchainIdentityType_Application;
+            }]];
+            
+            [self presentViewController:alertController animated:YES completion:nil];
+        } else if (indexPath.row == 3) { // About me / Register
             if (!self.blockchainIdentity.registered) {
                 [self registerBlockchainIdentity:self];
-            } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityRegistrationStatus_NotRegistered) {
-                
+            } else if (self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
+                [self.blockchainIdentity registerUsernames];
             } else {
                 DSContactProfileViewController *controller = [[DSContactProfileViewController alloc] initWithBlockchainIdentity:self.blockchainIdentity];
                 controller.delegate = self;

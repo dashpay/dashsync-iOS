@@ -298,7 +298,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
     
     DPContract *contract = [self contractFromDictionary:jsonObject withIdentifier:DPNS_CONTRACT onChain:chain error:&error];
     contract.contractState = DPContractState_Registered;
-    contract.registeredBlockchainIdentity = DPNS_ID.base64ToData.UInt256;
+    contract.registeredBlockchainIdentity = DPNS_ID.base58ToData.UInt256;
     NSAssert(!uint256_is_zero(contract.registeredBlockchainIdentity), @"The dpns contract must be already registered");
     NSAssert(error == nil, @"Failed building DPContract");
     

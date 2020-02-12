@@ -55,6 +55,7 @@
 #import "DSCreditFundingTransactionEntity+CoreDataClass.h"
 #import "BigIntTypes.h"
 #import "DSContractTransition.h"
+#import "NSData+Bitcoin.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
@@ -70,7 +71,6 @@
 @property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
-@property (nonatomic,assign) DSBlockchainIdentityType type;
 
 @property (nonatomic,assign) uint32_t keysCreated;
 @property (nonatomic,assign) uint32_t currentMainKeyIndex;
@@ -110,6 +110,7 @@
     self.keysCreated = 0;
     self.registrationTransitionHash = UINT256_ZERO;
     self.currentMainKeyIndex = 0;
+    self.currentMainKeyType = DSDerivationPathSigningAlgorith_ECDSA;
     self.index = index;
     self.blockchainIdentityTopupTransitions = [NSMutableArray array];
     self.blockchainIdentityCloseTransitions = [NSMutableArray array];
@@ -416,6 +417,14 @@
     }
 }
 
+-(void)setType:(DSBlockchainIdentityType)type {
+    if (self.type == DSBlockchainIdentityType_Unknown || !self.registered) {
+        _type = type;
+    } else {
+        DSDLog(@"Unable to switch types once set");
+    }
+}
+
 -(NSString*)uniqueIdString {
     return [uint256_data(self.uniqueID) base58String];
 }
@@ -609,42 +618,56 @@
     return [unregisteredUsernames copy];
 }
 
--(NSArray<DPDocument*>*)unregisteredUsernamesPreorderDocuments {
+-(NSArray<DPDocument*>*)unregisteredUsernamesPreorderDocumentsReturningSaltedDomainHashes:(NSArray<NSData*>**)saltedDomainHashes {
     NSMutableArray * usernamePreorderDocuments = [NSMutableArray array];
+    NSMutableArray * mSaltedDomainHashes = [NSMutableArray array];
     for (NSString * unregisteredUsername in [self unregisteredUsernames]) {
         NSError * error = nil;
         NSMutableData * saltedDomain = [NSMutableData data];
         NSData * usernameData = [unregisteredUsername dataUsingEncoding:NSUTF8StringEncoding];
         [saltedDomain appendData:usernameData];
-        NSString * saltedDomainHashString = uint256_hex([saltedDomain SHA256_2]);
+        NSData * saltedDomainHashData = uint256_data([saltedDomain SHA256_2]);
+        [mSaltedDomainHashes addObject:saltedDomainHashData];
+        NSString * saltedDomainHashString = [saltedDomainHashData hexString];
         DSStringValueDictionary * dataDictionary = @{
             @"saltedDomainHash": saltedDomainHashString
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"preorder" withDataDictionary:dataDictionary error:&error];
         [usernamePreorderDocuments addObject:document];
     }
+    if (saltedDomainHashes) *saltedDomainHashes = [mSaltedDomainHashes copy];
     return usernamePreorderDocuments;
 }
 
--(DSDocumentTransition*)unregisteredUsernamesPreorderTransition {
-    NSArray * usernamePreorderDocuments = [self unregisteredUsernamesPreorderDocuments];
+-(DSDocumentTransition*)unregisteredUsernamesPreorderTransitionReturningSaltedDomainHashes:(NSArray<NSData*>**)saltedDomainHashes {
+    NSArray * usernamePreorderDocuments = [self unregisteredUsernamesPreorderDocumentsReturningSaltedDomainHashes:saltedDomainHashes];
     if (![usernamePreorderDocuments count]) return nil;
     DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:usernamePreorderDocuments withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.wallet.chain];
     return transition;
 }
 
 -(void)registerUsernames {
-    DSDocumentTransition * transition = [self unregisteredUsernamesPreorderTransition];
-    //__weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
-        
-    } failure:^(NSError * _Nonnull error) {
-        DSDLog(@"%@", error);
-        
-//        if (completion) {
-//            completion(NO);
-//        }
+    NSArray<NSData*>* saltedDomainHashes = nil;
+    DSDocumentTransition * transition = [self unregisteredUsernamesPreorderTransitionReturningSaltedDomainHashes:&saltedDomainHashes];
+    [self signStateTransition:transition withPrompt:@"Register Usernames?" completion:^(BOOL success) {
+        if (success) {
+            [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
+                [self monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes withRetryCount:2 completion:^(BOOL success) {
+                    if (success) {
+                        
+                    }
+                }];
+                } failure:^(NSError * _Nonnull error) {
+                    DSDLog(@"%@", error);
+                    
+            //        if (completion) {
+            //            completion(NO);
+            //        }
+                }];
+        }
     }];
+    //__weak typeof(self) weakSelf = self;
+    
     
 }
 
@@ -833,6 +856,8 @@
         [self addKey:rKey atIndex:[keyId intValue] - 1 ofType:[type intValue] save:TRUE];
     }
 }
+
+// MARK: - Monitoring
         
 -(void)monitorForBlockchainIdentityWithRetryCount:(uint32_t)retryCount {
     __weak typeof(self) weakSelf = self;
@@ -860,6 +885,25 @@
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self monitorForBlockchainIdentityWithRetryCount:retryCount - 1];
             });
+        }
+    }];
+}
+
+-(void)monitorForDPNSPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL))completion {
+    __weak typeof(self) weakSelf = self;
+    [self.DAPINetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:saltedDomainHashes success:^(NSDictionary * _Nonnull preorderDocumentDictionary) {
+        completion(TRUE);
+    } failure:^(NSError * _Nonnull error) {
+        if (retryCount > 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes withRetryCount:retryCount - 1 completion:completion];
+            });
+        } else {
+            completion(FALSE);
         }
     }];
 }

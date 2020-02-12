@@ -16,6 +16,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BigIntTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,6 +36,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 @property(nonatomic,assign) DSPlatformDocumentType type;
 
 +(instancetype)dpnsRequestForName:(NSString*)name;
+
++(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes;
 
 -(GetDocumentsRequest*)getDocumentsRequest;
 

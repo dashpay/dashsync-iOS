@@ -18,7 +18,6 @@
 #import "DSPlatformDocumentsRequest.h"
 #import "NSString+Bitcoin.h"
 #import "NSMutableData+Dash.h"
-#import "BigIntTypes.h"
 #import "NSData+Bitcoin.h"
 #import <DAPI-GRPC/Platform.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
@@ -40,6 +39,19 @@
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == dash",name];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    return platformDocumentsRequest;
+}
+
++(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes {
+    NSMutableArray * preorderSaltedHashesAsHex = [NSMutableArray array];
+    for (NSData* data in preorderSaltedHashes) {
+        [preorderSaltedHashesAsHex addObject:data.hexString];
+    }
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"preorderSaltedHash IN %@",preorderSaltedHashesAsHex];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
