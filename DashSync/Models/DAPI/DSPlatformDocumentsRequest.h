@@ -35,7 +35,9 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 @property(nonatomic,assign) uint32_t limit;
 @property(nonatomic,assign) DSPlatformDocumentType type;
 
-+(instancetype)dpnsRequestForName:(NSString*)name;
++(instancetype)dpnsRequestForUsername:(NSString*)username;
+
++(instancetype)dpnsRequestForUsernames:(NSArray*)usernames;
 
 +(instancetype)dpnsRequestForPreorderSaltedHashes:(NSArray*)preorderSaltedHashes;
 

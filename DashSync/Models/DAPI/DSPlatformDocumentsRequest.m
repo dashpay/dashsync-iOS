@@ -35,12 +35,22 @@
     return self;
 }
 
-+(instancetype)dpnsRequestForName:(NSString*)name {
++(instancetype)dpnsRequestForUsername:(NSString*)username {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == dash",name];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == dash",username];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    return platformDocumentsRequest;
+}
+
++(instancetype)dpnsRequestForUsernames:(NSArray*)usernames {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == dash",usernames];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     return platformDocumentsRequest;
 }
@@ -53,7 +63,7 @@
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"preorderSaltedHash IN %@",preorderSaltedHashesAsHex];
     platformDocumentsRequest.startAt = 0;
-    platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     return platformDocumentsRequest;
 }

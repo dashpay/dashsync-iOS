@@ -429,6 +429,10 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                                             success:(void (^)(NSDictionary *preorderDocumentDictionary))success
                                             failure:(void (^)(NSError *error))failure;
 
+- (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
+                             success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                             failure:(void (^)(NSError *error))failure;
+
 @end
 
 NS_ASSUME_NONNULL_END

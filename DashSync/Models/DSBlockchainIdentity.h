@@ -23,9 +23,11 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityRegistrationStatus) {
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityUsernameStatus) {
     DSBlockchainIdentityUsernameStatus_NotPresent = 0,
     DSBlockchainIdentityUsernameStatus_Initial = 1,
-    DSBlockchainIdentityUsernameStatus_Preordered = 2,
-    DSBlockchainIdentityUsernameStatus_RegistrationPending = 3, //sent to DAPI, not yet confirmed
-    DSBlockchainIdentityUsernameStatus_Confirmed = 4,
+    DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending = 2,
+    DSBlockchainIdentityUsernameStatus_Preordered = 3,
+    DSBlockchainIdentityUsernameStatus_RegistrationPending = 4, //sent to DAPI, not yet confirmed
+    DSBlockchainIdentityUsernameStatus_Confirmed = 5,
+    DSBlockchainIdentityUsernameStatus_TakenOnNetwork = 6,
 };
 
 typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {

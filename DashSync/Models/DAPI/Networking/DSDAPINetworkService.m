@@ -473,11 +473,23 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
+- (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
+              success:(void (^)(NSDictionary *domainDocumentDictionary))success
+              failure:(void (^)(NSError *error))failure {
+    NSAssert(usernames.count,@"saltedDomainHash must not be empty");
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames];
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+}
+
 - (void)getIdentityByName:(NSString *)username
               success:(void (^)(NSDictionary *blockchainIdentity))success
               failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
-    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForName:username];
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username];
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
