@@ -186,7 +186,7 @@ NSErrorDomain const DSDAPIClientErrorDomain = @"DSDAPIClientErrorDomain";
             if ([self.activeServices count] == 1) return [self.activeServices objectAtIndex:0]; //if only 1 service, just use first one
             return [self.activeServices objectAtIndex:arc4random_uniform((uint32_t)[self.activeServices count])]; //use a random service
         } else if ([self.availablePeers count]) {
-            NSString * peerHost = [self.availablePeers anyObject];
+            NSString * peerHost = [[self.availablePeers allObjects] objectAtIndex:arc4random_uniform((uint32_t)[self.availablePeers count])];
             HTTPLoaderFactory *loaderFactory = [DSNetworkingCoordinator sharedInstance].loaderFactory;
             DSDAPINetworkService * DAPINetworkService = [[DSDAPINetworkService alloc] initWithDAPINodeIPAddress:peerHost httpLoaderFactory:loaderFactory usingGRPCDispatchQueue:self.dispatchQueue onChain:self.chain];
             [self.activeServices addObject:DAPINetworkService];
