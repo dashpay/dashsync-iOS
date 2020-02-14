@@ -1117,7 +1117,7 @@
 
 -(void)monitorForDPNSUsernames:(NSArray*)usernames withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames success:^(NSDictionary * _Nonnull preorderDocumentDictionary) {
+    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames inDomain:[self topDomainName] success:^(NSDictionary * _Nonnull preorderDocumentDictionary) {
         if (preorderDocumentDictionary) {
             
         }
@@ -1166,7 +1166,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
         if (contract.contractState == DPContractState_Unknown) {
-            [self.DAPINetworkService getIdentityByName:@"dashpay" success:^(NSDictionary * _Nonnull blockchainIdentity) {
+            [self.DAPINetworkService getIdentityByName:@"dashpay" inDomain:@"" success:^(NSDictionary * _Nonnull blockchainIdentity) {
                 NSLog(@"okay");
             } failure:^(NSError * _Nonnull error) {
                 __strong typeof(weakContract) strongContract = weakContract;
@@ -1258,7 +1258,7 @@
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getIdentityByName:potentialContact.username success:^(NSDictionary *_Nonnull blockchainIdentity) {
+    [self.DAPINetworkService getIdentityByName:potentialContact.username inDomain:[self topDomainName] success:^(NSDictionary *_Nonnull blockchainIdentity) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

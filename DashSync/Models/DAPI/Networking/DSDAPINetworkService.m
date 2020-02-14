@@ -462,8 +462,8 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
-              success:(void (^)(NSDictionary *preorderDocumentDictionary))success
-              failure:(void (^)(NSError *error))failure {
+                                              success:(void (^)(NSDictionary *preorderDocumentDictionary))success
+                                              failure:(void (^)(NSError *error))failure {
     NSAssert(saltedDomainHashes.count,@"saltedDomainHash must not be empty");
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForPreorderSaltedHashes:saltedDomainHashes];
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -474,10 +474,11 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
-              success:(void (^)(NSDictionary *domainDocumentDictionary))success
-              failure:(void (^)(NSError *error))failure {
+                            inDomain:(NSString*)domain
+                             success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                             failure:(void (^)(NSError *error))failure {
     NSAssert(usernames.count,@"saltedDomainHash must not be empty");
-    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames];
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames inDomain:domain];
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
@@ -486,10 +487,11 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getIdentityByName:(NSString *)username
-              success:(void (^)(NSDictionary *blockchainIdentity))success
-              failure:(void (^)(NSError *error))failure {
+                 inDomain:(NSString*)domain
+                  success:(void (^)(NSDictionary *blockchainIdentity))success
+                  failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
-    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username];
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username inDomain:domain];
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;

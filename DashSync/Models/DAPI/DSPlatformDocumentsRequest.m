@@ -35,20 +35,23 @@
     return self;
 }
 
-+(instancetype)dpnsRequestForUsername:(NSString*)username {
++(instancetype)dpnsRequestForUsername:(NSString*)username inDomain:(NSString*)domain {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == dash",username];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel == %@ && normalizedParentDomainName == %@",[username lowercaseString],[domain lowercaseString]];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     return platformDocumentsRequest;
 }
 
-+(instancetype)dpnsRequestForUsernames:(NSArray*)usernames {
++(instancetype)dpnsRequestForUsernames:(NSArray*)usernames inDomain:(NSString*)domain {
+    NSMutableArray * lowercaseUsernames = [NSMutableArray array];
+    for (NSString * username in usernames) {
+        [lowercaseUsernames addObject:[username lowercaseString]];
+    }
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == dash",usernames];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == dash",lowercaseUsernames,[domain lowercaseString]];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;

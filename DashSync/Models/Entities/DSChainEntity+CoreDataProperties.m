@@ -15,6 +15,7 @@
 }
 
 @dynamic baseBlockHash;
+@dynamic dpnsContractID;
 @dynamic checkpoints;
 @dynamic devnetIdentifier;
 @dynamic standardDapiJRPCPort;

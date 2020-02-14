@@ -148,14 +148,4 @@
     }});
 }
 
-- (UInt160)randomUInt160 {
-    return ((UInt160){.u32 = .u32 = {
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random(),
-        arc4random()
-    }});
-}
-
 @end

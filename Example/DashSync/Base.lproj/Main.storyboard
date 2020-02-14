@@ -1051,8 +1051,42 @@
                                     <outlet property="valueTextField" destination="F6v-ks-PSC" id="ytI-39-Oen"/>
                                 </connections>
                             </tableViewCell>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetProtocolVersionCellIdentifier" id="hUT-X8-wSh" userLabel="DevnetProtocolVersionCell" customClass="DSKeyValueTableViewCell">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DPNSContractIDCellIdentifier" id="Hrx-Ko-768" userLabel="DPNSContractIDCell" customClass="DSKeyValueTableViewCell">
                                 <rect key="frame" x="0.0" y="230.00000381469727" width="375" height="43.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Hrx-Ko-768" id="YZH-5m-ZcI">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DPNS Contract ID" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yaf-Oa-zbp">
+                                            <rect key="frame" x="16" y="12" width="137" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="H9S-56-KqY">
+                                            <rect key="frame" x="189" y="7" width="170" height="34"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="900" constant="170" id="NG0-ZP-Pqh"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no"/>
+                                        </textField>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="H9S-56-KqY" firstAttribute="top" secondItem="YZH-5m-ZcI" secondAttribute="top" constant="7" id="0UJ-lS-adN"/>
+                                        <constraint firstAttribute="trailing" secondItem="H9S-56-KqY" secondAttribute="trailing" constant="16" id="4wH-wG-Cav"/>
+                                        <constraint firstItem="Yaf-Oa-zbp" firstAttribute="top" secondItem="YZH-5m-ZcI" secondAttribute="top" constant="12.000000000000028" id="ea0-id-Bc5"/>
+                                        <constraint firstItem="Yaf-Oa-zbp" firstAttribute="leading" secondItem="YZH-5m-ZcI" secondAttribute="leading" constant="16" id="ldh-6a-SUJ"/>
+                                        <constraint firstItem="H9S-56-KqY" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Yaf-Oa-zbp" secondAttribute="trailing" constant="10" id="paM-Ob-n8e"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="valueTextField" destination="H9S-56-KqY" id="3AM-Ws-fO5"/>
+                                </connections>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetProtocolVersionCellIdentifier" id="hUT-X8-wSh" userLabel="DevnetProtocolVersionCell" customClass="DSKeyValueTableViewCell">
+                                <rect key="frame" x="0.0" y="273.66667175292969" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="hUT-X8-wSh" id="Veb-ZO-pWt">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
@@ -1086,7 +1120,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetMinProtocolVersionCellIdentifier" id="f8X-PX-JD9" userLabel="DevnetProtocolVersionCell" customClass="DSKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="273.66667175292969" width="375" height="43.666667938232422"/>
+                                <rect key="frame" x="0.0" y="317.33333969116211" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="f8X-PX-JD9" id="3di-dX-By4">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
@@ -1120,7 +1154,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetIPCellIdentifier" id="YVD-aD-IuZ" userLabel="DevnetIPCell" customClass="DSAddDevnetIPAddressTableViewCell">
-                                <rect key="frame" x="0.0" y="317.33333969116211" width="375" height="43.666667938232422"/>
+                                <rect key="frame" x="0.0" y="361.00000762939453" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="YVD-aD-IuZ" id="eCN-5y-OSg">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
@@ -1154,7 +1188,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DapiJRPCPortCellIdentifier" id="yuF-Cs-bQ4" userLabel="DAPIPortCell" customClass="DSKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="361.00000762939453" width="375" height="43.666667938232422"/>
+                                <rect key="frame" x="0.0" y="404.66667556762695" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="yuF-Cs-bQ4" id="25b-Qp-Gan">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
@@ -1188,7 +1222,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DapiGRPCPortCellIdentifier" id="m5w-3Z-8jJ" userLabel="DAPIPortCell" customClass="DSKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="404.66667556762695" width="375" height="43.666667938232422"/>
+                                <rect key="frame" x="0.0" y="448.33334350585938" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="m5w-3Z-8jJ" id="S7Z-6a-WEv">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
@@ -1222,7 +1256,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DashdPortCellIdentifier" id="XS4-6Q-4QG" userLabel="DashdPortCell" customClass="DSKeyValueTableViewCell">
-                                <rect key="frame" x="0.0" y="448.33334350585938" width="375" height="43.666667938232422"/>
+                                <rect key="frame" x="0.0" y="492.0000114440918" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="XS4-6Q-4QG" id="8lR-Iu-3HH">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>
@@ -1256,7 +1290,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DevnetAddIPCellIdentifier" id="CnD-XV-j6V" userLabel="DevnetAddIPCell" customClass="DSAddDevnetAddIPAddressTableViewCell">
-                                <rect key="frame" x="0.0" y="492.0000114440918" width="375" height="43.666667938232422"/>
+                                <rect key="frame" x="0.0" y="535.66667938232422" width="375" height="43.666667938232422"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="CnD-XV-j6V" id="rh7-pe-hfh">
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.666667938232422"/>

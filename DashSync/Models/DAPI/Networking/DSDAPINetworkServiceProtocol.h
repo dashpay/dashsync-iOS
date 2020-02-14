@@ -370,8 +370,9 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (void)getIdentityByName:(NSString *)username
-              success:(void (^)(NSDictionary *blockchainIdentity))success
-              failure:(void (^)(NSError *error))failure;
+                 inDomain:(NSString*)domain
+                  success:(void (^)(NSDictionary *blockchainIdentity))success
+                  failure:(void (^)(NSError *error))failure;
 
 /**
  Get a blockchain user by ID
@@ -381,8 +382,8 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
 - (void)getIdentityById:(NSString *)userId
-            success:(void (^)(NSDictionary *blockchainIdentity))success
-            failure:(void (^)(NSError *error))failure;
+                success:(void (^)(NSDictionary *blockchainIdentity))success
+                failure:(void (^)(NSError *error))failure;
 
 /**
  Get a list of users after matching search criteria
@@ -430,6 +431,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                                             failure:(void (^)(NSError *error))failure;
 
 - (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
+                            inDomain:(NSString*)domain
                              success:(void (^)(NSDictionary *domainDocumentDictionary))success
                              failure:(void (^)(NSError *error))failure;
 

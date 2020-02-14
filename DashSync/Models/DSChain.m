@@ -189,10 +189,6 @@ static checkpoint mainnet_checkpoint_array[] = {
 
 #define LOG_PREV_BLOCKS_ON_ORPHAN 0
 
-// number of previous confirmations needed in ix inputs
-#define MAINNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED 6
-#define TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED 2
-
 @interface DSChain ()
 
 @property (nonatomic, strong) DSMerkleBlock *lastBlock, *lastOrphan;
@@ -209,7 +205,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, strong) DSAccount * viewingAccount;
 @property (nonatomic, strong) NSMutableDictionary * estimatedBlockHeights;
 @property (nonatomic, assign) uint32_t bestEstimatedBlockHeight;
-@property (nonatomic, assign) uint64_t ixPreviousConfirmationsNeeded;
+@property (nonatomic, assign) UInt256 dpnsContractID;
 @property (nonatomic, assign) uint32_t cachedMinProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedProtocolVersion;
 @property (nonatomic, assign) uint32_t cachedStandardPort;
@@ -247,17 +243,15 @@ static checkpoint mainnet_checkpoint_array[] = {
         case DSChainType_MainNet: {
             self.standardPort = MAINNET_STANDARD_PORT;
             self.standardDapiJRPCPort = MAINNET_DAPI_JRPC_STANDARD_PORT;
-            self.ixPreviousConfirmationsNeeded = MAINNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
             break;
         }
         case DSChainType_TestNet: {
             self.standardPort = TESTNET_STANDARD_PORT;
             self.standardDapiJRPCPort = TESTNET_DAPI_JRPC_STANDARD_PORT;
-            self.ixPreviousConfirmationsNeeded = TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED;
             break;
         }
         case DSChainType_DevNet: {
-            NSAssert(NO, @"DevNet should be configured with initAsDevnetWithIdentifier:checkpoints:port:dapiPort:ixPreviousConfirmationsNeeded:");
+            NSAssert(NO, @"DevNet should be configured with initAsDevnetWithIdentifier:checkpoints:port:dapiPort:dapiGRPCPort:dpnsContractID:");
             break;
         }
     }
@@ -274,7 +268,7 @@ static checkpoint mainnet_checkpoint_array[] = {
 }
 
 
--(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort ixPreviousConfirmationsNeeded:(uint64_t)ixPreviousConfirmationsNeeded
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID
 {
     //for devnet the genesis checkpoint is really the second block
     if (! (self = [self init])) return nil;
@@ -293,7 +287,7 @@ static checkpoint mainnet_checkpoint_array[] = {
     self.standardPort = port;
     self.standardDapiJRPCPort = dapiJRPCPort;
     self.standardDapiGRPCPort = dapiGRPCPort;
-    self.ixPreviousConfirmationsNeeded = ixPreviousConfirmationsNeeded;
+    self.dpnsContractID = dpnsContractID;
     self.devnetIdentifier = identifier;
     self.mainThreadChainEntity = [self chainEntity];
     return self;
@@ -442,7 +436,7 @@ static dispatch_once_t devnetToken = 0;
     return devnetChain;
 }
 
-+(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort {
++(DSChain*)setUpDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray withDefaultPort:(uint32_t)port withDefaultDapiJRPCPort:(uint32_t)dapiJRPCPort withDefaultDapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID {
     dispatch_once(&devnetToken, ^{
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
@@ -450,7 +444,7 @@ static dispatch_once_t devnetToken = 0;
     __block BOOL inSetUp = FALSE;
     @synchronized(self) {
         if (![_devnetDictionary objectForKey:identifier]) {
-            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort ixPreviousConfirmationsNeeded:TESTNET_IX_PREVIOUS_CONFIRMATIONS_NEEDED];
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray port:port dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID];
             [_devnetDictionary setObject:devnetChain forKey:identifier];
             inSetUp = TRUE;
         } else {
