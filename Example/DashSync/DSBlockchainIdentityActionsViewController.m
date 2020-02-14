@@ -21,6 +21,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *aboutMeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *typeLabel;
 @property (strong, nonatomic) IBOutlet UILabel *indexLabel;
+@property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
 
 @end
@@ -39,13 +40,34 @@
     self.title = self.blockchainIdentity.currentUsername;
     if (!self.blockchainIdentity.registered) {
         self.aboutMeLabel.text = @"Register Identity";
+        self.usernameStatusLabel.text = @"";
     } else if (!self.blockchainIdentity.currentUsername) {
         self.aboutMeLabel.text = @"Set Username";
+        self.usernameStatusLabel.text = @"";
     } else if ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] != DSBlockchainIdentityUsernameStatus_Confirmed) {
         self.aboutMeLabel.text = @"Register Username";
+        switch ([self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername]) {
+            case DSBlockchainIdentityUsernameStatus_Initial:
+                self.usernameStatusLabel.text = @"Initial";
+                break;
+            case DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending:
+                self.usernameStatusLabel.text = @"Preorder Registration Pending";
+                break;
+            case DSBlockchainIdentityUsernameStatus_Preordered:
+                self.usernameStatusLabel.text = @"Preordered";
+                break;
+            case DSBlockchainIdentityUsernameStatus_RegistrationPending:
+                self.usernameStatusLabel.text = @"Registration Pending";
+                break;
+            default:
+                self.usernameStatusLabel.text = @"";
+                break;
+        }
+        
     } else if (!self.blockchainIdentity.ownContact) {
         self.aboutMeLabel.text = @"Fetching";
         [self.avatarImageView sd_setImageWithURL:nil];
+        self.usernameStatusLabel.text = @"";
     }
     else {
         self.aboutMeLabel.text = self.blockchainIdentity.ownContact.publicMessage;

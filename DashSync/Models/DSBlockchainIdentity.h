@@ -36,6 +36,9 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
     DSBlockchainIdentityType_Application = 2,
 };
 
+#define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
+#define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
+
 @interface DSBlockchainIdentity : NSObject
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
@@ -79,7 +82,7 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 
 -(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> * _Nullable)usernameDictionary inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)addUsername:(NSString*)username save:(BOOL)save;
 

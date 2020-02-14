@@ -29,20 +29,20 @@
     DSUInt256IndexPath *indexPath = [[DSUInt256IndexPath alloc] init];
     XCTAssert(indexPath.length == 0);
     XCTAssert(indexPath.hash == 0);
-
+    
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:indexPath];
     XCTAssertNotNil(data);
-
+    
     DSUInt256IndexPath *indexPathDecoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
     BOOL equals = [indexPath isEqual:indexPathDecoded];
     XCTAssert(equals);
-
+    
     indexPath = [indexPath indexPathByRemovingLastIndex];
     XCTAssert(indexPath.length == 0);
-
+    
     UInt256 index = [indexPath indexAtPosition:1];
     XCTAssert(uint256_eq(index, UINT256_MAX));
-
+    
     indexPath = [indexPath indexPathByAddingIndex:((UInt256){.u64 = {1, 2, 3, 4}})];
     XCTAssert(indexPath.length == 1);
 }
@@ -66,13 +66,13 @@
         ((UInt256){.u64 = {5, 6, 7, 8}}),
         ((UInt256){.u64 = {6, 7, 8, 9}}),
     };
-
+    
     DSUInt256IndexPath *firstIndexPath = [DSUInt256IndexPath indexPathWithIndexes:first length:2];
     DSUInt256IndexPath *secondIndexPath = [DSUInt256IndexPath indexPathWithIndexes:second length:2];
-
+    
     NSComparisonResult result = [firstIndexPath compare:secondIndexPath];
     XCTAssert(result == NSOrderedAscending);
-
+    
     result = [secondIndexPath compare:firstIndexPath];
     XCTAssert(result == NSOrderedDescending);
 }
@@ -81,43 +81,43 @@
 
 - (void)performTestsForIndexes:(UInt256 *)indexes length:(NSUInteger)length {
     DSUInt256IndexPath *indexPath = [DSUInt256IndexPath indexPathWithIndexes:indexes length:length];
-
+    
     // Basic
-
+    
     XCTAssert(indexPath.length == length, @"Failed for length %ld", length);
     XCTAssert(indexPath.hash != 0, @"Failed for length %ld", length);
-
+    
     for (NSUInteger i = 0; i < length; i++) {
         UInt256 inIndex = indexes[i];
         UInt256 index = [indexPath indexAtPosition:i];
         XCTAssert(uint256_eq(inIndex, index), @"Failed for length %ld", length);
     }
-
+    
     // NSCoding, isEqual
-
+    
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:indexPath];
     XCTAssertNotNil(data, @"Failed for length %ld", length);
-
+    
     DSUInt256IndexPath *indexPathDecoded = [NSKeyedUnarchiver unarchiveObjectWithData:data];
     BOOL equals = [indexPath isEqual:indexPathDecoded];
     XCTAssert(equals, @"Failed for length %ld", length);
-
+    
     // Methods
-
+    
     UInt256 index = [self randomUInt256];
     DSUInt256IndexPath *newIndexPath = [indexPath indexPathByAddingIndex:index];
     UInt256 returnedIndex = [newIndexPath indexAtPosition:length];
     XCTAssert(uint256_eq(returnedIndex, index), @"Failed for length %ld", length);
-
+    
     newIndexPath = [newIndexPath indexPathByRemovingLastIndex];
     XCTAssert(newIndexPath.hash == indexPath.hash, @"Failed for length %ld", length);
-
+    
     if (length > 2) {
         NSUInteger sliceLength = length - 2;
         NSRange range = NSMakeRange(1, sliceLength);
         UInt256 outIndexes[sliceLength];
         [indexPath getIndexes:outIndexes range:range];
-
+        
         newIndexPath = [DSUInt256IndexPath indexPathWithIndexes:outIndexes length:sliceLength];
         XCTAssert(newIndexPath.length == sliceLength, @"Failed for length %ld", length);
     }
@@ -127,21 +127,35 @@
     size_t size = sizeof(UInt256);
     size_t memorySize = length * size;
     UInt256 *indexes = calloc(memorySize, size); // creates array in heap
-
+    
     for (NSUInteger i = 0; i < length; i++) {
         indexes[i] = [self randomUInt256];
     }
-
+    
     return indexes;
 }
 
 - (UInt256)randomUInt256 {
-    return ((UInt256){.u64 = {
-                          (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-                          (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-                          (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-                          (uint64_t)arc4random_uniform(UINT32_MAX - 1),
-                      }});
+    return ((UInt256){.u32 = {
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random()
+    }});
+}
+
+- (UInt160)randomUInt160 {
+    return ((UInt160){.u32 = .u32 = {
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random(),
+        arc4random()
+    }});
 }
 
 @end

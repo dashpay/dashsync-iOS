@@ -240,9 +240,18 @@
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="alF-yx-peK">
+                                                    <rect key="frame" x="387.5" y="11" width="10.5" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstItem="alF-yx-peK" firstAttribute="firstBaseline" secondItem="UEO-9E-RM6" secondAttribute="firstBaseline" id="9J7-nY-XCZ"/>
+                                                <constraint firstAttribute="trailing" secondItem="alF-yx-peK" secondAttribute="trailing" constant="16" id="DbW-Ay-TzO"/>
                                                 <constraint firstItem="UEO-9E-RM6" firstAttribute="leading" secondItem="vCJ-eJ-UMw" secondAttribute="leading" constant="16" id="RhY-Ka-TfA"/>
+                                                <constraint firstItem="alF-yx-peK" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="UEO-9E-RM6" secondAttribute="trailing" constant="10" id="ZWg-Ag-xfa"/>
                                                 <constraint firstItem="UEO-9E-RM6" firstAttribute="top" secondItem="vCJ-eJ-UMw" secondAttribute="top" constant="11" id="f8W-WY-jPz"/>
                                             </constraints>
                                         </tableViewCellContentView>
@@ -460,6 +469,7 @@
                         <outlet property="indexLabel" destination="BTh-hE-xYu" id="4IE-i4-3gi"/>
                         <outlet property="typeLabel" destination="xQl-Ve-hFf" id="ugN-A0-BLn"/>
                         <outlet property="uniqueIdLabel" destination="0FK-a2-HOY" id="wmz-Ma-1o9"/>
+                        <outlet property="usernameStatusLabel" destination="alF-yx-peK" id="cdR-HQ-1Ca"/>
                         <segue destination="aFk-8c-5NO" kind="show" identifier="RegisterContractsSegue" id="2DF-Dj-eck"/>
                     </connections>
                 </tableViewController>

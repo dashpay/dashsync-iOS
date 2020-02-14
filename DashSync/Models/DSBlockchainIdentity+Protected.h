@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,readonly) DSBlockchainIdentityEntity* blockchainIdentityEntity;
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> * _Nullable)usernameDictionary havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type save:(BOOL)save;
 -(void)addKey:(DSKey*)key atIndexPath:(NSIndexPath*)indexPath ofType:(DSDerivationPathSigningAlgorith)type save:(BOOL)save;

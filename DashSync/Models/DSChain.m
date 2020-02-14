@@ -2347,7 +2347,7 @@ static dispatch_once_t devnetToken = 0;
         if (wallet) {
             DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:creditFundingTransaction.creditBurnIdentityIdentifier];
             if (!blockchainIdentity) {
-                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction withUsernameStatusDictionary:nil inWallet:wallet inContext:self.managedObjectContext];
+                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[creditFundingTransaction usedDerivationPathIndex] withFundingTransaction:creditFundingTransaction withUsernameDictionary:nil inWallet:wallet inContext:self.managedObjectContext];
                 [blockchainIdentity registerInWalletForRegistrationFundingTransaction:creditFundingTransaction];
             }
         }

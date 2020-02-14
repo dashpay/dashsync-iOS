@@ -17,5 +17,6 @@
 @dynamic status;
 @dynamic stringValue;
 @dynamic blockchainIdentity;
+@dynamic salt;
 
 @end

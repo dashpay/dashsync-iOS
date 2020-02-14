@@ -988,9 +988,15 @@
                             DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[blockchainIdentityEntity.registrationFundingTransaction transactionForChain:self.chain];
                             NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
                             for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentityEntity.usernames) {
-                                [usernameStatuses setObject:@(usernameEntity.status) forKey:usernameEntity.stringValue];
+                                NSData * salt = usernameEntity.salt;
+                                if (salt) {
+                                    [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status),BLOCKCHAIN_USERNAME_SALT:usernameEntity.salt} forKey:usernameEntity.stringValue];
+                                } else {
+                                    DSDLog(@"No salt found for username");
+                                    [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:usernameEntity.stringValue];
+                                }
                             }
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
                         } else {
                             //Identity is known by core data, but registration transaction hasn't synced yet
                             //Lets first see if the output exists just to sanity check
@@ -1001,9 +1007,15 @@
                                 DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
                                 NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
                                 for (DSBlockchainIdentityUsernameEntity * usernameEntity in blockchainIdentityEntity.usernames) {
-                                    [usernameStatuses setObject:@(usernameEntity.status) forKey:usernameEntity.stringValue];
+                                    NSData * salt = usernameEntity.salt;
+                                    if (salt) {
+                                        [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status),BLOCKCHAIN_USERNAME_SALT:usernameEntity.salt} forKey:usernameEntity.stringValue];
+                                    } else {
+                                        DSDLog(@"No salt found for username");
+                                        [usernameStatuses setObject:@{BLOCKCHAIN_USERNAME_STATUS:@(usernameEntity.status)} forKey:usernameEntity.stringValue];
+                                    }
                                 }
-                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameStatusDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
+                                blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withFundingTransaction:registrationTransaction withUsernameDictionary:usernameStatuses havingCredits:blockchainIdentityEntity.creditBalance registrationStatus:blockchainIdentityEntity.registrationStatus inWallet:self inContext:self.chain.managedObjectContext];
                             } else {
                                 blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:blockchainIdentityEntity.type atIndex:index withLockedOutpoint:blockchainIdentityLockedOutpoint inWallet:self inContext:self.chain.managedObjectContext];
                             }
@@ -1020,7 +1032,7 @@
                             //The registration funding transaction exists
                             //Weird but we should recover in this situation
                             DSCreditFundingTransaction * registrationTransaction = (DSCreditFundingTransaction *)[creditRegitrationTransactionEntity transactionForChain:self.chain];
-                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[registrationTransaction usedDerivationPathIndexForWallet:self] withFundingTransaction:registrationTransaction withUsernameStatusDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
+                            blockchainIdentity = [[DSBlockchainIdentity alloc] initWithType:DSBlockchainIdentityType_Unknown atIndex:[registrationTransaction usedDerivationPathIndexForWallet:self] withFundingTransaction:registrationTransaction withUsernameDictionary:nil inWallet:self inContext:self.chain.managedObjectContext];
                             [blockchainIdentity registerInWallet];
                         } else {
                             //We also don't have the registration funding transaction

@@ -78,6 +78,10 @@ typedef struct _DSLLMQ {
     UInt256 hash;
 } DSLLMQ;
 
+#define uint256_RANDOM ((UInt256){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}});
+
+#define uint160_RANDOM ((UInt160){.u32 = {arc4random(), arc4random(), arc4random(), arc4random(), arc4random()}});
+
 #define uint768_eq(a, b)\
 ((a).u64[0] == (b).u64[0] && (a).u64[1] == (b).u64[1] && (a).u64[2] == (b).u64[2] && (a).u64[3] == (b).u64[3] &&\
 (a).u64[4] == (b).u64[4] && (a).u64[5] == (b).u64[5] && (a).u64[6] == (b).u64[6] && (a).u64[7] == (b).u64[7] &&\

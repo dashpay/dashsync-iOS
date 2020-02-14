@@ -85,6 +85,8 @@
 @property(nonatomic,strong) NSMutableArray <DSDocumentTransition*>* documentTransitions;
 @property(nonatomic,strong) NSMutableArray <DSTransition*>* allTransitions;
 
+@property(nonatomic,strong) NSMutableDictionary <NSString*,NSData*>* usernameSalts;
+
 @property(nonatomic,readonly) DSDAPIClient* DAPIClient;
 @property(nonatomic,readonly) DSDAPINetworkService* DAPINetworkService;
 
@@ -120,6 +122,7 @@
     self.usernameStatuses = [NSMutableDictionary dictionary];
     self.usedKeys = [NSMutableDictionary dictionary];
     self.registrationStatus = DSBlockchainIdentityRegistrationStatus_Unknown;
+    self.usernameSalts = [NSMutableDictionary dictionary];
     self.type = type;
     if (managedObjectContext) {
         self.managedObjectContext = managedObjectContext;
@@ -159,18 +162,30 @@
     return self;
 }
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index  withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> *)usernameStatuses inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index  withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> *)usernameDictionary inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext*)managedObjectContext {
     NSAssert(index != UINT32_MAX, @"index must be found");
     if (!(self = [self initWithType:type atIndex:index withFundingTransaction:transaction inWallet:wallet inContext:managedObjectContext])) return nil;
     
-    if (usernameStatuses) {
-        self.usernameStatuses = [usernameStatuses mutableCopy];
+    if (usernameDictionary) {
+        NSMutableDictionary * usernameStatuses = [NSMutableDictionary dictionary];
+        NSMutableDictionary * usernameSalts = [NSMutableDictionary dictionary];
+        for (NSString * username in usernameDictionary) {
+            NSDictionary * subDictionary = usernameDictionary[username];
+            NSNumber * status = [subDictionary objectForKey:BLOCKCHAIN_USERNAME_STATUS];
+            [usernameStatuses setObject:status forKey:username];
+            NSData * salt = [subDictionary objectForKey:BLOCKCHAIN_USERNAME_SALT];
+            if (salt) {
+                [usernameSalts setObject:salt forKey:username];
+            }
+        }
+        self.usernameStatuses = usernameStatuses;
+        self.usernameSalts = usernameSalts;
     }
     return self;
 }
 
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index  withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameStatusDictionary:(NSDictionary <NSString *,NSNumber *> * _Nullable)usernameStatuses havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
-    if (!(self = [self initWithType:type atIndex:index withFundingTransaction:transaction withUsernameStatusDictionary:usernameStatuses inWallet:wallet inContext:managedObjectContext])) return nil;
+-(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index  withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> * _Nullable)usernameDictionary havingCredits:(uint64_t)credits registrationStatus:(DSBlockchainIdentityRegistrationStatus)registrationStatus inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext {
+    if (!(self = [self initWithType:type atIndex:index withFundingTransaction:transaction withUsernameDictionary:usernameDictionary inWallet:wallet inContext:managedObjectContext])) return nil;
     
     self.creditBalance = credits;
     self.registrationStatus = registrationStatus;
@@ -622,14 +637,34 @@
     return [unregisteredUsernames copy];
 }
 
+-(NSData*)saltForUsername:(NSString*)username saveSalt:(BOOL)saveSalt {
+    NSData * salt;
+    if ([self statusOfUsername:username] == DSBlockchainIdentityUsernameStatus_Initial || !(salt = [self.usernameSalts objectForKey:username])) {
+        UInt160 random160 = uint160_RANDOM;
+        salt = uint160_data(random160);
+        [self.usernameSalts setObject:salt forKey:username];
+        if (saveSalt) {
+            [self saveUsername:username status:[self statusOfUsername:username] salt:salt commitSave:YES];
+        }
+    } else {
+        salt = [self.usernameSalts objectForKey:username];
+    }
+    return salt;
+}
+
 -(NSMutableDictionary<NSString*,NSData*>*)saltedDomainHashesForUsernames:(NSArray*)usernames {
     NSMutableDictionary * mSaltedDomainHashes = [NSMutableDictionary dictionary];
     for (NSString * unregisteredUsername in usernames) {
         NSMutableData * saltedDomain = [NSMutableData data];
-        NSData * usernameData = [unregisteredUsername dataUsingEncoding:NSUTF8StringEncoding];
-        [saltedDomain appendData:usernameData];
+        NSData * salt = [self saltForUsername:unregisteredUsername saveSalt:YES];
+        NSString * usernameDomain = [[self topDomainName] isEqualToString:@""]?[unregisteredUsername lowercaseString]:[NSString stringWithFormat:@"%@.%@",[unregisteredUsername lowercaseString],[self topDomainName]];
+        NSData * usernameDomainData = [usernameDomain dataUsingEncoding:NSUTF8StringEncoding];
+        [saltedDomain appendData:salt];
+        [saltedDomain appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
+        [saltedDomain appendUInt256:[usernameDomainData SHA256_2]];
         NSData * saltedDomainHashData = uint256_data([saltedDomain SHA256_2]);
         [mSaltedDomainHashes setObject:saltedDomainHashData forKey:unregisteredUsername];
+        [self.usernameSalts setObject:salt forKey:unregisteredUsername];
     }
     return [mSaltedDomainHashes copy];
 }
@@ -648,17 +683,25 @@
     return usernamePreorderDocuments;
 }
 
+-(NSString*)topDomainName {
+    return @"";
+}
+
 -(NSArray<DPDocument*>*)domainDocumentsForUnregisteredUsernames:(NSArray*)unregisteredUsernames {
     NSMutableArray * usernameDomainDocuments = [NSMutableArray array];
     for (NSString * username in [self saltedDomainHashesForUsernames:unregisteredUsernames]) {
         NSError * error = nil;
+        NSMutableData * nameHashData = [NSMutableData data];
+        [nameHashData appendData:@"5620".hexToData]; //56 because SHA256_2 and 20 because 32 bytes
+        NSData * usernameData = [[username lowercaseString] dataUsingEncoding:NSUTF8StringEncoding];
+        [nameHashData appendUInt256:[usernameData SHA256_2]];
         DSStringValueDictionary * dataDictionary = @{
-            @"nameHash":username,
+            @"nameHash":nameHashData.hexString,
             @"label":username,
-            @"normalizedLabel": username,
-            @"normalizedParentDomainName":@"dash",
-            @"preorderSalt": username,
-            @"records" : username
+            @"normalizedLabel": [username lowercaseString],
+            @"normalizedParentDomainName":[self topDomainName],
+            @"preorderSalt": [self.usernameSalts objectForKey:username].base58String,
+            @"records" : @{@"identity":uint256_base58(self.uniqueID)}
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary error:&error];
         [usernameDomainDocuments addObject:document];
@@ -871,6 +914,7 @@
         DSBlockchainIdentityUsernameEntity * usernameEntity = [DSBlockchainIdentityUsernameEntity managedObject];
         usernameEntity.status = status;
         usernameEntity.stringValue = username;
+        usernameEntity.salt = [self saltForUsername:username saveSalt:NO];
         [entity addUsernamesObject:usernameEntity];
         [DSBlockchainIdentityEntity saveContext];
     }];
@@ -879,7 +923,7 @@
 -(void)saveUsernames:(NSArray*)usernames toStatus:(DSBlockchainIdentityUsernameStatus)status {
     [self.managedObjectContext performBlockAndWait:^{
         for (NSString * username in usernames) {
-            [self saveUsername:username status:status commitSave:NO];
+            [self saveUsername:username status:status salt:nil commitSave:NO];
         }
         [DSBlockchainIdentityEntity saveContext];
     }];
@@ -889,13 +933,13 @@
     [self.managedObjectContext performBlockAndWait:^{
         for (NSString * username in dictionary) {
             DSBlockchainIdentityUsernameStatus status = [dictionary[username] intValue];
-            [self saveUsername:username status:status commitSave:NO];
+            [self saveUsername:username status:status salt:nil commitSave:NO];
         }
         [DSBlockchainIdentityEntity saveContext];
     }];
 }
 
--(void)saveUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status commitSave:(BOOL)commitSave {
+-(void)saveUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status salt:(NSData*)salt commitSave:(BOOL)commitSave {
     [self.managedObjectContext performBlockAndWait:^{
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
         [DSBlockchainIdentityUsernameEntity setContext:self.managedObjectContext];
@@ -913,6 +957,9 @@
             NSAssert([usernamesPassingTest count] == 1, @"There should never be more than 1");
             DSBlockchainIdentityUsernameEntity * usernameEntity = [usernamesPassingTest anyObject];
             usernameEntity.status = status;
+            if (salt) {
+                usernameEntity.salt = salt;
+            }
             [entity addUsernamesObject:usernameEntity];
             if (commitSave) {
                 [DSBlockchainIdentityEntity saveContext];

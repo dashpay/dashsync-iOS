@@ -555,7 +555,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
-
+    DSDLog(@"Applying state transition with data %@",stateTransition.keyValueDictionary);
     ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
     updateStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
