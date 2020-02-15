@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
     DSPlatformDocumentType_Document = 2,
 };
 
-@class GetDocumentsRequest;
+@class GetDocumentsRequest, DPContract;
 
 @interface DSPlatformDocumentsRequest : NSObject
 
@@ -33,6 +33,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 @property(nonatomic,strong) NSArray <NSSortDescriptor*>* sortDescriptors;
 @property(nonatomic,assign) uint32_t startAt;
 @property(nonatomic,assign) uint32_t limit;
+@property(nonatomic,strong) NSString * tableName;
+@property(nonatomic,strong) DPContract * contract;
 @property(nonatomic,assign) DSPlatformDocumentType type;
 
 +(instancetype)dpnsRequestForUsername:(NSString*)username inDomain:(NSString*)domain;

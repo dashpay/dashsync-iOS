@@ -24,6 +24,7 @@
 #import "DPContract.h"
 #import "NSPredicate+CBORData.h"
 #import "NSObject+DSCborEncoding.h"
+#import "DPContract.h"
 
 @implementation DSPlatformDocumentsRequest
 
@@ -41,6 +42,7 @@
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"domain";
     return platformDocumentsRequest;
 }
 
@@ -51,10 +53,11 @@
     }
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
     //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == dash",lowercaseUsernames,[domain lowercaseString]];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == %@",lowercaseUsernames,[domain lowercaseString]];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)usernames.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"domain";
     return platformDocumentsRequest;
 }
 
@@ -64,10 +67,15 @@
         [preorderSaltedHashesAsHex addObject:data.hexString];
     }
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"preorderSaltedHash IN %@",preorderSaltedHashesAsHex];
+    if (preorderSaltedHashesAsHex.count == 1) {
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash == %@",[preorderSaltedHashesAsHex firstObject]];
+    } else {
+        platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"saltedDomainHash IN %@",preorderSaltedHashesAsHex];
+    }
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = (uint32_t)preorderSaltedHashes.count;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"preorder";
     return platformDocumentsRequest;
 }
 
@@ -83,11 +91,14 @@
 }
 
 -(GetDocumentsRequest*)getDocumentsRequest {
+    NSAssert(self.tableName, @"Table name must be set");
     GetDocumentsRequest * getDocumentsRequest = [[GetDocumentsRequest alloc] init];
-    getDocumentsRequest.documentType = @"domain";
-    getDocumentsRequest.dataContractId = DPNS_ID;
+    getDocumentsRequest.documentType = self.tableName;
+    getDocumentsRequest.dataContractId = self.contract.base58ContractID;
     getDocumentsRequest.where = [self whereData];
-    getDocumentsRequest.orderBy = [self orderByData];
+    if ([self.sortDescriptors count]) {
+        getDocumentsRequest.orderBy = [self orderByData];
+    }
     getDocumentsRequest.startAt = self.startAt;
     getDocumentsRequest.limit = self.limit;
     return getDocumentsRequest;

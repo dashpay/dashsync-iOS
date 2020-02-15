@@ -17,16 +17,25 @@
 
 #import "NSPredicate+CBORData.h"
 #import "NSObject+DSCborEncoding.h"
+#import "NSData+Bitcoin.h"
 
 
 @implementation NSPredicate (CBORData)
 
 -(NSArray*)whereClauseArray {
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
+        return [self whereClauseNestedArray];
+    } else {
+        return @[[self whereClauseArray]];
+    }
+}
+
+-(NSArray*)whereClauseNestedArray {
+    if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
         NSMutableArray * mArray = [NSMutableArray array];
         NSCompoundPredicate * compoundPredicate = (NSCompoundPredicate *)self;
         for (NSPredicate * predicate in compoundPredicate.subpredicates) {
-            [mArray addObject:[predicate whereClauseArray]];
+            [mArray addObject:[predicate whereClauseNestedArray]];
         }
         return mArray;
     } else {
@@ -109,8 +118,9 @@
 //        [sortDescriptorsArray addObject:@[sortDescriptor.key,sortDescriptor.ascending?@"asc":@"desc"]];
 //    }
 //    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
-//    NSData * json = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
-//    NSLog(@"%@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
+    NSData * json = [NSJSONSerialization dataWithJSONObject:[self whereClauseArray] options:0 error:nil];
+    DSDLog(@"json where %@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
+    DSDLog(@"hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 

@@ -619,7 +619,7 @@
     NSMutableArray * unregisteredUsernames = [NSMutableArray array];
     for (NSString * username in self.usernameStatuses) {
         DSBlockchainIdentityUsernameStatus status = [self.usernameStatuses[username] unsignedIntegerValue];
-        if (status == DSBlockchainIdentityUsernameStatus_Initial) {
+        if (status == usernameStatus) {
             [unregisteredUsernames addObject:username];
         }
     }
@@ -701,7 +701,7 @@
             @"normalizedLabel": [username lowercaseString],
             @"normalizedParentDomainName":[self topDomainName],
             @"preorderSalt": [self.usernameSalts objectForKey:username].base58String,
-            @"records" : @{@"identity":uint256_base58(self.uniqueID)}
+            @"records" : @{@"dashIdentity":uint256_base58(self.uniqueID)}
         };
         DPDocument * document = [self.dpnsDocumentFactory documentOnTable:@"domain" withDataDictionary:dataDictionary error:&error];
         [usernameDomainDocuments addObject:document];
@@ -737,7 +737,6 @@
             if (usernames.count) {
                 [self registerPreorderedSaltedDomainHashesForUsernames:usernames completion:^(BOOL success) {
                     if (success) {
-                        [self saveUsernames:usernames toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
                         [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
                     }
                 }];
@@ -748,12 +747,12 @@
         }
         case DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending:
         {
-            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
+            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
             NSDictionary<NSString*,NSData *>* saltedDomainHashes = [self saltedDomainHashesForUsernames:usernames];
             if (saltedDomainHashes.count) {
                 [self monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes withRetryCount:2 completion:^(BOOL success) {
                     if (success) {
-                        [self saveUsernames:usernames toStatus:DSBlockchainIdentityUsernameStatus_Preordered];
+                        [self registerUsernamesAtStage:DSBlockchainIdentityUsernameStatus_Preordered];
                     }
                 }];
             } else {
@@ -778,11 +777,11 @@
         }
         case DSBlockchainIdentityUsernameStatus_RegistrationPending:
         {
-            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
+            NSArray * usernames = [self usernamesWithStatus:DSBlockchainIdentityUsernameStatus_RegistrationPending];
             if (usernames.count) {
                 [self monitorForDPNSUsernames:usernames withRetryCount:2 completion:^(BOOL success) {
                     if (success) {
-                        [self saveUsernames:usernames toStatus:DSBlockchainIdentityUsernameStatus_Confirmed];
+                        //Done;
                     }
                 }];
             }
@@ -803,6 +802,7 @@
                     for (NSString * string in usernames) {
                         [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending) forKey:string];
                     }
+                    [self saveUsernames:usernames toStatus:DSBlockchainIdentityUsernameStatus_PreorderRegistrationPending];
                     if (completion) {
                         completion(YES);
                     }
@@ -1117,9 +1117,27 @@
 
 -(void)monitorForDPNSUsernames:(NSArray*)usernames withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames inDomain:[self topDomainName] success:^(NSDictionary * _Nonnull preorderDocumentDictionary) {
-        if (preorderDocumentDictionary) {
-            
+    [self.DAPINetworkService getDPNSDocumentsForUsernames:usernames inDomain:[self topDomainName] success:^(id _Nonnull domainDocumentArray) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if ([domainDocumentArray isKindOfClass:[NSArray class]]) {
+            NSMutableArray * usernamesLeft = [usernames mutableCopy];
+            for (NSString * username in usernames) {
+                for (NSDictionary * domainDocument in domainDocumentArray) {
+                    if ([[domainDocument objectForKey:@"normalizedLabel"] isEqualToString:[username lowercaseString]]) {
+                        [strongSelf.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:username];
+                        [strongSelf saveUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed salt:nil commitSave:YES];
+                        [usernamesLeft removeObject:username];
+                    }
+                }
+            }
+            if ([usernamesLeft count]) {
+                [strongSelf monitorForDPNSUsernames:usernamesLeft withRetryCount:retryCount - 1 completion:completion];
+            }
+        } else {
+            completion(FALSE);
         }
         completion(TRUE);
     } failure:^(NSError * _Nonnull error) {
@@ -1139,11 +1157,21 @@
 
 -(void)monitorForDPNSPreorderSaltedDomainHashes:(NSDictionary*)saltedDomainHashes withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues] success:^(NSDictionary * _Nonnull preorderDocumentDictionary) {
-        if (preorderDocumentDictionary) {
-            
+    [self.DAPINetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues] success:^(id _Nonnull preorderDocumentArray) {
+        if ([preorderDocumentArray isKindOfClass:[NSArray class]]) {
+            for (NSString * username in saltedDomainHashes) {
+                NSData * saltedDomainHashData = saltedDomainHashes[username];
+                NSString * saltedDomainHashString = [saltedDomainHashData hexString];
+                for (NSDictionary * preorderDocument in preorderDocumentArray) {
+                    if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToString:saltedDomainHashString]) {
+                        [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Preordered) forKey:username];
+                        [self saveUsername:username status:DSBlockchainIdentityUsernameStatus_Preordered salt:nil commitSave:YES];
+                    }
+                }
+            }
+        } else {
+            completion(FALSE);
         }
-        completion(TRUE);
     } failure:^(NSError * _Nonnull error) {
         if (retryCount > 0) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -1189,7 +1217,7 @@
             }];
             
         } else if (contract.contractState == DPContractState_Registered) {
-            [self.DAPINetworkService fetchContractForId:contract.globalContractIdentifier success:^(NSDictionary * _Nonnull contract) {
+            [self.DAPINetworkService fetchContractForId:contract.localContractIdentifier success:^(NSDictionary * _Nonnull contract) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
                     return;
@@ -1510,7 +1538,7 @@
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
     
-    [self.DAPINetworkService fetchDocumentsForContractId:[contract globalContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract localContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -1535,8 +1563,8 @@
     __weak typeof(self) weakSelf = self;
     DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
     // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
-    NSLog(@"%@",[contract globalContractIdentifier]);
-    [self.DAPINetworkService fetchDocumentsForContractId:[contract globalContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    NSLog(@"%@",[contract localContractIdentifier]);
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract localContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

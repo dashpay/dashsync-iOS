@@ -50,6 +50,7 @@
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
     __block UInt256 dpnsContractID;
+    __block UInt256 dashpayContractID;
     [self.managedObjectContext performBlockAndWait:^{
         port = self.standardPort;
         dapiJRPCPort = self.standardDapiJRPCPort;
@@ -61,6 +62,7 @@
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
         dpnsContractID = self.dpnsContractID.UInt256;
+        dashpayContractID = self.dashpayContractID.UInt256;
     }];
     if (type == DSChainType_MainNet) {
         return [DSChain mainnet];
@@ -71,7 +73,7 @@
             return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID];
+            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID];
         }
     }
     return nil;

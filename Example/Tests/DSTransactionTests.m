@@ -50,9 +50,9 @@
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
     
-    __unused DSChain *devnetDRA = [DSChain setUpDevnetWithIdentifier:@"devnet-DRA" withCheckpoints:nil withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010];
+    __unused DSChain *devnetDRA = [DSChain setUpDevnetWithIdentifier:@"devnet-DRA" withCheckpoints:nil withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO];
     
-    __unused DSChain *devnetMaithai = [DSChain setUpDevnetWithIdentifier:@"devnet-maithai" withCheckpoints:nil withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010];
+    __unused DSChain *devnetMaithai = [DSChain setUpDevnetWithIdentifier:@"devnet-maithai" withCheckpoints:nil withDefaultPort:20001 withDefaultDapiJRPCPort:3000 withDefaultDapiGRPCPort:3010 dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO];
     
     // the chain to test on
     self.chain = [DSChain mainnet];
@@ -122,7 +122,7 @@
     
     XCTAssertEqualObjects(uint160_hex([privateKey.publicKeyData hash160]),uint160_hex(fundingTransaction.creditBurnPublicKeyHash),@"The private key doesn't match the funding transaction");
     
-    [blockchainIdentityRegistrationTransition signWithKey:privateKey fromIdentity:nil];
+    [blockchainIdentityRegistrationTransition signWithKey:privateKey atIndex:0 fromIdentity:nil];
     
     NSLog(@"blockchainIdentityRegistrationTransition %@",blockchainIdentityRegistrationTransition.keyValueDictionary);
     

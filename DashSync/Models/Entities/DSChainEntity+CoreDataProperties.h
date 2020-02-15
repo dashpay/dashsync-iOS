@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, retain) NSData *baseBlockHash;
 @property (nullable, nonatomic, retain) NSData *dpnsContractID;
+@property (nullable, nonatomic, retain) NSData *dashpayContractID;
 @property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
 @property (nonatomic, assign) uint32_t standardDapiJRPCPort;

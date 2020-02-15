@@ -24,6 +24,7 @@
 #import "DSDAPIGRPCResponseHandler.h"
 #import "DPContract.h"
 #import "DSPlatformDocumentsRequest.h"
+#import "DSDashPlatform.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -466,6 +467,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                               failure:(void (^)(NSError *error))failure {
     NSAssert(saltedDomainHashes.count,@"saltedDomainHash must not be empty");
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForPreorderSaltedHashes:saltedDomainHashes];
+    platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
@@ -477,8 +479,9 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                             inDomain:(NSString*)domain
                              success:(void (^)(NSDictionary *domainDocumentDictionary))success
                              failure:(void (^)(NSError *error))failure {
-    NSAssert(usernames.count,@"saltedDomainHash must not be empty");
+    NSAssert(usernames.count,@"usernames must not be empty");
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames inDomain:domain];
+    platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
@@ -492,6 +495,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                   failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username inDomain:domain];
+    platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;

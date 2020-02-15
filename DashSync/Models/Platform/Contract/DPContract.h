@@ -29,13 +29,14 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
     DPContractState_Registering,
 };
 
-#define DPNS_ID @"CZovBVFoYxxiECxf95wSYQGPiqtFvgjjfsEMe5tBnMHC"
+#define DPNS_ID @"EzWtbtR6U9ScEFEi2hAPV8NAghnzmvQmbEHmQ2KwBAvf"
 
 @interface DPContract : DPBaseObject
 
-@property (readonly, copy, nonatomic) NSString *globalContractIdentifier;
+@property (readonly, copy, nonatomic) NSString *localContractIdentifier;
 @property (readonly, nonatomic) UInt256 registeredBlockchainIdentity;
 @property (readonly, copy, nonatomic) NSString *name;
+@property (readonly, copy, nonatomic) NSString *base58ContractID;
 @property (readonly, copy, nonatomic) NSString *statusString;
 @property (readonly, nonatomic) DPContractState contractState;
 @property (readonly, copy, nonatomic) NSString *jsonSchemaId;
@@ -48,7 +49,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *documents;
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
-- (instancetype)initWithContractId:(NSString *)contractID
+- (instancetype)initWithLocalContractIdentifier:(NSString *)contractID
                    documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain;
 
 - (instancetype)init NS_UNAVAILABLE;

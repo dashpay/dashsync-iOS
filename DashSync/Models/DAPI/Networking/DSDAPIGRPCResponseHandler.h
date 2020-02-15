@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (atomic, strong) dispatch_queue_t dispatchQueue;
 
-@property (nonatomic, copy) void (^successHandler)(NSDictionary * successDictionary);
+@property (nonatomic, copy) void (^successHandler)(id successObject);
 @property (nonatomic, copy) void (^errorHandler)(NSError * error);
 
 @end

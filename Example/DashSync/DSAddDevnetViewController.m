@@ -24,6 +24,7 @@
 @property (nonatomic,strong) DSKeyValueTableViewCell * dapiGRPCPortTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * dashdPortTableViewCell;
 @property (nonatomic,strong) DSKeyValueTableViewCell * dpnsContractIDTableViewCell;
+@property (nonatomic,strong) DSKeyValueTableViewCell * dashpayContractIDTableViewCell;
 
 @property (nonatomic,strong) DSAddDevnetAddIPAddressTableViewCell * addDevnetAddIPAddressTableViewCell;
 @property (nonatomic,strong) DSAddDevnetIPAddressTableViewCell * activeAddDevnetIPAddressTableViewCell;
@@ -38,6 +39,7 @@
     self.addDevnetAddIPAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetAddIPCellIdentifier"];
     self.sporkAddressTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetSporkAddressCellIdentifier"];
     self.dpnsContractIDTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DPNSContractIDCellIdentifier"];
+    self.dashpayContractIDTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DashpayContractIDCellIdentifier"];
     self.sporkPrivateKeyTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetSporkPrivateKeyCellIdentifier"];
     self.protocolVersionTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetProtocolVersionCellIdentifier"];
     self.minProtocolVersionTableViewCell = [self.tableView dequeueReusableCellWithIdentifier:@"DevnetMinProtocolVersionCellIdentifier"];
@@ -80,7 +82,10 @@
             return 6;
             break;
         case 1:
-            return 3;
+            return 2;
+            break;
+        case 2:
+            return 2;
             break;
         default:
             return 2 + _insertedIPAddresses.count;
@@ -128,13 +133,21 @@
                     return self.sporkAddressTableViewCell;
                 case 1:
                     return self.sporkPrivateKeyTableViewCell;
-                case 2:
-                    return self.dpnsContractIDTableViewCell;
                 default:
                     NSAssert(NO, @"Unknown cell");
                     return [[UITableViewCell alloc] init];
             }
         case 2:
+            switch (indexPath.row) {
+                case 0:
+                    return self.dpnsContractIDTableViewCell;
+                case 1:
+                    return self.dashpayContractIDTableViewCell;
+                default:
+                    NSAssert(NO, @"Unknown cell");
+                    return [[UITableViewCell alloc] init];
+            }
+        case 3:
         {    if (indexPath.row == _insertedIPAddresses.count + 1) return self.addDevnetAddIPAddressTableViewCell;
             return [self IPAddressCellAtIndex:indexPath.row];
             
@@ -217,6 +230,7 @@
     uint32_t dapiJRPCPort = [self.dapiJRPCPortTableViewCell.valueTextField.text isEqualToString:@""]?DEVNET_DAPI_JRPC_STANDARD_PORT:[self.dapiJRPCPortTableViewCell.valueTextField.text intValue];
     uint32_t dapiGRPCPort = [self.dapiGRPCPortTableViewCell.valueTextField.text isEqualToString:@""]?DEVNET_DAPI_GRPC_STANDARD_PORT:[self.dapiGRPCPortTableViewCell.valueTextField.text intValue];
     UInt256 dpnsContractID = [self.dpnsContractIDTableViewCell.valueTextField.text isEqualToString:@""]?UINT256_ZERO:[self.dpnsContractIDTableViewCell.valueTextField.text base58ToData].UInt256;
+    UInt256 dashpayContractID = [self.dashpayContractIDTableViewCell.valueTextField.text isEqualToString:@""]?UINT256_ZERO:[self.dashpayContractIDTableViewCell.valueTextField.text base58ToData].UInt256;
     if (![sporkAddress isValidDashDevnetAddress]) {
         sporkAddress = nil;
     }
@@ -224,10 +238,10 @@
         sporkPrivateKey = nil;
     }
     if (self.chain) {
-        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
+        [[DSChainsManager sharedInstance] updateDevnetChain:self.chain forServiceLocations:self.insertedIPAddresses standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     } else {
         NSString * identifier = self.addDevnetNameTableViewCell.valueTextField.text;
-        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
+        [[DSChainsManager sharedInstance] registerDevnetChainWithIdentifier:identifier forServiceLocations:self.insertedIPAddresses standardPort:dashdPort dapiJRPCPort:dapiJRPCPort dapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID protocolVersion:protocolVersion minProtocolVersion:minProtocolVersion sporkAddress:sporkAddress sporkPrivateKey:sporkPrivateKey];
     }
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }

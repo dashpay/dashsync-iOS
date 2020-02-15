@@ -22,7 +22,7 @@
 
 @interface DSDAPIGRPCResponseHandler()
 
-@property(nonatomic,strong) NSDictionary * responseDictionary;
+@property(nonatomic,strong) id responseObject;
 @property(nonatomic,strong) NSError * decodingError;
 
 @end
@@ -37,7 +37,19 @@
     if ([message isMemberOfClass:[GetIdentityResponse class]]) {
         GetIdentityResponse * identityResponse = (GetIdentityResponse*)message;
         NSError * error = nil;
-        self.responseDictionary = [[identityResponse identity] ds_decodeCborError:&error];
+        self.responseObject = [[identityResponse identity] ds_decodeCborError:&error];
+        if (error) {
+            self.decodingError = error;
+        }
+    } else if ([message isMemberOfClass:[GetDocumentsResponse class]]) {
+        GetDocumentsResponse * documentsResponse = (GetDocumentsResponse*)message;
+        NSError * error = nil;
+        NSMutableArray * mArray = [NSMutableArray array];
+        for (NSData * cborData in [documentsResponse documentsArray]) {
+            [mArray addObject:[cborData ds_decodeCborError:&error]];
+            if (error) break;
+        }
+        self.responseObject = [mArray copy];
         if (error) {
             self.decodingError = error;
         }
@@ -56,7 +68,7 @@
         }
         NSLog(@"error in didCloseWithTrailingMetadata %@",error);
     } else {
-        self.successHandler(self.responseDictionary);
+        self.successHandler(self.responseObject);
     }
     NSLog(@"didCloseWithTrailingMetadata");
 }
