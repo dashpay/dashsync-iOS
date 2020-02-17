@@ -25,6 +25,8 @@
 #import "DPContract.h"
 #import "DSPlatformDocumentsRequest.h"
 #import "DSDashPlatform.h"
+#import "NSData+Bitcoin.h"
+#import "DPErrors.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -498,7 +500,22 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
-    responseHandler.successHandler = success;
+    responseHandler.successHandler = ^(NSArray * dpnsDictionaries) {
+        if ([dpnsDictionaries count]) {
+            NSDictionary * dpnsDictionary = [dpnsDictionaries firstObject];
+            NSString * base58String = nil;
+            if (!dpnsDictionary || !(base58String = dpnsDictionary[@"$userId"])) {
+                if (failure) {
+                    failure([NSError errorWithDomain:DPErrorDomain code:DPErrorCode_InvalidDocumentType userInfo:@{
+                        NSLocalizedDescriptionKey :
+                            [NSString stringWithFormat:@"DPNS returned document is malformed"],
+                    }]);
+                }
+                return;
+            }
+            [self getIdentityById:base58String success:success failure:failure];
+        }
+    };
     responseHandler.errorHandler = failure;
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
@@ -561,7 +578,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                                         success:(void (^)(NSDictionary *successDictionary))success
                                         failure:(void (^)(NSError *error))failure {
     NSParameterAssert(stateTransition);
-    DSDLog(@"Applying state transition with data %@",stateTransition.keyValueDictionary);
+    DSDLog(@"Applying state transition with data %@ rawData %@",stateTransition.keyValueDictionary, stateTransition.data.hexString);
     ApplyStateTransitionRequest * updateStateRequest = [[ApplyStateTransitionRequest alloc] init];
     updateStateRequest.stateTransition = stateTransition.data;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
@@ -578,6 +595,14 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                             failure:(void (^)(NSError *error))failure {
     NSParameterAssert(contractId);
     NSParameterAssert(objectsType);
+    
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames inDomain:domain];
+    platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 
 
     NSMutableDictionary *optionsDictionary = [NSMutableDictionary dictionary];

@@ -1217,6 +1217,7 @@
             return;
         }
         if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"contractId"] isEqualToString:contract.base58ContractID]) {
+            contract.contractState = DPContractState_Registered;
             completion(TRUE);
         } else if (retryCount > 0) {
             [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 completion:completion];
@@ -1274,18 +1275,32 @@
                             
                         }];
                     } failure:^(NSError * _Nonnull error) {
-                        
+                        //maybe it was already registered
+                        __strong typeof(weakContract) strongContract = weakContract;
+                        if (!strongContract) {
+                            return;
+                        }
+                        strongContract.contractState = DPContractState_Unknown;
+                        __strong typeof(weakSelf) strongSelf = weakSelf;
+                        if (!strongSelf) {
+                            return;
+                        }
+                        [strongSelf monitorForContract:strongContract withRetryCount:2 completion:^(BOOL success) {
+                            
+                        }];
                     }];
                 }
             }];
             
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
-            [self.DAPINetworkService fetchContractForId:contract.localContractIdentifier success:^(NSDictionary * _Nonnull contract) {
+            [self.DAPINetworkService fetchContractForId:contract.base58ContractID success:^(NSDictionary * _Nonnull contract) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
                     return;
                 }
-                
+                if (strongContract.contractState == DPContractState_Registered) {
+                    
+                }
             } failure:^(NSError * _Nonnull error) {
                 NSString * debugDescription1 = [error.userInfo objectForKey:@"NSDebugDescription"];
                 NSError *jsonError;
@@ -1361,25 +1376,26 @@
     return _dpnsDocumentFactory;
 }
 
-// MARK: - Layer 2
+// MARK: - Dashpay
 
 - (void)sendNewFriendRequestToPotentialContact:(DSPotentialContact*)potentialContact completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getIdentityByName:potentialContact.username inDomain:[self topDomainName] success:^(NSDictionary *_Nonnull blockchainIdentity) {
+    [self.DAPINetworkService getIdentityByName:potentialContact.username inDomain:[self topDomainName] success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
-        
-        if (!blockchainIdentity) {
+        NSString * base58String = nil;
+        if (!blockchainIdentityDictionary || !(base58String = blockchainIdentityDictionary[@"id"])) {
             if (completion) {
                 completion(NO);
             }
             return;
         }
-        //TODO: switch this from regtxid
-        UInt256 blockchainIdentityContactUniqueId = ((NSString*)blockchainIdentity[@"regtxid"]).hexToData.reverse.UInt256;
-        __unused UInt384 blockchainIdentityContactEncryptionPublicKey = ((NSString*)blockchainIdentity[@"publicKey"]).hexToData.reverse.UInt384;
+        
+        UInt256 blockchainIdentityContactUniqueId = base58String.base58ToData.reverse.UInt256;
+        NSArray * publicKeys = blockchainIdentityDictionary[@"publicKeys"];
+        __unused UInt384 blockchainIdentityContactEncryptionPublicKey = ((NSString*)blockchainIdentityDictionary[@"publicKey"]).hexToData.reverse.UInt384;
         NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
         //NSAssert(!uint384_is_zero(blockchainIdentityContactEncryptionPublicKey), @"blockchainIdentityContactEncryptionPublicKey should not be null");
         [potentialContact setAssociatedBlockchainIdentityUniqueId:blockchainIdentityContactUniqueId];
@@ -1535,78 +1551,83 @@
 
 - (void)fetchProfileForBlockchainIdentityUniqueId:(UInt256)blockchainIdentityUniqueId saveReturnedProfile:(BOOL)saveReturnedProfile context:(NSManagedObjectContext*)context completion:(void (^)(DSContactEntity* contactEntity))completion {
     
-    //    NSDictionary *query = @{ @"userId" : uint256_reverse_hex(blockchainIdentityUniqueId) };
-    //    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
-    //
-    //    __weak typeof(self) weakSelf = self;
-    //    DPContract *contract = [DSDAPIClient ds_currentDashPayContract];
-    //    // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
-    //
-    //    DSDLog(@"contract ID %@",[contract identifier]);
-    //    [self.DAPINetworkService fetchDocumentsForContractId:[contract identifier] objectsType:@"profile" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-    //        __strong typeof(weakSelf) strongSelf = weakSelf;
-    //        if (!strongSelf) {
-    //            return;
-    //        }
-    //        if (![documents count]) {
-    //            if (completion) {
-    //                completion(nil);
-    //            }
-    //            return;
-    //        }
-    //        //todo
-    //
-    //        NSDictionary * contactDictionary = [documents firstObject];
-    //        [context performBlockAndWait:^{
-    //            [DSContactEntity setContext:context];
-    //            [DSChainEntity setContext:context];
-    //            NSString *scopeID = [contactDictionary objectForKey:@"$scopeId"];
-    //            DSContactEntity * contact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"documentScopeID == %@", scopeID];
-    //            if (!contact || [[contactDictionary objectForKey:@"$rev"] intValue] != contact.documentRevision) {
-    //
-    //                if (!contact) {
-    //                    contact = [DSContactEntity managedObjectInContext:context];
-    //                }
-    //
-    //                contact.documentScopeID = scopeID;
-    //                contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
-    //                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
-    //                contact.publicMessage = [contactDictionary objectForKey:@"about"];
-    //                contact.associatedBlockchainIdentityUniqueId = uint256_data(registrationTransactionHash);
-    //                contact.chain = self.wallet.chain.chainEntity;
-    //                if (uint256_eq(registrationTransactionHash, self.registrationTransitionHash) && !self.ownContact) {
-    //                    DSBlockchainIdentityRegistrationTransitionEntity * blockchainIdentityRegistrationTransactionEntity = [DSBlockchainIdentityRegistrationTransitionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
-    //                    NSAssert(blockchainIdentityRegistrationTransactionEntity, @"blockchainIdentityRegistrationTransactionEntity must exist");
-    //                    contact.associatedBlockchainIdentityRegistrationTransaction = blockchainIdentityRegistrationTransactionEntity;
-    //                    contact.username = self.username;
-    //                    self.ownContact = contact;
-    //                    if (saveReturnedProfile) {
-    //                        [DSContactEntity saveContext];
-    //                    }
-    //                } else if ([self.wallet blockchainIdentityForRegistrationHash:registrationTransactionHash]) {
-    //                    //this means we are fetching a contact for another blockchain user on the device
-    //                    DSBlockchainIdentity * blockchainIdentity = [self.wallet blockchainIdentityForRegistrationHash:registrationTransactionHash];
-    //                    DSBlockchainIdentityRegistrationTransitionEntity * blockchainIdentityRegistrationTransactionEntity = [DSBlockchainIdentityRegistrationTransitionEntity anyObjectMatchingInContext:context withPredicate:@"transactionHash.txHash == %@",uint256_data(registrationTransactionHash)];
-    //                    NSAssert(blockchainIdentityRegistrationTransactionEntity, @"blockchainIdentityRegistrationTransactionEntity must exist");
-    //                    contact.associatedBlockchainIdentityRegistrationTransaction = blockchainIdentityRegistrationTransactionEntity;
-    //                    contact.username = blockchainIdentity.username;
-    //                    blockchainIdentity.ownContact = contact;
-    //                    if (saveReturnedProfile) {
-    //                        [DSContactEntity saveContext];
-    //                    }
-    //                }
-    //            }
-    //
-    //            if (completion) {
-    //                completion(contact);
-    //            }
-    //        }];
-    //
-    //    } failure:^(NSError *_Nonnull error) {
-    //        if (completion) {
-    //            completion(nil);
-    //        }
-    //    }];
+    NSDictionary *query = @{ @"userId" : uint256_reverse_base58(blockchainIdentityUniqueId) };
+    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
+    
+    __weak typeof(self) weakSelf = self;
+    DSDashPlatform * platform = [DSDashPlatform sharedInstanceForChain:self.wallet.chain];
+    DPContract *contract = [platform dashPayContract];
+    // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
+    
+    DSDLog(@"contract ID %@",[contract base58ContractID]);
+    [self.DAPINetworkService fetchDocumentsForContractId:[contract base58ContractID] objectsType:@"profile" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (![documents count]) {
+            if (completion) {
+                completion(nil);
+            }
+            return;
+        }
+        //todo
+        
+        NSDictionary * contactDictionary = [documents firstObject];
+        [context performBlockAndWait:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            [DSContactEntity setContext:context];
+            [DSChainEntity setContext:context];
+            NSString *scopeID = [contactDictionary objectForKey:@"$scopeId"];
+            DSContactEntity * contact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"documentScopeID == %@", scopeID];
+            if (!contact || [[contactDictionary objectForKey:@"$rev"] intValue] != contact.documentRevision) {
+                
+                if (!contact) {
+                    contact = [DSContactEntity managedObjectInContext:context];
+                }
+                
+                contact.documentScopeID = scopeID;
+                contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
+                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+                contact.publicMessage = [contactDictionary objectForKey:@"about"];
+                contact.associatedBlockchainIdentityUniqueId = uint256_data(blockchainIdentityUniqueId);
+                contact.chain = strongSelf.wallet.chain.chainEntity;
+                if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && !strongSelf.ownContact) {
+                    NSAssert(strongSelf.blockchainIdentityEntity, @"blockchainIdentityEntity must exist");
+                    contact.associatedBlockchainIdentity = strongSelf.blockchainIdentityEntity;
+                    contact.associatedBlockchainIdentityUniqueId = uint256_data(strongSelf.uniqueID);
+                    contact.username = strongSelf.currentUsername;
+                    self.ownContact = contact;
+                    if (saveReturnedProfile) {
+                        [DSContactEntity saveContext];
+                    }
+                } else if ([strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId]) {
+                    //this means we are fetching a contact for another blockchain user on the device
+                    DSBlockchainIdentity * blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId];
+                    NSAssert(blockchainIdentity.blockchainIdentityEntity, @"blockchainIdentityEntity must exist");
+                    contact.associatedBlockchainIdentity = blockchainIdentity.blockchainIdentityEntity;
+                    contact.associatedBlockchainIdentityUniqueId = uint256_data(blockchainIdentity.uniqueID);
+                    contact.username = blockchainIdentity.currentUsername;
+                    blockchainIdentity.ownContact = contact;
+                    if (saveReturnedProfile) {
+                        [DSContactEntity saveContext];
+                    }
+                }
+            }
+            
+            if (completion) {
+                completion(contact);
+            }
+        }];
+        
+    } failure:^(NSError *_Nonnull error) {
+        if (completion) {
+            completion(nil);
+        }
+    }];
 }
 
 - (void)fetchIncomingContactRequests:(void (^)(BOOL success))completion {
@@ -1672,7 +1693,7 @@
         UInt256 recipientRegistrationHash = [recipientString hexToData].reverse.UInt256;
         NSString *senderString = metaData?metaData[@"userId"]:nil;
         UInt256 senderRegistrationHash = [senderString hexToData].reverse.UInt256;
-        NSString *extendedPublicKeyString = rawContact[@"publicKey"];
+        NSString *extendedPublicKeyString = rawContact[@"encryptedPublicKey"];
         NSData *extendedPublicKey = [[NSData alloc] initWithBase64EncodedString:extendedPublicKeyString options:0];
         if (uint256_eq(recipientRegistrationHash, self.ownContact.associatedBlockchainIdentityUniqueId.UInt256)) {
             //we are the recipient, this is an incoming request

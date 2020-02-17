@@ -53,6 +53,13 @@
         if (error) {
             self.decodingError = error;
         }
+    } else if ([message isMemberOfClass:[GetDataContractResponse class]]) {
+        GetDataContractResponse * contractResponse = (GetDataContractResponse*)message;
+        NSError * error = nil;
+        self.responseObject = [[contractResponse dataContract] ds_decodeCborError:&error];
+        if (error) {
+            self.decodingError = error;
+        }
     }
     NSLog(@"didReceiveProtoMessage");
 }

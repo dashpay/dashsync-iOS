@@ -86,12 +86,12 @@
     
     
     DSStringValueDictionary *data = @{
-                           @"toUserId" : uint256_reverse_hex(self.destinationContact.associatedBlockchainIdentityUniqueId),
-                           @"publicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
+                           @"toUserId" : uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId).reverse.base58String,
+                           @"encryptedPublicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
                            };
     
     
-    DPDocument *contact = [self.sourceBlockchainIdentity.dashpayDocumentFactory documentOnTable:@"contact" withDataDictionary:data error:&error];
+    DPDocument *contact = [self.sourceBlockchainIdentity.dashpayDocumentFactory documentOnTable:@"contactRequest" withDataDictionary:data error:&error];
     NSAssert(error == nil, @"Failed to build a contact");
     return contact;
 }

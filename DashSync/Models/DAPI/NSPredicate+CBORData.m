@@ -26,7 +26,7 @@
     if ([self isMemberOfClass:[NSCompoundPredicate class]]) {
         return [self whereClauseNestedArray];
     } else {
-        return @[[self whereClauseArray]];
+        return @[[self whereClauseNestedArray]];
     }
 }
 
