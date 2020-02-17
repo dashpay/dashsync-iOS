@@ -177,6 +177,9 @@
     if (!uint256_is_zero(dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
     }
+    if (!uint256_is_zero(dashpayContractID)) {
+        chain.dashpayContractID = dashpayContractID;
+    }
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];
         NSString * address = serviceArray[0];

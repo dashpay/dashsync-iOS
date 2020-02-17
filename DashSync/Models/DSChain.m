@@ -181,6 +181,9 @@ static checkpoint mainnet_checkpoint_array[] = {
 #define JRPC_PORT_LOCATION  @"JRPC_PORT_LOCATION"
 #define GRPC_PORT_LOCATION  @"GRPC_PORT_LOCATION"
 
+#define DPNS_CONTRACT_ID  @"DPNS_CONTRACT_ID"
+#define DASHPAY_CONTRACT_ID  @"DASHPAY_CONTRACT_ID"
+
 #define SPORK_PUBLIC_KEY_LOCATION  @"SPORK_PUBLIC_KEY_LOCATION"
 #define SPORK_ADDRESS_LOCATION  @"SPORK_ADDRESS_LOCATION"
 #define SPORK_PRIVATE_KEY_LOCATION  @"SPORK_PRIVATE_KEY_LOCATION"
@@ -210,6 +213,8 @@ static checkpoint mainnet_checkpoint_array[] = {
 @property (nonatomic, assign) uint32_t cachedStandardPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiJRPCPort;
 @property (nonatomic, assign) uint32_t cachedStandardDapiGRPCPort;
+@property (nonatomic, assign) UInt256 cachedDpnsContractID;
+@property (nonatomic, assign) UInt256 cachedDashpayContractID;
 @property (nonatomic, strong) NSManagedObjectContext * managedObjectContext;
 
 @end
@@ -749,6 +754,93 @@ static dispatch_once_t devnetToken = 0;
             break;
     }
 }
+
+-(UInt256)dpnsContractID {
+    if (!uint256_is_zero(_cachedDpnsContractID)) return _cachedDpnsContractID;
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            if (!self.isEvolutionEnabled) return UINT256_ZERO;
+            _cachedDpnsContractID = MAINNET_DPNS_CONTRACT_ID.hexToData.UInt256;
+            return _cachedDpnsContractID;
+        case DSChainType_TestNet:
+            if (!self.isEvolutionEnabled) return UINT256_ZERO;
+            _cachedDpnsContractID = TESTNET_DPNS_CONTRACT_ID.hexToData.UInt256;
+            return _cachedDpnsContractID;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            NSData * cachedDpnsContractIDData = getKeychainData([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DPNS_CONTRACT_ID], &error);
+            if (!error && cachedDpnsContractIDData) {
+                _cachedDpnsContractID = cachedDpnsContractIDData.UInt256;
+                return _cachedDpnsContractID;
+            }
+            else return UINT256_ZERO;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setDpnsContractID:(UInt256)dpnsContractID {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainData(uint256_data(dpnsContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DPNS_CONTRACT_ID], NO);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(UInt256)dashpayContractID {
+    if (!uint256_is_zero(_cachedDashpayContractID)) return _cachedDashpayContractID;
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            if (!self.isEvolutionEnabled) return UINT256_ZERO;
+            _cachedDashpayContractID = MAINNET_DASHPAY_CONTRACT_ID.hexToData.UInt256;
+            return _cachedDashpayContractID;
+        case DSChainType_TestNet:
+            if (!self.isEvolutionEnabled) return UINT256_ZERO;
+            _cachedDashpayContractID = TESTNET_DASHPAY_CONTRACT_ID.hexToData.UInt256;
+            return _cachedDashpayContractID;
+        case DSChainType_DevNet:
+        {
+            NSError * error = nil;
+            NSData * cachedDashpayContractIDData = getKeychainData([NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DASHPAY_CONTRACT_ID], &error);
+            if (!error && cachedDashpayContractIDData) {
+                _cachedDashpayContractID = cachedDashpayContractIDData.UInt256;
+                return _cachedDashpayContractID;
+            }
+            else return UINT256_ZERO;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+-(void)setDashpayContractID:(UInt256)dashpayContractID {
+    switch ([self chainType]) {
+        case DSChainType_MainNet:
+            return;
+        case DSChainType_TestNet:
+            return;
+        case DSChainType_DevNet:
+        {
+            setKeychainData(uint256_data(dashpayContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DASHPAY_CONTRACT_ID], NO);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 
 -(uint32_t)standardDapiJRPCPort {
     if (_cachedStandardDapiJRPCPort) return _cachedStandardDapiJRPCPort;

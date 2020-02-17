@@ -21,6 +21,8 @@
 @interface DSRegisterContractsViewController ()
 
 @property (nonatomic,strong) DSDashPlatform * platform;
+@property (nonatomic,strong) NSDictionary * contracts;
+@property (nonatomic,strong) id contractObserver;
 
 @end
 
@@ -30,6 +32,15 @@
     [super viewDidLoad];
     
     self.platform = [DSDashPlatform sharedInstanceForChain:self.blockchainIdentity.wallet.chain];
+    self.contracts = self.platform.knownContracts;
+    self.contractObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DPContractDidUpdateNotification object:nil
+                                                                               queue:nil usingBlock:^(NSNotification *note) {
+        DPContract * contract = note.userInfo[DSContractUpdateNotificationKey];
+        NSUInteger index = [[self.contracts allValues] indexOfObject:contract];
+        if (index != NSNotFound) {
+            [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+        }
+    }];
 }
 
 #pragma mark - Table view data source
@@ -49,14 +60,14 @@
 }
 
 -(void)configureContractCell:(DSContractTableViewCell *)cell forItemIndex:(NSUInteger)index {
-    NSString * identifier = [[self.platform.knownContracts allKeys] objectAtIndex:index];
-    DPContract * contract = self.platform.knownContracts[identifier];
+    NSString * identifier = [[self.contracts allKeys] objectAtIndex:index];
+    DPContract * contract = self.contracts[identifier];
     cell.contractNameLabel.text = contract.name;
     cell.statusLabel.text = contract.statusString;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-
+    
     UITableViewCell * cell;
     
     if (!indexPath.section) {

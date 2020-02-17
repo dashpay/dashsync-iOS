@@ -14,7 +14,8 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSContractEntity"];
 }
 
-@dynamic identifier;
+@dynamic localContractIdentifier;
+@dynamic registeredBlockchainIdentityUniqueID;
 @dynamic state;
 @dynamic chain;
 @dynamic creator;

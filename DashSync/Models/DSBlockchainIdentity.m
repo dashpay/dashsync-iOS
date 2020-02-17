@@ -851,7 +851,6 @@
 // MARK: - Persistence
 
 
-
 -(void)saveInitial {
     [self.managedObjectContext performBlockAndWait:^{
         [DSBlockchainIdentityEntity setContext:self.managedObjectContext];
@@ -1133,13 +1132,18 @@
                     }
                 }
             }
-            if ([usernamesLeft count]) {
+            if ([usernamesLeft count] && retryCount > 0) {
                 [strongSelf monitorForDPNSUsernames:usernamesLeft withRetryCount:retryCount - 1 completion:completion];
+            } else if ([usernamesLeft count]) {
+                completion(FALSE);
+            } else {
+                completion(TRUE);
             }
+        } else if (retryCount > 0) {
+            [strongSelf monitorForDPNSUsernames:usernames withRetryCount:retryCount - 1 completion:completion];
         } else {
             completion(FALSE);
         }
-        completion(TRUE);
     } failure:^(NSError * _Nonnull error) {
         if (retryCount > 0) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -1158,17 +1162,33 @@
 -(void)monitorForDPNSPreorderSaltedDomainHashes:(NSDictionary*)saltedDomainHashes withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL))completion {
     __weak typeof(self) weakSelf = self;
     [self.DAPINetworkService getDPNSDocumentsForPreorderSaltedDomainHashes:[saltedDomainHashes allValues] success:^(id _Nonnull preorderDocumentArray) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
         if ([preorderDocumentArray isKindOfClass:[NSArray class]]) {
+            NSMutableArray * usernamesLeft = [[saltedDomainHashes allKeys] mutableCopy];
             for (NSString * username in saltedDomainHashes) {
                 NSData * saltedDomainHashData = saltedDomainHashes[username];
                 NSString * saltedDomainHashString = [saltedDomainHashData hexString];
                 for (NSDictionary * preorderDocument in preorderDocumentArray) {
                     if ([[preorderDocument objectForKey:@"saltedDomainHash"] isEqualToString:saltedDomainHashString]) {
-                        [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Preordered) forKey:username];
-                        [self saveUsername:username status:DSBlockchainIdentityUsernameStatus_Preordered salt:nil commitSave:YES];
+                        [strongSelf.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Preordered) forKey:username];
+                        [strongSelf saveUsername:username status:DSBlockchainIdentityUsernameStatus_Preordered salt:nil commitSave:YES];
+                        [usernamesLeft removeObject:username];
                     }
                 }
             }
+            if ([usernamesLeft count] && retryCount > 0) {
+                NSDictionary * saltedDomainHashesLeft = [saltedDomainHashes dictionaryWithValuesForKeys:usernamesLeft];
+                [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashesLeft withRetryCount:retryCount - 1 completion:completion];
+            } else if ([usernamesLeft count]) {
+                completion(FALSE);
+            } else {
+                completion(TRUE);
+            }
+        } else if (retryCount > 0) {
+            [strongSelf monitorForDPNSPreorderSaltedDomainHashes:saltedDomainHashes withRetryCount:retryCount - 1 completion:completion];
         } else {
             completion(FALSE);
         }
@@ -1187,10 +1207,42 @@
     }];
 }
 
+-(void)monitorForContract:(DPContract*)contract withRetryCount:(uint32_t)retryCount completion:(void (^)(BOOL))completion {
+    __weak typeof(self) weakSelf = self;
+    NSParameterAssert(contract);
+    if (!contract) return;
+    [self.DAPINetworkService fetchContractForId:contract.base58ContractID success:^(id _Nonnull contractDictionary) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"contractId"] isEqualToString:contract.base58ContractID]) {
+            completion(TRUE);
+        } else if (retryCount > 0) {
+            [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 completion:completion];
+        } else {
+            completion(FALSE);
+        }
+    } failure:^(NSError * _Nonnull error) {
+        if (retryCount > 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+                [strongSelf monitorForContract:contract withRetryCount:retryCount - 1 completion:completion];
+            });
+        } else {
+            completion(FALSE);
+        }
+    }];
+}
+
 // MARK: - Contracts
 
 -(void)fetchAndUpdateContract:(DPContract*)contract {
     __weak typeof(contract) weakContract = contract;
+    __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
         if (contract.contractState == DPContractState_Unknown) {
@@ -1209,14 +1261,25 @@
             [self signStateTransition:transition withPrompt:@"Register Contract?" completion:^(BOOL success) {
                 if (success) {
                     [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
-                        NSLog(@"okay");
+                        __strong typeof(weakContract) strongContract = weakContract;
+                        if (!strongContract) {
+                            return;
+                        }
+                        __strong typeof(weakSelf) strongSelf = weakSelf;
+                        if (!strongSelf) {
+                            return;
+                        }
+                        strongContract.contractState = DPContractState_Registering;
+                        [strongSelf monitorForContract:strongContract withRetryCount:2 completion:^(BOOL success) {
+                            
+                        }];
                     } failure:^(NSError * _Nonnull error) {
                         
                     }];
                 }
             }];
             
-        } else if (contract.contractState == DPContractState_Registered) {
+        } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
             [self.DAPINetworkService fetchContractForId:contract.localContractIdentifier success:^(NSDictionary * _Nonnull contract) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
@@ -1224,7 +1287,23 @@
                 }
                 
             } failure:^(NSError * _Nonnull error) {
-                
+                NSString * debugDescription1 = [error.userInfo objectForKey:@"NSDebugDescription"];
+                NSError *jsonError;
+                NSData *objectData = [debugDescription1 dataUsingEncoding:NSUTF8StringEncoding];
+                NSDictionary * debugDescription = [NSJSONSerialization JSONObjectWithData:objectData options:0 error:&jsonError];
+                //NSDictionary * debugDescription =
+                NSString * errorMessage = [debugDescription objectForKey:@"grpc_message"];
+                if ([errorMessage isEqualToString:@"Invalid argument: Contract not found"]) {
+                    __strong typeof(weakContract) strongContract = weakContract;
+                    if (!strongContract) {
+                        return;
+                    }
+                    __strong typeof(weakSelf) strongSelf = weakSelf;
+                    if (!strongSelf) {
+                        return;
+                    }
+                    strongContract.contractState = DPContractState_NotRegistered;
+                }
             }];
         }
     });

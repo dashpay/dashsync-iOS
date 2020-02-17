@@ -60,6 +60,8 @@
         self.dashdPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardPort];
         self.dapiJRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardDapiJRPCPort];
         self.dapiGRPCPortTableViewCell.valueTextField.text = [NSString stringWithFormat:@"%u",self.chain.standardDapiGRPCPort];
+        self.dpnsContractIDTableViewCell.valueTextField.text = uint256_base58(self.chain.dpnsContractID);
+        self.dashpayContractIDTableViewCell.valueTextField.text = uint256_base58(self.chain.dashpayContractID);
     }
     
     // Do any additional setup after loading the view.

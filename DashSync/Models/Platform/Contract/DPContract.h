@@ -20,6 +20,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString* const DPContractDidUpdateNotification;
+FOUNDATION_EXPORT NSString* const DSContractUpdateNotificationKey;
+
 @class DSChain,DSContractTransition,DSBlockchainIdentity;
 
 typedef NS_ENUM(NSUInteger, DPContractState) {
@@ -50,7 +53,7 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
 @property (copy, nonatomic) NSDictionary<NSString *, DSStringValueDictionary *> *definitions;
 
 - (instancetype)initWithLocalContractIdentifier:(NSString *)contractID
-                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain;
+                   documents:(NSDictionary<NSString *, DSStringValueDictionary *> *)documents onChain:(DSChain*)chain inManagedObjectContext:(NSManagedObjectContext*)managedObjectContext;
 
 - (instancetype)init NS_UNAVAILABLE;
 

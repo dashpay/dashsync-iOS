@@ -15,8 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSFetchRequest<DSContractEntity *> *)fetchRequest;
 
-@property (nullable, nonatomic, retain) NSData *identifier;
-@property (nullable, nonatomic, copy) NSNumber *state;
+@property (nullable, nonatomic, retain) NSString *localContractIdentifier;
+@property (nullable, nonatomic, retain) NSData *registeredBlockchainIdentityUniqueID;
+@property (assign, nonatomic) uint16_t state;
 @property (nullable, nonatomic, retain) DSChainEntity *chain;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *creator;
 
