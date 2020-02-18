@@ -39,9 +39,6 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 
 @interface DSAuthenticationManager : NSObject
 
-@property (nonatomic, readonly, getter=isTouchIdEnabled) BOOL touchIdEnabled; // true if touch id is enabled
-@property (nonatomic, readonly, getter=isFaceIdEnabled) BOOL faceIdEnabled;
-@property (nonatomic, readonly, getter=isPasscodeEnabled) BOOL passcodeEnabled; // true if device passcode is enabled
 @property (nonatomic, readonly) BOOL shouldUseAuthentication; //true if the app should use authentication once it is set up
 @property (nonatomic, readonly) BOOL usesAuthentication; //true if the app uses authentication and it is set up
 @property (nonatomic, readonly) BOOL didAuthenticate; // true if the user authenticated after this was last set to false
