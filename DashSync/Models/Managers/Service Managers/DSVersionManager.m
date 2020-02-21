@@ -116,7 +116,8 @@
         }
         
         //upgrade scenario
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:message usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticated,BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:message usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticated, BOOL usedBiometrics, BOOL cancelled) {
+
             if (!authenticated) {
                 completion(NO,YES,NO,cancelled);
                 return;

@@ -244,7 +244,7 @@ static NSString * const BG_TASK_REFRESH_IDENTIFIER = @"org.dashcore.dashsync.bac
             [[NSNotificationCenter defaultCenter] postNotificationName:DSChainStandaloneDerivationPathsDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:chain}];
         });
     } else {
-        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+        [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"Wipe wallets" usingBiometricAuthentication:NO alertIfLockout:NO completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
             if (authenticatedOrSuccess) {
                 [chain wipeWalletsAndDerivatives];
                 dispatch_async(dispatch_get_main_queue(), ^{

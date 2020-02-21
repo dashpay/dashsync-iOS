@@ -101,7 +101,7 @@
 }
 
 -(void)walletTableViewCellDidRequestAuthentication:(DSWalletTableViewCell*)cell {
-    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"" usingBiometricAuthentication:FALSE alertIfLockout:FALSE completion:^(BOOL authenticatedOrSuccess, BOOL cancelled) {
+    [[DSAuthenticationManager sharedInstance] authenticateWithPrompt:@"" usingBiometricAuthentication:FALSE alertIfLockout:FALSE completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
         if (authenticatedOrSuccess) {
             [self.tableView reloadData];
         }
