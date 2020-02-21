@@ -60,6 +60,7 @@ extern NSString *const DSApplicationTerminationRequestNotification;
 - (BOOL)isBiometricAuthenticationAllowed;
 - (BOOL)isBiometricSpendingAllowed;
 
+- (BOOL)setBiometricSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
 - (BOOL)canUseBiometricAuthenticationForAmount:(uint64_t)amount;
 
 - (void)authenticateUsingBiometricsOnlyWithPrompt:(NSString * _Nullable)prompt
