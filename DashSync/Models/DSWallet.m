@@ -459,7 +459,11 @@
                 completion(nil,cancelled);
             } else {
                 if (usedBiometrics) {
-                    [[DSAuthenticationManager sharedInstance] updateBiometricsAmountLeftAfterSpendingAmount:amount];
+                    BOOL loweredAmountSuccessfully = [[DSAuthenticationManager sharedInstance] updateBiometricsAmountLeftAfterSpendingAmount:amount];
+                    if (!loweredAmountSuccessfully) {
+                        completion(nil,cancelled);
+                        return;
+                    }
                 }
                 completion([[DSBIP39Mnemonic sharedInstance] deriveKeyFromPhrase:getKeychainString(self.mnemonicUniqueID, nil) withPassphrase:nil],cancelled);
             }
