@@ -63,7 +63,7 @@ static NSString *sanitizeString(NSString *s)
 #define REDX    @"\xE2\x9D\x8C"     // unicode cross mark U+274C, red x emoji (utf-8)
 
 #define BIOMETRIC_SPENDING_LIMIT_KEY  @"SPEND_LIMIT_AMOUNT"
-#define BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY  @"SPEND_LIMIT_KEY" //this was named incorrectly before
+#define BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY  @"BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY"
 
 NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTerminationRequestNotification";
 
@@ -284,7 +284,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
         DSDLog(@"Tried to remove a pin, but wallets exist on device");
         return;
     }
-    setKeychainData(nil, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
+    setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
     setKeychainData(nil, PIN_KEY, NO);
     setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
     setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
@@ -344,6 +344,9 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 -(BOOL)updateBiometricsAmountLeftAfterSpendingAmount:(uint64_t)amount {
     NSError * error = nil;
+    BOOL hasAmountLeft = hasKeychainData(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
+    if (error || !hasAmountLeft) return NO;
+    
     uint64_t amountLeft = getKeychainInt(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
     if (error) return FALSE;
     if (amountLeft < amount) {
@@ -356,6 +359,9 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 
 -(BOOL)canUseBiometricAuthenticationForAmount:(uint64_t)amount {
     NSError * error = nil;
+    BOOL hasAmountLeft = hasKeychainData(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
+    if (error || !hasAmountLeft) return NO;
+    
     uint64_t amountLeft = getKeychainInt(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
     if (error) return FALSE;
     return (amount <= amountLeft);
@@ -780,7 +786,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 - (void)removePinForced {
-    setKeychainData(nil, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
+    setKeychainInt(0, BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, NO);
     setKeychainData(nil, PIN_KEY, NO);
     setKeychainData(nil, PIN_FAIL_COUNT_KEY, NO);
     setKeychainData(nil, PIN_FAIL_HEIGHT_KEY, NO);
