@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
 
-#define SPEND_LIMIT_KEY     @"SPEND_LIMIT_KEY"
-
 @interface DSChainsManager : NSObject
 
 @property (nonatomic,strong) DSChainManager * mainnetManager;
@@ -41,7 +39,6 @@ FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
 @property (nonatomic,readonly) NSArray * allWallets;
 @property (nonatomic,readonly) NSArray * chains;
 @property (nonatomic,readonly) NSArray * devnetChains;
-@property (nonatomic,readonly) uint64_t spendingLimit;
 
 -(DSChainManager * _Nullable)chainManagerForChain:(DSChain*)chain;
 
@@ -52,10 +49,6 @@ FOUNDATION_EXPORT NSString* const DSChainsDidChangeNotification;
 -(void)removeDevnetChain:(DSChain *)chain;
 
 +(instancetype)sharedInstance;
-
--(BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit;
-
--(BOOL)resetSpendingLimitsIfAuthenticated;
 
 @end
 

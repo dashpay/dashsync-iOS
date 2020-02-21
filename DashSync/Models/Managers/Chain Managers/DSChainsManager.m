@@ -37,7 +37,6 @@
 #include <arpa/inet.h>
 
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
-#define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
 
 @interface DSChainsManager()
 
@@ -294,47 +293,5 @@
     }
     return [mAllWallets copy];
 }
-
-// MARK: - Spending Limits
-
-// amount that can be spent using touch id without pin entry
-- (uint64_t)spendingLimit
-{
-    // it's ok to store this in userdefaults because increasing the value only takes effect after successful pin entry
-    if (! [[NSUserDefaults standardUserDefaults] objectForKey:SPEND_LIMIT_AMOUNT_KEY]) return DUFFS;
-    
-    return [[NSUserDefaults standardUserDefaults] doubleForKey:SPEND_LIMIT_AMOUNT_KEY];
-}
-
-- (BOOL)setSpendingLimitIfAuthenticated:(uint64_t)spendingLimit
-{
-    if (![[DSAuthenticationManager sharedInstance] didAuthenticate]) return FALSE;
-    uint64_t totalSent = 0;
-    for (DSChain * chain in self.chains) {
-        for (DSWallet * wallet in chain.wallets) {
-            totalSent += wallet.totalSent;
-        }
-    }
-    if (setKeychainInt((spendingLimit > 0) ? totalSent + spendingLimit : 0, SPEND_LIMIT_KEY, NO)) {
-        // use setDouble since setInteger won't hold a uint64_t
-        [[NSUserDefaults standardUserDefaults] setDouble:spendingLimit forKey:SPEND_LIMIT_AMOUNT_KEY];
-        return TRUE;
-    }
-    return FALSE;
-}
-
--(BOOL)resetSpendingLimitsIfAuthenticated {
-    if (![[DSAuthenticationManager sharedInstance] didAuthenticate]) return FALSE;
-    uint64_t limit = self.spendingLimit;
-    uint64_t totalSent = 0;
-    for (DSChain * chain in self.chains) {
-        for (DSWallet * wallet in chain.wallets) {
-            totalSent += wallet.totalSent;
-        }
-    }
-    if (limit > 0) setKeychainInt(totalSent + limit, SPEND_LIMIT_KEY, NO);
-    return TRUE;
-}
-
 
 @end
