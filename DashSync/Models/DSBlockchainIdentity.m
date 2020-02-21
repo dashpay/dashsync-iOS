@@ -1469,64 +1469,71 @@
     
 }
 
+-(DPDocument*)ownContactProfileDocument {
+    if (self.ownContact) {
+        DSStringValueDictionary * dataDictionary = @{
+            @"publicMessage": self.ownContact.publicMessage,
+            @"avatarUrl": self.ownContact.avatarPath,
+            @"displayName": self.ownContact.displayName,
+            @"$rev": @(self.ownContact.documentRevision + 1)
+        };
+        NSError * error = nil;
+        DPDocument * document = [self.dashpayDocumentFactory documentOnTable:@"profile" withDataDictionary:dataDictionary error:&error];
+        return document;
+    } else {
+        return nil;
+    }
+}
+
+-(DSDocumentTransition*)profileDocumentTransition {
+    DPDocument * profileDocument = [self ownContactProfileDocument];
+    if (!profileDocument) return nil;
+    DSDocumentTransition * transition = [[DSDocumentTransition alloc] initForDocuments:@[profileDocument] withTransitionVersion:1 blockchainIdentityUniqueId:self.uniqueID onChain:self.wallet.chain];
+    return transition;
+}
+
 - (void)createOrUpdateProfileWithAboutMeString:(NSString*)aboutme avatarURLString:(NSString *)avatarURLString completion:(void (^)(BOOL success))completion {
-    //    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:self.wallet.chain];
-    //    dpp.userId = uint256_reverse_hex(self.registrationTransitionHash);
-    //    DPContract *contract = [DSDAPIClient ds_currentDashPayContractForChain:self.wallet.chain];
-    //    dpp.contract = contract;
-    //    NSError *error = nil;
-    //    DSStringValueDictionary *data = @{
-    //                           @"about" :aboutme,
-    //                           @"avatarUrl" : avatarURLString,
-    //                           };
-    //    DPDocument *user = [dpp.documentFactory documentWithType:@"profile" data:data error:&error];
-    //    if (self.ownContact) {
-    //        NSError *error = nil;
-    //        [user setAction:DPDocumentAction_Update error:&error];
-    //        NSAssert(!error, @"Invalid action");
-    //
-    //        // TODO: refactor DPDocument update/delete API
-    //        DPMutableJSONObject *mutableData = [data mutableCopy];
-    //        mutableData[@"$scopeId"] = self.ownContact.documentScopeID;
-    //        mutableData[@"$rev"] = @(self.ownContact.documentRevision + 1);
-    //        [user setData:mutableData error:&error];
-    //        NSAssert(!error, @"Invalid data");
-    //    }
-    //    NSAssert(error == nil, @"Failed to build a user");
-    //
-    //    __weak typeof(self) weakSelf = self;
-    //
-    //    [self.wallet.chain.chainManager.DAPIClient sendDocument:user forUser:self contract:contract completion:^(NSError * _Nullable error) {
-    //        __strong typeof(weakSelf) strongSelf = weakSelf;
-    //        if (!strongSelf) {
-    //            return;
-    //        }
-    //
-    //        BOOL success = error == nil;
-    //
-    //        if (success) {
-    //            [self.DAPINetworkService getUserById:uint256_hex(uint256_reverse(self.registrationTransitionHash)) success:^(NSDictionary *_Nonnull blockchainIdentity) {
-    //                __strong typeof(weakSelf) strongSelf = weakSelf;
-    //                if (!strongSelf) {
-    //                    return;
-    //                }
-    //
-    //                if (completion) {
-    //                    completion(!!blockchainIdentity);
-    //                }
-    //            } failure:^(NSError * _Nonnull error) {
-    //                DSDLog(@"%@",error);
-    //                if (completion) {
-    //                    completion(NO);
-    //                }
-    //            }];
-    //        }
-    //        else {
-    //            if (completion) {
-    //                completion(NO);
-    //            }
-    //        }
-    //    }];
+    __weak typeof(self) weakSelf = self;
+    DSDocumentTransition * transition = [self profileDocumentTransition];
+    if (!transition) return;
+    [self signStateTransition:transition withPrompt:@"Update profile?" completion:^(BOOL success) {
+        if (success) {
+            [self.DAPINetworkService publishTransition:transition success:^(NSDictionary * _Nonnull successDictionary) {
+                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                        if (!strongSelf) {
+                            return;
+                        }
+                
+                        BOOL success = error == nil;
+                
+                        if (success) {
+                            [self.DAPINetworkService getUserById:uint256_hex(uint256_reverse(self.registrationTransitionHash)) success:^(NSDictionary *_Nonnull blockchainIdentity) {
+                                __strong typeof(weakSelf) strongSelf = weakSelf;
+                                if (!strongSelf) {
+                                    return;
+                                }
+                
+                                if (completion) {
+                                    completion(!!blockchainIdentity);
+                                }
+                            } failure:^(NSError * _Nonnull error) {
+                                DSDLog(@"%@",error);
+                                if (completion) {
+                                    completion(NO);
+                                }
+                            }];
+                        }
+                        else {
+                            if (completion) {
+                                completion(NO);
+                            }
+                        }
+            } failure:^(NSError * _Nonnull error) {
+                <#code#>
+            }];
+
+        }];
+        }
 }
 
 -(DSDAPIClient*)DAPIClient {
@@ -1631,15 +1638,9 @@
 }
 
 - (void)fetchIncomingContactRequests:(void (^)(BOOL success))completion {
-    NSDictionary *query = @{ @"document.toUserId" : self.ownContact.associatedBlockchainIdentityUniqueId.reverse.hexString};
-    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
-    
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
-    // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
-    
-    [self.DAPINetworkService fetchDocumentsForContractId:[contract localContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
+    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.ownContact.associatedBlockchainIdentityUniqueId.reverse.base58String since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
         }
@@ -1649,22 +1650,16 @@
                 completion(YES);
             }
         }];
-    } failure:^(NSError *_Nonnull error) {
-        if (completion) {
+    } failure:^(NSError * _Nonnull error) {
+                if (completion) {
             completion(NO);
         }
     }];
 }
 
 - (void)fetchOutgoingContactRequests:(void (^)(BOOL success))completion {
-    NSDictionary *query = @{ @"userId" : uint256_reverse_hex(self.registrationTransitionHash)};
-    DSDAPIClientFetchDapObjectsOptions *options = [[DSDAPIClientFetchDapObjectsOptions alloc] initWithWhereQuery:query orderBy:nil limit:nil startAt:nil startAfter:nil];
-    
     __weak typeof(self) weakSelf = self;
-    DPContract *contract = [DSDashPlatform sharedInstanceForChain:self.wallet.chain].dashPayContract;
-    // TODO: this method should have high-level wrapper in the category DSDAPIClient+DashPayDocuments
-    NSLog(@"%@",[contract localContractIdentifier]);
-    [self.DAPINetworkService fetchDocumentsForContractId:[contract localContractIdentifier] objectsType:@"contact" options:options success:^(NSArray<NSDictionary *> *_Nonnull documents) {
+    [self.DAPINetworkService getDashpayOutgoingContactRequestsForUserId:self.ownContact.associatedBlockchainIdentityUniqueId.reverse.base58String since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

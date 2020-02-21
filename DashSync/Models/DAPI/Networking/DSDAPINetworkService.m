@@ -588,38 +588,41 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     [[self.gRPCClient applyStateTransitionWithMessage:updateStateRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
-- (void)fetchDocumentsForContractId:(NSString *)contractId
-                        objectsType:(NSString *)objectsType
-                            options:(nullable DSDAPIClientFetchDapObjectsOptions *)options
-                            success:(void (^)(NSArray<NSDictionary *> *documents))success
-                            failure:(void (^)(NSError *error))failure {
-    NSParameterAssert(contractId);
-    NSParameterAssert(objectsType);
-    
-    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames inDomain:domain];
+- (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
+                             success:(void (^)(NSArray<NSDictionary *> *documents))success
+                             failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(userId);
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForRecipientUserId:userId since:timestamp];
     platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
     DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+}
 
+- (void)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId since:(NSTimeInterval)timestamp
+                             success:(void (^)(NSArray<NSDictionary *> *documents))success
+                             failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(userId);
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dashpayRequestForContactRequestsForSendingUserId:userId since:timestamp];
+    platformDocumentsRequest.contract = [DSDashPlatform sharedInstanceForChain:self.chain].dpnsContract;
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
+}
 
-    NSMutableDictionary *optionsDictionary = [NSMutableDictionary dictionary];
-    optionsDictionary[@"where"] = options.where;
-    optionsDictionary[@"orderBy"] = options.orderBy;
-    optionsDictionary[@"limit"] = options.limit;
-    optionsDictionary[@"startAt"] = options.startAt;
-    optionsDictionary[@"startAfter"] = options.startAfter;
-
-
-    [self requestWithMethod:@"fetchDocuments"
-                  parameters:@{ @"contractId" : contractId,
-                                @"type" : objectsType,
-                                @"options" : optionsDictionary }
-        validateAgainstClass:NSArray.class
-                     success:success
-                     failure:failure];
+- (void)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
+                            success:(void (^)(NSArray<NSDictionary *> *documents))success
+                            failure:(void (^)(NSError *error))failure {
+    NSParameterAssert(platformDocumentsRequest);
+    DSDAPIGRPCResponseHandler * responseHandler = [[DSDAPIGRPCResponseHandler alloc] init];
+    responseHandler.dispatchQueue = self.grpcDispatchQueue;
+    responseHandler.successHandler = success;
+    responseHandler.errorHandler = failure;
+    [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
 #pragma mark - Private

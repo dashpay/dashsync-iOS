@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
     DSDAPINetworkServiceErrorCodeInvalidResponse = 100,
 };
 
-@class DSTransition;
+@class DSTransition, DSPlatformDocumentsRequest;
 
 @protocol DSDAPINetworkServiceProtocol <NSObject>
 
@@ -412,19 +412,15 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                   failure:(void (^)(NSError *error))failure;
 
 /**
- Fetches user objects for a given condition
+ Fetches user documents for a given condition
  
- @param contractId A user's Contract ID
- @param objectsType DAP object type to fetch
- @param options Fetch options
+ @param platformDocumentsRequest The fetch request
  @param success A block object to be executed when the request operation finishes successfully
  @param failure A block object to be executed when the request operation finishes unsuccessfully
  */
-- (void)fetchDocumentsForContractId:(NSString *)contractId
-                        objectsType:(NSString *)objectsType
-                            options:(nullable DSDAPIClientFetchDapObjectsOptions *)options
-                            success:(void (^)(NSArray<NSDictionary *> *documents))success
-                            failure:(void (^)(NSError *error))failure;
+- (void)fetchDocumentsWithRequest:(DSPlatformDocumentsRequest *)platformDocumentsRequest
+                          success:(void (^)(NSArray<NSDictionary *> *documents))success
+                          failure:(void (^)(NSError *error))failure;
 
 - (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
                                             success:(void (^)(NSDictionary *preorderDocumentDictionary))success
@@ -434,6 +430,16 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                             inDomain:(NSString*)domain
                              success:(void (^)(NSDictionary *domainDocumentDictionary))success
                              failure:(void (^)(NSError *error))failure;
+
+- (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
+                                             since:(NSTimeInterval)timestamp
+                                           success:(void (^)(NSArray<NSDictionary *> *documents))success
+                                           failure:(void (^)(NSError *error))failure;
+
+- (void)getDashpayOutgoingContactRequestsForUserId:(NSString*)userId
+                                             since:(NSTimeInterval)timestamp
+                                           success:(void (^)(NSArray<NSDictionary *> *documents))success
+                                           failure:(void (^)(NSError *error))failure;
 
 @end
 

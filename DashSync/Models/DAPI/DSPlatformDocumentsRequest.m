@@ -61,18 +61,35 @@
     return platformDocumentsRequest;
 }
 
-+(instancetype)dashpayRequestForUsernames:(NSArray*)usernames inDomain:(NSString*)domain {
-    NSMutableArray * lowercaseUsernames = [NSMutableArray array];
-    for (NSString * username in usernames) {
-        [lowercaseUsernames addObject:[username lowercaseString]];
-    }
++(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    //UInt256 hashOfName = [[name dataUsingEncoding:NSUTF8StringEncoding] SHA256_2];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"normalizedLabel IN %@ && normalizedParentDomainName == %@",lowercaseUsernames,[domain lowercaseString]];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"$userId == %@ && timestamp >= %@",userId,timestamp];
     platformDocumentsRequest.startAt = 0;
-    platformDocumentsRequest.limit = (uint32_t)usernames.count;
+    platformDocumentsRequest.limit = 100;
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
-    platformDocumentsRequest.tableName = @"domain";
+    platformDocumentsRequest.tableName = @"contactRequest";
+    return platformDocumentsRequest;
+}
+
++(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString*)userId since:(NSTimeInterval)timestamp {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"toUserId == %@ && timestamp >= %@",userId,timestamp];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = 100;
+    platformDocumentsRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES]];
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"contactRequest";
+    return platformDocumentsRequest;
+}
+
++(instancetype)dashpayRequestForContactRequestForSendingUserId:(NSString*)userId toRecipientUserId:(NSString*)toUserId {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"$userId == %@ && toUserId == %@",userId,toUserId];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"contactRequest";
     return platformDocumentsRequest;
 }
 

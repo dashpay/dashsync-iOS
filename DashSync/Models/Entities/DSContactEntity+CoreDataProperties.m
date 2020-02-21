@@ -14,10 +14,9 @@
 	return [NSFetchRequest fetchRequestWithEntityName:@"DSContactEntity"];
 }
 
-@dynamic blockHeight;
 @dynamic documentRevision;
-@dynamic documentScopeID;
 @dynamic username;
+@dynamic displayName;
 @dynamic associatedBlockchainIdentityUniqueId;
 @dynamic publicMessage;
 @dynamic associatedBlockchainIdentity;

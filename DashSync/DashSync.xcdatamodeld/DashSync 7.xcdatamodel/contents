@@ -102,9 +102,8 @@
     <entity name="DSContactEntity" representedClassName="DSContactEntity" syncable="YES">
         <attribute name="associatedBlockchainIdentityUniqueId" attributeType="Binary" syncable="YES"/>
         <attribute name="avatarPath" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="blockHeight" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="displayName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="documentRevision" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" syncable="YES"/>
-        <attribute name="documentScopeID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="encryptionPublicKey" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="publicMessage" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="username" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
@@ -480,7 +479,7 @@
         <element name="DSChainEntity" positionX="-1151.6328125" positionY="-163.1796875" width="128" height="403"/>
         <element name="DSChainLockEntity" positionX="-2403" positionY="-171" width="128" height="103"/>
         <element name="DSCoinbaseTransactionEntity" positionX="-2322" positionY="-81" width="128" height="75"/>
-        <element name="DSContactEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="253"/>
+        <element name="DSContactEntity" positionX="-1898.890625" positionY="1279.48828125" width="128" height="238"/>
         <element name="DSContractEntity" positionX="-2412" positionY="-180" width="128" height="118"/>
         <element name="DSCreditFundingTransactionEntity" positionX="-2412" positionY="-180" width="128" height="88"/>
         <element name="DSDerivationPathEntity" positionX="-2121" positionY="-103.05859375" width="128" height="163"/>
