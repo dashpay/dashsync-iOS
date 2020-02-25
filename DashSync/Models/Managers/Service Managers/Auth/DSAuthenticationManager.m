@@ -358,6 +358,7 @@ NSString *const DSApplicationTerminationRequestNotification = @"DSApplicationTer
 }
 
 -(BOOL)canUseBiometricAuthenticationForAmount:(uint64_t)amount {
+    if (![self isBiometricSpendingAllowed]) return FALSE;
     NSError * error = nil;
     BOOL hasAmountLeft = hasKeychainData(BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY, &error);
     if (error || !hasAmountLeft) return NO;
