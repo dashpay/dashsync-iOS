@@ -465,7 +465,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
-                                              success:(void (^)(NSDictionary *preorderDocumentDictionary))success
+                                              success:(void (^)(NSArray<NSDictionary *> *documents))success
                                               failure:(void (^)(NSError *error))failure {
     NSAssert(saltedDomainHashes.count,@"saltedDomainHash must not be empty");
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForPreorderSaltedHashes:saltedDomainHashes];
@@ -478,7 +478,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 }
 
 - (void)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
-                             success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                             success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSParameterAssert(userId);
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUserId:userId];
@@ -492,7 +492,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 - (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
                             inDomain:(NSString*)domain
-                             success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                             success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure {
     NSAssert(usernames.count,@"usernames must not be empty");
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsernames:usernames inDomain:domain];

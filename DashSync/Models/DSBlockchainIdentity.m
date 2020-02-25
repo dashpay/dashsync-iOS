@@ -34,7 +34,6 @@
 #import "DSDashPlatform.h"
 #import "DSPotentialFriendship.h"
 #import "NSData+Bitcoin.h"
-#import "DSDAPIClient+RegisterDashPayContract.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSTransitionEntity+CoreDataClass.h"
@@ -1077,7 +1076,80 @@
 
 // MARK: Retrieval
 
-
+- (void)fetchUsernamesWithCompletion:(void (^)(BOOL))completion {
+    __weak typeof(self) weakSelf = self;
+    [self.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:self.uniqueIdString success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        if (![documents count]) {
+            if (completion) {
+                completion(YES);
+            }
+            return;
+        }
+        //todo verify return is true
+        for (NSDictionary * nameDictionary in documents) {
+            NSString * username = nameDictionary[@"label"];
+            if (username) {
+                [self.usernameStatuses setObject:@(DSBlockchainIdentityUsernameStatus_Confirmed) forKey:username];
+                [self saveNewUsername:username status:DSBlockchainIdentityUsernameStatus_Confirmed];
+            }
+        }
+//        [context performBlockAndWait:^{
+//            __strong typeof(weakSelf) strongSelf = weakSelf;
+//            if (!strongSelf) {
+//                return;
+//            }
+//            [DSContactEntity setContext:context];
+//            [DSChainEntity setContext:context];
+//            DSContactEntity * contact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@", uint256_data(blockchainIdentityUniqueId)];
+//            if (!contact || [[contactDictionary objectForKey:@"$rev"] intValue] != contact.documentRevision) {
+//
+//                if (!contact) {
+//                    contact = [DSContactEntity managedObjectInContext:context];
+//                }
+//
+//                contact.documentRevision = [[contactDictionary objectForKey:@"$rev"] intValue];
+//                contact.avatarPath = [contactDictionary objectForKey:@"avatarUrl"];
+//                contact.publicMessage = [contactDictionary objectForKey:@"about"];
+//                contact.associatedBlockchainIdentityUniqueId = uint256_data(blockchainIdentityUniqueId);
+//                contact.chain = strongSelf.wallet.chain.chainEntity;
+//                if (uint256_eq(blockchainIdentityUniqueId, strongSelf.uniqueID) && !strongSelf.ownContact) {
+//                    NSAssert(strongSelf.blockchainIdentityEntity, @"blockchainIdentityEntity must exist");
+//                    contact.associatedBlockchainIdentity = strongSelf.blockchainIdentityEntity;
+//                    contact.associatedBlockchainIdentityUniqueId = uint256_data(strongSelf.uniqueID);
+//                    contact.username = strongSelf.currentUsername;
+//                    self.ownContact = contact;
+//                    if (saveReturnedProfile) {
+//                        [DSContactEntity saveContext];
+//                    }
+//                } else if ([strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId]) {
+//                    //this means we are fetching a contact for another blockchain user on the device
+//                    DSBlockchainIdentity * blockchainIdentity = [strongSelf.wallet blockchainIdentityForUniqueId:blockchainIdentityUniqueId];
+//                    NSAssert(blockchainIdentity.blockchainIdentityEntity, @"blockchainIdentityEntity must exist");
+//                    contact.associatedBlockchainIdentity = blockchainIdentity.blockchainIdentityEntity;
+//                    contact.associatedBlockchainIdentityUniqueId = uint256_data(blockchainIdentity.uniqueID);
+//                    contact.username = blockchainIdentity.currentUsername;
+//                    blockchainIdentity.ownContact = contact;
+//                    if (saveReturnedProfile) {
+//                        [DSContactEntity saveContext];
+//                    }
+//                }
+//            }
+//
+//            if (completion) {
+//                completion(contact);
+//            }
+//        }];
+        
+    } failure:^(NSError *_Nonnull error) {
+        if (completion) {
+            completion(nil);
+        }
+    }];
+}
 
 
 

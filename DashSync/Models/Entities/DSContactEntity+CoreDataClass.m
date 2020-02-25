@@ -29,7 +29,6 @@
 #import "DSChainEntity+CoreDataClass.h"
 #import "DSChainManager.h"
 #import "DSIncomingFundsDerivationPath.h"
-#import "DSDAPIClient+RegisterDashPayContract.h"
 #import "NSData+Bitcoin.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"

@@ -48,7 +48,7 @@
 
 +(instancetype)dpnsRequestForUserId:(NSString*)userId {
     DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
-    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"$userId == %@",userId];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"records.dashIdentity == %@",userId];
     platformDocumentsRequest.startAt = 0;
     platformDocumentsRequest.limit = 100;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;

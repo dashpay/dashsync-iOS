@@ -52,11 +52,17 @@
             [identity retrieveIdentityNetworkStateInformationWithCompletion:^(BOOL success) {
                 if (success) {
                     //now lets get dpns info
-                    [identity dpns]
+                    [identity fetchUsernamesWithCompletion:^(BOOL success) {
+                        
+                    }];
                 }
             }];
         } else if (identity.registrationStatus == DSBlockchainIdentityRegistrationStatus_Registered) {
-            
+            if (!identity.currentUsername) {
+                [identity fetchUsernamesWithCompletion:^(BOOL success) {
+                    
+                }];
+            }
         }
     }
 }

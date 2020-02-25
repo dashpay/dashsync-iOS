@@ -11,7 +11,6 @@
 #import "DSBlockchainIdentityTransitionsViewController.h"
 
 #import "DSContactsNavigationController.h"
-#import <DashSync/DSDAPIClient+RegisterDashPayContract.h>
 #import <SDWebImage/SDWebImage.h>
 #import "DSContactProfileViewController.h"
 #import "DSRegisterContractsViewController.h"

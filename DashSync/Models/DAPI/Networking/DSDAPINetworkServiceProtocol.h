@@ -423,16 +423,16 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                           failure:(void (^)(NSError *error))failure;
 
 - (void)getDPNSDocumentsForPreorderSaltedDomainHashes:(NSArray*)saltedDomainHashes
-                                            success:(void (^)(NSDictionary *preorderDocumentDictionary))success
+                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                             failure:(void (^)(NSError *error))failure;
 
 - (void)getDPNSDocumentsForUsernames:(NSArray*)usernames
                             inDomain:(NSString*)domain
-                             success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                             success:(void (^)(NSArray<NSDictionary *> *documents))success
                              failure:(void (^)(NSError *error))failure;
 
 - (void)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
-                                      success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                                      success:(void (^)(NSArray<NSDictionary *> *documents))success
                                       failure:(void (^)(NSError *error))failure;
 
 - (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId

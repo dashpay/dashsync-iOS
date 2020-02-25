@@ -144,6 +144,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 
 -(void)registerUsernames;
 
+- (void)fetchUsernamesWithCompletion:(void (^)(BOOL))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -24,7 +24,6 @@
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "NSManagedObject+Sugar.h"
-#import "DSDAPIClient+RegisterDashPayContract.h"
 #import "DSBLSKey.h"
 #import "DSIncomingFundsDerivationPath.h"
 #import "DSDerivationPathEntity+CoreDataClass.h"
