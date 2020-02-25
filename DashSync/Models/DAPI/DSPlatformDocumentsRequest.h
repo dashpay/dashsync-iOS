@@ -37,6 +37,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 @property(nonatomic,strong) DPContract * contract;
 @property(nonatomic,assign) DSPlatformDocumentType type;
 
++(instancetype)dpnsRequestForUserId:(NSString*)userId;
+
 +(instancetype)dpnsRequestForUsername:(NSString*)username inDomain:(NSString*)domain;
 
 +(instancetype)dpnsRequestForUsernames:(NSArray*)usernames inDomain:(NSString*)domain;
@@ -48,6 +50,8 @@ typedef NS_ENUM(NSUInteger, DSPlatformDocumentType) {
 +(instancetype)dashpayRequestForContactRequestsForSendingUserId:(NSString*)userId since:(NSTimeInterval)timestamp;
 
 +(instancetype)dashpayRequestForContactRequestsForRecipientUserId:(NSString*)userId since:(NSTimeInterval)timestamp;
+
++(instancetype)dashpayRequestForProfileWithUserId:(NSString*)userId;
 
 -(GetDocumentsRequest*)getDocumentsRequest;
 

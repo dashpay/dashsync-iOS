@@ -31,9 +31,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self loadProfileInitial];
-    [self.blockchainIdentity fetchProfile:^(BOOL success) {
-        [self updateProfile];
-    }];
+//    [self.blockchainIdentity fetchProfile:^(BOOL success) {
+//        [self updateProfile];
+//    }];
 }
 
 -(void)loadProfileInitial {

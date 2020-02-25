@@ -46,6 +46,16 @@
     return platformDocumentsRequest;
 }
 
++(instancetype)dpnsRequestForUserId:(NSString*)userId {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"$userId == %@",userId];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = 100;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"domain";
+    return platformDocumentsRequest;
+}
+
 +(instancetype)dpnsRequestForUsernames:(NSArray*)usernames inDomain:(NSString*)domain {
     NSMutableArray * lowercaseUsernames = [NSMutableArray array];
     for (NSString * username in usernames) {
@@ -90,6 +100,16 @@
     platformDocumentsRequest.limit = 1;
     platformDocumentsRequest.type = DSPlatformDocumentType_Document;
     platformDocumentsRequest.tableName = @"contactRequest";
+    return platformDocumentsRequest;
+}
+
++(instancetype)dashpayRequestForProfileWithUserId:(NSString*)userId {
+    DSPlatformDocumentsRequest * platformDocumentsRequest = [[DSPlatformDocumentsRequest alloc] init];
+    platformDocumentsRequest.predicate = [NSPredicate predicateWithFormat:@"$userId == %@",userId];
+    platformDocumentsRequest.startAt = 0;
+    platformDocumentsRequest.limit = 1;
+    platformDocumentsRequest.type = DSPlatformDocumentType_Document;
+    platformDocumentsRequest.tableName = @"profile";
     return platformDocumentsRequest;
 }
 

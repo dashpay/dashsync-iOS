@@ -82,6 +82,9 @@
             case NSKeyPathExpressionType:
                 [mArray addObject:leftExpression.keyPath];
                 break;
+            case NSVariableExpressionType:
+                [mArray addObject:leftExpression.variable];
+                break;
                 
             default:
                 NSAssert(FALSE, @"Not supported yet");
@@ -94,6 +97,9 @@
                 break;
             case NSKeyPathExpressionType:
                 [mArray addObject:rightExpression.keyPath];
+                break;
+            case NSVariableExpressionType:
+                [mArray addObject:rightExpression.variable];
                 break;
                 
             default:

@@ -431,6 +431,10 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                              success:(void (^)(NSDictionary *domainDocumentDictionary))success
                              failure:(void (^)(NSError *error))failure;
 
+- (void)getDPNSDocumentsForIdentityWithUserId:(NSString *)userId
+                                      success:(void (^)(NSDictionary *domainDocumentDictionary))success
+                                      failure:(void (^)(NSError *error))failure;
+
 - (void)getDashpayIncomingContactRequestsForUserId:(NSString*)userId
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
@@ -440,6 +444,10 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
                                              since:(NSTimeInterval)timestamp
                                            success:(void (^)(NSArray<NSDictionary *> *documents))success
                                            failure:(void (^)(NSError *error))failure;
+
+- (void)getDashpayProfileForUserId:(NSString*)userId
+                           success:(void (^)(NSArray<NSDictionary *> *documents))success
+                           failure:(void (^)(NSError *error))failure;
 
 @end
 
