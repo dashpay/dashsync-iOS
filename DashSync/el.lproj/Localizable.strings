@@ -78,10 +78,10 @@
 "Double spend" = "Διπλό ξόδεμα";
 
 /* The server is not working */
-"Down" = "Down";
+"Down" = "Κάτω";
 
 /* No comment provided by engineer. */
-"Enter old PIN" = "Enter old PIN";
+"Enter old PIN" = "Εισάγετε παλαιό PIN";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "Σφάλμα από διακομιστή του αιτήματος πληρωμής %@";
@@ -138,10 +138,10 @@
 "Parse Error" = "Σφάλμα Ανάλυσης";
 
 /* No comment provided by engineer. */
-"Passcode" = "Passcode";
+"Passcode" = "Κωδικός πρόσβασης";
 
 /* No comment provided by engineer. */
-"Password" = "Password";
+"Password" = "Κωδικός";
 
 /* No comment provided by engineer. */
 "Password protected key" = "Προστατευμένο κλειδί με κωδικό πρόσβασης";
@@ -150,10 +150,10 @@
 "Payee identity isn't certified" = "Η ταυτότητα του δικαιούχου δεν είναι πιστοποιημένη";
 
 /* No comment provided by engineer. */
-"PIN for %@" = "PIN for %@";
+"PIN for %@" = "PIN για %@";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = "Ταυτοποιηθείτε για να δημιουργήσετε το δικό σας %@ πορτοφόλι ";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "Φράση ανάκτησης";
@@ -177,7 +177,7 @@
 "Server Error" = "Σφάλμα διακομιστή!";
 
 /* No comment provided by engineer. */
-"Set PIN" = "Set PIN";
+"Set PIN" = "Ορίστε PIN";
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
@@ -225,7 +225,7 @@
 "Untrusted certificate" = "Μη αξιόπιστο πιστοποιητικό";
 
 /* The server is up and running */
-"Up" = "Up";
+"Up" = "Πάνω";
 
 /* Updating Price */
 "Updating Price" = "Ανανέωση Τιμής";
@@ -237,7 +237,7 @@
 "WARNING" = "ΠΡΟΕΙΔΟΠΟΙΗΣΗ";
 
 /* No comment provided by engineer. */
-"Wipe" = "Wipe";
+"Wipe" = "εκκαθάριση";
 
 /* No comment provided by engineer. */
 "Your wallet may be out of sync.\nThis can often be fixed by rescanning the blockchain." = "Το πορτοφόλι σας μπορεί να είναι εκτός συγχρονισμού.\n Αυτό μπορεί συχνά να διορθωθεί με την επανασάρωση των μπλόκ συναλλαγών.";
