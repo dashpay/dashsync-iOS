@@ -78,10 +78,10 @@
 "Double spend" = "二重支払い";
 
 /* The server is not working */
-"Down" = "Down";
+"Down" = "下へ";
 
 /* No comment provided by engineer. */
-"Enter old PIN" = "Enter old PIN";
+"Enter old PIN" = "古いPINを入力してください";
 
 /* No comment provided by engineer. */
 "Error from payment request server %@" = "支払い要求サーバーからのエラー %@";
@@ -150,10 +150,10 @@
 "Payee identity isn't certified" = "支払先のIDが認証されていません";
 
 /* No comment provided by engineer. */
-"PIN for %@" = "PIN for %@";
+"PIN for %@" = " %@のためのPIN";
 
 /* Please authenticate to create your Testnet wallet */
-"Please authenticate to create your %@ wallet" = "Please authenticate to create your %@ wallet";
+"Please authenticate to create your %@ wallet" = " %@ ウォレットを作成するために認証してください";
 
 /* No comment provided by engineer. */
 "Recovery phrase" = "復元フレーズ";
@@ -195,7 +195,7 @@
 "Transaction canceled, network timeout" = "取引はキャンセルされました、ネットワークタイムアウトがありました";
 
 /* No comment provided by engineer. */
-"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)";
+"Transaction fees would cost more than the funds available on this private key (due to tiny \"dust\" deposits)" = "（極小の入金のため）この秘密鍵にある残高では取引手数料が不足します";
 
 /* No comment provided by engineer. */
 "Transaction rejected" = "取引が拒否されました";
@@ -225,7 +225,7 @@
 "Untrusted certificate" = "信頼されていない証明書";
 
 /* The server is up and running */
-"Up" = "Up";
+"Up" = "上へ";
 
 /* Updating Price */
 "Updating Price" = "価格のアップデート中";
