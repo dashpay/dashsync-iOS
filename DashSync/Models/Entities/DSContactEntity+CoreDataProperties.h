@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *avatarPath;
 @property (nullable, nonatomic, retain) NSData *associatedBlockchainIdentityUniqueId;
 @property (nullable, nonatomic, copy) NSString *publicMessage;
+@property (nonatomic, assign) BOOL isRegistered;
 @property (nullable, nonatomic, retain) DSBlockchainIdentityEntity *associatedBlockchainIdentity;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *outgoingRequests;
 @property (nullable, nonatomic, retain) NSSet<DSFriendRequestEntity *> *incomingRequests;

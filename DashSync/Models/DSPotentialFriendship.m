@@ -74,6 +74,7 @@
 
 -(DPDocument*)contactRequestDocument {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"the destination contact's associatedBlockchainIdentityUniqueId must be set before making a friend request");
+    NSAssert([self.encryptedExtendedPublicKey length] > 0, @"The encrypted extended public key must exist");
 //    DSDashPlatform *dpp = [DSDashPlatform sharedInstanceForChain:self.sourceBlockchainIdentity.wallet.chain];
 //    dpp.userId = uint256_reverse_hex(self.sourceBlockchainIdentity.registrationTransitionHash);
 //
@@ -85,6 +86,7 @@
     
     
     DSStringValueDictionary *data = @{
+        @"timestamp": @([[[NSDate alloc] init] timeIntervalSince1970]),
                            @"toUserId" : uint256_data(self.destinationContact.associatedBlockchainIdentityUniqueId).reverse.base58String,
                            @"encryptedPublicKey" : [self.encryptedExtendedPublicKey base64EncodedStringWithOptions:0],
                            };

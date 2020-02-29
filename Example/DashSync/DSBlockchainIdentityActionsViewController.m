@@ -30,9 +30,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self loadProfileInitial];
-//    [self.blockchainIdentity fetchProfile:^(BOOL success) {
-//        [self updateProfile];
-//    }];
+    if (self.blockchainIdentity.registered && self.blockchainIdentity.currentUsername && [self.blockchainIdentity statusOfUsername:self.blockchainIdentity.currentUsername] == DSBlockchainIdentityUsernameStatus_Confirmed) {
+        [self.blockchainIdentity fetchProfile:^(BOOL success) {
+            [self updateProfile];
+        }];
+    }
 }
 
 -(void)loadProfileInitial {
@@ -81,7 +83,7 @@
 
 -(void)updateProfile {
     self.title = self.blockchainIdentity.currentUsername;
-    if (!self.blockchainIdentity.ownContact) {
+    if (!self.blockchainIdentity.ownContact.isRegistered) {
         self.aboutMeLabel.text = @"Register Profile";
         [self.avatarImageView sd_setImageWithURL:nil];
     }

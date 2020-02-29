@@ -506,7 +506,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
 
 - (void)getIdentityByName:(NSString *)username
                  inDomain:(NSString*)domain
-                  success:(void (^)(NSDictionary *blockchainIdentity))success
+                  success:(void (^)(NSDictionary * _Nullable blockchainIdentity))success
                   failure:(void (^)(NSError *error))failure {
     NSParameterAssert(username);
     DSPlatformDocumentsRequest * platformDocumentsRequest = [DSPlatformDocumentsRequest dpnsRequestForUsername:username inDomain:domain];
@@ -527,6 +527,9 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
                 return;
             }
             [self getIdentityById:base58String success:success failure:failure];
+        } else {
+            //no identity
+            success(nil);
         }
     };
     responseHandler.errorHandler = failure;
@@ -611,6 +614,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
+    responseHandler.request = platformDocumentsRequest;
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 
@@ -624,6 +628,7 @@ NSString *const DSDAPINetworkServiceErrorDomain = @"dash.dapi-network-service.er
     responseHandler.dispatchQueue = self.grpcDispatchQueue;
     responseHandler.successHandler = success;
     responseHandler.errorHandler = failure;
+    responseHandler.request = platformDocumentsRequest;
     [[self.gRPCClient getDocumentsWithMessage:platformDocumentsRequest.getDocumentsRequest responseHandler:responseHandler callOptions:nil] start];
 }
 

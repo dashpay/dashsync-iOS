@@ -36,12 +36,36 @@
             },
             {
                 "properties": [{
+                    "$userId": "asc"
+                }]
+            },
+            {
+                "properties": [{
+                    "toUserId": "asc"
+                }]
+            },
+            {
+                "properties": [{
+                    "timestamp": "asc"
+                }]
+            },
+            {
+                "properties": [{
+                    "toUserId": "asc"
+                }, {
+                    "timestamp": "asc"
+                }]
+            },
+            {
+                "properties": [{
+                    "$userId": "asc"
+                }, {
                     "timestamp": "asc"
                 }]
             }],
             "properties": {
                 "timestamp": {
-                    "type": "double"
+                    "type": "number"
                 },
                 "toUserId": {
                     "type": "string",
@@ -59,7 +83,6 @@
                     "maxLength":2048
                 }
             },
-            "$comment":"immutable\": [\"toUserId\", \"publicKey\"], \"allowDeletion\": false, check that toUserId exists",
             "required": ["toUserId", "encryptedPublicKey"],
             "additionalProperties": false
         }

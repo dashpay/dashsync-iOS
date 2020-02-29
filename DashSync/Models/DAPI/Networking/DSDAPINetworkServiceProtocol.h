@@ -371,7 +371,7 @@ typedef NS_ENUM(NSUInteger, DSDAPINetworkServiceErrorCode) {
  */
 - (void)getIdentityByName:(NSString *)username
                  inDomain:(NSString*)domain
-                  success:(void (^)(NSDictionary *blockchainIdentity))success
+                  success:(void (^)(NSDictionary * _Nullable blockchainIdentity))success
                   failure:(void (^)(NSError *error))failure;
 
 /**

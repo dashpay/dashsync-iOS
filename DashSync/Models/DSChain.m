@@ -271,6 +271,26 @@ static checkpoint mainnet_checkpoint_array[] = {
     [self retrieveStandaloneDerivationPaths];
 }
 
+-(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints
+{
+    //for devnet the genesis checkpoint is really the second block
+    if (! (self = [self init])) return nil;
+    _chainType = DSChainType_DevNet;
+    if (!checkpoints || ![checkpoints count]) {
+        DSCheckpoint * genesisCheckpoint = [DSCheckpoint genesisDevnetCheckpoint];
+        DSCheckpoint * secondCheckpoint = [self createDevNetGenesisBlockCheckpointForParentCheckpoint:genesisCheckpoint withIdentifier:identifier];
+        self.checkpoints = @[genesisCheckpoint,secondCheckpoint];
+        self.genesisHash = secondCheckpoint.checkpointHash;
+    } else {
+        self.checkpoints = checkpoints;
+        self.genesisHash = checkpoints[1].checkpointHash;
+    }
+    //    DSDLog(@"%@",[NSData dataWithUInt256:self.checkpoints[0].checkpointHash]);
+    //    DSDLog(@"%@",[NSData dataWithUInt256:self.genesisHash]);
+    self.devnetIdentifier = identifier;
+    self.mainThreadChainEntity = [self chainEntity];
+    return self;
+}
 
 -(instancetype)initAsDevnetWithIdentifier:(NSString*)identifier checkpoints:(NSArray<DSCheckpoint*>*)checkpoints port:(uint32_t)port dapiJRPCPort:(uint32_t)dapiJRPCPort dapiGRPCPort:(uint32_t)dapiGRPCPort dpnsContractID:(UInt256)dpnsContractID dashpayContractID:(UInt256)dashpayContractID
 {
@@ -438,6 +458,34 @@ static dispatch_once_t devnetToken = 0;
         _devnetDictionary = [NSMutableDictionary dictionary];
     });
     DSChain * devnetChain = [_devnetDictionary objectForKey:identifier];
+    return devnetChain;
+}
+
++(DSChain*)recoverKnownDevnetWithIdentifier:(NSString*)identifier withCheckpoints:(NSArray<DSCheckpoint*>*)checkpointArray {
+    dispatch_once(&devnetToken, ^{
+        _devnetDictionary = [NSMutableDictionary dictionary];
+    });
+    DSChain * devnetChain = nil;
+    __block BOOL inSetUp = FALSE;
+    @synchronized(self) {
+        if (![_devnetDictionary objectForKey:identifier]) {
+            devnetChain = [[DSChain alloc] initAsDevnetWithIdentifier:identifier checkpoints:checkpointArray];
+            [_devnetDictionary setObject:devnetChain forKey:identifier];
+            inSetUp = TRUE;
+        } else {
+            devnetChain = [_devnetDictionary objectForKey:identifier];
+        }
+    }
+    if (inSetUp) {
+        [devnetChain setUp];
+        [[DSChainEntity context] performBlockAndWait:^{
+            DSChainEntity * chainEntity = [devnetChain chainEntity];
+            devnetChain.totalMasternodeCount = chainEntity.totalMasternodeCount;
+            devnetChain.totalGovernanceObjectsCount = chainEntity.totalGovernanceObjectsCount;
+            devnetChain.masternodeBaseBlockHash = chainEntity.baseBlockHash.UInt256;
+        }];
+    }
+    
     return devnetChain;
 }
 
@@ -790,7 +838,17 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet:
         {
-            setKeychainData(uint256_data(dpnsContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DPNS_CONTRACT_ID], NO);
+            _cachedDpnsContractID = dpnsContractID;
+            if (uint256_is_zero(dpnsContractID)) {
+                NSError * error = nil;
+                NSString * identifier = [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DPNS_CONTRACT_ID];
+                BOOL hasDashpayContractID = getKeychainData(identifier, &error);
+                if (hasDashpayContractID) {
+                    setKeychainData(nil, identifier, NO);
+                }
+            } else {
+                setKeychainData(uint256_data(dpnsContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DPNS_CONTRACT_ID], NO);
+            }
             break;
         }
         default:
@@ -833,7 +891,17 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet:
         {
-            setKeychainData(uint256_data(dashpayContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DASHPAY_CONTRACT_ID], NO);
+            _cachedDashpayContractID = dashpayContractID;
+            if (uint256_is_zero(dashpayContractID)) {
+                NSError * error = nil;
+                NSString * identifier = [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DASHPAY_CONTRACT_ID];
+                BOOL hasDashpayContractID = getKeychainData(identifier, &error);
+                if (hasDashpayContractID) {
+                    setKeychainData(nil, identifier, NO);
+                }
+            } else {
+                setKeychainData(uint256_data(dashpayContractID), [NSString stringWithFormat:@"%@%@",self.devnetIdentifier,DASHPAY_CONTRACT_ID], NO);
+            }
             break;
         }
         default:

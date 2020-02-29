@@ -69,7 +69,7 @@
         self.knownDevnetChains = [NSMutableArray array];
         for (NSString * string in registeredDevnetIdentifiers) {
             NSArray<DSCheckpoint*>* checkpointArray = registeredDevnetIdentifiers[string];
-            [self.knownDevnetChains addObject:[DSChain setUpDevnetWithIdentifier:string withCheckpoints:checkpointArray withDefaultPort:DEVNET_STANDARD_PORT withDefaultDapiJRPCPort:DEVNET_DAPI_JRPC_STANDARD_PORT withDefaultDapiGRPCPort:DEVNET_DAPI_GRPC_STANDARD_PORT dpnsContractID:UINT256_ZERO dashpayContractID:UINT256_ZERO]];
+            [self.knownDevnetChains addObject:[DSChain recoverKnownDevnetWithIdentifier:string withCheckpoints:checkpointArray]];
         }
         
         self.reachability = [DSReachabilityManager sharedManager];
@@ -174,10 +174,10 @@
     if (dapiGRPCPort && dapiGRPCPort != chain.standardDapiGRPCPort) {
         chain.standardDapiGRPCPort = dapiGRPCPort;
     }
-    if (!uint256_is_zero(dpnsContractID)) {
+    if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
     }
-    if (!uint256_is_zero(dashpayContractID)) {
+    if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
         chain.dashpayContractID = dashpayContractID;
     }
     for (NSString * serviceLocation in serviceLocations) {

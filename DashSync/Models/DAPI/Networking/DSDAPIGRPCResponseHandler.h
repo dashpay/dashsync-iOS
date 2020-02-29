@@ -18,12 +18,14 @@
 #import <Foundation/Foundation.h>
 #import <DAPI-GRPC/Platform.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
+#import "DSPlatformDocumentsRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DSDAPIGRPCResponseHandler : NSObject <GRPCProtoResponseHandler>
 
 @property (atomic, strong) dispatch_queue_t dispatchQueue;
+@property (nonatomic,strong) DSPlatformDocumentsRequest * request; //for debuging purposes
 
 @property (nonatomic, copy) void (^successHandler)(id successObject);
 @property (nonatomic, copy) void (^errorHandler)(NSError * error);

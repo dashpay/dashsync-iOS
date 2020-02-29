@@ -19,6 +19,7 @@
 #import <DAPI-GRPC/Platform.pbrpc.h>
 #import <DAPI-GRPC/Platform.pbobjc.h>
 #import "NSData+DSCborDecoding.h"
+#import "DPContract.h"
 
 @interface DSDAPIGRPCResponseHandler()
 
@@ -61,7 +62,7 @@
             self.decodingError = error;
         }
     }
-    NSLog(@"didReceiveProtoMessage");
+    DSDLog(@"didReceiveProtoMessage");
 }
 
 - (void)didCloseWithTrailingMetadata:(nullable NSDictionary *)trailingMetadata
@@ -73,15 +74,19 @@
         if (self.errorHandler) {
             self.errorHandler(error);
         }
-        NSLog(@"error in didCloseWithTrailingMetadata %@",error);
+        DSDLog(@"error in didCloseWithTrailingMetadata %@",error);
+        if (self.request) {
+            DSDLog(@"request contract ID was %@",self.request.contract.base58ContractID);
+        }
+        
     } else {
         self.successHandler(self.responseObject);
     }
-    NSLog(@"didCloseWithTrailingMetadata");
+    DSDLog(@"didCloseWithTrailingMetadata");
 }
 
 -(void)didWriteMessage {
-    NSLog(@"didWriteMessage");
+    DSDLog(@"didWriteMessage");
 }
 
 
