@@ -153,6 +153,7 @@
     }
     getDocumentsRequest.startAt = self.startAt;
     getDocumentsRequest.limit = self.limit;
+    DSDLog(@"Sending request to Contract %@",getDocumentsRequest.dataContractId);
     return getDocumentsRequest;
 }
 

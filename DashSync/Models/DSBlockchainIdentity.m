@@ -154,7 +154,7 @@
     //[self loadTransitions];
     
     [self.managedObjectContext performBlockAndWait:^{
-        self.ownContact = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.registrationTransitionHash)];
+        self.ownContact = [DSContactEntity anyObjectMatching:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(self.uniqueID)];
     }];
     
     //    [self updateCreditBalance];
@@ -1408,7 +1408,9 @@
         DSDLog(@"%@", error);
         
         if (completion) {
-            completion(NO);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(NO);
+            });
         }
     }];
 }
@@ -1547,21 +1549,6 @@
             if (contactEntity) {
                 completion(YES);
             } else {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-                [DSContactEntity setContext:self.managedObjectContext];
-                [DSChainEntity setContext:self.managedObjectContext];
-                DSContactEntity * contact = nil;
-                if (!contactEntity) {
-                    contact = [DSContactEntity managedObjectInContext:self.managedObjectContext];
-                }
-                contact.associatedBlockchainIdentity = self.blockchainIdentityEntity;
-                contact.associatedBlockchainIdentityUniqueId = uint256_data(self.uniqueID);
-                contact.chain = strongSelf.wallet.chain.chainEntity;
-                [DSContactEntity saveContext];
-                self.ownContact = contact;
                 completion(NO);
             }
         }
@@ -1642,7 +1629,7 @@
 
 - (void)fetchIncomingContactRequests:(void (^)(BOOL success))completion {
     __weak typeof(self) weakSelf = self;
-    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.ownContact.associatedBlockchainIdentityUniqueId.reverse.base58String since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+    [self.DAPINetworkService getDashpayIncomingContactRequestsForUserId:self.uniqueIdString since:0 success:^(NSArray<NSDictionary *> * _Nonnull documents) {
                 __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -1688,9 +1675,9 @@
     NSMutableDictionary <NSData *,NSData *> *outgoingNewRequests = [NSMutableDictionary dictionary];
     for (NSDictionary *rawContact in rawContactRequests) {
         NSString *recipientString = rawContact[@"toUserId"];
-        UInt256 recipientBlockchainIdentityUniqueId = [recipientString base58ToData].reverse.UInt256;
+        UInt256 recipientBlockchainIdentityUniqueId = [recipientString base58ToData].UInt256;
         NSString *senderString = rawContact[@"$userId"];
-        UInt256 senderBlockchainIdentityUniqueId = [senderString base58ToData].reverse.UInt256;
+        UInt256 senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
         NSString *encryptedPublicKeyString = rawContact[@"encryptedPublicKey"];
         NSData *encryptedPublicKeyData = [[NSData alloc] initWithBase64EncodedString:encryptedPublicKeyString options:0];
         
@@ -1787,12 +1774,12 @@
         __block BOOL succeeded = YES;
         dispatch_group_t dispatchGroup = dispatch_group_create();
         
-        for (NSData * blockchainIdentityRegistrationHash in incomingRequests) {
-            DSContactEntity * externalContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",blockchainIdentityRegistrationHash];
+        for (NSData * blockchainIdentityUniqueId in incomingRequests) {
+            DSContactEntity * externalContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",blockchainIdentityUniqueId];
             if (!externalContact) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                [self.DAPINetworkService getIdentityById:blockchainIdentityRegistrationHash.reverse.base58String success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+                [self.DAPINetworkService getIdentityById:blockchainIdentityUniqueId.base58String success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
                     NSAssert(blockchainIdentityDictionary != nil, @"Should not be nil. Otherwise dispatch_group logic will be broken");
                     if (blockchainIdentityDictionary) {
                         UInt256 contactBlockchainIdentityUniqueId = ((NSString*)blockchainIdentityDictionary[@"uniqueId"]).hexToData.reverse.UInt256;
@@ -1803,7 +1790,7 @@
                                 contactEntity.associatedBlockchainIdentityUniqueId = uint256_data(contactBlockchainIdentityUniqueId);
                                 
                                 [self addIncomingRequestFromContact:contactEntity
-                                               forExtendedPublicKey:incomingRequests[blockchainIdentityRegistrationHash]
+                                               forExtendedPublicKey:incomingRequests[blockchainIdentityUniqueId]
                                                             context:context];
                                 
                             }
@@ -1844,7 +1831,7 @@
                 } else {
                     //the contact already existed, create the incoming friend request, add a friendship if an outgoing friend request also exists
                     [self addIncomingRequestFromContact:externalContact
-                                   forExtendedPublicKey:incomingRequests[blockchainIdentityRegistrationHash]
+                                   forExtendedPublicKey:incomingRequests[blockchainIdentityUniqueId]
                                                 context:context];
                     
                     if ([[externalContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
@@ -1874,12 +1861,12 @@
         __block BOOL succeeded = YES;
         dispatch_group_t dispatchGroup = dispatch_group_create();
         
-        for (NSData * blockchainIdentityRegistrationHash in outgoingRequests) {
-            DSContactEntity * destinationContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",blockchainIdentityRegistrationHash];
+        for (NSData * blockchainIdentityUniqueId in outgoingRequests) {
+            DSContactEntity * destinationContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",blockchainIdentityUniqueId];
             if (!destinationContact) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                [self.DAPINetworkService getIdentityById:blockchainIdentityRegistrationHash.reverse.base58String success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+                [self.DAPINetworkService getIdentityById:blockchainIdentityUniqueId.base58String success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
                     NSAssert(blockchainIdentityDictionary != nil, @"Should not be nil. Otherwise dispatch_group logic will be broken");
                     if (blockchainIdentityDictionary) {
                         UInt256 contactBlockchainIdentityUniqueId = ((NSString*)blockchainIdentityDictionary[@"uniqueId"]).hexToData.reverse.UInt256;
@@ -2004,9 +1991,21 @@
             usernameEntity.blockchainIdentity = entity;
             [entity addUsernamesObject:usernameEntity];
         }
+        [DSContactEntity setContext:self.managedObjectContext];
+        [DSChainEntity setContext:self.managedObjectContext];
+        DSContactEntity * contact = [DSContactEntity anyObjectMatchingInContext:self.managedObjectContext withPredicate:@"associatedBlockchainIdentityUniqueId == %@", uint256_data(self.uniqueID)];
+        if (!contact) {
+            contact = [DSContactEntity managedObjectInContext:self.managedObjectContext];
+            contact.associatedBlockchainIdentityUniqueId = uint256_data(self.uniqueID);
+            contact.chain = self.wallet.chain.chainEntity;
+            contact.username = self.currentUsername;
+        }
+        contact.associatedBlockchainIdentity = self.blockchainIdentityEntity;
+        self.ownContact = contact;
         [DSBlockchainIdentityEntity saveContext];
     }];
 }
+
 
 -(void)save {
     [self.managedObjectContext performBlockAndWait:^{
@@ -2050,6 +2049,9 @@
         usernameEntity.stringValue = username;
         usernameEntity.salt = [self saltForUsername:username saveSalt:NO];
         [entity addUsernamesObject:usernameEntity];
+        if (!self.ownContact.username) {
+            self.ownContact.username = username;
+        }
         [DSBlockchainIdentityEntity saveContext];
     }];
 }

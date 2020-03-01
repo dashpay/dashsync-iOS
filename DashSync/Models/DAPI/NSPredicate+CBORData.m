@@ -126,7 +126,7 @@
 //    [dictionary setObject:sortDescriptorsArray forKey:@"orderBy"];
     NSData * json = [NSJSONSerialization dataWithJSONObject:[self whereClauseArray] options:0 error:nil];
     DSDLog(@"json where %@",[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
-    DSDLog(@"hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
+ //   DSDLog(@"hex %@",[[self whereClauseArray] ds_cborEncodedObject].hexString);
     return [[self whereClauseArray] ds_cborEncodedObject];
 }
 

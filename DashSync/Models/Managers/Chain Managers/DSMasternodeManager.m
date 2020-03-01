@@ -395,7 +395,10 @@
 }
 
 -(void)dequeueMasternodeListRequest {
-    if (![self.masternodeListRetrievalQueue count]) return;
+    if (![self.masternodeListRetrievalQueue count]) {
+        [self.chain.chainManager chainFinishedSyncingMasternodeListsAndQuorums:self.chain];
+        return;
+    }
     if ([self.masternodeListsInRetrieval count]) return;
     if (!self.peerManager.downloadPeer || (self.peerManager.downloadPeer.status != DSPeerStatus_Connected)) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), [self peerManager].chainPeerManagerQueue, ^{

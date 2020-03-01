@@ -77,13 +77,16 @@
                     "maxLength":128,
                     "minLength":128
                 },
+                "encryptionKeyIndex": {
+                    "type": "number"
+                },
                 "privateData": {
                     "type": "string",
                     "description": "This is the encrypted values of aliasName + note + displayHidden encoded as an array in cbor",
                     "maxLength":2048
                 }
             },
-            "required": ["toUserId", "encryptedPublicKey"],
+            "required": ["timestamp", "toUserId", "encryptedPublicKey", "encryptionKeyIndex"],
             "additionalProperties": false
         }
     }

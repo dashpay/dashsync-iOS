@@ -224,13 +224,16 @@
     [self.transactionManager fetchMempoolFromNetwork];
     [self.sporkManager getSporks];
     [self.governanceSyncManager startGovernanceSync];
-    if ([self.chain isEvolutionEnabled]) {
-        [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
-    }
     if (([[DSOptionsManager sharedInstance] syncType] & DSSyncType_MasternodeList)) {
         // make sure we care about masternode lists
         [self.masternodeManager getRecentMasternodeList:32 withSafetyDelay:0];
         [self.masternodeManager getCurrentMasternodeListWithSafetyDelay:0];
+    }
+}
+
+-(void)chainFinishedSyncingMasternodeListsAndQuorums:(DSChain*)chain {
+    if ([self.chain isEvolutionEnabled]) {
+        [self.identitiesManager retrieveAllBlockchainIdentitiesChainStates];
     }
 }
 

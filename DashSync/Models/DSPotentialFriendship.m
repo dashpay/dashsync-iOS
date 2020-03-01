@@ -55,7 +55,7 @@
 -(DSIncomingFundsDerivationPath*)createDerivationPath {
     NSAssert(!uint256_is_zero(self.destinationContact.associatedBlockchainIdentityUniqueId), @"associatedBlockchainIdentityUniqueId must not be null");
     self.fundsDerivationPathForContact = [DSIncomingFundsDerivationPath
-                                          contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:self.destinationContact.associatedBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.registrationTransitionHash forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
+                                          contactBasedDerivationPathWithDestinationBlockchainIdentityUniqueId:self.destinationContact.associatedBlockchainIdentityUniqueId sourceBlockchainIdentityUniqueId:self.sourceBlockchainIdentity.uniqueID forAccountNumber:self.account.accountNumber onChain:self.sourceBlockchainIdentity.wallet.chain];
     self.fundsDerivationPathForContact.account = self.account;
     DSDerivationPath * masterContactsDerivationPath = [self.account masterContactsDerivationPath];
     
@@ -113,7 +113,8 @@
 
 -(DSFriendRequestEntity*)outgoingFriendRequestForContactEntity:(DSContactEntity*)contactEntity {
     NSParameterAssert(contactEntity);
-    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityUniqueId.UInt256,self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
+    NSAssert(uint256_eq(contactEntity.associatedBlockchainIdentityUniqueId.UInt256, self.destinationContact.associatedBlockchainIdentityUniqueId), @"contact entity must match");
+    NSAssert(self.sourceBlockchainIdentity.ownContact,@"The own contact of the source Identity must be set");
     DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObject];
     friendRequestEntity.sourceContact = self.sourceBlockchainIdentity.ownContact;
     friendRequestEntity.destinationContact = contactEntity;
