@@ -18,9 +18,9 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 #import "BigIntTypes.h"
-#import "DSPotentialFriendship.h"
+#import "DSPotentialOneWayFriendship.h"
 
-@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity;
+@class DSAccountEntity, DSFriendRequestEntity, DSTransitionEntity, DSBlockchainIdentity,DSPotentialOneWayFriendship,DSWallet,DSIncomingFundsDerivationPath,DSChainEntity, DSBlockchainIdentityEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 

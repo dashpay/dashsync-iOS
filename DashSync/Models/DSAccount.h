@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 };
 
 @class DSFundsDerivationPath,DSIncomingFundsDerivationPathDSWallet,DSBlockchainIdentityRegistrationTransition,DSBlockchainIdentityUpdateTransition,DSCreditFundingTransaction;
-@class DSCoinbaseTransaction,DSPotentialFriendship;
+@class DSCoinbaseTransaction,DSPotentialOneWayFriendship;
 
 @interface DSAccount : NSObject
 
@@ -98,7 +98,7 @@ typedef NS_ENUM(NSUInteger, DSTransactionDirection) {
 @property (nonatomic, readonly) NSArray <NSString *> * internalAddresses;
 
 // all the contacts for an account
-@property (nonatomic, readonly) NSArray <DSPotentialFriendship*> * _Nonnull contacts;
+@property (nonatomic, readonly) NSArray <DSPotentialOneWayFriendship*> * _Nonnull contacts;
 
 -(NSArray * _Nullable)registerAddressesWithGapLimit:(NSUInteger)gapLimit internal:(BOOL)internal;
 

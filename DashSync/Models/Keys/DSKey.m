@@ -12,6 +12,8 @@
 #import "NSData+Bitcoin.h"
 #import "NSMutableData+Dash.h"
 #import "DSChain.h"
+#import "DSBLSKey.h"
+#import "DSECDSAKey.h"
 
 @implementation DSKey
 
@@ -64,6 +66,30 @@
 
 -(DSKeyType)keyType {
     return 0;
+}
+
++ (DSKey*)keyForPublicKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
+    switch (keyType) {
+        case DSKeyType_BLS:
+            return [DSBLSKey blsKeyWithPublicKey:data.UInt384 onChain:chain];
+        case DSKeyType_ECDSA:
+            return [DSECDSAKey keyWithPublicKey:data];
+        default:
+            return nil;
+    }
+
+}
+
++ (DSKey*)keyForSecretKeyData:(NSData*)data forKeyType:(DSKeyType)keyType onChain:(DSChain*)chain {
+    switch (keyType) {
+        case DSKeyType_BLS:
+            return [DSBLSKey blsKeyWithPrivateKey:data.UInt256 onChain:chain];
+        case DSKeyType_ECDSA:
+            return [DSECDSAKey keyWithSecret:data.UInt256 compressed:YES];
+        default:
+            return nil;
+    }
+
 }
 
 @end

@@ -32,7 +32,7 @@
 #import "DSFriendRequestEntity+CoreDataClass.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSDashPlatform.h"
-#import "DSPotentialFriendship.h"
+#import "DSPotentialOneWayFriendship.h"
 #import "NSData+Bitcoin.h"
 #import "NSManagedObject+Sugar.h"
 #import "DSIncomingFundsDerivationPath.h"
@@ -55,6 +55,8 @@
 #import "BigIntTypes.h"
 #import "DSContractTransition.h"
 #import "NSData+Bitcoin.h"
+#import "DSContactRequest.h"
+#import "NSIndexPath+Dash.h"
 
 #define BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY @"BLOCKCHAIN_USER_UNIQUE_IDENTIFIER_KEY"
 #define DEFAULT_SIGNING_ALGORITH DSDerivationPathSigningAlgorith_ECDSA
@@ -446,6 +448,21 @@
     return nil;
 }
 
+-(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type {
+    
+    const NSUInteger indexes[] = {_index,index};
+    NSIndexPath * indexPath = [NSIndexPath indexPathWithIndexes:indexes length:2];
+    
+    DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:type];
+    
+    NSError * error = nil;
+    NSData * keySecret = getKeychainData([self identifierForKeyAtPath:indexPath fromDerivationPath:derivationPath], &error);
+    
+    if (!keySecret || error) return nil;
+    
+    return [DSKey keyForSecretKeyData:keySecret forKeyType:(DSKeyType)type onChain:self.wallet.chain];
+}
+
 -(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type forSeed:(NSData*)seed {
     
     const NSUInteger indexes[] = {_index,index};
@@ -508,7 +525,7 @@
 
 // MARK: From Remote/Network
 
--(void)addKeyFromKeyDictionary:(NSDictionary*)dictionary {
+-(DSKey*)keyFromKeyDictionary:(NSDictionary*)dictionary rType:(uint32_t*)rType rIndex:(uint32_t*)rIndex {
     NSString * dataString = dictionary[@"data"];
     NSNumber * keyId = dictionary[@"id"];
     NSNumber * isEnabled = dictionary[@"isEnabled"];
@@ -521,7 +538,19 @@
         } else if ([type intValue] == DSKeyType_ECDSA) {
             rKey = [DSECDSAKey keyWithPublicKey:data];
         }
-        [self addKey:rKey atIndex:[keyId intValue] - 1 ofType:[type intValue] save:TRUE];
+        *rIndex = [keyId unsignedIntValue] - 1;
+        *rType = [type unsignedIntValue];
+        return rKey;
+    }
+    return nil;
+}
+
+-(void)addKeyFromKeyDictionary:(NSDictionary*)dictionary {
+    uint32_t index = 0;
+    uint32_t type = 0;
+    DSKey * key = [self keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
+    if (key) {
+        [self addKey:key atIndex:index ofType:type save:TRUE];
     }
 }
 
@@ -697,16 +726,16 @@
     return [publicKey verify:messageDigest signatureData:signature];
 }
 
--(void)encryptData:(NSData*)data forRecipientKey:(UInt384)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion {
+-(void)encryptData:(NSData*)data withKeyAtIndex:(uint32_t)index forRecipientKey:(DSKey*)recipientPublicKey withPrompt:(NSString * _Nullable)prompt completion:(void (^ _Nullable)(NSData* encryptedData))completion {
     [[DSAuthenticationManager sharedInstance] seedWithPrompt:@"" forWallet:self.wallet forAmount:0 forceAuthentication:NO completion:^(NSData* _Nullable seed, BOOL cancelled) {
         if (!seed) {
             completion(nil);
             return;
         }
-        DSAuthenticationKeysDerivationPath * derivationPath = [[DSDerivationPathFactory sharedInstance] blockchainIdentityBLSKeysDerivationPathForWallet:self.wallet];
-        DSBLSKey * privateKey = (DSBLSKey *)[derivationPath privateKeyAtIndex:self.index fromSeed:seed];
-        DSBLSKey * publicRecipientKey = [DSBLSKey blsKeyWithPublicKey:recipientPublicKey onChain:self.wallet.chain];
-        NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:publicRecipientKey];
+            
+        DSAuthenticationKeysDerivationPath * derivationPath = [self derivationPathForType:(DSDerivationPathSigningAlgorith)recipientPublicKey.keyType];
+        DSKey * privateKey = [derivationPath privateKeyAtIndex:self.index fromSeed:seed];
+        NSData * encryptedData = [data encryptWithSecretKey:privateKey forPeerWithPublicKey:recipientPublicKey];
         completion(encryptedData);
     }];
 }
@@ -733,7 +762,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ //this is so we don't get DAPINetworkService immediately
         
         if (contract.contractState == DPContractState_Unknown) {
-            [self.DAPINetworkService getIdentityByName:@"dashpay4" inDomain:@"" success:^(NSDictionary * _Nonnull blockchainIdentity) {
+            [self.DAPINetworkService getIdentityByName:@"dashpay7" inDomain:@"" success:^(NSDictionary * _Nonnull blockchainIdentity) {
                 if (!blockchainIdentity) {
                     __strong typeof(weakContract) strongContract = weakContract;
                     if (!strongContract) {
@@ -1393,13 +1422,35 @@
         
         UInt256 blockchainIdentityContactUniqueId = base58String.base58ToData.reverse.UInt256;
         NSArray * publicKeys = blockchainIdentityDictionary[@"publicKeys"];
-        __unused UInt384 blockchainIdentityContactEncryptionPublicKey = ((NSString*)blockchainIdentityDictionary[@"publicKey"]).hexToData.reverse.UInt384;
+        if (![publicKeys count]) {
+            completion(NO);
+            return;
+        }
+        NSDictionary * publicKeyDictionary = nil;
+        BOOL foundEnabled = FALSE;
+        for (NSUInteger i = 0; i < publicKeys.count; i++) {
+            publicKeyDictionary = publicKeys[i];
+            if ([publicKeyDictionary[@"isEnabled"] isEqual:@(1)]) {
+                foundEnabled = TRUE;
+                break;
+            }
+        }
+        if (!foundEnabled || !publicKeyDictionary[@"data"] || ![publicKeyDictionary[@"data"] isKindOfClass:[NSString class]] || !publicKeyDictionary[@"type"]  || ![publicKeyDictionary[@"type"] isKindOfClass:[NSNumber class]] || !publicKeyDictionary[@"id"]  || ![publicKeyDictionary[@"id"] isKindOfClass:[NSNumber class]]) {
+            completion(NO);
+            return;
+        }
+        NSData * publicKeyData = ((NSString*)publicKeyDictionary[@"data"]).base58ToData;
+        DSKeyType keyType = [(NSNumber*)publicKeyDictionary[@"type"] unsignedIntValue];
+        uint32_t keyIndex = [(NSNumber*)publicKeyDictionary[@"id"] unsignedIntValue];
+        
+        DSKey * key = [DSKey keyForPublicKeyData:publicKeyData forKeyType:keyType onChain:self.wallet.chain];
+        
         NSAssert(!uint256_is_zero(blockchainIdentityContactUniqueId), @"blockchainIdentityContactUniqueId should not be null");
-        //NSAssert(!uint384_is_zero(blockchainIdentityContactEncryptionPublicKey), @"blockchainIdentityContactEncryptionPublicKey should not be null");
+        NSAssert(key, @"key should not be null");
         [potentialContact setAssociatedBlockchainIdentityUniqueId:blockchainIdentityContactUniqueId];
-        //[potentialContact setContactEncryptionPublicKey:blockchainIdentityContactEncryptionPublicKey];
+        [potentialContact addPublicKey:key atIndex:keyIndex];
         DSAccount * account = [self.wallet accountWithNumber:0];
-        DSPotentialFriendship * potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:potentialContact sourceBlockchainIdentity:self account:account];
+        DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:potentialContact destinationKeyIndex:keyIndex sourceBlockchainIdentity:self sourceKeyIndex:0 account:account];
         
         [potentialFriendship createDerivationPath];
         
@@ -1415,7 +1466,7 @@
     }];
 }
 
-- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialFriendship*)potentialFriendship completion:(void (^)(BOOL))completion {
+- (void)sendNewFriendRequestMatchingPotentialFriendship:(DSPotentialOneWayFriendship*)potentialFriendship completion:(void (^)(BOOL))completion {
     if (uint256_is_zero(potentialFriendship.destinationContact.associatedBlockchainIdentityUniqueId)) {
         [self sendNewFriendRequestToPotentialContact:potentialFriendship.destinationContact completion:completion];
         return;
@@ -1460,9 +1511,9 @@
     DSPotentialContact *contact = [[DSPotentialContact alloc] initWithUsername:friendRequest.sourceContact.username avatarPath:friendRequest.sourceContact.avatarPath
                                                                  publicMessage:friendRequest.sourceContact.publicMessage];
     [contact setAssociatedBlockchainIdentityUniqueId:friendRequest.sourceContact.associatedBlockchainIdentityUniqueId.UInt256];
-    DSPotentialFriendship *potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact
-                                                                                  sourceBlockchainIdentity:self
-                                                                                                   account:account];
+    DSKey * friendsEncyptionKey = [DSKey keyForPublicKeyData:friendRequest.sourceContact.encryptionPublicKey forKeyType:friendRequest.sourceContact.encryptionPublicKeyType onChain:self.wallet.chain];
+    [contact addPublicKey:friendsEncyptionKey atIndex:friendRequest.sourceContact.encryptionPublicKeyIndex];
+    DSPotentialOneWayFriendship *potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:friendRequest.sourceContact.encryptionPublicKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:0 account:account];
     [potentialFriendship createDerivationPath];
     
     [self sendNewFriendRequestMatchingPotentialFriendship:potentialFriendship completion:completion];
@@ -1670,31 +1721,32 @@
 
 // MARK: Response Processing
 
+/// Handle an array of contact requests. This method will split contact requests into either incoming contact requests or outgoing contact requests and then call methods for handling them if applicable.
+/// @param rawContactRequests A dictionary of rawContactRequests, these are returned by the network.
+/// @param context The managed object context in which to process results.
+/// @param completion Completion callback with success boolean.
 - (void)handleContactRequestObjects:(NSArray<NSDictionary *> *)rawContactRequests context:(NSManagedObjectContext *)context completion:(void (^)(BOOL success))completion {
-    NSMutableDictionary <NSData *,NSData *> *incomingNewRequests = [NSMutableDictionary dictionary];
-    NSMutableDictionary <NSData *,NSData *> *outgoingNewRequests = [NSMutableDictionary dictionary];
+    NSMutableArray <DSContactRequest *> *incomingNewRequests = [NSMutableArray array];
+    NSMutableArray <DSContactRequest *> *outgoingNewRequests = [NSMutableArray array];
     for (NSDictionary *rawContact in rawContactRequests) {
-        NSString *recipientString = rawContact[@"toUserId"];
-        UInt256 recipientBlockchainIdentityUniqueId = [recipientString base58ToData].UInt256;
-        NSString *senderString = rawContact[@"$userId"];
-        UInt256 senderBlockchainIdentityUniqueId = [senderString base58ToData].UInt256;
-        NSString *encryptedPublicKeyString = rawContact[@"encryptedPublicKey"];
-        NSData *encryptedPublicKeyData = [[NSData alloc] initWithBase64EncodedString:encryptedPublicKeyString options:0];
+        DSContactRequest * contactRequest = [DSContactRequest contactRequestFromDictionary:rawContact onBlockchainIdentity:self];
         
-        if (uint256_eq(recipientBlockchainIdentityUniqueId, self.uniqueID)) {
+        if (uint256_eq(contactRequest.recipientBlockchainIdentityUniqueId, self.uniqueID)) {
             //we are the recipient, this is an incoming request
-            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatchingInContext:context withPredicate:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentityUniqueId == %@",self.ownContact,[NSData dataWithUInt256:senderBlockchainIdentityUniqueId]];
+            DSFriendRequestEntity * friendRequest = [DSFriendRequestEntity anyObjectMatchingInContext:context withPredicate:@"destinationContact == %@ && sourceContact.associatedBlockchainIdentityUniqueId == %@",self.ownContact,[NSData dataWithUInt256:contactRequest.senderBlockchainIdentityUniqueId]];
             if (!friendRequest) {
-                [incomingNewRequests setObject:encryptedPublicKeyData forKey:[NSData dataWithUInt256:senderBlockchainIdentityUniqueId]];
+                [incomingNewRequests addObject:contactRequest];
             } else if (friendRequest.sourceContact == nil) {
                 
             }
-        } else if (uint256_eq(senderBlockchainIdentityUniqueId, self.uniqueID)) {
-            BOOL isNew = ![DSFriendRequestEntity countObjectsMatchingInContext:context withPredicate:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentityUniqueId == %@",self.ownContact,[NSData dataWithUInt256:recipientBlockchainIdentityUniqueId]];
+        } else if (uint256_eq(contactRequest.senderBlockchainIdentityUniqueId, self.uniqueID)) {
+            //we are the sender, this is an outgoing request
+            BOOL isNew = ![DSFriendRequestEntity countObjectsMatchingInContext:context withPredicate:@"sourceContact == %@ && destinationContact.associatedBlockchainIdentityUniqueId == %@",self.ownContact,[NSData dataWithUInt256:contactRequest.recipientBlockchainIdentityUniqueId]];
             if (isNew) {
-                [outgoingNewRequests setObject:encryptedPublicKeyData forKey:[NSData dataWithUInt256:recipientBlockchainIdentityUniqueId]];
+                [outgoingNewRequests addObject:contactRequest];
             }
         } else {
+            //we should not have received this
             NSAssert(FALSE, @"the contact request needs to be either outgoing or incoming");
         }
     }
@@ -1728,43 +1780,7 @@
     });
 }
 
--(void)addIncomingRequestFromContact:(DSContactEntity*)contactEntity
-                forExtendedPublicKey:(NSData*)extendedPublicKey
-                             context:(NSManagedObjectContext *)context {
-    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
-    friendRequestEntity.sourceContact = contactEntity;
-    friendRequestEntity.destinationContact = self.ownContact;
-    
-    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
-    derivationPathEntity.chain = self.wallet.chain.chainEntity;
-    
-    friendRequestEntity.derivationPath = derivationPathEntity;
-    
-    DSAccount * account = [self.wallet accountWithNumber:0];
-    
-    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:account.accountNumber onChain:self.wallet.chain];
-    
-    derivationPathEntity.account = accountEntity;
-    
-    friendRequestEntity.account = accountEntity;
-    
-    [friendRequestEntity finalizeWithFriendshipIdentifier];
-    
-    DSIncomingFundsDerivationPath * derivationPath = [DSIncomingFundsDerivationPath externalDerivationPathWithExtendedPublicKey:extendedPublicKey withDestinationBlockchainIdentityUniqueId:self.ownContact.associatedBlockchainIdentityUniqueId.UInt256 sourceBlockchainIdentityUniqueId:contactEntity.associatedBlockchainIdentityUniqueId.UInt256 onChain:self.wallet.chain];
-    
-    derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
-    
-    [derivationPath storeExternalDerivationPathExtendedPublicKeyToKeyChain];
-    
-    //incoming request uses an outgoing derivation path
-    [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
-    
-    [self.ownContact addIncomingRequestsObject:friendRequestEntity];
-    
-    [DSContactEntity saveContext];
-}
-
-- (void)handleIncomingRequests:(NSDictionary <NSData *,NSData *>  *)incomingRequests
+- (void)handleIncomingRequests:(NSArray <DSContactRequest*> *)incomingRequests
                        context:(NSManagedObjectContext *)context
                     completion:(void (^)(BOOL success))completion {
     [self.managedObjectContext performBlockAndWait:^{
@@ -1774,37 +1790,64 @@
         __block BOOL succeeded = YES;
         dispatch_group_t dispatchGroup = dispatch_group_create();
         
-        for (NSData * blockchainIdentityUniqueId in incomingRequests) {
-            DSContactEntity * externalContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",blockchainIdentityUniqueId];
+        for (DSContactRequest * contactRequest in incomingRequests) {
+            DSContactEntity * externalContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(contactRequest.senderBlockchainIdentityUniqueId)];
             if (!externalContact) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                [self.DAPINetworkService getIdentityById:blockchainIdentityUniqueId.base58String success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
-                    NSAssert(blockchainIdentityDictionary != nil, @"Should not be nil. Otherwise dispatch_group logic will be broken");
-                    if (blockchainIdentityDictionary) {
-                        UInt256 contactBlockchainIdentityUniqueId = ((NSString*)blockchainIdentityDictionary[@"uniqueId"]).hexToData.reverse.UInt256;
-                        [self fetchProfileForBlockchainIdentityUniqueId:contactBlockchainIdentityUniqueId saveReturnedProfile:NO context:context completion:^(DSContactEntity *contactEntity) {
-                            if (contactEntity) {
-                                NSString * username = blockchainIdentityDictionary[@"uname"];
-                                contactEntity.username = username;
-                                contactEntity.associatedBlockchainIdentityUniqueId = uint256_data(contactBlockchainIdentityUniqueId);
-                                
-                                [self addIncomingRequestFromContact:contactEntity
-                                               forExtendedPublicKey:incomingRequests[blockchainIdentityUniqueId]
-                                                            context:context];
-                                
-                            }
-                            else {
-                                succeeded = NO;
-                            }
-                            
-                            dispatch_group_leave(dispatchGroup);
-                        }];
+                [self.DAPINetworkService getIdentityById:uint256_base58(contactRequest.senderBlockchainIdentityUniqueId) success:^(NSDictionary * _Nonnull blockchainIdentityDictionary) {
+                    NSMutableDictionary * keyDictionary = [NSMutableDictionary dictionary];
+                    if (blockchainIdentityDictionary[@"publicKeys"]) {
+                        for (NSDictionary * dictionary in blockchainIdentityDictionary[@"publicKeys"]) {
+                            uint32_t index = 0;
+                            uint32_t type = 0;
+                            DSKey * key = [self keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
+                            [keyDictionary setObject:key forKey:@(index)];
+                        }
                     }
+                    [self.DAPINetworkService getDPNSDocumentsForIdentityWithUserId:uint256_base58(contactRequest.senderBlockchainIdentityUniqueId) success:^(NSArray<NSDictionary *> * _Nonnull documents) {
+                        if ([documents count]) {
+                            NSDictionary * nameDictionary = [documents firstObject];
+                            [self fetchProfileForBlockchainIdentityUniqueId:contactRequest.senderBlockchainIdentityUniqueId saveReturnedProfile:NO context:context completion:^(DSContactEntity *contactEntity) {
+                                if (contactEntity) {
+                                    NSString * username = nameDictionary[@"label"];
+                                    contactEntity.username = username;
+                                    contactEntity.associatedBlockchainIdentityUniqueId = uint256_data(contactRequest.senderBlockchainIdentityUniqueId);
+                                    DSKey * key = [keyDictionary objectForKey:@(contactRequest.senderKeyIndex)];
+                                    contactEntity.encryptionPublicKey = key.publicKeyData;
+                                    contactEntity.encryptionPublicKeyType = (uint32_t)key.keyType;
+                                    contactEntity.encryptionPublicKeyIndex = contactRequest.senderKeyIndex;
+                                    NSAssert(key, @"The encryptionPublicKey should exist");
+                                    
+                                    if (!contactEntity.encryptionPublicKey) {
+                                        succeeded = NO;
+                                        dispatch_group_leave(dispatchGroup);
+                                        return;
+                                    }
+                                    
+                                    NSData * extendedPublicKeyData = [contactRequest decryptedPublicKeyDataWithKey:key];
+                                    
+                                    [self addIncomingRequestFromContact:contactEntity
+                                                   forExtendedPublicKey:extendedPublicKeyData
+                                                                context:context];
+                                    
+                                }
+                                else {
+                                    succeeded = NO;
+                                }
+                                
+                                dispatch_group_leave(dispatchGroup);
+                            }];
+                        }
+                    } failure:^(NSError * _Nonnull error) {
+                        succeeded = NO;
+                        dispatch_group_leave(dispatchGroup);
+                    }];
                 } failure:^(NSError * _Nonnull error) {
                     succeeded = NO;
                     dispatch_group_leave(dispatchGroup);
                 }];
+                
             } else {
                 if (externalContact.associatedBlockchainIdentityUniqueId && [self.wallet blockchainIdentityForUniqueId:externalContact.associatedBlockchainIdentityUniqueId.UInt256]) {
                     //it's also local (aka both contacts are on this device), we should store the extended public key for the destination
@@ -1814,7 +1857,7 @@
                     
                     DSPotentialContact* contact = [[DSPotentialContact alloc] initWithContactEntity:self.ownContact];
                     
-                    DSPotentialFriendship * potentialFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact sourceBlockchainIdentity:sourceBlockchainIdentity account:account];
+                    DSPotentialOneWayFriendship * potentialFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:0 sourceBlockchainIdentity:sourceBlockchainIdentity sourceKeyIndex:0 account:account];
                     
                     DSIncomingFundsDerivationPath * derivationPath = [potentialFriendship createDerivationPath];
                     
@@ -1828,15 +1871,47 @@
                     
                     [account addIncomingDerivationPath:derivationPath forFriendshipIdentifier:friendRequest.friendshipIdentifier];
                     
-                } else {
-                    //the contact already existed, create the incoming friend request, add a friendship if an outgoing friend request also exists
+                } else if (externalContact.encryptionPublicKey) {
+                    //the contact already existed, and has an encryption public key set, create the incoming friend request, add a friendship if an outgoing friend request also exists
+                    DSKey * key = [DSKey keyForPublicKeyData:externalContact.encryptionPublicKey forKeyType:externalContact.encryptionPublicKeyType onChain:self.wallet.chain];
+                    NSData * decrypted = [contactRequest decryptedPublicKeyDataWithKey:key];
                     [self addIncomingRequestFromContact:externalContact
-                                   forExtendedPublicKey:incomingRequests[blockchainIdentityUniqueId]
+                                   forExtendedPublicKey:decrypted
                                                 context:context];
                     
                     if ([[externalContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
                         [self.ownContact addFriendsObject:externalContact];
                     }
+                } else {
+                    //the contact already existed, but had no encryption public key set, create the incoming friend request, add a friendship if an outgoing friend request also exists
+                    dispatch_group_enter(dispatchGroup);
+                    [self.DAPINetworkService getIdentityById:uint256_base58(contactRequest.senderBlockchainIdentityUniqueId) success:^(NSDictionary * _Nonnull blockchainIdentityDictionary) {
+                        NSMutableDictionary * keyDictionary = [NSMutableDictionary dictionary];
+                        if (blockchainIdentityDictionary[@"publicKeys"]) {
+                            for (NSDictionary * dictionary in blockchainIdentityDictionary[@"publicKeys"]) {
+                                uint32_t index = 0;
+                                uint32_t type = 0;
+                                DSKey * key = [self keyFromKeyDictionary:dictionary rType:&type rIndex:&index];
+                                [keyDictionary setObject:key forKey:@(index)];
+                            }
+                        }
+                        DSKey * key = [keyDictionary objectForKey:@(contactRequest.senderKeyIndex)];
+                        externalContact.encryptionPublicKey = key.publicKeyData;
+                        externalContact.encryptionPublicKeyType = (uint32_t)key.keyType;
+                        externalContact.encryptionPublicKeyIndex = contactRequest.senderKeyIndex;
+                        NSData * decrypted = [contactRequest decryptedPublicKeyDataWithKey:key];
+                        NSAssert(decrypted, @"we should have an extended public key here");
+                        [self addIncomingRequestFromContact:externalContact
+                                       forExtendedPublicKey:decrypted
+                                                    context:context];
+                        
+                        if ([[externalContact.incomingRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"sourceContact == %@",self.ownContact]] count]) {
+                            [self.ownContact addFriendsObject:externalContact];
+                        }
+                    } failure:^(NSError * _Nonnull error) {
+                        succeeded = NO;
+                        dispatch_group_leave(dispatchGroup);
+                    }];
                 }
                 
                 [DSContactEntity saveContext];
@@ -1851,7 +1926,7 @@
     }];
 }
 
-- (void)handleOutgoingRequests:(NSDictionary <NSData *,NSData *>  *)outgoingRequests
+- (void)handleOutgoingRequests:(NSArray <DSContactRequest *>  *)outgoingRequests
                        context:(NSManagedObjectContext *)context
                     completion:(void (^)(BOOL success))completion {
     [context performBlockAndWait:^{
@@ -1861,12 +1936,12 @@
         __block BOOL succeeded = YES;
         dispatch_group_t dispatchGroup = dispatch_group_create();
         
-        for (NSData * blockchainIdentityUniqueId in outgoingRequests) {
-            DSContactEntity * destinationContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",blockchainIdentityUniqueId];
+        for (DSContactRequest * contactRequest in outgoingRequests) {
+            DSContactEntity * destinationContact = [DSContactEntity anyObjectMatchingInContext:context withPredicate:@"associatedBlockchainIdentityUniqueId == %@",uint256_data(contactRequest.recipientBlockchainIdentityUniqueId)];
             if (!destinationContact) {
                 //no contact exists yet
                 dispatch_group_enter(dispatchGroup);
-                [self.DAPINetworkService getIdentityById:blockchainIdentityUniqueId.base58String success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
+                [self.DAPINetworkService getIdentityById:uint256_base58(contactRequest.recipientBlockchainIdentityUniqueId) success:^(NSDictionary *_Nonnull blockchainIdentityDictionary) {
                     NSAssert(blockchainIdentityDictionary != nil, @"Should not be nil. Otherwise dispatch_group logic will be broken");
                     if (blockchainIdentityDictionary) {
                         UInt256 contactBlockchainIdentityUniqueId = ((NSString*)blockchainIdentityDictionary[@"uniqueId"]).hexToData.reverse.UInt256;
@@ -1899,7 +1974,7 @@
                             
                             DSPotentialContact * contact = [[DSPotentialContact alloc] initWithContactEntity:destinationContactEntity];
                             
-                            DSPotentialFriendship * realFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact sourceBlockchainIdentity:self account:account];
+                            DSPotentialOneWayFriendship * realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:0 sourceBlockchainIdentity:self sourceKeyIndex:0 account:account];
                             
                             DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                             
@@ -1936,7 +2011,7 @@
                 
                 DSPotentialContact* contact = [[DSPotentialContact alloc] initWithContactEntity:destinationContact];
                 
-                DSPotentialFriendship * realFriendship = [[DSPotentialFriendship alloc] initWithDestinationContact:contact sourceBlockchainIdentity:self account:account];
+                DSPotentialOneWayFriendship * realFriendship = [[DSPotentialOneWayFriendship alloc] initWithDestinationContact:contact destinationKeyIndex:contactRequest.recipientKeyIndex sourceBlockchainIdentity:self sourceKeyIndex:contactRequest.senderKeyIndex account:account];
                 
                 DSIncomingFundsDerivationPath * derivationPath = [realFriendship createDerivationPath];
                 
@@ -1967,6 +2042,42 @@
             }
         });
     }];
+}
+
+-(void)addIncomingRequestFromContact:(DSContactEntity*)contactEntity
+                forExtendedPublicKey:(NSData*)extendedPublicKey
+                             context:(NSManagedObjectContext *)context {
+    DSFriendRequestEntity * friendRequestEntity = [DSFriendRequestEntity managedObjectInContext:context];
+    friendRequestEntity.sourceContact = contactEntity;
+    friendRequestEntity.destinationContact = self.ownContact;
+    
+    DSDerivationPathEntity * derivationPathEntity = [DSDerivationPathEntity managedObjectInContext:context];
+    derivationPathEntity.chain = self.wallet.chain.chainEntity;
+    
+    friendRequestEntity.derivationPath = derivationPathEntity;
+    
+    DSAccount * account = [self.wallet accountWithNumber:0];
+    
+    DSAccountEntity * accountEntity = [DSAccountEntity accountEntityForWalletUniqueID:self.wallet.uniqueID index:account.accountNumber onChain:self.wallet.chain];
+    
+    derivationPathEntity.account = accountEntity;
+    
+    friendRequestEntity.account = accountEntity;
+    
+    [friendRequestEntity finalizeWithFriendshipIdentifier];
+    
+    DSIncomingFundsDerivationPath * derivationPath = [DSIncomingFundsDerivationPath externalDerivationPathWithExtendedPublicKey:extendedPublicKey withDestinationBlockchainIdentityUniqueId:self.ownContact.associatedBlockchainIdentityUniqueId.UInt256 sourceBlockchainIdentityUniqueId:contactEntity.associatedBlockchainIdentityUniqueId.UInt256 onChain:self.wallet.chain];
+    
+    derivationPathEntity.publicKeyIdentifier = derivationPath.standaloneExtendedPublicKeyUniqueID;
+    
+    [derivationPath storeExternalDerivationPathExtendedPublicKeyToKeyChain];
+    
+    //incoming request uses an outgoing derivation path
+    [account addOutgoingDerivationPath:derivationPath forFriendshipIdentifier:friendRequestEntity.friendshipIdentifier];
+    
+    [self.ownContact addIncomingRequestsObject:friendRequestEntity];
+    
+    [DSContactEntity saveContext];
 }
 
 // MARK: - Persistence
@@ -2019,6 +2130,9 @@
     }];
 }
 
+-(NSString*)identifierForKeyAtPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
+    return [NSString stringWithFormat:@"%@-%@-%@",self.uniqueIdString,derivationPath.standaloneExtendedPublicKeyUniqueID,[path indexPathString]];
+}
 
 -(void)saveNewKey:(DSKey*)key atPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
     [self.managedObjectContext performBlockAndWait:^{
@@ -2031,7 +2145,7 @@
         if (!count) {
             DSBlockchainIdentityKeyPathEntity * blockchainIdentityKeyPathEntity = [DSBlockchainIdentityKeyPathEntity managedObject];
             blockchainIdentityKeyPathEntity.derivationPath = derivationPath.derivationPathEntity;
-            
+            setKeychainData(key.secretKeyData, [self identifierForKeyAtPath:path fromDerivationPath:derivationPath], YES);
             blockchainIdentityKeyPathEntity.path = keyPathData;
             [entity addKeyPathsObject:blockchainIdentityKeyPathEntity];
             [DSBlockchainIdentityEntity saveContext];

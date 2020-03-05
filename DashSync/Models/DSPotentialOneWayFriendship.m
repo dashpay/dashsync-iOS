@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-#import "DSPotentialFriendship.h"
+#import "DSPotentialOneWayFriendship.h"
 #import "DSAccount.h"
 #import "DSWallet.h"
 #import "DSDerivationPathFactory.h"
@@ -29,8 +29,9 @@
 #import "DSDerivationPathEntity+CoreDataClass.h"
 #import "DSPotentialContact.h"
 #import "NSData+Encryption.h"
+#import "DSKey.h"
 
-@interface DSPotentialFriendship()
+@interface DSPotentialOneWayFriendship()
 
 @property (nonatomic, strong) DSAccount* account;
 @property (nonatomic, strong) DSBlockchainIdentity * sourceBlockchainIdentity;
@@ -38,16 +39,20 @@
 @property (nonatomic, strong) DSIncomingFundsDerivationPath * fundsDerivationPathForContact;
 @property (nonatomic, strong) NSData * extendedPublicKey;
 @property (nonatomic, strong) NSData * encryptedExtendedPublicKey;
+@property (nonatomic, assign) uint32_t sourceKeyIndex;
+@property (nonatomic, assign) uint32_t destinationKeyIndex;
 
 @end
 
-@implementation DSPotentialFriendship
+@implementation DSPotentialOneWayFriendship
 
--(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity account:(DSAccount*)account {
+-(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)sourceBlockchainIdentity sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account {
     if (!(self = [super init])) return nil;
     self.destinationContact = destinationContact;
     self.account = account;
     self.sourceBlockchainIdentity = sourceBlockchainIdentity;
+    self.sourceKeyIndex = sourceKeyIndex;
+    self.destinationKeyIndex = destinationKeyIndex;
     
     return self;
 }
@@ -61,7 +66,8 @@
     
     self.extendedPublicKey = [self.fundsDerivationPathForContact generateExtendedPublicKeyFromParentDerivationPath:masterContactsDerivationPath storeUnderWalletUniqueId:nil];
     __weak typeof(self) weakSelf = self;
-    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey forRecipientKey:self.contactEncryptionPublicKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
+    DSKey * recipientKey = [self.destinationContact publicKeyAtIndex:self.destinationKeyIndex];
+    [self.sourceBlockchainIdentity encryptData:self.extendedPublicKey withKeyAtIndex:self.sourceKeyIndex forRecipientKey:recipientKey withPrompt:@"" completion:^(NSData * _Nonnull encryptedData) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;
@@ -151,8 +157,8 @@
         return FALSE;
     }
     
-    if ([self.destinationContact.username isEqualToString:((DSPotentialFriendship*)object).destinationContact.username] && uint256_eq(self.sourceBlockchainIdentity.registrationTransitionHash,((DSPotentialFriendship*)object).sourceBlockchainIdentity.registrationTransitionHash) &&
-        self.account.accountNumber == ((DSPotentialFriendship*)object).account.accountNumber) {
+    if ([self.destinationContact.username isEqualToString:((DSPotentialOneWayFriendship*)object).destinationContact.username] && uint256_eq(self.sourceBlockchainIdentity.registrationTransitionHash,((DSPotentialOneWayFriendship*)object).sourceBlockchainIdentity.registrationTransitionHash) &&
+        self.account.accountNumber == ((DSPotentialOneWayFriendship*)object).account.accountNumber) {
         return TRUE;
     }
     

@@ -16,6 +16,7 @@
 @interface DSBlockchainIdentitiesViewController ()
 
 @property (nonatomic,strong) id<NSObject> chainBlockchainIdentitiesObserver;
+@property (nonatomic,strong) NSArray <NSArray*>* orderedBlockchainIdentities;
 
 @end
 
@@ -29,8 +30,31 @@
                                                            [self.tableView reloadData];
                                                        }];
     
+
+    NSMutableArray * mOrderedBlockchainIdentities = [NSMutableArray array];
+    for (DSWallet * wallet in self.chainManager.chain.wallets) {
+        if ([wallet.blockchainIdentities count]) {
+            [mOrderedBlockchainIdentities addObject:[[wallet.blockchainIdentities allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.blockHeight" ascending:NO]]]];
+        }
+    }
+    
+    self.orderedBlockchainIdentities = [mOrderedBlockchainIdentities copy];
+    
     
     // Do any additional setup after loading the view.
+}
+
+-(DSWallet*)walletAtIndex:(NSUInteger)index {
+    NSUInteger currentIndex = 0;
+    for (DSWallet * wallet in self.chainManager.chain.wallets) {
+        if ([wallet.blockchainIdentities count]) {
+            if (currentIndex == index) {
+                return wallet;
+            }
+            currentIndex++;
+        }
+    }
+    return nil;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -39,12 +63,12 @@
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:section];
-    return [wallet.blockchainIdentities count];
+    
+    return [self.orderedBlockchainIdentities[section] count];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return [self.chainManager.chain.wallets count];
+    return [self.orderedBlockchainIdentities count];
 }
 
 -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -57,8 +81,7 @@
 
 -(void)configureCell:(DSBlockchainIdentityTableViewCell*)blockchainIdentityCell atIndexPath:(NSIndexPath *)indexPath {
     @autoreleasepool {
-        DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
-        DSBlockchainIdentity * blockchainIdentity = [[wallet.blockchainIdentities allValues] objectAtIndex:indexPath.row];
+        DSBlockchainIdentity * blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
         blockchainIdentityCell.usernameLabel.text = blockchainIdentity.currentUsername?blockchainIdentity.currentUsername:@"Not yet set";
         blockchainIdentityCell.creditBalanceLabel.text = [NSString stringWithFormat:@"%llu",blockchainIdentity.creditBalance];
         if (blockchainIdentity.registrationCreditFundingTransaction) {
@@ -81,8 +104,8 @@
 
 -(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
-        DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
-        DSBlockchainIdentity * blockchainIdentity = [[wallet.blockchainIdentities allValues] objectAtIndex:indexPath.row];
+        DSWallet * wallet = [self walletAtIndex:indexPath.section];
+        DSBlockchainIdentity * blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
         [wallet unregisterBlockchainIdentity:blockchainIdentity];
     }];
     UITableViewRowAction * editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"Edit" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
@@ -100,8 +123,7 @@
         DSBlockchainIdentityActionsViewController * blockchainIdentityActionsViewController = segue.destinationViewController;
         blockchainIdentityActionsViewController.chainManager = self.chainManager;
         NSIndexPath * indexPath = [self.tableView indexPathForSelectedRow];
-        DSWallet * wallet = [self.chainManager.chain.wallets objectAtIndex:indexPath.section];
-        DSBlockchainIdentity * blockchainIdentity = [[wallet.blockchainIdentities allValues] objectAtIndex:indexPath.row];
+        DSBlockchainIdentity * blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
         blockchainIdentityActionsViewController.blockchainIdentity = blockchainIdentity;
     }
 }

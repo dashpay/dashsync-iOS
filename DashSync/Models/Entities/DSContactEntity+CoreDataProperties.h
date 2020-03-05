@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) uint32_t documentRevision;
 @property (nullable, nonatomic, retain) NSData *encryptionPublicKey;
+@property (nonatomic, assign) uint32_t encryptionPublicKeyType;
+@property (nonatomic, assign) uint32_t encryptionPublicKeyIndex;
 @property (nullable, nonatomic, copy) NSString *username;
 @property (nullable, nonatomic, copy) NSString *displayName;
 @property (nullable, nonatomic, copy) NSString *avatarPath;

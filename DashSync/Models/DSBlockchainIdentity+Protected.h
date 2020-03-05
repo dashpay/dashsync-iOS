@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)addKey:(DSKey*)key atIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type save:(BOOL)save;
 -(void)addKey:(DSKey*)key atIndexPath:(NSIndexPath*)indexPath ofType:(DSDerivationPathSigningAlgorith)type save:(BOOL)save;
 -(void)registerKeyIsActive:(BOOL)active atIndexPath:(NSIndexPath*)indexPath ofType:(DSDerivationPathSigningAlgorith)type;
+-(DSKey*)privateKeyAtIndex:(uint32_t)index ofType:(DSDerivationPathSigningAlgorith)type;
 
 @end
 

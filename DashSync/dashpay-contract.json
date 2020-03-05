@@ -77,8 +77,11 @@
                     "maxLength":128,
                     "minLength":128
                 },
-                "encryptionKeyIndex": {
-                    "type": "number"
+                "senderKeyIndex": {
+                    "type": "integer"
+                },
+                "recipientKeyIndex": {
+                    "type": "integer"
                 },
                 "privateData": {
                     "type": "string",
@@ -86,7 +89,7 @@
                     "maxLength":2048
                 }
             },
-            "required": ["timestamp", "toUserId", "encryptedPublicKey", "encryptionKeyIndex"],
+            "required": ["timestamp", "toUserId", "encryptedPublicKey", "senderKeyIndex", "receiverKeyIndex"],
             "additionalProperties": false
         }
     }

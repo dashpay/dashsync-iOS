@@ -23,14 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSBlockchainIdentity,DSAccount,DSBlockchainIdentityRegistrationTransition,DSFriendRequestEntity,DSPotentialContact,DSContactEntity,DSIncomingFundsDerivationPath,DSDerivationPathEntity;
 
-@interface DSPotentialFriendship : NSObject
+@interface DSPotentialOneWayFriendship : NSObject
 
 @property (nonatomic, readonly) DSAccount* account;
 @property (nonatomic, readonly) DSPotentialContact * destinationContact;
 @property (nonatomic, readonly) DSBlockchainIdentity * sourceBlockchainIdentity; //this is the holder of the contacts, not the destination
-@property (nonatomic, assign) UInt384 contactEncryptionPublicKey;
 
--(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact sourceBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentityOwner account:(DSAccount*)account;
+-(instancetype)initWithDestinationContact:(DSPotentialContact*)destinationContact destinationKeyIndex:(uint32_t)destinationKeyIndex sourceBlockchainIdentity:(DSBlockchainIdentity*)blockchainIdentityOwner sourceKeyIndex:(uint32_t)sourceKeyIndex account:(DSAccount*)account;
 
 -(DSFriendRequestEntity*)outgoingFriendRequest;
 

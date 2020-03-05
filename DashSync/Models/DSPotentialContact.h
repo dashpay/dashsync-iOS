@@ -18,14 +18,14 @@
 #import <Foundation/Foundation.h>
 #import "BigIntTypes.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSContactEntity;
+@class DSContactEntity, DSKey;
 
 @interface DSPotentialContact : NSObject
 
 @property (nonatomic, copy) NSString * username;
+@property (nonatomic, copy) NSString * displayName;
 @property (nonatomic, copy) NSString * avatarPath;
 @property (nonatomic, copy) NSString * publicMessage;
 @property (nonatomic, assign) UInt256 associatedBlockchainIdentityUniqueId;
@@ -35,6 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage;
 
 -(instancetype)initWithContactEntity:(DSContactEntity*)contactEntity;
+
+-(void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index;
+
+-(DSKey*)publicKeyAtIndex:(NSUInteger)index;
 
 @end
 

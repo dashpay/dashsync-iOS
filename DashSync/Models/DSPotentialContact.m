@@ -19,6 +19,13 @@
 #import "BigIntTypes.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "NSData+Bitcoin.h"
+#import "DSKey.h"
+
+@interface DSPotentialContact()
+
+@property (nonatomic, strong) NSMutableDictionary * keyDictionary;
+
+@end
 
 @implementation DSPotentialContact
 
@@ -27,17 +34,16 @@
     if (self) {
         _username = username;
         _associatedBlockchainIdentityUniqueId = UINT256_ZERO;
+        self.keyDictionary = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
 -(instancetype)initWithUsername:(NSString*)username avatarPath:(NSString*)avatarPath publicMessage:(NSString*)publicMessage {
-    self = [super init];
+    self = [self initWithUsername:username];
     if (self) {
-        _username = username;
         _avatarPath = avatarPath;
         _publicMessage = publicMessage;
-        _associatedBlockchainIdentityUniqueId = UINT256_ZERO;
     }
     return self;
 }
@@ -54,6 +60,13 @@
     return [NSString stringWithFormat:@"%@ - %@ - %@", [super debugDescription], self.username, uint256_hex(self.associatedBlockchainIdentityUniqueId)];
 }
 
+-(void)addPublicKey:(DSKey *)key atIndex:(NSUInteger)index {
+    self.keyDictionary[@(index)] = key;
+}
+
+-(DSKey*)publicKeyAtIndex:(NSUInteger)index {
+    return self.keyDictionary[@(index)];
+}
 
 
 @end

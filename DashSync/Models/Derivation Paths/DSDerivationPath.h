@@ -30,6 +30,7 @@
 #import "DSUInt256IndexPath.h"
 #import "DSChain.h"
 #import "DSECDSAKey.h"
+#import "DSKey.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -59,8 +60,8 @@ typedef NS_ENUM(NSUInteger, DSDerivationPathType) {
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathSigningAlgorith) {
-    DSDerivationPathSigningAlgorith_ECDSA = 1,
-    DSDerivationPathSigningAlgorith_BLS = 2
+    DSDerivationPathSigningAlgorith_ECDSA = DSKeyType_ECDSA,
+    DSDerivationPathSigningAlgorith_BLS = DSKeyType_BLS
 };
 
 typedef NS_ENUM(NSUInteger, DSDerivationPathReference) {

@@ -103,7 +103,7 @@
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
 #import "DSQuorumEntry.h"
 #import "DSBlockchainIdentity.h"
-#import "DSPotentialFriendship.h"
+#import "DSPotentialOneWayFriendship.h"
 #import "DSPotentialContact.h"
 #import "DSContactEntity+CoreDataClass.h"
 #import "DSFriendRequestEntity+CoreDataClass.h"

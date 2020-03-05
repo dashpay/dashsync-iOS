@@ -23,7 +23,7 @@
 #import "DSFundsDerivationPath.h"
 #import "DSDashPlatform.h"
 #import "NSData+Bitcoin.h"
-#import "DSPotentialFriendship.h"
+#import "DSPotentialOneWayFriendship.h"
 #import "DSAccountEntity+CoreDataClass.h"
 #import "DSBlockchainIdentityRegistrationTransitionEntity+CoreDataClass.h"
 #import "DSChainEntity+CoreDataClass.h"

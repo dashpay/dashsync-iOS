@@ -28,5 +28,7 @@
 @dynamic avatarPath;
 @dynamic chain;
 @dynamic isRegistered;
+@dynamic encryptionPublicKeyType;
+@dynamic encryptionPublicKeyIndex;
 
 @end
