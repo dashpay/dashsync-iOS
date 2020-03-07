@@ -33,6 +33,7 @@
 #import "DSWallet.h"
 #import "DashSync.h"
 #include <arpa/inet.h>
+#import "DSDashPlatform.h"
 
 #define DEVNET_CHAINS_KEY  @"DEVNET_CHAINS_KEY"
 #define SPEND_LIMIT_AMOUNT_KEY  @"SPEND_LIMIT_AMOUNT"
@@ -176,9 +177,15 @@
     }
     if (!uint256_eq(dpnsContractID, chain.dpnsContractID)) {
         chain.dpnsContractID = dpnsContractID;
+        DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dpnsContract;
+        DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityForUniqueId:dpnsContractID];
+        [contract registerCreator:blockchainIdentity];
     }
     if (!uint256_eq(dashpayContractID, chain.dashpayContractID)) {
         chain.dashpayContractID = dashpayContractID;
+        DPContract * contract = [DSDashPlatform sharedInstanceForChain:chain].dashPayContract;
+        DSBlockchainIdentity * blockchainIdentity = [chain blockchainIdentityForUniqueId:dashpayContractID];
+        [contract registerCreator:blockchainIdentity];
     }
     for (NSString * serviceLocation in serviceLocations) {
         NSArray * serviceArray = [serviceLocation componentsSeparatedByString:@":"];

@@ -236,6 +236,13 @@
     [self saveInitial];
 }
 
+-(BOOL)unregisterLocally {
+    if (self.isRegistered) return FALSE; //if it is already registered we can not unregister it from the wallet
+    [self.wallet unregisterBlockchainIdentity:self];
+    [self deletePersistentObject];
+    return TRUE;
+}
+
 // MARK: - Setters
 
 -(void)setType:(DSBlockchainIdentityType)type {
@@ -815,13 +822,14 @@
             }];
             
         } else if (contract.contractState == DPContractState_Registered || contract.contractState == DPContractState_Registering) {
-            [self.DAPINetworkService fetchContractForId:contract.base58ContractID success:^(NSDictionary * _Nonnull contract) {
+            DSDLog(@"Fetching contract for verification %@",contract.base58ContractID);
+            [self.DAPINetworkService fetchContractForId:contract.base58ContractID success:^(NSDictionary * _Nonnull contractDictionary) {
                 __strong typeof(weakContract) strongContract = weakContract;
                 if (!weakContract) {
                     return;
                 }
                 if (strongContract.contractState == DPContractState_Registered) {
-                    
+                    DSDLog(@"Contract dictionary is %@",contractDictionary);
                 }
             } failure:^(NSError * _Nonnull error) {
                 NSString * debugDescription1 = [error.userInfo objectForKey:@"NSDebugDescription"];
@@ -1360,6 +1368,7 @@
         if (!strongSelf) {
             return;
         }
+        DSDLog(@"Contract dictionary is %@",contractDictionary);
         if ([contractDictionary isKindOfClass:[NSDictionary class]] && [contractDictionary[@"contractId"] isEqualToString:contract.base58ContractID]) {
             contract.contractState = DPContractState_Registered;
             completion(TRUE);
@@ -2115,6 +2124,9 @@
         self.ownContact = contact;
         [DSBlockchainIdentityEntity saveContext];
     }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
+    });
 }
 
 
@@ -2128,6 +2140,9 @@
         entity.type = self.type;
         [DSBlockchainIdentityEntity saveContext];
     }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
+    });
 }
 
 -(NSString*)identifierForKeyAtPath:(NSIndexPath*)path fromDerivationPath:(DSDerivationPath*)derivationPath {
@@ -2151,6 +2166,9 @@
             [DSBlockchainIdentityEntity saveContext];
         }
     }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
+    });
 }
 
 -(void)saveNewUsername:(NSString*)username status:(DSBlockchainIdentityUsernameStatus)status {
@@ -2168,6 +2186,9 @@
         }
         [DSBlockchainIdentityEntity saveContext];
     }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
+    });
 }
 
 -(void)saveUsernames:(NSArray*)usernames toStatus:(DSBlockchainIdentityUsernameStatus)status {
@@ -2216,6 +2237,27 @@
             }
         }
     }];
+}
+
+// MARK: Deletion
+
+-(void)deletePersistentObject {
+    [self.managedObjectContext performBlockAndWait:^{
+        DSBlockchainIdentityEntity * blockchainIdentityEntity = self.blockchainIdentityEntity;
+        if (blockchainIdentityEntity) {
+        NSSet <DSFriendRequestEntity *>* friendRequests = [blockchainIdentityEntity.ownContact outgoingRequests];
+        for (DSFriendRequestEntity * friendRequest in friendRequests) {
+            uint32_t accountNumber = friendRequest.account.index;
+            DSAccount * account = [self.wallet accountWithNumber:accountNumber];
+            [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+        }
+        [blockchainIdentityEntity deleteObject];
+            [DSBlockchainIdentityEntity saveContext];
+        }
+    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
+    });
 }
 
 // MARK: Entity

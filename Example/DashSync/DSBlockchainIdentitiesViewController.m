@@ -15,8 +15,8 @@
 
 @interface DSBlockchainIdentitiesViewController ()
 
-@property (nonatomic,strong) id<NSObject> chainBlockchainIdentitiesObserver;
 @property (nonatomic,strong) NSArray <NSArray*>* orderedBlockchainIdentities;
+@property (strong, nonatomic) id blockchainIdentitiesObserver;
 
 @end
 
@@ -24,24 +24,36 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.chainBlockchainIdentitiesObserver =
-    [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlockchainIdentitiesDidChangeNotification object:nil
+
+    [self loadData];
+    
+    self.blockchainIdentitiesObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentitiesDidUpdateNotification object:nil
                                                        queue:nil usingBlock:^(NSNotification *note) {
-                                                           [self.tableView reloadData];
+                                                           
+                                                           if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self.chainManager chain]]) {
+                                                               [self loadData];
+                                                               [self.tableView reloadData];
+                                                           }
                                                        }];
     
+    // Do any additional setup after loading the view.
+}
 
+-(void)loadData {
     NSMutableArray * mOrderedBlockchainIdentities = [NSMutableArray array];
     for (DSWallet * wallet in self.chainManager.chain.wallets) {
         if ([wallet.blockchainIdentities count]) {
-            [mOrderedBlockchainIdentities addObject:[[wallet.blockchainIdentities allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.blockHeight" ascending:NO]]]];
+            [mOrderedBlockchainIdentities addObject:[[wallet.blockchainIdentities allValues] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.blockHeight" ascending:NO],[NSSortDescriptor sortDescriptorWithKey:@"registrationCreditFundingTransaction.timestamp" ascending:NO]]]];
         }
     }
     
     self.orderedBlockchainIdentities = [mOrderedBlockchainIdentities copy];
     
-    
-    // Do any additional setup after loading the view.
+}
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentitiesObserver];
 }
 
 -(DSWallet*)walletAtIndex:(NSUInteger)index {
@@ -104,9 +116,8 @@
 
 -(NSArray*)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     UITableViewRowAction * deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"Delete" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
-        DSWallet * wallet = [self walletAtIndex:indexPath.section];
         DSBlockchainIdentity * blockchainIdentity = self.orderedBlockchainIdentities[indexPath.section][indexPath.row];
-        [wallet unregisterBlockchainIdentity:blockchainIdentity];
+        [blockchainIdentity unregisterLocally];
     }];
     UITableViewRowAction * editAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal title:@"Edit" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
         //[self performSegueWithIdentifier:@"CreateBlockchainIdentitySegue" sender:[self.tableView cellForRowAtIndexPath:indexPath]];

@@ -86,7 +86,6 @@ typedef NS_ENUM(uint16_t, DSChainType) {
 };
 
 FOUNDATION_EXPORT NSString* const DSChainWalletsDidChangeNotification;
-FOUNDATION_EXPORT NSString* const DSChainBlockchainIdentitiesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneDerivationPathsDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainStandaloneAddressesDidChangeNotification;
 FOUNDATION_EXPORT NSString* const DSChainBlocksDidChangeNotification;
@@ -286,6 +285,8 @@ FOUNDATION_EXPORT NSString* const DSChainNewChainTipBlockNotification;
 - (void)triggerUpdatesForLocalReferences:(DSTransaction*)transaction;
 
 - (void)updateAddressUsageOfSimplifiedMasternodeEntries:(NSArray*)simplifiedMasternodeEntries;
+
+- (DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId;
 
 @end
 

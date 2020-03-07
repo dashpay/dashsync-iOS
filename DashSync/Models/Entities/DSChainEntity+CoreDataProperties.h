@@ -16,13 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSFetchRequest<DSChainEntity *> *)fetchRequest;
 
 @property (nullable, nonatomic, retain) NSData *baseBlockHash;
-@property (nullable, nonatomic, retain) NSData *dpnsContractID;
-@property (nullable, nonatomic, retain) NSData *dashpayContractID;
 @property (nullable, nonatomic, retain) NSData *checkpoints;
 @property (nullable, nonatomic, copy) NSString *devnetIdentifier;
-@property (nonatomic, assign) uint32_t standardDapiJRPCPort;
-@property (nonatomic, assign) uint32_t standardDapiGRPCPort;
-@property (nonatomic, assign) uint32_t standardPort;
 @property (nonatomic, assign) uint32_t totalGovernanceObjectsCount;
 @property (nonatomic, assign) uint32_t totalMasternodeCount;
 @property (nonatomic, assign) uint16_t type;

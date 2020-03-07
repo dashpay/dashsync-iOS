@@ -283,7 +283,7 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
 }
 
 - (void)registerCreator:(DSBlockchainIdentity*)blockchainIdentity {
-    self.registeredBlockchainIdentity = blockchainIdentity.uniqueID;
+    self.registeredBlockchainIdentity = blockchainIdentity?blockchainIdentity.uniqueID:UINT256_ZERO;
     [self save];
 }
 
@@ -324,8 +324,11 @@ static NSString *const DPCONTRACT_SCHEMA_ID = @"contract";
             }
             hasChange = YES;
         }
-        if (!uint256_is_zero(self.registeredBlockchainIdentity) && !entity.registeredBlockchainIdentityUniqueID) {
+        if (!uint256_is_zero(self.registeredBlockchainIdentity) && (!entity.registeredBlockchainIdentityUniqueID || !uint256_eq(entity.registeredBlockchainIdentityUniqueID.UInt256, self.registeredBlockchainIdentity))) {
             entity.registeredBlockchainIdentityUniqueID = uint256_data(self.registeredBlockchainIdentity);
+            hasChange = YES;
+        } else if (uint256_is_zero(self.registeredBlockchainIdentity) && entity.registeredBlockchainIdentityUniqueID) {
+            entity.registeredBlockchainIdentityUniqueID = nil;
             hasChange = YES;
         }
         if (entity.state != self.contractState) {

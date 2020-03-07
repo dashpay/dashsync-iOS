@@ -15,13 +15,8 @@
 }
 
 @dynamic baseBlockHash;
-@dynamic dpnsContractID;
-@dynamic dashpayContractID;
 @dynamic checkpoints;
 @dynamic devnetIdentifier;
-@dynamic standardDapiJRPCPort;
-@dynamic standardDapiGRPCPort;
-@dynamic standardPort;
 @dynamic totalGovernanceObjectsCount;
 @dynamic totalMasternodeCount;
 @dynamic type;

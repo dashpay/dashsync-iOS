@@ -754,6 +754,7 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet:
         {
+            _cachedStandardPort = standardPort;
             setKeychainInt(standardPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,STANDARD_PORT_LOCATION], NO);
             break;
         }
@@ -795,6 +796,7 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet:
         {
+            _cachedStandardDapiGRPCPort = standardDapiGRPCPort;
             setKeychainInt(standardDapiGRPCPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,GRPC_PORT_LOCATION], NO);
             break;
         }
@@ -943,6 +945,7 @@ static dispatch_once_t devnetToken = 0;
             return;
         case DSChainType_DevNet:
         {
+            _cachedStandardDapiJRPCPort = standardDapiJRPCPort;
             setKeychainInt(standardDapiJRPCPort,[NSString stringWithFormat:@"%@%@",self.devnetIdentifier,JRPC_PORT_LOCATION], NO);
             break;
         }
@@ -2251,6 +2254,18 @@ static dispatch_once_t devnetToken = 0;
 - (BOOL)isEqual:(id)obj
 {
     return self == obj || ([obj isKindOfClass:[DSChain class]] && uint256_eq([obj genesisHash], _genesisHash));
+}
+
+// MARK: - Identities
+
+-(DSBlockchainIdentity*)blockchainIdentityForUniqueId:(UInt256)uniqueId {
+    for (DSWallet * wallet in self.wallets) {
+        DSBlockchainIdentity * blockchainIdentity = [wallet blockchainIdentityForUniqueId:uniqueId];
+        if (blockchainIdentity) {
+            return blockchainIdentity;
+        }
+    }
+    return nil;
 }
 
 // MARK: - Registering special transactions

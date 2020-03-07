@@ -32,7 +32,6 @@
 @implementation DSChainEntity
 
 - (instancetype)setAttributesFromChain:(DSChain *)chain {
-    self.standardPort = chain.standardPort;
     self.type = chain.chainType;
     self.totalMasternodeCount = chain.totalMasternodeCount;
     self.totalGovernanceObjectsCount = chain.totalGovernanceObjectsCount;
@@ -41,28 +40,18 @@
 
 - (DSChain *)chain {
     __block DSChainType type;
-    __block uint32_t port;
-    __block uint32_t dapiJRPCPort;
-    __block uint32_t dapiGRPCPort;
     __block NSString * devnetIdentifier;
     __block NSData * data;
     __block uint32_t totalMasternodeCount;
     __block uint32_t totalGovernanceObjectsCount;
     __block UInt256 baseBlockHash;
-    __block UInt256 dpnsContractID;
-    __block UInt256 dashpayContractID;
     [self.managedObjectContext performBlockAndWait:^{
-        port = self.standardPort;
-        dapiJRPCPort = self.standardDapiJRPCPort;
-        dapiGRPCPort = self.standardDapiGRPCPort;
         type = self.type;
         devnetIdentifier = self.devnetIdentifier;
         data = self.checkpoints;
         totalMasternodeCount = self.totalMasternodeCount;
         totalGovernanceObjectsCount = self.totalGovernanceObjectsCount;
         baseBlockHash = self.baseBlockHash.UInt256;
-        dpnsContractID = self.dpnsContractID.UInt256;
-        dashpayContractID = self.dashpayContractID.UInt256;
     }];
     if (type == DSChainType_MainNet) {
         return [DSChain mainnet];
@@ -73,7 +62,7 @@
             return [DSChain devnetWithIdentifier:devnetIdentifier];
         } else {
             NSArray * checkpointArray = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            return [DSChain setUpDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray withDefaultPort:port withDefaultDapiJRPCPort:dapiJRPCPort withDefaultDapiGRPCPort:dapiGRPCPort dpnsContractID:dpnsContractID dashpayContractID:dashpayContractID];
+            return [DSChain recoverKnownDevnetWithIdentifier:devnetIdentifier withCheckpoints:checkpointArray];
         }
     }
     return nil;
@@ -97,19 +86,6 @@
     if (checkpoints) {
         NSData * archivedCheckpoints = [NSKeyedArchiver archivedDataWithRootObject:checkpoints];
         chainEntity.checkpoints = archivedCheckpoints;
-    }
-    if (type == DSChainType_MainNet) {
-        chainEntity.standardPort = MAINNET_STANDARD_PORT;
-        chainEntity.standardDapiJRPCPort = MAINNET_DAPI_JRPC_STANDARD_PORT;
-        chainEntity.standardDapiGRPCPort = MAINNET_DAPI_GRPC_STANDARD_PORT;
-    } else if (type == DSChainType_TestNet) {
-        chainEntity.standardPort = TESTNET_STANDARD_PORT;
-        chainEntity.standardDapiJRPCPort = TESTNET_DAPI_JRPC_STANDARD_PORT;
-        chainEntity.standardDapiGRPCPort = TESTNET_DAPI_GRPC_STANDARD_PORT;
-    } else {
-        chainEntity.standardPort = DEVNET_STANDARD_PORT;
-        chainEntity.standardDapiJRPCPort = DEVNET_DAPI_JRPC_STANDARD_PORT;
-        chainEntity.standardDapiGRPCPort = DEVNET_DAPI_GRPC_STANDARD_PORT;
     }
     return chainEntity;
 }

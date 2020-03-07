@@ -32,8 +32,6 @@ typedef NS_ENUM(NSUInteger, DPContractState) {
     DPContractState_Registering,
 };
 
-#define DPNS_ID @"EzWtbtR6U9ScEFEi2hAPV8NAghnzmvQmbEHmQ2KwBAvf"
-
 @interface DPContract : DPBaseObject
 
 @property (readonly, copy, nonatomic) NSString *localContractIdentifier;

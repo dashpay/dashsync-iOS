@@ -200,7 +200,7 @@
                                                            }
                                                        }];
     
-    self.blockchainIdentitiesObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSChainBlockchainIdentitiesDidChangeNotification object:nil
+    self.blockchainIdentitiesObserver = [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentitiesDidUpdateNotification object:nil
                                                                                           queue:nil usingBlock:^(NSNotification *note) {
                                                                                               if ([note.userInfo[DSChainManagerNotificationChainKey] isEqual:[self chain]]) {
                                                                                                   [self updateBlockchainIdentitiesCount];

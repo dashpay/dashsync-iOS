@@ -890,23 +890,6 @@
     if (!keyChainDictionary) keyChainDictionary = [NSMutableDictionary dictionary];
     [keyChainDictionary removeObjectForKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
-    
-    //we also have to remove all contacts derivation paths from their associated accounts.
-    
-    [self.chain.managedObjectContext performBlockAndWait:^{
-        NSSet <DSFriendRequestEntity *>* friendRequests = [blockchainIdentity.ownContact outgoingRequests];
-        for (DSFriendRequestEntity * friendRequest in friendRequests) {
-            uint32_t accountNumber = friendRequest.account.index;
-            DSAccount * account = [blockchainIdentity.wallet accountWithNumber:accountNumber];
-            [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
-        }
-        [blockchainIdentity.blockchainIdentityEntity deleteObject];
-    }];
-    
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainIdentitiesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-    });
 }
 -(void)addBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
 
@@ -929,14 +912,12 @@
     NSAssert(!uint256_is_zero(blockchainIdentity.uniqueID), @"registrationTransactionHashData must not be null");
     [keyChainDictionary setObject:@(blockchainIdentity.index) forKey:blockchainIdentity.lockedOutpointData];
     setKeychainDict(keyChainDictionary, self.walletBlockchainIdentitiesKey, NO);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSChainBlockchainIdentitiesDidChangeNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.chain}];
-    });
 }
 
 -(void)wipeBlockchainIdentities {
     for (DSBlockchainIdentity * blockchainIdentity in [_mBlockchainIdentities allValues]) {
         [self unregisterBlockchainIdentity:blockchainIdentity];
+        [blockchainIdentity deletePersistentObject];
     }
 }
 

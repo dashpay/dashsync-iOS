@@ -39,6 +39,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 #define BLOCKCHAIN_USERNAME_STATUS @"BLOCKCHAIN_USERNAME_STATUS"
 #define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentitiesDidUpdateNotification;
+
 @interface DSBlockchainIdentity : NSObject
 
 @property (nonatomic,weak,readonly) DSWallet * wallet;
@@ -96,6 +98,8 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 -(void)generateBlockchainIdentityExtendedPublicKeys:(void (^ _Nullable)(BOOL registered))completion;
 
 -(void)registerInWallet;
+
+-(BOOL)unregisterLocally;
 
 -(void)registerInWalletForRegistrationFundingTransaction:(DSCreditFundingTransaction*)fundingTransaction;
 
