@@ -157,7 +157,7 @@
         return FALSE;
     }
     
-    if ([self.destinationContact.username isEqualToString:((DSPotentialOneWayFriendship*)object).destinationContact.username] && uint256_eq(self.sourceBlockchainIdentity.registrationTransitionHash,((DSPotentialOneWayFriendship*)object).sourceBlockchainIdentity.registrationTransitionHash) &&
+    if ([self.destinationContact.username isEqualToString:((DSPotentialOneWayFriendship*)object).destinationContact.username] && uint256_eq(self.sourceBlockchainIdentity.uniqueID,((DSPotentialOneWayFriendship*)object).sourceBlockchainIdentity.uniqueID) &&
         self.account.accountNumber == ((DSPotentialOneWayFriendship*)object).account.accountNumber) {
         return TRUE;
     }

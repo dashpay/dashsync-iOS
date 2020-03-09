@@ -22,6 +22,7 @@
 @property (strong, nonatomic) IBOutlet UILabel *indexLabel;
 @property (strong, nonatomic) IBOutlet UILabel *usernameStatusLabel;
 @property (strong, nonatomic) IBOutlet UILabel *uniqueIdLabel;
+@property (strong, nonatomic) id blockchainIdentityNameObserver;
 
 @end
 
@@ -35,10 +36,22 @@
             [self updateProfile];
         }];
     }
+    
+    self.blockchainIdentityNameObserver =
+    [[NSNotificationCenter defaultCenter] addObserverForName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil
+                                                       queue:nil usingBlock:^(NSNotification *note) {
+                                                           
+                                                           if ([note.userInfo[DSBlockchainIdentityKey] isEqual:self]) {
+                                                               [self reloadRegistrationInfo];
+                                                           }
+                                                       }];
 }
 
--(void)loadProfileInitial {
-    self.title = self.blockchainIdentity.currentUsername;
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self.blockchainIdentityNameObserver];
+}
+
+-(void)reloadRegistrationInfo {
     if (!self.blockchainIdentity.registered) {
         self.aboutMeLabel.text = @"Register Identity";
         self.usernameStatusLabel.text = @"";
@@ -74,6 +87,11 @@
         self.aboutMeLabel.text = self.blockchainIdentity.ownContact.publicMessage;
         [self.avatarImageView sd_setImageWithURL:[NSURL URLWithString:self.blockchainIdentity.ownContact.avatarPath]];
     }
+}
+
+-(void)loadProfileInitial {
+    self.title = self.blockchainIdentity.currentUsername;
+    [self reloadRegistrationInfo];
     
     self.typeLabel.text = self.blockchainIdentity.localizedBlockchainIdentityTypeString;
     self.indexLabel.text = [NSString stringWithFormat:@"%d",self.blockchainIdentity.index];

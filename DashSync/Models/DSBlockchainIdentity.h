@@ -40,20 +40,42 @@ typedef NS_ENUM(NSUInteger, DSBlockchainIdentityType) {
 #define BLOCKCHAIN_USERNAME_SALT @"BLOCKCHAIN_USERNAME_SALT"
 
 FOUNDATION_EXPORT NSString* const DSBlockchainIdentitiesDidUpdateNotification;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification;
+FOUNDATION_EXPORT NSString* const DSBlockchainIdentityKey;
 
 @interface DSBlockchainIdentity : NSObject
 
-@property (nonatomic,weak,readonly) DSWallet * wallet;
-@property (nonatomic,readonly) NSString * uniqueIdString;
+/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO (as of dpp v10). Returned as a 256 bit number */
 @property (nonatomic,readonly) UInt256 uniqueID;
-@property (nonatomic,readonly) UInt256 registrationTransitionHash;
+
+/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO (as of dpp v10). Returned as a base 58 string of a 256 bit number */
+@property (nonatomic,readonly) NSString * uniqueIdString;
+
+/*! @brief This is the unique identifier representing the blockchain identity. It is derived from the credit funding transaction credit burn UTXO (as of dpp v10). Returned as a NSData of a 256 bit number */
 @property (nonatomic,readonly) NSData * uniqueIDData;
+
+/*! @brief This is the outpoint of the registration credit funding transaction. It is used to determine the unique ID by double SHA256 its value. Returned as a UTXO { .hash , .n } */
+@property (nonatomic,readonly) DSUTXO lockedOutpoint;
+
+/*! @brief This is the outpoint of the registration credit funding transaction. It is used to determine the unique ID by double SHA256 its value. Returned as an NSData of a UTXO { .hash , .n } */
 @property (nonatomic,readonly) NSData * lockedOutpointData;
-@property (nullable,nonatomic,readonly) NSString * currentUsername;
-@property (nonatomic,readonly) UInt256 lastTransitionHash;
+
+/*! @brief This is the wallet holding the blockchain identity. There should always be a wallet associated to a blockchain identity and hence this should never be nil. */
+@property (nonatomic,weak,readonly) DSWallet * wallet;
+
+/*! @brief This is the index of the blockchain identity in the wallet. The index is the top derivation used to derive an extended set of keys for the identity. No two blockchain identities should be allowed to have the same index in a wallet. For example m/.../.../.../index/key */
 @property (nonatomic,readonly) uint32_t index;
-@property (nonatomic,readonly) NSString * registrationFundingAddress;
+
+/*! @brief Related to DPNS. This is the list of usernames that are associated to the identity. These usernames however might not yet be registered or might be invalid. This can be used in tandem with the statusOfUsername: method */
 @property (nonatomic,readonly) NSArray <NSString *> * usernames;
+
+/*! @brief Related to DPNS. This is current and most likely username associated to the identity. It is not necessarily registered yet on L2 however so its state should be determined with the statusOfUsername: method */
+@property (nullable,nonatomic,readonly) NSString * currentUsername;
+
+@property (nonatomic,readonly) UInt256 lastTransitionHash;
+
+@property (nonatomic,readonly) NSString * registrationFundingAddress;
+
 @property (nonatomic,readonly) NSString * dashpayBioString;
 @property (nonatomic,readonly) uint64_t creditBalance;
 @property (nonatomic,readonly) uint32_t activeKeys;
@@ -62,9 +84,9 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentitiesDidUpdateNotification;
 
 @property (nonatomic,readonly) NSArray <DSTransition*>* allTransitions;
 
+/*! @brief This is the transaction on L1 that has an output that is used to fund the creation of this blockchain identity.
+    @discussion There are situations where this is nil as it is not yet known ; if the blockchain identity is being retrieved from L2 or if we are resyncing the chain. */
 @property (nonatomic,readonly) DSCreditFundingTransaction * registrationCreditFundingTransaction;
-
-//@property (nonatomic,readonly) DSBlockchainIdentityRegistrationTransition * blockchainIdentityRegistrationTransition;
 
 @property (nonatomic,readonly) DSContactEntity* ownContact;
 
@@ -78,12 +100,6 @@ FOUNDATION_EXPORT NSString* const DSBlockchainIdentitiesDidUpdateNotification;
 @property (nonatomic,readonly,getter=isRegistered) BOOL registered;
 
 @property (nonatomic,readonly) NSString * localizedBlockchainIdentityTypeString;
-
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
-
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withLockedOutpoint:(DSUTXO)lockedOutpoint inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
-
--(instancetype)initWithType:(DSBlockchainIdentityType)type atIndex:(uint32_t)index withFundingTransaction:(DSCreditFundingTransaction*)transaction withUsernameDictionary:(NSDictionary <NSString *,NSDictionary *> * _Nullable)usernameDictionary inWallet:(DSWallet*)wallet inContext:(NSManagedObjectContext* _Nullable)managedObjectContext;
 
 -(void)addUsername:(NSString*)username save:(BOOL)save;
 

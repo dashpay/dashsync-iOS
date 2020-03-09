@@ -105,6 +105,15 @@ typedef struct _DSLLMQ {
 
 #define uint256_xor(a, b) ((UInt256) { .u64 = { a.u64[0] ^ b.u64[0], a.u64[1] ^ b.u64[1], a.u64[2] ^ b.u64[2], a.u64[3] ^ b.u64[3] } })//this needs to be tested
 
+#define uint2_firstbits(x) (x & 0x1? 0 : 1)
+#define uint4_firstbits(x) (x & 0x3? uint2_firstbits( x ) : 2+uint2_firstbits( x >> 2 ))
+#define uint8_firstbits(x) (x & 0xF? uint4_firstbits( x ) : 4+uint4_firstbits( x >> 4 ))
+#define uint16_firstbits(x) (x & 0xFF? uint8_firstbits( x ) : 8+uint8_firstbits( x >> 8 ))
+#define uint32_firstbits(x) (x & 0xFFFF? uint16_firstbits( x ) : 16+uint16_firstbits( x >> 16 ))
+#define uint64_firstbits(x) (x & 0xFFFFFFFF? uint32_firstbits( x ) : 32+uint32_firstbits( x >> 32 ))
+#define uint128_firstbits(x) (x.u64[0] & 0xFFFFFFFF? uint64_firstbits( x ) : 64+uint64_firstbits( x.u64[1] ))
+#define uint256_firstbits(x) ((x.u64[0] & 0xFFFFFFFF)? uint64_firstbits( x.u64[0] ) : ((x.u64[1] & 0xFFFFFFFF)? (64+uint64_firstbits( x.u64[1] )):((x.u64[2] & 0xFFFFFFFF)? (128+uint64_firstbits( x.u64[2] )):(192+uint64_firstbits( x.u64[3] )))))
+
 #define uint768_is_zero(u)\
 (((u).u64[0] | (u).u64[1] | (u).u64[2] | (u).u64[3] | (u).u64[4] | (u).u64[5] | (u).u64[6] | (u).u64[7] | (u).u64[8] | (u).u64[9] | (u).u64[10] | (u).u64[11]) == 0)
 #define uint512_is_zero(u)\

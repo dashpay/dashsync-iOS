@@ -69,7 +69,6 @@
 @property (nonatomic,assign) DSUTXO lockedOutpoint;
 @property (nonatomic,assign) uint32_t index;
 @property (nonatomic,assign) DSBlockchainIdentityRegistrationStatus registrationStatus;
-@property (nonatomic,assign) UInt256 registrationTransitionHash;
 @property (nonatomic,assign) UInt256 lastTransitionHash;
 @property (nonatomic,assign) uint64_t creditBalance;
 
@@ -113,7 +112,6 @@
     if (!(self = [super init])) return nil;
     self.wallet = wallet;
     self.keysCreated = 0;
-    self.registrationTransitionHash = UINT256_ZERO;
     self.currentMainKeyIndex = 0;
     self.currentMainKeyType = DSDerivationPathSigningAlgorith_ECDSA;
     self.index = index;
@@ -2119,8 +2117,10 @@
             contact.associatedBlockchainIdentityUniqueId = uint256_data(self.uniqueID);
             contact.chain = self.wallet.chain.chainEntity;
             contact.username = self.currentUsername;
+            contact.associatedBlockchainIdentity = entity;
+        } else if (!contact.associatedBlockchainIdentity) {
+            contact.associatedBlockchainIdentity = entity;
         }
-        contact.associatedBlockchainIdentity = self.blockchainIdentityEntity;
         self.ownContact = contact;
         [DSBlockchainIdentityEntity saveContext];
     }];
@@ -2187,7 +2187,7 @@
         [DSBlockchainIdentityEntity saveContext];
     }];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentitiesDidUpdateNotification object:nil userInfo:@{DSChainManagerNotificationChainKey:self.wallet.chain}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:DSBlockchainIdentityDidUpdateUsernameStatusNotification object:nil userInfo:@{DSBlockchainIdentityKey:self}];
     });
 }
 
@@ -2245,13 +2245,13 @@
     [self.managedObjectContext performBlockAndWait:^{
         DSBlockchainIdentityEntity * blockchainIdentityEntity = self.blockchainIdentityEntity;
         if (blockchainIdentityEntity) {
-        NSSet <DSFriendRequestEntity *>* friendRequests = [blockchainIdentityEntity.ownContact outgoingRequests];
-        for (DSFriendRequestEntity * friendRequest in friendRequests) {
-            uint32_t accountNumber = friendRequest.account.index;
-            DSAccount * account = [self.wallet accountWithNumber:accountNumber];
-            [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
-        }
-        [blockchainIdentityEntity deleteObject];
+            NSSet <DSFriendRequestEntity *>* friendRequests = [blockchainIdentityEntity.ownContact outgoingRequests];
+            for (DSFriendRequestEntity * friendRequest in friendRequests) {
+                uint32_t accountNumber = friendRequest.account.index;
+                DSAccount * account = [self.wallet accountWithNumber:accountNumber];
+                [account removeIncomingDerivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
+            }
+            [blockchainIdentityEntity deleteObject];
             [DSBlockchainIdentityEntity saveContext];
         }
     }];

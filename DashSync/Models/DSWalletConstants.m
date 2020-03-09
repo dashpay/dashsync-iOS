@@ -44,7 +44,7 @@ NSString* const DSGovernanceVoteCountUpdateNotification = @"DSGovernanceVoteCoun
 
 NSString* const DSChainsDidChangeNotification = @"DSChainsDidChangeNotification";
 
-NSString* const DSChainManagerNotificationChainKey =         @"DSChainManagerNotificationChainKey";
+NSString* const DSChainManagerNotificationChainKey = @"DSChainManagerNotificationChainKey";
 
 NSString* const DSTransactionManagerNotificationTransactionKey =         @"DSTransactionManagerNotificationTransactionKey";
 NSString* const DSTransactionManagerNotificationTransactionChangesKey =         @"DSTransactionManagerNotificationTransactionChangesKey";
@@ -60,3 +60,7 @@ NSString* const DPContractDidUpdateNotification = @"DPContractDidUpdateNotificat
 NSString* const DSContractUpdateNotificationKey = @"DSContractUpdateNotificationKey";
 
 NSString* const DSBlockchainIdentitiesDidUpdateNotification = @"DSBlockchainIdentitiesDidUpdateNotification";
+
+NSString* const DSBlockchainIdentityDidUpdateUsernameStatusNotification = @"DSBlockchainIdentityDidUpdateUsernameStatusNotification";
+
+NSString* const DSBlockchainIdentityKey = @"DSBlockchainIdentityKey";

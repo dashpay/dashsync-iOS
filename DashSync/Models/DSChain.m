@@ -74,6 +74,7 @@
 #import "DSQuorumEntryEntity+CoreDataProperties.h"
 #import "DSCreditFundingTransaction.h"
 #import "NSManagedObject+Sugar.h"
+#import "DSBlockchainIdentity+Protected.h"
 
 typedef const struct checkpoint { uint32_t height; const char *checkpointHash; uint32_t timestamp; uint32_t target; const char * masternodeListPath; const char * merkleRoot;} checkpoint;
 
