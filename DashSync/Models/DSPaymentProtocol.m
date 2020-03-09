@@ -245,6 +245,11 @@ typedef enum : NSUInteger {
     if (scripts.count == 0) return nil; // one or more outputs required
     _outputAmounts = amounts;
     _outputScripts = scripts;
+    if (!self.chain) {
+        self.chain = chain;
+    } else if (self.chain != chain) {
+        return nil;
+    }
     return self;
 }
 
